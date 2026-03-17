@@ -219,6 +219,42 @@ def _looks_like_county_and_lgid(tokens: List[str]) -> bool:
   return True
 
 
+def _parse_leading_ids(
+  tokens: List[str],
+) -> Optional[tuple[str, str, Optional[str], List[str]]]:
+  """
+  Parse county_id, lgid, optional subdistrict, and remainder from line tokens.
+  Returns (county_id, lgid, subdistrict, remainder) or None if not parseable.
+
+  Handles both:
+  - Normal: "4298 3131 East Smoky Hill..." (two numeric tokens).
+  - Concatenated: "429703130 East Smoky Hill..." (one numeric token split into county+lgid).
+  """
+  if len(tokens) < 3:
+    return None
+  if tokens[0].isdigit() and tokens[1].isdigit():
+    county_id = tokens[0]
+    lgid = tokens[1]
+    cursor = 2
+    subdistrict: Optional[str] = None
+    if cursor < len(tokens) and re.fullmatch(r"\d{1,3}", tokens[cursor]):
+      subdistrict = tokens[cursor]
+      cursor += 1
+    return (county_id, lgid, subdistrict, tokens[cursor:])
+  # Fallback: single concatenated county+lgid (e.g. "429703130" -> 4297, 03130)
+  if (
+    tokens[0].isdigit()
+    and len(tokens[0]) >= 5
+    and not tokens[1].isdigit()
+  ):
+    raw = tokens[0]
+    county_id = raw[:4]
+    lgid = raw[4:]
+    if lgid and lgid.isdigit():
+      return (county_id, lgid, None, tokens[1:])
+  return None
+
+
 def _split_name_and_purpose(tokens: List[str]) -> tuple[List[str], List[str], int]:
   """
   Given tokens AFTER countyId / lgid / optional subdistrict, split into:
@@ -283,19 +319,11 @@ def normalize_metro_districts_from_lines(raw_rows: List[RawRow]) -> Dict[str, An
       continue
 
     tokens = _tokenize(line)
-    if not _looks_like_county_and_lgid(tokens):
+    parsed = _parse_leading_ids(tokens)
+    if not parsed:
       continue
 
-    county_id = tokens[0]
-    lgid = tokens[1]
-
-    subdistrict: Optional[str] = None
-    cursor = 2
-    if cursor < len(tokens) and re.fullmatch(r"\d{1,3}", tokens[cursor]):
-      subdistrict = tokens[cursor]
-      cursor += 1
-
-    remainder = tokens[cursor:]
+    county_id, lgid, subdistrict, remainder = parsed
     if not remainder:
       continue
 

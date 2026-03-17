@@ -645,11 +645,14 @@ export default function HomePage() {
                         onSelect={(id) => setSelectedMetroId(id)}
                       />
                     )}
-                    <p className="mt-2 text-sm text-slate-500 sm:text-base">
-                      {selectedDistrict
-                        ? `Debt service mills used: ${metroDebtMills.toFixed(6)}`
-                        : "If you do not have a metro district, leave this unselected."}
+                    <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">
+                      Only districts that report debt service mills are listed.
                     </p>
+                    {selectedDistrict && (
+                      <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                        Debt service mills used: {metroDebtMills.toFixed(6)}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
