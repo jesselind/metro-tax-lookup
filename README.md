@@ -1,38 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Metro tax lookup (Arapahoe County)
+
+A small web tool for Arapahoe County residents to estimate what share of their property tax rate goes to metro district debt service (based on numbers from the county site or property tax bill).
+
+Not affiliated with Arapahoe County. Informational only. Verify with official county sources. Not legal or tax advice.
 
 MIT-licensed; please attribute and verify with county source documents.
 
-## Getting Started
+## Use (for residents)
 
-First, run the development server:
+1. Use the Arapahoe County property search to find your parcel.
+2. Find the total mills and your metro district debt service mills (if any).
+3. Enter those numbers in this tool to see the percentage and the math.
+
+## Sources, privacy, accessibility
+
+- **Sources**: See the in-app Sources page at `/sources`.
+- **Privacy**: No analytics, no cookies, and no saving inputs in your browser (local/session storage). See `/privacy`.
+- **Accessibility**: We aim for WCAG 2.1 AA. To report an accessibility issue, email `metro.tax.lookup@pm.me`. See `/accessibility`.
+
+## Development
+
+Install deps and run the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Data files
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **App data**: `public/data/metro-levies-2025.json`
+- **Extractor scripts** (offline tools): `tools/extract_metro_levies_2025.py` and `tools/extract_metro_levies_2026.py`
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT. See `LICENSE`.
