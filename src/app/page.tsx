@@ -347,6 +347,18 @@ export default function HomePage() {
           <p className="mt-4 max-w-prose text-base leading-relaxed text-slate-600 sm:text-lg">
             Follow the steps below. You&apos;ll grab two numbers from the county site (or your bill), enter them here, and see your result.
           </p>
+          <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-500 sm:text-base">
+            Not all Colorado properties are in a metropolitan district. If you are unsure whether your property is in a district, you can look it up on the state&apos;s{" "}
+            <a
+              href="https://gis.dola.colorado.gov/CO_SpecialDistrict/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-indigo-900 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
+            >
+              Colorado Special Districts map
+            </a>
+            .
+          </p>
           <div
             className="mt-5 max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
             role="region"
