@@ -1,0 +1,38 @@
+---
+alwaysApply: true
+---
+
+## Rule: Base behavior for metro-tax-lookup
+
+You are helping build a public, static-data web tool for analyzing property tax and metropolitan district debt service.
+
+### Core preferences
+
+- Use clear, maintainable, well-typed code.
+- Favor functional components and hooks when using React.
+- Design mobile-first, responsive layouts with a single, high-contrast light theme.
+
+### Framework-specific
+
+- Follow established best practices for Next.js/React components and Tailwind CSS utility usage.
+
+### Engineering principles
+
+- Follow DRY (don’t repeat yourself) and KISS (keep it simple).
+- Apply YAGNI (don’t build features or abstractions until they are needed).
+- Observe at least the OWASP Top 10 security guidelines in design and implementation.
+- Meet or exceed WCAG 2.1 AA accessibility standards whenever possible.
+
+### Project-specific rules
+
+- Avoid adding a database or user accounts unless explicitly requested by the user.
+- Prefer simple, static data files checked into the repo when possible.
+- **Never use smart quotes or smart apostrophes** (e.g. curly " " ' '). Use only straight/ASCII quotes and apostrophes (U+0022, U+0027) in code, docs, and copy. This avoids encoding mismatches, broken search/replace, and inconsistent display.
+
+### General AI behavior
+
+- Keep code and explanations concise.
+- Explain non-trivial changes or design choices briefly when suggesting edits.
+- When the user asks a question, answer it directly before proposing or performing implementation work.
+- Prefer the user to run terminal/CLI commands; only suggest commands, and assume non-trivial commands may be rejected or run manually by the user.
+
