@@ -33,10 +33,17 @@ const HELP_PILL_CLASS =
   "inline-flex items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 sm:text-base";
 const INPUT_CLASS =
   "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
-const CARD_CLASS = `overflow-hidden rounded-xl border border-slate-700 bg-slate-700`;
-const CARD_HEADER_CLASS =
-  `px-4 py-3 text-base font-semibold text-white sm:px-5`;
+const CARD_CLASS_CLIPPED =
+  "overflow-hidden rounded-xl border border-slate-700 bg-slate-700";
+const CARD_HEADER_CLASS = "px-4 py-3 text-base font-semibold text-white sm:px-5";
 const CARD_BODY_CLASS = "bg-white px-4 py-4 sm:px-5 sm:py-5";
+
+// For the Step 3 dropdown card: keep overflow visible so the menu can escape,
+// but avoid corner artifacts by using a single white surface.
+const CARD_CLASS_DROPDOWN = "rounded-xl border border-slate-700 bg-white";
+const CARD_HEADER_CLASS_DROPDOWN =
+  "rounded-t-xl bg-slate-700 px-4 py-3 text-base font-semibold text-white sm:px-5";
+const CARD_BODY_CLASS_DROPDOWN = "rounded-b-xl bg-white px-4 py-4 sm:px-5 sm:py-5";
 
 function InfoIcon() {
   return (
@@ -408,7 +415,7 @@ export default function HomePage() {
           <ol className="space-y-6 sm:space-y-8">
             {/* Step 1: Go to property lookup */}
             <li>
-              <div className={CARD_CLASS}>
+              <div className={CARD_CLASS_CLIPPED}>
                 <div className={CARD_HEADER_CLASS}>Step 1 - Find your property</div>
                 <div className={CARD_BODY_CLASS}>
                   <p className="text-base text-slate-800 sm:text-lg">
@@ -429,7 +436,7 @@ export default function HomePage() {
 
             {/* Step 2: Find total mills on property details page */}
             <li>
-              <div className={CARD_CLASS}>
+              <div className={CARD_CLASS_CLIPPED}>
                 <div className={CARD_HEADER_CLASS}>Step 2 - Total mills</div>
                 <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
@@ -481,9 +488,9 @@ export default function HomePage() {
 
             {/* Step 3: Get metro district debt — picker if they know name, or guide + image if not */}
             <li>
-              <div className={CARD_CLASS}>
-                <div className={CARD_HEADER_CLASS}>Step 3 - Metro debt mills</div>
-                <div className={`${CARD_BODY_CLASS} space-y-3`}>
+              <div className={CARD_CLASS_DROPDOWN}>
+                <div className={CARD_HEADER_CLASS_DROPDOWN}>Step 3 - Metro debt mills</div>
+                <div className={`${CARD_BODY_CLASS_DROPDOWN} space-y-3`}>
                   <div className="rounded-md border border-slate-300 bg-white px-3 py-2">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base">
                       <input
@@ -590,7 +597,7 @@ export default function HomePage() {
             {/* Result */}
             {showResult && (
               <li>
-                <div className="rounded-xl border-2 border-indigo-950 bg-white">
+                <div className="overflow-hidden rounded-xl border-2 border-indigo-950 bg-indigo-950">
                   <div className={CARD_HEADER_CLASS}>Result</div>
                   <div className={CARD_BODY_CLASS}>
                   <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
