@@ -35,4 +35,5 @@ You are helping build a public, static-data web tool for analyzing property tax 
 - Explain non-trivial changes or design choices briefly when suggesting edits.
 - When the user asks a question, answer it directly before proposing or performing implementation work.
 - Prefer the user to run terminal/CLI commands; only suggest commands, and assume non-trivial commands may be rejected or run manually by the user.
+- Do not run any `git` commands (status/diff/log/commit/push/etc.) unless the user explicitly asks you to run them.
 

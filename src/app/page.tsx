@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { calculateDebtPercentage } from "@/lib/levyCalculator";
 import levyData from "../../public/data/metro-levies-2025.json";
@@ -323,7 +322,7 @@ export default function HomePage() {
                 </span>
               </summary>
               <div className="px-4 pb-4 sm:px-5">
-                <div className="rounded-md bg-white p-3 text-sm text-slate-800 ring-1 ring-slate-200 sm:text-base">
+                <div className="rounded-md bg-white p-3 text-base text-slate-800 ring-1 ring-slate-200">
                   <div className="space-y-2">
                     <p>
                       A <strong>metro district</strong> (metropolitan district) is a
@@ -390,7 +389,7 @@ export default function HomePage() {
                 </span>
               </summary>
               <div className="px-4 pb-4 sm:px-5">
-                <div className="rounded-md bg-white p-3 text-sm text-slate-800 ring-1 ring-slate-200 sm:text-base">
+                <div className="rounded-md bg-white p-3 text-base text-slate-800 ring-1 ring-slate-200">
                   <p>
                     <strong>Mills</strong> are how property tax rates are shown on
                     your bill and the county site. You don&apos;t need to convert
@@ -426,19 +425,19 @@ export default function HomePage() {
                     >
                       property search
                     </a>
-                    , type your address, and open your property.
+                    , type your address, then open the county assessor property details page (your parcel record).
                   </p>
                 </div>
               </div>
             </li>
 
-            {/* Step 2: Find total mills on property page */}
+            {/* Step 2: Find total mills on property details page */}
             <li>
               <div className={CARD_CLASS}>
                 <div className={CARD_HEADER_CLASS}>Step 2 - Total mills</div>
                 <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
-                    On the property page, find <strong>2025 Mill Levy</strong> (the total mills, e.g. 183.894). Enter it below.
+                    On the property details page, find <strong>2025 Mill Levy</strong> (the total mills, example: 183.894). Enter it below.
                   </p>
                   <button
                     type="button"
@@ -449,7 +448,7 @@ export default function HomePage() {
                   </button>
                   {showStepsDetails && (
                     <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
-                      <p className="mb-3">Look for <strong>2025 Mill Levy</strong> on the property page.</p>
+                      <p className="mb-3">Look for <strong>2025 Mill Levy</strong> on the property details page.</p>
                       <figure>
                         <a href={propertyPageImg.src} target="_blank" rel="noopener noreferrer" className="block">
                           <Image
@@ -472,7 +471,7 @@ export default function HomePage() {
                       type="number"
                       inputMode="decimal"
                       step="0.000001"
-                      placeholder="e.g. 183.894"
+                      placeholder="Example: 183.894"
                       className={INPUT_CLASS}
                       value={totalMillsInput}
                       onChange={(e) => setTotalMillsInput(e.target.value)}
@@ -526,7 +525,7 @@ export default function HomePage() {
                   ) : (
                     <>
                       <p className="text-base text-slate-800 sm:text-lg">
-                        On the property page with your parcel details, tap the <strong>Tax District Levies</strong> link. On the detailed mill levy statement, find your metro district and its levy number (or enter <span className="font-mono">0</span> if you don&apos;t have one).
+                        On the county assessor property details page, tap the <strong>Tax District Levies</strong> link. On the detailed mill levy statement, find your metro district and its levy number (or enter <span className="font-mono">0</span> if you don&apos;t have one).
                       </p>
                       <button
                         type="button"
@@ -560,7 +559,7 @@ export default function HomePage() {
                           type="number"
                           inputMode="decimal"
                           step="0.000001"
-                          placeholder="e.g. 0 or the district levy"
+                          placeholder="Example: 0"
                           className={INPUT_CLASS}
                           value={metroDebtMillsInput}
                           onChange={(e) => setMetroDebtMillsInput(e.target.value)}
@@ -655,58 +654,6 @@ export default function HomePage() {
           </button>
         </p>
       </div>
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto w-full max-w-xl px-4 py-6 text-sm text-slate-700 sm:text-base">
-          <nav aria-label="Footer">
-            <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-              <li>
-                <Link
-                  href="/accessibility"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                >
-                  Accessibility statement
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </Link>
-              </li>
-              <li aria-hidden className="text-slate-400">
-                |
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                >
-                  Privacy policy
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </Link>
-              </li>
-              <li aria-hidden className="text-slate-400">
-                |
-              </li>
-              <li>
-                <Link
-                  href="/sources"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                >
-                  Sources
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-          <p className="mt-4 max-w-prose text-center text-sm leading-relaxed text-slate-600 sm:text-base">
-            Not affiliated with Arapahoe County. This is an informational tool to
-            help voters and residents understand publicly available mill levy
-            data. Verify with official county sources. Not legal or tax advice.
-          </p>
-        </div>
-      </footer>
     </main>
   );
 }

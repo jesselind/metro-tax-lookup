@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SITE_CONFIG } from "@/lib/siteConfig";
 
 export const metadata = {
   title: "Sources | Metro district tax share",
@@ -66,6 +67,27 @@ export default function SourcesPage() {
             </p>
           </div>
         </section>
+
+        {SITE_CONFIG.githubRepoUrl ? (
+          <section className="mt-8 space-y-3 text-base leading-relaxed text-slate-800 sm:text-lg">
+            <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+              Code
+            </h2>
+            <p className="max-w-prose text-slate-700">
+              Source code is available on{" "}
+              <a
+                href={SITE_CONFIG.githubRepoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+              >
+                GitHub
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+              .
+            </p>
+          </section>
+        ) : null}
 
         <section className="mt-8 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg">
           <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
