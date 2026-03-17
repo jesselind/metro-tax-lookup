@@ -566,7 +566,7 @@ export default function HomePage() {
                       name="total-mills"
                       type="number"
                       inputMode="decimal"
-                      step="0.000001"
+                      step="0.001"
                       placeholder="Example: 183.894"
                       className={INPUT_CLASS}
                       value={totalMillsInput}
