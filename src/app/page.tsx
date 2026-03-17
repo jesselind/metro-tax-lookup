@@ -487,10 +487,11 @@ export default function HomePage() {
               </summary>
               <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
                 <p>
-                  <strong>Mills</strong> are how property tax rates are shown on
-                  your bill and the county site. You don&apos;t need to convert
-                  them — just copy the numbers. For example, if the county shows
-                  &quot;Total: 183.894,&quot; enter <span className="font-mono">183.894</span>.
+                  <strong>Mills</strong> are the units used to express property
+                  tax rates. One mill means <strong>$1 of tax for every $1,000 of
+                  taxable (assessed) value</strong>. So if your assessed value is
+                  $400,000 and the rate is 100 mills, your tax from that rate
+                  would be about $400.
                 </p>
               </div>
             </details>
