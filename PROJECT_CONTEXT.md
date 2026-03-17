@@ -18,7 +18,7 @@ Goal: a simple public web portal where anyone in **Arapahoe County, Colorado** c
 - Get guided to their **official tax statement**
 - Enter a couple of numbers (or have them auto-detected in later versions)
 - See **what percentage of their property taxes goes to metropolitan district debt service**
-- Learn **what that means** and why some structures are questionable even if legal
+- Learn **what that means** and why some structures are controversial in Colorado (including ongoing litigation and policy debate), even when operating within the law
 
 This file is meant to:
 
@@ -232,7 +232,7 @@ In addition, the county and state reference general education material about how
 
 #### Example: parcel not in a metro district
 
-For PIN `032490811` / AIN `2077-34-2-09-011` (656 W Jamison Cir, Littleton), the workflow and data look like this:
+Example A (anonymized): a parcel that is not in a metro district.
 
 1. **Search by address on the Treasurer’s site**
    - Go to the **Search Property Tax Information** page (URL above).
@@ -272,7 +272,7 @@ Interpretation for the app:
 
 #### Example: parcel in a metro district (rate known, debt split later)
 
-For PIN `035120732` / AIN `2071-32-3-09-004` (25518 E Otero Pl, Aurora; Whispering Pines), the parcel search shows:
+Example B (anonymized): a parcel that is in a metro district.
 
 - **2025 Mill Levy**: `152.984`
 - **2025 Tax Levies for Taxing Authority 1779**:
@@ -286,13 +286,13 @@ For PIN `035120732` / AIN `2071-32-3-09-004` (25518 E Otero Pl, Aurora; Whisperi
   - 4712 – Urban Drainage & Flood – `00.9000000000`
   - 4713 – Urbn Drnge&Fld (S Platte) – `00.1000000000`
   - 4744 – W. Arap. Conservation Dis – `00.0000000000`
-  - 4745 – Whispering Pines Met Ds #1 – `67.6610000000`
+  - 4745 – [Example metro district] – `67.6610000000`
   - **Total**: `152.9840000000` mills.
 
 Interpretation for the app:
 
 - **Total property tax rate (mills)** = `152.984`.
-- This parcel is clearly in a metro district: **Whispering Pines Metropolitan District No. 1**, with a combined metro levy of `67.661` mills.
+- This parcel is clearly in a metro district (combined metro levy shown above is `67.661` mills).
 - For a simple “metro district share of taxes” calculation, we could treat:
   - `metroDistrictMillLevy = 67.661`.
   - Share of all taxes going to the metro district (operations + debt) would be `67.661 / 152.984`.
@@ -441,7 +441,7 @@ This is nice-to-have; the DOLA dataset is enough to ship v2.
 
 **Purpose:**
 
-- Help users understand how legally valid arrangements can still feel questionable or unfair.
+- Help users understand how legally valid arrangements can still be controversial or feel unfair.
 - Put numeric results in a broader policy/structural context.
 
 ---
@@ -476,7 +476,7 @@ This is usually a **15–30 minute** one-time setup.
 
 Guiding principles:
 
-- **Neutral, factual** descriptions of metro districts, even when discussing questionable or controversial structures.
+- **Neutral, factual** descriptions of metro districts, even when discussing controversial structures.
 - Make clear:
   - This is an **independent tool**, not affiliated with Arapahoe County or any district.
   - It uses **publicly available data** and user-provided information.
@@ -503,7 +503,14 @@ Use this section to append new context over time.
 
 - v1: **Single-page, manual-only calculator** (no maps/GIS). Plain-language copy (e.g. "neighborhood district," "What share of your property tax pays off neighborhood debt?"). Primary link: **Assessor property search** (Search Residential, Commercial, Ag and Vacant) – voter types address, opens property; **2025 Mill Levy** on that page is the first number. Second number: district dropdown if they know the name (app pre-fills debt from JSON) or 0. Expandable "Show where to find the mill levy" has tappable screenshot `src/assets/images/mill-levy-property-page.png`. Result shows debt %; when a district is selected, also **total district %** (ops + debt) from JSON.
 - **Levy data (current)**: `metro-levies-2026.json` from Mill Levy Public Information PDF via line-based extractor. 192 districts, 118 metro. JSON stores rates (decimal); app uses mills (x1000). Typed with `LevyDistrictFromJson`. Copy in `public/data/metro-levies-2026.json`.
-- Defer GIS/auto-detect until v1 is stable. Add accessibility statement (WCAG 2.1 AA) when appropriate.
+- **Policy pages + footer**:
+  - Footer includes links (opened in a new tab) to **Accessibility**, **Privacy**, and **Sources**, plus a disclaimer: not affiliated with Arapahoe County; informational only; verify with official county sources; not legal/tax advice.
+  - Accessibility contact email: `metro.tax.lookup@pm.me`.
+  - Privacy policy is explicit: no tracking/analytics, no cookies, and no saving inputs in the browser (local/session storage).
+- **Sources page**: `/sources` lists the original county PDFs and explicitly distinguishes:
+  - Source of truth used to generate the dropdown JSON: **Mill Levy Public Information Form**.
+  - Supporting references (not used to generate the app's JSON): **Taxing District Levy Percentage** and **Certification of Levies and Revenues**.
+- Defer GIS/auto-detect until v1 is stable.
 
 Add new bullets here as the project evolves so that future sessions have a single, authoritative place to rehydrate context.
 
