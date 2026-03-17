@@ -363,10 +363,10 @@ export default function HomePage() {
             What share of your property tax pays off your metro district&apos;s debt?
           </h1>
           <p className="mt-4 max-w-prose text-base leading-relaxed text-slate-600 sm:text-lg">
-            Follow the steps below. You&apos;ll grab two numbers from the county site (or your bill), enter them here, and see your result.
+            Not all Colorado properties are in a metropolitan district. If your property is not in a metro district, you do not need this tool.
           </p>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-500 sm:text-base">
-            Not all Colorado properties are in a metropolitan district. If you are unsure whether your property is in a district, you can look it up on the state&apos;s{" "}
+            If you are unsure whether your property is in a district, you can look it up on the state&apos;s{" "}
             <a
               href="https://gis.dola.colorado.gov/CO_SpecialDistrict/"
               target="_blank"
