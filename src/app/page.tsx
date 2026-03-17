@@ -95,7 +95,7 @@ function MetroDistrictSelect({
   const selected = metroOptions.find((m) => m.id === selectedMetroId);
   const displayLabel = selected
     ? formatOptionLabel(selected)
-    : "Choose your district\u2026";
+    : "Choose your district...";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -211,7 +211,7 @@ function MetroDistrictSelect({
             }}
             onMouseEnter={() => setFocusedIndex(-1)}
           >
-            Choose your district\u2026
+            None / I don&apos;t have a metro district
           </li>
           {metroOptions.map((m, i) => (
             <li
@@ -239,7 +239,6 @@ function MetroDistrictSelect({
 
 export default function HomePage() {
   const [totalMillsInput, setTotalMillsInput] = useState("");
-  const [metroDebtMillsInput, setMetroDebtMillsInput] = useState("");
   const [showMetroHelpDetails, setShowMetroHelpDetails] = useState(false);
   const [showStepsDetails, setShowStepsDetails] = useState(false);
   const [knowsMetroName, setKnowsMetroName] = useState(false);
@@ -261,14 +260,14 @@ export default function HomePage() {
     );
 
   const totalMills = parseFloat(totalMillsInput) || 0;
-  const metroDebtMills = parseFloat(metroDebtMillsInput) || 0;
+  const selectedDistrict = metroOptions.find((m) => m.id === selectedMetroId);
+  const metroDebtMills = selectedDistrict ? selectedDistrict.debtMills * RATE_TO_MILLS : 0;
 
   const { percentage } = calculateDebtPercentage(
     totalMills,
     metroDebtMills
   );
 
-  const selectedDistrict = metroOptions.find((m) => m.id === selectedMetroId);
   const totalDistrictMills =
     selectedDistrict && totalMills > 0
       ? selectedDistrict.totalMills * RATE_TO_MILLS
@@ -282,7 +281,6 @@ export default function HomePage() {
 
   function handleStartOver() {
     setTotalMillsInput("");
-    setMetroDebtMillsInput("");
     setKnowsMetroName(false);
     setSelectedMetroId("");
     setShowStepsDetails(false);
@@ -437,7 +435,7 @@ export default function HomePage() {
             {/* Step 2: Find total mills on property details page */}
             <li>
               <div className={CARD_CLASS_CLIPPED}>
-                <div className={CARD_HEADER_CLASS}>Step 2 - Total mills</div>
+                <div className={CARD_HEADER_CLASS}>Step 2 - Find total mills</div>
                 <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
                     On the property details page, find <strong>2025 Mill Levy</strong> (the total mills, example: 183.894). Enter it below.
@@ -497,7 +495,10 @@ export default function HomePage() {
                         id="knows-metro-name"
                         type="checkbox"
                         checked={knowsMetroName}
-                        onChange={(e) => setKnowsMetroName(e.target.checked)}
+                        onChange={(e) => {
+                          setKnowsMetroName(e.target.checked);
+                          if (e.target.checked) setShowMetroHelpDetails(false);
+                        }}
                         className="h-4 w-4 rounded border-slate-300 text-indigo-900 focus:ring-indigo-700"
                       />
                       <label htmlFor="knows-metro-name" className="text-base font-medium text-slate-900">
@@ -505,30 +506,11 @@ export default function HomePage() {
                       </label>
                     </div>
                   </div>
-                  {knowsMetroName ? (
+
+                  {!knowsMetroName && (
                     <>
                       <p className="text-base text-slate-800 sm:text-lg">
-                        Pick your district below. We&apos;ll fill in the debt number for you.
-                      </p>
-                      {metroOptions.length > 0 && (
-                        <MetroDistrictSelect
-                          metroOptions={metroOptions}
-                          selectedMetroId={selectedMetroId}
-                          onSelect={(id) => {
-                            setSelectedMetroId(id);
-                            const match = metroOptions.find((m) => m.id === id);
-                            if (match) {
-                              const mills = match.debtMills * RATE_TO_MILLS;
-                              setMetroDebtMillsInput(mills.toFixed(6));
-                            }
-                          }}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-base text-slate-800 sm:text-lg">
-                        On the county assessor property details page, tap the <strong>Tax District Levies</strong> link. On the detailed mill levy statement, find your metro district and its levy number (or enter <span className="font-mono">0</span> if you don&apos;t have one).
+                        On your property details page, tap the <strong>2025 Mill Levy</strong> number from Step 2. Find the row with your metro district&apos;s <strong>name</strong>.
                       </p>
                       <button
                         type="button"
@@ -539,12 +521,12 @@ export default function HomePage() {
                       </button>
                       {showMetroHelpDetails && (
                         <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
-                          <p className="mb-3">On the Tax District Levies page, find the row with your metro district&apos;s name and use its levy value.</p>
+                          <p className="mb-3">Use this page to identify the metro district name (the row label).</p>
                           <figure>
                             <a href={millLevyDetailImg.src} target="_blank" rel="noopener noreferrer" className="block">
                               <Image
                                 src={millLevyDetailImg}
-                                alt="County tax levies table with a metro district row highlighted (e.g. Sky Ranch Metro Dist.)."
+                                alt="County tax levies table with the metro district name highlighted (example: Sky Ranch Metro Dist. #3)."
                                 className="w-full rounded border border-slate-400"
                                 width={800}
                                 height={500}
@@ -554,42 +536,26 @@ export default function HomePage() {
                           </figure>
                         </div>
                       )}
-                      <div className="pt-1">
-                        <label htmlFor="metro-debt-mills" className="sr-only">Metro district debt (mills)</label>
-                        <input
-                          id="metro-debt-mills"
-                          name="metro-debt-mills"
-                          type="number"
-                          inputMode="decimal"
-                          step="0.000001"
-                          placeholder="Example: 0"
-                          className={INPUT_CLASS}
-                          value={metroDebtMillsInput}
-                          onChange={(e) => setMetroDebtMillsInput(e.target.value)}
-                          aria-describedby="metro-debt-hint"
-                        />
-                        <p id="metro-debt-hint" className="mt-1 text-sm text-slate-500 sm:text-base">Metro district debt (mills). Use 0 if none.</p>
-                      </div>
                     </>
                   )}
-                  {knowsMetroName && (
-                    <div className="pt-1">
-                      <label htmlFor="metro-debt-mills" className="sr-only">Metro district debt (mills) — optional override</label>
-                      <input
-                        id="metro-debt-mills"
-                        name="metro-debt-mills"
-                        type="number"
-                        inputMode="decimal"
-                        step="0.000001"
-                        placeholder="Or type from your bill"
-                        className={INPUT_CLASS}
-                        value={metroDebtMillsInput}
-                        onChange={(e) => setMetroDebtMillsInput(e.target.value)}
-                        aria-describedby="metro-debt-hint-override"
+
+                  <div>
+                    <p className="text-base text-slate-800 sm:text-lg">
+                      Select your metro district here. We&apos;ll fill in the <strong>debt service mills</strong> automatically.
+                    </p>
+                    {metroOptions.length > 0 && (
+                      <MetroDistrictSelect
+                        metroOptions={metroOptions}
+                        selectedMetroId={selectedMetroId}
+                        onSelect={(id) => setSelectedMetroId(id)}
                       />
-                      <p id="metro-debt-hint-override" className="mt-1 text-sm text-slate-500 sm:text-base">We filled this from your district; you can change it if your bill differs.</p>
-                    </div>
-                  )}
+                    )}
+                    <p className="mt-2 text-sm text-slate-500 sm:text-base">
+                      {selectedDistrict
+                        ? `Debt service mills used: ${metroDebtMills.toFixed(6)}`
+                        : "If you do not have a metro district, leave this unselected."}
+                    </p>
+                  </div>
                 </div>
               </div>
             </li>
@@ -600,46 +566,46 @@ export default function HomePage() {
                 <div className="overflow-hidden rounded-xl border-2 border-indigo-950 bg-indigo-950">
                   <div className={CARD_HEADER_CLASS}>Result</div>
                   <div className={CARD_BODY_CLASS}>
-                  <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-                    {percentage.toFixed(1)}%
-                  </p>
-                  <p className="mt-2 text-base font-medium text-slate-900 sm:text-lg">
-                    {percentage > 0
-                      ? `${percentage.toFixed(1)}% of your property taxes are paying off your metro district's debt.`
-                      : "None of your property taxes go to metro district debt."}
-                  </p>
-                  {selectedDistrict && totalDistrictShare > 0 && (
-                    <p className="mt-2 text-base text-slate-700 sm:text-lg">
-                      {totalDistrictShare.toFixed(1)}% of your property taxes go to your metro district in total (operations + debt).
+                    <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+                      {percentage.toFixed(1)}%
                     </p>
-                  )}
-                  <details className="mt-4 group">
-                    <summary className="cursor-pointer text-sm font-medium text-indigo-900 hover:text-indigo-700">
-                      Show the math
-                    </summary>
-                    <div className="mt-3 space-y-4 text-base text-slate-700 sm:text-lg">
-                      <div>
-                        <p className="mb-1 font-medium text-indigo-950">Debt service share</p>
-                        <p className="font-mono text-sm sm:text-base">
-                          (metro district debt mills &divide; total property tax mills) &times; 100
-                        </p>
-                        <p className="mt-0.5 font-mono text-sm sm:text-base">
-                          = ({metroDebtMills.toFixed(3)} &divide; {totalMills.toFixed(3)}) &times; 100 = {percentage.toFixed(1)}%
-                        </p>
-                      </div>
-                      {selectedDistrict && totalDistrictMills > 0 && (
+                    <p className="mt-2 text-base font-medium text-slate-900 sm:text-lg">
+                      {percentage > 0
+                        ? `${percentage.toFixed(1)}% of your property taxes are paying off your metro district's debt.`
+                        : "None of your property taxes go to metro district debt."}
+                    </p>
+                    {selectedDistrict && totalDistrictShare > 0 && (
+                      <p className="mt-2 text-base text-slate-700 sm:text-lg">
+                        {totalDistrictShare.toFixed(1)}% of your property taxes go to your metro district in total (operations + debt).
+                      </p>
+                    )}
+                    <details className="mt-4 group">
+                      <summary className="cursor-pointer text-sm font-medium text-indigo-900 hover:text-indigo-700">
+                        Show the math
+                      </summary>
+                      <div className="mt-3 space-y-4 text-base text-slate-700 sm:text-lg">
                         <div>
-                          <p className="mb-1 font-medium text-indigo-950">Metro district total share (operations + debt)</p>
+                          <p className="mb-1 font-medium text-indigo-950">Debt service share</p>
                           <p className="font-mono text-sm sm:text-base">
-                            (metro district total mills &divide; total property tax mills) &times; 100
+                            (metro district debt mills &divide; total property tax mills) &times; 100
                           </p>
                           <p className="mt-0.5 font-mono text-sm sm:text-base">
-                            = ({totalDistrictMills.toFixed(3)} &divide; {totalMills.toFixed(3)}) &times; 100 = {totalDistrictShare.toFixed(1)}%
+                            = ({metroDebtMills.toFixed(3)} &divide; {totalMills.toFixed(3)}) &times; 100 = {percentage.toFixed(1)}%
                           </p>
                         </div>
-                      )}
-                    </div>
-                  </details>
+                        {selectedDistrict && totalDistrictMills > 0 && (
+                          <div>
+                            <p className="mb-1 font-medium text-indigo-950">Metro district total share (operations + debt)</p>
+                            <p className="font-mono text-sm sm:text-base">
+                              (metro district total mills &divide; total property tax mills) &times; 100
+                            </p>
+                            <p className="mt-0.5 font-mono text-sm sm:text-base">
+                              = ({totalDistrictMills.toFixed(3)} &divide; {totalMills.toFixed(3)}) &times; 100 = {totalDistrictShare.toFixed(1)}%
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </details>
                   </div>
                 </div>
               </li>
