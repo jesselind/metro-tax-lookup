@@ -33,14 +33,10 @@ const HELP_PILL_CLASS =
   "inline-flex items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 sm:text-base";
 const INPUT_CLASS =
   "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
-const CARD_CHROME = {
-  border: "border-slate-700",
-  headerBg: "bg-slate-700",
-} as const;
-const CARD_CLASS = `rounded-xl border ${CARD_CHROME.border} bg-white shadow-sm`;
+const CARD_CLASS = `overflow-hidden rounded-xl border border-slate-700 bg-slate-700`;
 const CARD_HEADER_CLASS =
-  `rounded-t-xl ${CARD_CHROME.headerBg} px-4 py-3 text-base font-semibold text-white sm:px-5`;
-const CARD_BODY_CLASS = "px-4 py-4 sm:px-5 sm:py-5";
+  `px-4 py-3 text-base font-semibold text-white sm:px-5`;
+const CARD_BODY_CLASS = "bg-white px-4 py-4 sm:px-5 sm:py-5";
 
 function InfoIcon() {
   return (
@@ -288,7 +284,7 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-white text-slate-900">
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-8 sm:py-12">
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-8 pb-4 sm:pt-12 sm:pb-6">
         <header className="pb-4 sm:pb-6">
           <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base" aria-hidden>
             Arapahoe County
@@ -300,12 +296,12 @@ export default function HomePage() {
             Follow the steps below. You&apos;ll grab two numbers from the county site (or your bill), enter them here, and see your result.
           </p>
           <div
-            className="mt-5 max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50/50"
+            className="mt-5 max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
             role="region"
             aria-label="Important information"
           >
             <details className="group">
-              <summary className="cursor-pointer bg-indigo-50 px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
+              <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
                 <span className="flex items-center justify-between gap-3">
                   <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
                     <InfoIcon />
@@ -325,7 +321,7 @@ export default function HomePage() {
                   </svg>
                 </span>
               </summary>
-              <div className="bg-indigo-50 px-4 pb-4 text-base text-slate-800 sm:px-5">
+              <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
                 <div className="space-y-2">
                   <p>
                     A <strong>metro district</strong> (metropolitan district) is a
@@ -370,7 +366,7 @@ export default function HomePage() {
             <div className="w-full border-t border-indigo-400" aria-hidden />
 
             <details className="group">
-              <summary className="cursor-pointer bg-indigo-50 px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
+              <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
                 <span className="flex items-center justify-between gap-3">
                   <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
                     <InfoIcon />
@@ -390,7 +386,7 @@ export default function HomePage() {
                   </svg>
                 </span>
               </summary>
-              <div className="bg-indigo-50 px-4 pb-4 text-base text-slate-800 sm:px-5">
+              <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
                 <p>
                   <strong>Mills</strong> are how property tax rates are shown on
                   your bill and the county site. You don&apos;t need to convert
@@ -594,7 +590,7 @@ export default function HomePage() {
             {/* Result */}
             {showResult && (
               <li>
-                <div className="rounded-xl border-2 border-indigo-950 bg-white shadow-sm">
+                <div className="rounded-xl border-2 border-indigo-950 bg-white">
                   <div className={CARD_HEADER_CLASS}>Result</div>
                   <div className={CARD_BODY_CLASS}>
                   <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
