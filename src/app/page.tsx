@@ -700,6 +700,11 @@ export default function HomePage() {
               </li>
             </ul>
           </nav>
+          <p className="mt-4 max-w-prose text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+            Not affiliated with Arapahoe County. This is an informational tool to
+            help voters and residents understand publicly available mill levy
+            data. Verify with official county sources. Not legal or tax advice.
+          </p>
         </div>
       </footer>
     </main>
