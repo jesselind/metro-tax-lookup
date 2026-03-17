@@ -109,6 +109,12 @@ function MetroDistrictSelect({
     ? formatOptionLabel(selected)
     : "Choose your district...";
 
+  const activeDescendantId = isOpen
+    ? focusedIndex === -1
+      ? "metro-option-none"
+      : `metro-option-${metroOptions[focusedIndex]?.id}`
+    : undefined;
+
   useEffect(() => {
     if (!isOpen) return;
     function handleClickOutside(e: MouseEvent) {
@@ -181,9 +187,12 @@ function MetroDistrictSelect({
       <button
         type="button"
         id="metro-select"
+        role="combobox"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-controls="metro-listbox"
         aria-labelledby="metro-select-label"
+        aria-activedescendant={activeDescendantId}
         className="flex min-h-[2.75rem] w-full items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-left text-base shadow-sm focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
         onClick={() => {
           if (!isOpen) {
@@ -334,8 +343,17 @@ export default function HomePage() {
     setShowResultDetails(false);
   }
 
+  const resultAnnouncement = showResult
+    ? percentage > 0
+      ? `${percentage.toFixed(1)} percent of your property taxes go to metro district debt service`
+      : "No metro district debt shown in your property tax rate"
+    : "";
+
   return (
     <main className="flex min-h-screen flex-col bg-white text-slate-900">
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {resultAnnouncement}
+      </div>
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-8 pb-4 sm:pt-12 sm:pb-6">
         <header className="pb-4 sm:pb-6">
           <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base" aria-hidden>
