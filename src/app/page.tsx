@@ -17,12 +17,22 @@ type MetroDistrictOption = {
   totalMills: number;
 };
 
+type LevyLineFromJson = {
+  purposeRaw: string;
+  purposeCategory: string;
+  rateMillsCurrent: number;
+  rateMillsPrevious: number | null;
+  taborExempt: boolean | null;
+  rawRowIndex: number;
+};
+
 /** Shape of a district entry in the imported levy JSON. */
 type LevyDistrictFromJson = {
   districtId: string;
   name: string;
   type: string;
-  aggregates?: { debtMills?: number; totalMills?: number };
+  aggregates?: { opsMills?: number; debtMills?: number; totalMills?: number };
+  levies?: LevyLineFromJson[];
 };
 
 const MAX_NAME_LEN = 48;
@@ -245,10 +255,15 @@ export default function HomePage() {
   const [showStepsDetails, setShowStepsDetails] = useState(false);
   const [knowsMetroName, setKnowsMetroName] = useState(false);
   const [selectedMetroId, setSelectedMetroId] = useState<string>("");
+  const [showResultDetails, setShowResultDetails] = useState(false);
 
-  const metroOptions: MetroDistrictOption[] = (
-    levyData as { districts: LevyDistrictFromJson[] }
-  ).districts
+  const levyJson = levyData as {
+    year: number;
+    source?: { title?: string };
+    districts: LevyDistrictFromJson[];
+  };
+
+  const metroOptions: MetroDistrictOption[] = levyJson.districts
     .filter((d: LevyDistrictFromJson) => d.type === "metro")
     .map((d: LevyDistrictFromJson) => ({
       id: d.districtId,
@@ -279,6 +294,35 @@ export default function HomePage() {
       ? Math.round((totalDistrictMills / totalMills) * 1000) / 10
       : 0;
 
+  const fullDistrict = levyJson.districts.find(
+    (d) => d.districtId === selectedMetroId
+  );
+  const metroLevies = fullDistrict?.levies ?? [];
+  const metroDebtLevies = metroLevies.filter(
+    (l) => l.purposeCategory === "debt_service"
+  );
+  const metroOpsLevies = metroLevies
+    .filter((l) => l.purposeCategory === "operations")
+    .slice()
+    .sort((a, b) => (b.rateMillsCurrent ?? 0) - (a.rateMillsCurrent ?? 0));
+  const metroOpsMills =
+    fullDistrict?.aggregates?.opsMills != null
+      ? fullDistrict.aggregates.opsMills * RATE_TO_MILLS
+      : 0;
+  const metroDebtMillsFromAggregates =
+    fullDistrict?.aggregates?.debtMills != null
+      ? fullDistrict.aggregates.debtMills * RATE_TO_MILLS
+      : 0;
+  const metroTotalMillsFromAggregates =
+    metroOpsMills + metroDebtMillsFromAggregates;
+  const metroDebtShareWithinDistrict =
+    metroTotalMillsFromAggregates > 0
+      ? (metroDebtMillsFromAggregates / metroTotalMillsFromAggregates) * 100
+      : 0;
+  const metroOpsShareWithinDistrict =
+    metroTotalMillsFromAggregates > 0
+      ? (metroOpsMills / metroTotalMillsFromAggregates) * 100
+      : 0;
   const showResult = totalMills > 0 || metroDebtMills > 0;
 
   function handleStartOver() {
@@ -287,6 +331,7 @@ export default function HomePage() {
     setSelectedMetroId("");
     setShowStepsDetails(false);
     setShowMetroHelpDetails(false);
+    setShowResultDetails(false);
   }
 
   return (
@@ -358,13 +403,30 @@ export default function HomePage() {
                     investors can make a profit. Homeowners repay that debt
                     through property taxes over many years, and can end up paying
                     for infrastructure twice: once in the home price and again
-                    through their tax bill. Some districts are structured so that
-                    insiders can lock in years of high tax collections with little
-                    oversight, weak accountability, and almost no practical way
-                    for homeowners to push back. In Colorado, metropolitan
-                    districts are a type of special district, and special
-                    districts are explicitly exempt from the jurisdiction of the
-                    Colorado Independent Ethics Commission.
+                    through their tax bill.
+                  </p>
+                  <p>
+                    On top of that, many metro district debt service mill levies are
+                    approved by voters as TABOR-exempt. Colorado&apos;s Taxpayer&apos;s Bill
+                    of Rights (TABOR) normally limits how fast local government tax
+                    revenue can grow. But metro district voters can approve mill
+                    levies that are TABOR-exempt, especially for debt payments. Those
+                    levies are allowed to increase as needed to cover bonds and other
+                    obligations, even when other parts of a tax bill are held down by
+                    TABOR limits.
+                  </p>
+                  <p>
+                    Early on, the only &quot;voters&quot; in a new metro district are
+                    often the developer and people closely tied to them. It is not
+                    unusual for a developer to sell tiny parcels to employees or
+                    other insiders for the sole purpose of making them property owners with voting power. They then unanimously approve high mill levies,
+                    generous debt authority, and TABOR-exempt status for that debt.
+                    That structure can leave homeowners locked into years of high tax
+                    collections with little oversight, weak accountability, and almost
+                    no practical way for them to push back. In Colorado, metropolitan
+                    districts are a type of special district, and special districts
+                    are explicitly exempt from the jurisdiction of the Colorado
+                    Independent Ethics Commission.
                   </p>
                 </div>
               </div>
@@ -434,13 +496,13 @@ export default function HomePage() {
               </div>
             </li>
 
-            {/* Step 2: Find total mills on property details page */}
+            {/* Step 2: Find total property tax mills on property details page */}
             <li>
               <div className={CARD_CLASS_CLIPPED}>
-                <div className={CARD_HEADER_CLASS}>Step 2 - Find total mills</div>
+                <div className={CARD_HEADER_CLASS}>Step 2 - Find total property tax mills</div>
                 <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
-                    On the property details page, find <strong>2025 Mill Levy</strong> (the total mills, example: 183.894). Enter it below.
+                    On the property details page, find <strong>2025 Mill Levy</strong> (your total property tax mills, example: 183.894). Enter it below.
                   </p>
                   <button
                     type="button"
@@ -571,43 +633,296 @@ export default function HomePage() {
                     <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                       {percentage.toFixed(1)}%
                     </p>
-                    <p className="mt-2 text-base font-medium text-slate-900 sm:text-lg">
+                    <p className="mt-1 text-sm font-medium text-slate-700 sm:text-base">
                       {percentage > 0
-                        ? `${percentage.toFixed(1)}% of your property taxes are paying off your metro district's debt.`
-                        : "None of your property taxes go to metro district debt."}
+                        ? "Share of your property taxes going to metro district debt"
+                        : "No metro district debt shown in your property tax rate"}
                     </p>
-                    {selectedDistrict && totalDistrictShare > 0 && (
-                      <p className="mt-2 text-base text-slate-700 sm:text-lg">
-                        {totalDistrictShare.toFixed(1)}% of your property taxes go to your metro district in total (operations + debt).
-                      </p>
-                    )}
-                    <details className="mt-4 group">
-                      <summary className="cursor-pointer text-sm font-medium text-indigo-900 hover:text-indigo-700">
-                        Show the math
-                      </summary>
-                      <div className="mt-3 space-y-4 text-base text-slate-700 sm:text-lg">
-                        <div>
-                          <p className="mb-1 font-medium text-indigo-950">Debt service share</p>
-                          <p className="font-mono text-sm sm:text-base">
-                            (metro district debt mills &divide; total property tax mills) &times; 100
-                          </p>
-                          <p className="mt-0.5 font-mono text-sm sm:text-base">
-                            = ({metroDebtMills.toFixed(3)} &divide; {totalMills.toFixed(3)}) &times; 100 = {percentage.toFixed(1)}%
-                          </p>
+                    <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-slate-50 text-sm sm:text-base">
+                      <div>
+                        <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
+                          <div className="text-slate-700">
+                            <p className="font-medium">Metro debt share</p>
+                            <p className="text-xs text-slate-500 sm:text-sm">
+                              Portion of your total property tax rate going to metro district debt
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-slate-900">
+                              {percentage.toFixed(1)}%
+                            </p>
+                            <p className="font-mono text-xs text-slate-600 sm:text-sm">
+                              {metroDebtMills.toFixed(3)} mills
+                            </p>
+                          </div>
                         </div>
-                        {selectedDistrict && totalDistrictMills > 0 && (
-                          <div>
-                            <p className="mb-1 font-medium text-indigo-950">Metro district total share (operations + debt)</p>
-                            <p className="font-mono text-sm sm:text-base">
-                              (metro district total mills &divide; total property tax mills) &times; 100
-                            </p>
-                            <p className="mt-0.5 font-mono text-sm sm:text-base">
-                              = ({totalDistrictMills.toFixed(3)} &divide; {totalMills.toFixed(3)}) &times; 100 = {totalDistrictShare.toFixed(1)}%
-                            </p>
+                        {showResultDetails && totalMills > 0 && (
+                          <div className="px-3 pb-2.5 sm:px-4">
+                            <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-600 sm:text-xs">
+                              <p>
+                                Metro debt share = metro district debt mills / total property tax mills
+                              </p>
+                              <p>
+                                = {metroDebtMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
+                                {percentage.toFixed(1)}%
+                              </p>
+                            </div>
                           </div>
                         )}
                       </div>
-                    </details>
+                      {selectedDistrict && totalDistrictShare > 0 && (
+                        <div>
+                          <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
+                            <div className="text-slate-700">
+                              <p className="font-medium">
+                                Metro total share (ops + debt)
+                              </p>
+                              <p className="text-xs text-slate-500 sm:text-sm">
+                                Portion of your total property tax rate going to metro district operations and debt
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-slate-900">
+                                {totalDistrictShare.toFixed(1)}%
+                              </p>
+                              <p className="font-mono text-xs text-slate-600 sm:text-sm">
+                                {totalDistrictMills.toFixed(3)} mills
+                              </p>
+                            </div>
+                          </div>
+                          {showResultDetails && totalMills > 0 && (
+                            <div className="px-3 pb-2.5 sm:px-4">
+                              <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-600 sm:text-xs">
+                                <p>
+                                  Metro total share (ops + debt) = metro district total mills / total property tax mills
+                                </p>
+                                <p>
+                                  = {totalDistrictMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
+                                  {totalDistrictShare.toFixed(1)}%
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {selectedDistrict && fullDistrict && (
+                      <>
+                        {showResultDetails && (
+                          <div className="mt-3 space-y-3 text-sm text-slate-700 sm:text-base">
+                            <div className="border border-slate-200 bg-slate-50 px-3 py-2.5 sm:px-4">
+                              <p className="font-medium text-indigo-950">
+                                Visual breakdown
+                              </p>
+                              {totalMills > 0 && (
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-xs text-slate-600 sm:text-sm">
+                                    Metro debt vs total bill
+                                  </p>
+                                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+                                    <div
+                                      className="h-full bg-indigo-600"
+                                      style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }}
+                                    />
+                                  </div>
+                                  <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-2 w-2 rounded-full bg-indigo-600" />
+                                      Metro debt {percentage.toFixed(1)}%
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-2 w-2 rounded-full bg-slate-300" />
+                                      Everything else{" "}
+                                      {(Math.max(0, 100 - percentage)).toFixed(1)}%
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              {totalMills > 0 && totalDistrictShare > 0 && (
+                                <div className="mt-3 space-y-1">
+                                  <p className="text-xs text-slate-600 sm:text-sm">
+                                    Metro total (ops + debt) vs total bill
+                                  </p>
+                                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+                                    <div
+                                      className="h-full bg-indigo-400"
+                                      style={{
+                                        width: `${Math.min(Math.max(totalDistrictShare, 0), 100)}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-2 w-2 rounded-full bg-indigo-400" />
+                                      Metro total {totalDistrictShare.toFixed(1)}%
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-2 w-2 rounded-full bg-slate-300" />
+                                      Everything else{" "}
+                                      {(Math.max(0, 100 - totalDistrictShare)).toFixed(1)}%
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              {metroTotalMillsFromAggregates > 0 && (
+                                <div className="mt-3 space-y-1">
+                                  <p className="text-xs text-slate-600 sm:text-sm">
+                                    Metro district: operations vs debt (within metro mills)
+                                  </p>
+                                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+                                    <div
+                                      className="h-full bg-emerald-500"
+                                      style={{
+                                        width: `${Math.min(
+                                          Math.max(metroOpsShareWithinDistrict, 0),
+                                          100
+                                        )}%`,
+                                      }}
+                                    />
+                                    <div
+                                      className="relative -mt-2.5 h-2.5 bg-transparent"
+                                      aria-hidden
+                                    >
+                                      <div
+                                        className="h-2.5 bg-indigo-500"
+                                        style={{
+                                          width: `${Math.min(
+                                            Math.max(metroDebtShareWithinDistrict, 0),
+                                            100
+                                          )}%`,
+                                          marginLeft: `${Math.min(
+                                            Math.max(metroOpsShareWithinDistrict, 0),
+                                            100
+                                          )}%`,
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                                      Ops {metroOpsShareWithinDistrict.toFixed(1)}%
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                                      Debt {metroDebtShareWithinDistrict.toFixed(1)}%
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="border border-slate-200 bg-slate-50 px-3 py-2.5 sm:px-4">
+                              <p className="font-medium text-indigo-950">
+                                Metro mills (from the county data)
+                              </p>
+                              <div className="mt-1 space-y-1 font-mono text-xs text-slate-700 sm:text-sm">
+                                <p>
+                                  <strong>Metro operations mills</strong>: {metroOpsMills.toFixed(3)}
+                                </p>
+                                <p>
+                                  <strong>Metro debt service mills</strong>: {metroDebtMillsFromAggregates.toFixed(3)}
+                                </p>
+                                {totalDistrictMills > 0 && (
+                                  <p>
+                                    <strong>Metro total mills (ops + debt)</strong>: {totalDistrictMills.toFixed(3)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {metroDebtLevies.length > 0 && (
+                              <div className="border border-slate-200 bg-slate-50">
+                                <div className="px-3 py-2.5 sm:px-4">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium text-indigo-950">
+                                      Debt service lines
+                                    </p>
+                                  </div>
+                                  <p className="mt-0.5 text-[0.7rem] text-slate-500 sm:text-xs">
+                                    Line items from the county form that are categorized as debt payments (bonds and similar obligations).
+                                  </p>
+                                </div>
+                                <ul className="divide-y divide-slate-200">
+                                  {metroDebtLevies.slice(0, 3).map((levy) => (
+                                    <li
+                                      key={levy.rawRowIndex}
+                                      className="flex items-baseline justify-between gap-3 px-3 py-2 sm:px-4"
+                                    >
+                                      <span className="text-xs sm:text-sm">
+                                        {levy.purposeRaw}
+                                      </span>
+                                      <span className="flex flex-col items-end text-right">
+                                        <span className="text-xs font-mono text-slate-700 sm:text-sm">
+                                          {(levy.rateMillsCurrent * RATE_TO_MILLS).toFixed(3)}{" "}
+                                          mills
+                                        </span>
+                                        {levy.taborExempt && (
+                                          <span className="mt-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-amber-900">
+                                            TABOR-exempt
+                                          </span>
+                                        )}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {metroOpsLevies.length > 0 && (
+                              <div className="border border-slate-200 bg-slate-50">
+                                <div className="px-3 py-2.5 sm:px-4">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium text-indigo-950">
+                                      Operations lines
+                                    </p>
+                                  </div>
+                                  <p className="mt-0.5 text-[0.7rem] text-slate-500 sm:text-xs">
+                                    Line items from the county form that are categorized as operations (the metro district&apos;s ongoing services and administration).
+                                  </p>
+                                </div>
+                                <ul className="divide-y divide-slate-200">
+                                  {metroOpsLevies.slice(0, 3).map((levy) => (
+                                    <li
+                                      key={levy.rawRowIndex}
+                                      className="flex items-baseline justify-between gap-3 px-3 py-2 sm:px-4"
+                                    >
+                                      <span className="text-xs sm:text-sm">
+                                        {levy.purposeRaw}
+                                      </span>
+                                      <span className="flex flex-col items-end text-right">
+                                        <span className="text-xs font-mono text-slate-700 sm:text-sm">
+                                          {(levy.rateMillsCurrent * RATE_TO_MILLS).toFixed(3)}{" "}
+                                          mills
+                                        </span>
+                                        {levy.taborExempt && (
+                                          <span className="mt-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-amber-900">
+                                            TABOR-exempt
+                                          </span>
+                                        )}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            <p className="text-[0.7rem] text-slate-500 sm:text-xs">
+                              Based on the county&apos;s mill levy public information form
+                              for tax year {levyJson.year}.{" "}
+                              {levyJson.source?.title
+                                ? `Source: ${levyJson.source.title}.`
+                                : null}
+                            </p>
+                          </div>
+                        )}
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            className={`${HELP_PILL_CLASS} text-xs sm:text-sm`}
+                            onClick={() => setShowResultDetails((prev) => !prev)}
+                          >
+                            {showResultDetails ? "Hide details" : "Show details"}
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </li>
