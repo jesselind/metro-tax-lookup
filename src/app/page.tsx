@@ -33,9 +33,13 @@ const HELP_PILL_CLASS =
   "inline-flex items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 sm:text-base";
 const INPUT_CLASS =
   "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
-const CARD_CLASS = "rounded-xl border border-slate-800 bg-white shadow-sm";
+const CARD_CHROME = {
+  border: "border-slate-700",
+  headerBg: "bg-slate-700",
+} as const;
+const CARD_CLASS = `rounded-xl border ${CARD_CHROME.border} bg-white shadow-sm`;
 const CARD_HEADER_CLASS =
-  "rounded-t-xl bg-slate-800 px-4 py-3 text-base font-semibold text-white sm:px-5";
+  `rounded-t-xl ${CARD_CHROME.headerBg} px-4 py-3 text-base font-semibold text-white sm:px-5`;
 const CARD_BODY_CLASS = "px-4 py-4 sm:px-5 sm:py-5";
 
 function InfoIcon() {
@@ -289,19 +293,19 @@ export default function HomePage() {
           <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base" aria-hidden>
             Arapahoe County
           </p>
-          <h1 className="mt-2 bg-slate-800 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:mt-3 sm:px-5 sm:py-4 sm:text-3xl">
+          <h1 className="mt-2 bg-slate-700 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:mt-3 sm:px-5 sm:py-4 sm:text-3xl">
             What share of your property tax pays off your metro district&apos;s debt?
           </h1>
           <p className="mt-4 max-w-prose text-base leading-relaxed text-slate-600 sm:text-lg">
             Follow the steps below. You&apos;ll grab two numbers from the county site (or your bill), enter them here, and see your result.
           </p>
           <div
-            className="mt-5 max-w-prose rounded-xl border border-slate-200 bg-slate-50/60"
+            className="mt-5 max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50/50"
             role="region"
             aria-label="Important information"
           >
             <details className="group">
-              <summary className="cursor-pointer px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 sm:px-5">
+              <summary className="cursor-pointer bg-indigo-50 px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
                 <span className="flex items-center justify-between gap-3">
                   <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
                     <InfoIcon />
@@ -321,54 +325,52 @@ export default function HomePage() {
                   </svg>
                 </span>
               </summary>
-              <div className="px-4 pb-4 sm:px-5">
-                <div className="rounded-md bg-white p-3 text-base text-slate-800 ring-1 ring-slate-200">
-                  <div className="space-y-2">
-                    <p>
-                      A <strong>metro district</strong> (metropolitan district) is a
-                      local government that can charge property taxes in your
-                      neighborhood for things like roads, parks, and water. Often part
-                      of that tax goes to paying off long-term debt (bonds).
-                    </p>
-                    <p>
-                      A bond is like a long-term IOU: the district borrows money to
-                      build things, then repays it over many years using a portion
-                      of property taxes. The &quot;debt service&quot; number in this
-                      tool is the part of your tax rate that goes to those
-                      repayments.
-                    </p>
-                    <p>
-                      <strong>How it is supposed to work:</strong> Developers often
-                      form metro districts and the district may issue bonds that
-                      investors (sometimes the developer) buy. In a conservative or
-                      well-run district, the money borrowed roughly matches the cost
-                      of roads, parks, and other improvements, and property taxes
-                      simply pay that debt back over time.
-                    </p>
-                    <p>
-                      <strong>How it can be abused:</strong> In other districts, the
-                      bonds are used as a cash-flow strategy: the amount borrowed is
-                      intentionally larger than what was spent on improvements so
-                      investors can make a profit. Homeowners repay that debt
-                      through property taxes over many years, and can end up paying
-                      for infrastructure twice: once in the home price and again
-                      through their tax bill. Some districts are structured so that
-                      insiders can lock in years of high tax collections with little
-                      oversight, weak accountability, and almost no practical way
-                      for homeowners to push back. In Colorado, metropolitan
-                      districts are a type of special district, and special
-                      districts are explicitly exempt from the jurisdiction of the
-                      Colorado Independent Ethics Commission.
-                    </p>
-                  </div>
+              <div className="bg-indigo-50 px-4 pb-4 text-base text-slate-800 sm:px-5">
+                <div className="space-y-2">
+                  <p>
+                    A <strong>metro district</strong> (metropolitan district) is a
+                    local government that can charge property taxes in your
+                    neighborhood for things like roads, parks, and water. Often part
+                    of that tax goes to paying off long-term debt (bonds).
+                  </p>
+                  <p>
+                    A bond is like a long-term IOU: the district borrows money to
+                    build things, then repays it over many years using a portion
+                    of property taxes. The &quot;debt service&quot; number in this
+                    tool is the part of your tax rate that goes to those
+                    repayments.
+                  </p>
+                  <p>
+                    <strong>How it is supposed to work:</strong> Developers often
+                    form metro districts and the district may issue bonds that
+                    investors (sometimes the developer) buy. In a conservative or
+                    well-run district, the money borrowed roughly matches the cost
+                    of roads, parks, and other improvements, and property taxes
+                    simply pay that debt back over time.
+                  </p>
+                  <p>
+                    <strong>How it can be abused:</strong> In other districts, the
+                    bonds are used as a cash-flow strategy: the amount borrowed is
+                    intentionally larger than what was spent on improvements so
+                    investors can make a profit. Homeowners repay that debt
+                    through property taxes over many years, and can end up paying
+                    for infrastructure twice: once in the home price and again
+                    through their tax bill. Some districts are structured so that
+                    insiders can lock in years of high tax collections with little
+                    oversight, weak accountability, and almost no practical way
+                    for homeowners to push back. In Colorado, metropolitan
+                    districts are a type of special district, and special
+                    districts are explicitly exempt from the jurisdiction of the
+                    Colorado Independent Ethics Commission.
+                  </p>
                 </div>
               </div>
             </details>
 
-            <div className="mx-4 border-t border-slate-200 sm:mx-5" aria-hidden />
+            <div className="w-full border-t border-indigo-400" aria-hidden />
 
             <details className="group">
-              <summary className="cursor-pointer px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 sm:px-5">
+              <summary className="cursor-pointer bg-indigo-50 px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
                 <span className="flex items-center justify-between gap-3">
                   <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
                     <InfoIcon />
@@ -388,15 +390,13 @@ export default function HomePage() {
                   </svg>
                 </span>
               </summary>
-              <div className="px-4 pb-4 sm:px-5">
-                <div className="rounded-md bg-white p-3 text-base text-slate-800 ring-1 ring-slate-200">
-                  <p>
-                    <strong>Mills</strong> are how property tax rates are shown on
-                    your bill and the county site. You don&apos;t need to convert
-                    them — just copy the numbers. For example, if the county shows
-                    &quot;Total: 183.894,&quot; enter <span className="font-mono">183.894</span>.
-                  </p>
-                </div>
+              <div className="bg-indigo-50 px-4 pb-4 text-base text-slate-800 sm:px-5">
+                <p>
+                  <strong>Mills</strong> are how property tax rates are shown on
+                  your bill and the county site. You don&apos;t need to convert
+                  them — just copy the numbers. For example, if the county shows
+                  &quot;Total: 183.894,&quot; enter <span className="font-mono">183.894</span>.
+                </p>
               </div>
             </details>
           </div>
