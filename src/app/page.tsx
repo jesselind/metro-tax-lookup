@@ -40,10 +40,12 @@ const CARD_BODY_CLASS = "bg-white px-4 py-4 sm:px-5 sm:py-5";
 
 // For the Step 3 dropdown card: keep overflow visible so the menu can escape,
 // but avoid corner artifacts by using a single white surface.
-const CARD_CLASS_DROPDOWN = "rounded-xl border border-slate-700 bg-white";
+const CARD_CLASS_DROPDOWN =
+  "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
 const CARD_HEADER_CLASS_DROPDOWN =
-  "rounded-t-xl bg-slate-700 px-4 py-3 text-base font-semibold text-white sm:px-5";
-const CARD_BODY_CLASS_DROPDOWN = "rounded-b-xl bg-white px-4 py-4 sm:px-5 sm:py-5";
+  "px-4 py-3 text-base font-semibold text-white sm:px-5";
+const CARD_BODY_CLASS_DROPDOWN =
+  "rounded-b-xl bg-white px-4 py-4 sm:px-5 sm:py-5";
 
 function InfoIcon() {
   return (
