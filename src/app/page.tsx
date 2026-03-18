@@ -355,147 +355,13 @@ export default function HomePage() {
         {resultAnnouncement}
       </div>
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-8 pb-4 sm:pt-12 sm:pb-6">
-        <header className="pb-4 sm:pb-6">
+        <header className="pb-4">
           <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base" aria-hidden>
             Arapahoe County
           </p>
           <h1 className="mt-2 bg-slate-700 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:mt-3 sm:px-5 sm:py-4 sm:text-3xl">
             What share of your property tax pays off your metro district&apos;s debt?
           </h1>
-          <p className="mt-4 max-w-prose text-base leading-relaxed text-slate-600 sm:text-lg">
-            Not all Colorado properties are in a metropolitan district. If your property is not in a metro district, you do not need this tool.
-          </p>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-500 sm:text-base">
-            If you are unsure whether your property is in a district, you can look it up on the state&apos;s{" "}
-            <a
-              href="https://gis.dola.colorado.gov/CO_SpecialDistrict/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-indigo-900 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
-            >
-              Colorado Special Districts map
-            </a>
-            .
-          </p>
-          <div
-            className="mt-5 max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
-            role="region"
-            aria-label="Important information"
-          >
-            <details className="group">
-              <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
-                <span className="flex items-center justify-between gap-3">
-                  <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
-                    <InfoIcon />
-                    <span className="truncate">What&apos;s a metro district?</span>
-                  </span>
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden
-                    className="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-              </summary>
-              <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
-                <div className="space-y-2">
-                  <p>
-                    A <strong>metro district</strong> (metropolitan district) is a
-                    local government that can charge property taxes in your
-                    neighborhood for things like roads, parks, and water. Often part
-                    of that tax goes to paying off long-term debt (bonds).
-                  </p>
-                  <p>
-                    A bond is like a long-term IOU: the district borrows money to
-                    build things, then repays it over many years using a portion
-                    of property taxes. The &quot;debt service&quot; number in this
-                    tool is the part of your tax rate that goes to those
-                    repayments.
-                  </p>
-                  <p>
-                    <strong>How it is supposed to work:</strong> Developers often
-                    form metro districts and the district may issue bonds that
-                    investors (sometimes the developer) buy. In a conservative or
-                    well-run district, the money borrowed roughly matches the cost
-                    of roads, parks, and other improvements, and property taxes
-                    simply pay that debt back over time.
-                  </p>
-                  <p>
-                    <strong>How it can be abused:</strong> In other districts, the
-                    bonds are used as a cash-flow strategy: the amount borrowed is
-                    intentionally larger than what was spent on improvements so
-                    investors can make a profit. Homeowners repay that debt
-                    through property taxes over many years, and can end up paying
-                    for infrastructure twice: once in the home price and again
-                    through their tax bill.
-                  </p>
-                  <p>
-                    On top of that, many metro district debt service mill levies are
-                    approved by voters as TABOR-exempt. Colorado&apos;s Taxpayer&apos;s Bill
-                    of Rights (TABOR) normally limits how fast local government tax
-                    revenue can grow. But metro district voters can approve mill
-                    levies that are TABOR-exempt, especially for debt payments. Those
-                    levies are allowed to increase as needed to cover bonds and other
-                    obligations, even when other parts of a tax bill are held down by
-                    TABOR limits.
-                  </p>
-                  <p>
-                    Early on, the only &quot;voters&quot; in a new metro district are
-                    often the developer and people closely tied to them. It is not
-                    unusual for a developer to sell tiny parcels to employees or
-                    other insiders for the sole purpose of making them property owners with voting power. They then unanimously approve high mill levies,
-                    generous debt authority, and TABOR-exempt status for that debt.
-                    That structure can leave homeowners locked into years of high tax
-                    collections with little oversight, weak accountability, and almost
-                    no practical way for them to push back. In Colorado, metropolitan
-                    districts are a type of special district, and special districts
-                    are explicitly exempt from the jurisdiction of the Colorado
-                    Independent Ethics Commission.
-                  </p>
-                </div>
-              </div>
-            </details>
-
-            <div className="w-full border-t border-indigo-400" aria-hidden />
-
-            <details className="group">
-              <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
-                <span className="flex items-center justify-between gap-3">
-                  <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
-                    <InfoIcon />
-                    <span className="truncate">What are &quot;mills&quot;?</span>
-                  </span>
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden
-                    className="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-              </summary>
-              <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
-                <p>
-                  <strong>Mills</strong> are the units used to express property
-                  tax rates. One mill means <strong>$1 of tax for every $1,000 of
-                  taxable (assessed) value</strong>. So if your assessed value is
-                  $400,000 and the rate is 100 mills, your tax from that rate
-                  would be about $400.
-                </p>
-              </div>
-            </details>
-          </div>
         </header>
 
         <section
@@ -506,11 +372,122 @@ export default function HomePage() {
             Step-by-step: find your numbers and see your result
           </h2>
           <ol className="space-y-6 sm:space-y-8">
-            {/* Step 1: Go to property lookup */}
+            {/* Step 1: Determine metro district first */}
             <li>
               <div className={CARD_CLASS_CLIPPED}>
-                <div className={CARD_HEADER_CLASS}>Step 1 - Find your property</div>
-                <div className={CARD_BODY_CLASS}>
+                <div className={CARD_HEADER_CLASS}>Step 1 - Do you live in a metro district?</div>
+                <div className={`${CARD_BODY_CLASS} space-y-2`}>
+                  <p className="text-base text-slate-800 sm:text-lg">
+                    Not all Colorado properties are in a metropolitan district. Before you look up
+                    tax details, confirm whether your property is in a <strong>metro district</strong>{" "}
+                    using the{" "}
+                    <a
+                      href="https://gis.dola.colorado.gov/CO_SpecialDistrict/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
+                    >
+                      Colorado Special Districts map
+                    </a>
+                    .
+                  </p>
+                  <p className="text-base text-slate-800 sm:text-lg">
+                    If you do not see a metro district covering your property, you can stop here.
+                  </p>
+                  <div
+                    className="max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
+                    role="region"
+                    aria-label="Important information"
+                  >
+                    <details className="group">
+                      <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
+                        <span className="flex items-center justify-between gap-3">
+                          <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
+                            <InfoIcon />
+                            <span className="truncate">What&apos;s a metro district?</span>
+                          </span>
+                          <svg
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden
+                            className="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </summary>
+                      <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
+                        <div className="space-y-2">
+                          <p>
+                            A <strong>metro district</strong> (metropolitan district) is a
+                            local government that can charge property taxes in your
+                            neighborhood for things like roads, parks, and water. Often part
+                            of that tax goes to paying off long-term debt (bonds).
+                          </p>
+                          <p>
+                            A bond is like a long-term IOU: the district borrows money to
+                            build things, then repays it over many years using a portion
+                            of property taxes. The &quot;debt service&quot; number in this
+                            tool is the part of your tax rate that goes to those
+                            repayments.
+                          </p>
+                          <p>
+                            <strong>How it is supposed to work:</strong> Developers often
+                            form metro districts and the district may issue bonds that
+                            investors (sometimes the developer) buy. In a conservative or
+                            well-run district, the money borrowed roughly matches the cost
+                            of roads, parks, and other improvements, and property taxes
+                            simply pay that debt back over time.
+                          </p>
+                          <p>
+                            <strong>How it can be abused:</strong> In other districts, the
+                            bonds are used as a cash-flow strategy: the amount borrowed is
+                            intentionally larger than what was spent on improvements so
+                            investors can make a profit. Homeowners repay that debt
+                            through property taxes over many years, and can end up paying
+                            for infrastructure twice: once in the home price and again
+                            through their tax bill.
+                          </p>
+                          <p>
+                            On top of that, many metro district debt service mill levies are
+                            approved by voters as TABOR-exempt. Colorado&apos;s Taxpayer&apos;s Bill
+                            of Rights (TABOR) normally limits how fast local government tax
+                            revenue can grow. But metro district voters can approve mill
+                            levies that are TABOR-exempt, especially for debt payments. Those
+                            levies are allowed to increase as needed to cover bonds and other
+                            obligations, even when other parts of a tax bill are held down by
+                            TABOR limits.
+                          </p>
+                          <p>
+                            Early on, the only &quot;voters&quot; in a new metro district are
+                            often the developer and people closely tied to them. It is not
+                            unusual for a developer to sell tiny parcels to employees or
+                            other insiders for the sole purpose of making them property owners with voting power. They then unanimously approve high mill levies,
+                            generous debt authority, and TABOR-exempt status for that debt.
+                            That structure can leave homeowners locked into years of high tax
+                            collections with little oversight, weak accountability, and almost
+                            no practical way for them to push back. In Colorado, metropolitan
+                            districts are a type of special district, and special districts
+                            are explicitly exempt from the jurisdiction of the Colorado
+                            Independent Ethics Commission.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            {/* Step 2: Go to property lookup */}
+            <li>
+              <div className={CARD_CLASS_CLIPPED}>
+                <div className={CARD_HEADER_CLASS}>Step 2 - Find your property</div>
+                <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
                     Open the county{" "}
                     <a
@@ -527,13 +504,14 @@ export default function HomePage() {
               </div>
             </li>
 
-            {/* Step 2: Find total property tax mills on property details page */}
+            {/* Step 3: Find total property tax mills on property details page */}
             <li>
               <div className={CARD_CLASS_CLIPPED}>
-                <div className={CARD_HEADER_CLASS}>Step 2 - Find total property tax mills</div>
+                <div className={CARD_HEADER_CLASS}>Step 3 - Find total property tax mills</div>
                 <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
-                    On the property details page, find <strong>2025 Mill Levy</strong> (your total property tax mills, example: 183.894). Enter it below.
+                    On the property details page, find <strong>2025 Mill Levy</strong>{" "}
+                    (your total property tax mills, example: 183.894). Enter it below.
                   </p>
                   <button
                     type="button"
@@ -544,7 +522,9 @@ export default function HomePage() {
                   </button>
                   {showStepsDetails && (
                     <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
-                      <p className="mb-3">Look for <strong>2025 Mill Levy</strong> on the property details page.</p>
+                      <p className="mb-3">
+                        Look for <strong>2025 Mill Levy</strong> on the property details page.
+                      </p>
                       <figure>
                         <a href={propertyPageImg.src} target="_blank" rel="noopener noreferrer" className="block">
                           <Image
@@ -575,14 +555,51 @@ export default function HomePage() {
                     />
                     <p id="total-mills-hint" className="mt-1 text-sm text-slate-500 sm:text-base">Total property tax rate (mills)</p>
                   </div>
+                  <div
+                    className="w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
+                    role="region"
+                    aria-label="Important information"
+                  >
+                    <details className="group">
+                      <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
+                        <span className="flex items-center justify-between gap-3">
+                          <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
+                            <InfoIcon />
+                            <span className="truncate">What are &quot;mills&quot;?</span>
+                          </span>
+                          <svg
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden
+                            className="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </span>
+                      </summary>
+                      <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
+                        <p>
+                          <strong>Mills</strong> are the units used to express property
+                          tax rates. One mill means <strong>$1 of tax for every $1,000 of
+                          taxable (assessed) value</strong>. So if your assessed value is
+                          $400,000 and the rate is 100 mills, your tax from that rate
+                          would be about $400.
+                        </p>
+                      </div>
+                    </details>
+                  </div>
                 </div>
               </div>
             </li>
 
-            {/* Step 3: Get metro district debt — picker if they know name, or guide + image if not */}
+            {/* Step 4: Get metro district debt — picker if they know name, or guide + image if not */}
             <li>
               <div className={CARD_CLASS_DROPDOWN}>
-                <div className={CARD_HEADER_CLASS_DROPDOWN}>Step 3 - Metro debt mills</div>
+                <div className={CARD_HEADER_CLASS_DROPDOWN}>Step 4 - Metro debt mills</div>
                 <div className={`${CARD_BODY_CLASS_DROPDOWN} space-y-3`}>
                   <div className="rounded-md border border-slate-300 bg-white px-3 py-2">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base">
@@ -605,7 +622,9 @@ export default function HomePage() {
                   {!knowsMetroName && (
                     <>
                       <p className="text-base text-slate-800 sm:text-lg">
-                        On your property details page, tap the <strong>2025 Mill Levy</strong> number from Step 2. Find the row with your metro district&apos;s <strong>name</strong>.
+                        On your property details page, tap the <strong>2025 Mill Levy</strong>{" "}
+                        number from Step 3. Find the row with your metro district&apos;s{" "}
+                        <strong>name</strong>.
                       </p>
                       <button
                         type="button"
@@ -636,7 +655,8 @@ export default function HomePage() {
 
                   <div>
                     <p className="text-base text-slate-800 sm:text-lg">
-                      Select your metro district here. We&apos;ll fill in the <strong>debt service mills</strong> automatically.
+                      Select your metro district here. We&apos;ll fill in the{" "}
+                      <strong>debt service mills</strong> automatically.
                     </p>
                     {metroOptions.length > 0 && (
                       <MetroDistrictSelect
