@@ -1,43 +1,23 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
-import {
-  calculateSharePercentage,
-} from "@/lib/levyCalculator";
+import { useState } from "react";
+import { calculateSharePercentage } from "@/lib/levyCalculator";
+import type {
+  LevyDataFile,
+  LevyDistrictFromJson,
+  MetroDistrictOption,
+} from "@/lib/levyTypes";
 import levyData from "../../public/data/metro-levies-2025.json";
 import propertyPageImg from "@/assets/images/mill-levy-property-page.png";
 import millLevyDetailImg from "@/assets/images/mill-levy-detail.png";
+import { InfoDetails } from "@/components/InfoDetails";
+import { LevyLinesCard } from "@/components/LevyLinesCard";
+import { MetroDistrictSelect } from "@/components/MetroDistrictSelect";
 
 const ASSESSOR_SEARCH_URL =
   "https://www.arapahoeco.gov/your_county/county_departments/assessor/property_search/search_residential_commercial_ag_and_vacant.php";
 
-type MetroDistrictOption = {
-  id: string;
-  name: string;
-  debtMills: number;
-  totalMills: number;
-};
-
-type LevyLineFromJson = {
-  purposeRaw: string;
-  purposeCategory: string;
-  rateMillsCurrent: number;
-  rateMillsPrevious: number | null;
-  taborExempt: boolean | null;
-  rawRowIndex: number;
-};
-
-/** Shape of a district entry in the imported levy JSON. */
-type LevyDistrictFromJson = {
-  districtId: string;
-  name: string;
-  type: string;
-  aggregates?: { opsMills?: number; debtMills?: number; totalMills?: number };
-  levies?: LevyLineFromJson[];
-};
-
-const MAX_NAME_LEN = 48;
 /** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
 const RATE_TO_MILLS = 1000;
 
@@ -59,207 +39,8 @@ const CARD_HEADER_CLASS_DROPDOWN =
 const CARD_BODY_CLASS_DROPDOWN =
   "rounded-b-xl bg-white px-4 py-4 sm:px-5 sm:py-5";
 
-function InfoIcon() {
-  return (
-    <span
-      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-900 text-white"
-      aria-hidden
-    >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021" />
-        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-        <path d="M12 8.25h.008v.008H12V8.25Z" />
-      </svg>
-    </span>
-  );
-}
-
-function formatOptionLabel(m: MetroDistrictOption): string {
-  const name =
-    m.name.length > MAX_NAME_LEN
-      ? `${m.name.slice(0, MAX_NAME_LEN - 1)}...`
-      : m.name;
-  const debtMills = m.debtMills * RATE_TO_MILLS;
-  const totalMills = m.totalMills * RATE_TO_MILLS;
-  return `${name} - metro mills ${totalMills.toFixed(3)} (debt mills ${debtMills.toFixed(3)})`;
-}
-
-function MetroDistrictSelect({
-  metroOptions,
-  selectedMetroId,
-  onSelect,
-}: {
-  metroOptions: MetroDistrictOption[];
-  selectedMetroId: string;
-  onSelect: (id: string) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const selected = metroOptions.find((m) => m.id === selectedMetroId);
-  const displayLabel = selected
-    ? formatOptionLabel(selected)
-    : "Choose your district...";
-
-  const activeDescendantId = isOpen
-    ? focusedIndex === -1
-      ? "metro-option-none"
-      : `metro-option-${metroOptions[focusedIndex]?.id}`
-    : undefined;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const id =
-      focusedIndex === -1
-        ? "metro-option-none"
-        : `metro-option-${metroOptions[focusedIndex]?.id}`;
-    const opt = id ? document.getElementById(id) : null;
-    opt?.scrollIntoView({ block: "nearest" });
-  }, [isOpen, focusedIndex, metroOptions]);
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (!isOpen) {
-      if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
-        e.preventDefault();
-        setIsOpen(true);
-        const idx = selectedMetroId
-          ? metroOptions.findIndex((m) => m.id === selectedMetroId)
-          : -1;
-        setFocusedIndex(idx >= 0 ? idx : -1);
-      }
-      return;
-    }
-    if (e.key === "Escape") {
-      e.preventDefault();
-      setIsOpen(false);
-      return;
-    }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setFocusedIndex((i) =>
-        i < metroOptions.length - 1 ? i + 1 : i
-      );
-      return;
-    }
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setFocusedIndex((i) => (i > -1 ? i - 1 : -1));
-      return;
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (focusedIndex === -1) {
-        onSelect("");
-      } else if (metroOptions[focusedIndex]) {
-        onSelect(metroOptions[focusedIndex].id);
-      }
-      setIsOpen(false);
-    }
-  }
-
-  return (
-    <div className="relative mt-2" ref={containerRef}>
-      <label id="metro-select-label" className="sr-only">
-        Select metropolitan district
-      </label>
-      <button
-        type="button"
-        id="metro-select"
-        role="combobox"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        aria-controls="metro-listbox"
-        aria-labelledby="metro-select-label"
-        aria-activedescendant={activeDescendantId}
-        className="flex min-h-[2.75rem] w-full items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-left text-base shadow-sm focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
-        onClick={() => {
-          if (!isOpen) {
-            const idx = selectedMetroId
-              ? metroOptions.findIndex((m) => m.id === selectedMetroId)
-              : -1;
-            setFocusedIndex(idx >= 0 ? idx : -1);
-          }
-          setIsOpen((prev) => !prev);
-        }}
-        onKeyDown={handleKeyDown}
-      >
-        <span className="truncate">{displayLabel}</span>
-        <span
-          className="ml-2 shrink-0 text-indigo-700"
-          aria-hidden
-        >
-          {isOpen ? "\u25B2" : "\u25BC"}
-        </span>
-      </button>
-      {isOpen && (
-        <ul
-          role="listbox"
-          aria-labelledby="metro-select-label"
-          className="absolute left-0 right-0 z-50 mt-1 max-h-72 overflow-auto rounded-md border border-indigo-400 bg-white py-1 shadow-lg"
-          id="metro-listbox"
-        >
-          <li
-            id="metro-option-none"
-            role="option"
-            aria-selected={!selectedMetroId}
-            className={`cursor-pointer px-3 py-2.5 text-base text-slate-600 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none ${focusedIndex === -1 ? "bg-indigo-50" : "bg-white"
-              }`}
-            onClick={() => {
-              onSelect("");
-              setIsOpen(false);
-            }}
-            onMouseEnter={() => setFocusedIndex(-1)}
-          >
-            None / I don&apos;t have a metro district
-          </li>
-          {metroOptions.map((m, i) => (
-            <li
-              key={m.id}
-              id={`metro-option-${m.id}`}
-              role="option"
-              aria-selected={m.id === selectedMetroId}
-              className={`cursor-pointer px-3 py-2.5 text-base text-slate-900 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none ${i === focusedIndex ? "bg-indigo-50" : "bg-white"
-                }`}
-              onClick={() => {
-                onSelect(m.id);
-                setIsOpen(false);
-              }}
-              onMouseEnter={() => setFocusedIndex(i)}
-              title={m.name.length > MAX_NAME_LEN ? m.name : undefined}
-            >
-              {formatOptionLabel(m)}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+const INFO_DETAILS_WIDE_CLASS =
+  "w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
 
 export default function HomePage() {
   const [totalMillsInput, setTotalMillsInput] = useState("");
@@ -269,11 +50,7 @@ export default function HomePage() {
   const [selectedMetroId, setSelectedMetroId] = useState<string>("");
   const [showResultDetails, setShowResultDetails] = useState(false);
 
-  const levyJson = levyData as {
-    year: number;
-    source?: { title?: string };
-    districts: LevyDistrictFromJson[];
-  };
+  const levyJson = levyData as LevyDataFile;
 
   const metroOptions: MetroDistrictOption[] = levyJson.districts
     .filter((d: LevyDistrictFromJson) => d.type === "metro")
@@ -395,91 +172,63 @@ export default function HomePage() {
                   <p className="text-base text-slate-800 sm:text-lg">
                     If you do not see a metro district covering your property, you can stop here.
                   </p>
-                  <div
-                    className="max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
-                    role="region"
-                    aria-label="Important information"
-                  >
-                    <details className="group">
-                      <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
-                        <span className="flex items-center justify-between gap-3">
-                          <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
-                            <InfoIcon />
-                            <span className="truncate">What&apos;s a metro district?</span>
-                          </span>
-                          <svg
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden
-                            className="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </summary>
-                      <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
-                        <div className="space-y-2">
-                          <p>
-                            A <strong>metro district</strong> (metropolitan district) is a
-                            local government that can charge property taxes in your
-                            neighborhood for things like roads, parks, and water. Often part
-                            of that tax goes to paying off long-term debt (bonds).
-                          </p>
-                          <p>
-                            A bond is like a long-term IOU: the district borrows money to
-                            build things, then repays it over many years using a portion
-                            of property taxes. The &quot;debt service&quot; number in this
-                            tool is the part of your tax rate that goes to those
-                            repayments.
-                          </p>
-                          <p>
-                            <strong>How it is supposed to work:</strong> Developers often
-                            form metro districts and the district may issue bonds that
-                            investors (sometimes the developer) buy. In a conservative or
-                            well-run district, the money borrowed roughly matches the cost
-                            of roads, parks, and other improvements, and property taxes
-                            simply pay that debt back over time.
-                          </p>
-                          <p>
-                            <strong>How it can be abused:</strong> In other districts, the
-                            bonds are used as a cash-flow strategy: the amount borrowed is
-                            intentionally larger than what was spent on improvements so
-                            investors can make a profit. Homeowners repay that debt
-                            through property taxes over many years, and can end up paying
-                            for infrastructure twice: once in the home price and again
-                            through their tax bill.
-                          </p>
-                          <p>
-                            On top of that, many metro district debt service mill levies are
-                            approved by voters as TABOR-exempt. Colorado&apos;s Taxpayer&apos;s Bill
-                            of Rights (TABOR) normally limits how fast local government tax
-                            revenue can grow. But metro district voters can approve mill
-                            levies that are TABOR-exempt, especially for debt payments. Those
-                            levies are allowed to increase as needed to cover bonds and other
-                            obligations, even when other parts of a tax bill are held down by
-                            TABOR limits.
-                          </p>
-                          <p>
-                            Early on, the only &quot;voters&quot; in a new metro district are
-                            often the developer and people closely tied to them. It is not
-                            unusual for a developer to sell tiny parcels to employees or
-                            other insiders for the sole purpose of making them property owners with voting power. They then unanimously approve high mill levies,
-                            generous debt authority, and TABOR-exempt status for that debt.
-                            That structure can leave homeowners locked into years of high tax
-                            collections with little oversight, weak accountability, and almost
-                            no practical way for them to push back. In Colorado, metropolitan
-                            districts are a type of special district, and special districts
-                            are explicitly exempt from the jurisdiction of the Colorado
-                            Independent Ethics Commission.
-                          </p>
-                        </div>
-                      </div>
-                    </details>
-                  </div>
+                  <InfoDetails title="What&apos;s a metro district?">
+                    <div className="space-y-2">
+                      <p>
+                        A <strong>metro district</strong> (metropolitan district) is a
+                        local government that can charge property taxes in your
+                        neighborhood for things like roads, parks, and water. Often part
+                        of that tax goes to paying off long-term debt (bonds).
+                      </p>
+                      <p>
+                        A bond is like a long-term IOU: the district borrows money to
+                        build things, then repays it over many years using a portion
+                        of property taxes. The &quot;debt service&quot; number in this
+                        tool is the part of your tax rate that goes to those
+                        repayments.
+                      </p>
+                      <p>
+                        <strong>How it is supposed to work:</strong> Developers often
+                        form metro districts and the district may issue bonds that
+                        investors (sometimes the developer) buy. In a conservative or
+                        well-run district, the money borrowed roughly matches the cost
+                        of roads, parks, and other improvements, and property taxes
+                        simply pay that debt back over time.
+                      </p>
+                      <p>
+                        <strong>How it can be abused:</strong> In other districts, the
+                        bonds are used as a cash-flow strategy: the amount borrowed is
+                        intentionally larger than what was spent on improvements so
+                        investors can make a profit. Homeowners repay that debt
+                        through property taxes over many years, and can end up paying
+                        for infrastructure twice: once in the home price and again
+                        through their tax bill.
+                      </p>
+                      <p>
+                        On top of that, many metro district debt service mill levies are
+                        approved by voters as TABOR-exempt. Colorado&apos;s Taxpayer&apos;s Bill
+                        of Rights (TABOR) normally limits how fast local government tax
+                        revenue can grow. But metro district voters can approve mill
+                        levies that are TABOR-exempt, especially for debt payments. Those
+                        levies are allowed to increase as needed to cover bonds and other
+                        obligations, even when other parts of a tax bill are held down by
+                        TABOR limits.
+                      </p>
+                      <p>
+                        Early on, the only &quot;voters&quot; in a new metro district are
+                        often the developer and people closely tied to them. It is not
+                        unusual for a developer to sell tiny parcels to employees or
+                        other insiders for the sole purpose of making them property owners with voting power. They then unanimously approve high mill levies,
+                        generous debt authority, and TABOR-exempt status for that debt.
+                        That structure can leave homeowners locked into years of high tax
+                        collections with little oversight, weak accountability, and almost
+                        no practical way for them to push back. In Colorado, metropolitan
+                        districts are a type of special district, and special districts
+                        are explicitly exempt from the jurisdiction of the Colorado
+                        Independent Ethics Commission.
+                      </p>
+                    </div>
+                  </InfoDetails>
                 </div>
               </div>
             </li>
@@ -556,43 +305,18 @@ export default function HomePage() {
                     />
                     <p id="total-mills-hint" className="mt-1 text-sm text-slate-500 sm:text-base">Total property tax rate (mills)</p>
                   </div>
-                  <div
-                    className="w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50"
-                    role="region"
-                    aria-label="Important information"
+                  <InfoDetails
+                    title="What are &quot;mills&quot;?"
+                    className={INFO_DETAILS_WIDE_CLASS}
                   >
-                    <details className="group">
-                      <summary className="cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5">
-                        <span className="flex items-center justify-between gap-3">
-                          <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900 sm:text-base">
-                            <InfoIcon />
-                            <span className="truncate">What are &quot;mills&quot;?</span>
-                          </span>
-                          <svg
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden
-                            className="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </summary>
-                      <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
-                        <p>
-                          <strong>Mills</strong> are the units used to express property
-                          tax rates. One mill means <strong>$1 of tax for every $1,000 of
-                          taxable (assessed) value</strong>. So if your assessed value is
-                          $400,000 and the rate is 100 mills, your tax from that rate
-                          would be about $400.
-                        </p>
-                      </div>
-                    </details>
-                  </div>
+                    <p>
+                      <strong>Mills</strong> are the units used to express property
+                      tax rates. One mill means <strong>$1 of tax for every $1,000 of
+                      taxable (assessed) value</strong>. So if your assessed value is
+                      $400,000 and the rate is 100 mills, your tax from that rate
+                      would be about $400.
+                    </p>
+                  </InfoDetails>
                 </div>
               </div>
             </li>
@@ -886,80 +610,18 @@ export default function HomePage() {
                                 )}
                               </div>
                             </div>
-                            {metroDebtLevies.length > 0 && (
-                              <div className="border border-slate-200 bg-slate-50">
-                                <div className="px-3 py-2.5 sm:px-4">
-                                  <div className="flex items-center justify-between">
-                                    <p className="font-medium text-indigo-950">
-                                      Debt service lines
-                                    </p>
-                                  </div>
-                                  <p className="mt-0.5 text-[0.7rem] text-slate-500 sm:text-xs">
-                                    Line items from the county form that are categorized as debt payments (bonds and similar obligations).
-                                  </p>
-                                </div>
-                                <ul className="divide-y divide-slate-200">
-                                  {metroDebtLevies.slice(0, 3).map((levy) => (
-                                    <li
-                                      key={levy.rawRowIndex}
-                                      className="flex items-baseline justify-between gap-3 px-3 py-2 sm:px-4"
-                                    >
-                                      <span className="text-xs sm:text-sm">
-                                        {levy.purposeRaw}
-                                      </span>
-                                      <span className="flex flex-col items-end text-right">
-                                        <span className="text-xs font-mono text-slate-700 sm:text-sm">
-                                          {(levy.rateMillsCurrent * RATE_TO_MILLS).toFixed(3)}{" "}
-                                          mills
-                                        </span>
-                                        {levy.taborExempt && (
-                                          <span className="mt-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-amber-900">
-                                            TABOR-exempt
-                                          </span>
-                                        )}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            {metroOpsLevies.length > 0 && (
-                              <div className="border border-slate-200 bg-slate-50">
-                                <div className="px-3 py-2.5 sm:px-4">
-                                  <div className="flex items-center justify-between">
-                                    <p className="font-medium text-indigo-950">
-                                      Operations lines
-                                    </p>
-                                  </div>
-                                  <p className="mt-0.5 text-[0.7rem] text-slate-500 sm:text-xs">
-                                    Line items from the county form that are categorized as operations (the metro district&apos;s ongoing services and administration).
-                                  </p>
-                                </div>
-                                <ul className="divide-y divide-slate-200">
-                                  {metroOpsLevies.slice(0, 3).map((levy) => (
-                                    <li
-                                      key={levy.rawRowIndex}
-                                      className="flex items-baseline justify-between gap-3 px-3 py-2 sm:px-4"
-                                    >
-                                      <span className="text-xs sm:text-sm">
-                                        {levy.purposeRaw}
-                                      </span>
-                                      <span className="flex flex-col items-end text-right">
-                                        <span className="text-xs font-mono text-slate-700 sm:text-sm">
-                                          {(levy.rateMillsCurrent * RATE_TO_MILLS).toFixed(3)}{" "}
-                                          mills
-                                        </span>
-                                        {levy.taborExempt && (
-                                          <span className="mt-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-amber-900">
-                                            TABOR-exempt
-                                          </span>
-                                        )}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
+                            <LevyLinesCard
+                              title="Debt service lines"
+                              description="Line items from the county form that are categorized as debt payments (bonds and similar obligations)."
+                              levies={metroDebtLevies}
+                              rateToMills={RATE_TO_MILLS}
+                            />
+                            <LevyLinesCard
+                              title="Operations lines"
+                              description="Line items from the county form that are categorized as operations (the metro district&apos;s ongoing services and administration)."
+                              levies={metroOpsLevies}
+                              rateToMills={RATE_TO_MILLS}
+                            />
                             <p className="text-[0.7rem] text-slate-500 sm:text-xs">
                               Based on the county&apos;s mill levy public information form
                               for tax year {levyJson.year}.{" "}

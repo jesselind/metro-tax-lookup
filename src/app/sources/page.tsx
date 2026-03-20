@@ -1,4 +1,9 @@
 import Link from "next/link";
+import {
+  StaticArticleShell,
+  staticArticleBackLinkClass,
+  staticArticleSecondaryLinkClass,
+} from "@/components/StaticArticleShell";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 
 export const metadata = {
@@ -26,106 +31,19 @@ const SOURCES = [
 
 export default function SourcesPage() {
   return (
-    <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto w-full max-w-xl px-4 py-8 sm:py-12">
-        <header className="space-y-3">
-          <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base">
-            Metro district tax share
-          </p>
-          <h1 className="bg-slate-800 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:px-5 sm:py-4 sm:text-3xl">
-            Sources
-          </h1>
-          <p className="max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg">
-            This tool is built from publicly available Arapahoe County documents.
-            Always verify numbers against official county sources.
-          </p>
-        </header>
-
-        <section className="mt-6 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg">
-          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-            How the data is used
-          </h2>
-          <div className="space-y-3">
-            <p className="max-w-prose">
-              The calculator results are based on numbers you enter from the
-              county site or your bill. The optional metro district dropdown
-              (when you check &quot;I know my metro district&apos;s name&quot;) is
-              populated from a static JSON file generated offline from the
-              county&apos;s PDFs.
-            </p>
-            <p className="max-w-prose">
-              Source of truth for the dropdown is the &quot;Mill Levy Public
-              Information Form&quot;. We extract it offline into
-              {" "}
-              <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-900">
-                public/data/metro-levies-2025.json
-              </code>
-              . The app uses each
-              district&apos;s aggregated debt service mills and total mills to
-              pre-fill the debt value and show the metro district&apos;s total
-              share.
-            </p>
-          </div>
-        </section>
-
-        {SITE_CONFIG.githubRepoUrl ? (
-          <section className="mt-8 space-y-3 text-base leading-relaxed text-slate-800 sm:text-lg">
-            <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-              Code
-            </h2>
-            <p className="max-w-prose text-slate-700">
-              Source code is available on{" "}
-              <a
-                href={SITE_CONFIG.githubRepoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-              >
-                GitHub
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-              .
-            </p>
-          </section>
-        ) : null}
-
-        <section className="mt-8 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg">
-          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-            Primary documents
-          </h2>
-          <ul className="space-y-4">
-            {SOURCES.map((s) => (
-              <li key={s.url} className="rounded-lg border border-slate-200 p-4">
-                <p className="font-semibold text-slate-900">{s.title}</p>
-                <p className="mt-2 max-w-prose text-slate-700">{s.note}</p>
-                <p className="mt-2">
-                  <a
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                  >
-                    Open source PDF
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center rounded-md border border-indigo-400 bg-white px-4 py-2 text-base font-medium text-indigo-950 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-          >
+    <StaticArticleShell
+      title="Sources"
+      intro="This tool is built from publicly available Arapahoe County documents. Always verify numbers against official county sources."
+      footer={
+        <div className="flex flex-wrap gap-3">
+          <Link href="/" className={staticArticleBackLinkClass}>
             Back to the tool
           </Link>
           <Link
             href="/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-900 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+            className={staticArticleSecondaryLinkClass}
           >
             Privacy policy
             <span className="sr-only"> (opens in a new tab)</span>
@@ -134,14 +52,84 @@ export default function SourcesPage() {
             href="/accessibility"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-900 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+            className={staticArticleSecondaryLinkClass}
           >
             Accessibility statement
             <span className="sr-only"> (opens in a new tab)</span>
           </Link>
         </div>
-      </div>
-    </main>
+      }
+    >
+      <section className="mt-6 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg">
+        <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+          How the data is used
+        </h2>
+        <div className="space-y-3">
+          <p className="max-w-prose">
+            The calculator results are based on numbers you enter from the
+            county site or your bill. The optional metro district dropdown
+            (when you check &quot;I know my metro district&apos;s name&quot;) is
+            populated from a static JSON file generated offline from the
+            county&apos;s PDFs.
+          </p>
+          <p className="max-w-prose">
+            Source of truth for the dropdown is the &quot;Mill Levy Public
+            Information Form&quot;. We extract it offline into{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-900">
+              public/data/metro-levies-2025.json
+            </code>
+            . The app uses each district&apos;s aggregated debt service mills
+            and total mills to pre-fill the debt value and show the metro
+            district&apos;s total share.
+          </p>
+        </div>
+      </section>
+
+      {SITE_CONFIG.githubRepoUrl ? (
+        <section className="mt-8 space-y-3 text-base leading-relaxed text-slate-800 sm:text-lg">
+          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+            Code
+          </h2>
+          <p className="max-w-prose text-slate-700">
+            Source code is available on{" "}
+            <a
+              href={SITE_CONFIG.githubRepoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+            >
+              GitHub
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            .
+          </p>
+        </section>
+      ) : null}
+
+      <section className="mt-8 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg">
+        <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+          Primary documents
+        </h2>
+        <ul className="space-y-4">
+          {SOURCES.map((s) => (
+            <li key={s.url} className="rounded-lg border border-slate-200 p-4">
+              <p className="font-semibold text-slate-900">{s.title}</p>
+              <p className="mt-2 max-w-prose text-slate-700">{s.note}</p>
+              <p className="mt-2">
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+                >
+                  Open source PDF
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </StaticArticleShell>
   );
 }
-
