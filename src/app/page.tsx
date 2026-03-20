@@ -43,9 +43,6 @@ const CARD_BODY_CLASS_DROPDOWN =
 const INFO_DETAILS_WIDE_CLASS =
   "w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
 
-const DEBT_BAR_CLASS = "bg-red-700";
-const DEBT_BAR_STACK_CLASS = "bg-red-600";
-
 export default function HomePage() {
   const [totalMillsInput, setTotalMillsInput] = useState("");
   const [showMetroHelpDetails, setShowMetroHelpDetails] = useState(false);
@@ -104,17 +101,32 @@ export default function HomePage() {
     fullDistrict?.aggregates?.debtMills != null
       ? fullDistrict.aggregates.debtMills * RATE_TO_MILLS
       : 0;
-  const metroTotalMillsFromAggregates =
-    metroOpsMills + metroDebtMillsFromAggregates;
-  const metroDebtShareWithinDistrict =
-    metroTotalMillsFromAggregates > 0
-      ? (metroDebtMillsFromAggregates / metroTotalMillsFromAggregates) * 100
-      : 0;
-  const metroOpsShareWithinDistrict =
-    metroTotalMillsFromAggregates > 0
-      ? (metroOpsMills / metroTotalMillsFromAggregates) * 100
-      : 0;
   const showResult = totalMills > 0;
+
+  const otherMillsForStack =
+    totalMills > 0
+      ? Math.max(0, totalMills - metroOpsMills - metroDebtMills)
+      : 0;
+  const { percentage: shareOpsOfTotal } = calculateSharePercentage(
+    totalMills,
+    metroOpsMills
+  );
+  const { percentage: shareDebtOfTotal } = calculateSharePercentage(
+    totalMills,
+    metroDebtMills
+  );
+  const { percentage: shareOtherOfTotal } = calculateSharePercentage(
+    totalMills,
+    otherMillsForStack
+  );
+  const stackWidthOps =
+    totalMills > 0 ? (metroOpsMills / totalMills) * 100 : 0;
+  const stackWidthDebt =
+    totalMills > 0 ? (metroDebtMills / totalMills) * 100 : 0;
+  const stackWidthOther =
+    totalMills > 0
+      ? Math.max(0, 100 - stackWidthOps - stackWidthDebt)
+      : 0;
 
   function handleStartOver() {
     setTotalMillsInput("");
@@ -125,10 +137,11 @@ export default function HomePage() {
     setShowResultDetails(false);
   }
 
+  const taxRateSplitAnnouncement = `Split of your total property tax rate: ${shareOpsOfTotal.toFixed(1)} percent metro operations, ${shareDebtOfTotal.toFixed(1)} percent metro debt, ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
   const resultAnnouncement = showResult
     ? totalDistrictShare > 0
-      ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to metro district (operations + debt)`
-      : "No metro district mills shown in your property tax rate"
+      ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to metro district (operations + debt). ${taxRateSplitAnnouncement}`
+      : `No metro district mills shown in your property tax rate. ${taxRateSplitAnnouncement}`
     : "";
 
   return (
@@ -443,181 +456,181 @@ export default function HomePage() {
                         ? "Share of your property taxes going to your metro district (operations + debt)"
                         : "No metro district mills shown in your property tax rate"}
                     </p>
-                    <div className="mt-4 flex flex-col text-sm sm:text-base">
-                      <div className={DEBT_RESULT_STRIP_CLASS}>
-                        <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
-                          <div className="text-slate-800">
-                            <p className="font-medium text-slate-900">Metro debt share</p>
-                            <p className="text-xs text-slate-600 sm:text-sm">
-                              Portion of your total property tax rate going to metro district debt
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-slate-900">
-                              {metroDebtPercentage.toFixed(1)}%
-                            </p>
-                            <p className="font-mono text-xs text-slate-700 sm:text-sm">
-                              {metroDebtMills.toFixed(3)} mills
-                            </p>
-                          </div>
+                    <div className="mt-5 space-y-3">
+                      <p
+                        id="tax-rate-split-heading"
+                        className="text-sm font-semibold text-slate-900 sm:text-base"
+                      >
+                        Your total property tax rate, in three parts
+                      </p>
+                      <p id="tax-rate-split-desc" className="sr-only">
+                        Stacked bar: {shareOpsOfTotal.toFixed(1)} percent metro
+                        operations, {shareDebtOfTotal.toFixed(1)} percent metro
+                        debt, {shareOtherOfTotal.toFixed(1)} percent other local
+                        districts and taxes. Percentages are shares of your total
+                        mill rate.
+                      </p>
+                      <div
+                        className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                        aria-hidden="true"
+                      >
+                        <div className="flex h-full w-full">
+                          {stackWidthOps > 0 && (
+                            <div
+                              className="h-full min-w-0 bg-emerald-600"
+                              style={{ width: `${stackWidthOps}%` }}
+                            />
+                          )}
+                          {stackWidthDebt > 0 && (
+                            <div
+                              className="h-full min-w-0 bg-red-700"
+                              style={{ width: `${stackWidthDebt}%` }}
+                            />
+                          )}
+                          {stackWidthOther > 0 && (
+                            <div
+                              className="h-full min-w-0 bg-slate-300"
+                              style={{ width: `${stackWidthOther}%` }}
+                            />
+                          )}
                         </div>
-                        {showResultDetails && totalMills > 0 && (
-                          <div className="px-3 pb-2.5 sm:px-4">
-                            <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-700 sm:text-xs">
-                              <p>
-                                Metro debt share = metro district debt mills / total property tax mills
-                              </p>
-                              <p>
-                                = {metroDebtMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
-                                {metroDebtPercentage.toFixed(1)}%
-                              </p>
-                            </div>
-                          </div>
-                        )}
                       </div>
-                      {selectedDistrict && totalDistrictShare > 0 && (
-                        <div className="border-x border-b border-slate-200 bg-slate-50">
+                      <ul
+                        className="space-y-2.5 text-sm text-slate-800 sm:text-base"
+                        aria-labelledby="tax-rate-split-heading"
+                        aria-describedby="tax-rate-split-desc"
+                      >
+                        <li className="flex items-start justify-between gap-3">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-emerald-600"
+                              aria-hidden="true"
+                            />
+                            <span className="min-w-0">
+                              <span className="font-medium text-slate-900">
+                                Metro operations
+                              </span>
+                              <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                                Day-to-day metro district services
+                              </span>
+                            </span>
+                          </span>
+                          <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                            {shareOpsOfTotal.toFixed(1)}%
+                          </span>
+                        </li>
+                        <li className="flex items-start justify-between gap-3">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-red-700"
+                              aria-hidden="true"
+                            />
+                            <span className="min-w-0">
+                              <span className="font-medium text-slate-900">
+                                Metro debt
+                              </span>
+                              <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                                Bond repayments and similar debt
+                              </span>
+                            </span>
+                          </span>
+                          <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                            {shareDebtOfTotal.toFixed(1)}%
+                          </span>
+                        </li>
+                        <li className="flex items-start justify-between gap-3">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
+                              aria-hidden="true"
+                            />
+                            <span className="min-w-0">
+                              <span className="font-medium text-slate-900">
+                                Everything else
+                              </span>
+                              <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                                Schools, county, city, and other local districts
+                              </span>
+                            </span>
+                          </span>
+                          <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                            {shareOtherOfTotal.toFixed(1)}%
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                    {showResultDetails && (
+                      <div className="mt-4 flex flex-col text-sm sm:text-base">
+                        <div className={DEBT_RESULT_STRIP_CLASS}>
                           <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
-                            <div className="text-slate-700">
-                              <p className="font-medium">
-                                Metro total share (ops + debt)
-                              </p>
-                              <p className="text-xs text-slate-500 sm:text-sm">
-                                Portion of your total property tax rate going to metro district operations and debt
+                            <div className="text-slate-800">
+                              <p className="font-medium text-slate-900">Metro debt share</p>
+                              <p className="text-xs text-slate-600 sm:text-sm">
+                                Portion of your total property tax rate going to metro district debt
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="font-semibold text-slate-900">
-                                {totalDistrictShare.toFixed(1)}%
+                                {metroDebtPercentage.toFixed(1)}%
                               </p>
-                              <p className="font-mono text-xs text-slate-600 sm:text-sm">
-                                {totalDistrictMills.toFixed(3)} mills
+                              <p className="font-mono text-xs text-slate-700 sm:text-sm">
+                                {metroDebtMills.toFixed(3)} mills
                               </p>
                             </div>
                           </div>
-                          {showResultDetails && totalMills > 0 && (
+                          {totalMills > 0 && (
                             <div className="px-3 pb-2.5 sm:px-4">
-                              <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-600 sm:text-xs">
+                              <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-700 sm:text-xs">
                                 <p>
-                                  Metro total share (ops + debt) = metro district total mills / total property tax mills
+                                  Metro debt share = metro district debt mills / total property tax mills
                                 </p>
                                 <p>
-                                  = {totalDistrictMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
-                                  {totalDistrictShare.toFixed(1)}%
+                                  = {metroDebtMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
+                                  {metroDebtPercentage.toFixed(1)}%
                                 </p>
                               </div>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
+                        {selectedDistrict && totalDistrictShare > 0 && (
+                          <div className="border-x border-b border-slate-200 bg-slate-50">
+                            <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
+                              <div className="text-slate-700">
+                                <p className="font-medium">Metro total share</p>
+                                <p className="text-xs text-slate-500 sm:text-sm">
+                                  Portion of your total property tax rate going to metro district operations and debt
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold text-slate-900">
+                                  {totalDistrictShare.toFixed(1)}%
+                                </p>
+                                <p className="font-mono text-xs text-slate-600 sm:text-sm">
+                                  {totalDistrictMills.toFixed(3)} mills
+                                </p>
+                              </div>
+                            </div>
+                            {totalMills > 0 && (
+                              <div className="px-3 pb-2.5 sm:px-4">
+                                <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-600 sm:text-xs">
+                                  <p>
+                                    Metro total share = metro district total mills / total property tax mills
+                                  </p>
+                                  <p>
+                                    = {totalDistrictMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
+                                    {totalDistrictShare.toFixed(1)}%
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {selectedDistrict && fullDistrict && (
                       <>
                         {showResultDetails && (
                           <div className="mt-3 space-y-3 text-sm text-slate-700 sm:text-base">
-                            <div className="border border-slate-200 bg-slate-50 px-3 py-2.5 sm:px-4">
-                              <p className="font-medium text-indigo-950">
-                                Visual breakdown
-                              </p>
-                              {totalMills > 0 && (
-                                <div className="mt-2 space-y-1">
-                                  <p className="text-xs text-slate-600 sm:text-sm">
-                                    Metro debt vs total bill
-                                  </p>
-                                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-                                    <div
-                                      className={`h-full ${DEBT_BAR_CLASS}`}
-                                      style={{
-                                        width: `${Math.min(Math.max(metroDebtPercentage, 0), 100)}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
-                                    <span className="flex items-center gap-1">
-                                      <span className={`h-2 w-2 rounded-full ${DEBT_BAR_CLASS}`} />
-                                      Metro debt {metroDebtPercentage.toFixed(1)}%
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <span className="h-2 w-2 rounded-full bg-slate-300" />
-                                      Everything else{" "}
-                                      {(Math.max(0, 100 - metroDebtPercentage)).toFixed(1)}%
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                              {totalMills > 0 && totalDistrictShare > 0 && (
-                                <div className="mt-3 space-y-1">
-                                  <p className="text-xs text-slate-600 sm:text-sm">
-                                    Metro total (ops + debt) vs total bill
-                                  </p>
-                                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-                                    <div
-                                      className="h-full bg-indigo-400"
-                                      style={{
-                                        width: `${Math.min(Math.max(totalDistrictShare, 0), 100)}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
-                                    <span className="flex items-center gap-1">
-                                      <span className="h-2 w-2 rounded-full bg-indigo-400" />
-                                      Metro total {totalDistrictShare.toFixed(1)}%
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <span className="h-2 w-2 rounded-full bg-slate-300" />
-                                      Everything else{" "}
-                                      {(Math.max(0, 100 - totalDistrictShare)).toFixed(1)}%
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                              {metroTotalMillsFromAggregates > 0 && (
-                                <div className="mt-3 space-y-1">
-                                  <p className="text-xs text-slate-600 sm:text-sm">
-                                    Metro district: operations vs debt (within metro mills)
-                                  </p>
-                                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-                                    <div
-                                      className="h-full bg-emerald-500"
-                                      style={{
-                                        width: `${Math.min(
-                                          Math.max(metroOpsShareWithinDistrict, 0),
-                                          100
-                                        )}%`,
-                                      }}
-                                    />
-                                    <div
-                                      className="relative -mt-2.5 h-2.5 bg-transparent"
-                                      aria-hidden
-                                    >
-                                      <div
-                                        className={`h-2.5 ${DEBT_BAR_STACK_CLASS}`}
-                                        style={{
-                                          width: `${Math.min(
-                                            Math.max(metroDebtShareWithinDistrict, 0),
-                                            100
-                                          )}%`,
-                                          marginLeft: `${Math.min(
-                                            Math.max(metroOpsShareWithinDistrict, 0),
-                                            100
-                                          )}%`,
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
-                                    <span className="flex items-center gap-1">
-                                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                      Ops {metroOpsShareWithinDistrict.toFixed(1)}%
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <span className={`h-2 w-2 rounded-full ${DEBT_BAR_STACK_CLASS}`} />
-                                      Debt {metroDebtShareWithinDistrict.toFixed(1)}%
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
                             <div className="border border-slate-200 bg-slate-50 px-3 py-2.5 sm:px-4">
                               <p className="font-medium text-indigo-950">
                                 Metro mills (from the county data)
