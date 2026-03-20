@@ -128,18 +128,27 @@ export default function HomePage() {
     : "";
 
   return (
-    <main className="flex min-h-screen flex-col bg-white text-slate-900">
+    <main className="flex min-h-screen flex-col overflow-x-hidden bg-white text-slate-900">
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {resultAnnouncement}
       </div>
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-8 pb-4 sm:pt-12 sm:pb-6">
-        <header className="pb-4">
-          <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base" aria-hidden>
-            Arapahoe County
-          </p>
-          <h1 className="mt-2 bg-slate-700 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:mt-3 sm:px-5 sm:py-4 sm:text-3xl">
-            What share of your property tax goes to your metro district?
-          </h1>
+        <header className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 pb-4">
+          <div className="mx-auto w-full max-w-xl px-4">
+            <p
+              className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base"
+              aria-hidden
+            >
+              Arapahoe County
+            </p>
+          </div>
+          <div className="mt-2 bg-slate-700 sm:mt-3">
+            <div className="mx-auto w-full max-w-xl px-4 py-4 sm:px-5 sm:py-5">
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
+                What share of your property tax goes to your metro district?
+              </h1>
+            </div>
+          </div>
         </header>
 
         <section
