@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { DEBT_RESULT_STRIP_CLASS } from "@/lib/debtUiClasses";
 import { calculateSharePercentage } from "@/lib/levyCalculator";
 import type {
   LevyDataFile,
@@ -41,6 +42,9 @@ const CARD_BODY_CLASS_DROPDOWN =
 
 const INFO_DETAILS_WIDE_CLASS =
   "w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
+
+const DEBT_BAR_CLASS = "bg-red-700";
+const DEBT_BAR_STACK_CLASS = "bg-red-600";
 
 export default function HomePage() {
   const [totalMillsInput, setTotalMillsInput] = useState("");
@@ -165,9 +169,7 @@ export default function HomePage() {
                 <div className={CARD_HEADER_CLASS}>Step 1 - Do you live in a metro district?</div>
                 <div className={`${CARD_BODY_CLASS} space-y-2`}>
                   <p className="text-base text-slate-800 sm:text-lg">
-                    Not all Colorado properties are in a metropolitan district. Before you look up
-                    tax details, confirm whether your property is in a <strong>metro district</strong>{" "}
-                    using the{" "}
+                    Check the{" "}
                     <a
                       href="https://gis.dola.colorado.gov/CO_SpecialDistrict/"
                       target="_blank"
@@ -175,8 +177,8 @@ export default function HomePage() {
                       className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
                     >
                       Colorado Special Districts map
-                    </a>
-                    .
+                    </a>{" "}
+                    for a <strong>metro district</strong> covering your property.
                   </p>
                   <p className="text-base text-slate-800 sm:text-lg">
                     If you do not see a metro district covering your property, you can stop here.
@@ -326,6 +328,19 @@ export default function HomePage() {
                       would be about $400.
                     </p>
                   </InfoDetails>
+                  <InfoDetails
+                    title="What is a &quot;levy&quot;?"
+                    className={INFO_DETAILS_WIDE_CLASS}
+                  >
+                    <p>
+                      A <strong>levy</strong> is a taxing district&apos;s{" "}
+                      <strong>certified property tax rate</strong> for a given year,
+                      usually expressed in <strong>mills</strong>. Your{" "}
+                      <strong>mill levy</strong> on the assessor page is the{" "}
+                      <strong>combined</strong> rate from every district that taxes your
+                      parcel (schools, county, metro district, and others).
+                    </p>
+                  </InfoDetails>
                 </div>
               </div>
             </li>
@@ -390,7 +405,8 @@ export default function HomePage() {
                   <div>
                     <p className="text-base text-slate-800 sm:text-lg">
                       Select your metro district here. We&apos;ll fill in the <strong>metro mills</strong>{" "}
-                      automatically (including <strong>debt service mills</strong>, if any).
+                      automatically (including{" "}
+                      <strong className="text-red-900">debt service mills</strong>, if any).
                     </p>
                     {metroOptions.length > 0 && (
                       <MetroDistrictSelect
@@ -403,8 +419,9 @@ export default function HomePage() {
                       All metro districts from the county form are listed (including ones with 0 debt mills).
                     </p>
                     {selectedDistrict && (
-                      <p className="mt-2 text-sm text-slate-500 sm:text-base">
-                        Debt service mills used: {metroDebtMills.toFixed(6)}
+                      <p className="mt-2 text-sm text-slate-800 sm:text-base">
+                        <span className="font-medium text-red-900">Debt service mills used:</span>{" "}
+                        <span className="font-mono text-slate-800">{metroDebtMills.toFixed(6)}</span>
                       </p>
                     )}
                   </div>
@@ -423,15 +440,15 @@ export default function HomePage() {
                     </p>
                     <p className="mt-1 text-sm font-medium text-slate-700 sm:text-base">
                       {totalDistrictShare > 0
-                        ? "Share of your property taxes going to metro district (operations + debt)"
+                        ? "Share of your property taxes going to your metro district (operations + debt)"
                         : "No metro district mills shown in your property tax rate"}
                     </p>
-                    <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-slate-50 text-sm sm:text-base">
-                      <div>
+                    <div className="mt-4 flex flex-col text-sm sm:text-base">
+                      <div className={DEBT_RESULT_STRIP_CLASS}>
                         <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
-                          <div className="text-slate-700">
-                            <p className="font-medium">Metro debt share</p>
-                            <p className="text-xs text-slate-500 sm:text-sm">
+                          <div className="text-slate-800">
+                            <p className="font-medium text-slate-900">Metro debt share</p>
+                            <p className="text-xs text-slate-600 sm:text-sm">
                               Portion of your total property tax rate going to metro district debt
                             </p>
                           </div>
@@ -439,14 +456,14 @@ export default function HomePage() {
                             <p className="font-semibold text-slate-900">
                               {metroDebtPercentage.toFixed(1)}%
                             </p>
-                            <p className="font-mono text-xs text-slate-600 sm:text-sm">
+                            <p className="font-mono text-xs text-slate-700 sm:text-sm">
                               {metroDebtMills.toFixed(3)} mills
                             </p>
                           </div>
                         </div>
                         {showResultDetails && totalMills > 0 && (
                           <div className="px-3 pb-2.5 sm:px-4">
-                            <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-600 sm:text-xs">
+                            <div className="space-y-0.5 font-mono text-[0.7rem] text-slate-700 sm:text-xs">
                               <p>
                                 Metro debt share = metro district debt mills / total property tax mills
                               </p>
@@ -459,7 +476,7 @@ export default function HomePage() {
                         )}
                       </div>
                       {selectedDistrict && totalDistrictShare > 0 && (
-                        <div>
+                        <div className="border-x border-b border-slate-200 bg-slate-50">
                           <div className="flex items-baseline justify-between gap-4 px-3 py-2.5 sm:px-4">
                             <div className="text-slate-700">
                               <p className="font-medium">
@@ -509,7 +526,7 @@ export default function HomePage() {
                                   </p>
                                   <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
                                     <div
-                                      className="h-full bg-indigo-600"
+                                      className={`h-full ${DEBT_BAR_CLASS}`}
                                       style={{
                                         width: `${Math.min(Math.max(metroDebtPercentage, 0), 100)}%`,
                                       }}
@@ -517,7 +534,7 @@ export default function HomePage() {
                                   </div>
                                   <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
                                     <span className="flex items-center gap-1">
-                                      <span className="h-2 w-2 rounded-full bg-indigo-600" />
+                                      <span className={`h-2 w-2 rounded-full ${DEBT_BAR_CLASS}`} />
                                       Metro debt {metroDebtPercentage.toFixed(1)}%
                                     </span>
                                     <span className="flex items-center gap-1">
@@ -574,7 +591,7 @@ export default function HomePage() {
                                       aria-hidden
                                     >
                                       <div
-                                        className="h-2.5 bg-indigo-500"
+                                        className={`h-2.5 ${DEBT_BAR_STACK_CLASS}`}
                                         style={{
                                           width: `${Math.min(
                                             Math.max(metroDebtShareWithinDistrict, 0),
@@ -594,7 +611,7 @@ export default function HomePage() {
                                       Ops {metroOpsShareWithinDistrict.toFixed(1)}%
                                     </span>
                                     <span className="flex items-center gap-1">
-                                      <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                                      <span className={`h-2 w-2 rounded-full ${DEBT_BAR_STACK_CLASS}`} />
                                       Debt {metroDebtShareWithinDistrict.toFixed(1)}%
                                     </span>
                                   </div>
@@ -610,7 +627,8 @@ export default function HomePage() {
                                   <strong>Metro operations mills</strong>: {metroOpsMills.toFixed(3)}
                                 </p>
                                 <p>
-                                  <strong>Metro debt service mills</strong>: {metroDebtMillsFromAggregates.toFixed(3)}
+                                  <strong className="text-red-900">Metro debt service mills</strong>:{" "}
+                                  {metroDebtMillsFromAggregates.toFixed(3)}
                                 </p>
                                 {totalDistrictMills > 0 && (
                                   <p>
@@ -624,6 +642,7 @@ export default function HomePage() {
                               description="Line items from the county form that are categorized as debt payments (bonds and similar obligations)."
                               levies={metroDebtLevies}
                               rateToMills={RATE_TO_MILLS}
+                              tone="debt"
                             />
                             <LevyLinesCard
                               title="Operations lines"

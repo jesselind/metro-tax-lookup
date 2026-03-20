@@ -10,6 +10,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Debt callouts: visible on large cards, still light; use with slate-600+ text for AA */
+  --color-debt-wash: #ffecec;
 }
 
 html {
