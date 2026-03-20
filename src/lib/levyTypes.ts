@@ -22,8 +22,15 @@ export type MetroDistrictOption = {
   totalMills: number;
 };
 
+/** Set when the PDF is re-ingested; surfaced in the UI as "current as of". */
+export type LevyDataSnapshot = {
+  /** ISO calendar date (YYYY-MM-DD) when this JSON was generated from the county PDF. */
+  bundledAsOf: string;
+};
+
 export type LevyDataFile = {
   year: number;
   source?: { title?: string };
+  snapshot?: LevyDataSnapshot;
   districts: LevyDistrictFromJson[];
 };

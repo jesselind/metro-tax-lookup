@@ -1,5 +1,8 @@
 {
   "year": 2026,
+  "snapshot": {
+    "bundledAsOf": "2026-03-20"
+  },
   "source": {
     "type": "mill_levy_public_information",
     "title": "Mill Levy Public Information pursuant to C.R.S. 39-1-125 (1)(c) for Tax Year 2025/Budget Year 2026",

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import date
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -473,6 +474,9 @@ def normalize_metro_districts_from_lines(raw_rows: List[RawRow]) -> Dict[str, An
 
   return {
     "year": 2025,
+    "snapshot": {
+      "bundledAsOf": date.today().isoformat(),
+    },
     "source": {
       "type": "mill_levy_public_information",
       "title": "Mill Levy Public Information pursuant to C.R.S. 39-1-125 (1)(c) for Tax Year 2024/Budget Year 2025",

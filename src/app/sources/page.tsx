@@ -10,7 +10,10 @@ import {
   ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB,
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
 } from "@/lib/arapahoeCountyUrls";
+import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
+import type { LevyDataFile } from "@/lib/levyTypes";
 import { SITE_CONFIG } from "@/lib/siteConfig";
+import levyData from "../../../public/data/metro-levies-2025.json";
 
 export const metadata = {
   title: "Sources | Metro district tax share",
@@ -50,6 +53,10 @@ const SOURCES: PrimarySource[] = [
 ];
 
 export default function SourcesPage() {
+  const levyJson = levyData as LevyDataFile;
+  const bundledIso = levyJson.snapshot?.bundledAsOf;
+  const bundledLabel = bundledIso ? formatLevyBundledAsOf(bundledIso) : null;
+
   return (
     <StaticArticleShell
       title="Sources"
@@ -102,6 +109,16 @@ export default function SourcesPage() {
             and total mills to pre-fill the debt value and show the metro
             district&apos;s total share.
           </p>
+          {bundledLabel && bundledIso ? (
+            <p className="max-w-prose rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
+              <span className="font-semibold text-slate-900">Data snapshot: </span>
+              Metro levy rates in this tool were last bundled on{" "}
+              <time dateTime={bundledIso}>{bundledLabel}</time>
+              {" "}(when our copy of the county PDF was processed into JSON). That
+              date is not necessarily when the county last amended the form; for
+              the authoritative schedule, use the county&apos;s current PDF.
+            </p>
+          ) : null}
         </div>
       </section>
 

@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
+import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import { calculateSharePercentage } from "@/lib/levyCalculator";
 import type {
   LevyDataFile,
@@ -56,6 +58,10 @@ export default function HomePage() {
   const [showResultDetails, setShowResultDetails] = useState(false);
 
   const levyJson = levyData as LevyDataFile;
+  const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
+  const bundledAsOfLabel = bundledAsOfIso
+    ? formatLevyBundledAsOf(bundledAsOfIso)
+    : null;
 
   const metroOptions: MetroDistrictOption[] = levyJson.districts
     .filter((d: LevyDistrictFromJson) => d.type === "metro")
@@ -448,6 +454,27 @@ export default function HomePage() {
                     <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">
                       All metro districts from the county form are listed (including ones with 0 debt mills).
                     </p>
+                    {bundledAsOfLabel && bundledAsOfIso ? (
+                      <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">
+                        Levy data snapshot bundled{" "}
+                        <time dateTime={bundledAsOfIso}>{bundledAsOfLabel}</time>
+                        {" "}(when this site&apos;s copy of the county PDF was processed). Verify on the{" "}
+                        <a
+                          href={MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={COUNTY_EXTERNAL_LINK_CLASS}
+                        >
+                          official PDF
+                          <span className="sr-only"> (opens in a new tab)</span>
+                        </a>{" "}
+                        if you need the latest certification.{" "}
+                        <Link href="/sources" className={COUNTY_EXTERNAL_LINK_CLASS}>
+                          Sources
+                        </Link>{" "}
+                        has methodology.
+                      </p>
+                    ) : null}
                     {selectedDistrict && (
                       <p className="mt-2 text-sm text-slate-800 sm:text-base">
                         <span className="font-medium text-red-900">Debt service mills used:</span>{" "}
@@ -760,7 +787,16 @@ export default function HomePage() {
                                   (opens in a new tab)
                                 </span>
                               </a>{" "}
-                              (PDF) for tax year {levyJson.year}.{" "}
+                              (PDF) for tax year {levyJson.year}
+                              {bundledAsOfLabel && bundledAsOfIso ? (
+                                <>
+                                  ; snapshot bundled{" "}
+                                  <time dateTime={bundledAsOfIso}>
+                                    {bundledAsOfLabel}
+                                  </time>
+                                </>
+                              ) : null}
+                              .{" "}
                               {levyJson.source?.title
                                 ? `Full citation: ${levyJson.source.title}. `
                                 : null}
