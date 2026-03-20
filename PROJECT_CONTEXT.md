@@ -177,27 +177,26 @@ Suggested project structure (Next.js App Router with `src/`):
 
 ### 4.1 Core Calculator Logic
 
-Core function (in `src/lib/levyCalculator.ts` or similar):
+Core function (in `src/lib/levyCalculator.ts`):
 
 ```ts
-export function calculateDebtPercentage(
+export function calculateSharePercentage(
   totalMillLevy: number,
-  metroDebtMillLevy: number
-): { percentage: number; explanation: string } {
+  numeratorMillLevy: number
+): { percentage: number } {
+  const safeTotal = Number.isFinite(totalMillLevy) ? totalMillLevy : 0;
+  const safeNumerator = Number.isFinite(numeratorMillLevy)
+    ? numeratorMillLevy
+    : 0;
   const percentage =
-    totalMillLevy > 0
-      ? Math.round((metroDebtMillLevy / totalMillLevy) * 100 * 10) / 10
+    safeTotal > 0
+      ? Math.round((safeNumerator / safeTotal) * 1000) / 10
       : 0;
-
-  return {
-    percentage,
-    explanation:
-      metroDebtMillLevy > 0
-        ? `Debt service from metropolitan district(s) accounts for ${percentage}% of your total property taxes.`
-        : "No metropolitan district debt service detected on this parcel.",
-  };
+  return { percentage };
 }
 ```
+
+The UI calls this for metro debt share and for metro total share (operations + debt), using the same rounding rule.
 
 ---
 

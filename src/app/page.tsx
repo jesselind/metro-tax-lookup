@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { calculateDebtPercentage } from "@/lib/levyCalculator";
+import {
+  calculateSharePercentage,
+} from "@/lib/levyCalculator";
 import levyData from "../../public/data/metro-levies-2025.json";
 import propertyPageImg from "@/assets/images/mill-levy-property-page.png";
 import millLevyDetailImg from "@/assets/images/mill-levy-detail.png";
@@ -85,10 +87,11 @@ function InfoIcon() {
 function formatOptionLabel(m: MetroDistrictOption): string {
   const name =
     m.name.length > MAX_NAME_LEN
-      ? `${m.name.slice(0, MAX_NAME_LEN - 1)}\u2026`
+      ? `${m.name.slice(0, MAX_NAME_LEN - 1)}...`
       : m.name;
-  const mills = m.debtMills * RATE_TO_MILLS;
-  return `${name} \u2014 debt mills ${mills.toFixed(3)}`;
+  const debtMills = m.debtMills * RATE_TO_MILLS;
+  const totalMills = m.totalMills * RATE_TO_MILLS;
+  return `${name} - metro mills ${totalMills.toFixed(3)} (debt mills ${debtMills.toFixed(3)})`;
 }
 
 function MetroDistrictSelect({
@@ -280,7 +283,6 @@ export default function HomePage() {
       debtMills: d.aggregates?.debtMills ?? 0,
       totalMills: d.aggregates?.totalMills ?? 0,
     }))
-    .filter((d: MetroDistrictOption) => d.debtMills > 0)
     .sort((a: MetroDistrictOption, b: MetroDistrictOption) =>
       a.name.localeCompare(b.name)
     );
@@ -289,19 +291,18 @@ export default function HomePage() {
   const selectedDistrict = metroOptions.find((m) => m.id === selectedMetroId);
   const metroDebtMills = selectedDistrict ? selectedDistrict.debtMills * RATE_TO_MILLS : 0;
 
-  const { percentage } = calculateDebtPercentage(
+  const { percentage: metroDebtPercentage } = calculateSharePercentage(
     totalMills,
     metroDebtMills
   );
 
-  const totalDistrictMills =
-    selectedDistrict && totalMills > 0
-      ? selectedDistrict.totalMills * RATE_TO_MILLS
-      : 0;
-  const totalDistrictShare =
-    totalMills > 0 && totalDistrictMills > 0
-      ? Math.round((totalDistrictMills / totalMills) * 1000) / 10
-      : 0;
+  const totalDistrictMills = selectedDistrict
+    ? selectedDistrict.totalMills * RATE_TO_MILLS
+    : 0;
+  const { percentage: totalDistrictShare } = calculateSharePercentage(
+    totalMills,
+    totalDistrictMills
+  );
 
   const fullDistrict = levyJson.districts.find(
     (d) => d.districtId === selectedMetroId
@@ -332,7 +333,7 @@ export default function HomePage() {
     metroTotalMillsFromAggregates > 0
       ? (metroOpsMills / metroTotalMillsFromAggregates) * 100
       : 0;
-  const showResult = totalMills > 0 || metroDebtMills > 0;
+  const showResult = totalMills > 0;
 
   function handleStartOver() {
     setTotalMillsInput("");
@@ -344,9 +345,9 @@ export default function HomePage() {
   }
 
   const resultAnnouncement = showResult
-    ? percentage > 0
-      ? `${percentage.toFixed(1)} percent of your property taxes go to metro district debt service`
-      : "No metro district debt shown in your property tax rate"
+    ? totalDistrictShare > 0
+      ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to metro district (operations + debt)`
+      : "No metro district mills shown in your property tax rate"
     : "";
 
   return (
@@ -360,7 +361,7 @@ export default function HomePage() {
             Arapahoe County
           </p>
           <h1 className="mt-2 bg-slate-700 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:mt-3 sm:px-5 sm:py-4 sm:text-3xl">
-            What share of your property tax pays off your metro district&apos;s debt?
+            What share of your property tax goes to your metro district?
           </h1>
         </header>
 
@@ -596,10 +597,10 @@ export default function HomePage() {
               </div>
             </li>
 
-            {/* Step 4: Get metro district debt — picker if they know name, or guide + image if not */}
+            {/* Step 4: Get metro district debt - picker if they know name, or guide + image if not */}
             <li>
               <div className={CARD_CLASS_DROPDOWN}>
-                <div className={CARD_HEADER_CLASS_DROPDOWN}>Step 4 - Metro debt mills</div>
+                <div className={CARD_HEADER_CLASS_DROPDOWN}>Step 4 - Metro mills</div>
                 <div className={`${CARD_BODY_CLASS_DROPDOWN} space-y-3`}>
                   <div className="rounded-md border border-slate-300 bg-white px-3 py-2">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base">
@@ -655,8 +656,8 @@ export default function HomePage() {
 
                   <div>
                     <p className="text-base text-slate-800 sm:text-lg">
-                      Select your metro district here. We&apos;ll fill in the{" "}
-                      <strong>debt service mills</strong> automatically.
+                      Select your metro district here. We&apos;ll fill in the <strong>metro mills</strong>{" "}
+                      automatically (including <strong>debt service mills</strong>, if any).
                     </p>
                     {metroOptions.length > 0 && (
                       <MetroDistrictSelect
@@ -666,7 +667,7 @@ export default function HomePage() {
                       />
                     )}
                     <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">
-                      Only districts that report debt service mills are listed.
+                      All metro districts from the county form are listed (including ones with 0 debt mills).
                     </p>
                     {selectedDistrict && (
                       <p className="mt-2 text-sm text-slate-500 sm:text-base">
@@ -685,12 +686,12 @@ export default function HomePage() {
                   <div className={CARD_HEADER_CLASS}>Result</div>
                   <div className={CARD_BODY_CLASS}>
                     <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-                      {percentage.toFixed(1)}%
+                      {totalDistrictShare.toFixed(1)}%
                     </p>
                     <p className="mt-1 text-sm font-medium text-slate-700 sm:text-base">
-                      {percentage > 0
-                        ? "Share of your property taxes going to metro district debt"
-                        : "No metro district debt shown in your property tax rate"}
+                      {totalDistrictShare > 0
+                        ? "Share of your property taxes going to metro district (operations + debt)"
+                        : "No metro district mills shown in your property tax rate"}
                     </p>
                     <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-slate-50 text-sm sm:text-base">
                       <div>
@@ -703,7 +704,7 @@ export default function HomePage() {
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-slate-900">
-                              {percentage.toFixed(1)}%
+                              {metroDebtPercentage.toFixed(1)}%
                             </p>
                             <p className="font-mono text-xs text-slate-600 sm:text-sm">
                               {metroDebtMills.toFixed(3)} mills
@@ -718,7 +719,7 @@ export default function HomePage() {
                               </p>
                               <p>
                                 = {metroDebtMills.toFixed(3)} / {totalMills.toFixed(3)} ={" "}
-                                {percentage.toFixed(1)}%
+                                {metroDebtPercentage.toFixed(1)}%
                               </p>
                             </div>
                           </div>
@@ -776,18 +777,20 @@ export default function HomePage() {
                                   <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
                                     <div
                                       className="h-full bg-indigo-600"
-                                      style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }}
+                                      style={{
+                                        width: `${Math.min(Math.max(metroDebtPercentage, 0), 100)}%`,
+                                      }}
                                     />
                                   </div>
                                   <div className="mt-1 flex items-center justify-between text-[0.7rem] text-slate-600 sm:text-xs">
                                     <span className="flex items-center gap-1">
                                       <span className="h-2 w-2 rounded-full bg-indigo-600" />
-                                      Metro debt {percentage.toFixed(1)}%
+                                      Metro debt {metroDebtPercentage.toFixed(1)}%
                                     </span>
                                     <span className="flex items-center gap-1">
                                       <span className="h-2 w-2 rounded-full bg-slate-300" />
                                       Everything else{" "}
-                                      {(Math.max(0, 100 - percentage)).toFixed(1)}%
+                                      {(Math.max(0, 100 - metroDebtPercentage)).toFixed(1)}%
                                     </span>
                                   </div>
                                 </div>
