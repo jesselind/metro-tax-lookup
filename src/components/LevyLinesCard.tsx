@@ -6,7 +6,10 @@ type LevyLinesCardProps = {
   description: string;
   levies: LevyLineFromJson[];
   rateToMills: number;
+  /** Default 3. Ignored when showAllLines is true. */
   maxLines?: number;
+  /** If true, list every levy line (for audit / detail views). */
+  showAllLines?: boolean;
   /** Debt-themed surface; use slate-600+ for small text (AA on light wash). */
   tone?: "neutral" | "debt";
 };
@@ -17,11 +20,13 @@ export function LevyLinesCard({
   levies,
   rateToMills,
   maxLines = 3,
+  showAllLines = false,
   tone = "neutral",
 }: LevyLinesCardProps) {
   if (levies.length === 0) return null;
 
-  const shown = levies.slice(0, maxLines);
+  const cap = showAllLines ? levies.length : maxLines;
+  const shown = levies.slice(0, cap);
   const shellClass =
     tone === "debt"
       ? DEBT_PANEL_CLASS
@@ -71,7 +76,7 @@ export function LevyLinesCard({
                 {(levy.rateMillsCurrent * rateToMills).toFixed(3)} mills
               </span>
               {levy.taborExempt && (
-                <span className="mt-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-amber-900">
+                <span className="mt-1 inline-flex items-center justify-center rounded-full border border-amber-900 bg-amber-50 px-1.5 pb-0.5 pt-1 text-[0.55rem] font-semibold uppercase leading-none tracking-wide text-amber-900">
                   TABOR-exempt
                 </span>
               )}

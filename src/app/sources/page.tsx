@@ -4,6 +4,12 @@ import {
   staticArticleBackLinkClass,
   staticArticleSecondaryLinkClass,
 } from "@/components/StaticArticleShell";
+import {
+  ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF,
+  ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF,
+  ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB,
+  ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
+} from "@/lib/arapahoeCountyUrls";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 
 export const metadata = {
@@ -11,23 +17,37 @@ export const metadata = {
   description: "Primary sources and methodology for this tool.",
 };
 
-const SOURCES = [
+type PrimarySource = {
+  title: string;
+  url: string;
+  note: string;
+  /** Default: "Open source PDF" */
+  openLinkLabel?: string;
+};
+
+const SOURCES: PrimarySource[] = [
+  {
+    title: "Mill Levies and Tax Districts (Arapahoe County Assessor)",
+    url: ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB,
+    note: "Assessor document center: Mill Levy Public Information Form, certification of levies and revenues, abstracts of assessment, mill levies by tax area, and related PDFs.",
+    openLinkLabel: "Open Assessor page",
+  },
   {
     title: "2025 Taxing District Levy Percentage (Arapahoe County Assessor)",
-    url: "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490",
+    url: ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF,
     note: "Supporting reference (not used to generate the app's JSON). Useful for corroboration and context by taxing district and tax area.",
   },
   {
     title: "Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))",
-    url: "https://www.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/Mill%20Levy%20Public%20Information%20Form.pdf?t=202601121519240",
+    url: ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
     note: "Source of truth for the metro district dropdown. Debt service and total mills are extracted offline from this PDF into the app's JSON.",
   },
   {
     title: "2025 Certification of Levies and Revenues",
-    url: "https://www.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/2025%20Certification%20of%20Levies%20and%20Revenues.pdf?t=202412301249070",
+    url: ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF,
     note: "Supporting reference (not used to generate the app's JSON). Useful to cross-check levy certification and for future updates.",
   },
-] as const;
+];
 
 export default function SourcesPage() {
   return (
@@ -122,7 +142,7 @@ export default function SourcesPage() {
                   rel="noopener noreferrer"
                   className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                 >
-                  Open source PDF
+                  {s.openLinkLabel ?? "Open source PDF"}
                   <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </p>
