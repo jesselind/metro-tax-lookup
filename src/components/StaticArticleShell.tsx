@@ -24,19 +24,26 @@ export function StaticArticleShell({
   footer,
 }: StaticArticleShellProps) {
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen overflow-x-hidden bg-white text-slate-900">
       <div className="mx-auto w-full max-w-xl px-4 py-8 sm:py-12">
-        <header className="space-y-3">
-          <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base">
-            {EYEBROW}
-          </p>
-          <h1 className="bg-slate-800 px-4 py-3 text-2xl font-bold leading-tight tracking-tight text-white sm:px-5 sm:py-4 sm:text-3xl">
-            {title}
-          </h1>
-          <p className="max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg">
-            {intro}
-          </p>
+        <header className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 pb-4">
+          <div className="mx-auto w-full max-w-xl px-4">
+            <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base">
+              {EYEBROW}
+            </p>
+          </div>
+          <div className="mt-2 bg-slate-700 sm:mt-3">
+            <div className="mx-auto w-full max-w-xl px-4 py-4 sm:px-5 sm:py-5">
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
+                {title}
+              </h1>
+            </div>
+          </div>
         </header>
+
+        <p className="max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg">
+          {intro}
+        </p>
 
         {children}
 
