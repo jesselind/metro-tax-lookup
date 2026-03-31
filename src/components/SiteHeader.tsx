@@ -17,11 +17,11 @@ export function SiteHeader() {
         </p>
         {showToolsLink ? (
           <Link href="/" className={toolsButtonClass}>
-            Tools
+            Home
           </Link>
         ) : (
           <span aria-hidden className={`${toolsButtonClass} invisible`}>
-            Tools
+            Home
           </span>
         )}
       </div>

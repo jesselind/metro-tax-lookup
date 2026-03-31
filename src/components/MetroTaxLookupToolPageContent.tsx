@@ -13,6 +13,10 @@ import type {
 import levyData from "../../public/data/metro-levies-2025.json";
 import propertyPageImg from "@/assets/images/mill-levy-property-page.png";
 import millLevyDetailImg from "@/assets/images/mill-levy-detail.png";
+import {
+  LevyDefinitionInfoDetails,
+  MillsDefinitionInfoDetails,
+} from "@/components/propertyTaxInfoDetails";
 import { InfoDetails } from "@/components/InfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
 import { MetroDistrictSelect } from "@/components/MetroDistrictSelect";
@@ -23,33 +27,20 @@ import {
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF as MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
-
-const COUNTY_EXTERNAL_LINK_CLASS =
-  "font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";
+import {
+  CARD_BODY_CLASS,
+  CARD_BODY_CLASS_DROPDOWN,
+  CARD_CLASS_CLIPPED,
+  CARD_CLASS_DROPDOWN,
+  CARD_HEADER_CLASS,
+  CARD_HEADER_CLASS_DROPDOWN,
+  COUNTY_EXTERNAL_LINK_CLASS,
+  HELP_PILL_CLASS,
+  INPUT_CLASS,
+} from "@/lib/toolFlowStyles";
 
 /** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
 const RATE_TO_MILLS = 1000;
-
-const HELP_PILL_CLASS =
-  "inline-flex items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 sm:text-base";
-const INPUT_CLASS =
-  "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
-const CARD_CLASS_CLIPPED =
-  "overflow-hidden rounded-xl border border-slate-700 bg-slate-700";
-const CARD_HEADER_CLASS = "px-4 py-3 text-base font-semibold text-white sm:px-5";
-const CARD_BODY_CLASS = "bg-white px-4 py-4 sm:px-5 sm:py-5";
-
-// For the Step 3 dropdown card: keep overflow visible so the menu can escape,
-// but avoid corner artifacts by using a single white surface.
-const CARD_CLASS_DROPDOWN =
-  "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
-const CARD_HEADER_CLASS_DROPDOWN =
-  "px-4 py-3 text-base font-semibold text-white sm:px-5";
-const CARD_BODY_CLASS_DROPDOWN =
-  "rounded-b-xl bg-white px-4 py-4 sm:px-5 sm:py-5";
-
-const INFO_DETAILS_WIDE_CLASS =
-  "w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
 
 export function MetroTaxLookupToolPageContent() {
   const [totalMillsInput, setTotalMillsInput] = useState("");
@@ -195,6 +186,7 @@ export function MetroTaxLookupToolPageContent() {
                       className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
                     >
                       Colorado Special Districts map
+                      <span className="sr-only"> (opens in a new tab)</span>
                     </a>{" "}
                     for a <strong>metro district</strong> covering your property.
                   </p>
@@ -274,6 +266,7 @@ export function MetroTaxLookupToolPageContent() {
                       className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
                     >
                       property search
+                      <span className="sr-only"> (opens in a new tab)</span>
                     </a>
                     , type your address, then open the county assessor property details page (your parcel record).
                   </p>
@@ -309,6 +302,7 @@ export function MetroTaxLookupToolPageContent() {
                             width={800}
                             height={500}
                           />
+                          <span className="sr-only"> (opens in a new tab)</span>
                         </a>
                         <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">Tap image to open full size.</figcaption>
                       </figure>
@@ -330,31 +324,8 @@ export function MetroTaxLookupToolPageContent() {
                     />
                     <p id="total-mills-hint" className="mt-1 text-sm text-slate-500 sm:text-base">Total property tax rate (mills)</p>
                   </div>
-                  <InfoDetails
-                    title="What are &quot;mills&quot;?"
-                    className={INFO_DETAILS_WIDE_CLASS}
-                  >
-                    <p>
-                      <strong>Mills</strong> are the units used to express property
-                      tax rates. One mill means <strong>$1 of tax for every $1,000 of
-                      taxable (assessed) value</strong>. So if your assessed value is
-                      $400,000 and the rate is 100 mills, your tax from that rate
-                      would be about $400.
-                    </p>
-                  </InfoDetails>
-                  <InfoDetails
-                    title="What is a &quot;levy&quot;?"
-                    className={INFO_DETAILS_WIDE_CLASS}
-                  >
-                    <p>
-                      A <strong>levy</strong> is a taxing district&apos;s{" "}
-                      <strong>certified property tax rate</strong> for a given year,
-                      usually expressed in <strong>mills</strong>. Your{" "}
-                      <strong>mill levy</strong> on the assessor page is the{" "}
-                      <strong>combined</strong> rate from every district that taxes your
-                      parcel (schools, county, metro district, and others).
-                    </p>
-                  </InfoDetails>
+                  <MillsDefinitionInfoDetails />
+                  <LevyDefinitionInfoDetails />
                 </div>
               </div>
             </li>
@@ -405,6 +376,7 @@ export function MetroTaxLookupToolPageContent() {
                                 width={800}
                                 height={500}
                               />
+                              <span className="sr-only"> (opens in a new tab)</span>
                             </a>
                             <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">Tap image to open full size.</figcaption>
                           </figure>
