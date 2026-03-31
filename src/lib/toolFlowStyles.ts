@@ -41,6 +41,16 @@ export const CARD_HEADER_CLASS =
 
 export const CARD_BODY_CLASS = "bg-white px-4 py-4 sm:px-5 sm:py-5";
 
+/** Hub home: full-card link (one tab stop, stretched hit target). Pair with hub header/body classes. */
+export const TOOL_CARD_LINK_CLASS =
+  `${CARD_CLASS_CLIPPED} group block border outline-none transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-indigo-500 hover:shadow-xl active:translate-y-0 active:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-700/50 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:hover:translate-y-0`;
+
+/** Hub tool cards only: header bar shifts slightly on card hover. */
+export const TOOL_CARD_HUB_HEADER_CLASS = `${CARD_HEADER_CLASS} bg-slate-700 text-balance transition-colors duration-150 group-hover:bg-slate-600`;
+
+/** Hub tool cards only: body picks up a light wash when the card is hovered. */
+export const TOOL_CARD_HUB_BODY_CLASS = `${CARD_BODY_CLASS} transition-colors duration-150 group-hover:bg-indigo-50`;
+
 /** For steps with a dropdown that must escape the card (e.g. metro district select). */
 export const CARD_CLASS_DROPDOWN =
   "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
