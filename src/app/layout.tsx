@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SiteHeader } from "@/components/SiteHeader";
+import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 
 const geistSans = Geist({
@@ -14,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Metro district tax share | Arapahoe County",
+  title: "Arapahoe County property tax tools",
   description:
-    "See what share of your Arapahoe County property tax pays for metro district debt. Enter two numbers from your tax bill or the county site.",
+    "Citizen-friendly tools to help Arapahoe County residents understand property tax rates and levy data.",
 };
 
 export default function RootLayout({
@@ -30,6 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased font-sans`}
       >
         <div className="flex min-h-screen flex-col">
+          <SiteHeader />
           <div className="flex-1">{children}</div>
           <footer className="border-t border-slate-200 bg-white">
             <div className="mx-auto w-full max-w-xl px-4 py-6 text-sm text-slate-700 sm:text-base">
@@ -38,6 +41,9 @@ export default function RootLayout({
                 to help voters and residents understand publicly available mill
                 levy data. Verify with official county sources. Not legal or tax
                 advice.
+              </p>
+              <p className="mt-3 text-center text-xs text-slate-500 sm:text-sm">
+                Version {APP_VERSION} · Last updated {SITE_LAST_UPDATED_LABEL}
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2">

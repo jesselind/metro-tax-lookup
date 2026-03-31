@@ -53,7 +53,7 @@ export default function SourcesPage() {
       footer={
         <div className="flex flex-wrap gap-3">
           <Link href="/" className={staticArticleBackLinkClass}>
-            Back to the tool
+            Back to tools
           </Link>
           <Link
             href="/privacy"
@@ -111,11 +111,11 @@ export default function SourcesPage() {
         </div>
       </section>
 
-      {SITE_CONFIG.githubRepoUrl ? (
-        <section className="mt-8 space-y-3 text-base leading-relaxed text-slate-800 sm:text-lg">
-          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-            Code
-          </h2>
+      <section className="mt-8 space-y-3 text-base leading-relaxed text-slate-800 sm:text-lg">
+        <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+          Code
+        </h2>
+        {SITE_CONFIG.githubRepoUrl ? (
           <p className="max-w-prose text-slate-700">
             Source code is available on{" "}
             <a
@@ -129,8 +129,20 @@ export default function SourcesPage() {
             </a>
             .
           </p>
-        </section>
-      ) : null}
+        ) : (
+          <p className="max-w-prose text-slate-700">
+            Source code link is temporarily unavailable due to site
+            configuration. If this persists, please contact{" "}
+            <a
+              href="mailto:metro.tax.lookup@pm.me?subject=Broken%20GitHub%20source%20link%20on%20Sources%20page"
+              className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+            >
+              metro.tax.lookup@pm.me
+            </a>
+            .
+          </p>
+        )}
+      </section>
 
       <section className="mt-8 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg">
         <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
