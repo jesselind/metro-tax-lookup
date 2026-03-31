@@ -9,38 +9,46 @@ import {
   LevyDefinitionInfoDetails,
   MillsDefinitionInfoDetails,
 } from "@/components/propertyTaxInfoDetails";
+import { HelpPillButton } from "@/components/HelpPillButton";
 import { PageHero } from "@/components/PageHero";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH as ASSESSOR_SEARCH_URL } from "@/lib/arapahoeCountyUrls";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
+import { LevyStackManualEntry } from "@/components/LevyStackManualEntry";
 import {
   CARD_BODY_CLASS,
   CARD_CLASS_CLIPPED,
   CARD_HEADER_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
-  HELP_PILL_CLASS,
+  TOOL_PAGE_HERO_INTRO_GROUP_CLASS,
+  TOOL_PAGE_INNER_CLASS_TOOL,
+  TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
 } from "@/lib/toolFlowStyles";
 
 export function LevyBreakdownToolPageContent() {
   const [showParcelRecordHelp, setShowParcelRecordHelp] = useState(false);
   const [showLevyTableHelp, setShowLevyTableHelp] = useState(false);
+  const [levyEntryResetKey, setLevyEntryResetKey] = useState(0);
 
   function handleStartOver() {
     setShowParcelRecordHelp(false);
     setShowLevyTableHelp(false);
+    setLevyEntryResetKey((k) => k + 1);
   }
 
   return (
     <main className="flex min-h-screen flex-col overflow-x-hidden bg-white text-slate-900">
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-0 pb-4 sm:pb-6">
-        <PageHero title="Property tax levy breakdown" />
-        <p className="max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg">
-          Your property tax bill is split among schools, the county, fire
-          protection, and other local services. This walkthrough helps you pull up
-          that split on the county website.
-        </p>
+      <div className={TOOL_PAGE_INNER_CLASS_TOOL}>
+        <div className={TOOL_PAGE_HERO_INTRO_GROUP_CLASS}>
+          <PageHero title="Property tax levy breakdown" />
+          <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>
+            Follow the steps to open your county levy list, then enter it in the tool
+            below.
+          </p>
+        </div>
         <section aria-labelledby="levy-flow-heading" className="">
           <h2 id="levy-flow-heading" className="sr-only">
-            Steps: find your property, open the county list, see your levy breakdown
+            Steps: find your property, open Tax District Levies and review the
+            breakdown screen, enter your levy lines in the tool
           </h2>
           <ol className="space-y-6 sm:space-y-8">
             <li>
@@ -73,27 +81,21 @@ export function LevyBreakdownToolPageContent() {
             <li>
               <div className={CARD_CLASS_CLIPPED}>
                 <div className={CARD_HEADER_CLASS}>
-                  Step 2 - Get the list
+                  Step 2 - Tax District Levies
                 </div>
                 <div className={`${CARD_BODY_CLASS} space-y-3`}>
                   <p className="text-base text-slate-800 sm:text-lg">
                     On your property page, click the link that says{" "}
                     <strong>Tax District Levies</strong>.
                   </p>
-                  <button
-                    type="button"
-                    className={HELP_PILL_CLASS}
+                  <HelpPillButton
                     onClick={() => setShowParcelRecordHelp((prev) => !prev)}
                     aria-expanded={showParcelRecordHelp}
                   >
                     {showParcelRecordHelp ? "Hide" : "Show"} where to find it
-                  </button>
+                  </HelpPillButton>
                   {showParcelRecordHelp && (
                     <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
-                      <p className="mb-3">
-                        The image shows where the <strong>Tax District Levies</strong>{" "}
-                        link is on your property page.
-                      </p>
                       <figure>
                         <a
                           href={parcelRecordLevyImg.src}
@@ -115,27 +117,16 @@ export function LevyBreakdownToolPageContent() {
                       </figure>
                     </div>
                   )}
-                </div>
-              </div>
-            </li>
-            <li>
-              <div className={CARD_CLASS_CLIPPED}>
-                <div className={CARD_HEADER_CLASS}>
-                  Step 3 - Here is your levy breakdown
-                </div>
-                <div className={`${CARD_BODY_CLASS} space-y-3`}>
                   <p className="text-base text-slate-800 sm:text-lg">
-                    This screen is your levy breakdown: how your property tax is split,
-                    one line at a time, with a total at the bottom.
+                    That screen lists each taxing district and its levy, with a total
+                    at the bottom—what you will copy in the next step.
                   </p>
-                  <button
-                    type="button"
-                    className={HELP_PILL_CLASS}
+                  <HelpPillButton
                     onClick={() => setShowLevyTableHelp((prev) => !prev)}
                     aria-expanded={showLevyTableHelp}
                   >
                     {showLevyTableHelp ? "Hide" : "Show"} example
-                  </button>
+                  </HelpPillButton>
                   {showLevyTableHelp && (
                     <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
                       <figure>
@@ -160,21 +151,23 @@ export function LevyBreakdownToolPageContent() {
                     </div>
                   )}
                   <LevyDefinitionInfoDetails />
-                  <p
-                    className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2.5 text-sm text-amber-950 sm:text-base"
-                    role="status"
-                  >
-                    <strong className="font-semibold">Under construction.</strong> This
-                    tool is not finished yet. The steps above help you open your levy
-                    list on the county site; more here soon.
-                  </p>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div className={CARD_CLASS_CLIPPED}>
+                <div className={CARD_HEADER_CLASS}>
+                  Step 3 - Enter your levy stack
+                </div>
+                <div className={`${CARD_BODY_CLASS} space-y-3`}>
+                  <LevyStackManualEntry key={levyEntryResetKey} />
+                  <div className="mt-6">
+                    <MillsDefinitionInfoDetails />
+                  </div>
                 </div>
               </div>
             </li>
           </ol>
-          <div className="mt-6">
-            <MillsDefinitionInfoDetails />
-          </div>
         </section>
         <div
           className="flex flex-wrap items-center justify-center gap-3"

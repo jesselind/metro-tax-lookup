@@ -1,5 +1,28 @@
 /** Shared layout classes for multi-step tool flows (metro tax, levy breakdown, etc.). */
 
+/**
+ * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
+ * Pair with {@link TOOL_PAGE_INNER_PB_TOOL} or {@link TOOL_PAGE_INNER_PB_ROOMY}.
+ */
+export const TOOL_PAGE_INNER_BASE_CLASS =
+  "mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-0";
+
+export const TOOL_PAGE_INNER_PB_TOOL = "pb-4 sm:pb-6";
+export const TOOL_PAGE_INNER_PB_ROOMY = "pb-6 sm:pb-10";
+
+/** Metro + levy tool pages (standard bottom padding). */
+export const TOOL_PAGE_INNER_CLASS_TOOL = `${TOOL_PAGE_INNER_BASE_CLASS} ${TOOL_PAGE_INNER_PB_TOOL}`;
+
+/** Home hub + static articles (roomier bottom padding). */
+export const TOOL_PAGE_INNER_CLASS_HUB = `${TOOL_PAGE_INNER_BASE_CLASS} ${TOOL_PAGE_INNER_PB_ROOMY}`;
+
+/** PageHero + lead paragraph: spacing under the slate title bar matches all tools. */
+export const TOOL_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-2";
+
+/** Lead paragraph directly under PageHero. */
+export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
+  "max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg";
+
 /** External links to county / assessor pages (matches site indigo treatment). */
 export const COUNTY_EXTERNAL_LINK_CLASS =
   "font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";

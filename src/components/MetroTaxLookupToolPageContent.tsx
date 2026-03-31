@@ -17,6 +17,7 @@ import {
   LevyDefinitionInfoDetails,
   MillsDefinitionInfoDetails,
 } from "@/components/propertyTaxInfoDetails";
+import { HelpPillButton } from "@/components/HelpPillButton";
 import { InfoDetails } from "@/components/InfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
 import { MetroDistrictSelect } from "@/components/MetroDistrictSelect";
@@ -35,8 +36,8 @@ import {
   CARD_HEADER_CLASS,
   CARD_HEADER_CLASS_DROPDOWN,
   COUNTY_EXTERNAL_LINK_CLASS,
-  HELP_PILL_CLASS,
   INPUT_CLASS,
+  TOOL_PAGE_INNER_CLASS_TOOL,
 } from "@/lib/toolFlowStyles";
 
 /** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
@@ -165,7 +166,7 @@ export function MetroTaxLookupToolPageContent() {
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {resultAnnouncement}
       </div>
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-0 pb-4 sm:pb-6">
+      <div className={TOOL_PAGE_INNER_CLASS_TOOL}>
         <PageHero title="What share of your property tax goes to your metro district?" />
         {/* ...unchanged tool UI moved from prior home route... */}
         <section aria-labelledby="flow-heading" className="">
@@ -281,13 +282,11 @@ export function MetroTaxLookupToolPageContent() {
                     On the property details page, find <strong>2025 Mill Levy</strong>{" "}
                     (your total property tax mills, example: 183.894). Enter it below.
                   </p>
-                  <button
-                    type="button"
-                    className={HELP_PILL_CLASS}
+                  <HelpPillButton
                     onClick={() => setShowStepsDetails((prev) => !prev)}
                   >
                     {showStepsDetails ? "Hide" : "Show"} where to find it
-                  </button>
+                  </HelpPillButton>
                   {showStepsDetails && (
                     <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
                       <p className="mb-3">
@@ -357,13 +356,11 @@ export function MetroTaxLookupToolPageContent() {
                         number from Step 3. Find the row with your metro district&apos;s{" "}
                         <strong>name</strong>.
                       </p>
-                      <button
-                        type="button"
-                        className={HELP_PILL_CLASS}
+                      <HelpPillButton
                         onClick={() => setShowMetroHelpDetails((prev) => !prev)}
                       >
                         {showMetroHelpDetails ? "Hide" : "Show"} example
-                      </button>
+                      </HelpPillButton>
                       {showMetroHelpDetails && (
                         <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
                           <p className="mb-3">Use this page to identify the metro district name (the row label).</p>
@@ -762,13 +759,12 @@ export function MetroTaxLookupToolPageContent() {
                           </div>
                         )}
                         <div className="mt-3">
-                          <button
-                            type="button"
-                            className={`${HELP_PILL_CLASS} text-xs sm:text-sm`}
+                          <HelpPillButton
+                            className="text-xs sm:text-sm"
                             onClick={() => setShowResultDetails((prev) => !prev)}
                           >
                             {showResultDetails ? "Hide details" : "Show details"}
-                          </button>
+                          </HelpPillButton>
                         </div>
                       </>
                     )}

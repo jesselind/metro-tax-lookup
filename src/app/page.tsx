@@ -5,17 +5,22 @@ import {
   CARD_BODY_CLASS,
   CARD_CLASS_CLIPPED,
   CARD_HEADER_CLASS,
+  TOOL_PAGE_HERO_INTRO_GROUP_CLASS,
+  TOOL_PAGE_INNER_CLASS_HUB,
+  TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
 } from "@/lib/toolFlowStyles";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen overflow-x-hidden bg-white text-slate-900">
-      <div className="mx-auto w-full max-w-xl px-4 pt-0 pb-6 sm:pb-10">
-        <PageHero title="Property tax tools for residents" />
-        <p className="max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg">
-          Use these tools to understand where your property tax bill goes, in plain language.
-        </p>
-        <section className="mt-8 space-y-6 sm:space-y-8" aria-label="Available tools">
+    <main className="flex min-h-screen flex-col overflow-x-hidden bg-white text-slate-900">
+      <div className={TOOL_PAGE_INNER_CLASS_HUB}>
+        <div className={TOOL_PAGE_HERO_INTRO_GROUP_CLASS}>
+          <PageHero title="Property tax tools for residents" />
+          <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>
+            Pick a tool below. Each opens its own walkthrough.
+          </p>
+        </div>
+        <section className="space-y-6 sm:space-y-8" aria-label="Available tools">
           <article className={CARD_CLASS_CLIPPED}>
             <h2 className={CARD_HEADER_CLASS}>Metro district tax share</h2>
             <div className={`${CARD_BODY_CLASS} space-y-3`}>
@@ -26,8 +31,9 @@ export default function HomePage() {
                 <Link
                   href="/metro-tax-lookup"
                   className={btnOutlinePrimaryMd}
+                  aria-label="Open metro district tax share tool"
                 >
-                  Open metro district tax share tool
+                  Open
                 </Link>
               </p>
             </div>
@@ -39,8 +45,12 @@ export default function HomePage() {
                 Break your full property tax rate into district-by-district line items.
               </p>
               <p>
-                <Link href="/levy-breakdown" className={btnOutlinePrimaryMd}>
-                  Open property tax levy breakdown tool
+                <Link
+                  href="/levy-breakdown"
+                  className={btnOutlinePrimaryMd}
+                  aria-label="Open property tax levy breakdown tool"
+                >
+                  Open
                 </Link>
               </p>
             </div>

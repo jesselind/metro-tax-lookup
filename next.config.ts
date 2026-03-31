@@ -3,9 +3,10 @@ import type { NextConfig } from "next";
 const isProd = process.env.NODE_ENV === "production";
 
 /**
- * Baseline CSP for a static Next.js app (no third-party scripts).
- * Dev keeps 'unsafe-eval' for webpack / React refresh.
- * Tighten script-src further with nonces if you add strict CSP later.
+ * CSP: as strict as practical while keeping static generation and Next hydration.
+ * - script-src 'unsafe-inline' is still required for Next's inline bootstrap without
+ *   per-request nonces (see proxy/middleware + dynamic rendering) or experimental SRI.
+ * - script-src-attr 'none' blocks inline event handlers (onclick=, etc.).
  */
 function contentSecurityPolicy(): string {
   const directives = [
@@ -13,7 +14,9 @@ function contentSecurityPolicy(): string {
     isProd
       ? "script-src 'self' 'unsafe-inline'"
       : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "script-src-attr 'none'",
     "style-src 'self' 'unsafe-inline'",
+    "connect-src 'self'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
     "object-src 'none'",
@@ -30,10 +33,12 @@ function contentSecurityPolicy(): string {
 const securityHeaders: { key: string; value: string }[] = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  /** Never send path or query to other origins; same-origin requests keep full URL. */
+  { key: "Referrer-Policy", value: "strict-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    value:
+      "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=(), serial=(), browsing-topics=()",
   },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Content-Security-Policy", value: contentSecurityPolicy() },
