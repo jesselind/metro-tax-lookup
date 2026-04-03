@@ -68,6 +68,12 @@ export default function RootLayout({
                   >
                     Accessibility
                   </a>
+                  <a
+                    href="/contact"
+                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+                  >
+                    Contact
+                  </a>
                 </nav>
                 {SITE_CONFIG.githubRepoUrl ? (
                   <a

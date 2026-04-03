@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  StaticArticleShell,
-  staticArticleBackLinkClass,
-  staticArticleSecondaryLinkClass,
-} from "@/components/StaticArticleShell";
+import { StaticArticleShell } from "@/components/StaticArticleShell";
 import {
   SOURCES_PAGE_INNER_CLASS,
   TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
@@ -122,31 +118,6 @@ export default function SourcesPage() {
         </p>
       }
       contentClassName={SOURCES_PAGE_INNER_CLASS}
-      footer={
-        <div className="flex flex-wrap gap-3">
-          <Link href="/" className={staticArticleBackLinkClass}>
-            Back to tools
-          </Link>
-          <Link
-            href="/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={staticArticleSecondaryLinkClass}
-          >
-            Privacy policy
-            <span className="sr-only"> (opens in a new tab)</span>
-          </Link>
-          <Link
-            href="/accessibility"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={staticArticleSecondaryLinkClass}
-          >
-            Accessibility statement
-            <span className="sr-only"> (opens in a new tab)</span>
-          </Link>
-        </div>
-      }
     >
       <nav
         aria-label="On this page"
