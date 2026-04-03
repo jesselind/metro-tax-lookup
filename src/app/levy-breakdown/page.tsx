@@ -4,7 +4,7 @@ import { LevyBreakdownToolPageContent } from "@/components/LevyBreakdownToolPage
 export const metadata: Metadata = {
   title: "Property tax levy breakdown | Arapahoe County",
   description:
-    "Walkthrough: find your Arapahoe County parcel and open your tax district levies on the assessor site. More in-tool help is on the way.",
+    "Walkthrough: find your Arapahoe County parcel and PIN, then load your district levy lines in the tool.",
 };
 
 export default function LevyBreakdownPage() {

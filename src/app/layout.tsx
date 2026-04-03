@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
 import { SITE_CONFIG } from "@/lib/siteConfig";
+import { SITE_CONTENT_MAX_WIDTH_CLASS } from "@/lib/toolFlowStyles";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,8 +36,10 @@ export default function RootLayout({
           <SiteHeader />
           <div className="flex-1">{children}</div>
           <footer className="border-t border-slate-200 bg-white">
-            <div className="mx-auto w-full max-w-xl px-4 py-6 text-sm text-slate-700 sm:text-base">
-              <p className="mx-auto max-w-prose text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+            <div
+              className={`mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-6 text-sm text-slate-700 sm:text-base`}
+            >
+              <p className="text-center text-sm leading-relaxed text-slate-600 sm:text-base">
                 Not affiliated with Arapahoe County. This is an informational tool
                 to help voters and residents understand publicly available mill
                 levy data. Verify with official county sources. Not legal or tax

@@ -1,0 +1,190 @@
+{
+  "_comment": "Keys = Mart_TA_TAG Field6 (uppercased, trimmed). legalName = DOLA string for fuzzy match. taxEntityId filled at build time from property-tax-entities-export.xlsx when resolvable. millsOverride = use this mill value instead of DOLA levy column when county Levy.aspx disagrees (sets dolaMills + millsReason in JSON). ura=true = TIF/URA; may have no LGIS id.",
+
+  "byAuthorityUpper": {
+    "ARAPAHOE COUNTY": {
+      "legalName": "Arapahoe County",
+      "millsOverride": 15.959,
+      "note": "DOLA xlsx total levy for TE 03001/1 is 16.959; Arapahoe Levy.aspx line 2998 (2025 tax year) is 15.959. Override matches the county levy table so PIN stacks agree with Levy.aspx."
+    },
+    "REGIONAL TRANSPORTATION": {
+      "legalName": "Regional Transportation District",
+      "note": "County label omits district name; match DOLA RTD row when xlsx present."
+    },
+    "URBAN DRAINAGE & FLOOD": {
+      "legalName": "Urban Drainage and Flood Control District",
+      "note": "Mart 4712; DOLA main district levy (64147/1), not the South Platte line."
+    },
+    "URBN DRNGE&FLD (S PLATTE)": {
+      "legalName": "Urban Drainage & Flood, South Platte Levy",
+      "taxEntityId": "64174/1",
+      "note": "Mart 4713; separate DOLA row from 4712 — South Platte levy (0.1) vs main drainage (0.9)."
+    },
+
+    "SMFR FIRE PROTECTION DISTRICT": {
+      "legalName": "South Metro Fire Rescue Fire Protection District",
+      "note": "SMFR acronym; full FPD name for DOLA row."
+    },
+    "CITY OF AURORA": {
+      "legalName": "Aurora",
+      "note": "DOLA xlsx uses municipality name without City of prefix (TE e.g. 64010/1)."
+    },
+    "CHERRY CREEK BASIN AUTH": {
+      "legalName": "Cherry Creek Basin Water Quality Authority",
+      "note": "AUTH truncation; full legal name includes Water Quality."
+    },
+    "S SUBURBAN PARK & REC": {
+      "legalName": "South Suburban Park and Recreation District",
+      "note": "S SUBURBAN abbreviation; & vs and."
+    },
+    "CITY OF CENTENNIAL": {
+      "legalName": "Centennial",
+      "note": "DOLA uses Centennial without City of prefix."
+    },
+    "STHEST PUB IMP METRO DIS": {
+      "legalName": "Southeast Public Improvement Metropolitan District",
+      "note": "STHEST = Southeast; PUB IMP = Public Improvement."
+    },
+    "NORTH KIOWA BIJOU WATER": {
+      "legalName": "North Kiowa Bijou Water Management District",
+      "note": "Truncated; multi-county possible."
+    },
+    "CHERRY HILLS FIRE BOND": {
+      "legalName": "Cherry Hills Village Fire Protection District",
+      "note": "BOND = debt subdistrict; base entity CHV FPD; subdistrict may differ from ops levy."
+    },
+    "SOUTHEAST ENGLEWOOD WATER": {
+      "legalName": "South-East Englewood Water District",
+      "note": "DOLA spelling includes hyphen in South-East."
+    },
+    "CITY OF LITTLETON": {
+      "legalName": "Littleton",
+      "note": "DOLA uses Littleton without City of prefix (distinct from school district rows)."
+    },
+    "SOUTH ENGLEWOOD SAN # 1A": {
+      "legalName": "South Englewood Sanitation District No. 1A",
+      "note": "SAN = Sanitation."
+    },
+    "ARAPAHOE W & W PID": {
+      "legalName": "Arapahoe Water and Wastewater Public Improvement District",
+      "note": "W & W = Water and Wastewater; PID = Public Improvement District."
+    },
+    "SOUTHWEST METRO WATER & S": {
+      "legalName": "Southwest Metropolitan Water and Sanitation District",
+      "note": "Truncated at column width."
+    },
+    "CITY OF ENGLEWOOD": {
+      "legalName": "Englewood",
+      "note": "DOLA uses Englewood without City of prefix."
+    },
+    "STRASBURG FIRE DIST": {
+      "legalName": "Strasburg Fire Protection District",
+      "note": "DIST = District."
+    },
+    "GOLDSMITH GULCH SAN": {
+      "legalName": "Goldsmith Gulch Sanitation District",
+      "note": "SAN = Sanitation."
+    },
+    "CITY OF CH. HILLS SAN": {
+      "legalName": "City of Cherry Hills Village Sanitation",
+      "note": "CH. HILLS = Cherry Hills; SAN = Sanitation."
+    },
+    "E.CHRY CRK VAL W&S BONDS": {
+      "legalName": "East Cherry Creek Valley Water and Sanitation District",
+      "note": "BONDS = debt subdistrict; same base entity as ops line; subdistrict differs."
+    },
+    "CITY OF SHERIDAN": {
+      "legalName": "Sheridan",
+      "note": "DOLA uses Sheridan without City of prefix."
+    },
+    "PARKER JORDAN METRO": {
+      "legalName": "Parker Jordan Metropolitan District",
+      "note": "Metro district; may have multiple subdistricts."
+    },
+    "CITY OF GLENDALE": {
+      "legalName": "Glendale",
+      "note": "DOLA uses Glendale without City of prefix."
+    },
+    "PARKER JRDN MTRO DIS BOND": {
+      "legalName": "Parker Jordan Metropolitan District",
+      "note": "Same entity as PARKER JORDAN METRO; BOND = debt subdistrict."
+    },
+    "PANORAMA MT DIS BOND ONLY": {
+      "legalName": "Panorama Metropolitan District",
+      "note": "BOND ONLY = debt-only subdistrict."
+    },
+    "GOLDSMITH METRO BOND": {
+      "legalName": "Goldsmith Metropolitan District",
+      "note": "BOND = debt subdistrict."
+    },
+    "HORIZON UPTOWN URB RNWL A": {
+      "legalName": "Horizon Uptown Urban Renewal Authority",
+      "ura": true,
+      "note": "URA / TIF; may not have standard Tax Entity ID in DOLA."
+    },
+    "LOST CREEK WATER MGMT": {
+      "legalName": "Lost Creek Water Management District",
+      "note": "Water management district."
+    },
+    "STRASBURG METRO PARK&REC": {
+      "legalName": "Strasburg Metropolitan Park and Recreation District",
+      "note": "PARK&REC = Park and Recreation."
+    },
+    "COLUMBINE WATER & SAN": {
+      "legalName": "Columbine Water and Sanitation District",
+      "note": "W & S district."
+    },
+    "E. CHERRY CRK VAL WATER": {
+      "legalName": "East Cherry Creek Valley Water and Sanitation District",
+      "note": "Ops levy; same base entity as E.CHRY CRK VAL W&S BONDS; subdistrict differs."
+    },
+    "GLENDALE DDA LEVY": {
+      "legalName": "City of Glendale Downtown Development Authority",
+      "ura": true,
+      "note": "DDA; TIF-adjacent; may lack standard LGIS id."
+    },
+    "FITZSIMONS URB REN TAX IN": {
+      "legalName": "Fitzsimons Urban Renewal Authority",
+      "ura": true,
+      "note": "URA / TIF; TAX IN = tax increment."
+    },
+    "ALAMEDA CTR URA": {
+      "legalName": "Alameda Center Urban Renewal Authority",
+      "ura": true,
+      "note": "URA / TIF."
+    },
+    "TOWN OF BENNETT": {
+      "legalName": "Bennett",
+      "note": "DOLA uses Bennett without Town of prefix."
+    },
+    "SHERIDAN URBAN RNWL PLN": {
+      "legalName": "City of Sheridan Urban Renewal Authority",
+      "ura": true,
+      "note": "URA; RNWL PLN = renewal plan."
+    },
+    "LIVERPOOL METRO": {
+      "legalName": "Liverpool Metropolitan District",
+      "note": "Metro district."
+    },
+    "GREENWOOD NORTH METRO": {
+      "legalName": "Greenwood North Metropolitan District",
+      "note": "Metro district."
+    },
+    "FOREST TRACE METRO DIS #2": {
+      "legalName": "Forest Trace Metropolitan District No. 2",
+      "note": "Numbered metro district."
+    },
+    "FOREST TRACE METRO DIS #3": {
+      "legalName": "Forest Trace Metropolitan District No. 3",
+      "note": "Numbered metro district."
+    },
+    "INVERNESS METRO IMPROVE": {
+      "legalName": "Inverness Metropolitan Improvement District",
+      "note": "IMPROVE = Improvement."
+    },
+    "HILLCREST WATER & SAN": {
+      "legalName": "Hillcrest Water and Sanitation District",
+      "note": "W & S district."
+    }
+  }
+}

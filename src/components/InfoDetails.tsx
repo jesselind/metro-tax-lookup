@@ -12,6 +12,8 @@ type InfoDetailsProps = {
   children: ReactNode;
   /** Outer wrapper; default matches Step 1 callout width. Use `w-full max-w-prose ...` when the parent is narrow. */
   className?: string;
+  /** Optional anchor id for in-page links (e.g. #what-are-mills). */
+  id?: string;
 };
 
 const DEFAULT_WRAPPER_CLASS =
@@ -21,9 +23,20 @@ export function InfoDetails({
   title,
   children,
   className = DEFAULT_WRAPPER_CLASS,
+  id,
 }: InfoDetailsProps) {
   return (
-    <div className={className} role="region" aria-label="Important information">
+    <div
+      id={id}
+      className={[
+        className,
+        id ? "scroll-mt-4 sm:scroll-mt-6" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      role="region"
+      aria-label="Important information"
+    >
       <details className="group">
         <summary className={SUMMARY_CLASS}>
           <span className="flex items-center justify-between gap-3">

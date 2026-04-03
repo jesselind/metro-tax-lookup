@@ -1,1 +1,6 @@
 pdfplumber
+# District ∩ county spatial joins (GDB, WKT); use conda-forge if pip wheels fail on macOS.
+geopandas>=1.0
+# Arapahoe parcel levy index (tools/build_arapahoe_parcel_levy_index.py)
+openpyxl>=3.1
+rapidfuzz>=3.0

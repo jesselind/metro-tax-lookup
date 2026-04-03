@@ -16,7 +16,11 @@ const DEMO_ROWS: { authority: string; mills: number }[] = [
   { authority: "Arapahoe County", mills: 15.959 },
   { authority: "Developmental Disability", mills: 1.0 },
   { authority: "City Of Littleton", mills: 2.0 },
-  { authority: "Smfr Fire Protection District", mills: 12.25 },
+  // County levy pages often abbreviate this as SMFR; full name matches DOLA/GIS.
+  {
+    authority: "South Metro Fire Rescue Fire Protection District",
+    mills: 12.25,
+  },
   { authority: "Regional Transportation", mills: 0 },
   { authority: "S Suburban Park & Rec", mills: 8.8 },
   { authority: "Urban Drainage & Flood", mills: 0.9 },

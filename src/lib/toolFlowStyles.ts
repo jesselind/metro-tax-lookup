@@ -1,11 +1,25 @@
 /** Shared layout classes for multi-step tool flows (metro tax, levy breakdown, etc.). */
 
+/** Main column cap (header, hero, footer, tools): wide on desktop, harmless on mobile. */
+export const SITE_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
+
+/** Full-width slate title bar (PageHero): viewport breakout + space below before content. */
+export const PAGE_HERO_OUTER_CLASS =
+  "relative left-1/2 mb-1 w-screen max-w-[100vw] -translate-x-1/2";
+
+export const PAGE_HERO_SLATE_BAR_CLASS = "bg-slate-700";
+
+/** Constrained inner column + padding (aligns with {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
+export const PAGE_HERO_INNER_CLASS = `mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-4 sm:px-5 sm:py-5`;
+
+export const PAGE_HERO_TITLE_CLASS =
+  "text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl";
+
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
  * Pair with {@link TOOL_PAGE_INNER_PB_TOOL} or {@link TOOL_PAGE_INNER_PB_ROOMY}.
  */
-export const TOOL_PAGE_INNER_BASE_CLASS =
-  "mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-0";
+export const TOOL_PAGE_INNER_BASE_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} flex-1 flex-col gap-4 px-4 pt-0`;
 
 export const TOOL_PAGE_INNER_PB_TOOL = "pb-4 sm:pb-6";
 export const TOOL_PAGE_INNER_PB_ROOMY = "pb-6 sm:pb-10";
@@ -16,12 +30,15 @@ export const TOOL_PAGE_INNER_CLASS_TOOL = `${TOOL_PAGE_INNER_BASE_CLASS} ${TOOL_
 /** Home hub + static articles (roomier bottom padding). */
 export const TOOL_PAGE_INNER_CLASS_HUB = `${TOOL_PAGE_INNER_BASE_CLASS} ${TOOL_PAGE_INNER_PB_ROOMY}`;
 
-/** PageHero + lead paragraph: spacing under the slate title bar matches all tools. */
-export const TOOL_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-2";
+/** Sources / methodology: same main column as hub + tools (see {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
+export const SOURCES_PAGE_INNER_CLASS = TOOL_PAGE_INNER_CLASS_HUB;
 
-/** Lead paragraph directly under PageHero. */
+/** PageHero + lead paragraph: spacing under the slate title bar matches all tools. */
+export const TOOL_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-3";
+
+/** Lead paragraph directly under PageHero (uses main column width; see {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
 export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
-  "max-w-prose text-base leading-relaxed text-slate-700 sm:text-lg";
+  "text-base leading-relaxed text-slate-700 sm:text-lg";
 
 /** External links to county / assessor pages (matches site indigo treatment). */
 export const COUNTY_EXTERNAL_LINK_CLASS =

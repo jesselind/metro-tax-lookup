@@ -1,6 +1,9 @@
 import { InfoDetails } from "@/components/InfoDetails";
 import { INFO_DETAILS_WIDE_CLASS } from "@/lib/toolFlowStyles";
 
+/** In-page anchor for levy breakdown step 3 (link from &quot;Enter mills…&quot; heading). */
+export const MILLS_DEFINITION_ELEMENT_ID = "what-are-mills";
+
 type Props = {
   /** Defaults to the wide callout style used in tool step cards. */
   className?: string;
@@ -11,7 +14,11 @@ export function MillsDefinitionInfoDetails({
   className = INFO_DETAILS_WIDE_CLASS,
 }: Props) {
   return (
-    <InfoDetails title="What are &quot;mills&quot;?" className={className}>
+    <InfoDetails
+      id={MILLS_DEFINITION_ELEMENT_ID}
+      title="What are &quot;mills&quot;?"
+      className={className}
+    >
       <p>
         <strong>Mills</strong> are the units used to express property tax rates. One
         mill means{" "}

@@ -168,7 +168,6 @@ export function MetroTaxLookupToolPageContent() {
       </div>
       <div className={TOOL_PAGE_INNER_CLASS_TOOL}>
         <PageHero title="What share of your property tax goes to your metro district?" />
-        {/* ...unchanged tool UI moved from prior home route... */}
         <section aria-labelledby="flow-heading" className="">
           <h2 id="flow-heading" className="sr-only">
             Step-by-step: find your numbers and see your result

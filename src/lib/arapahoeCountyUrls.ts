@@ -5,6 +5,14 @@
 export const ARAPAHOE_ASSESSOR_PROPERTY_SEARCH =
   "https://www.arapahoeco.gov/your_county/county_departments/assessor/property_search/search_residential_commercial_ag_and_vacant.php";
 
+/** Assessor Data Mart: weekly exports (e.g. Main Parcel Table, Tax Authority Groups and Tax Authorities). */
+export const ARAPAHOE_ASSESSOR_DATA_MART_EXPORT =
+  "https://gis.arapahoegov.com/assessordataexport/";
+
+/** Assessor Maps/GIS downloads (e.g. AssessorParcels_WGS.gdb file geodatabase). */
+export const ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE =
+  "https://www.arapahoeco.gov/your_county/county_departments/assessor/arapahoe_maps_gis/gis_data_download.php";
+
 export const ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF =
   "https://files.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/Mill%20Levy%20Public%20Information%20Form.pdf";
 

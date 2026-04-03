@@ -1,15 +1,16 @@
 {
   "name": "metro-tax-lookup",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:arapahoe-index": "python3 tools/build_arapahoe_parcel_levy_index.py",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.1.6",
+    "next": "16.2.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
@@ -19,7 +20,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

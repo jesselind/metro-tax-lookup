@@ -17,10 +17,13 @@ export const staticArticleSecondaryLinkClass = btnOutlineSecondaryMd;
 
 type StaticArticleShellProps = {
   title: string;
-  intro: string;
+  /** Plain text or rich content (e.g. inline links to definitions). */
+  intro: string | ReactNode;
   children: ReactNode;
   /** If omitted, renders a single &quot;Back to tools&quot; link. */
   footer?: ReactNode;
+  /** Override inner column (default {@link TOOL_PAGE_INNER_CLASS_HUB}). */
+  contentClassName?: string;
 };
 
 export function StaticArticleShell({
@@ -28,13 +31,18 @@ export function StaticArticleShell({
   intro,
   children,
   footer,
+  contentClassName,
 }: StaticArticleShellProps) {
   return (
     <main className="flex min-h-screen flex-col overflow-x-hidden bg-white text-slate-900">
-      <div className={TOOL_PAGE_INNER_CLASS_HUB}>
+      <div className={contentClassName ?? TOOL_PAGE_INNER_CLASS_HUB}>
         <div className={TOOL_PAGE_HERO_INTRO_GROUP_CLASS}>
           <PageHero title={title} />
-          <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>{intro}</p>
+          {typeof intro === "string" ? (
+            <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>{intro}</p>
+          ) : (
+            intro
+          )}
         </div>
 
         <div>

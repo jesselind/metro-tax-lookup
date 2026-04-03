@@ -17,7 +17,10 @@ export default function HomePage() {
             Pick a tool below. Each opens its own walkthrough.
           </p>
         </div>
-        <section className="space-y-7 sm:space-y-9" aria-label="Available tools">
+        <section
+          className="grid grid-cols-1 gap-7 sm:grid-cols-2 sm:gap-9"
+          aria-label="Available tools"
+        >
           {HUB_TOOLS.map((tool) => (
             <ToolHubCard key={tool.href} {...tool} />
           ))}

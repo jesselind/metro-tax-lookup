@@ -28,9 +28,12 @@ You are helping build a public, static-data web tool for analyzing property tax 
 - Avoid adding a database or user accounts unless explicitly requested by the user.
 - Prefer simple, static data files checked into the repo when possible.
 - **Never use smart quotes or smart apostrophes** (e.g. curly " " ' '). Use only straight/ASCII quotes and apostrophes (U+0022, U+0027) in code, docs, and copy. This avoids encoding mismatches, broken search/replace, and inconsistent display.
+- **Human-friendly documentation:** Put plain-language methodology, citations, and audit guidance on the **in-app Sources** page (`/sources`) and similar user-facing copy. The repo **README** may stay technical (developers, GitHub, pipeline). When editing both, avoid duplicating long human-oriented blocks in README — cross-reference `/sources` instead. On Sources, spell out or link jargon on first substantive use (e.g. **JSON** with an in-page definition or footnote-style note), not only in README.
 
 ### General AI behavior
 
+- **Default to short replies.** A few sentences or one short paragraph is often enough. Do not fire-hose lists of options, sub-options, or tangents. The user will ask to elaborate when they want depth.
+- **Answer the actual question** they asked; do not expand into a survey of alternatives unless they asked for options or a comparison.
 - Keep code and explanations concise.
 - Explain non-trivial changes or design choices briefly when suggesting edits.
 - When the user asks a question, answer it directly before proposing or performing implementation work.

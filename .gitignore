@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+.venv/
 
 # vercel
 .vercel
@@ -39,3 +40,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# --- Data policy (metro-tax-lookup) ---
+# Runtime and audit JSON live under public/data/ and are committed so forks
+# work with npm install + npm run dev. Large county/state inputs stay under
+# supporting-data/ but are gitignored here; see README "Data and reproducibility".
+
+# Large Arapahoe assessor export (~100MB+); required to regenerate PIN map + stacks.
+supporting-data/Main Parcel Table (CSV)/
+
+# Optional DOLA tax-entity spreadsheet for certified mills in build_arapahoe_parcel_levy_index.py
+supporting-data/property-tax-entities-export.xlsx
+
+# Statewide special-district export (~50MB); import script produces lean JSON in public/data/
+supporting-data/All_Special_Districts_in_Colorado_*.csv
+
+# Census / GIS file geodatabases used by enrich_district_json_county_geoids.py (~150MB each)
+supporting-data/**/*.gdb/

@@ -5,8 +5,13 @@ const isProd = process.env.NODE_ENV === "production";
 /**
  * CSP: as strict as practical while keeping static generation and Next hydration.
  * - script-src 'unsafe-inline' is still required for Next's inline bootstrap without
- *   per-request nonces (see proxy/middleware + dynamic rendering) or experimental SRI.
+ *   per-request nonces (middleware + dynamic rendering) or experimental SRI.
  * - script-src-attr 'none' blocks inline event handlers (onclick=, etc.).
+ * - Tightening further (e.g. nonce-based script-src) is optional and increases
+ *   operational complexity; evaluate if third-party scripts are ever added.
+ *
+ * Deploy: terminate TLS at the edge (HTTPS redirects, valid certs). HSTS below only
+ * helps browsers that already received it over HTTPS.
  */
 function contentSecurityPolicy(): string {
   const directives = [

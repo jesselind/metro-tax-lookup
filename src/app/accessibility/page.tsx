@@ -16,7 +16,7 @@ export default function AccessibilityPage() {
         <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
           Feedback and support
         </h2>
-        <p className="max-w-prose">
+        <p>
           If you encounter an accessibility barrier (keyboard navigation,
           screen reader output, color contrast, or clarity of instructions),
           please email{" "}
@@ -40,7 +40,7 @@ export default function AccessibilityPage() {
         <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
           Compatibility
         </h2>
-        <p className="max-w-prose">
+        <p>
           This site is designed to work with modern browsers and assistive
           technologies. If something does not work with your setup, please
           report it.
