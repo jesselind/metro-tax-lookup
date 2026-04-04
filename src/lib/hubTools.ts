@@ -5,6 +5,7 @@ export type HubToolEntry = {
   description: string;
 };
 
+/** Metro tool only; levy breakdown lives on the home page. */
 export const HUB_TOOLS: readonly HubToolEntry[] = [
   {
     slug: "metro",
@@ -12,12 +13,5 @@ export const HUB_TOOLS: readonly HubToolEntry[] = [
     title: "Metro district tax share",
     description:
       "See what part of your total property tax rate goes to your metro district.",
-  },
-  {
-    slug: "levy",
-    href: "/levy-breakdown",
-    title: "Property tax levy breakdown",
-    description:
-      "Break your full property tax rate into district-by-district line items.",
   },
 ];

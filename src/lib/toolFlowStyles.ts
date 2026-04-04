@@ -3,9 +3,9 @@
 /** Main column cap (header, hero, footer, tools): wide on desktop, harmless on mobile. */
 export const SITE_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
 
-/** Full-width slate title bar (PageHero): viewport breakout + space below before content. */
+/** Full-width slate title bar (PageHero): viewport breakout; spacing below uses parent tool column gap. */
 export const PAGE_HERO_OUTER_CLASS =
-  "relative left-1/2 mb-1 w-screen max-w-[100vw] -translate-x-1/2";
+  "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2";
 
 export const PAGE_HERO_SLATE_BAR_CLASS = "bg-slate-700";
 
@@ -42,10 +42,10 @@ export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
 
 /** External links to county / assessor pages (matches site indigo treatment). */
 export const COUNTY_EXTERNAL_LINK_CLASS =
-  "font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";
+  "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";
 
 export const HELP_PILL_CLASS =
-  "inline-flex items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 sm:text-base";
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 disabled:cursor-not-allowed sm:text-base";
 
 export const INPUT_CLASS =
   "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
@@ -56,11 +56,21 @@ export const CARD_CLASS_CLIPPED =
 export const CARD_HEADER_CLASS =
   "px-4 py-3 text-base font-semibold text-white sm:px-5";
 
-export const CARD_BODY_CLASS = "bg-white px-4 py-4 sm:px-5 sm:py-5";
+/** Shared with {@link CARD_BODY_CLASS} and {@link CARD_BODY_CLASS_DROPDOWN} (hub cards include via {@link TOOL_CARD_HUB_BODY_CLASS}). */
+export const CARD_BODY_PADDING_X = "px-4 sm:px-5";
+
+/**
+ * Vertical padding: mobile matches horizontal (py-4 + px-4). sm+ matches horizontal insets
+ * (pt-5 / pb-5 with px-5) so content like tile grids does not read tighter to the header
+ * than to the sides.
+ */
+export const CARD_BODY_PADDING_Y = "py-4 sm:pt-5 sm:pb-5";
+
+export const CARD_BODY_CLASS = `bg-white ${CARD_BODY_PADDING_X} ${CARD_BODY_PADDING_Y}`;
 
 /** Hub home: full-card link (one tab stop, stretched hit target). Pair with hub header/body classes. */
 export const TOOL_CARD_LINK_CLASS =
-  `${CARD_CLASS_CLIPPED} group block border outline-none transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-indigo-500 hover:shadow-xl active:translate-y-0 active:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-700/50 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:hover:translate-y-0`;
+  `${CARD_CLASS_CLIPPED} group block cursor-pointer border outline-none transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-indigo-500 hover:shadow-xl active:translate-y-0 active:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-700/50 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:hover:translate-y-0`;
 
 /** Hub tool cards only: header bar shifts slightly on card hover. */
 export const TOOL_CARD_HUB_HEADER_CLASS = `${CARD_HEADER_CLASS} bg-slate-700 text-balance transition-colors duration-150 group-hover:bg-slate-600`;
@@ -75,8 +85,8 @@ export const CARD_CLASS_DROPDOWN =
 export const CARD_HEADER_CLASS_DROPDOWN =
   "px-4 py-3 text-base font-semibold text-white sm:px-5";
 
-export const CARD_BODY_CLASS_DROPDOWN =
-  "rounded-b-xl bg-white px-4 py-4 sm:px-5 sm:py-5";
+export const CARD_BODY_CLASS_DROPDOWN = `rounded-b-xl bg-white ${CARD_BODY_PADDING_X} ${CARD_BODY_PADDING_Y}`;
 
+/** Full width of parent card body; text still wraps naturally inside. */
 export const INFO_DETAILS_WIDE_CLASS =
-  "w-full max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
+  "w-full overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";

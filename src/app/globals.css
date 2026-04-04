@@ -30,6 +30,20 @@ summary::-webkit-details-marker {
 
 summary {
   list-style: none;
+  cursor: pointer;
+}
+
+/**
+ * Buttons are interactive by default; preflight does not set pointer (unlike text links).
+ * Disabled: not-allowed; override with disabled:pointer-events-none where the control is non-functional.
+ */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 /**
@@ -38,7 +52,7 @@ summary {
  */
 @layer components {
   .btn-outline-primary {
-    @apply inline-flex items-center justify-center rounded-md border border-indigo-400 bg-white font-medium text-indigo-950 shadow-sm transition-colors hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2;
+    @apply inline-flex cursor-pointer items-center justify-center rounded-md border border-indigo-400 bg-white font-medium text-indigo-950 shadow-sm transition-colors hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2 disabled:cursor-not-allowed;
   }
   .btn-outline-primary--sm {
     @apply px-3 py-1 text-sm sm:text-base;
@@ -47,7 +61,7 @@ summary {
     @apply px-4 py-2 text-base;
   }
   .btn-outline-secondary {
-    @apply inline-flex items-center justify-center rounded-md border border-slate-300 bg-white font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2;
+    @apply inline-flex cursor-pointer items-center justify-center rounded-md border border-slate-300 bg-white font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2 disabled:cursor-not-allowed;
   }
   .btn-outline-secondary--md {
     @apply px-4 py-2 text-base;

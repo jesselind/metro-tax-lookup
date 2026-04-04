@@ -35,7 +35,7 @@ const SECTION_H2 = "text-lg font-semibold text-slate-900 sm:text-xl";
 const SECTION_H3 = "mt-8 text-base font-semibold text-slate-900";
 const SECTION_WRAP = "mt-10 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg";
 const TOOL_ANCHOR =
-  "font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
+  "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
 /** First (and only linked) mention of JSON on this page: footnote to Definitions. */
 function JsonFirstMention() {
@@ -140,7 +140,7 @@ export default function SourcesPage() {
               href="#levy-breakdown-tool"
               className="block rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-center text-sm font-medium leading-snug text-slate-900 no-underline transition hover:border-indigo-400 hover:bg-indigo-50/60 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
             >
-              Property tax levy breakdown
+              Breakdown of your property tax bill
             </a>
           </li>
           <li>
@@ -364,12 +364,15 @@ export default function SourcesPage() {
         id="levy-breakdown-tool"
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
       >
-        <h2 className={SECTION_H2}>Property tax levy breakdown (Arapahoe)</h2>
+        <h2 className={SECTION_H2}>
+          Breakdown of your property tax bill (Arapahoe)
+        </h2>
         <p className="text-slate-700">
-          <Link href="/levy-breakdown" className={TOOL_ANCHOR}>
-            Levy breakdown
-          </Link>{" "}
-          can load your taxing lines from your parcel PIN using offline
+          On the{" "}
+          <Link href="/" className={TOOL_ANCHOR}>
+            home page
+          </Link>
+          , the levy breakdown can load your taxing lines from your parcel PIN using offline
           county <DataMartFirstMention />
           {"-style exports "}
           joined in this repo, then match lines to
@@ -383,7 +386,7 @@ export default function SourcesPage() {
         </h3>
         <p className="text-slate-700">
           Use the county parcel record and online levy table; compare to what the
-          app shows after you load by PIN or enter lines manually.
+          app shows after you load by PIN or add lines with Add tile.
         </p>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
           <li>
@@ -394,7 +397,7 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TOOL_ANCHOR}
             >
-              property search
+              Search Residential, Commercial, Ag and Vacant
               <span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             to find your parcel. Note the{" "}
@@ -405,7 +408,7 @@ export default function SourcesPage() {
             for that parcel (linked from the parcel page). You will see a table:
             each <strong className="text-slate-900">taxing authority</strong> and
             its mills, plus a total. Compare that list to what the tool shows after
-            you load by PIN or type lines manually — they should align.
+            you load by PIN or add lines with Add tile — they should align.
           </li>
           <li>
             The tool may omit one{" "}
@@ -436,6 +439,19 @@ export default function SourcesPage() {
           </li>
           <li>
             <code className={CODE_INLINE}>
+              public/data/arapahoe-situs-to-pins.json
+            </code>{" "}
+            — lookup key from Main Parcel situs fields: merged house number (mart{" "}
+            <code className={CODE_INLINE}>SAAddrNumber</code> + optional{" "}
+            <code className={CODE_INLINE}>SAStreetNumberSfx</code>, same join as
+            the home form), normalized street name (direction and street-type
+            tokens stripped, including spelled-out compass words when typed),
+            optional unit → matching PINs and labels. One address can
+            match many parcels (for example large buildings); the home page lists
+            candidates for you to compare.
+          </li>
+          <li>
+            <code className={CODE_INLINE}>
               public/data/colorado-special-district-directory.json
             </code>{" "}
             + optional{" "}
@@ -461,18 +477,46 @@ export default function SourcesPage() {
         <h3 className={`${SECTION_H3} !mt-8`}>Sources and how they connect</h3>
         <ul className="list-disc space-y-2 pl-5 text-slate-700">
           <li>
-            <strong>Parcel and PIN:</strong> Users find a PIN on the county{" "}
+            <strong>Parcel and PIN:</strong> On the home page you can match a PIN
+            for <strong className="text-slate-900">real property</strong> using
+            bundled situs fields: main house number plus optional number suffix
+            (mart <code className={CODE_INLINE}>SAStreetNumberSfx</code>, e.g. a
+            fraction), street name with direction and type stripped for matching,
+            and optional unit. Submit with{" "}
+            <strong className="text-slate-900">Search</strong> or{" "}
+            <strong className="text-slate-900">Enter</strong> from any field. The
+            browser loads{" "}
+            <code className={CODE_INLINE}>arapahoe-situs-to-pins.json</code> and
+            matches keys the same way{" "}
+            <code className={CODE_INLINE}>
+              tools/build_arapahoe_parcel_levy_index.py
+            </code>{" "}
+            builds them from <code className={CODE_INLINE}>Main Parcel</code>; use
+            the county{" "}
             <a
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
               rel="noopener noreferrer"
               className={TOOL_ANCHOR}
             >
-              property search
+              Search Residential, Commercial, Ag and Vacant
               <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . The PIN is not sent to a server; lookup is in the browser against{" "}
-            <code className={CODE_INLINE}>arapahoe-pin-to-tag.json</code>.
+            </a>{" "}
+            if you need to verify a PIN or legal description. When exactly one
+            parcel matches, the home page loads the levy stack (tiles and optional
+            levy-lines table) from your PIN automatically. When several parcels
+            match, use <strong className="text-slate-900">View levy breakdown</strong>{" "}
+            on the row you want. If the home address form finds no match, the same
+            county search steps (same PIN help as on the home page) appear under the
+            error so you can open your parcel record and read the PIN, then paste
+            that PIN below to load the stack.{" "}
+            <strong className="text-slate-900">Business personal property</strong>{" "}
+            is out of scope (different county workflow; not in this situs index).
+            Levy stack loading by PIN uses{" "}
+            <code className={CODE_INLINE}>arapahoe-pin-to-tag.json</code>. Nothing
+            is sent to our servers. Address fields are length-capped in the
+            browser; bundled situs JSON is validated for expected shape after
+            load before lookup runs.
           </li>
           <li>
             <strong>Taxing authority (TAGId):</strong>{" "}
@@ -769,7 +813,10 @@ export default function SourcesPage() {
           <p className="mt-4 text-sm sm:text-base">
             <a href="#data-mart-term-first" className={TOOL_ANCHOR}>
               Back to first mention
-              <span className="sr-only"> in Property tax levy breakdown</span>
+              <span className="sr-only">
+                {" "}
+                in Breakdown of your property tax bill
+              </span>
             </a>
           </p>
         </aside>

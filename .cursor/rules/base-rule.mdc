@@ -4,13 +4,41 @@ alwaysApply: true
 
 ## Rule: Base behavior for metro-tax-lookup
 
-You are helping build a public, static-data web tool for analyzing property tax and metropolitan district debt service.
+You are helping build a public, static-data web tool that makes **Arapahoe-focused property tax and metro-district context** easier to understand.
+
+- **North star:** Push toward an experience that feels **markedly more helpful** than county sites and PDFs alone (clarity, speed, privacy, explanation, fewer dead ends). That is a **direction**, not a pass/fail gate on every line of copy - but if the whole product drifts into "thin clone" territory, step back and **re-center** (change course, cut scope, or sharpen what is unique).
+
+Implementation can be precise. **User-facing copy and layout should lean away from** county-site tone and spreadsheet vibes - **aim for** something people actually want to use.
 
 ### Core preferences
 
 - Use clear, maintainable, well-typed code.
 - Favor functional components and hooks when using React.
 - Design mobile-first, responsive layouts with a single, high-contrast light theme.
+- **UI/UX and feel:** Treat this as a **real product**, not a bare form dump. Aim for **great** interaction design - clear hierarchy, generous spacing, responsive behavior, helpful feedback, and polish. The overall vibe should be **light and engaging** - **fun** is a valid target alongside accessible and trustworthy.
+
+### Pointer (cursor) affordances
+
+- **Hover must read as clickable:** Any control that responds to click or tap (native or custom `button`, `a`, disclosure/accordion headers, segment toggles, hub card links, icon-only controls, draggable handles, etc.) must show an explicit **`cursor-pointer`** on the interactive surface in Tailwind (`className` on the element that receives the click, or a parent that covers the full hit target). Do not leave the default arrow on something that is obviously interactive.
+- **Chevrons and icons inside buttons** inherit from the parent; ensure the **parent** button/link has `cursor-pointer` so hovering the caret matches the rest of the control.
+- **Disabled:** Use **`cursor-not-allowed`** (and `disabled:` styles) when the control is visibly disabled; do not use `cursor-pointer` there.
+- **Text fields:** Keep default text cursor on inputs and textareas; do not force `cursor-pointer` on plain inputs.
+
+### Information hierarchy (progressive disclosure)
+
+- **Primary first:** The main payoff (visualization, totals, the core widget) should appear **before** supporting context so users are not buried in fine print on the way to the answer.
+- **Supporting detail below:** Metadata (e.g. matched PIN, TAG id, verification links), extra links, and explanatory accordions belong **under** the primary content for users who want to dig deeper - not stacked above tiles, charts, or key results.
+- **Avoid redundancy:** Do not repeat the same idea in a subsection heading and the parent card title; one clear label per region is enough.
+- **Light separators:** Do not use extra horizontal rules or heavy borders between adjacent blocks that are already part of one flow (e.g. between a help accordion and a mode toggle). Separate only when it genuinely aids scanning.
+
+### Accessibility (critical)
+
+- **Accessibility is a first-class requirement**, not a visual polish pass. The app is for the **general public**, including people who **do not** navigate primarily by sight.
+- **Keyboard and focus:** Every flow must be fully operable with keyboard only - tab order that matches reading order, no keyboard traps, visible focus states, and correct use of native controls (`button`, `a`, `input`) or equivalent roles and keyboard handlers for custom widgets.
+- **Screen readers and assistive tech:** Provide proper names, roles, and states; associate labels with fields; surface errors and dynamic results (`role="alert"`, `aria-live`, regions) so non-visual users get the same outcomes as sighted users.
+- **Do not rely on** color alone, hover-only cues, or pointer-only gestures for essential information or actions.
+- **Forms and search:** Use real `<form>` + submit semantics where users expect Enter to act; keep labels, hints, and validation perceivable and programmatically tied to inputs.
+- **Baseline:** Meet or exceed **WCAG 2.1 AA**; when in doubt, choose the more inclusive option.
 
 ### Framework-specific
 
@@ -18,17 +46,25 @@ You are helping build a public, static-data web tool for analyzing property tax 
 
 ### Engineering principles
 
-- Follow DRY (don’t repeat yourself) and KISS (keep it simple).
-- Apply YAGNI (don’t build features or abstractions until they are needed).
+- Follow DRY (don't repeat yourself) and KISS (keep it simple).
+- Apply YAGNI (don't build features or abstractions until they are needed).
 - Observe at least the OWASP Top 10 security guidelines in design and implementation.
-- Meet or exceed WCAG 2.1 AA accessibility standards whenever possible.
+- Accessibility expectations are spelled out under **Accessibility (critical)** above; WCAG 2.1 AA is the minimum bar.
 
 ### Project-specific rules
 
 - Avoid adding a database or user accounts unless explicitly requested by the user.
 - Prefer simple, static data files checked into the repo when possible.
 - **Never use smart quotes or smart apostrophes** (e.g. curly " " ' '). Use only straight/ASCII quotes and apostrophes (U+0022, U+0027) in code, docs, and copy. This avoids encoding mismatches, broken search/replace, and inconsistent display.
-- **Human-friendly documentation:** Put plain-language methodology, citations, and audit guidance on the **in-app Sources** page (`/sources`) and similar user-facing copy. The repo **README** may stay technical (developers, GitHub, pipeline). When editing both, avoid duplicating long human-oriented blocks in README — cross-reference `/sources` instead. On Sources, spell out or link jargon on first substantive use (e.g. **JSON** with an in-page definition or footnote-style note), not only in README.
+
+### Audience, tone, and language (user-facing)
+
+- **Who this is for:** The **general public** - including people whose eyes glaze over at **financial statements, spreadsheets, and dense government forms**. Write for them first. When copy reads like it was pasted from a county assessor or treasurer page, **consider rewriting** for warmth and clarity (exceptions are fine when accuracy requires it).
+- **How it should feel:** **Light, clear, and inviting** - quick to understand, low cognitive load, **enlightening** without being flip or fear-based (skip bait like "shocking" or "alarming" your bill). Prefer **everyday words**, short lines, and a calm confidence that the tool is on the user's side.
+- **Steer away from in primary UI** (headings, labels, buttons, hints, errors, empty states, hub cards, main flows): heavy **county website echo** (their jargon as the main story, or "same as the county search" as the value prop) and **piles of tax/assessor jargon** when plain language would do. **Prefer** explaining in human terms in the flow; **save** bureaucracy-shaped detail for people who want depth.
+- **When jargon is needed:** Lead with **plain language in the UI**; put **precise terms, methodology, or citations** on **`/sources`** (or another dedicated in-app explanation), with a **first-use definition or footnote** there when you introduce something technical. Occasional terms in the UI are OK if wrapped in plain English.
+- **Human-friendly documentation:** Put methodology, provenance, citations, audit guidance, and **definitions of technical terms** on the **in-app Sources** page (`/sources`). The repo **README** stays **technical** (developers, GitHub, pipeline). Do **not** paste long narrative methodology into README - **cross-link `/sources`**. On Sources, spell out or link jargon on **first substantive use** (e.g. **JSON** with an in-page definition or footnote), not only in README.
+- **Documentation when you change things:** Any addition or change that affects how the app works, what data it uses, how it is built or deployed, or how users should interpret results must include updates to **README.md** and/or **`src/app/sources/page.tsx`** as appropriate before the work is considered complete. README: setup, pipeline, file paths. `/sources`: narrative, citations, and **plain explanations** for readers who want depth. If unsure, prefer `/sources` for human narrative and README for a short cross-link only.
 
 ### General AI behavior
 
@@ -39,4 +75,3 @@ You are helping build a public, static-data web tool for analyzing property tax 
 - When the user asks a question, answer it directly before proposing or performing implementation work.
 - Prefer the user to run terminal/CLI commands; only suggest commands, and assume non-trivial commands may be rejected or run manually by the user.
 - Do not run any `git` commands (status/diff/log/commit/push/etc.) unless the user explicitly asks you to run them.
-

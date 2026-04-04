@@ -1,11 +1,11 @@
 "use client";
 
-import { ExampleModeCallout } from "@/components/ExampleModeCallout";
 import type { ArapahoeDolaMatch, ArapahoeLevyStacksFile } from "@/lib/arapahoeParcelLevyData";
 import type {
   SpecialDistrictMatch,
   SpecialDistrictRecord,
 } from "@/lib/specialDistrictMatch";
+import { ModalPortal } from "@/components/ModalPortal";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
@@ -24,7 +24,6 @@ type Props = {
   snapshot: { bundledAsOf: string; source: string } | null;
   /** From arapahoe-levy-stacks-by-tag-id.json when a parcel stack was loaded. */
   arapahoeSnapshot?: ArapahoeLevyStacksFile["snapshot"] | null;
-  useSampleData: boolean;
   onClose: () => void;
 };
 
@@ -47,44 +46,38 @@ export function LevyLineDistrictDetailDialog({
   directoryError,
   snapshot,
   arapahoeSnapshot = null,
-  useSampleData,
   onClose,
 }: Props) {
   const districtWebsiteHref = safeHttpOrHttpsUrl(
     match && match.kind !== "none" ? match.record.websiteUrl : null,
   );
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/45"
-        aria-label="Close details"
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="levy-line-detail-heading"
-        className="relative z-10 max-h-[min(90vh,40rem)] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-2xl sm:p-5"
-      >
-        <h3
-          id="levy-line-detail-heading"
-          className="pr-2 text-base font-semibold leading-snug text-slate-900 sm:text-lg"
+    <ModalPortal>
+      <div className="fixed inset-0 z-[100] flex min-h-[100dvh] w-full items-end justify-center sm:items-center sm:p-4">
+        <button
+          type="button"
+          className="absolute inset-0 min-h-[100dvh] bg-black/45"
+          aria-label="Close details"
+          onClick={onClose}
+        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="levy-line-detail-heading"
+          className="relative z-10 flex max-h-[min(90dvh,40rem)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:rounded-2xl"
         >
-          {authorityLabel}
-        </h3>
-        <p className="mt-1 font-mono text-sm tabular-nums text-slate-600">
-          {millsLabel} mills · {pctLabel}% of your stack
-        </p>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-4 sm:px-5 sm:pt-5">
+            <h3
+              id="levy-line-detail-heading"
+              className="pr-2 text-base font-semibold leading-snug text-slate-900 sm:text-lg"
+            >
+              {authorityLabel}
+            </h3>
+            <p className="mt-1 font-mono text-sm tabular-nums text-slate-600">
+              {millsLabel} mills · {pctLabel}% of your property tax
+            </p>
 
-        {useSampleData && (
-          <ExampleModeCallout variant="compact" as="p" className="mt-3">
-            Example stack: lines are illustrative; matches still use the same
-            district directory.
-          </ExampleModeCallout>
-        )}
-
-        <div className="mt-4 space-y-4 text-sm leading-relaxed text-slate-800 sm:text-base">
+            <div className="mt-4 space-y-4 pb-1 text-sm leading-relaxed text-slate-800 sm:text-base">
           {dolaMatch && dolaMatch.uraHint && (
             <p className="rounded-lg border border-violet-200 bg-violet-50/90 px-3 py-2 text-slate-800">
               <strong className="font-semibold text-violet-950">Urban renewal / TIF</strong>
@@ -312,19 +305,21 @@ export function LevyLineDistrictDetailDialog({
               )}
             </>
           )}
-        </div>
+            </div>
+          </div>
 
-        <div className="mt-5">
-          <button
-            type="button"
-            className={`${btnOutlineSecondaryMd} w-full justify-center py-3`}
-            onClick={onClose}
-          >
-            Close
-          </button>
+          <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-4 sm:px-5 sm:py-5">
+            <button
+              type="button"
+              className={`${btnOutlineSecondaryMd} w-full justify-center py-3`}
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
 

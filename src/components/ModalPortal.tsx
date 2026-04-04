@@ -1,0 +1,17 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
+
+type ModalPortalProps = {
+  children: ReactNode;
+};
+
+/**
+ * Renders on document.body so fixed overlays cover the full viewport and are not
+ * clipped by ancestor overflow (e.g. card shells) or tied to transformed ancestors.
+ */
+export function ModalPortal({ children }: ModalPortalProps) {
+  if (typeof document === "undefined") return null;
+  return createPortal(children, document.body);
+}

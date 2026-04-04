@@ -3,6 +3,8 @@
  * tools/build_arapahoe_parcel_levy_index.py (public/data/arapahoe-*.json).
  */
 
+import { clearArapahoeSitusDataCache } from "@/lib/arapahoeSitusLookup";
+
 export type ArapahoeDolaMatch = {
   method: "fuzzy" | "override" | "none" | "skipped";
   confidence: "high" | "medium" | "low";
@@ -138,4 +140,5 @@ export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null
 export function clearArapahoeParcelDataCache(): void {
   stacksCache = null;
   pinCache = null;
+  clearArapahoeSitusDataCache();
 }

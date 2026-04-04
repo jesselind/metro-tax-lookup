@@ -2,8 +2,14 @@
  * Canonical Arapahoe County / Assessor URLs used in the app and Sources page.
  * Single place to update when county links change.
  */
+
+/** Real property: residential, commercial, agricultural, and vacant land parcels (Main Parcel / PIN). */
 export const ARAPAHOE_ASSESSOR_PROPERTY_SEARCH =
   "https://www.arapahoeco.gov/your_county/county_departments/assessor/property_search/search_residential_commercial_ag_and_vacant.php";
+
+/** Business personal property accounts (different search form: From / To / Street name / Unit). */
+export const ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH =
+  "https://www.arapahoeco.gov/your_county/county_departments/assessor/property_search/business_personal_property_search.php";
 
 /** Assessor Data Mart: weekly exports (e.g. Main Parcel Table, Tax Authority Groups and Tax Authorities). */
 export const ARAPAHOE_ASSESSOR_DATA_MART_EXPORT =

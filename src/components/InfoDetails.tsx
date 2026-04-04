@@ -10,14 +10,14 @@ const CHEVRON_CLASS =
 type InfoDetailsProps = {
   title: string;
   children: ReactNode;
-  /** Outer wrapper; default matches Step 1 callout width. Use `w-full max-w-prose ...` when the parent is narrow. */
+  /** Outer wrapper; default is full width of parent. Pass `max-w-prose` if you need a narrower reading measure. */
   className?: string;
   /** Optional anchor id for in-page links (e.g. #what-are-mills). */
   id?: string;
 };
 
 const DEFAULT_WRAPPER_CLASS =
-  "max-w-prose overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
+  "w-full overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
 
 export function InfoDetails({
   title,

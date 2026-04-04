@@ -4,8 +4,8 @@ import { HELP_PILL_CLASS } from "@/lib/toolFlowStyles";
 type HelpPillButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
- * Pill-shaped toggle for in-flow help (Show example, Show table, etc.).
- * Uses {@link HELP_PILL_CLASS} from tool styles.
+ * Pill-shaped toggle for in-flow help. Use labels that name what opens or closes
+ * (e.g. "Hide privacy and verify info", not only "Hide"). Uses {@link HELP_PILL_CLASS}.
  */
 export function HelpPillButton({
   className = "",

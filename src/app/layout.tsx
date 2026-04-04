@@ -4,7 +4,11 @@ import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
 import { SITE_CONFIG } from "@/lib/siteConfig";
-import { SITE_CONTENT_MAX_WIDTH_CLASS } from "@/lib/toolFlowStyles";
+import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  SITE_CONTENT_MAX_WIDTH_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +48,23 @@ export default function RootLayout({
                 to help voters and residents understand publicly available mill
                 levy data. Verify with official county sources. Not legal or tax
                 advice.
+              </p>
+              <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+                Address lookup runs in your browser from static files on this
+                site; your address is not sent to us or the county when you
+                search. Coverage is Main Parcel / real property in Arapahoe
+                County (homes, buildings, land), not business personal property.
+                Use the{" "}
+                <a
+                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={COUNTY_EXTERNAL_LINK_CLASS}
+                >
+                  Arapahoe County property search
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>{" "}
+                to double-check a record or legal description.
               </p>
               <p className="mt-3 text-center text-xs text-slate-500 sm:text-sm">
                 Version {APP_VERSION} · Last updated {SITE_LAST_UPDATED_LABEL}

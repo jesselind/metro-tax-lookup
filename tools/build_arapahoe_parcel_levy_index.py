@@ -5,6 +5,7 @@ Build Arapahoe parcel → levy stack index from county datamart CSV exports.
 Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from xlsx when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr } (large; see --skip-pin-map)
+  - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
 
 Mart_TA_TAG: supporting-data/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/.../Main Parcel Table.csv
@@ -19,7 +20,7 @@ Maintainer notes:
   - Levy.aspx?id= uses TAGId (tax area), same as Mart_TA_TAG Field2 and Main Parcel TAGId.
     It is not a per-parcel serial; many parcels share one TAGId.
   - Field5 code ASSRFEES is the county assessor fee in the mart export; it is not shown on the
-    county online Tax District Levies page. The PIN-load UI in LevyStackManualEntry omits
+    county online Tax District Levies page. The app PIN-load path omits
     that row so the list matches the table users copy from.
 """
 
@@ -110,6 +111,201 @@ def normalize_pin(raw: str) -> str:
     if not digits:
         return ""
     return digits.zfill(9)[:20]
+
+
+# Situs lookup keys must stay in sync with src/lib/arapahoeSitusLookup.ts (home address flow).
+_STREET_DIR_TOKENS = frozenset(
+    {
+        "N",
+        "S",
+        "E",
+        "W",
+        "NE",
+        "NW",
+        "SE",
+        "SW",
+        "NORTH",
+        "SOUTH",
+        "EAST",
+        "WEST",
+        "NORTHEAST",
+        "NORTHWEST",
+        "SOUTHEAST",
+        "SOUTHWEST",
+    }
+)
+_STREET_TYPE_TOKENS = frozenset(
+    {
+        "ST",
+        "STREET",
+        "AVE",
+        "AVENUE",
+        "RD",
+        "ROAD",
+        "BLVD",
+        "BOULEVARD",
+        "DR",
+        "DRIVE",
+        "LN",
+        "LANE",
+        "CT",
+        "COURT",
+        "CIR",
+        "CIRCLE",
+        "WAY",
+        "PL",
+        "PLACE",
+        "PKWY",
+        "PARKWAY",
+        "TRL",
+        "TRAIL",
+        "LOOP",
+        "TER",
+        "TERR",
+        "TERRACE",
+        "TPKE",
+        "TURNPIKE",
+        "HWY",
+        "HIGHWAY",
+        "BL",
+        "PATH",
+        "PLZ",
+        "PLAZA",
+        "RUN",
+        "COVE",
+        "PASS",
+        "ALLEY",
+        "ALY",
+        "BEND",
+        "XING",
+        "CROSSING",
+        "POINT",
+        "PT",
+        "COMMONS",
+        "MALL",
+    }
+)
+
+
+def normalize_street_name_key(raw: str) -> str:
+    """County address search omits directionals and street types; mirror that on mart situs."""
+    s = strip_field(raw).upper()
+    if not s:
+        return ""
+    tokens = [t for t in re.split(r"[^\w]+", s) if t]
+    kept: list[str] = []
+    for t in tokens:
+        if t in _STREET_DIR_TOKENS or t in _STREET_TYPE_TOKENS:
+            continue
+        kept.append(t)
+    return " ".join(kept)
+
+
+def normalize_street_number_key(primary: str, range_or_suffix: str) -> str:
+    """Merge SAAddrNumber + optional SAStreetNumberSfx (e.g. 1/2); keep in sync with arapahoeSitusLookup.ts."""
+    a = strip_field(primary)
+    b = strip_field(range_or_suffix)
+    merged = " ".join(x for x in (a, b) if x)
+    if not merged:
+        return ""
+    merged_u = merged.upper().replace(" ", "")
+    return "".join(c for c in merged_u if c.isdigit() or c in "/-")
+
+
+def normalize_unit_key(raw: str) -> str:
+    s = strip_field(raw).upper()
+    if not s:
+        return ""
+    return re.sub(r"[^A-Z0-9]", "", s)
+
+
+def row_situs_lookup_key(row: dict[str, str]) -> str | None:
+    num = normalize_street_number_key(row.get("SAAddrNumber", ""), row.get("SAStreetNumberSfx", ""))
+    name = normalize_street_name_key(row.get("SAStreetName", ""))
+    unit = normalize_unit_key(row.get("SAUnitNumber", ""))
+    if not num or not name:
+        return None
+    # Skip common placeholder situs rows in the mart (not useful for address search).
+    if strip_field(row.get("SAAddrNumber", "")) == "0":
+        return None
+    if "TAG" in strip_field(row.get("SAStreetName", "")).upper():
+        return None
+    return f"{num}|{name}|{unit}"
+
+
+def format_situs_label(row: dict[str, str]) -> str:
+    n = strip_field(row.get("SAAddrNumber", ""))
+    pre = strip_field(row.get("SAPredirectional", ""))
+    name = strip_field(row.get("SAStreetName", ""))
+    typ = strip_field(row.get("SAStreetType", ""))
+    post = strip_field(row.get("SAPostdirectional", ""))
+    unit = strip_field(row.get("SAUnitNumber", ""))
+    city = strip_field(row.get("SACity", ""))
+    line1 = " ".join(x for x in (n, pre, name, typ, post) if x)
+    if unit:
+        line1 = f"{line1} Unit {unit}".strip()
+    if city:
+        return f"{line1}, {city}".strip()
+    return line1 or strip_field(row.get("Pin", ""))
+
+
+def build_situs_to_pins(path: Path) -> dict[str, list[dict[str, str]]]:
+    """Pin -> one label each; multiple parcels can share the same lookup key."""
+    by_key: dict[str, dict[str, str]] = {}
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            pin = normalize_pin(strip_field(row.get("Pin", "")))
+            if not pin:
+                continue
+            lk = row_situs_lookup_key(row)
+            if not lk:
+                continue
+            label = format_situs_label(row)
+            if lk not in by_key:
+                by_key[lk] = {}
+            # Duplicate PIN rows in the export share the same situs; keep one label.
+            if pin not in by_key[lk]:
+                by_key[lk][pin] = label
+    out: dict[str, list[dict[str, str]]] = {}
+    for k, pin_map in by_key.items():
+        items = [{"pin": p, "label": pin_map[p]} for p in sorted(pin_map.keys())]
+        out[k] = items
+    return merge_aggregate_situs_keys(out)
+
+
+def merge_aggregate_situs_keys(
+    by_key: dict[str, list[dict[str, str]]],
+) -> dict[str, list[dict[str, str]]]:
+    """
+    Add num|name| keys that union every pin from num|name|* so unit can stay optional
+    (county treats Unit as optional).
+    """
+    parent_pins: dict[str, dict[str, str]] = {}
+    for k, items in by_key.items():
+        parts = k.split("|")
+        if len(parts) != 3:
+            continue
+        num, name, _unit = parts
+        if not num or not name:
+            continue
+        parent = f"{num}|{name}|"
+        bucket = parent_pins.setdefault(parent, {})
+        for it in items:
+            pin = it.get("pin", "")
+            if pin and pin not in bucket:
+                bucket[pin] = it.get("label", "")
+    merged = dict(by_key)
+    for parent, pmap in parent_pins.items():
+        agg_list = [{"pin": p, "label": pmap[p]} for p in sorted(pmap.keys())]
+        if parent not in merged:
+            merged[parent] = agg_list
+        else:
+            combined: dict[str, str] = {x["pin"]: x["label"] for x in merged[parent]}
+            for it in agg_list:
+                combined.setdefault(it["pin"], it["label"])
+            merged[parent] = [{"pin": p, "label": combined[p]} for p in sorted(combined.keys())]
+    return merged
 
 
 def mart_row_maps(fieldnames: list[str] | None) -> dict[str, str]:
@@ -657,6 +853,7 @@ def main() -> None:
             encoding="utf-8",
         )
         print(f"Wrote {stacks_path} ({len(stacks)} TAG stacks)", file=sys.stderr)
+        print("Skipping arapahoe-pin-to-tag.json and arapahoe-situs-to-pins.json (--skip-pin-map).", file=sys.stderr)
         return
 
     pin_map = read_pin_map(args.main_parcel)
@@ -682,6 +879,35 @@ def main() -> None:
     pin_path.write_text(json.dumps(pin_payload, separators=sep), encoding="utf-8")
     mb = pin_path.stat().st_size / (1024 * 1024)
     print(f"Wrote {pin_path} ({len(pin_map)} pins, {mb:.2f} MiB)", file=sys.stderr)
+
+    situs_map = build_situs_to_pins(args.main_parcel)
+    situs_snapshot = {
+        "bundledAsOf": bundled_as_of,
+        "source": "Arapahoe County datamart: Main Parcel situs fields (Pin, SA*)",
+        "taxYear": tax_year or None,
+        "lookupNote": (
+            "Keys match county address search rules: street number (+ optional range/suffix), "
+            "street name without directionals (N,S,E,W,...) or types (St,Ave,...); optional unit."
+        ),
+    }
+    situs_path = args.out_dir / "arapahoe-situs-to-pins.json"
+    situs_path.write_text(
+        json.dumps(
+            {
+                "snapshot": situs_snapshot,
+                "lookupVersion": 1,
+                "entryCount": len(situs_map),
+                "byKey": situs_map,
+            },
+            separators=sep,
+        ),
+        encoding="utf-8",
+    )
+    sm = situs_path.stat().st_size / (1024 * 1024)
+    print(
+        f"Wrote {situs_path} ({len(situs_map)} keys, {sm:.2f} MiB)",
+        file=sys.stderr,
+    )
 
 
 if __name__ == "__main__":

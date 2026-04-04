@@ -1,7 +1,7 @@
 import { InfoDetails } from "@/components/InfoDetails";
 import { INFO_DETAILS_WIDE_CLASS } from "@/lib/toolFlowStyles";
 
-/** In-page anchor for levy breakdown step 3 (link from &quot;Enter mills…&quot; heading). */
+/** In-page anchor for &quot;what are mills&quot; (linked from levy template mills UI). */
 export const MILLS_DEFINITION_ELEMENT_ID = "what-are-mills";
 
 type Props = {
