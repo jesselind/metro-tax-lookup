@@ -9,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-/** Single source of truth: mills definition (same text as metro tax tool). */
+/** Mills definition accordion (levy stack tool; in-page anchor for template-mills links). */
 export function MillsDefinitionInfoDetails({
   className = INFO_DETAILS_WIDE_CLASS,
 }: Props) {
@@ -30,7 +30,7 @@ export function MillsDefinitionInfoDetails({
   );
 }
 
-/** Single source of truth: levy definition (same text as metro tax tool). */
+/** Levy definition accordion (levy stack tool). */
 export function LevyDefinitionInfoDetails({
   className = INFO_DETAILS_WIDE_CLASS,
 }: Props) {

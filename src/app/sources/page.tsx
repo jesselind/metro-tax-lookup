@@ -168,12 +168,23 @@ export default function SourcesPage() {
       >
         <h2 className={SECTION_H2}>Metro district tax share</h2>
         <p className="text-slate-700">
-          <Link href="/metro-tax-lookup" className={TOOL_ANCHOR}>
+          <Link href="/" className={TOOL_ANCHOR}>
             Metro district tax share
           </Link>{" "}
-          compares your <strong>total</strong> mill rate to metro district levy
-          lines from a single county form. You type totals from the county site or
-          your bill; the app does not fetch your parcel for this tool.
+          on the home page compares your <strong>total</strong> mill rate to metro
+          district levy lines from the county mill file. After a successful PIN load,
+          the metro card can pre-fill your total mills from the levy stack and{" "}
+          <strong>select your metro district</strong> when a stack line&apos;s
+          LG ID (from the DOLA bundle, or the digits before the slash in the LGIS
+          tax entity ID when the export omits a separate LG ID) matches the{" "}
+          <code className={CODE_INLINE}>lgid</code> on a metro row in{" "}
+          <code className={CODE_INLINE}>metro-levies-2025.json</code>. If no line
+          carries a matching ID, the tool shows a short message, the district list,
+          and an inline link to the statewide special districts map. After you choose a
+          district, total mills appears; use <strong className="text-slate-900">Start over</strong>{" "}
+          in the address card to reset the whole home page flow. The extra help panel stays off that minimal path until you use the
+          fuller flow. Old URL <code className={CODE_INLINE}>/metro-tax-lookup</code> redirects
+          to <code className={CODE_INLINE}>/</code>.
         </p>
 
         <h3 className={`${SECTION_H3} !mt-6`}>
@@ -239,6 +250,11 @@ export default function SourcesPage() {
           <code className={CODE_INLINE}>public/data/metro-levies-2025.json</code>
           . That file is built offline from the county PDF below using{" "}
           <code className={CODE_INLINE}>tools/extract_metro_levies_*.py</code>.
+          Metro rows in that JSON include <code className={CODE_INLINE}>lgid</code>
+          ; the home-page match uses the same LG ID values attached to levy lines
+          when{" "}
+          <code className={CODE_INLINE}>tools/build_arapahoe_parcel_levy_index.py</code>{" "}
+          aligns county mart data with DOLA (see levy breakdown methodology below).
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">

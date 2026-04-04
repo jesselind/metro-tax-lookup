@@ -7,6 +7,11 @@
       "millsOverride": 15.959,
       "note": "DOLA xlsx total levy for TE 03001/1 is 16.959; Arapahoe Levy.aspx line 2998 (2025 tax year) is 15.959. Override matches the county levy table so PIN stacks agree with Levy.aspx."
     },
+    "ARAPAHOE COUNTY L.E.A.": {
+      "legalName": "Arapahoe Law Enforcement Authority",
+      "millsOverride": 4.982,
+      "note": "Mart 4012; fuzzy match on the mart label otherwise hits Arapahoe County (2998) and TE 03001/1 (16.959). County Levy.aspx L.E.A. line is 4.982 mills (2025 tax year)."
+    },
     "REGIONAL TRANSPORTATION": {
       "legalName": "Regional Transportation District",
       "note": "County label omits district name; match DOLA RTD row when xlsx present."

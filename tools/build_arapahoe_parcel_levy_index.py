@@ -626,6 +626,19 @@ def _te_id_str(x: Any) -> str:
     return strip_field(str(x))
 
 
+def _coalesce_lg_id_from_entity(lg_id: Any, tax_entity_id: Any) -> Any:
+    """Property tax export sometimes omits lgId; tax entity id is often '{lgId}/1'."""
+    lid = strip_field(str(lg_id)) if lg_id is not None else ""
+    if lid:
+        return lid
+    te = _te_id_str(tax_entity_id)
+    if "/" in te:
+        left = te.split("/", 1)[0].strip()
+        if left.isdigit():
+            return left
+    return None
+
+
 def match_dola_line(
     authority_upper: str,
     entities: list[dict[str, Any]],
@@ -652,7 +665,9 @@ def match_dola_line(
                         "method": "override",
                         "confidence": "high",
                         "taxEntityId": e.get("taxEntityId"),
-                        "lgId": e.get("lgId"),
+                        "lgId": _coalesce_lg_id_from_entity(
+                            e.get("lgId"), e.get("taxEntityId")
+                        ),
                         "matchedLegalName": e.get("legalName"),
                         "score": 1.0,
                         **ura_extra(),
@@ -664,7 +679,9 @@ def match_dola_line(
                 "method": "override",
                 "confidence": "low",
                 "taxEntityId": ovr.get("taxEntityId"),
-                "lgId": ovr.get("lgId"),
+                "lgId": _coalesce_lg_id_from_entity(
+                    ovr.get("lgId"), ovr.get("taxEntityId")
+                ),
                 "matchedLegalName": ovr.get("legalName"),
                 "score": None,
                 **ura_extra(),
@@ -720,7 +737,9 @@ def match_dola_line(
         "method": method,
         "confidence": conf,
         "taxEntityId": best.get("taxEntityId"),
-        "lgId": best.get("lgId"),
+        "lgId": _coalesce_lg_id_from_entity(
+            best.get("lgId"), best.get("taxEntityId")
+        ),
         "matchedLegalName": best.get("legalName"),
         "score": round(best_score, 4),
         **ura_extra(),

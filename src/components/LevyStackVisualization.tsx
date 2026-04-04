@@ -662,15 +662,17 @@ export function LevyStackVisualization({
             </div>
 
             <p className="text-sm text-slate-600">
-              Tap a tile for share and, when we can match a row in the bundled
-              Colorado district data (state GIS plus metro, fire, and water /
-              sanitation exports), official website and mailing address when
-              available.
+              Tap a tile to see its share of your total mills and extra details
+              when we can match it to public district records.
               {allowLineEdit ? (
                 <>
                   {" "}
                   Use <strong className="font-semibold text-slate-800">Add tile</strong>{" "}
-                  to type another line from your county levy screen.
+                  to add another row from your county{" "}
+                  <strong className="font-semibold text-slate-800">
+                    Tax District Levies
+                  </strong>{" "}
+                  list.
                 </>
               ) : null}
             </p>

@@ -1,17 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
-import { ToolHubCard } from "@/components/ToolHubCard";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { LevyStackVisualization } from "@/components/LevyStackVisualization";
 import { MetroToolConstructionBanner } from "@/components/UnderConstructionBanner";
+import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
+import { MetroHavingTroubleInfoDetails } from "@/components/MetroHavingTroubleInfoDetails";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
+import {
+  LevyDefinitionInfoDetails,
+  MillsDefinitionInfoDetails,
+} from "@/components/propertyTaxInfoDetails";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import type { ArapahoeLevyStacksFile } from "@/lib/arapahoeParcelLevyData";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
   loadLevyStackFromPin,
+  scaleLevyLinesToTargetTotal,
   type CommittedLevyLine,
 } from "@/lib/committedLevyLine";
 import {
@@ -21,11 +28,15 @@ import {
   normalizeStreetNameKey,
   SITUS_INPUT_MAX_LEN,
 } from "@/lib/arapahoeSitusLookup";
-import { HUB_TOOLS } from "@/lib/hubTools";
+import { metroFromLevyStackForPinLoad } from "@/lib/metroDistrictFromLevyLines";
+import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import {
   CARD_BODY_CLASS,
+  CARD_BODY_ROUNDED_BOTTOM_CLASS,
   CARD_CLASS_CLIPPED,
+  CARD_CLASS_TOOL_OVERFLOW_VISIBLE,
   CARD_HEADER_CLASS,
+  COUNTY_EXTERNAL_LINK_CLASS,
   INPUT_CLASS,
 } from "@/lib/toolFlowStyles";
 
@@ -107,6 +118,8 @@ export function HomeParcelAddressLookup() {
 
   /** Opens levy / metro / hub without a PIN load (user builds the stack with Add tile). */
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
+  /** Bumps after a deliberate county reload so the metro total field resyncs from the new stack. */
+  const [levyStackReloadRevision, setLevyStackReloadRevision] = useState(0);
 
   const addressPanelId = useId();
   const addressDisclosureId = useId();
@@ -177,6 +190,7 @@ export function HomeParcelAddressLookup() {
     setLevyLoadBusy(false);
     setParcelPin("");
     setHomeLevyWorkbenchOpen(false);
+    setLevyStackReloadRevision(0);
   }, []);
 
   function clearLevyStackOnly() {
@@ -186,32 +200,45 @@ export function HomeParcelAddressLookup() {
     setLevyLoadedMeta(null);
     setLevyStacksSnapshot(null);
     setLevyTemplateMillsError(null);
+    setLevyStackReloadRevision(0);
   }
 
-  const loadLevyStack = useCallback(async (pin: string) => {
-    setLevyLoadError(null);
-    setLevyTemplateMillsError(null);
-    setLevyLoadBusy(true);
-    try {
-      const result = await loadLevyStackFromPin(pin);
-      if (!result.ok) {
-        setLevyLoadError(result.error);
-        return;
+  const loadLevyStack = useCallback(
+    async (pin: string, options?: { bumpMetroSync?: boolean }) => {
+      setLevyLoadError(null);
+      setLevyTemplateMillsError(null);
+      setLevyLoadBusy(true);
+      try {
+        const result = await loadLevyStackFromPin(pin);
+        if (!result.ok) {
+          setLevyLoadError(result.error);
+          return;
+        }
+        setParcelPin(result.matchedPin);
+        setLevyLines(result.lines);
+        setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
+        setLevyStacksSnapshot(result.arapahoeStacksSnapshot);
+        setLevyTemplateMillDrafts(result.templateMillDrafts);
+        setLevyLoadedMeta({
+          pin: result.matchedPin,
+          tagShortDescr: result.tagShortDescr,
+          levyAspxUrl: result.levyAspxUrl,
+        });
+        if (options?.bumpMetroSync) {
+          setLevyStackReloadRevision((n) => n + 1);
+        }
+      } finally {
+        setLevyLoadBusy(false);
       }
-      setParcelPin(result.matchedPin);
-      setLevyLines(result.lines);
-      setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
-      setLevyStacksSnapshot(result.arapahoeStacksSnapshot);
-      setLevyTemplateMillDrafts(result.templateMillDrafts);
-      setLevyLoadedMeta({
-        pin: result.matchedPin,
-        tagShortDescr: result.tagShortDescr,
-        levyAspxUrl: result.levyAspxUrl,
-      });
-    } finally {
-      setLevyLoadBusy(false);
-    }
-  }, []);
+    },
+    [],
+  );
+
+  const reloadCountyLevyStack = useCallback(() => {
+    const pin = levyLoadedMeta?.pin?.trim();
+    if (!pin) return;
+    void loadLevyStack(pin, { bumpMetroSync: true });
+  }, [levyLoadedMeta, loadLevyStack]);
 
   const sumMills = useMemo(() => {
     const s = levyLines.reduce((acc, l) => acc + l.mills, 0);
@@ -223,6 +250,15 @@ export function HomeParcelAddressLookup() {
     if (sumMills <= 0) return null;
     return sumMills;
   }, [levyAwaitingTemplateMills, sumMills]);
+
+  const applyMetroTotalToLevyStack = useCallback((mills: number) => {
+    setLevyLines((prev) => scaleLevyLinesToTargetTotal(prev, mills));
+  }, []);
+
+  const homeMetroFromLevyStack = useMemo(
+    () => metroFromLevyStackForPinLoad(levyLoadedMeta, levyLines),
+    [levyLoadedMeta, levyLines],
+  );
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -330,6 +366,7 @@ export function HomeParcelAddressLookup() {
     levyLines.length > 0 ||
     levyAwaitingTemplateMills ||
     levyLoadedMeta != null;
+  const trimmedParcelPin = parcelPin.trim();
   /** Omit wrapper when empty so parent space-y-5 does not add a stray gap above the stack. */
   const showLevyIntroBlock =
     !levyLoadBusy &&
@@ -337,20 +374,19 @@ export function HomeParcelAddressLookup() {
     !levyLoadedMeta &&
     !levyAwaitingTemplateMills &&
     !levyLoadError;
-  const showClearOrStart =
+  /** Single reset control for the whole home tool (address, PIN, levy, metro). */
+  const showStartOverInAddressCard =
     !fieldsEmpty ||
     hasLookupResults ||
     error != null ||
     showCountyPinFallback ||
-    hasLevyContent;
-  const secondaryActionLabel =
-    hasLookupResults || hasLevyContent ? "Start over" : "Clear form";
-  const secondaryActionAriaLabel =
-    hasLookupResults || hasLevyContent
-      ? "Clear address fields and search results"
-      : "Clear address fields";
-
-  const trimmedParcelPin = parcelPin.trim();
+    hasLevyContent ||
+    homeLevyWorkbenchOpen ||
+    trimmedParcelPin.length > 0 ||
+    levyLoadBusy ||
+    levyLoadError != null;
+  const startOverAriaLabel =
+    "Reset address lookup, parcel PIN, search results, and levy and metro sections on this page";
   const pinMatchesLoadedLevy =
     trimmedParcelPin.length > 0 &&
     levyLoadedMeta != null &&
@@ -559,15 +595,15 @@ export function HomeParcelAddressLookup() {
                 >
                   {busy ? "Searching…" : "Search"}
                 </button>
-                {showClearOrStart ? (
+                {showStartOverInAddressCard ? (
                   <button
                     type="button"
                     className={ADDRESS_FORM_ACTION_BTN_CLASS}
                     disabled={busy}
                     onClick={resetAddressForm}
-                    aria-label={secondaryActionAriaLabel}
+                    aria-label={startOverAriaLabel}
                   >
-                    {secondaryActionLabel}
+                    Start over
                   </button>
                 ) : null}
               </div>
@@ -590,7 +626,7 @@ export function HomeParcelAddressLookup() {
               {showCountyPinFallback
                 ? "Enter the PIN from your county parcel record (see help below if needed)."
                 : hits != null && hits.length > 1
-                  ? "Pick the row that matches your property below, or type a PIN here if you already know it."
+                  ? "Pick the row that matches your property below, or type a PIN here if you already know it. If you are unsure, verify on the county parcel record (see note under the list)."
                   : hits != null && hits.length === 1
                     ? "Filled in from your address match. Change it only if you meant a different parcel."
                     : "Search your address above, or enter a PIN from your county parcel record if you already have it."}
@@ -682,7 +718,7 @@ export function HomeParcelAddressLookup() {
               >
                 Find your PIN on the county site
               </h3>
-              <CountyParcelPinLookupHelp />
+              <CountyParcelPinLookupHelp includeLevyTableScreenshots />
               <p className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-700">
                 Enter that PIN in the <strong>Parcel PIN</strong> field at the
                 top of this card (under the address form).
@@ -701,6 +737,21 @@ export function HomeParcelAddressLookup() {
                   ? "One property matched"
                   : `${hits.length} properties matched — pick the row that matches your unit or legal description`}
               </p>
+              {hits.length > 1 ? (
+                <p className="mb-3 text-sm text-slate-700">
+                  Not sure which PIN is yours? Open your parcel on the{" "}
+                  <a
+                    href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
+                  >
+                    county property search
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>{" "}
+                  and compare the PIN to the address, unit, or legal description.
+                </p>
+              ) : null}
               <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
                 {hits.map((h) => (
                   <li
@@ -779,6 +830,39 @@ export function HomeParcelAddressLookup() {
                 <strong className="font-semibold text-slate-800">Tax District Levies</strong>{" "}
                 screen.
               </p>
+              <div
+                className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
+                aria-labelledby="home-levy-county-table-help-heading"
+              >
+                <h3
+                  id="home-levy-county-table-help-heading"
+                  className="mb-2 text-sm font-semibold text-slate-900 sm:text-base"
+                >
+                  Where to find those rows on the county site
+                </h3>
+                <p className="mb-3 text-sm text-slate-700 sm:text-base">
+                  Open your parcel from the{" "}
+                  <a
+                    href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
+                  >
+                    county property search
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                  . On the parcel record, use{" "}
+                  <strong className="font-semibold text-slate-800">
+                    Tax District Levies
+                  </strong>{" "}
+                  for the table (one row per <strong>Add tile</strong>).{" "}
+                  <strong className="font-semibold text-slate-800">
+                    2025 Mill Levy
+                  </strong>{" "}
+                  on that page is the total mills if you want to compare to your stack.
+                </p>
+                <CountyAssessorMillLevyFigures />
+              </div>
             </div>
           ) : null}
 
@@ -800,8 +884,11 @@ export function HomeParcelAddressLookup() {
               onClearLoadedStack={clearParcelTemplateExtended}
               allowLineEdit
               millsDefinitionHref="#what-are-mills"
-              showMillsDefinitionBelow
             />
+          </div>
+          <div className="space-y-3">
+            <MillsDefinitionInfoDetails />
+            <LevyDefinitionInfoDetails />
           </div>
         </div>
       </section>
@@ -809,37 +896,32 @@ export function HomeParcelAddressLookup() {
       <MetroToolConstructionBanner />
 
       <section
-        className={CARD_CLASS_CLIPPED}
+        className={CARD_CLASS_TOOL_OVERFLOW_VISIBLE}
         aria-labelledby="home-metro-share-heading"
       >
         <h2 id="home-metro-share-heading" className={CARD_HEADER_CLASS}>
           Metro district tax share
         </h2>
-        <div className={`${CARD_BODY_CLASS} space-y-4`}>
-          <p className="text-base leading-relaxed text-slate-800 sm:text-lg">
-            Compare your <strong>total property tax mills</strong> to your metro
-            district&apos;s mills. When your levy breakdown above has a reliable
-            total, we pre-fill Step 3 here (you can still edit it to match your
-            bill).
-          </p>
+        <div
+          className={`${CARD_BODY_CLASS} ${CARD_BODY_ROUNDED_BOTTOM_CLASS} space-y-4`}
+        >
           <MetroTaxShareFlow
             embedded
             idPrefix="home-metro"
             prefillTotalMills={metroPrefillTotalMills}
+            metroFromLevyStack={homeMetroFromLevyStack}
+            levyStackReloadRevision={levyStackReloadRevision}
+            countyLevyReloadBusy={levyLoadBusy}
+            onReloadCountyLevyStack={
+              levyLoadedMeta ? reloadCountyLevyStack : undefined
+            }
+            onApplyTotalMillsToLevy={applyMetroTotalToLevyStack}
           />
+          <MetroDistrictInfoDetails />
+          {homeMetroFromLevyStack?.kind !== "no_metro_lgid_match" ? (
+            <MetroHavingTroubleInfoDetails />
+          ) : null}
         </div>
-      </section>
-
-      <section
-        className="grid grid-cols-1 gap-4 sm:max-w-xl"
-        aria-labelledby="home-fallback-tools-heading"
-      >
-        <h2 id="home-fallback-tools-heading" className="sr-only">
-          Open a tool directly
-        </h2>
-        {HUB_TOOLS.map((tool) => (
-          <ToolHubCard key={tool.href} {...tool} />
-        ))}
       </section>
         </>
       ) : null}

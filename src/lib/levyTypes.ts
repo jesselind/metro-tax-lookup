@@ -9,6 +9,9 @@ export type LevyLineFromJson = {
 
 export type LevyDistrictFromJson = {
   districtId: string;
+  /** Colorado LG ID (DOLA / special district registry); present on metro rows in bundled JSON. */
+  lgid?: string | null;
+  countyId?: string | null;
   name: string;
   type: string;
   aggregates?: { opsMills?: number; debtMills?: number; totalMills?: number };

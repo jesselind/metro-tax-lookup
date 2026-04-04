@@ -9,6 +9,10 @@
 export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
   "https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf";
 
+/** DOLA statewide special districts map (linked from minimal metro path when LG ID does not match). */
+export const COLORADO_SPECIAL_DISTRICTS_MAP_URL =
+  "https://gis.dola.colorado.gov/CO_SpecialDistrict/";
+
 /** Colorado Information Marketplace — Map of All Special Districts (tabular export for `import_colorado_district_layer_csv.py`). */
 export const COLORADO_DATA_GOV_ALL_SPECIAL_DISTRICTS_DATASET =
   "https://data.colorado.gov/Local-Aggregation/Map-of-All-Special-Districts-in-Colorado/dm2a-biqr";

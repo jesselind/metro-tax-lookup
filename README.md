@@ -1,6 +1,6 @@
 # Metro tax lookup (Arapahoe County)
 
-A small **Next.js** site for Arapahoe County residents: the **home page** (`/`) combines address → PIN lookup and the full **property tax levy breakdown** (tiles; add lines with **Add tile** or load by PIN). The **metro district tax share** tool lives at `/metro-tax-lookup`. Policy pages: sources, privacy, accessibility.
+A small **Next.js** site for Arapahoe County residents: the **home page** (`/`) combines address → PIN lookup, the **property tax levy breakdown** (tiles; **Add tile** or load by PIN), and the **metro district tax share** card. Policy pages: sources, privacy, accessibility. Old URL `/metro-tax-lookup` redirects to `/`.
 
 Not affiliated with Arapahoe County. Informational only. Verify with official county sources. Not legal or tax advice.
 
@@ -13,21 +13,19 @@ MIT-licensed; please attribute and verify with county source documents.
 | Tool | Route | What it does |
 | --- | --- | --- |
 | **Address + levy breakdown** | `/` | Offline address → PIN (`arapahoe-situs-to-pins.json`), then levy stack from PIN (TAG lines). Optional **Add levy lines without loading a PIN** opens the same breakdown; use **Add tile** in the grid to copy rows from the county levy table. Editable tiles and table. |
-| **Metro district tax share** | `/metro-tax-lookup` | From two numbers (total mills and metro debt service mills), shows what share of your property tax *rate* pays metro district debt and shows the math. A yellow **under construction** notice appears above this tool on `/` and `/metro-tax-lookup` until the flow is stabilized. |
+| **Metro district tax share** | `/` (home card) | Compares total mills to metro district mills; shows share of your property tax *rate* that goes to the metro district (operations + debt). After a PIN load, pre-fills total mills and **selects the metro district** when a stack line's matched LG ID matches `lgid` in `metro-levies-2025.json`. A yellow **under construction** notice appears above this card on `/` until the flow is stabilized. |
 
 Static JSON under `public/data/` powers metro rates, Arapahoe PIN/TAG/situs indexes, levy stacks, and Colorado district metadata.
 
 ## Use (for residents)
 
-Start at `/` for address + levy breakdown, or open `/metro-tax-lookup` for metro share only.
+Start at `/` for address lookup, levy breakdown, and metro district tax share.
 
-The first home card is an **offline address → PIN** helper (`arapahoe-situs-to-pins.json`). Field semantics match `tools/build_arapahoe_parcel_levy_index.py` (Main Parcel `SAAddrNumber` + optional `SAStreetNumberSfx`, normalized street name, optional unit). One match loads the levy stack automatically; several matches use **Use this property** per row; no match shows county PIN help. Until a PIN load is in progress, completes (success or error), you choose **Add levy lines without loading a PIN**, or you already have levy content, the home page hides the levy card, the embedded metro card, and the hub tool links so only the address card shows (typing address fields or PIN alone does not reveal them). After a failed load you can add lines with **Add tile** in the grid. The **Breakdown of your property tax bill** section uses bundled county data and/or lines you add from the county levy table, then the tile + table UI. See `/sources` for methodology. Old URL `/levy-breakdown` redirects to `/`.
+The first home card is an **offline address → PIN** helper (`arapahoe-situs-to-pins.json`). Field semantics match `tools/build_arapahoe_parcel_levy_index.py` (Main Parcel `SAAddrNumber` + optional `SAStreetNumberSfx`, normalized street name, optional unit). One match loads the levy stack automatically; several matches use **Use this property** per row, with a county link if you need to verify which PIN is yours; no match shows county PIN help plus optional screenshots for **Tax District Levies** and **2025 Mill Levy** on the parcel page. Until a PIN load is in progress, completes (success or error), you choose **Add levy lines without loading a PIN**, or you already have levy content, the home page hides the levy card and the embedded metro card so only the address card shows (typing address fields or PIN alone does not reveal them). After a failed load you can add lines with **Add tile** in the grid. If you open the breakdown without a PIN, a **Where to find those rows on the county site** panel above the tiles repeats that levy-table and total-mills guidance (same toggles as metro **Having trouble?**). The **Breakdown of your property tax bill** section uses bundled county data and/or lines you add from the county levy table, then the tile + table UI; collapsible **What are mills?** and **What is a levy?** explainers sit at the bottom of that same card. See `/sources` for methodology. Old URL `/levy-breakdown` redirects to `/`.
 
 ### Metro district tax share
 
-1. Use the Arapahoe County property search to find your parcel (the tool links you there).
-2. Find the **total mills** and your **metro district debt service mills** (if any) on the county site or your tax bill.
-3. Enter those numbers to see the percentage and the formula.
+After you load a parcel PIN and the levy stack appears, the metro card pre-fills **total mills** when the stack total is usable, and **picks your metro district** when a levy line's DOLA/LG ID matches a metro row in bundled JSON (`src/lib/metroDistrictFromLevyLines.ts`). If there is no ID match, the UI stays minimal until you pick a district: a short note, an inline map link, and the list. **Total property tax mills** appears after you select a metro district. **Start over** lives only in the **Start with your address** card; it clears address search, PIN, levy stack, and metro state together. Editing total mills (then leaving the field) **rescales every levy line proportionally** so the stack still matches the number shown. **Reset to county numbers** re-runs the same PIN load as **Load property data** (no separate snapshot). On the non-ID-miss path, optional **Having trouble?** (map, assessor link, screenshot hints) sits at the bottom of the metro card, below **What's a metro district?**.
 
 ### Breakdown of your property tax bill (home page)
 
@@ -52,7 +50,7 @@ npm install
 npm run dev
 ```
 
-Then open `http://localhost:3000` (home) or `/metro-tax-lookup`.
+Then open `http://localhost:3000`.
 
 ### Data files
 
@@ -103,6 +101,8 @@ No Python required. Uses committed `public/data/*`.
    ```
 
    That runs `tools/build_arapahoe_parcel_levy_index.py` and writes `public/data/arapahoe-levy-stacks-by-tag-id.json` and (unless `--skip-pin-map`) `public/data/arapahoe-pin-to-tag.json` plus `public/data/arapahoe-situs-to-pins.json` (situs lookup keys from `Main Parcel` → PIN list for the home-page address flow). The county **Tax District Levies** page uses `Levy.aspx?id=` with **TAGId** (county taxing authority ID), the same key as Field2 in the mart export — not an arbitrary parcel ID. See `PROJECT_CONTEXT.md` and the Sources page for methodology.
+
+   **Mart label overrides:** `tools/arapahoe_dola_authority_overrides.json` maps mart authority strings (uppercased) to DOLA legal names and optional `millsOverride` when fuzzy matching would pick the wrong entity or DOLA totals disagree with the county levy table. Example: **ARAPAHOE COUNTY L.E.A.** (code 4012) otherwise token-matches **Arapahoe County** and picked up the county mill rate instead of the Law Enforcement Authority line.
 
    Optional county GIS: **`AssessorParcels_WGS.gdb`** is published from the county [GIS Data Download](https://www.arapahoeco.gov/your_county/county_departments/assessor/arapahoe_maps_gis/gis_data_download.php) page (not used by that Python builder today; mart CSVs are the inputs).
 

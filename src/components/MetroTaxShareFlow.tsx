@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import { calculateSharePercentage } from "@/lib/levyCalculator";
 import type {
@@ -11,65 +9,79 @@ import type {
   MetroDistrictOption,
 } from "@/lib/levyTypes";
 import levyData from "../../public/data/metro-levies-2025.json";
-import propertyPageImg from "@/assets/images/mill-levy-property-page.png";
-import millLevyDetailImg from "@/assets/images/mill-levy-detail.png";
-import {
-  LevyDefinitionInfoDetails,
-  MillsDefinitionInfoDetails,
-} from "@/components/propertyTaxInfoDetails";
+import { parseMills } from "@/lib/committedLevyLine";
 import { HelpPillButton } from "@/components/HelpPillButton";
-import { InfoDetails } from "@/components/InfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
 import { MetroDistrictSelect } from "@/components/MetroDistrictSelect";
 import {
   ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB as ASSESSOR_MILL_LEVIES_HUB_URL,
-  ARAPAHOE_ASSESSOR_PROPERTY_SEARCH as ASSESSOR_SEARCH_URL,
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF as MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL,
 } from "@/lib/arapahoeCountyUrls";
-import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
+import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import {
-  CARD_BODY_CLASS,
-  CARD_BODY_CLASS_DROPDOWN,
-  CARD_CLASS_CLIPPED,
-  CARD_CLASS_DROPDOWN,
-  CARD_HEADER_CLASS,
-  CARD_HEADER_CLASS_DROPDOWN,
   COUNTY_EXTERNAL_LINK_CLASS,
   INPUT_CLASS,
 } from "@/lib/toolFlowStyles";
+import type { MetroFromLevyStack } from "@/lib/metroDistrictFromLevyLines";
+import { COLORADO_SPECIAL_DISTRICTS_MAP_URL } from "@/lib/dataSourceUrls";
 
 /** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
 const RATE_TO_MILLS = 1000;
 
 export type MetroTaxShareFlowProps = {
-  /** When set, use distinct element ids (required if another flow can exist on the same document). */
   idPrefix?: string;
-  /** Shorter copy and footer links for the home dashboard panel. */
   embedded?: boolean;
-  /**
-   * When provided and the total mills field is empty, pre-fill from the levy stack total
-   * (same figure as county "total mills" when stacks are complete).
-   */
   prefillTotalMills?: number | null;
+  metroFromLevyStack?: MetroFromLevyStack;
+  /**
+   * When set (e.g. home embedded flow), committing a valid total rescales levy stack lines
+   * so the on-screen stack matches this field.
+   */
+  onApplyTotalMillsToLevy?: (mills: number) => void;
+  /** Re-runs PIN load for the loaded parcel (same as loading property data again). */
+  onReloadCountyLevyStack?: () => void;
+  countyLevyReloadBusy?: boolean;
+  /** Increments when the parent reloads the stack from the county; forces metro total to resync. */
+  levyStackReloadRevision?: number;
 };
 
 export function MetroTaxShareFlow({
   idPrefix = "",
   embedded = false,
   prefillTotalMills = null,
+  metroFromLevyStack,
+  onApplyTotalMillsToLevy,
+  onReloadCountyLevyStack,
+  countyLevyReloadBusy = false,
+  levyStackReloadRevision = 0,
 }: MetroTaxShareFlowProps) {
   const p = idPrefix ? `${idPrefix}-` : "";
   const flowHeadingId = `${p}flow-heading`;
   const totalMillsId = `${p}total-mills`;
   const totalMillsHintId = `${p}total-mills-hint`;
-  const knowsMetroNameId = `${p}knows-metro-name`;
 
   const [totalMillsInput, setTotalMillsInput] = useState("");
-  const [showMetroHelpDetails, setShowMetroHelpDetails] = useState(false);
-  const [showStepsDetails, setShowStepsDetails] = useState(false);
-  const [knowsMetroName, setKnowsMetroName] = useState(false);
   const [selectedMetroId, setSelectedMetroId] = useState<string>("");
   const [showResultDetails, setShowResultDetails] = useState(false);
+
+  const prevMetroHintKeyRef = useRef<string>("");
+  const totalMillsDirtyRef = useRef(false);
+  const lastProcessedReloadRevision = useRef(0);
+
+  useEffect(() => {
+    if (levyStackReloadRevision <= lastProcessedReloadRevision.current) {
+      return;
+    }
+    lastProcessedReloadRevision.current = levyStackReloadRevision;
+    totalMillsDirtyRef.current = false;
+    if (prefillTotalMills != null && prefillTotalMills > 0) {
+      const formatted =
+        Math.round(prefillTotalMills * 1000) / 1000 === prefillTotalMills
+          ? String(prefillTotalMills)
+          : prefillTotalMills.toFixed(3);
+      queueMicrotask(() => setTotalMillsInput(formatted));
+    }
+  }, [levyStackReloadRevision, prefillTotalMills]);
 
   useEffect(() => {
     if (prefillTotalMills == null || prefillTotalMills <= 0) return;
@@ -77,8 +89,15 @@ export function MetroTaxShareFlow({
       Math.round(prefillTotalMills * 1000) / 1000 === prefillTotalMills
         ? String(prefillTotalMills)
         : prefillTotalMills.toFixed(3);
-    setTotalMillsInput((prev) => (prev.trim() === "" ? formatted : prev));
-  }, [prefillTotalMills]);
+    if (onApplyTotalMillsToLevy) {
+      if (totalMillsDirtyRef.current) return;
+      queueMicrotask(() => setTotalMillsInput(formatted));
+      return;
+    }
+    queueMicrotask(() =>
+      setTotalMillsInput((prev) => (prev.trim() === "" ? formatted : prev)),
+    );
+  }, [prefillTotalMills, onApplyTotalMillsToLevy]);
 
   const levyJson = levyData as LevyDataFile;
   const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
@@ -86,17 +105,47 @@ export function MetroTaxShareFlow({
     ? formatLevyBundledAsOf(bundledAsOfIso)
     : null;
 
-  const metroOptions: MetroDistrictOption[] = levyJson.districts
-    .filter((d: LevyDistrictFromJson) => d.type === "metro")
-    .map((d: LevyDistrictFromJson) => ({
-      id: d.districtId,
-      name: d.name,
-      debtMills: d.aggregates?.debtMills ?? 0,
-      totalMills: d.aggregates?.totalMills ?? 0,
-    }))
-    .sort((a: MetroDistrictOption, b: MetroDistrictOption) =>
-      a.name.localeCompare(b.name),
-    );
+  const metroOptions: MetroDistrictOption[] = useMemo(
+    () =>
+      levyJson.districts
+        .filter((d: LevyDistrictFromJson) => d.type === "metro")
+        .map((d: LevyDistrictFromJson) => ({
+          id: d.districtId,
+          name: d.name,
+          debtMills: d.aggregates?.debtMills ?? 0,
+          totalMills: d.aggregates?.totalMills ?? 0,
+        }))
+        .sort((a: MetroDistrictOption, b: MetroDistrictOption) =>
+          a.name.localeCompare(b.name),
+        ),
+    [levyJson.districts],
+  );
+
+  const metroDistrictIdSet = useMemo(
+    () => new Set(metroOptions.map((m) => m.id)),
+    [metroOptions],
+  );
+
+  useEffect(() => {
+    const key =
+      metroFromLevyStack == null
+        ? "none"
+        : metroFromLevyStack.kind === "match"
+          ? `m:${metroFromLevyStack.districtId}`
+          : "no";
+    if (key !== prevMetroHintKeyRef.current) {
+      prevMetroHintKeyRef.current = key;
+    }
+    if (metroFromLevyStack == null) return;
+    if (metroFromLevyStack.kind === "match") {
+      const { districtId } = metroFromLevyStack;
+      if (metroDistrictIdSet.has(districtId)) {
+        queueMicrotask(() => setSelectedMetroId(districtId));
+      }
+      return;
+    }
+    queueMicrotask(() => setSelectedMetroId(""));
+  }, [metroFromLevyStack, metroDistrictIdSet]);
 
   const totalMills = parseFloat(totalMillsInput) || 0;
   const selectedDistrict = metroOptions.find((m) => m.id === selectedMetroId);
@@ -136,7 +185,8 @@ export function MetroTaxShareFlow({
     fullDistrict?.aggregates?.debtMills != null
       ? fullDistrict.aggregates.debtMills * RATE_TO_MILLS
       : 0;
-  const showResult = totalMills > 0;
+
+  const showResultCard = totalMills > 0 && selectedMetroId.length > 0;
 
   const otherMillsForStack =
     totalMills > 0
@@ -176,25 +226,46 @@ export function MetroTaxShareFlow({
     totalDistrictMills <= 0 ||
     Math.abs(barMetroPartsSum - totalDistrictMills) < MILLS_ROUND_EPS;
 
-  function handleStartOver() {
-    setTotalMillsInput("");
-    setKnowsMetroName(false);
-    setSelectedMetroId("");
-    setShowStepsDetails(false);
-    setShowMetroHelpDetails(false);
-    setShowResultDetails(false);
+  function handleTotalMillsChange(raw: string) {
+    totalMillsDirtyRef.current = true;
+    setTotalMillsInput(raw);
+  }
+
+  function handleTotalMillsBlur() {
+    const parsed = parseMills(totalMillsInput);
+    if (parsed == null || parsed <= 0) {
+      if (prefillTotalMills != null && prefillTotalMills > 0) {
+        const formatted =
+          Math.round(prefillTotalMills * 1000) / 1000 === prefillTotalMills
+            ? String(prefillTotalMills)
+            : prefillTotalMills.toFixed(3);
+        setTotalMillsInput(formatted);
+      }
+      totalMillsDirtyRef.current = false;
+      return;
+    }
+    if (onApplyTotalMillsToLevy && parsed > 0) {
+      const baseline = prefillTotalMills ?? 0;
+      if (Math.abs(parsed - baseline) > 0.0005) {
+        onApplyTotalMillsToLevy(parsed);
+      }
+    }
+    totalMillsDirtyRef.current = false;
   }
 
   const taxRateSplitAnnouncement = `Split of your total property tax rate: ${shareOpsOfTotal.toFixed(1)} percent metro operations, ${shareDebtOfTotal.toFixed(1)} percent metro debt, ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
-  const resultAnnouncement = showResult
-    ? totalDistrictShare > 0
-      ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to metro district (operations + debt). ${taxRateSplitAnnouncement}`
-      : `No metro district mills shown in your property tax rate. ${taxRateSplitAnnouncement}`
-    : "";
 
-  const footerAria = embedded
-    ? "Reset metro calculator or open the full step-by-step guide"
-    : "Start over or return to tools menu";
+  let resultAnnouncement = "";
+  if (showResultCard) {
+    resultAnnouncement =
+      totalDistrictShare > 0
+        ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to metro district (operations + debt). ${taxRateSplitAnnouncement}`
+        : `No metro district mills shown in your property tax rate. ${taxRateSplitAnnouncement}`;
+  } else if (totalMills > 0 && !selectedMetroId) {
+    resultAnnouncement = "Select a metro district to see your share.";
+  }
+
+  const isNoAutoMatch = metroFromLevyStack?.kind === "no_metro_lgid_match";
 
   return (
     <>
@@ -203,714 +274,495 @@ export function MetroTaxShareFlow({
       </div>
       <section aria-labelledby={flowHeadingId} className="">
         <h2 id={flowHeadingId} className="sr-only">
-          Step-by-step: find your numbers and see your result
+          Metro district tax share
         </h2>
-        <ol className="space-y-6 sm:space-y-8">
-          <li>
-            <div className={CARD_CLASS_CLIPPED}>
-              <div className={CARD_HEADER_CLASS}>
-                Step 1 - Do you live in a metro district?
-              </div>
-              <div className={`${CARD_BODY_CLASS} space-y-2`}>
-                <p className="text-base text-slate-800 sm:text-lg">
-                  Check the{" "}
-                  <a
-                    href="https://gis.dola.colorado.gov/CO_SpecialDistrict/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
-                  >
-                    Colorado Special Districts map
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>{" "}
-                  for a <strong>metro district</strong> covering your property.
-                </p>
-                <p className="text-base text-slate-800 sm:text-lg">
-                  If you do not see a metro district covering your property, you
-                  can stop here.
-                </p>
-                <InfoDetails title="What&apos;s a metro district?">
-                  <div className="space-y-2">
-                    <p>
-                      A <strong>metro district</strong> (metropolitan district)
-                      is a local government that can charge property taxes in
-                      your neighborhood for things like roads, parks, and
-                      water. Often part of that tax goes to paying off long-term
-                      debt (bonds).
-                    </p>
-                    <p>
-                      A bond is like a long-term IOU: the district borrows money
-                      to build things, then repays it over many years using a
-                      portion of property taxes. The &quot;debt service&quot;
-                      number in this tool is the part of your tax rate that goes
-                      to those repayments.
-                    </p>
-                    <p>
-                      <strong>How it is supposed to work:</strong> Developers
-                      often form metro districts and the district may issue
-                      bonds that investors (sometimes the developer) buy. In a
-                      conservative or well-run district, the money borrowed
-                      roughly matches the cost of roads, parks, and other
-                      improvements, and property taxes simply pay that debt back
-                      over time.
-                    </p>
-                    <p>
-                      <strong>How it can be abused:</strong> In other districts,
-                      the bonds are used as a cash-flow strategy: the amount
-                      borrowed is intentionally larger than what was spent on
-                      improvements so investors can make a profit. Homeowners
-                      repay that debt through property taxes over many years,
-                      and can end up paying for infrastructure twice: once in
-                      the home price and again through their tax bill.
-                    </p>
-                    <p>
-                      On top of that, many metro district debt service mill
-                      levies are approved by voters as TABOR-exempt.
-                      Colorado&apos;s Taxpayer&apos;s Bill of Rights (TABOR)
-                      normally limits how fast local government tax revenue can
-                      grow. But metro district voters can approve mill levies
-                      that are TABOR-exempt, especially for debt payments. Those
-                      levies are allowed to increase as needed to cover bonds and
-                      other obligations, even when other parts of a tax bill are
-                      held down by TABOR limits.
-                    </p>
-                    <p>
-                      Early on, the only &quot;voters&quot; in a new metro
-                      district are often the developer and people closely tied to
-                      them. It is not unusual for a developer to sell tiny
-                      parcels to employees or other insiders for the sole
-                      purpose of making them property owners with voting power.
-                      They then unanimously approve high mill levies, generous
-                      debt authority, and TABOR-exempt status for that debt. That
-                      structure can leave homeowners locked into years of high
-                      tax collections with little oversight, weak accountability,
-                      and almost no practical way for them to push back. In
-                      Colorado, metropolitan districts are a type of special
-                      district, and special districts are explicitly exempt from
-                      the jurisdiction of the Colorado Independent Ethics
-                      Commission.
-                    </p>
-                  </div>
-                </InfoDetails>
-              </div>
-            </div>
-          </li>
-          <li>
-            <div className={CARD_CLASS_CLIPPED}>
-              <div className={CARD_HEADER_CLASS}>
-                {embedded ? "Step 2 - Your property" : "Step 2 - Find your property"}
-              </div>
-              <div className={`${CARD_BODY_CLASS} space-y-2`}>
-                {embedded ? (
-                  <p className="text-base text-slate-800 sm:text-lg">
-                    You already looked up your parcel above. Open the county{" "}
-                    <a
-                      href={ASSESSOR_SEARCH_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
-                    >
-                      property search
-                      <span className="sr-only"> (opens in a new tab)</span>
-                    </a>{" "}
-                    any time you need your official parcel record.
-                  </p>
-                ) : (
-                  <p className="text-base text-slate-800 sm:text-lg">
-                    Open the county{" "}
-                    <a
-                      href={ASSESSOR_SEARCH_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
-                    >
-                      property search
-                      <span className="sr-only"> (opens in a new tab)</span>
-                    </a>
-                    , type your address, then open the county assessor property
-                    details page (your parcel record).
-                  </p>
-                )}
-              </div>
-            </div>
-          </li>
-          <li>
-            <div className={CARD_CLASS_CLIPPED}>
-              <div className={CARD_HEADER_CLASS}>
-                Step 3 - Find total property tax mills
-              </div>
-              <div className={`${CARD_BODY_CLASS} space-y-2`}>
-                <p className="text-base text-slate-800 sm:text-lg">
-                  On the property details page, find{" "}
-                  <strong>2025 Mill Levy</strong> (your total property tax mills,
-                  example: 183.894). Enter it below.
-                </p>
-                {embedded ? (
-                  <p className="text-sm text-slate-600 sm:text-base">
-                    When your levy breakdown above has a full total, we
-                    pre-fill this field while it is empty. You can always edit
-                    it to match your bill.
-                  </p>
-                ) : null}
-                <HelpPillButton
-                  onClick={() => setShowStepsDetails((prev) => !prev)}
+
+        <div className="space-y-6 sm:space-y-8">
+        {showResultCard ? (
+          <div
+            role="region"
+            aria-labelledby={`${p}metro-result-heading`}
+            className="rounded-lg border border-slate-200 bg-slate-50/90 p-4 sm:p-5"
+          >
+            <h3
+              id={`${p}metro-result-heading`}
+              className="text-sm font-semibold text-slate-900 sm:text-base"
+            >
+              Result
+            </h3>
+              <p className="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl sm:mt-4">
+                {totalDistrictShare.toFixed(1)}%
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-700 sm:text-base">
+                {totalDistrictShare > 0
+                  ? "Share of your property taxes going to your metro district (operations + debt)"
+                  : "No metro district mills shown in your property tax rate"}
+              </p>
+              <div className="mt-5 space-y-3">
+                <p
+                  id={`${p}tax-rate-split-heading`}
+                  className="text-sm font-semibold text-slate-900 sm:text-base"
                 >
-                  {showStepsDetails
-                    ? "Hide 2025 Mill Levy screenshot"
-                    : "Show where to find 2025 Mill Levy"}
-                </HelpPillButton>
-                {showStepsDetails && (
-                  <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
-                    <p className="mb-3">
-                      Look for <strong>2025 Mill Levy</strong> on the property
-                      details page.
-                    </p>
-                    <figure>
-                      <a
-                        href={propertyPageImg.src}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block cursor-pointer"
-                      >
-                        <Image
-                          src={propertyPageImg}
-                          alt="Arapahoe County property page with 2025 Mill Levy and Tax District Levies link highlighted."
-                          className="w-full rounded border border-slate-400"
-                          width={800}
-                          height={500}
-                        />
-                        <span className="sr-only"> (opens in a new tab)</span>
-                      </a>
-                      <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">
-                        Tap image to open full size.
-                      </figcaption>
-                    </figure>
-                  </div>
-                )}
-                <div className="pt-1">
-                  <label htmlFor={totalMillsId} className="sr-only">
-                    Total property tax rate (mills)
-                  </label>
-                  <input
-                    id={totalMillsId}
-                    name={totalMillsId}
-                    type="number"
-                    inputMode="decimal"
-                    step="0.001"
-                    placeholder="Example: 183.894"
-                    className={INPUT_CLASS}
-                    value={totalMillsInput}
-                    onChange={(e) => setTotalMillsInput(e.target.value)}
-                    aria-describedby={totalMillsHintId}
-                  />
-                  <p
-                    id={totalMillsHintId}
-                    className="mt-1 text-sm text-slate-500 sm:text-base"
-                  >
-                    Total property tax rate (mills)
-                  </p>
-                </div>
-                <MillsDefinitionInfoDetails />
-                <LevyDefinitionInfoDetails />
-              </div>
-            </div>
-          </li>
-          <li>
-            <div className={CARD_CLASS_DROPDOWN}>
-              <div className={CARD_HEADER_CLASS_DROPDOWN}>Step 4 - Metro mills</div>
-              <div className={`${CARD_BODY_CLASS_DROPDOWN} space-y-3`}>
-                <div className="rounded-md border border-slate-300 bg-white px-3 py-2">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base">
-                    <input
-                      id={knowsMetroNameId}
-                      type="checkbox"
-                      checked={knowsMetroName}
-                      onChange={(e) => {
-                        setKnowsMetroName(e.target.checked);
-                        if (e.target.checked) setShowMetroHelpDetails(false);
-                      }}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-900 focus:ring-indigo-700"
-                    />
-                    <label
-                      htmlFor={knowsMetroNameId}
-                      className="text-base font-medium text-slate-900"
-                    >
-                      I know my metro district&apos;s name
-                    </label>
+                  Your total property tax rate, in three parts
+                </p>
+                <p id={`${p}tax-rate-split-desc`} className="sr-only">
+                  Stacked bar: {shareOpsOfTotal.toFixed(1)} percent metro
+                  operations, {shareDebtOfTotal.toFixed(1)} percent metro debt,{" "}
+                  {shareOtherOfTotal.toFixed(1)} percent other local districts and
+                  taxes. Percentages are shares of your total mill rate.
+                </p>
+                <div
+                  className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                  aria-hidden="true"
+                >
+                  <div className="flex h-full w-full">
+                    {stackWidthOps > 0 ? (
+                      <div
+                        className="h-full min-w-0 bg-emerald-600"
+                        style={{ width: `${stackWidthOps}%` }}
+                      />
+                    ) : null}
+                    {stackWidthDebt > 0 ? (
+                      <div
+                        className="h-full min-w-0 bg-red-700"
+                        style={{ width: `${stackWidthDebt}%` }}
+                      />
+                    ) : null}
+                    {stackWidthOther > 0 ? (
+                      <div
+                        className="h-full min-w-0 bg-slate-300"
+                        style={{ width: `${stackWidthOther}%` }}
+                      />
+                    ) : null}
                   </div>
                 </div>
-                {!knowsMetroName && (
-                  <>
-                    <p className="text-base text-slate-800 sm:text-lg">
-                      On your property details page, tap the{" "}
-                      <strong>2025 Mill Levy</strong> number from Step 3. Find
-                      the row with your metro district&apos;s{" "}
-                      <strong>name</strong>.
-                    </p>
-                    <HelpPillButton
-                      onClick={() => setShowMetroHelpDetails((prev) => !prev)}
-                    >
-                      {showMetroHelpDetails
-                        ? "Hide metro district row example"
-                        : "Show metro district row example"}
-                    </HelpPillButton>
-                    {showMetroHelpDetails && (
-                      <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
-                        <p className="mb-3">
-                          Use this page to identify the metro district name (the
-                          row label).
-                        </p>
-                        <figure>
-                          <a
-                            href={millLevyDetailImg.src}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block cursor-pointer"
-                          >
-                            <Image
-                              src={millLevyDetailImg}
-                              alt="County tax levies table with the metro district name highlighted (example: Sky Ranch Metro Dist. #3)."
-                              className="w-full rounded border border-slate-400"
-                              width={800}
-                              height={500}
-                            />
-                            <span className="sr-only"> (opens in a new tab)</span>
-                          </a>
-                          <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">
-                            Tap image to open full size.
-                          </figcaption>
-                        </figure>
-                      </div>
-                    )}
-                  </>
-                )}
-                <div>
-                  <p className="text-base text-slate-800 sm:text-lg">
-                    Select your metro district here. We&apos;ll fill in the{" "}
-                    <strong>metro mills</strong> automatically (including{" "}
-                    <strong className="text-red-900">debt service mills</strong>,
-                    if any).
-                  </p>
-                  {metroOptions.length > 0 && (
-                    <MetroDistrictSelect
-                      metroOptions={metroOptions}
-                      selectedMetroId={selectedMetroId}
-                      onSelect={(id) => setSelectedMetroId(id)}
-                    />
-                  )}
-                  <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">
-                    All metro districts from the county form are listed (including
-                    ones with 0 debt mills).
-                  </p>
-                  {bundledAsOfLabel && bundledAsOfIso ? (
-                    <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">
-                      Levy data snapshot bundled{" "}
-                      <time dateTime={bundledAsOfIso}>{bundledAsOfLabel}</time>
-                      {" "}
-                      (when this site&apos;s copy of the county PDF was
-                      processed). Verify on the{" "}
-                      <a
-                        href={MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={COUNTY_EXTERNAL_LINK_CLASS}
-                      >
-                        official PDF
-                        <span className="sr-only"> (opens in a new tab)</span>
-                      </a>{" "}
-                      if you need the latest certification.{" "}
-                      <Link href="/sources" className={COUNTY_EXTERNAL_LINK_CLASS}>
-                        Sources
-                      </Link>{" "}
-                      has methodology.
-                    </p>
-                  ) : null}
-                  {selectedDistrict && (
-                    <p className="mt-2 text-sm text-slate-800 sm:text-base">
-                      <span className="font-medium text-red-900">
-                        Debt service mills used:
-                      </span>{" "}
-                      <span className="font-mono text-slate-800">
-                        {metroDebtMills.toFixed(3)}
+                <ul
+                  className="space-y-2.5 text-sm text-slate-800 sm:text-base"
+                  aria-labelledby={`${p}tax-rate-split-heading`}
+                  aria-describedby={`${p}tax-rate-split-desc`}
+                >
+                  <li className="flex items-start justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-emerald-600"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="font-medium text-slate-900">
+                          Metro operations
+                        </span>
+                        <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                          Day-to-day metro district services
+                        </span>
                       </span>
-                    </p>
-                  )}
-                </div>
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                      {shareOpsOfTotal.toFixed(1)}%
+                    </span>
+                  </li>
+                  <li className="flex items-start justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-red-700"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="font-medium text-slate-900">
+                          Metro debt
+                        </span>
+                        <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                          Bond repayments and similar debt
+                        </span>
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                      {shareDebtOfTotal.toFixed(1)}%
+                    </span>
+                  </li>
+                  <li className="flex items-start justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="font-medium text-slate-900">
+                          Everything else
+                        </span>
+                        <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                          Schools, county, city, and other local districts
+                        </span>
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                      {shareOtherOfTotal.toFixed(1)}%
+                    </span>
+                  </li>
+                </ul>
               </div>
-            </div>
-          </li>
-          {showResult && (
-            <li>
-              <div className="overflow-hidden rounded-xl border-2 border-indigo-950 bg-indigo-950">
-                <div className={CARD_HEADER_CLASS}>Result</div>
-                <div className={CARD_BODY_CLASS}>
-                  <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-                    {totalDistrictShare.toFixed(1)}%
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-slate-700 sm:text-base">
-                    {totalDistrictShare > 0
-                      ? "Share of your property taxes going to your metro district (operations + debt)"
-                      : "No metro district mills shown in your property tax rate"}
-                  </p>
-                  <div className="mt-5 space-y-3">
-                    <p
-                      id={`${p}tax-rate-split-heading`}
-                      className="text-sm font-semibold text-slate-900 sm:text-base"
-                    >
-                      Your total property tax rate, in three parts
-                    </p>
-                    <p id={`${p}tax-rate-split-desc`} className="sr-only">
-                      Stacked bar: {shareOpsOfTotal.toFixed(1)} percent metro
-                      operations, {shareDebtOfTotal.toFixed(1)} percent metro
-                      debt, {shareOtherOfTotal.toFixed(1)} percent other local
-                      districts and taxes. Percentages are shares of your total
-                      mill rate.
-                    </p>
-                    <div
-                      className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
-                      aria-hidden="true"
-                    >
-                      <div className="flex h-full w-full">
-                        {stackWidthOps > 0 && (
-                          <div
-                            className="h-full min-w-0 bg-emerald-600"
-                            style={{ width: `${stackWidthOps}%` }}
-                          />
-                        )}
-                        {stackWidthDebt > 0 && (
-                          <div
-                            className="h-full min-w-0 bg-red-700"
-                            style={{ width: `${stackWidthDebt}%` }}
-                          />
-                        )}
-                        {stackWidthOther > 0 && (
-                          <div
-                            className="h-full min-w-0 bg-slate-300"
-                            style={{ width: `${stackWidthOther}%` }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                    <ul
-                      className="space-y-2.5 text-sm text-slate-800 sm:text-base"
-                      aria-labelledby={`${p}tax-rate-split-heading`}
-                      aria-describedby={`${p}tax-rate-split-desc`}
-                    >
-                      <li className="flex items-start justify-between gap-3">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span
-                            className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-emerald-600"
-                            aria-hidden="true"
-                          />
-                          <span className="min-w-0">
+              {selectedDistrict && fullDistrict ? (
+                <>
+                  {showResultDetails ? (
+                    <div className="mt-4 space-y-4 text-sm text-slate-800 sm:text-base">
+                      <div className="overflow-hidden rounded-lg border border-slate-300 bg-slate-50">
+                        <div className="border-b border-slate-200 bg-white px-3 py-2.5 sm:px-4">
+                          <p className="font-semibold text-indigo-950">
+                            Check the math
+                          </p>
+                          <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+                            County file for{" "}
                             <span className="font-medium text-slate-900">
-                              Metro operations
+                              {selectedDistrict.name}
                             </span>
-                            <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                              Day-to-day metro district services
+                            . Metro debt mills here match the{" "}
+                            <strong>debt mills</strong> value for this district in
+                            the picker (to three decimals:{" "}
+                            <span className="font-mono">
+                              {metroDebtMills.toFixed(3)}
                             </span>
-                          </span>
-                        </span>
-                        <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                          {shareOpsOfTotal.toFixed(1)}%
-                        </span>
-                      </li>
-                      <li className="flex items-start justify-between gap-3">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span
-                            className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-red-700"
-                            aria-hidden="true"
-                          />
-                          <span className="min-w-0">
-                            <span className="font-medium text-slate-900">
-                              Metro debt
-                            </span>
-                            <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                              Bond repayments and similar debt
-                            </span>
-                          </span>
-                        </span>
-                        <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                          {shareDebtOfTotal.toFixed(1)}%
-                        </span>
-                      </li>
-                      <li className="flex items-start justify-between gap-3">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span
-                            className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
-                            aria-hidden="true"
-                          />
-                          <span className="min-w-0">
-                            <span className="font-medium text-slate-900">
-                              Everything else
-                            </span>
-                            <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                              Schools, county, city, and other local districts
-                            </span>
-                          </span>
-                        </span>
-                        <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                          {shareOtherOfTotal.toFixed(1)}%
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
-                  {selectedDistrict && fullDistrict && (
-                    <>
-                      {showResultDetails && (
-                        <div className="mt-4 space-y-4 text-sm text-slate-800 sm:text-base">
-                          <div className="overflow-hidden rounded-lg border border-slate-300 bg-slate-50">
-                            <div className="border-b border-slate-200 bg-white px-3 py-2.5 sm:px-4">
-                              <p className="font-semibold text-indigo-950">
-                                Check the math
-                              </p>
-                              <p className="mt-1 text-xs text-slate-600 sm:text-sm">
-                                County file for{" "}
-                                <span className="font-medium text-slate-900">
-                                  {selectedDistrict.name}
-                                </span>
-                                . Debt mills in the table match{" "}
-                                <strong>Debt service mills used</strong> in Step 4
-                                (shown to three decimals there:{" "}
-                                <span className="font-mono">
-                                  {metroDebtMills.toFixed(3)}
-                                </span>
-                                ). Official PDF and related county links are at
-                                the bottom of this section.
-                              </p>
-                            </div>
-                            <div className="overflow-x-auto px-3 py-3 sm:px-4">
-                              <table className="w-full min-w-[280px] border-collapse text-left text-xs sm:text-sm">
-                                <caption className="sr-only">
-                                  Mill rates used in this result
-                                </caption>
-                                <thead>
-                                  <tr className="border-b border-slate-200 text-slate-600">
-                                    <th
-                                      scope="col"
-                                      className="py-1.5 pr-3 font-medium"
-                                    >
-                                      Item
-                                    </th>
-                                    <th
-                                      scope="col"
-                                      className="py-1.5 text-right font-medium tabular-nums"
-                                    >
-                                      Mills
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="font-mono text-slate-800">
-                                  <tr className="border-b border-slate-100">
-                                    <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                      Your total property tax mills (Step 3)
-                                    </td>
-                                    <td className="py-2 text-right tabular-nums">
-                                      {totalMills.toFixed(3)}
-                                    </td>
-                                  </tr>
-                                  <tr className="border-b border-slate-100">
-                                    <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                      Metro operations (county)
-                                    </td>
-                                    <td className="py-2 text-right tabular-nums">
-                                      {metroOpsMills.toFixed(3)}
-                                    </td>
-                                  </tr>
-                                  <tr className="border-b border-slate-100">
-                                    <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                      Metro debt service (county)
-                                    </td>
-                                    <td className="py-2 text-right tabular-nums">
-                                      {metroDebtMills.toFixed(3)}
-                                    </td>
-                                  </tr>
-                                  <tr className="border-b border-slate-100">
-                                    <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                      Metro total (county certified)
-                                    </td>
-                                    <td className="py-2 text-right tabular-nums">
-                                      {totalDistrictMills.toFixed(3)}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                      Everything else (rest of your bill)
-                                    </td>
-                                    <td className="py-2 text-right tabular-nums">
-                                      {otherMillsForStack.toFixed(3)}
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                            <div className="space-y-2 border-t border-slate-200 bg-white px-3 py-3 sm:px-4">
-                              <p className="text-xs font-medium text-slate-800 sm:text-sm">
-                                Shares of your total mills
-                              </p>
-                              {totalMills > 0 ? (
-                                <div className="space-y-1.5 font-mono text-[0.7rem] leading-snug text-slate-700 sm:text-xs">
-                                  <p>
-                                    Metro operations share ={" "}
-                                    {metroOpsMills.toFixed(3)} /{" "}
-                                    {totalMills.toFixed(3)} ={" "}
-                                    {shareOpsOfTotal.toFixed(1)}%
-                                  </p>
-                                  <p>
-                                    Metro debt share ={" "}
-                                    {metroDebtMills.toFixed(3)} /{" "}
-                                    {totalMills.toFixed(3)} ={" "}
-                                    {metroDebtPercentage.toFixed(1)}%
-                                  </p>
-                                  <p>
-                                    Metro total share (headline) ={" "}
-                                    {totalDistrictMills.toFixed(3)} /{" "}
-                                    {totalMills.toFixed(3)} ={" "}
-                                    {totalDistrictShare.toFixed(1)}%
-                                  </p>
-                                  <p>
-                                    Everything else share ={" "}
-                                    {otherMillsForStack.toFixed(3)} /{" "}
-                                    {totalMills.toFixed(3)} ={" "}
-                                    {shareOtherOfTotal.toFixed(1)}%
-                                  </p>
-                                </div>
-                              ) : null}
-                              {totalDistrictMills > 0 && (
-                                <p
-                                  className={
-                                    countyOpsDebtMatchesTotal
-                                      ? "text-xs text-slate-600 sm:text-sm"
-                                      : "text-xs text-amber-900 sm:text-sm"
-                                  }
-                                >
-                                  {countyOpsDebtMatchesTotal
-                                    ? `County check: metro operations (${metroOpsMills.toFixed(3)}) + metro debt from file (${metroDebtMillsFromAggregates.toFixed(3)}) equals metro total (${totalDistrictMills.toFixed(3)}).`
-                                    : `County data note: operations (${metroOpsMills.toFixed(3)}) plus debt from file (${metroDebtMillsFromAggregates.toFixed(3)}) is ${metroSumOpsPlusDebtFromFile.toFixed(3)} mills, which does not match certified metro total (${totalDistrictMills.toFixed(3)}). The headline uses the certified total.`}
-                                </p>
-                              )}
-                              {!pickerDebtMatchesAggregate &&
-                                totalDistrictMills > 0 && (
-                                  <p className="text-xs text-amber-900 sm:text-sm">
-                                    Debt mills used for the bar and formulas (
-                                    {metroDebtMills.toFixed(3)}) differ slightly
-                                    from the county file debt aggregate (
-                                    {metroDebtMillsFromAggregates.toFixed(3)}).
-                                  </p>
-                                )}
-                              {totalDistrictMills > 0 &&
-                                !barMatchesCountyTotal && (
-                                  <p className="text-xs text-amber-900 sm:text-sm">
-                                    Bar segments use operations plus debt (
-                                    {barMetroPartsSum.toFixed(3)} mills); the
-                                    headline metro share uses certified metro
-                                    total ({totalDistrictMills.toFixed(3)}{" "}
-                                    mills). Totals may differ slightly.
-                                  </p>
-                                )}
-                            </div>
-                          </div>
-                          <LevyLinesCard
-                            title="Debt service lines"
-                            description="Bonds and other debt line items from the county form."
-                            levies={metroDebtLevies}
-                            rateToMills={RATE_TO_MILLS}
-                            tone="debt"
-                            showAllLines
-                          />
-                          <LevyLinesCard
-                            title="Operations lines"
-                            description="Ongoing services and administration lines from the county form."
-                            levies={metroOpsLevies}
-                            rateToMills={RATE_TO_MILLS}
-                            showAllLines
-                          />
-                          <p className="text-[0.7rem] text-slate-500 sm:text-xs">
-                            Based on Arapahoe County&apos;s{" "}
-                            <a
-                              href={MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={COUNTY_EXTERNAL_LINK_CLASS}
-                            >
-                              Mill Levy Public Information Form
-                              <span className="sr-only">
-                                {" "}
-                                (opens in a new tab)
-                              </span>
-                            </a>{" "}
-                            (PDF) for tax year {levyJson.year}
-                            {bundledAsOfLabel && bundledAsOfIso ? (
-                              <>
-                                ; snapshot bundled{" "}
-                                <time dateTime={bundledAsOfIso}>
-                                  {bundledAsOfLabel}
-                                </time>
-                              </>
-                            ) : null}
-                            .{" "}
-                            {levyJson.source?.title
-                              ? `Full citation: ${levyJson.source.title}. `
-                              : null}
-                            More levy PDFs:{" "}
-                            <a
-                              href={ASSESSOR_MILL_LEVIES_HUB_URL}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={COUNTY_EXTERNAL_LINK_CLASS}
-                            >
-                              Assessor Mill Levies and Tax Districts
-                              <span className="sr-only">
-                                {" "}
-                                (opens in a new tab)
-                              </span>
-                            </a>
-                            .
+                            ). Official PDF and related county links are at the
+                            bottom of this section.
                           </p>
                         </div>
-                      )}
-                      <div className="mt-3">
-                        <HelpPillButton
-                          className="text-xs sm:text-sm"
-                          onClick={() =>
-                            setShowResultDetails((prev) => !prev)
-                          }
-                        >
-                          {showResultDetails
-                            ? "Hide rate split details"
-                            : "Show rate split details"}
-                        </HelpPillButton>
+                        <div className="overflow-x-auto px-3 py-3 sm:px-4">
+                          <table className="w-full min-w-[280px] border-collapse text-left text-xs sm:text-sm">
+                            <caption className="sr-only">
+                              Mill rates used in this result
+                            </caption>
+                            <thead>
+                              <tr className="border-b border-slate-200 text-slate-600">
+                                <th
+                                  scope="col"
+                                  className="py-1.5 pr-3 font-medium"
+                                >
+                                  Item
+                                </th>
+                                <th
+                                  scope="col"
+                                  className="py-1.5 text-right font-medium tabular-nums"
+                                >
+                                  Mills
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="font-mono text-slate-800">
+                              <tr className="border-b border-slate-100">
+                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
+                                  Your total property tax mills
+                                </td>
+                                <td className="py-2 text-right tabular-nums">
+                                  {totalMills.toFixed(3)}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-slate-100">
+                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
+                                  Metro operations (county)
+                                </td>
+                                <td className="py-2 text-right tabular-nums">
+                                  {metroOpsMills.toFixed(3)}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-slate-100">
+                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
+                                  Metro debt service (county)
+                                </td>
+                                <td className="py-2 text-right tabular-nums">
+                                  {metroDebtMills.toFixed(3)}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-slate-100">
+                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
+                                  Metro total (county certified)
+                                </td>
+                                <td className="py-2 text-right tabular-nums">
+                                  {totalDistrictMills.toFixed(3)}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
+                                  Everything else (rest of your bill)
+                                </td>
+                                <td className="py-2 text-right tabular-nums">
+                                  {otherMillsForStack.toFixed(3)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="space-y-2 border-t border-slate-200 bg-white px-3 py-3 sm:px-4">
+                          <p className="text-xs font-medium text-slate-800 sm:text-sm">
+                            Shares of your total mills
+                          </p>
+                          {totalMills > 0 ? (
+                            <div className="space-y-1.5 font-mono text-[0.7rem] leading-snug text-slate-700 sm:text-xs">
+                              <p>
+                                Metro operations share = {metroOpsMills.toFixed(3)}{" "}
+                                / {totalMills.toFixed(3)} ={" "}
+                                {shareOpsOfTotal.toFixed(1)}%
+                              </p>
+                              <p>
+                                Metro debt share = {metroDebtMills.toFixed(3)} /{" "}
+                                {totalMills.toFixed(3)} ={" "}
+                                {metroDebtPercentage.toFixed(1)}%
+                              </p>
+                              <p>
+                                Metro total share (headline) ={" "}
+                                {totalDistrictMills.toFixed(3)} /{" "}
+                                {totalMills.toFixed(3)} ={" "}
+                                {totalDistrictShare.toFixed(1)}%
+                              </p>
+                              <p>
+                                Everything else share ={" "}
+                                {otherMillsForStack.toFixed(3)} /{" "}
+                                {totalMills.toFixed(3)} ={" "}
+                                {shareOtherOfTotal.toFixed(1)}%
+                              </p>
+                            </div>
+                          ) : null}
+                          {totalDistrictMills > 0 ? (
+                            <p
+                              className={
+                                countyOpsDebtMatchesTotal
+                                  ? "text-xs text-slate-600 sm:text-sm"
+                                  : "text-xs text-amber-900 sm:text-sm"
+                              }
+                            >
+                              {countyOpsDebtMatchesTotal
+                                ? `County check: metro operations (${metroOpsMills.toFixed(3)}) + metro debt from file (${metroDebtMillsFromAggregates.toFixed(3)}) equals metro total (${totalDistrictMills.toFixed(3)}).`
+                                : `County data note: operations (${metroOpsMills.toFixed(3)}) plus debt from file (${metroDebtMillsFromAggregates.toFixed(3)}) is ${metroSumOpsPlusDebtFromFile.toFixed(3)} mills, which does not match certified metro total (${totalDistrictMills.toFixed(3)}). The headline uses the certified total.`}
+                            </p>
+                          ) : null}
+                          {!pickerDebtMatchesAggregate &&
+                          totalDistrictMills > 0 ? (
+                            <p className="text-xs text-amber-900 sm:text-sm">
+                              Debt mills used for the bar and formulas (
+                              {metroDebtMills.toFixed(3)}) differ slightly from the
+                              county file debt aggregate (
+                              {metroDebtMillsFromAggregates.toFixed(3)}).
+                            </p>
+                          ) : null}
+                          {totalDistrictMills > 0 && !barMatchesCountyTotal ? (
+                            <p className="text-xs text-amber-900 sm:text-sm">
+                              Bar segments use operations plus debt (
+                              {barMetroPartsSum.toFixed(3)} mills); the headline metro
+                              share uses certified metro total (
+                              {totalDistrictMills.toFixed(3)} mills). Totals may
+                              differ slightly.
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
-                    </>
-                  )}
+                      <LevyLinesCard
+                        title="Debt service lines"
+                        description="Bonds and other debt line items from the county form."
+                        levies={metroDebtLevies}
+                        rateToMills={RATE_TO_MILLS}
+                        tone="debt"
+                        showAllLines
+                      />
+                      <LevyLinesCard
+                        title="Operations lines"
+                        description="Ongoing services and administration lines from the county form."
+                        levies={metroOpsLevies}
+                        rateToMills={RATE_TO_MILLS}
+                        showAllLines
+                      />
+                      <p className="text-[0.7rem] text-slate-500 sm:text-xs">
+                        Based on Arapahoe County&apos;s{" "}
+                        <a
+                          href={MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={COUNTY_EXTERNAL_LINK_CLASS}
+                        >
+                          Mill Levy Public Information Form
+                          <span className="sr-only">
+                            {" "}
+                            (opens in a new tab)
+                          </span>
+                        </a>{" "}
+                        (PDF) for tax year {levyJson.year}
+                        {bundledAsOfLabel && bundledAsOfIso ? (
+                          <>
+                            ; snapshot bundled{" "}
+                            <time dateTime={bundledAsOfIso}>
+                              {bundledAsOfLabel}
+                            </time>
+                          </>
+                        ) : null}
+                        .{" "}
+                        {levyJson.source?.title
+                          ? `Full citation: ${levyJson.source.title}. `
+                          : null}
+                        More levy PDFs:{" "}
+                        <a
+                          href={ASSESSOR_MILL_LEVIES_HUB_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={COUNTY_EXTERNAL_LINK_CLASS}
+                        >
+                          Assessor Mill Levies and Tax Districts
+                          <span className="sr-only">
+                            {" "}
+                            (opens in a new tab)
+                          </span>
+                        </a>
+                        .
+                      </p>
+                    </div>
+                  ) : null}
+                  <div className="mt-3">
+                    <HelpPillButton
+                      className="text-xs sm:text-sm"
+                      onClick={() =>
+                        setShowResultDetails((prev) => !prev)
+                      }
+                    >
+                      {showResultDetails
+                        ? "Hide rate split details"
+                        : "Show rate split details"}
+                    </HelpPillButton>
+                  </div>
+                </>
+              ) : null}
+          </div>
+        ) : null}
+
+        <div className="space-y-4">
+            {metroFromLevyStack?.kind === "match" &&
+              selectedMetroId === metroFromLevyStack.districtId && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2.5 text-sm text-emerald-950 sm:text-base"
+                >
+                  <p className="font-medium text-emerald-950">
+                    You are all set here
+                  </p>
+                  <p className="mt-1 text-emerald-900">
+                    We matched your loaded property breakdown to{" "}
+                    <strong className="font-semibold text-emerald-950">
+                      {selectedDistrict?.name ?? "your metro district"}
+                    </strong>
+                    {" "}
+                    below. Change the selection anytime if it does not look right.
+                  </p>
                 </div>
+              )}
+            {isNoAutoMatch ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-sm text-amber-950 sm:text-base"
+              >
+                <p>
+                  <span className="font-medium text-amber-950">
+                    No metro district match found.
+                  </span>{" "}
+                  If you know you live in one, please select a metro district from
+                  the list below. If you are unsure, please see{" "}
+                  <a
+                    href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
+                  >
+                    this map
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                  .
+                </p>
               </div>
-            </li>
-          )}
-        </ol>
+            ) : null}
+
+            <div>
+              {!isNoAutoMatch ? (
+                <p className="text-base text-slate-800 sm:text-lg">
+                  Choose your <strong>metro district</strong>. Mills for each district
+                  come from the county file (shown in the list).
+                </p>
+              ) : null}
+              {metroOptions.length > 0 ? (
+                <MetroDistrictSelect
+                  metroOptions={metroOptions}
+                  selectedMetroId={selectedMetroId}
+                  onSelect={(id) => setSelectedMetroId(id)}
+                />
+              ) : null}
+            </div>
+
+            {selectedMetroId ? (
+              <div className="border-t border-slate-200 pt-4">
+                <label htmlFor={totalMillsId} className="sr-only">
+                  Total property tax rate (mills)
+                </label>
+                <p className="mb-1.5 text-base font-medium text-slate-900 sm:text-lg">
+                  Total property tax mills
+                </p>
+                {embedded &&
+                onApplyTotalMillsToLevy &&
+                prefillTotalMills != null &&
+                prefillTotalMills > 0 ? (
+                  <p className="mb-2 text-sm text-slate-600 sm:text-base">
+                    Matches your levy stack. Change the number and leave this field to
+                    rescale every line proportionally.
+                  </p>
+                ) : null}
+                <input
+                  id={totalMillsId}
+                  name={totalMillsId}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.001"
+                  placeholder="Example: 183.894"
+                  className={INPUT_CLASS}
+                  value={totalMillsInput}
+                  onChange={(e) => handleTotalMillsChange(e.target.value)}
+                  onBlur={handleTotalMillsBlur}
+                  aria-describedby={totalMillsHintId}
+                />
+                <p
+                  id={totalMillsHintId}
+                  className="mt-1 text-sm text-slate-500 sm:text-base"
+                >
+                  {onApplyTotalMillsToLevy && !isNoAutoMatch
+                    ? "Combined rate for all districts; kept in sync with the levy stack above when you leave the field."
+                    : isNoAutoMatch
+                      ? "Your combined rate from your tax bill or assessor page."
+                      : "Combined rate from your property tax bill or assessor page (all districts together)."}
+                </p>
+                {onReloadCountyLevyStack ? (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={onReloadCountyLevyStack}
+                      disabled={countyLevyReloadBusy}
+                      aria-label={
+                        countyLevyReloadBusy
+                          ? "Reloading levy data from the county file"
+                          : "Reset to county numbers. Reloads this parcel from the bundled county data, same as Load property data again."
+                      }
+                      className={`${btnOutlineSecondaryMd} cursor-pointer disabled:cursor-not-allowed disabled:opacity-60`}
+                    >
+                      {countyLevyReloadBusy
+                        ? "Reloading county data…"
+                        : "Reset to county numbers"}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+        </div>
+        </div>
       </section>
-      <div
-        className={`flex flex-wrap items-center gap-3 ${embedded ? "mt-6 justify-start" : "mt-8 justify-center"}`}
-        role="group"
-        aria-label={footerAria}
-      >
-        <button
-          type="button"
-          onClick={handleStartOver}
-          className={btnOutlinePrimaryMd}
-        >
-          Start over
-        </button>
-        {embedded ? (
-          <Link href="/metro-tax-lookup" className={btnOutlinePrimaryMd}>
-            Full metro district guide
-          </Link>
-        ) : (
-          <Link href="/" className={btnOutlinePrimaryMd}>
-            Back to tools
-          </Link>
-        )}
-      </div>
+      {embedded && selectedMetroId ? (
+        <p className="mt-6 text-sm text-slate-600 sm:text-base">
+          To reset this calculator and your levy breakdown, use{" "}
+          <strong className="font-semibold text-slate-800">Start over</strong>{" "}
+          in the <strong className="font-semibold text-slate-800">Start with your address</strong>{" "}
+          section above.
+        </p>
+      ) : null}
     </>
   );
 }

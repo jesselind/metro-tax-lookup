@@ -64,6 +64,11 @@ const nextConfig: NextConfig = {
         destination: "/",
         permanent: true,
       },
+      {
+        source: "/metro-tax-lookup",
+        destination: "/",
+        permanent: true,
+      },
     ];
   },
   async headers() {

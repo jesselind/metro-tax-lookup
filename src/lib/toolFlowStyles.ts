@@ -53,6 +53,10 @@ export const INPUT_CLASS =
 export const CARD_CLASS_CLIPPED =
   "overflow-hidden rounded-xl border border-slate-700 bg-slate-700";
 
+/** Same shell as {@link CARD_CLASS_CLIPPED} but overflow visible (e.g. metro district combobox). */
+export const CARD_CLASS_TOOL_OVERFLOW_VISIBLE =
+  "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
+
 export const CARD_HEADER_CLASS =
   "px-4 py-3 text-base font-semibold text-white sm:px-5";
 
@@ -67,6 +71,13 @@ export const CARD_BODY_PADDING_X = "px-4 sm:px-5";
 export const CARD_BODY_PADDING_Y = "py-4 sm:pt-5 sm:pb-5";
 
 export const CARD_BODY_CLASS = `bg-white ${CARD_BODY_PADDING_X} ${CARD_BODY_PADDING_Y}`;
+
+/**
+ * Bottom radius for the white panel under a slate header when the outer shell uses
+ * {@link CARD_CLASS_TOOL_OVERFLOW_VISIBLE} (no section clipping). Use the same radius as the
+ * shell (`rounded-xl` / 12px) so the white fill meets the border curve instead of square wedges.
+ */
+export const CARD_BODY_ROUNDED_BOTTOM_CLASS = "rounded-b-xl";
 
 /** Hub home: full-card link (one tab stop, stretched hit target). Pair with hub header/body classes. */
 export const TOOL_CARD_LINK_CLASS =

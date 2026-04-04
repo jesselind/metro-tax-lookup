@@ -3,15 +3,26 @@
 import Image from "next/image";
 import { useState } from "react";
 import parcelPinImg from "@/assets/images/Parcel-PIN.png";
+import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { HelpPillButton } from "@/components/HelpPillButton";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH as ASSESSOR_SEARCH_URL } from "@/lib/arapahoeCountyUrls";
 import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 
+type CountyParcelPinLookupHelpProps = {
+  /**
+   * When true, adds **Tax District Levies** / **2025 Mill Levy** guidance and the same
+   * screenshot toggles used under metro "Having trouble?" (for Add tile and total mills).
+   */
+  includeLevyTableScreenshots?: boolean;
+};
+
 /**
  * County assessor property search + where to find parcel PIN (shared home-page help body).
- * Shared by the levy breakdown flow and the home address card when situs lookup has no match.
+ * Used from the home address card when situs lookup has no match (optionally with levy table help).
  */
-export function CountyParcelPinLookupHelp() {
+export function CountyParcelPinLookupHelp({
+  includeLevyTableScreenshots = false,
+}: CountyParcelPinLookupHelpProps) {
   const [showParcelPinHelp, setShowParcelPinHelp] = useState(false);
 
   return (
@@ -71,6 +82,21 @@ export function CountyParcelPinLookupHelp() {
           </div>
         ) : null}
       </div>
+      {includeLevyTableScreenshots ? (
+        <div className="mt-4 space-y-3 border-t border-slate-200 pt-4">
+          <h4 className="text-sm font-semibold text-slate-900 sm:text-base">
+            Levy table and total mills (same parcel page)
+          </h4>
+          <p className="text-base text-slate-800 sm:text-lg">
+            On that parcel record, open{" "}
+            <strong>Tax District Levies</strong> (sidebar link) for the table you
+            can copy into <strong>Add tile</strong> here.{" "}
+            <strong>2025 Mill Levy</strong> on the page is your total mills if you
+            need to check or type it.
+          </p>
+          <CountyAssessorMillLevyFigures />
+        </div>
+      ) : null}
     </div>
   );
 }

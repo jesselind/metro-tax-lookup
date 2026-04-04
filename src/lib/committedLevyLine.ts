@@ -42,6 +42,39 @@ export function parseMills(raw: string): number | null {
   return Math.round(n * 1000) / 1000;
 }
 
+const MILLS_ROUND = 1000;
+
+/**
+ * Scale each line's mills proportionally so the stack sums to the given total.
+ * The last line absorbs rounding drift so the total matches to three decimals.
+ */
+export function scaleLevyLinesToTargetTotal(
+  lines: CommittedLevyLine[],
+  targetTotal: number,
+): CommittedLevyLine[] {
+  if (lines.length === 0 || targetTotal <= 0) return lines;
+  const sum = lines.reduce((a, l) => a + l.mills, 0);
+  if (sum <= 0) return lines;
+  const factor = targetTotal / sum;
+  const scaled = lines.map((l) => ({
+    ...l,
+    mills: Math.round(l.mills * factor * MILLS_ROUND) / MILLS_ROUND,
+  }));
+  const newSum = scaled.reduce((a, l) => a + l.mills, 0);
+  const drift =
+    Math.round((targetTotal - newSum) * MILLS_ROUND) / MILLS_ROUND;
+  if (drift === 0) return scaled;
+  const last = scaled[scaled.length - 1]!;
+  return [
+    ...scaled.slice(0, -1),
+    {
+      ...last,
+      mills:
+        Math.round((last.mills + drift) * MILLS_ROUND) / MILLS_ROUND,
+    },
+  ];
+}
+
 export function displayAuthorityForLevyLine(authority: string): string {
   return authority.trim() || "Line (add a name)";
 }
