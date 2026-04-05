@@ -5,7 +5,6 @@ import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLe
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { LevyStackVisualization } from "@/components/LevyStackVisualization";
-import { MetroToolConstructionBanner } from "@/components/UnderConstructionBanner";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { MetroHavingTroubleInfoDetails } from "@/components/MetroHavingTroubleInfoDetails";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
@@ -26,7 +25,11 @@ import {
   fetchArapahoeSitusToPinsJson,
   lookupPinsBySitusKey,
   normalizeStreetNameKey,
+  resolveSitusFieldsForLookup,
+  situsUnitLooksLikeStreetAutofillDuplicate,
+  SITUS_AUTOFILL_LINE1_MAX_LEN,
   SITUS_INPUT_MAX_LEN,
+  trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyStackForPinLoad } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
@@ -81,6 +84,9 @@ const addressSitusGrid = {
 } as const;
 
 const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnOutlinePrimaryMd} inline-flex w-full min-w-0 justify-center sm:flex-1 md:flex-1 lg:w-auto lg:min-w-[7.5rem] lg:flex-none`;
+
+/** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
+const AC_SECTION = "section-arapahoe-situs";
 
 export function HomeParcelAddressLookup() {
   const [streetNumber, setStreetNumber] = useState("");
@@ -149,6 +155,21 @@ export function HomeParcelAddressLookup() {
       setAddressSectionExpanded(false);
     }
   }, [successfulLoadKey]);
+
+  /** Mobile autofill often ignores autocomplete=off on Unit; strip duplicate street lines. */
+  useEffect(() => {
+    if (
+      !situsUnitLooksLikeStreetAutofillDuplicate(
+        unit,
+        streetNumber,
+        streetNumberSuffix,
+        streetName,
+      )
+    ) {
+      return;
+    }
+    setUnit("");
+  }, [unit, streetNumber, streetNumberSuffix, streetName]);
 
   useEffect(() => {
     if (
@@ -266,16 +287,46 @@ export function HomeParcelAddressLookup() {
     setHomeLevyWorkbenchOpen(true);
   }
 
+  function applySitusBlurSplit(
+    rawFromInput: string,
+    mode: "number" | "street",
+  ) {
+    const split = trySitusAutofillBlurSplit(rawFromInput, mode, {
+      streetNumber,
+      streetNumberSuffix,
+      streetName,
+    });
+    if (!split) return;
+    setStreetNumber(split.streetNumber);
+    setStreetNumberSuffix(split.streetNumberSuffix);
+    setStreetName(split.streetName);
+  }
+
   async function onLookup() {
     if (busy) return;
     clearAllLevyState();
     setError(null);
     setHits(null);
     setShowCountyPinFallback(false);
-    const num = streetNumber.trim();
-    const suffix = streetNumberSuffix.trim();
-    const nameRaw = streetName.trim();
-    const unitTrim = unit.trim();
+
+    const { resolved, syncNumberFieldsToState, clearUnitToState } =
+      resolveSitusFieldsForLookup(
+        streetNumber,
+        streetNumberSuffix,
+        streetName,
+        unit,
+      );
+    const { num, suffix, nameRaw, unitTrim } = resolved;
+
+    if (syncNumberFieldsToState) {
+      setStreetNumber(resolved.num);
+      setStreetNumberSuffix(resolved.suffix);
+      setStreetName(resolved.nameRaw);
+    }
+    if (clearUnitToState) {
+      setUnit("");
+    }
+
     if (num.length > SITUS_INPUT_MAX_LEN.streetNumber) {
       setError("Street number is too long.");
       return;
@@ -317,12 +368,7 @@ export function HomeParcelAddressLookup() {
         );
         return;
       }
-      const key = buildSitusLookupKey(
-        streetNumber,
-        streetNumberSuffix,
-        streetName,
-        unit,
-      );
+      const key = buildSitusLookupKey(num, suffix, nameRaw, unitTrim);
       if (!key) {
         setError("Could not build a lookup key from those fields.");
         return;
@@ -407,6 +453,10 @@ export function HomeParcelAddressLookup() {
     levyLoadBusy ||
     levyLoadError != null ||
     homeLevyWorkbenchOpen;
+
+  /** PIN entry + workbench shortcut stay hidden until address search needs a manual PIN path. */
+  const showParcelPinSection =
+    showCountyPinFallback || (hits != null && hits.length > 1);
 
   return (
     <>
@@ -499,13 +549,16 @@ export function HomeParcelAddressLookup() {
               <input
                 id="home-situs-number"
                 type="text"
-                inputMode="numeric"
-                autoComplete="off"
+                name="situs_line1"
+                inputMode="text"
+                enterKeyHint="next"
+                autoComplete={`${AC_SECTION} address-line1`}
                 spellCheck={false}
-                maxLength={SITUS_INPUT_MAX_LEN.streetNumber}
+                maxLength={SITUS_AUTOFILL_LINE1_MAX_LEN}
                 className={`${INPUT_ROW} ${addressSitusGrid.numberInput}`}
                 value={streetNumber}
                 onChange={(e) => setStreetNumber(e.target.value)}
+                onBlur={(e) => applySitusBlurSplit(e.target.value, "number")}
                 disabled={busy}
               />
             </div>
@@ -528,6 +581,8 @@ export function HomeParcelAddressLookup() {
               <input
                 id="home-situs-number-suffix"
                 type="text"
+                name="arapahoe_situs_number_suffix"
+                enterKeyHint="next"
                 autoComplete="off"
                 spellCheck={false}
                 maxLength={SITUS_INPUT_MAX_LEN.numberSuffix}
@@ -553,12 +608,15 @@ export function HomeParcelAddressLookup() {
               <input
                 id="home-situs-street"
                 type="text"
+                name="arapahoe_situs_street_name"
+                enterKeyHint="next"
                 autoComplete="off"
                 spellCheck={false}
                 maxLength={SITUS_INPUT_MAX_LEN.streetName}
                 className={`${INPUT_ROW} ${addressSitusGrid.streetInput}`}
                 value={streetName}
                 onChange={(e) => setStreetName(e.target.value)}
+                onBlur={(e) => applySitusBlurSplit(e.target.value, "street")}
                 disabled={busy}
                 placeholder="e.g. Holly or South Holly Circle"
               />
@@ -574,7 +632,11 @@ export function HomeParcelAddressLookup() {
               <input
                 id="home-situs-unit"
                 type="text"
+                name="situs_unit"
+                enterKeyHint="done"
                 autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
                 spellCheck={false}
                 maxLength={SITUS_INPUT_MAX_LEN.unit}
                 className={`${INPUT_ROW} ${addressSitusGrid.unitInput}`}
@@ -609,98 +671,96 @@ export function HomeParcelAddressLookup() {
               </div>
             </div>
           </form>
-          <div
-            className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
-            aria-labelledby="home-parcel-pin-heading"
-          >
-            <h3
-              id="home-parcel-pin-heading"
-              className="mb-2 text-sm font-semibold text-slate-900 sm:text-base"
+          {showParcelPinSection ? (
+            <div
+              className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
+              aria-labelledby="home-parcel-pin-heading"
             >
-              Parcel PIN
-            </h3>
-            <p
-              id="home-parcel-pin-hint"
-              className="mb-3 text-sm text-slate-700"
-            >
-              {showCountyPinFallback
-                ? "Enter the PIN from your county parcel record (see help below if needed)."
-                : hits != null && hits.length > 1
-                  ? "Pick the row that matches your property below, or type a PIN here if you already know it. If you are unsure, verify on the county parcel record (see note under the list)."
-                  : hits != null && hits.length === 1
-                    ? "Filled in from your address match. Change it only if you meant a different parcel."
-                    : "Search your address above, or enter a PIN from your county parcel record if you already have it."}
-            </p>
-            {levyReadyForSummary && hasLoadedTaxAuthCode ? (
-              <p
-                id="home-parcel-pin-tax-auth"
-                className="mb-3 text-sm text-slate-600"
+              <h3
+                id="home-parcel-pin-heading"
+                className="mb-2 text-sm font-semibold text-slate-900 sm:text-base"
               >
-                Taxing authority code (the county levy screen labels this
-                &quot;Taxing authority&quot;):{" "}
-                <span className="font-mono font-semibold tabular-nums text-slate-900">
-                  {loadedTaxAuthCodeDisplay}
-                </span>
+                Parcel PIN
+              </h3>
+              <p
+                id="home-parcel-pin-hint"
+                className="mb-3 text-sm text-slate-700"
+              >
+                {showCountyPinFallback
+                  ? "Enter the PIN from your county parcel record (see help below if needed)."
+                  : "Pick the row that matches your property below, or type a PIN here if you already know it. If you are unsure, verify on the county parcel record (see note under the list)."}
               </p>
-            ) : null}
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
-              <div className="min-w-0 w-full sm:min-w-[12rem] sm:flex-1">
-                <label
-                  htmlFor="home-parcel-pin-input"
-                  className="sr-only"
+              {levyReadyForSummary && hasLoadedTaxAuthCode ? (
+                <p
+                  id="home-parcel-pin-tax-auth"
+                  className="mb-3 text-sm text-slate-600"
                 >
-                  Parcel PIN
-                </label>
-                <input
-                  id="home-parcel-pin-input"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  spellCheck={false}
-                  maxLength={24}
-                  className={INPUT_PIN_ROW}
-                  value={parcelPin}
-                  onChange={(e) => setParcelPin(e.target.value)}
-                  disabled={levyLoadBusy}
-                  placeholder="from address search or county record"
-                  aria-describedby={
-                    levyReadyForSummary && hasLoadedTaxAuthCode
-                      ? "home-parcel-pin-hint home-parcel-pin-tax-auth"
-                      : "home-parcel-pin-hint"
-                  }
-                />
+                  Taxing authority code (the county levy screen labels this
+                  &quot;Taxing authority&quot;):{" "}
+                  <span className="font-mono font-semibold tabular-nums text-slate-900">
+                    {loadedTaxAuthCodeDisplay}
+                  </span>
+                </p>
+              ) : null}
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
+                <div className="min-w-0 w-full sm:min-w-[12rem] sm:flex-1">
+                  <label
+                    htmlFor="home-parcel-pin-input"
+                    className="sr-only"
+                  >
+                    Parcel PIN
+                  </label>
+                  <input
+                    id="home-parcel-pin-input"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={24}
+                    className={INPUT_PIN_ROW}
+                    value={parcelPin}
+                    onChange={(e) => setParcelPin(e.target.value)}
+                    disabled={levyLoadBusy}
+                    placeholder="from address search or county record"
+                    aria-describedby={
+                      levyReadyForSummary && hasLoadedTaxAuthCode
+                        ? "home-parcel-pin-hint home-parcel-pin-tax-auth"
+                        : "home-parcel-pin-hint"
+                    }
+                  />
+                </div>
+                {showPinLoadButton ? (
+                  <button
+                    type="button"
+                    className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-3 sm:w-auto sm:whitespace-nowrap`}
+                    disabled={levyLoadBusy}
+                    onClick={() => void loadLevyStack(trimmedParcelPin)}
+                  >
+                    {levyLoadBusy ? "Loading…" : "Load property data"}
+                  </button>
+                ) : null}
               </div>
-              {showPinLoadButton ? (
-                <button
-                  type="button"
-                  className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-3 sm:w-auto sm:whitespace-nowrap`}
-                  disabled={levyLoadBusy}
-                  onClick={() => void loadLevyStack(trimmedParcelPin)}
-                >
-                  {levyLoadBusy ? "Loading…" : "Load property data"}
-                </button>
+              {!showHomeLevyMetroAndHub ? (
+                <p className="mt-3 text-sm text-slate-700">
+                  <button
+                    type="button"
+                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2"
+                    onClick={() => setHomeLevyWorkbenchOpen(true)}
+                  >
+                    Add levy lines without loading a PIN
+                  </button>
+                  <span className="font-normal text-slate-600">
+                    {" "}
+                    — opens the breakdown below. Copy rows from your county{" "}
+                    <strong className="font-semibold text-slate-800">
+                      Tax District Levies
+                    </strong>{" "}
+                    screen using <strong className="font-semibold text-slate-800">Add tile</strong>.
+                  </span>
+                </p>
               ) : null}
             </div>
-            {!showHomeLevyMetroAndHub ? (
-              <p className="mt-3 text-sm text-slate-700">
-                <button
-                  type="button"
-                  className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2"
-                  onClick={() => setHomeLevyWorkbenchOpen(true)}
-                >
-                  Add levy lines without loading a PIN
-                </button>
-                <span className="font-normal text-slate-600">
-                  {" "}
-                  — opens the breakdown below. Copy rows from your county{" "}
-                  <strong className="font-semibold text-slate-800">
-                    Tax District Levies
-                  </strong>{" "}
-                  screen using <strong className="font-semibold text-slate-800">Add tile</strong>.
-                </span>
-              </p>
-            ) : null}
-          </div>
+          ) : null}
           {error ? (
             <p className="text-sm text-red-700" role="alert">
               {error}
@@ -892,8 +952,6 @@ export function HomeParcelAddressLookup() {
           </div>
         </div>
       </section>
-
-      <MetroToolConstructionBanner />
 
       <section
         className={CARD_CLASS_TOOL_OVERFLOW_VISIBLE}

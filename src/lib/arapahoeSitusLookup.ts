@@ -30,6 +30,156 @@ export const SITUS_INPUT_MAX_LEN = {
   unit: 40,
 } as const;
 
+/**
+ * Mobile autofill often dumps the full first address line into the first text field.
+ * Allow a longer capture on that field; we split into number / suffix / street on blur or search.
+ */
+export const SITUS_AUTOFILL_LINE1_MAX_LEN = 160;
+
+/**
+ * When a single field contains a full first line (e.g. "123 Main St", "3721 1/2 Holly"),
+ * split into situs parts. Returns null if the string does not match that pattern.
+ */
+export function trySplitSitusAutofillLine(raw: string): {
+  streetNumber: string;
+  streetNumberSuffix: string;
+  streetName: string;
+} | null {
+  const trimmed = raw.trim();
+  if (trimmed.length > SITUS_AUTOFILL_LINE1_MAX_LEN + 64) return null;
+  if (!trimmed.includes(" ")) return null;
+  const frac = trimmed.match(/^(\d+)\s+(\d\s*\/\s*\d)\s+(.+)$/);
+  if (frac) {
+    const streetName = frac[3].trim();
+    if (streetName.length < 1 || !/[A-Za-z]/.test(streetName)) return null;
+    return {
+      streetNumber: frac[1],
+      streetNumberSuffix: frac[2].replace(/\s*\/\s*/, "/"),
+      streetName,
+    };
+  }
+  const m = trimmed.match(/^(\d+)\s+(.+)$/);
+  if (!m) return null;
+  const streetName = m[2].trim();
+  if (streetName.length < 1 || !/[A-Za-z]/.test(streetName)) return null;
+  return {
+    streetNumber: m[1],
+    streetNumberSuffix: "",
+    streetName,
+  };
+}
+
+function normAddrCompareKey(s: string): string {
+  return s
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/,\s*$/g, "")
+    .toLowerCase();
+}
+
+/**
+ * True when the unit field contains a full first address line (typical autofill mistake)
+ * or the same text as number (+ optional suffix) + street after normalization.
+ */
+export function situsUnitLooksLikeStreetAutofillDuplicate(
+  unitRaw: string,
+  streetNumber: string,
+  streetNumberSuffix: string,
+  streetName: string,
+): boolean {
+  const u = unitRaw.trim();
+  if (!u) return false;
+  if (trySplitSitusAutofillLine(u) != null) return true;
+  const name = streetName.trim();
+  if (!name) return false;
+  const num = streetNumber.trim();
+  const suf = streetNumberSuffix.trim();
+  const parts = [num];
+  if (suf.length > 0) parts.push(suf);
+  parts.push(name);
+  const combined = normAddrCompareKey(parts.join(" "));
+  return combined.length > 0 && normAddrCompareKey(u) === combined;
+}
+
+export type SitusResolvedForLookup = {
+  num: string;
+  suffix: string;
+  nameRaw: string;
+  unitTrim: string;
+};
+
+/**
+ * Pure normalization before PIN lookup: split combined line1 from the number box,
+ * drop unit values that duplicate the street line (mobile autofill quirk).
+ */
+export function resolveSitusFieldsForLookup(
+  streetNumber: string,
+  streetNumberSuffix: string,
+  streetName: string,
+  unit: string,
+): {
+  resolved: SitusResolvedForLookup;
+  syncNumberFieldsToState: boolean;
+  clearUnitToState: boolean;
+} {
+  const rawNumFromState = streetNumber.trim();
+  let num = rawNumFromState;
+  let suffix = streetNumberSuffix.trim();
+  let nameRaw = streetName.trim();
+  let unitTrim = unit.trim();
+  let syncNumberFieldsToState = false;
+  let clearUnitToState = false;
+
+  if (nameRaw.length === 0) {
+    const s = trySplitSitusAutofillLine(num);
+    if (s) {
+      num = s.streetNumber;
+      suffix = s.streetNumberSuffix;
+      nameRaw = s.streetName;
+      syncNumberFieldsToState = true;
+      if (unitTrim === rawNumFromState && rawNumFromState.length > 0) {
+        unitTrim = "";
+        clearUnitToState = true;
+      }
+    }
+  }
+
+  if (situsUnitLooksLikeStreetAutofillDuplicate(unitTrim, num, suffix, nameRaw)) {
+    unitTrim = "";
+    clearUnitToState = true;
+  }
+
+  return {
+    resolved: { num, suffix, nameRaw, unitTrim },
+    syncNumberFieldsToState,
+    clearUnitToState,
+  };
+}
+
+/**
+ * Blur handler helper: split combined address-line1 only when it would not overwrite
+ * intentional multi-field entry.
+ */
+export function trySitusAutofillBlurSplit(
+  rawFromInput: string,
+  mode: "number" | "street",
+  current: {
+    streetNumber: string;
+    streetNumberSuffix: string;
+    streetName: string;
+  },
+): ReturnType<typeof trySplitSitusAutofillLine> {
+  const sn = current.streetNumber.trim();
+  const suf = current.streetNumberSuffix.trim();
+  const nm = current.streetName.trim();
+  if (mode === "number") {
+    if (nm !== "") return null;
+  } else if (sn !== "" || suf !== "") {
+    return null;
+  }
+  return trySplitSitusAutofillLine(rawFromInput);
+}
+
 const MAX_PIN_CHARS = 64;
 const MAX_LABEL_CHARS = 4000;
 

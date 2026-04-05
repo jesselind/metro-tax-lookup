@@ -16,7 +16,7 @@ export function SiteHeader() {
         className={`mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} items-center justify-between px-4 py-3`}
       >
         <p className="text-sm font-medium uppercase tracking-widest text-indigo-900 sm:text-base">
-          Arapahoe County
+          For Arapahoe County residents
         </p>
         {showToolsLink ? (
           <Link href="/" className={toolsButtonClass}>

@@ -63,6 +63,8 @@ export function MetroTaxShareFlow({
   const [totalMillsInput, setTotalMillsInput] = useState("");
   const [selectedMetroId, setSelectedMetroId] = useState<string>("");
   const [showResultDetails, setShowResultDetails] = useState(false);
+  const [showMetroAdvancedOptions, setShowMetroAdvancedOptions] =
+    useState(false);
 
   const prevMetroHintKeyRef = useRef<string>("");
   const totalMillsDirtyRef = useRef(false);
@@ -267,6 +269,18 @@ export function MetroTaxShareFlow({
 
   const isNoAutoMatch = metroFromLevyStack?.kind === "no_metro_lgid_match";
 
+  const isMetroAutoMatchUi =
+    metroFromLevyStack?.kind === "match" &&
+    selectedMetroId === metroFromLevyStack.districtId;
+  const hideMetroPickerAndTotals =
+    isMetroAutoMatchUi && !showMetroAdvancedOptions;
+
+  useEffect(() => {
+    if (!isMetroAutoMatchUi) {
+      setShowMetroAdvancedOptions(false);
+    }
+  }, [isMetroAutoMatchUi]);
+
   return (
     <>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -277,7 +291,7 @@ export function MetroTaxShareFlow({
           Metro district tax share
         </h2>
 
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-3 sm:space-y-4">
         {showResultCard ? (
           <div
             role="region"
@@ -629,8 +643,7 @@ export function MetroTaxShareFlow({
         ) : null}
 
         <div className="space-y-4">
-            {metroFromLevyStack?.kind === "match" &&
-              selectedMetroId === metroFromLevyStack.districtId && (
+            {isMetroAutoMatchUi ? (
                 <div
                   role="status"
                   aria-live="polite"
@@ -640,15 +653,29 @@ export function MetroTaxShareFlow({
                     You are all set here
                   </p>
                   <p className="mt-1 text-emerald-900">
-                    We matched your loaded property breakdown to{" "}
+                    We matched your levy breakdown to{" "}
                     <strong className="font-semibold text-emerald-950">
                       {selectedDistrict?.name ?? "your metro district"}
                     </strong>
-                    {" "}
-                    below. Change the selection anytime if it does not look right.
+                    . The share above already uses that district and your total
+                    mills from the stack.
                   </p>
+                  <div className="mt-3">
+                    <HelpPillButton
+                      className="text-xs sm:text-sm"
+                      type="button"
+                      aria-expanded={showMetroAdvancedOptions}
+                      onClick={() =>
+                        setShowMetroAdvancedOptions((prev) => !prev)
+                      }
+                    >
+                      {showMetroAdvancedOptions
+                        ? "Hide metro district and mills options"
+                        : "Change metro district or mills"}
+                    </HelpPillButton>
+                  </div>
                 </div>
-              )}
+              ) : null}
             {isNoAutoMatch ? (
               <div
                 role="status"
@@ -676,13 +703,13 @@ export function MetroTaxShareFlow({
             ) : null}
 
             <div>
-              {!isNoAutoMatch ? (
+              {!hideMetroPickerAndTotals && !isNoAutoMatch ? (
                 <p className="text-base text-slate-800 sm:text-lg">
                   Choose your <strong>metro district</strong>. Mills for each district
                   come from the county file (shown in the list).
                 </p>
               ) : null}
-              {metroOptions.length > 0 ? (
+              {!hideMetroPickerAndTotals && metroOptions.length > 0 ? (
                 <MetroDistrictSelect
                   metroOptions={metroOptions}
                   selectedMetroId={selectedMetroId}
@@ -691,7 +718,7 @@ export function MetroTaxShareFlow({
               ) : null}
             </div>
 
-            {selectedMetroId ? (
+            {selectedMetroId && !hideMetroPickerAndTotals ? (
               <div className="border-t border-slate-200 pt-4">
                 <label htmlFor={totalMillsId} className="sr-only">
                   Total property tax rate (mills)
@@ -755,7 +782,9 @@ export function MetroTaxShareFlow({
         </div>
         </div>
       </section>
-      {embedded && selectedMetroId ? (
+      {embedded &&
+      selectedMetroId &&
+      !hideMetroPickerAndTotals ? (
         <p className="mt-6 text-sm text-slate-600 sm:text-base">
           To reset this calculator and your levy breakdown, use{" "}
           <strong className="font-semibold text-slate-800">Start over</strong>{" "}
