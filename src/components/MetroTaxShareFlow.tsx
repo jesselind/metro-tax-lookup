@@ -418,8 +418,8 @@ export function MetroTaxShareFlow({
                 <>
                   {showResultDetails ? (
                     <div className="mt-4 space-y-4 text-sm text-slate-800 sm:text-base">
-                      <div className="overflow-hidden rounded-lg border border-slate-300 bg-slate-50">
-                        <div className="border-b border-slate-200 bg-white px-3 py-2.5 sm:px-4">
+                      <div className="space-y-3 border-t border-slate-200 pt-4">
+                        <div>
                           <p className="font-semibold text-indigo-950">
                             Check the math
                           </p>
@@ -438,7 +438,7 @@ export function MetroTaxShareFlow({
                             bottom of this section.
                           </p>
                         </div>
-                        <div className="overflow-x-auto px-3 py-3 sm:px-4">
+                        <div className="overflow-x-auto">
                           <table className="w-full min-w-[280px] border-collapse text-left text-xs sm:text-sm">
                             <caption className="sr-only">
                               Mill rates used in this result
@@ -503,7 +503,7 @@ export function MetroTaxShareFlow({
                             </tbody>
                           </table>
                         </div>
-                        <div className="space-y-2 border-t border-slate-200 bg-white px-3 py-3 sm:px-4">
+                        <div className="space-y-2">
                           <p className="text-xs font-medium text-slate-800 sm:text-sm">
                             Shares of your total mills
                           </p>
