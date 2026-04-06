@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
@@ -26,13 +26,7 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
-import {
-  CARD_BODY_CLASS,
-  CARD_CLASS_CLIPPED,
-  CARD_HEADER_CLASS,
-  COUNTY_EXTERNAL_LINK_CLASS,
-  INPUT_CLASS,
-} from "@/lib/toolFlowStyles";
+import { COUNTY_EXTERNAL_LINK_CLASS, INPUT_CLASS } from "@/lib/toolFlowStyles";
 
 const INPUT_ROW = `${INPUT_CLASS} min-w-0 w-full !max-w-none px-2 py-2 text-base sm:text-base`;
 const INPUT_PIN_ROW = `${INPUT_CLASS} w-full min-w-0 max-w-none px-2 py-2 text-base`;
@@ -76,8 +70,14 @@ const addressSitusGrid = {
 
 const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnOutlinePrimaryMd} inline-flex w-full min-w-0 justify-center sm:flex-1 md:flex-1 lg:w-auto lg:min-w-[7.5rem] lg:flex-none`;
 
+/** Shared shell for address summary, PIN, county help, and list callouts. */
+const ADDRESS_TILE_SURFACE_CLASS =
+  "rounded-lg border border-slate-200 bg-slate-50/80";
+
+const ADDRESS_LOOKUP_PANEL_CLASS = `${ADDRESS_TILE_SURFACE_CLASS} p-3 sm:p-4`;
+
 const HOME_DEFINITIONS_HEADING_CLASS =
-  "text-lg font-semibold text-slate-900 sm:text-xl";
+  "text-base font-semibold text-slate-800 sm:text-lg";
 
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
@@ -110,39 +110,25 @@ export function HomeParcelAddressLookup() {
   >(null);
   const [levyLoadBusy, setLevyLoadBusy] = useState(false);
   const [levyLoadError, setLevyLoadError] = useState<string | null>(null);
-  /** Parcel PIN lives only in the address card; levy and metro panels read loaded data, not a second PIN field. */
+  /** Parcel PIN is edited in the lookup flow only; levy and metro use loaded data, not a second PIN field. */
   const [parcelPin, setParcelPin] = useState("");
 
   /** Opens levy / metro / hub without a PIN load (user builds the stack with Add tile). */
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
-  const addressPanelId = useId();
-  const addressDisclosureId = useId();
-  const [addressSectionExpanded, setAddressSectionExpanded] = useState(true);
-  const prevSuccessfulLoadKeyRef = useRef<string | null>(null);
-  const prevAddressExpandedRef = useRef(true);
+  /** After a successful address validation + search request; hides the field grid until Start over. */
+  const [addressSearchLocked, setAddressSearchLocked] = useState(false);
+  const startOverButtonRef = useRef<HTMLButtonElement>(null);
+  const prevAddressSearchLockedRef = useRef(false);
 
   const levyReadyForSummary =
     levyLoadedMeta != null &&
     !levyLoadError &&
     !levyLoadBusy;
-  const successfulLoadKey = levyReadyForSummary ? levyLoadedMeta.pin : null;
   const loadedTaxAuthCodeDisplay =
     levyLoadedMeta != null
       ? formatTaxAreaShortDescrDisplay(levyLoadedMeta.tagShortDescr)
       : "";
   const hasLoadedTaxAuthCode = loadedTaxAuthCodeDisplay.length > 0;
-
-  useEffect(() => {
-    if (successfulLoadKey == null) {
-      prevSuccessfulLoadKeyRef.current = null;
-      setAddressSectionExpanded(true);
-      return;
-    }
-    if (successfulLoadKey !== prevSuccessfulLoadKeyRef.current) {
-      prevSuccessfulLoadKeyRef.current = successfulLoadKey;
-      setAddressSectionExpanded(false);
-    }
-  }, [successfulLoadKey]);
 
   /** Mobile autofill often ignores autocomplete=off on Unit; strip duplicate street lines. */
   useEffect(() => {
@@ -159,34 +145,17 @@ export function HomeParcelAddressLookup() {
     setUnit("");
   }, [unit, streetNumber, streetNumberSuffix, streetName]);
 
+  /** After search locks the UI, move focus off the removed submit control; on Start over, return to the first field. */
   useEffect(() => {
-    if (
-      prevAddressExpandedRef.current &&
-      !addressSectionExpanded &&
-      levyReadyForSummary
-    ) {
-      const heading = document.getElementById("home-levy-breakdown-heading");
-      if (heading instanceof HTMLElement) {
-        const reduceMotion =
-          typeof window !== "undefined" &&
-          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        heading.scrollIntoView({
-          behavior: reduceMotion ? "auto" : "smooth",
-          block: "start",
-        });
-        // Move focus to the levy section so keyboard and SR users land with the
-        // viewport (scroll alone does not move focus).
-        const moveFocus = () =>
-          heading.focus({ preventScroll: true });
-        if (reduceMotion) {
-          queueMicrotask(moveFocus);
-        } else {
-          window.setTimeout(moveFocus, 450);
-        }
-      }
+    const wasLocked = prevAddressSearchLockedRef.current;
+    prevAddressSearchLockedRef.current = addressSearchLocked;
+    if (addressSearchLocked && !wasLocked) {
+      startOverButtonRef.current?.focus();
     }
-    prevAddressExpandedRef.current = addressSectionExpanded;
-  }, [addressSectionExpanded, levyReadyForSummary]);
+    if (!addressSearchLocked && wasLocked) {
+      document.getElementById("home-situs-number")?.focus();
+    }
+  }, [addressSearchLocked]);
 
   const clearAllLevyState = useCallback(() => {
     setLevyLines([]);
@@ -327,6 +296,7 @@ export function HomeParcelAddressLookup() {
       return;
     }
 
+    setAddressSearchLocked(true);
     setBusy(true);
     try {
       const data = await fetchArapahoeSitusToPinsJson();
@@ -367,15 +337,10 @@ export function HomeParcelAddressLookup() {
     setError(null);
     setHits(null);
     setShowCountyPinFallback(false);
+    setAddressSearchLocked(false);
     clearAllLevyState();
   }
 
-  const fieldsEmpty =
-    !streetNumber.trim() &&
-    !streetNumberSuffix.trim() &&
-    !streetName.trim() &&
-    !unit.trim();
-  const hasLookupResults = hits != null && hits.length > 0;
   const hasLevyContent =
     levyLines.length > 0 ||
     levyAwaitingTemplateMills ||
@@ -388,17 +353,6 @@ export function HomeParcelAddressLookup() {
     !levyLoadedMeta &&
     !levyAwaitingTemplateMills &&
     !levyLoadError;
-  /** Single reset control for the whole home tool (address, PIN, levy, metro). */
-  const showStartOverInAddressCard =
-    !fieldsEmpty ||
-    hasLookupResults ||
-    error != null ||
-    showCountyPinFallback ||
-    hasLevyContent ||
-    homeLevyWorkbenchOpen ||
-    trimmedParcelPin.length > 0 ||
-    levyLoadBusy ||
-    levyLoadError != null;
   const startOverAriaLabel =
     "Reset address lookup, parcel PIN, search results, and levy and metro sections on this page";
   const pinMatchesLoadedLevy =
@@ -412,7 +366,7 @@ export function HomeParcelAddressLookup() {
 
   /**
    * Levy, metro, and hub stay hidden until a PIN load is attempted (in progress, error,
-   * or success), the user opens the levy workbench from the address card, or there is
+   * or success), the user opens the levy workbench from the Parcel PIN section, or there is
    * already levy content. Typing address fields or PIN alone does not reveal these
    * sections; address search results without a chosen/loaded PIN stay hidden too.
    */
@@ -426,73 +380,25 @@ export function HomeParcelAddressLookup() {
   const showParcelPinSection =
     showCountyPinFallback || (hits != null && hits.length > 1);
 
+  /** County situs line for the matched or chosen row — not the raw typed search. */
+  const lockedAddressHeadline = useMemo((): string | null => {
+    if (hits == null || hits.length === 0) return null;
+    if (hits.length === 1) return hits[0]?.label ?? null;
+    const pin = trimmedParcelPin;
+    if (pin.length === 0) return null;
+    return hits.find((h) => h.pin === pin)?.label ?? null;
+  }, [hits, trimmedParcelPin]);
+
   return (
-    <>
-      <section
-        className={CARD_CLASS_CLIPPED}
-        aria-labelledby={addressDisclosureId}
-      >
-        <h2 className={CARD_HEADER_CLASS}>
-          <button
-            type="button"
-            id={addressDisclosureId}
-            className="flex w-full cursor-pointer items-center justify-between gap-2 bg-transparent p-0 text-left text-base font-semibold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/75"
-            aria-expanded={addressSectionExpanded}
-            aria-controls={addressPanelId}
-            onClick={() => setAddressSectionExpanded((open) => !open)}
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block">Start with your address</span>
-              {levyReadyForSummary && !addressSectionExpanded ? (
-                <span className="mt-0.5 block text-sm font-normal leading-snug text-white/85">
-                  PIN {levyLoadedMeta.pin}
-                  {hasLoadedTaxAuthCode ? (
-                    <>
-                      {" "}
-                      · Taxing authority code {loadedTaxAuthCodeDisplay}
-                    </>
-                  ) : null}
-                </span>
-              ) : null}
-            </span>
-            <span className="shrink-0 text-white/90" aria-hidden>
-              {addressSectionExpanded ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9.47 6.47a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 1 1-1.06 1.06L10 8.06l-3.72 3.72a.75.75 0 0 1-1.06-1.06l4.25-4.25Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </span>
-          </button>
-        </h2>
-        <div
-          id={addressPanelId}
-          role="region"
-          aria-labelledby={addressDisclosureId}
-          hidden={!addressSectionExpanded}
-          className={`${CARD_BODY_CLASS} space-y-4 sm:space-y-5`}
-        >
+    <section
+      className="w-full min-w-0 space-y-4 sm:space-y-5"
+      aria-labelledby="home-tool-heading"
+    >
+      <h2 id="home-tool-heading" className="sr-only">
+        Property tax lookup and breakdown
+      </h2>
+      {!addressSearchLocked ? (
+        <div className={ADDRESS_LOOKUP_PANEL_CLASS}>
           <form
             className={ADDRESS_LOOKUP_FORM_CLASS}
             aria-label="Address lookup"
@@ -625,23 +531,93 @@ export function HomeParcelAddressLookup() {
                 >
                   {busy ? "Searching…" : "Search"}
                 </button>
-                {showStartOverInAddressCard ? (
-                  <button
-                    type="button"
-                    className={ADDRESS_FORM_ACTION_BTN_CLASS}
-                    disabled={busy}
-                    onClick={resetAddressForm}
-                    aria-label={startOverAriaLabel}
-                  >
-                    Start over
-                  </button>
-                ) : null}
               </div>
             </div>
           </form>
-          {showParcelPinSection ? (
+          {error ? (
+            <p className="mt-3 text-sm text-red-700" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <div className="flex min-w-0 flex-row items-stretch gap-3">
+          <div
+            className={`${ADDRESS_LOOKUP_PANEL_CLASS} min-w-0 flex-1`}
+            role="region"
+            aria-label="Search result: matched address, PIN, and load status"
+          >
+            <div className="space-y-1">
+              {busy ? (
+                <p className="text-sm text-slate-600" aria-live="polite">
+                  Searching…
+                </p>
+              ) : null}
+              {!busy && lockedAddressHeadline ? (
+                <p className="text-base font-medium text-slate-900">
+                  {lockedAddressHeadline}
+                </p>
+              ) : null}
+              {!busy && levyReadyForSummary ? (
+                <p className="text-sm leading-snug text-slate-600">
+                  <span className="sr-only">Loaded parcel </span>
+                  <span className="font-mono font-semibold tabular-nums text-slate-900">
+                    {levyLoadedMeta.pin}
+                  </span>
+                  {hasLoadedTaxAuthCode ? (
+                    <span>
+                      {" "}
+                      · Taxing authority {loadedTaxAuthCodeDisplay}
+                    </span>
+                  ) : null}
+                </p>
+              ) : !busy &&
+                trimmedParcelPin.length > 0 &&
+                !levyReadyForSummary ? (
+                <p className="text-sm text-slate-600">
+                  <span className="sr-only">Parcel PIN </span>
+                  <span className="font-mono font-semibold tabular-nums text-slate-900">
+                    {trimmedParcelPin}
+                  </span>
+                </p>
+              ) : null}
+              {!busy && hits != null && hits.length === 1 && levyLoadBusy ? (
+                <p className="text-sm text-slate-600" aria-live="polite">
+                  Loading your levy breakdown…
+                </p>
+              ) : null}
+              {!busy &&
+              hits != null &&
+              hits.length > 1 &&
+              trimmedParcelPin.length === 0 ? (
+                <p className="text-sm text-slate-600">
+                  Pick the row that matches your property in the list below.
+                </p>
+              ) : null}
+              {error ? (
+                <p className="pt-1 text-sm text-red-700" role="alert">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <button
+            ref={startOverButtonRef}
+            type="button"
+            className={`${ADDRESS_TILE_SURFACE_CLASS} inline-flex w-[5.75rem] shrink-0 cursor-pointer flex-col items-center justify-center self-stretch px-2 py-3 text-center text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 sm:w-24 sm:px-3`}
+            onClick={resetAddressForm}
+            aria-label={startOverAriaLabel}
+          >
+            <span className="flex flex-col items-center leading-tight">
+              <span>Start</span>
+              <span>over</span>
+            </span>
+          </button>
+        </div>
+      )}
+      {showParcelPinSection ? (
             <div
-              className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
+              className={ADDRESS_LOOKUP_PANEL_CLASS}
               aria-labelledby="home-parcel-pin-heading"
             >
               <h3
@@ -658,18 +634,6 @@ export function HomeParcelAddressLookup() {
                   ? "Enter the PIN from your county parcel record (see help below if needed)."
                   : "Pick the row that matches your property below, or type a PIN here if you already know it. If you are unsure, verify on the county parcel record (see note under the list)."}
               </p>
-              {levyReadyForSummary && hasLoadedTaxAuthCode ? (
-                <p
-                  id="home-parcel-pin-tax-auth"
-                  className="mb-3 text-sm text-slate-600"
-                >
-                  Taxing authority code (the county levy screen labels this
-                  &quot;Taxing authority&quot;):{" "}
-                  <span className="font-mono font-semibold tabular-nums text-slate-900">
-                    {loadedTaxAuthCodeDisplay}
-                  </span>
-                </p>
-              ) : null}
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
                 <div className="min-w-0 w-full sm:min-w-[12rem] sm:flex-1">
                   <label
@@ -690,11 +654,7 @@ export function HomeParcelAddressLookup() {
                     onChange={(e) => setParcelPin(e.target.value)}
                     disabled={levyLoadBusy}
                     placeholder="from address search or county record"
-                    aria-describedby={
-                      levyReadyForSummary && hasLoadedTaxAuthCode
-                        ? "home-parcel-pin-hint home-parcel-pin-tax-auth"
-                        : "home-parcel-pin-hint"
-                    }
+                    aria-describedby="home-parcel-pin-hint"
                   />
                 </div>
                 {showPinLoadButton ? (
@@ -729,14 +689,9 @@ export function HomeParcelAddressLookup() {
               ) : null}
             </div>
           ) : null}
-          {error ? (
-            <p className="text-sm text-red-700" role="alert">
-              {error}
-            </p>
-          ) : null}
-          {showCountyPinFallback ? (
+      {showCountyPinFallback ? (
             <div
-              className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
+              className={ADDRESS_LOOKUP_PANEL_CLASS}
               role="region"
               aria-labelledby="home-county-pin-fallback-heading"
             >
@@ -748,38 +703,34 @@ export function HomeParcelAddressLookup() {
               </h3>
               <CountyParcelPinLookupHelp includeLevyTableScreenshots />
               <p className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-700">
-                Enter that PIN in the <strong>Parcel PIN</strong> field at the
-                top of this card (under the address form).
+                Enter that PIN in the <strong>Parcel PIN</strong> section above.
               </p>
             </div>
           ) : null}
-          {hits && hits.length > 0 ? (
+      {hits && hits.length > 1 ? (
             <div
-              className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
+              className={ADDRESS_LOOKUP_PANEL_CLASS}
               role="region"
               aria-live="polite"
               aria-label="Matching properties"
             >
               <p className="mb-2 text-sm font-semibold text-slate-900">
-                {hits.length === 1
-                  ? "One property matched"
-                  : `${hits.length} properties matched — pick the row that matches your unit or legal description`}
+                {hits.length} properties matched — pick the row that matches
+                your unit or legal description
               </p>
-              {hits.length > 1 ? (
-                <p className="mb-3 text-sm text-slate-700">
-                  Not sure which PIN is yours? Open your parcel on the{" "}
-                  <a
-                    href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={COUNTY_EXTERNAL_LINK_CLASS}
-                  >
-                    county property search
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>{" "}
-                  and compare the PIN to the address, unit, or legal description.
-                </p>
-              ) : null}
+              <p className="mb-3 text-sm text-slate-700">
+                Not sure which PIN is yours? Open your parcel on the{" "}
+                <a
+                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={COUNTY_EXTERNAL_LINK_CLASS}
+                >
+                  county property search
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>{" "}
+                and compare the PIN to the address, unit, or legal description.
+              </p>
               <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
                 {hits.map((h) => (
                   <li
@@ -795,28 +746,21 @@ export function HomeParcelAddressLookup() {
                           {h.label}
                         </span>
                       </div>
-                      {hits.length > 1 ? (
-                        <button
-                          type="button"
-                          className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
-                          disabled={levyLoadBusy}
-                          onClick={() => {
-                            setParcelPin(h.pin);
-                            void loadLevyStack(h.pin);
-                          }}
-                        >
-                          Use this property
-                        </button>
-                      ) : null}
+                      <button
+                        type="button"
+                        className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
+                        disabled={levyLoadBusy}
+                        onClick={() => {
+                          setParcelPin(h.pin);
+                          void loadLevyStack(h.pin);
+                        }}
+                      >
+                        Use this property
+                      </button>
                     </div>
                   </li>
                 ))}
               </ul>
-              {hits.length === 1 && levyLoadBusy ? (
-                <p className="mt-3 text-sm text-slate-600" aria-live="polite">
-                  Loading your levy breakdown…
-                </p>
-              ) : null}
             </div>
           ) : null}
           {levyLoadError ? (
@@ -824,42 +768,27 @@ export function HomeParcelAddressLookup() {
               {levyLoadError}
             </p>
           ) : null}
-        </div>
-      </section>
 
       {showHomeLevyMetroAndHub ? (
-        <>
-      <section
-        className={CARD_CLASS_CLIPPED}
-        aria-labelledby="home-levy-breakdown-heading"
-      >
-        <h2
+        <div
           id="home-levy-breakdown-heading"
-          tabIndex={-1}
-          className={`${CARD_HEADER_CLASS} outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/75`}
+          className="space-y-5"
+          role="region"
+          aria-label="Property tax breakdown"
         >
-          Your property tax bill
-        </h2>
-        <div className={`${CARD_BODY_CLASS} space-y-5`}>
-          {levyLoadError ? (
-            <p className="text-sm text-red-700" role="alert">
-              {levyLoadError}
-            </p>
-          ) : null}
-
           {showLevyIntroBlock ? (
             <div className="space-y-5">
               <p className="text-sm text-slate-600 sm:text-base">
                 Nothing loaded from a PIN yet — use{" "}
                 <strong className="font-semibold text-slate-800">Load property data</strong>{" "}
-                in the address card when you have a PIN, or tap{" "}
+                when you have a PIN, or tap{" "}
                 <strong className="font-semibold text-slate-800">Add tile</strong>{" "}
-                below to type lines from your county{" "}
+                below to type rows from your county{" "}
                 <strong className="font-semibold text-slate-800">Tax District Levies</strong>{" "}
                 screen.
               </p>
               <div
-                className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:p-4"
+                className={ADDRESS_LOOKUP_PANEL_CLASS}
                 aria-labelledby="home-levy-county-table-help-heading"
               >
                 <h3
@@ -902,12 +831,7 @@ export function HomeParcelAddressLookup() {
             />
           ) : null}
 
-          <div
-            className={
-              showHomeMetroSection
-                ? "space-y-3 border-t border-slate-200 pt-6 sm:pt-7"
-                : "space-y-3"
-            }
+          <div className="space-y-3"
             role="region"
             aria-labelledby={
               showHomeMetroSection
@@ -942,24 +866,27 @@ export function HomeParcelAddressLookup() {
             />
           </div>
         </div>
-      </section>
-        </>
       ) : null}
 
       {levyReadyForSummary ? (
-        <section
+        <div
           id="page-definitions"
+          className="scroll-mt-6 border-t border-slate-200 pt-6 sm:pt-8"
           aria-labelledby="home-page-definitions-heading"
-          className="mt-10 w-full scroll-mt-8 border-t border-slate-200 pt-10"
         >
-          <h2 id="home-page-definitions-heading" className={HOME_DEFINITIONS_HEADING_CLASS}>
-            Definitions
-          </h2>
-          <TermMillsAside />
-          <TermLevyAside />
-          <TermLgIdAside />
-        </section>
+          <h3
+            id="home-page-definitions-heading"
+            className={HOME_DEFINITIONS_HEADING_CLASS}
+          >
+            Key terms
+          </h3>
+          <div className="mt-4 space-y-4">
+            <TermMillsAside />
+            <TermLevyAside />
+            <TermLgIdAside />
+          </div>
+        </div>
       ) : null}
-    </>
+    </section>
   );
 }

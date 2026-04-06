@@ -52,7 +52,9 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 - Observe at least the OWASP Top 10 security guidelines in design and implementation.
 - Accessibility expectations are spelled out under **Accessibility (critical)** above; WCAG 2.1 AA is the minimum bar.
 
-**On-demand audits (DRY, KISS, YAGNI, anti-patterns, OWASP):** When the user asks for that kind of final or pre-commit check, respond **only with items that could be better or need addressing**. Do **not** list what is already fine, balanced pros/cons, or long "what's good" sections - that is too verbose for this project. If there is nothing worth changing, say so in **one short sentence**.
+**Review and audit responses (any type):** When the user asks for a **review, audit, final check, pre-commit check, a11y/contrast/SR/keyboard pass, security review, or similar**, respond **only with gaps, risks, and follow-ups** — things they might have **missed** or should **verify manually**. Do **not** summarize what is already fine, what passed, that the build or lint succeeded (unless the user explicitly asked for a command result), balanced pros/cons, or "what's good" / "already in good shape" sections. Those bury the signal. If there is **nothing** to flag after a sincere pass, say so in **one short sentence** (e.g. "No issues to flag from this pass.").
+
+The same **negatives-only** rule applies to the scoped audits below (DRY, KISS, YAGNI, OWASP, etc.): only actionable or questionable items, not praise or reassurance lists.
 
 ### Project-specific rules
 
