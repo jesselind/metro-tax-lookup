@@ -12,7 +12,8 @@ import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetailDialog";
 import { ModalPortal } from "@/components/ModalPortal";
-import { INPUT_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
+import { INPUT_CLASS, TERM_LINK_CLASS, TOOL_DISCLOSURE_ROW_ALIGN_CLASS } from "@/lib/toolFlowStyles";
 import {
   ARAPAHOE_COUNTY_GEOID,
   matchSpecialDistrict,
@@ -696,17 +697,15 @@ export function LevyStackVisualization({
             </div>
 
           {tilesSorted.length > 0 ? (
-          <div>
-            <button
-              type="button"
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+          <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+            <ToolOutlinedToggleButton
               aria-expanded={showLevyDetails}
               onClick={() => setShowLevyDetails((v) => !v)}
             >
               {showLevyDetails
                 ? "Hide table"
                 : "See data in table form"}
-            </button>
+            </ToolOutlinedToggleButton>
           </div>
           ) : null}
 

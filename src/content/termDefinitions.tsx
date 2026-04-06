@@ -67,7 +67,7 @@ export function TermDataMartAside() {
       <p className="mt-4 text-sm sm:text-base">
         <a href="#data-mart-term-first" className={TERM_LINK_CLASS}>
           Back to first mention
-          <span className="sr-only"> in Breakdown of your property tax bill</span>
+          <span className="sr-only"> on the home page</span>
         </a>
       </p>
     </aside>

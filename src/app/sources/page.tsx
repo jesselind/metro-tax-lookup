@@ -126,7 +126,7 @@ export default function SourcesPage() {
           </li>
           <li className="flex min-h-0">
             <a href="#levy-breakdown-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Breakdown of your property tax bill
+              Your property tax bill
             </a>
           </li>
           <li className="flex min-h-0">
@@ -373,7 +373,7 @@ export default function SourcesPage() {
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
       >
         <h2 className={SECTION_H2}>
-          Breakdown of your property tax bill (Arapahoe)
+          Your property tax bill (Arapahoe)
         </h2>
         <p className="text-slate-700">
           On the{" "}

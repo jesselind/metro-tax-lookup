@@ -70,6 +70,13 @@ export const CODE_INLINE_CLASS =
 export const HELP_PILL_CLASS =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 disabled:cursor-not-allowed sm:text-base";
 
+/** Outlined white button for levy stack and metro More details toggles. */
+export const TOOL_OUTLINED_TOGGLE_BUTTON_CLASS =
+  "inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 sm:w-auto sm:justify-start";
+
+/** Wrapper so outlined toggles span the card column on mobile and stay left-aligned. */
+export const TOOL_DISCLOSURE_ROW_ALIGN_CLASS = "flex w-full justify-start";
+
 export const INPUT_CLASS =
   "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
 

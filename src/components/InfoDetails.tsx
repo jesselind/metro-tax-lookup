@@ -25,15 +25,14 @@ export function InfoDetails({
   className = DEFAULT_WRAPPER_CLASS,
   id,
 }: InfoDetailsProps) {
+  const wrapperClass = [className, id ? "scroll-mt-4 sm:scroll-mt-6" : ""]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div
       id={id}
-      className={[
-        className,
-        id ? "scroll-mt-4 sm:scroll-mt-6" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={wrapperClass}
       role="region"
       aria-label="Important information"
     >

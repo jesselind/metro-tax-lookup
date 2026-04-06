@@ -52,6 +52,8 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 - Observe at least the OWASP Top 10 security guidelines in design and implementation.
 - Accessibility expectations are spelled out under **Accessibility (critical)** above; WCAG 2.1 AA is the minimum bar.
 
+**On-demand audits (DRY, KISS, YAGNI, anti-patterns, OWASP):** When the user asks for that kind of final or pre-commit check, respond **only with items that could be better or need addressing**. Do **not** list what is already fine, balanced pros/cons, or long "what's good" sections - that is too verbose for this project. If there is nothing worth changing, say so in **one short sentence**.
+
 ### Project-specific rules
 
 - Avoid adding a database or user accounts unless explicitly requested by the user.

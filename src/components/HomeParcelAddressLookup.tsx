@@ -5,7 +5,6 @@ import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLe
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { LevyStackVisualization } from "@/components/LevyStackVisualization";
-import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { TermLevyAside, TermLgIdAside, TermMillsAside } from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
@@ -26,16 +25,10 @@ import {
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
-import {
-  HOME_METRO_SECTION_HEADING_ID,
-  metroHomeSectionHeadingText,
-} from "@/lib/metroHomeSection";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import {
   CARD_BODY_CLASS,
-  CARD_BODY_ROUNDED_BOTTOM_CLASS,
   CARD_CLASS_CLIPPED,
-  CARD_CLASS_TOOL_OVERFLOW_VISIBLE,
   CARD_HEADER_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
   INPUT_CLASS,
@@ -255,12 +248,6 @@ export function HomeParcelAddressLookup() {
     [levyLines],
   );
   const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
-  const homeMetroHeadingText = useMemo(() => {
-    if (homeMetroFromLevyStack?.kind !== "match") return "";
-    return metroHomeSectionHeadingText(
-      homeMetroFromLevyStack.districtIds.length,
-    );
-  }, [homeMetroFromLevyStack]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -851,7 +838,7 @@ export function HomeParcelAddressLookup() {
           tabIndex={-1}
           className={`${CARD_HEADER_CLASS} outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/75`}
         >
-          Breakdown of your property tax bill
+          Your property tax bill
         </h2>
         <div className={`${CARD_BODY_CLASS} space-y-5`}>
           {levyLoadError ? (
@@ -907,10 +894,38 @@ export function HomeParcelAddressLookup() {
             </div>
           ) : null}
 
+          {showHomeMetroSection ? (
+            <MetroTaxShareFlow
+              idPrefix="home-metro"
+              prefillTotalMills={metroPrefillTotalMills}
+              metroFromLevyStack={homeMetroFromLevyStack}
+            />
+          ) : null}
+
           <div
-            className="space-y-3"
-            aria-label="Levy stack visualization"
+            className={
+              showHomeMetroSection
+                ? "space-y-3 border-t border-slate-200 pt-6 sm:pt-7"
+                : "space-y-3"
+            }
+            role="region"
+            aria-labelledby={
+              showHomeMetroSection
+                ? "home-levy-stack-subheading"
+                : undefined
+            }
+            aria-label={
+              showHomeMetroSection ? undefined : "Levy stack visualization"
+            }
           >
+            {showHomeMetroSection ? (
+              <p
+                id="home-levy-stack-subheading"
+                className="text-sm font-normal leading-snug text-slate-500 sm:text-base"
+              >
+                Your tax bill breakdown
+              </p>
+            ) : null}
             <LevyStackVisualization
               lines={levyLines}
               setLines={setLevyLines}
@@ -928,27 +943,6 @@ export function HomeParcelAddressLookup() {
           </div>
         </div>
       </section>
-
-      {showHomeMetroSection ? (
-        <section
-          className={CARD_CLASS_TOOL_OVERFLOW_VISIBLE}
-          aria-labelledby={HOME_METRO_SECTION_HEADING_ID}
-        >
-          <h2 id={HOME_METRO_SECTION_HEADING_ID} className={CARD_HEADER_CLASS}>
-            {homeMetroHeadingText}
-          </h2>
-          <div
-            className={`${CARD_BODY_CLASS} ${CARD_BODY_ROUNDED_BOTTOM_CLASS} space-y-4`}
-          >
-            <MetroTaxShareFlow
-              idPrefix="home-metro"
-              prefillTotalMills={metroPrefillTotalMills}
-              metroFromLevyStack={homeMetroFromLevyStack}
-            />
-            <MetroDistrictInfoDetails />
-          </div>
-        </section>
-      ) : null}
         </>
       ) : null}
 

@@ -10,13 +10,17 @@ import type {
   MetroDistrictOption,
 } from "@/lib/levyTypes";
 import levyData from "../../public/data/metro-levies-2025.json";
-import { HelpPillButton } from "@/components/HelpPillButton";
+import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
+import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import {
   ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB as ASSESSOR_MILL_LEVIES_HUB_URL,
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF as MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL,
 } from "@/lib/arapahoeCountyUrls";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
+} from "@/lib/toolFlowStyles";
 import type { MetroFromLevyStack } from "@/lib/metroDistrictFromLevyLines";
 import {
   buildMetroLevyBarSegments,
@@ -123,6 +127,9 @@ export function MetroTaxShareFlow({
   const p = idPrefix ? `${idPrefix}-` : "";
 
   const [showResultDetails, setShowResultDetails] = useState(false);
+  const metroBreakdownPanelId = `${p}metro-breakdown-panel`;
+  const toggleResultDetails = () =>
+    setShowResultDetails((prev) => !prev);
 
   const levyJson = levyData as LevyDataFile;
   const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
@@ -278,7 +285,7 @@ export function MetroTaxShareFlow({
 
   const taxRateSplitAnnouncement = useMemo(() => {
     if (totalMills <= 0) {
-      return `Split of your total property tax rate: ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
+      return `Split of your total property tax bill: ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
     }
     const metroParts: string[] = [];
     for (const b of perDistrictBundles) {
@@ -294,14 +301,14 @@ export function MetroTaxShareFlow({
       }
     }
     if (metroParts.length === 0) {
-      return `Split of your total property tax rate: ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
+      return `Split of your total property tax bill: ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
     }
     const cap = 8;
     const shown =
       metroParts.length > cap
-        ? `${metroParts.slice(0, cap).join(", ")}, and ${metroParts.length - cap} more parts of your metro rates`
+        ? `${metroParts.slice(0, cap).join(", ")}, and ${metroParts.length - cap} more parts of your metro share of the bill`
         : metroParts.join(", ");
-    return `Split of your total property tax rate: ${shown}; ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
+    return `Split of your total property tax bill: ${shown}; ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
   }, [totalMills, perDistrictBundles, shareOtherOfTotal]);
 
   const multiMetroParcel =
@@ -347,7 +354,7 @@ export function MetroTaxShareFlow({
               ? ` ${debtShareOfTotal.toFixed(1)} percent of your property taxes are paying off ${debtMetroLabel} debt.`
               : ""
           } ${taxRateSplitAnnouncement}`
-        : `No metro district mills shown in your property tax rate.${totalLine} ${taxRateSplitAnnouncement}`;
+        : `No metro district mills shown on your property tax bill.${totalLine} ${taxRateSplitAnnouncement}`;
   } else if (totalMills > 0 && activeDistrictIds.length === 0) {
     resultAnnouncement =
       "No metro districts were matched from your levy stack for this card.";
@@ -358,267 +365,305 @@ export function MetroTaxShareFlow({
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {resultAnnouncement}
       </div>
-      <div className="space-y-3 sm:space-y-4">
-        {showResultCard ? (
-          <div
-            role="region"
-            aria-label="Metro district share"
-            className="min-w-0"
+      {showResultCard ? (
+        <div
+          role="region"
+          aria-label="Metro district share"
+          className={`min-w-0 grid grid-cols-1 gap-4 sm:gap-6 ${
+            showDebtHeadline ? "sm:grid-cols-2" : ""
+          }`}
+        >
+          <button
+            type="button"
+            className="min-w-0 w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-100 px-3 py-4 text-left shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2"
+            aria-expanded={showResultDetails}
+            aria-controls={metroBreakdownPanelId}
+            onClick={toggleResultDetails}
           >
-              <div
-                className={
-                  showDebtHeadline
-                    ? "grid gap-4 sm:grid-cols-2 sm:gap-6"
-                    : ""
-                }
-              >
-                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-100 px-3 py-4 shadow-md sm:px-5 sm:py-5">
-                  <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-                    {totalDistrictShare.toFixed(1)}%
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-600 sm:text-base">
-                    {totalDistrictShare > 0
-                      ? multiMetroParcel
-                        ? "of your property taxes go to your metro districts (combined)"
-                        : "of your property taxes go to your metro district"
-                      : "No metro district mills shown in your property tax rate"}
-                  </p>
-                </div>
-                {showDebtHeadline ? (
-                  <div
-                    className="min-w-0 rounded-xl border border-red-800 bg-red-700 px-3 py-4 text-white shadow-md sm:px-5 sm:py-5"
-                    role="group"
-                    aria-label="Share of your taxes paying metro district debt"
-                  >
-                    <p className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                      {debtShareOfTotal.toFixed(1)}%
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-white sm:text-base">
-                      {multiMetroParcel
-                        ? "of your property taxes are paying off metro district debt (combined)"
-                        : "of your property taxes are paying off your metro district's debt"}
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-              <div className="mt-5 space-y-3">
-                <p
-                  id={`${p}tax-rate-split-heading`}
-                  className="text-sm font-semibold text-slate-900 sm:text-base"
+            <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+              {totalDistrictShare.toFixed(1)}%
+            </p>
+            <p className="mt-1 text-sm font-semibold text-slate-600 sm:text-base">
+              {totalDistrictShare > 0
+                ? multiMetroParcel
+                  ? "of your property taxes go to your metro districts (combined)"
+                  : "of your property taxes go to your metro district"
+                      : "No metro district mills shown on your property tax bill"}
+            </p>
+          </button>
+          {showDebtHeadline ? (
+            <button
+              type="button"
+              className="min-w-0 w-full cursor-pointer rounded-xl border border-red-800 bg-red-700 px-3 py-4 text-left text-white shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-red-900 hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:bg-red-700 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-red-700"
+              aria-expanded={showResultDetails}
+              aria-controls={metroBreakdownPanelId}
+              onClick={toggleResultDetails}
+            >
+              <p className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                {debtShareOfTotal.toFixed(1)}%
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white sm:text-base">
+                {multiMetroParcel
+                  ? "of your property taxes are paying off metro district debt (combined)"
+                  : "of your property taxes are paying off your metro district's debt"}
+              </p>
+            </button>
+          ) : null}
+          {perDistrictBundles.length > 0 ? (
+            <div className="col-span-full">
+              <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+                <ToolOutlinedToggleButton
+                  aria-expanded={showResultDetails}
+                  aria-controls={metroBreakdownPanelId}
+                  onClick={toggleResultDetails}
                 >
-                  Your total property tax rate
-                </p>
-                <p id={`${p}tax-rate-split-desc`} className="sr-only">
-                  {taxRateSplitAnnouncement} Percentages are shares of your total
-                  mill rate. Levy names match the Mill levy name or purpose column
-                  on the county form.
-                </p>
-                <div className={multiMetroParcel ? "space-y-2" : "space-y-5"}>
-                  {multiMetroParcel ? (
-                    <div className="space-y-2">
-                      <div
-                        className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
-                        aria-hidden="true"
-                      >
-                        <div className="flex h-full w-full">
-                          {combinedMetroBarRows.map(({ b, seg, flatIndex }) => {
-                            const w = segmentBarWidthPercent(
-                              totalMills,
-                              b,
-                              seg,
-                            );
-                            return w > 0 ? (
+                  {showResultDetails
+                    ? "Hide details"
+                    : "More details"}
+                </ToolOutlinedToggleButton>
+              </div>
+                  {showResultDetails ? (
+                    <div
+                      id={metroBreakdownPanelId}
+                      role="region"
+                      aria-label="Metro breakdown, sources, and explainer"
+                      className="mt-4 space-y-6 text-sm text-slate-800 sm:text-base"
+                    >
+                      <div className="space-y-3">
+                        <p
+                          id={`${p}tax-rate-split-heading`}
+                          className="text-sm font-semibold text-slate-900 sm:text-base"
+                        >
+                          Metro districts and the rest of your property tax bill
+                        </p>
+                        <p id={`${p}tax-rate-split-desc`} className="sr-only">
+                          {taxRateSplitAnnouncement} Percentages are each
+                          part&apos;s share of your total property tax bill
+                          (by mills). Levy names match the Mill levy name or
+                          purpose column on the county form.
+                        </p>
+                        <div
+                          className={multiMetroParcel ? "space-y-2" : "space-y-5"}
+                        >
+                          {multiMetroParcel ? (
+                            <div className="space-y-2">
                               <div
-                                key={`${b.districtId}-${seg.key}`}
-                                className={`h-full min-w-0 ${metroBarSegmentColorClass(flatIndex)}`}
-                                style={{ width: `${w}%` }}
-                              />
-                            ) : null;
-                          })}
-                          {combinedBarOtherPercent > 0 ? (
-                            <div
-                              className="h-full min-w-0 bg-slate-300"
-                              style={{
-                                width: `${combinedBarOtherPercent}%`,
-                              }}
-                            />
-                          ) : null}
-                        </div>
-                      </div>
-                      <ul
-                        className="space-y-2.5 text-sm text-slate-800 sm:text-base"
-                        aria-labelledby={`${p}tax-rate-split-heading`}
-                        aria-describedby={`${p}tax-rate-split-desc`}
-                      >
-                        {combinedMetroBarRows.map(({ b, seg, flatIndex }) => {
-                          const { percentage } = calculateSharePercentage(
-                            totalMills,
-                            allocatedMillsForSegment(b, seg),
-                          );
-                          const debtService = isMetroLevyDebtService(seg);
-                          return (
-                            <li
-                              key={`${b.districtId}-${seg.key}`}
-                              className="flex items-start justify-between gap-3"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <div className="flex gap-2">
-                                  <span
-                                    className={`mt-1 h-3 w-3 shrink-0 rounded-sm ${metroBarSegmentColorClass(flatIndex)}`}
-                                    aria-hidden="true"
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-semibold leading-snug text-slate-700 sm:text-sm">
-                                      {b.name}
-                                    </p>
-                                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                      <span className="font-medium text-slate-900">
-                                        {metroBarSegmentDisplayLabel(seg)}
-                                      </span>
-                                      {debtService ? (
-                                        <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
-                                          Debt passed on to you
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                    <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
-                                      {metroPurposeCategoryHintForSegment(seg)}
-                                    </p>
-                                  </div>
+                                className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                                aria-hidden="true"
+                              >
+                                <div className="flex h-full w-full">
+                                  {combinedMetroBarRows.map(
+                                    ({ b, seg, flatIndex }) => {
+                                      const w = segmentBarWidthPercent(
+                                        totalMills,
+                                        b,
+                                        seg,
+                                      );
+                                      return w > 0 ? (
+                                        <div
+                                          key={`${b.districtId}-${seg.key}`}
+                                          className={`h-full min-w-0 ${metroBarSegmentColorClass(flatIndex)}`}
+                                          style={{ width: `${w}%` }}
+                                        />
+                                      ) : null;
+                                    },
+                                  )}
+                                  {combinedBarOtherPercent > 0 ? (
+                                    <div
+                                      className="h-full min-w-0 bg-slate-300"
+                                      style={{
+                                        width: `${combinedBarOtherPercent}%`,
+                                      }}
+                                    />
+                                  ) : null}
                                 </div>
                               </div>
-                              <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                                {percentage.toFixed(1)}%
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ) : (
-                    perDistrictBundles.map((b) => {
-                      const barOtherPct = stackWidthOtherPercentForBundle(
-                        totalMills,
-                        b,
-                      );
-                      return (
-                        <div key={b.districtId} className="space-y-2">
-                          <div
-                            className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
-                            aria-hidden="true"
-                          >
-                            <div className="flex h-full w-full">
-                              {b.metroBarSegments.map((seg, i) => {
-                                const w = segmentBarWidthPercent(
-                                  totalMills,
-                                  b,
-                                  seg,
-                                );
-                                return w > 0 ? (
-                                  <div
-                                    key={seg.key}
-                                    className={`h-full min-w-0 ${metroBarSegmentPurposeSwatchClass(seg, i)}`}
-                                    style={{ width: `${w}%` }}
-                                  />
-                                ) : null;
-                              })}
-                              {barOtherPct > 0 ? (
-                                <div
-                                  className="h-full min-w-0 bg-slate-300"
-                                  style={{
-                                    width: `${barOtherPct}%`,
-                                  }}
-                                />
-                              ) : null}
-                            </div>
-                          </div>
-                          <ul
-                            className="space-y-2.5 text-sm text-slate-800 sm:text-base"
-                            aria-labelledby={`${p}tax-rate-split-heading`}
-                            aria-describedby={`${p}tax-rate-split-desc`}
-                          >
-                            {b.metroBarSegments.map((seg, i) => {
-                              const { percentage } = calculateSharePercentage(
-                                totalMills,
-                                allocatedMillsForSegment(b, seg),
-                              );
-                              const debtService = isMetroLevyDebtService(seg);
-                              return (
-                                <li
-                                  key={seg.key}
-                                  className="flex items-start justify-between gap-3"
-                                >
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex gap-2">
-                                      <span
-                                        className={`mt-1 h-3 w-3 shrink-0 rounded-sm ${metroBarSegmentPurposeSwatchClass(seg, i)}`}
-                                        aria-hidden="true"
-                                      />
-                                      <div className="min-w-0 flex-1">
-                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                          <span className="font-medium text-slate-900">
-                                            {metroBarSegmentDisplayLabel(seg)}
-                                          </span>
-                                          {debtService ? (
-                                            <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
-                                              Debt passed on to you
-                                            </span>
-                                          ) : null}
+                              <ul
+                                className="space-y-2.5 text-sm text-slate-800 sm:text-base"
+                                aria-labelledby={`${p}tax-rate-split-heading`}
+                                aria-describedby={`${p}tax-rate-split-desc`}
+                              >
+                                {combinedMetroBarRows.map(
+                                  ({ b, seg, flatIndex }) => {
+                                    const { percentage } =
+                                      calculateSharePercentage(
+                                        totalMills,
+                                        allocatedMillsForSegment(b, seg),
+                                      );
+                                    const debtService =
+                                      isMetroLevyDebtService(seg);
+                                    return (
+                                      <li
+                                        key={`${b.districtId}-${seg.key}`}
+                                        className="flex items-start justify-between gap-3"
+                                      >
+                                        <div className="min-w-0 flex-1">
+                                          <div className="flex gap-2">
+                                            <span
+                                              className={`mt-1 h-3 w-3 shrink-0 rounded-sm ${metroBarSegmentColorClass(flatIndex)}`}
+                                              aria-hidden="true"
+                                            />
+                                            <div className="min-w-0 flex-1">
+                                              <p className="text-xs font-semibold leading-snug text-slate-700 sm:text-sm">
+                                                {b.name}
+                                              </p>
+                                              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                <span className="font-medium text-slate-900">
+                                                  {metroBarSegmentDisplayLabel(
+                                                    seg,
+                                                  )}
+                                                </span>
+                                                {debtService ? (
+                                                  <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
+                                                    Debt passed on to you
+                                                  </span>
+                                                ) : null}
+                                              </div>
+                                              <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
+                                                {metroPurposeCategoryHintForSegment(
+                                                  seg,
+                                                )}
+                                              </p>
+                                            </div>
+                                          </div>
                                         </div>
-                                        <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
-                                          {metroPurposeCategoryHintForSegment(
-                                            seg,
-                                          )}
-                                        </p>
-                                      </div>
+                                        <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                                          {percentage.toFixed(1)}%
+                                        </span>
+                                      </li>
+                                    );
+                                  },
+                                )}
+                              </ul>
+                            </div>
+                          ) : (
+                            perDistrictBundles.map((b) => {
+                              const barOtherPct = stackWidthOtherPercentForBundle(
+                                totalMills,
+                                b,
+                              );
+                              return (
+                                <div key={b.districtId} className="space-y-2">
+                                  <div
+                                    className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                                    aria-hidden="true"
+                                  >
+                                    <div className="flex h-full w-full">
+                                      {b.metroBarSegments.map((seg, i) => {
+                                        const w = segmentBarWidthPercent(
+                                          totalMills,
+                                          b,
+                                          seg,
+                                        );
+                                        return w > 0 ? (
+                                          <div
+                                            key={seg.key}
+                                            className={`h-full min-w-0 ${metroBarSegmentPurposeSwatchClass(seg, i)}`}
+                                            style={{ width: `${w}%` }}
+                                          />
+                                        ) : null;
+                                      })}
+                                      {barOtherPct > 0 ? (
+                                        <div
+                                          className="h-full min-w-0 bg-slate-300"
+                                          style={{
+                                            width: `${barOtherPct}%`,
+                                          }}
+                                        />
+                                      ) : null}
                                     </div>
                                   </div>
-                                  <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                                    {percentage.toFixed(1)}%
-                                  </span>
-                                </li>
+                                  <ul
+                                    className="space-y-2.5 text-sm text-slate-800 sm:text-base"
+                                    aria-labelledby={`${p}tax-rate-split-heading`}
+                                    aria-describedby={`${p}tax-rate-split-desc`}
+                                  >
+                                    {b.metroBarSegments.map((seg, i) => {
+                                      const { percentage } =
+                                        calculateSharePercentage(
+                                          totalMills,
+                                          allocatedMillsForSegment(b, seg),
+                                        );
+                                      const debtService =
+                                        isMetroLevyDebtService(seg);
+                                      return (
+                                        <li
+                                          key={seg.key}
+                                          className="flex items-start justify-between gap-3"
+                                        >
+                                          <div className="min-w-0 flex-1">
+                                            <div className="flex gap-2">
+                                              <span
+                                                className={`mt-1 h-3 w-3 shrink-0 rounded-sm ${metroBarSegmentPurposeSwatchClass(seg, i)}`}
+                                                aria-hidden="true"
+                                              />
+                                              <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                  <span className="font-medium text-slate-900">
+                                                    {metroBarSegmentDisplayLabel(
+                                                      seg,
+                                                    )}
+                                                  </span>
+                                                  {debtService ? (
+                                                    <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
+                                                      Debt passed on to you
+                                                    </span>
+                                                  ) : null}
+                                                </div>
+                                                <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
+                                                  {metroPurposeCategoryHintForSegment(
+                                                    seg,
+                                                  )}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                                            {percentage.toFixed(1)}%
+                                          </span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
                               );
-                            })}
-                          </ul>
+                            })
+                          )}
                         </div>
-                      );
-                    })
-                  )}
-                </div>
-                <ul
-                  className="mt-3 space-y-2.5 text-sm text-slate-800 sm:text-base"
-                  aria-labelledby={`${p}tax-rate-split-heading`}
-                  aria-describedby={`${p}tax-rate-split-desc`}
-                >
-                  <li className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex gap-2">
-                        <span
-                          className="mt-1 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
-                          aria-hidden="true"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-slate-900">
-                              Everything else
+                        <ul
+                          className="mt-3 space-y-2.5 text-sm text-slate-800 sm:text-base"
+                          aria-labelledby={`${p}tax-rate-split-heading`}
+                          aria-describedby={`${p}tax-rate-split-desc`}
+                        >
+                          <li className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex gap-2">
+                                <span
+                                  className="mt-1 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
+                                  aria-hidden="true"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-slate-900">
+                                      Everything else
+                                    </span>
+                                  </div>
+                                  <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
+                                    Schools, county, city, and other local
+                                    districts
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                              {shareOtherOfTotal.toFixed(1)}%
                             </span>
-                          </div>
-                          <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
-                            Schools, county, city, and other local districts
-                          </p>
-                        </div>
+                          </li>
+                        </ul>
                       </div>
-                    </div>
-                    <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                      {shareOtherOfTotal.toFixed(1)}%
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              {perDistrictBundles.length > 0 ? (
-                <>
-                  {showResultDetails ? (
-                    <div className="mt-4 space-y-6 text-sm text-slate-800 sm:text-base">
+                      <div className="mt-4 sm:mt-5">
+                        <MetroDistrictInfoDetails />
+                      </div>
                       <div className="space-y-3 border-t border-slate-200 pt-4">
                         <div>
                           <p className="font-semibold text-indigo-950">
@@ -883,23 +928,10 @@ export function MetroTaxShareFlow({
                       </p>
                     </div>
                   ) : null}
-                  <div className="mt-3">
-                    <HelpPillButton
-                      className="text-xs sm:text-sm"
-                      onClick={() =>
-                        setShowResultDetails((prev) => !prev)
-                      }
-                    >
-                      {showResultDetails
-                        ? "Hide rate split details"
-                        : "Show rate split details"}
-                    </HelpPillButton>
-                  </div>
-                </>
-              ) : null}
-          </div>
-        ) : null}
-      </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </>
   );
 }
