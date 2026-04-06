@@ -610,8 +610,10 @@ export default function SourcesPage() {
             {" "}
             (tax entity ID, LG ID, fuzzy name scores from county-to-DOLA only).{" "}
             <strong className="text-slate-900">(2) Directory contact match</strong> against bundled
-            district JSON (Arapahoe boundary filtering for fuzzy matches). When LG ID matches
-            across both, the UI treats that as the strongest link; if only the name is fuzzy,
+            district JSON (Arapahoe boundary filtering for fuzzy matches). When the levy line has a
+            bill LG ID from the DOLA join, that ID selects the directory row first; otherwise the
+            label may supply an LG ID or a fuzzy name match. When LG ID matches across both, the
+            UI treats that as the strongest link; if only the name is fuzzy,
             contact is shown with a caveat. See{" "}
             <Link href="#term-lg-id" className={TOOL_ANCHOR}>
               LG ID

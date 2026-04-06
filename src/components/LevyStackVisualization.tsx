@@ -264,6 +264,7 @@ export function LevyStackVisualization({
       specialDistrictFile != null
         ? matchSpecialDistrict(line.authority, specialDistrictFile.districts, {
             countyGeoid: ARAPAHOE_COUNTY_GEOID,
+            preferredLgId: line.dolaMatch?.lgId ?? null,
           })
         : null;
     return {

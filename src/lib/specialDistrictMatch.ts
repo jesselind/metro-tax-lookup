@@ -86,6 +86,12 @@ export type SpecialDistrictMatchOptions = {
    * array are excluded.
    */
   countyGeoid?: string;
+  /**
+   * LG ID from the county/DOLA join on the levy line (e.g. bill-side match).
+   * When set, the directory row for this ID is used first (before parsing the
+   * authority label or fuzzy name matching).
+   */
+  preferredLgId?: string | null;
 };
 
 export type SpecialDistrictMatch =
@@ -136,6 +142,12 @@ function significantTokens(s: string): string[] {
 function padLgId(digits: string): string {
   if (digits.length >= 6) return digits.slice(0, 5);
   return digits.padStart(5, "0");
+}
+
+function lgIdKeyFromRaw(raw: string): string | null {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  return padLgId(digits);
 }
 
 function extractLgIdFromLabel(authority: string): string | null {
@@ -243,6 +255,16 @@ export function matchSpecialDistrict(
 
   ensureCache(districts);
   const byLg = cachedByLgId!;
+
+  const preferredKey = options?.preferredLgId
+    ? lgIdKeyFromRaw(options.preferredLgId)
+    : null;
+  if (preferredKey) {
+    const fromBill = byLg.get(preferredKey);
+    if (fromBill && countyOk(fromBill)) {
+      return { kind: "lgId", record: fromBill, confidence: "high" };
+    }
+  }
 
   const lgGuess = extractLgIdFromLabel(trimmed);
   if (lgGuess) {
