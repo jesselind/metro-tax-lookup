@@ -514,19 +514,13 @@ export function LevyStackVisualization({
                           <div
                             className={
                               allowLineEdit
-                                ? "grid min-h-0 flex-1 grid-rows-[1fr_auto]"
-                                : "grid min-h-0 flex-1 grid-rows-[1fr_auto] pt-0"
+                                ? "grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-y-2 sm:gap-y-3"
+                                : "grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-y-2 sm:gap-y-3 pt-0"
                             }
                           >
-                            <div
-                              className={
-                                allowLineEdit
-                                  ? "min-h-0 self-start pr-11"
-                                  : "min-h-0 self-start"
-                              }
-                            >
+                            <div className="min-h-0 w-full min-w-0 self-start">
                               <p
-                                className={`w-full min-w-0 font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${TILE_DESC_MILLS_CLASS} line-clamp-6`}
+                                className={`w-full min-w-0 font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${TILE_DESC_MILLS_CLASS} line-clamp-6${allowLineEdit ? " pr-11" : ""}`}
                               >
                                 {item.authority}
                               </p>
