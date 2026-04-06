@@ -1,0 +1,42 @@
+---
+description: JSX/React prose — explicit space after inline tags so words do not run together
+alwaysApply: true
+---
+
+## JSX prose: never rely on whitespace after `</strong>`, `</dfn>`, etc.
+
+In JSX, **line breaks and indentation around inline elements are not reliable spaces**. Text can render with **missing spaces** (e.g. `greenside`, `them).The`) so the next word is glued to the closing tag or to the previous word across a line break.
+
+### Required pattern
+
+- After **any closing inline tag** (`</strong>`, `</dfn>`, `</em>`, `</b>`, `</span>`, `</code>`, etc.), if more text follows in the same sentence, insert an explicit space expression: **`{" "}`** on its own line or immediately before the next text node.
+- When starting a sentence after a period and the next token is a component or `<strong>`, use **`{" "}`** between the period (or closing paren) and the next word or element if there is any chance of a line break in the source between them.
+
+### Good
+
+```tsx
+The{" "}
+<strong className="font-semibold text-slate-900">green</strong>
+{" "}
+side is the state&apos;s record.
+```
+
+### Bad (may collapse to missing spaces)
+
+```tsx
+The <strong>green</strong> side is the
+state&apos;s record.
+```
+
+```tsx
+<p>
+  Something <strong>bold</strong> else.
+</p>
+```
+
+(Prefer `</strong>{" "}else` or keep the following word on the same line as `</strong>` **and** still use `{" "}` after `</strong>` when teammates or formatters may reflow lines.)
+
+### When editing
+
+- After adding or moving bold, `dfn`, links, or `code` in user-facing copy, **re-read the rendered string as plain text** and fix glued words.
+- Prefer explicit `{" "}` over trusting a single space character or newline after a `>` in formatted JSX.

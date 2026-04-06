@@ -59,6 +59,14 @@ export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
 export const COUNTY_EXTERNAL_LINK_CLASS =
   "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";
 
+/** In-app links to glossary entries (e.g. `/sources#term-*`). */
+export const TERM_LINK_CLASS =
+  "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
+
+/** Inline <code> in prose (Sources page, term definitions). Single class for consistent styling. */
+export const CODE_INLINE_CLASS =
+  "rounded bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-900";
+
 export const HELP_PILL_CLASS =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 disabled:cursor-not-allowed sm:text-base";
 

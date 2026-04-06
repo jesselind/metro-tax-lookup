@@ -353,6 +353,14 @@ def sort_line_code(code: str) -> tuple[int, str]:
 
 
 def normalize_for_match(name: str) -> str:
+    """
+    Shared normalization for mart authority labels and DOLA legal names before
+    fuzz.token_sort_ratio. Keeps both sides comparable so common abbreviations
+    do not tank scores (e.g. METRO vs METROPOLITAN, DIST vs DISTRICT).
+
+    Word-boundary rules use \\b so we do not alter METROPOLITAN (METRO is not a
+    standalone token inside that word).
+    """
     s = strip_field(name).upper()
     s = s.replace("&", " AND ")
     s = s.replace("#", " ")
@@ -366,6 +374,10 @@ def normalize_for_match(name: str) -> str:
     )
     for a, b in repl:
         s = s.replace(a, b)
+    # Typo occasionally seen in exports
+    s = s.replace("DISTRRICT", "DISTRICT")
+    # Mart lines often say METRO; DOLA legal names say METROPOLITAN
+    s = re.sub(r"\bMETRO\b", "METROPOLITAN", s)
     return s
 
 

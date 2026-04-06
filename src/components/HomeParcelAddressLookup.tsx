@@ -8,12 +8,8 @@ import { LevyStackVisualization } from "@/components/LevyStackVisualization";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { MetroHavingTroubleInfoDetails } from "@/components/MetroHavingTroubleInfoDetails";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
-import {
-  LevyDefinitionInfoDetails,
-  MillsDefinitionInfoDetails,
-} from "@/components/propertyTaxInfoDetails";
+import { TermLevyAside, TermLgIdAside, TermMillsAside } from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
-import type { ArapahoeLevyStacksFile } from "@/lib/arapahoeParcelLevyData";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
   loadLevyStackFromPin,
@@ -85,6 +81,9 @@ const addressSitusGrid = {
 
 const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnOutlinePrimaryMd} inline-flex w-full min-w-0 justify-center sm:flex-1 md:flex-1 lg:w-auto lg:min-w-[7.5rem] lg:flex-none`;
 
+const HOME_DEFINITIONS_HEADING_CLASS =
+  "text-lg font-semibold text-slate-900 sm:text-xl";
+
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
 
@@ -106,9 +105,6 @@ export function HomeParcelAddressLookup() {
     tagShortDescr: string;
     levyAspxUrl: string;
   } | null>(null);
-  const [levyStacksSnapshot, setLevyStacksSnapshot] = useState<
-    ArapahoeLevyStacksFile["snapshot"] | null
-  >(null);
   const [levyAwaitingTemplateMills, setLevyAwaitingTemplateMills] =
     useState(false);
   const [levyTemplateMillDrafts, setLevyTemplateMillDrafts] = useState<
@@ -203,7 +199,6 @@ export function HomeParcelAddressLookup() {
   const clearAllLevyState = useCallback(() => {
     setLevyLines([]);
     setLevyLoadedMeta(null);
-    setLevyStacksSnapshot(null);
     setLevyAwaitingTemplateMills(false);
     setLevyTemplateMillDrafts({});
     setLevyTemplateMillsError(null);
@@ -219,7 +214,6 @@ export function HomeParcelAddressLookup() {
     setLevyAwaitingTemplateMills(false);
     setLevyTemplateMillDrafts({});
     setLevyLoadedMeta(null);
-    setLevyStacksSnapshot(null);
     setLevyTemplateMillsError(null);
     setLevyStackReloadRevision(0);
   }
@@ -238,7 +232,6 @@ export function HomeParcelAddressLookup() {
         setParcelPin(result.matchedPin);
         setLevyLines(result.lines);
         setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
-        setLevyStacksSnapshot(result.arapahoeStacksSnapshot);
         setLevyTemplateMillDrafts(result.templateMillDrafts);
         setLevyLoadedMeta({
           pin: result.matchedPin,
@@ -934,7 +927,6 @@ export function HomeParcelAddressLookup() {
               lines={levyLines}
               setLines={setLevyLines}
               loadedParcelMeta={levyLoadedMeta}
-              arapahoeStacksSnapshot={levyStacksSnapshot}
               awaitingTemplateMills={levyAwaitingTemplateMills}
               setAwaitingTemplateMills={setLevyAwaitingTemplateMills}
               templateMillDrafts={levyTemplateMillDrafts}
@@ -943,12 +935,8 @@ export function HomeParcelAddressLookup() {
               setTemplateMillsError={setLevyTemplateMillsError}
               onClearLoadedStack={clearParcelTemplateExtended}
               allowLineEdit
-              millsDefinitionHref="#what-are-mills"
+              termDefinitionsOnHomePage={levyReadyForSummary}
             />
-          </div>
-          <div className="space-y-3">
-            <MillsDefinitionInfoDetails />
-            <LevyDefinitionInfoDetails />
           </div>
         </div>
       </section>
@@ -982,6 +970,21 @@ export function HomeParcelAddressLookup() {
         </div>
       </section>
         </>
+      ) : null}
+
+      {levyReadyForSummary ? (
+        <section
+          id="page-definitions"
+          aria-labelledby="home-page-definitions-heading"
+          className="mt-10 w-full scroll-mt-8 border-t border-slate-200 pt-10"
+        >
+          <h2 id="home-page-definitions-heading" className={HOME_DEFINITIONS_HEADING_CLASS}>
+            Definitions
+          </h2>
+          <TermMillsAside />
+          <TermLevyAside />
+          <TermLgIdAside />
+        </section>
       ) : null}
     </>
   );

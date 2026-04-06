@@ -6,7 +6,7 @@ Not affiliated with Arapahoe County. Informational only. Verify with official co
 
 MIT-licensed; please attribute and verify with county source documents.
 
-**Audience:** This file is for **developers and contributors** (Git clone, tooling, regenerating JSON). The deployed app’s **Sources** page at `/sources` is written for a general audience — residents, tax-minded reviewers, and anyone auditing numbers without using GitHub or the command line.
+**Audience:** This file is for **developers and contributors** (Git clone, tooling, regenerating JSON). The deployed app’s **Sources** page at `/sources` is for anyone verifying against county sources **without code**, and for **technical, finance, and audit readers** who need the full transparent path from exports and scripts through bundled JSON to the UI.
 
 ## The tools
 
@@ -21,7 +21,7 @@ Static JSON under `public/data/` powers metro rates, Arapahoe PIN/TAG/situs inde
 
 Start at `/` for address lookup, levy breakdown, and metro district tax share.
 
-The first home card is an **offline address → PIN** helper (`arapahoe-situs-to-pins.json`). Field semantics match `tools/build_arapahoe_parcel_levy_index.py` (Main Parcel `SAAddrNumber` + optional `SAStreetNumberSfx`, normalized street name, optional unit). One match loads the levy stack automatically; several matches use **Use this property** per row, with a county link if you need to verify which PIN is yours; no match shows county PIN help plus optional screenshots for **Tax District Levies** and **2025 Mill Levy** on the parcel page. Until a PIN load is in progress, completes (success or error), you choose **Add levy lines without loading a PIN**, or you already have levy content, the home page hides the levy card and the embedded metro card so only the address card shows (typing address fields or PIN alone does not reveal them). After a failed load you can add lines with **Add tile** in the grid. If you open the breakdown without a PIN, a **Where to find those rows on the county site** panel above the tiles repeats that levy-table and total-mills guidance (same toggles as metro **Having trouble?**). The **Breakdown of your property tax bill** section uses bundled county data and/or lines you add from the county levy table, then the tile + table UI; collapsible **What are mills?** and **What is a levy?** explainers sit at the bottom of that same card. See `/sources` for methodology. Old URL `/levy-breakdown` redirects to `/`.
+The first home card is an **offline address → PIN** helper (`arapahoe-situs-to-pins.json`). Field semantics match `tools/build_arapahoe_parcel_levy_index.py` (Main Parcel `SAAddrNumber` + optional `SAStreetNumberSfx`, normalized street name, optional unit). One match loads the levy stack automatically; several matches use **Use this property** per row, with a county link if you need to verify which PIN is yours; no match shows county PIN help plus optional screenshots for **Tax District Levies** and **2025 Mill Levy** on the parcel page. Until a PIN load is in progress, completes (success or error), you choose **Add levy lines without loading a PIN**, or you already have levy content, the home page hides the levy card and the embedded metro card so only the address card shows (typing address fields or PIN alone does not reveal them). After a failed load you can add lines with **Add tile** in the grid. If you open the breakdown without a PIN, a **Where to find those rows on the county site** panel above the tiles repeats that levy-table and total-mills guidance (same toggles as metro **Having trouble?**). The **Breakdown of your property tax bill** section uses bundled county data and/or lines you add from the county levy table, then the tile + table UI. After a successful PIN load, plain-language **Definitions** (mills, levy, LG ID — same section title as `/sources`) sit at the bottom of the page. See `/sources` for methodology. Old URL `/levy-breakdown` redirects to `/`.
 
 ### Metro district tax share
 
@@ -31,17 +31,20 @@ After you load a parcel PIN and the levy stack appears, the metro card pre-fills
 
 1. Finish the address card: search by address and, if needed, enter or confirm **Parcel PIN**, then load the stack when prompted — or use **Add levy lines without loading a PIN** to open the breakdown and use **Add tile** for each row from **Tax District Levies**. After a successful PIN load, the address card collapses (toggle the header to reopen); the page scrolls to the levy section and moves keyboard focus to that heading (smooth scroll unless reduced motion is on).
 2. County PIN path reads bundled JSON only; compare to the county **Tax District Levies** table when verifying.
+3. After a successful **PIN** load, **Definitions** (mills, levy, LG ID — same blocks as on `/sources`) appears at the bottom of `/`. The levy line modal shows one combined card (tax entity, LG ID, contact) with caveats when needed; matching LG ID between DOLA and the directory is treated as the strongest link. Bundled district JSON does not include phone numbers yet, so the UI cannot show them until a future data pass.
 
 Details and citations are on the in-app Sources page (`/sources`).
 
 ## Sources, privacy, accessibility
 
-- **Sources**: In-app at `/sources` — methodology, official links, and human-friendly verification (not GitHub-oriented). Use this README’s **Development** section for pipeline commands and file paths.
+- **Sources**: In-app at `/sources` — step-by-step verification, official links, definitions, and **auditable methodology** (build inputs, scripts, independence of levy-detail matchers). Use this README’s **Development** section for pipeline commands and file paths.
 - **Privacy**: No analytics, no cookies, and no saving inputs in your browser (local/session storage). See `/privacy`.
 - **Accessibility**: We aim for WCAG 2.1 AA. To report an accessibility issue, email `metro.tax.lookup@pm.me`. See `/accessibility`.
 - **Security**: HTTP security headers (CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, frame denial, HSTS in production) are configured in `next.config.ts`. The home address lookup caps field lengths, keeps lookup in the browser, fetches bundled JSON with `credentials: "same-origin"`, and validates JSON shape after parse before indexing (see `validateArapahoeSitusToPinsPayload` in `src/lib/arapahoeSitusLookup.ts`). There is no server endpoint that accepts user-submitted addresses.
 
 ## Development
+
+**Glossary / term definitions:** All definition blocks live in `src/content/termDefinitions.tsx`. The Sources page renders **`AllTermDefinitionAsides`**; the home page renders **`TermMillsAside`**, **`TermLevyAside`**, and **`TermLgIdAside`** (after a successful PIN load). Levy line detail copy and layout live in `LevyLineDistrictDetailDialog.tsx`.
 
 Install deps and run the dev server:
 

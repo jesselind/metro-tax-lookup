@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import { calculateSharePercentage } from "@/lib/levyCalculator";
 import type {
@@ -27,6 +34,52 @@ import { COLORADO_SPECIAL_DISTRICTS_MAP_URL } from "@/lib/dataSourceUrls";
 
 /** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
 const RATE_TO_MILLS = 1000;
+
+type MetroAutoMatchBannerProps = {
+  districtName: string | undefined;
+  /** When true, hide metro picker and mills (simplified "all set" layout). */
+  onSuppressPickerChange: (suppress: boolean) => void;
+};
+
+function MetroAutoMatchBanner({
+  districtName,
+  onSuppressPickerChange,
+}: MetroAutoMatchBannerProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  useLayoutEffect(() => {
+    onSuppressPickerChange(!showAdvanced);
+  }, [showAdvanced, onSuppressPickerChange]);
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2.5 text-sm text-emerald-950 sm:text-base"
+    >
+      <p className="font-medium text-emerald-950">You are all set here</p>
+      <p className="mt-1 text-emerald-900">
+        We matched your levy breakdown to{" "}
+        <strong className="font-semibold text-emerald-950">
+          {districtName ?? "your metro district"}
+        </strong>
+        . The share above already uses that district and your total mills from the stack.
+      </p>
+      <div className="mt-3">
+        <HelpPillButton
+          className="text-xs sm:text-sm"
+          type="button"
+          aria-expanded={showAdvanced}
+          onClick={() => setShowAdvanced((prev) => !prev)}
+        >
+          {showAdvanced
+            ? "Hide metro district and mills options"
+            : "Change metro district or mills"}
+        </HelpPillButton>
+      </div>
+    </div>
+  );
+}
 
 export type MetroTaxShareFlowProps = {
   idPrefix?: string;
@@ -63,8 +116,12 @@ export function MetroTaxShareFlow({
   const [totalMillsInput, setTotalMillsInput] = useState("");
   const [selectedMetroId, setSelectedMetroId] = useState<string>("");
   const [showResultDetails, setShowResultDetails] = useState(false);
-  const [showMetroAdvancedOptions, setShowMetroAdvancedOptions] =
-    useState(false);
+  const [autoMatchSuppressPicker, setAutoMatchSuppressPicker] =
+    useState(true);
+
+  const handleAutoMatchSuppressPicker = useCallback((suppress: boolean) => {
+    setAutoMatchSuppressPicker(suppress);
+  }, []);
 
   const prevMetroHintKeyRef = useRef<string>("");
   const totalMillsDirtyRef = useRef(false);
@@ -273,13 +330,7 @@ export function MetroTaxShareFlow({
     metroFromLevyStack?.kind === "match" &&
     selectedMetroId === metroFromLevyStack.districtId;
   const hideMetroPickerAndTotals =
-    isMetroAutoMatchUi && !showMetroAdvancedOptions;
-
-  useEffect(() => {
-    if (!isMetroAutoMatchUi) {
-      setShowMetroAdvancedOptions(false);
-    }
-  }, [isMetroAutoMatchUi]);
+    isMetroAutoMatchUi && autoMatchSuppressPicker;
 
   return (
     <>
@@ -644,37 +695,10 @@ export function MetroTaxShareFlow({
 
         <div className="space-y-4">
             {isMetroAutoMatchUi ? (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-2.5 text-sm text-emerald-950 sm:text-base"
-                >
-                  <p className="font-medium text-emerald-950">
-                    You are all set here
-                  </p>
-                  <p className="mt-1 text-emerald-900">
-                    We matched your levy breakdown to{" "}
-                    <strong className="font-semibold text-emerald-950">
-                      {selectedDistrict?.name ?? "your metro district"}
-                    </strong>
-                    . The share above already uses that district and your total
-                    mills from the stack.
-                  </p>
-                  <div className="mt-3">
-                    <HelpPillButton
-                      className="text-xs sm:text-sm"
-                      type="button"
-                      aria-expanded={showMetroAdvancedOptions}
-                      onClick={() =>
-                        setShowMetroAdvancedOptions((prev) => !prev)
-                      }
-                    >
-                      {showMetroAdvancedOptions
-                        ? "Hide metro district and mills options"
-                        : "Change metro district or mills"}
-                    </HelpPillButton>
-                  </div>
-                </div>
+                <MetroAutoMatchBanner
+                  districtName={selectedDistrict?.name}
+                  onSuppressPickerChange={handleAutoMatchSuppressPicker}
+                />
               ) : null}
             {isNoAutoMatch ? (
               <div

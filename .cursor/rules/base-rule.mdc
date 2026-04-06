@@ -43,6 +43,7 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 ### Framework-specific
 
 - Follow established best practices for Next.js/React components and Tailwind CSS utility usage.
+- **JSX prose / whitespace:** Inline tags (`<strong>`, `<dfn>`, etc.) plus line breaks can drop spaces between words. Use explicit `{" "}` after closing inline tags before more text; see `.cursor/rules/jsx-whitespace.mdc`.
 
 ### Engineering principles
 

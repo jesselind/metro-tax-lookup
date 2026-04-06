@@ -50,6 +50,11 @@ export default function RootLayout({
                 advice.
               </p>
               <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+                We aim to produce accurate results from the sources we cite, but we
+                cannot guarantee them. We are constantly updating this site and its
+                data to make it more reliable.
+              </p>
+              <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
                 Address lookup runs in your browser from static files on this
                 site; your address is not sent to us or the county when you
                 search. Coverage is Main Parcel / real property in Arapahoe

@@ -12,17 +12,12 @@ import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetailDialog";
 import { ModalPortal } from "@/components/ModalPortal";
-import {
-  MILLS_DEFINITION_ELEMENT_ID,
-  MillsDefinitionInfoDetails,
-} from "@/components/propertyTaxInfoDetails";
-import { INPUT_CLASS } from "@/lib/toolFlowStyles";
+import { INPUT_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import {
   ARAPAHOE_COUNTY_GEOID,
   matchSpecialDistrict,
   mergeDistrictDirectoryLayers,
 } from "@/lib/specialDistrictMatch";
-import type { ArapahoeLevyStacksFile } from "@/lib/arapahoeParcelLevyData";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 import { safeArapahoeLevyAspxUrl } from "@/lib/safeExternalHref";
@@ -113,7 +108,6 @@ export type LevyStackVisualizationProps = {
     tagShortDescr: string;
     levyAspxUrl: string;
   } | null;
-  arapahoeStacksSnapshot: ArapahoeLevyStacksFile["snapshot"] | null;
   awaitingTemplateMills: boolean;
   setAwaitingTemplateMills: (v: boolean) => void;
   templateMillDrafts: Record<string, string>;
@@ -124,17 +118,17 @@ export type LevyStackVisualizationProps = {
   setTemplateMillsError: (e: string | null) => void;
   onClearLoadedStack: () => void;
   allowLineEdit: boolean;
-  /** Link for &quot;mills&quot; in the template-mills panel (default: in-page anchor). */
-  millsDefinitionHref?: string;
-  /** When true, show the mills definition block below the visualization (levy tool page). */
-  showMillsDefinitionBelow?: boolean;
+  /**
+   * When true, levy line detail and term links scroll to `/#term-*` on the home page
+   * (Definitions on `/` after a successful PIN load); otherwise `/sources#term-*`.
+   */
+  termDefinitionsOnHomePage?: boolean;
 };
 
 export function LevyStackVisualization({
   lines,
   setLines,
   loadedParcelMeta,
-  arapahoeStacksSnapshot,
   awaitingTemplateMills,
   setAwaitingTemplateMills,
   templateMillDrafts,
@@ -143,8 +137,7 @@ export function LevyStackVisualization({
   setTemplateMillsError,
   onClearLoadedStack,
   allowLineEdit,
-  millsDefinitionHref,
-  showMillsDefinitionBelow = false,
+  termDefinitionsOnHomePage = false,
 }: LevyStackVisualizationProps) {
   const templateErrorId = useId();
   const [showLevyDetails, setShowLevyDetails] = useState(false);
@@ -192,8 +185,20 @@ export function LevyStackVisualization({
   const showLevyGrid =
     !awaitingTemplateMills && (lines.length > 0 || allowLineEdit);
 
-  const millsLink =
-    millsDefinitionHref ?? `#${MILLS_DEFINITION_ELEMENT_ID}`;
+  const millsTermHref = termDefinitionsOnHomePage ? "#term-mills" : "/sources#term-mills";
+  const levyTermHref = termDefinitionsOnHomePage ? "#term-levy" : "/sources#term-levy";
+
+  function goToTermFromTileMenu(id: "term-mills" | "term-levy") {
+    setTileActionsId(null);
+    window.setTimeout(() => {
+      if (termDefinitionsOnHomePage) {
+        window.history.replaceState(null, "", `/#${id}`);
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.location.assign(`/sources#${id}`);
+      }
+    }, 0);
+  }
 
   useEffect(() => {
     if (!showResults || specialDistrictFetchStartedRef.current) return;
@@ -796,13 +801,23 @@ export function LevyStackVisualization({
           <p className="text-sm font-semibold text-indigo-950 sm:text-base">
             Enter{" "}
             <a
-              href={millsLink}
+              href={millsTermHref}
               className="underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-              title="What are mills?"
             >
               mills
             </a>{" "}
             for each line
+          </p>
+          <p className="mt-1 text-sm text-slate-700">
+            Each row is one{" "}
+            <a
+              href={levyTermHref}
+              className="font-medium text-indigo-950 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+            >
+              levy
+            </a>
+            {" "}
+            (one district line on your bill).
           </p>
           {loadedParcelMeta && (
             <div className="mt-1 space-y-2 text-sm leading-relaxed text-slate-700">
@@ -914,7 +929,7 @@ export function LevyStackVisualization({
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
           snapshot={specialDistrictFile?.snapshot ?? null}
-          arapahoeSnapshot={arapahoeStacksSnapshot}
+          termDefinitionsOnHomePage={termDefinitionsOnHomePage}
           onClose={() => setDetailLineId(null)}
         />
       )}
@@ -940,9 +955,30 @@ export function LevyStackVisualization({
             >
               {displayAuthorityForLevyLine(actionLine.authority)}
             </h3>
-            <p className="mt-1 font-mono text-sm tabular-nums text-slate-600">
-              {formatMills(actionLine.mills)} mills
-            </p>
+            <div className="mt-1 space-y-1.5">
+              <p className="font-mono text-sm tabular-nums text-slate-600">
+                <span>{formatMills(actionLine.mills)}</span>{" "}
+                <button
+                  type="button"
+                  className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
+                  onClick={() => goToTermFromTileMenu("term-mills")}
+                >
+                  mills
+                </button>
+              </p>
+              <p className="text-sm text-slate-600">
+                One{" "}
+                <button
+                  type="button"
+                  className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-sm`}
+                  onClick={() => goToTermFromTileMenu("term-levy")}
+                >
+                  levy
+                </button>
+                {" "}
+                line among several on your parcel.
+              </p>
+            </div>
             <div className="mt-4 flex flex-col gap-2">
               <button
                 type="button"
@@ -973,11 +1009,6 @@ export function LevyStackVisualization({
         </ModalPortal>
       )}
 
-      {showMillsDefinitionBelow ? (
-        <div className="mt-3">
-          <MillsDefinitionInfoDetails />
-        </div>
-      ) : null}
     </div>
   );
 }
