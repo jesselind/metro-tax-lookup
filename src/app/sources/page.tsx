@@ -152,19 +152,24 @@ export default function SourcesPage() {
             Metro district tax share
           </Link>{" "}
           on the home page compares your <strong>total</strong> mill rate to metro
-          district levy lines from the county mill file. After a successful PIN load,
-          the metro card can pre-fill your total mills from the levy stack and{" "}
-          <strong>select your metro district</strong> when a stack line&apos;s
+          district rates from the county mill file. After a successful PIN load,
+          the metro card uses the same total mills as your stack (sum of the breakdown
+          above the card) and{" "}
+          <strong>detects metro districts from the stack</strong> when a row&apos;s
           LG ID (from the DOLA bundle, or the digits before the slash in the LGIS
           tax entity ID when the export omits a separate LG ID) matches the{" "}
           <code className={CODE_INLINE_CLASS}>lgid</code> on a metro row in{" "}
-          <code className={CODE_INLINE_CLASS}>metro-levies-2025.json</code>. If no line
-          carries a matching ID, the tool shows a short message, the district list,
-          and an inline link to the statewide special districts map. After you choose a
-          district, total mills appears; use <strong className="text-slate-900">Start over</strong>{" "}
-          in the address card to reset the whole home page flow. The extra help panel stays off that minimal path until you use the
-          fuller flow. Old URL <code className={CODE_INLINE_CLASS}>/metro-tax-lookup</code> redirects
-          to <code className={CODE_INLINE_CLASS}>/</code>.
+          <code className={CODE_INLINE_CLASS}>metro-levies-2025.json</code>. There is
+          no manual district picker; if no row carries a matching ID, the card explains
+          that and links to the statewide special districts map. When more than one metro
+          district appears on your stack, the headline uses <strong>combined</strong>{" "}
+          certified metro mills and the rate split shows <strong>one</strong> stacked
+          bar and legend, in county stack order. The metro card shows the same total mills as your levy stack (no separate
+          mills field on that card). Use{" "}
+          <strong className="text-slate-900">Start over</strong> in the address card to
+          reset the home page flow. Old URL{" "}
+          <code className={CODE_INLINE_CLASS}>/metro-tax-lookup</code> redirects to{" "}
+          <code className={CODE_INLINE_CLASS}>/</code>.
         </p>
 
         <h3 className={`${SECTION_H3} !mt-6`}>
@@ -180,9 +185,14 @@ export default function SourcesPage() {
             <strong className="text-slate-900">paper bill</strong> or the
             county site, identify your{" "}
             <strong className="text-slate-900">total mill levy</strong> and the
-            line(s) for{" "}
-            <strong className="text-slate-900">metro district debt service</strong>{" "}
-            mills (wording varies). The tool only needs those two kinds of
+            metro-related parts of your rate (for example{" "}
+            <strong className="text-slate-900">debt service</strong> and{" "}
+            <strong className="text-slate-900">operations</strong>), using the
+            county&apos;s labels — wording varies. For a quick manual check, total
+            mills and metro debt are usually the easiest figures to compare first.
+            In the app, the metro card always uses your <strong>full stack total</strong>{" "}
+            as the denominator for every percentage and picks up <strong>every</strong>{" "}
+            metro that matches an LG ID on your stack — not a hand-chosen pair of
             numbers.
           </li>
           <li>
@@ -213,8 +223,8 @@ export default function SourcesPage() {
             <strong className="text-slate-900">name or LGID</strong>. That
             schedule shows how the county publishes{" "}
             <strong className="text-slate-900">operations vs debt service</strong>{" "}
-            mills — the same split the app uses when it pre-fills or explains
-            metro debt mills.
+            mills — the same split the app uses when it shows metro debt share
+            (when applicable).
           </li>
           <li>
             If the in-app snapshot date is older than the county&apos;s current
@@ -231,10 +241,12 @@ export default function SourcesPage() {
           . That file is built offline from the county PDF below using{" "}
           <code className={CODE_INLINE_CLASS}>tools/extract_metro_levies_*.py</code>.
           Metro rows in that JSON include <code className={CODE_INLINE_CLASS}>lgid</code>
-          ; the home-page match uses the same LG ID values attached to levy lines
-          when{" "}
+          ; the home-page match uses the same LG ID values attached to each row in your
+          stack when{" "}
           <code className={CODE_INLINE_CLASS}>tools/build_arapahoe_parcel_levy_index.py</code>{" "}
           aligns county mart data with DOLA (see levy breakdown methodology below).
+          The metro card does not offer a manual district choice; it only uses LG IDs
+          that appear on your loaded stack.
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">

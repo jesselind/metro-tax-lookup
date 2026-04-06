@@ -13,7 +13,6 @@ import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
   loadLevyStackFromPin,
-  scaleLevyLinesToTargetTotal,
   type CommittedLevyLine,
 } from "@/lib/committedLevyLine";
 import {
@@ -120,9 +119,6 @@ export function HomeParcelAddressLookup() {
 
   /** Opens levy / metro / hub without a PIN load (user builds the stack with Add tile). */
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
-  /** Bumps after a deliberate county reload so the metro total field resyncs from the new stack. */
-  const [levyStackReloadRevision, setLevyStackReloadRevision] = useState(0);
-
   const addressPanelId = useId();
   const addressDisclosureId = useId();
   const [addressSectionExpanded, setAddressSectionExpanded] = useState(true);
@@ -206,7 +202,6 @@ export function HomeParcelAddressLookup() {
     setLevyLoadBusy(false);
     setParcelPin("");
     setHomeLevyWorkbenchOpen(false);
-    setLevyStackReloadRevision(0);
   }, []);
 
   function clearLevyStackOnly() {
@@ -215,44 +210,31 @@ export function HomeParcelAddressLookup() {
     setLevyTemplateMillDrafts({});
     setLevyLoadedMeta(null);
     setLevyTemplateMillsError(null);
-    setLevyStackReloadRevision(0);
   }
 
-  const loadLevyStack = useCallback(
-    async (pin: string, options?: { bumpMetroSync?: boolean }) => {
-      setLevyLoadError(null);
-      setLevyTemplateMillsError(null);
-      setLevyLoadBusy(true);
-      try {
-        const result = await loadLevyStackFromPin(pin);
-        if (!result.ok) {
-          setLevyLoadError(result.error);
-          return;
-        }
-        setParcelPin(result.matchedPin);
-        setLevyLines(result.lines);
-        setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
-        setLevyTemplateMillDrafts(result.templateMillDrafts);
-        setLevyLoadedMeta({
-          pin: result.matchedPin,
-          tagShortDescr: result.tagShortDescr,
-          levyAspxUrl: result.levyAspxUrl,
-        });
-        if (options?.bumpMetroSync) {
-          setLevyStackReloadRevision((n) => n + 1);
-        }
-      } finally {
-        setLevyLoadBusy(false);
+  const loadLevyStack = useCallback(async (pin: string) => {
+    setLevyLoadError(null);
+    setLevyTemplateMillsError(null);
+    setLevyLoadBusy(true);
+    try {
+      const result = await loadLevyStackFromPin(pin);
+      if (!result.ok) {
+        setLevyLoadError(result.error);
+        return;
       }
-    },
-    [],
-  );
-
-  const reloadCountyLevyStack = useCallback(() => {
-    const pin = levyLoadedMeta?.pin?.trim();
-    if (!pin) return;
-    void loadLevyStack(pin, { bumpMetroSync: true });
-  }, [levyLoadedMeta, loadLevyStack]);
+      setParcelPin(result.matchedPin);
+      setLevyLines(result.lines);
+      setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
+      setLevyTemplateMillDrafts(result.templateMillDrafts);
+      setLevyLoadedMeta({
+        pin: result.matchedPin,
+        tagShortDescr: result.tagShortDescr,
+        levyAspxUrl: result.levyAspxUrl,
+      });
+    } finally {
+      setLevyLoadBusy(false);
+    }
+  }, []);
 
   const sumMills = useMemo(() => {
     const s = levyLines.reduce((acc, l) => acc + l.mills, 0);
@@ -264,10 +246,6 @@ export function HomeParcelAddressLookup() {
     if (sumMills <= 0) return null;
     return sumMills;
   }, [levyAwaitingTemplateMills, sumMills]);
-
-  const applyMetroTotalToLevyStack = useCallback((mills: number) => {
-    setLevyLines((prev) => scaleLevyLinesToTargetTotal(prev, mills));
-  }, []);
 
   const homeMetroFromLevyStack = useMemo(
     () => metroFromLevyStackForPinLoad(levyLoadedMeta, levyLines),
@@ -952,16 +930,9 @@ export function HomeParcelAddressLookup() {
           className={`${CARD_BODY_CLASS} ${CARD_BODY_ROUNDED_BOTTOM_CLASS} space-y-4`}
         >
           <MetroTaxShareFlow
-            embedded
             idPrefix="home-metro"
             prefillTotalMills={metroPrefillTotalMills}
             metroFromLevyStack={homeMetroFromLevyStack}
-            levyStackReloadRevision={levyStackReloadRevision}
-            countyLevyReloadBusy={levyLoadBusy}
-            onReloadCountyLevyStack={
-              levyLoadedMeta ? reloadCountyLevyStack : undefined
-            }
-            onApplyTotalMillsToLevy={applyMetroTotalToLevyStack}
           />
           <MetroDistrictInfoDetails />
           {homeMetroFromLevyStack?.kind !== "no_metro_lgid_match" ? (

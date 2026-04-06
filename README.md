@@ -13,7 +13,7 @@ MIT-licensed; please attribute and verify with county source documents.
 | Tool | Route | What it does |
 | --- | --- | --- |
 | **Address + levy breakdown** | `/` | Offline address → PIN (`arapahoe-situs-to-pins.json`), then levy stack from PIN (TAG lines). Optional **Add levy lines without loading a PIN** opens the same breakdown; use **Add tile** in the grid to copy rows from the county levy table. Editable tiles and table. |
-| **Metro district tax share** | `/` (home card) | Compares total mills to metro district mills; shows share of your property tax *rate* that goes to the metro district (operations + debt). After a PIN load, pre-fills total mills and **selects the metro district** when a stack line's matched LG ID matches `lgid` in `metro-levies-2025.json`. A yellow **under construction** notice appears above this card on `/` until the flow is stabilized. |
+| **Metro district tax share** | `/` (home card) | Compares total mills to metro district mills; shows share of your property tax *rate* that goes to the metro district (operations + debt). Uses the **same total mills as the levy stack** (sum of lines) and **detects metro district(s) from levy stack lines** when matched LG IDs align with `lgid` on metro rows in `metro-levies-2025.json`. There is **no manual district picker** and **no separate mills field** on this card; if no line matches, the card explains that and links to the statewide special districts map. |
 
 Static JSON under `public/data/` powers metro rates, Arapahoe PIN/TAG/situs indexes, levy stacks, and Colorado district metadata.
 
@@ -25,7 +25,7 @@ The first home card is an **offline address → PIN** helper (`arapahoe-situs-to
 
 ### Metro district tax share
 
-After you load a parcel PIN and the levy stack appears, the metro card pre-fills **total mills** when the stack total is usable, and **picks your metro district** when a levy line's DOLA/LG ID matches a metro row in bundled JSON (`src/lib/metroDistrictFromLevyLines.ts`). If there is no ID match, the UI stays minimal until you pick a district: a short note, an inline map link, and the list. **Total property tax mills** appears after you select a metro district. **Start over** lives only in the **Start with your address** card; it clears address search, PIN, levy stack, and metro state together. Editing total mills (then leaving the field) **rescales every levy line proportionally** so the stack still matches the number shown. **Reset to county numbers** re-runs the same PIN load as **Load property data** (no separate snapshot). On the non-ID-miss path, optional **Having trouble?** (map, assessor link, screenshot hints) sits at the bottom of the metro card, below **What's a metro district?**.
+After you load a parcel PIN and the levy stack appears, the metro card uses the **same total mills as the levy stack** (sum of lines) and **derives metro district(s) only from the stack** when levy line LG IDs match metro rows in bundled JSON (`src/lib/metroDistrictFromLevyLines.ts`). There is **no manual district selection** and **no separate mills field** on this card; change lines in the breakdown above if you need different numbers. If there is no ID match, a short message and a link to the statewide special districts map appear; metro share numbers are not shown until a match exists. **Start over** lives only in the **Start with your address** card; it clears address search, PIN, levy stack, and metro state together. Optional **Having trouble?** (map, assessor link, screenshot hints) sits at the bottom of the metro card, below **What's a metro district?**.
 
 ### Breakdown of your property tax bill (home page)
 
@@ -69,7 +69,7 @@ Then open `http://localhost:3000`.
 | `supporting-data/` | Local inputs for regeneration; large files ignored, documented in this README |
 | `tools/*.py` | Offline extractors and index builders (not runtime) |
 
-- **Metro levy JSON (dropdown / rates):** `public/data/metro-levies-2025.json` (and year-specific siblings). Regenerate with `tools/extract_metro_levies_2025.py` / `tools/extract_metro_levies_2026.py` from the county **Mill Levy Public Information** PDF placed at `supporting-data/Mill Levy Public Information Form.pdf` (see script docstrings for flags).
+- **Metro levy JSON (bundled rates):** `public/data/metro-levies-2025.json` (and year-specific siblings). Regenerate with `tools/extract_metro_levies_2025.py` / `tools/extract_metro_levies_2026.py` from the county **Mill Levy Public Information** PDF placed at `supporting-data/Mill Levy Public Information Form.pdf` (see script docstrings for flags).
 
 ### Minimal path (fork and run the app)
 

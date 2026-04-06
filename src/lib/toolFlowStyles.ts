@@ -76,7 +76,7 @@ export const INPUT_CLASS =
 export const CARD_CLASS_CLIPPED =
   "overflow-hidden rounded-xl border border-slate-700 bg-slate-700";
 
-/** Same shell as {@link CARD_CLASS_CLIPPED} but overflow visible (e.g. metro district combobox). */
+/** Same shell as {@link CARD_CLASS_CLIPPED} but overflow visible (e.g. popovers that must not clip). */
 export const CARD_CLASS_TOOL_OVERFLOW_VISIBLE =
   "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
 
@@ -112,7 +112,7 @@ export const TOOL_CARD_HUB_HEADER_CLASS = `${CARD_HEADER_CLASS} bg-slate-700 tex
 /** Hub tool cards only: body picks up a light wash when the card is hovered. */
 export const TOOL_CARD_HUB_BODY_CLASS = `${CARD_BODY_CLASS} transition-colors duration-150 group-hover:bg-indigo-50`;
 
-/** For steps with a dropdown that must escape the card (e.g. metro district select). */
+/** For steps with a combobox or popover that must escape the card clipping. */
 export const CARD_CLASS_DROPDOWN =
   "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
 

@@ -4,7 +4,11 @@ import levyData from "../../public/data/metro-levies-2025.json";
 
 /** Hint from a PIN-loaded levy stack: metro prefill, or no matching metro LG ID on any line. */
 export type MetroFromLevyStack =
-  | { kind: "match"; districtId: string }
+  | {
+      kind: "match";
+      /** Every metro district ID found on levy lines (order follows the county stack). */
+      districtIds: string[];
+    }
   | { kind: "no_metro_lgid_match" };
 
 /** Align DOLA / mart LG ID strings with `lgid` on metro rows in metro-levies JSON. */
@@ -33,13 +37,13 @@ function metroPrefillLgIdKeyFromDolaMatch(
 }
 
 /**
- * First levy line whose matched LG ID corresponds to a metro district in bundled
- * mill data wins (order matches county stack).
+ * Every levy line whose matched LG ID corresponds to a metro district in bundled
+ * mill data, in stack order (first hit per district only).
  */
-export function findMetroDistrictIdFromLevyLines(
+export function findMetroDistrictIdsFromLevyLines(
   lines: CommittedLevyLine[],
   districts: LevyDistrictFromJson[],
-): string | null {
+): string[] {
   const byLg = new Map<string, string>();
   for (const d of districts) {
     if (d.type !== "metro") continue;
@@ -47,24 +51,28 @@ export function findMetroDistrictIdFromLevyLines(
     if (!key) continue;
     byLg.set(key, d.districtId);
   }
+  const seen = new Set<string>();
+  const out: string[] = [];
   for (const ln of lines) {
     const key = metroPrefillLgIdKeyFromDolaMatch(ln.dolaMatch);
     if (!key) continue;
     const id = byLg.get(key);
-    if (id) return id;
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
-  return null;
+  return out;
 }
 
-export function findMetroDistrictIdFromCommittedLines(
+export function findMetroDistrictIdsFromCommittedLines(
   lines: CommittedLevyLine[],
-): string | null {
+): string[] {
   const file = levyData as LevyDataFile;
-  return findMetroDistrictIdFromLevyLines(lines, file.districts);
+  return findMetroDistrictIdsFromLevyLines(lines, file.districts);
 }
 
 /**
- * After a successful PIN load, derive metro dropdown state from stack lines.
+ * After a successful PIN load, derive which metro district IDs appear on the levy stack.
  * Returns undefined when there is no PIN-backed stack context (manual workbench only).
  */
 export function metroFromLevyStackForPinLoad(
@@ -73,7 +81,7 @@ export function metroFromLevyStackForPinLoad(
 ): MetroFromLevyStack | undefined {
   if (!levyLoadedMeta) return undefined;
   if (levyLines.length === 0) return undefined;
-  const districtId = findMetroDistrictIdFromCommittedLines(levyLines);
-  if (districtId) return { kind: "match", districtId };
+  const districtIds = findMetroDistrictIdsFromCommittedLines(levyLines);
+  if (districtIds.length > 0) return { kind: "match", districtIds };
   return { kind: "no_metro_lgid_match" };
 }

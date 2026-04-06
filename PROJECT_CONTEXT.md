@@ -173,7 +173,7 @@ Suggested project structure (Next.js App Router with `src/`):
   - `extract_metro_levies_2026.py` – offline Python script that **line-parses** the Mill Levy Public Information PDF (no table extraction; pdfplumber multi-line headers break `extract_tables`). Reads `page.extract_text()`, tokenizes each line, maps tokens to known columns (county ID, LGID, name, purpose, rates, Y/N flags), classifies purpose (operations / debt_service / other), and writes `metro-levies-2026.json` plus `metro-levies-2026-raw.json`. Run: `python3 tools/extract_metro_levies_2026.py --pdf "supporting-data/Mill Levy Public Information Form.pdf" --out "supporting-data/metro-levies-2026.json"`.
   - `requirements.txt` – Python deps for the script (`pdfplumber`; pandas removed – line-based parser only).
 - `public/data/`
-  - `metro-levies-2026.json` – copy of the normalized levy file used by the app. The app reads `aggregates.debtMills` and `aggregates.totalMills` per district. **Units**: JSON stores mill *rates* (decimal, e.g. 0.118956); the app and county display *mills* (e.g. 118.956). When pre-filling or computing total district share, the app multiplies by 1000 (RATE_TO_MILLS). Optional UI: checkbox "I know my neighborhood district's name" reveals a custom dropdown (not native `<select>`) to pick a metro; selection pre-fills debt mills and enables showing both debt % and total district % (operations + debt) in the result. Update when re-running the extractor.
+  - `metro-levies-2026.json` – copy of the normalized levy file used by the app. The app reads `aggregates.debtMills` and `aggregates.totalMills` per district. **Units**: JSON stores mill *rates* (decimal, e.g. 0.118956); the app and county display *mills* (e.g. 118.956). When pre-filling or computing total district share, the app multiplies by 1000 (RATE_TO_MILLS). On the home page, **metro districts are not chosen by the user**: the metro card matches levy stack lines to metro rows by LG ID (`src/lib/metroDistrictFromLevyLines.ts`) and can show one or more metros when several lines match. Update when re-running the extractor.
   - (Later, v2+) `metro-districts.geojson` – metro boundaries (from DOLA or county GIS).
 
 ### 4.1 Core Calculator Logic
@@ -501,14 +501,14 @@ Use this section to append new context over time.
 
 ### Working notes (keep this short)
 
-- v1: **Single-page, manual-only calculator** (no maps/GIS). Plain-language copy (e.g. "neighborhood district," "What share of your property tax pays off neighborhood debt?"). Primary link: **Assessor property search** (Search Residential, Commercial, Ag and Vacant) – voter types address, opens property; **2025 Mill Levy** on that page is the first number. Second number: district dropdown if they know the name (app pre-fills debt from JSON) or 0. Expandable "Show where to find the mill levy" has tappable screenshot `src/assets/images/mill-levy-property-page.png`. Result shows debt %; when a district is selected, also **total district %** (ops + debt) from JSON.
+- Home `/`: **Levy stack from PIN** (bundled JSON) plus **metro district tax share** card. Metro districts are **inferred from levy line LG IDs** against `metro-levies-*.json`; no manual district picker. Plain-language copy (e.g. "neighborhood district," debt vs total metro share). **Assessor property search** remains the primary county entry. Expandable help references county pages and screenshots where applicable.
 - **Levy data (current)**: `metro-levies-2026.json` from Mill Levy Public Information PDF via line-based extractor. 192 districts, 118 metro. JSON stores rates (decimal); app uses mills (x1000). Typed with `LevyDistrictFromJson`. Copy in `public/data/metro-levies-2026.json`.
 - **Policy pages + footer**:
   - Footer includes links (opened in a new tab) to **Accessibility**, **Privacy**, and **Sources**, plus a disclaimer: not affiliated with Arapahoe County; informational only; verify with official county sources; not legal/tax advice.
   - Accessibility contact email: `metro.tax.lookup@pm.me`.
   - Privacy policy is explicit: no tracking/analytics, no cookies, and no saving inputs in the browser (local/session storage).
 - **Sources page**: `/sources` lists the original county PDFs and explicitly distinguishes:
-  - Source of truth used to generate the dropdown JSON: **Mill Levy Public Information Form**.
+  - Source of truth used to generate bundled **metro-levies-*.json**: **Mill Levy Public Information Form**.
   - Supporting references (not used to generate the app's JSON): **Taxing District Levy Percentage** and **Certification of Levies and Revenues**.
 - Defer GIS/auto-detect until v1 is stable.
 

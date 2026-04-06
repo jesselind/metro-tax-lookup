@@ -25,8 +25,8 @@ export function MetroHavingTroubleInfoDetails({
       <div className="space-y-4 text-base text-slate-800 sm:text-lg">
         <p>
           Most people do not need this section. Use it if you are not using a PIN
-          on the home page, the district list looks wrong, or you want to
-          double-check on official sites.
+          on the home page, your levy stack or metro share looks wrong, or you want
+          to double-check on official sites.
         </p>
         <p>
           <a
