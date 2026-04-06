@@ -31,6 +31,14 @@ import {
 } from "@/lib/toolFlowStyles";
 import type { MetroFromLevyStack } from "@/lib/metroDistrictFromLevyLines";
 import { COLORADO_SPECIAL_DISTRICTS_MAP_URL } from "@/lib/dataSourceUrls";
+import {
+  buildMetroLevyBarSegments,
+  isMetroLevyDebtService,
+  metroBarSegmentPurposeSwatchClass,
+  metroBarSegmentDisplayLabel,
+  metroPurposeCategoryHintForSegment,
+  type MetroLevyBarSegment,
+} from "@/lib/metroLevyBarSegments";
 
 /** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
 const RATE_TO_MILLS = 1000;
@@ -212,11 +220,6 @@ export function MetroTaxShareFlow({
     ? selectedDistrict.debtMills * RATE_TO_MILLS
     : 0;
 
-  const { percentage: metroDebtPercentage } = calculateSharePercentage(
-    totalMills,
-    metroDebtMills,
-  );
-
   const totalDistrictMills = selectedDistrict
     ? selectedDistrict.totalMills * RATE_TO_MILLS
     : 0;
@@ -236,54 +239,128 @@ export function MetroTaxShareFlow({
     .filter((l) => l.purposeCategory === "operations")
     .slice()
     .sort((a, b) => (b.rateMillsCurrent ?? 0) - (a.rateMillsCurrent ?? 0));
-  const metroOpsMills =
-    fullDistrict?.aggregates?.opsMills != null
-      ? fullDistrict.aggregates.opsMills * RATE_TO_MILLS
-      : 0;
+  const metroOtherLevies = metroLevies
+    .filter((l) => l.purposeCategory === "other")
+    .slice()
+    .sort((a, b) => (b.rateMillsCurrent ?? 0) - (a.rateMillsCurrent ?? 0));
   const metroDebtMillsFromAggregates =
     fullDistrict?.aggregates?.debtMills != null
       ? fullDistrict.aggregates.debtMills * RATE_TO_MILLS
       : 0;
 
+  const metroBarSegments = useMemo((): MetroLevyBarSegment[] => {
+    const fromLines = buildMetroLevyBarSegments(metroLevies, RATE_TO_MILLS);
+    if (fromLines.length > 0) return fromLines;
+    if (totalDistrictMills > 0 && selectedMetroId.length > 0) {
+      return [
+        {
+          key: "certified-fallback",
+          label: "Certified total",
+          mills: totalDistrictMills,
+          purposeCategory: "other",
+          rawRowIndex: -1,
+        },
+      ];
+    }
+    return [];
+  }, [metroLevies, totalDistrictMills, selectedMetroId]);
+
+  const sumMetroLineMills = useMemo(
+    () => metroBarSegments.reduce((s, seg) => s + seg.mills, 0),
+    [metroBarSegments],
+  );
+
   const showResultCard = totalMills > 0 && selectedMetroId.length > 0;
 
   const otherMillsForStack =
     totalMills > 0
-      ? Math.max(0, totalMills - metroOpsMills - metroDebtMills)
+      ? Math.max(0, totalMills - totalDistrictMills)
       : 0;
-  const { percentage: shareOpsOfTotal } = calculateSharePercentage(
-    totalMills,
-    metroOpsMills,
-  );
-  const { percentage: shareDebtOfTotal } = calculateSharePercentage(
-    totalMills,
-    metroDebtMills,
-  );
   const { percentage: shareOtherOfTotal } = calculateSharePercentage(
     totalMills,
     otherMillsForStack,
   );
-  const stackWidthOps =
-    totalMills > 0 ? (metroOpsMills / totalMills) * 100 : 0;
-  const stackWidthDebt =
-    totalMills > 0 ? (metroDebtMills / totalMills) * 100 : 0;
-  const stackWidthOther =
-    totalMills > 0
-      ? Math.max(0, 100 - stackWidthOps - stackWidthDebt)
-      : 0;
 
   const MILLS_ROUND_EPS = 0.0005;
-  const metroSumOpsPlusDebtFromFile =
-    metroOpsMills + metroDebtMillsFromAggregates;
-  const countyOpsDebtMatchesTotal =
+  const lineSumMatchesCertified =
     totalDistrictMills <= 0 ||
-    Math.abs(metroSumOpsPlusDebtFromFile - totalDistrictMills) < MILLS_ROUND_EPS;
+    Math.abs(sumMetroLineMills - totalDistrictMills) < MILLS_ROUND_EPS;
   const pickerDebtMatchesAggregate =
     Math.abs(metroDebtMills - metroDebtMillsFromAggregates) < MILLS_ROUND_EPS;
-  const barMetroPartsSum = metroOpsMills + metroDebtMills;
-  const barMatchesCountyTotal =
-    totalDistrictMills <= 0 ||
-    Math.abs(barMetroPartsSum - totalDistrictMills) < MILLS_ROUND_EPS;
+
+  const { debtShareOfTotal, showDebtHeadline } = useMemo(() => {
+    if (sumMetroLineMills <= 0 || totalMills <= 0) {
+      return { debtShareOfTotal: 0, showDebtHeadline: false };
+    }
+    const debtLineMillsSum = metroBarSegments.reduce(
+      (s, seg) => s + (isMetroLevyDebtService(seg) ? seg.mills : 0),
+      0,
+    );
+    const debtAllocated =
+      totalDistrictMills * (debtLineMillsSum / sumMetroLineMills);
+    if (debtAllocated <= MILLS_ROUND_EPS) {
+      return { debtShareOfTotal: 0, showDebtHeadline: false };
+    }
+    const { percentage } = calculateSharePercentage(totalMills, debtAllocated);
+    return { debtShareOfTotal: percentage, showDebtHeadline: true };
+  }, [
+    metroBarSegments,
+    sumMetroLineMills,
+    totalDistrictMills,
+    totalMills,
+  ]);
+
+  function allocatedMillsForSegment(seg: MetroLevyBarSegment): number {
+    if (sumMetroLineMills <= 0) return 0;
+    return totalDistrictMills * (seg.mills / sumMetroLineMills);
+  }
+
+  function segmentBarWidthPercent(seg: MetroLevyBarSegment): number {
+    if (totalMills <= 0 || sumMetroLineMills <= 0) return 0;
+    return (
+      (totalDistrictMills / totalMills) *
+      (seg.mills / sumMetroLineMills) *
+      100
+    );
+  }
+
+  const stackWidthOther =
+    totalMills > 0
+      ? Math.max(
+          0,
+          100 -
+            metroBarSegments.reduce(
+              (s, seg) => s + segmentBarWidthPercent(seg),
+              0,
+            ),
+        )
+      : 0;
+
+  const taxRateSplitAnnouncement = useMemo(() => {
+    if (totalMills <= 0 || metroBarSegments.length === 0) {
+      return `Split of your total property tax rate: ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
+    }
+    const metroParts = metroBarSegments.map((seg) => {
+      const allocated =
+        sumMetroLineMills > 0
+          ? totalDistrictMills * (seg.mills / sumMetroLineMills)
+          : 0;
+      const { percentage } = calculateSharePercentage(totalMills, allocated);
+      return `${percentage.toFixed(1)}% ${metroBarSegmentDisplayLabel(seg)}`;
+    });
+    const cap = 6;
+    const shown =
+      metroParts.length > cap
+        ? `${metroParts.slice(0, cap).join(", ")}, and ${metroParts.length - cap} more parts of this metro rate`
+        : metroParts.join(", ");
+    return `Split of your total property tax rate: ${shown}; ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
+  }, [
+    totalMills,
+    metroBarSegments,
+    shareOtherOfTotal,
+    sumMetroLineMills,
+    totalDistrictMills,
+  ]);
 
   function handleTotalMillsChange(raw: string) {
     totalMillsDirtyRef.current = true;
@@ -312,13 +389,15 @@ export function MetroTaxShareFlow({
     totalMillsDirtyRef.current = false;
   }
 
-  const taxRateSplitAnnouncement = `Split of your total property tax rate: ${shareOpsOfTotal.toFixed(1)} percent metro operations, ${shareDebtOfTotal.toFixed(1)} percent metro debt, ${shareOtherOfTotal.toFixed(1)} percent other local districts and taxes.`;
-
   let resultAnnouncement = "";
   if (showResultCard) {
     resultAnnouncement =
       totalDistrictShare > 0
-        ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to metro district (operations + debt). ${taxRateSplitAnnouncement}`
+        ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to your metro district.${
+            showDebtHeadline
+              ? ` ${debtShareOfTotal.toFixed(1)} percent of your property taxes are paying off your metro district's debt.`
+              : ""
+          } ${taxRateSplitAnnouncement}`
         : `No metro district mills shown in your property tax rate. ${taxRateSplitAnnouncement}`;
   } else if (totalMills > 0 && !selectedMetroId) {
     resultAnnouncement = "Select a metro district to see your share.";
@@ -346,53 +425,68 @@ export function MetroTaxShareFlow({
         {showResultCard ? (
           <div
             role="region"
-            aria-labelledby={`${p}metro-result-heading`}
-            className="rounded-lg border border-slate-200 bg-slate-50/90 p-4 sm:p-5"
+            aria-label="Metro district share"
+            className="min-w-0"
           >
-            <h3
-              id={`${p}metro-result-heading`}
-              className="text-sm font-semibold text-slate-900 sm:text-base"
-            >
-              Result
-            </h3>
-              <p className="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl sm:mt-4">
-                {totalDistrictShare.toFixed(1)}%
-              </p>
-              <p className="mt-1 text-sm font-medium text-slate-700 sm:text-base">
-                {totalDistrictShare > 0
-                  ? "Share of your property taxes going to your metro district (operations + debt)"
-                  : "No metro district mills shown in your property tax rate"}
-              </p>
+              <div
+                className={
+                  showDebtHeadline
+                    ? "grid gap-4 sm:grid-cols-2 sm:gap-6"
+                    : ""
+                }
+              >
+                <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-100 px-3 py-4 shadow-md sm:px-5 sm:py-5">
+                  <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+                    {totalDistrictShare.toFixed(1)}%
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-600 sm:text-base">
+                    {totalDistrictShare > 0
+                      ? "of your property taxes go to your metro district"
+                      : "No metro district mills shown in your property tax rate"}
+                  </p>
+                </div>
+                {showDebtHeadline ? (
+                  <div
+                    className="min-w-0 rounded-xl border border-red-800 bg-red-700 px-3 py-4 text-white shadow-md sm:px-5 sm:py-5"
+                    role="group"
+                    aria-label="Share of your taxes paying metro district debt"
+                  >
+                    <p className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                      {debtShareOfTotal.toFixed(1)}%
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white sm:text-base">
+                      of your property taxes are paying off your metro district&apos;s debt
+                    </p>
+                  </div>
+                ) : null}
+              </div>
               <div className="mt-5 space-y-3">
                 <p
                   id={`${p}tax-rate-split-heading`}
                   className="text-sm font-semibold text-slate-900 sm:text-base"
                 >
-                  Your total property tax rate, in three parts
+                  Your total property tax rate
                 </p>
                 <p id={`${p}tax-rate-split-desc`} className="sr-only">
-                  Stacked bar: {shareOpsOfTotal.toFixed(1)} percent metro
-                  operations, {shareDebtOfTotal.toFixed(1)} percent metro debt,{" "}
-                  {shareOtherOfTotal.toFixed(1)} percent other local districts and
-                  taxes. Percentages are shares of your total mill rate.
+                  {taxRateSplitAnnouncement} Percentages are shares of your total
+                  mill rate. Levy names match the Mill levy name or purpose column
+                  on the county form.
                 </p>
                 <div
                   className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
                   aria-hidden="true"
                 >
                   <div className="flex h-full w-full">
-                    {stackWidthOps > 0 ? (
-                      <div
-                        className="h-full min-w-0 bg-emerald-600"
-                        style={{ width: `${stackWidthOps}%` }}
-                      />
-                    ) : null}
-                    {stackWidthDebt > 0 ? (
-                      <div
-                        className="h-full min-w-0 bg-red-700"
-                        style={{ width: `${stackWidthDebt}%` }}
-                      />
-                    ) : null}
+                    {metroBarSegments.map((seg, i) => {
+                      const w = segmentBarWidthPercent(seg);
+                      return w > 0 ? (
+                        <div
+                          key={seg.key}
+                          className={`h-full min-w-0 ${metroBarSegmentPurposeSwatchClass(seg, i)}`}
+                          style={{ width: `${w}%` }}
+                        />
+                      ) : null;
+                    })}
                     {stackWidthOther > 0 ? (
                       <div
                         className="h-full min-w-0 bg-slate-300"
@@ -406,59 +500,65 @@ export function MetroTaxShareFlow({
                   aria-labelledby={`${p}tax-rate-split-heading`}
                   aria-describedby={`${p}tax-rate-split-desc`}
                 >
+                  {metroBarSegments.map((seg, i) => {
+                    const { percentage } = calculateSharePercentage(
+                      totalMills,
+                      allocatedMillsForSegment(seg),
+                    );
+                    const debtService = isMetroLevyDebtService(seg);
+                    return (
+                      <li
+                        key={seg.key}
+                        className="flex items-start justify-between gap-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex gap-2">
+                            <span
+                              className={`mt-1 h-3 w-3 shrink-0 rounded-sm ${metroBarSegmentPurposeSwatchClass(seg, i)}`}
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span className="font-medium text-slate-900">
+                                  {metroBarSegmentDisplayLabel(seg)}
+                                </span>
+                                {debtService ? (
+                                  <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
+                                    Debt passed on to you
+                                  </span>
+                                ) : null}
+                              </div>
+                              <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
+                                {metroPurposeCategoryHintForSegment(seg)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+                          {percentage.toFixed(1)}%
+                        </span>
+                      </li>
+                    );
+                  })}
                   <li className="flex items-start justify-between gap-3">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span
-                        className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-emerald-600"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0">
-                        <span className="font-medium text-slate-900">
-                          Metro operations
-                        </span>
-                        <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                          Day-to-day metro district services
-                        </span>
-                      </span>
-                    </span>
-                    <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                      {shareOpsOfTotal.toFixed(1)}%
-                    </span>
-                  </li>
-                  <li className="flex items-start justify-between gap-3">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span
-                        className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-red-700"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0">
-                        <span className="font-medium text-slate-900">
-                          Metro debt
-                        </span>
-                        <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                          Bond repayments and similar debt
-                        </span>
-                      </span>
-                    </span>
-                    <span className="shrink-0 font-semibold tabular-nums text-slate-900">
-                      {shareDebtOfTotal.toFixed(1)}%
-                    </span>
-                  </li>
-                  <li className="flex items-start justify-between gap-3">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span
-                        className="mt-0.5 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0">
-                        <span className="font-medium text-slate-900">
-                          Everything else
-                        </span>
-                        <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                          Schools, county, city, and other local districts
-                        </span>
-                      </span>
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex gap-2">
+                        <span
+                          className="mt-1 h-3 w-3 shrink-0 rounded-sm bg-slate-300"
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-900">
+                              Everything else
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-xs font-normal leading-snug text-slate-600 sm:text-sm">
+                            Schools, county, city, and other local districts
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     <span className="shrink-0 font-semibold tabular-nums text-slate-900">
                       {shareOtherOfTotal.toFixed(1)}%
                     </span>
@@ -519,22 +619,19 @@ export function MetroTaxShareFlow({
                                   {totalMills.toFixed(3)}
                                 </td>
                               </tr>
-                              <tr className="border-b border-slate-100">
-                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                  Metro operations (county)
-                                </td>
-                                <td className="py-2 text-right tabular-nums">
-                                  {metroOpsMills.toFixed(3)}
-                                </td>
-                              </tr>
-                              <tr className="border-b border-slate-100">
-                                <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
-                                  Metro debt service (county)
-                                </td>
-                                <td className="py-2 text-right tabular-nums">
-                                  {metroDebtMills.toFixed(3)}
-                                </td>
-                              </tr>
+                              {metroBarSegments.map((seg) => (
+                                <tr
+                                  key={`math-${seg.key}`}
+                                  className="border-b border-slate-100"
+                                >
+                                  <td className="py-2 pr-3 align-top text-[0.7rem] font-sans text-slate-700 sm:text-xs">
+                                    {metroBarSegmentDisplayLabel(seg)}
+                                  </td>
+                                  <td className="py-2 text-right tabular-nums">
+                                    {seg.mills.toFixed(3)}
+                                  </td>
+                                </tr>
+                              ))}
                               <tr className="border-b border-slate-100">
                                 <td className="py-2 pr-3 align-top text-[0.7rem] text-slate-700 sm:text-xs">
                                   Metro total (county certified)
@@ -560,16 +657,20 @@ export function MetroTaxShareFlow({
                           </p>
                           {totalMills > 0 ? (
                             <div className="space-y-1.5 font-mono text-[0.7rem] leading-snug text-slate-700 sm:text-xs">
-                              <p>
-                                Metro operations share = {metroOpsMills.toFixed(3)}{" "}
-                                / {totalMills.toFixed(3)} ={" "}
-                                {shareOpsOfTotal.toFixed(1)}%
-                              </p>
-                              <p>
-                                Metro debt share = {metroDebtMills.toFixed(3)} /{" "}
-                                {totalMills.toFixed(3)} ={" "}
-                                {metroDebtPercentage.toFixed(1)}%
-                              </p>
+                              {metroBarSegments.map((seg) => {
+                                const alloc = allocatedMillsForSegment(seg);
+                                const { percentage } = calculateSharePercentage(
+                                  totalMills,
+                                  alloc,
+                                );
+                                return (
+                                  <p key={`share-${seg.key}`}>
+                                    {metroBarSegmentDisplayLabel(seg)} share ={" "}
+                                    {alloc.toFixed(3)} / {totalMills.toFixed(3)}{" "}
+                                    = {percentage.toFixed(1)}%
+                                  </p>
+                                );
+                              })}
                               <p>
                                 Metro total share (headline) ={" "}
                                 {totalDistrictMills.toFixed(3)} /{" "}
@@ -587,32 +688,23 @@ export function MetroTaxShareFlow({
                           {totalDistrictMills > 0 ? (
                             <p
                               className={
-                                countyOpsDebtMatchesTotal
+                                lineSumMatchesCertified
                                   ? "text-xs text-slate-600 sm:text-sm"
                                   : "text-xs text-amber-900 sm:text-sm"
                               }
                             >
-                              {countyOpsDebtMatchesTotal
-                                ? `County check: metro operations (${metroOpsMills.toFixed(3)}) + metro debt from file (${metroDebtMillsFromAggregates.toFixed(3)}) equals metro total (${totalDistrictMills.toFixed(3)}).`
-                                : `County data note: operations (${metroOpsMills.toFixed(3)}) plus debt from file (${metroDebtMillsFromAggregates.toFixed(3)}) is ${metroSumOpsPlusDebtFromFile.toFixed(3)} mills, which does not match certified metro total (${totalDistrictMills.toFixed(3)}). The headline uses the certified total.`}
+                              {lineSumMatchesCertified
+                                ? `County check: sum of all metro levy mills (${sumMetroLineMills.toFixed(3)}) matches certified metro total (${totalDistrictMills.toFixed(3)}).`
+                                : `County data note: sum of all metro levy mills (${sumMetroLineMills.toFixed(3)}) does not match certified metro total (${totalDistrictMills.toFixed(3)}). Bar widths scale each metro levy to the certified total; the headline uses the certified total.`}
                             </p>
                           ) : null}
                           {!pickerDebtMatchesAggregate &&
                           totalDistrictMills > 0 ? (
                             <p className="text-xs text-amber-900 sm:text-sm">
-                              Debt mills used for the bar and formulas (
-                              {metroDebtMills.toFixed(3)}) differ slightly from the
-                              county file debt aggregate (
+                              Debt mills in the district list (
+                              {metroDebtMills.toFixed(3)}) differ slightly from
+                              the county file debt aggregate (
                               {metroDebtMillsFromAggregates.toFixed(3)}).
-                            </p>
-                          ) : null}
-                          {totalDistrictMills > 0 && !barMatchesCountyTotal ? (
-                            <p className="text-xs text-amber-900 sm:text-sm">
-                              Bar segments use operations plus debt (
-                              {barMetroPartsSum.toFixed(3)} mills); the headline metro
-                              share uses certified metro total (
-                              {totalDistrictMills.toFixed(3)} mills). Totals may
-                              differ slightly.
                             </p>
                           ) : null}
                         </div>
@@ -629,6 +721,13 @@ export function MetroTaxShareFlow({
                         title="Operations lines"
                         description="Ongoing services and administration lines from the county form."
                         levies={metroOpsLevies}
+                        rateToMills={RATE_TO_MILLS}
+                        showAllLines
+                      />
+                      <LevyLinesCard
+                        title="Other purposes"
+                        description="Parts of the rate not classified as operations or debt (for example summary totals)."
+                        levies={metroOtherLevies}
                         rateToMills={RATE_TO_MILLS}
                         showAllLines
                       />

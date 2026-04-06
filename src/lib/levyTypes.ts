@@ -14,7 +14,13 @@ export type LevyDistrictFromJson = {
   countyId?: string | null;
   name: string;
   type: string;
-  aggregates?: { opsMills?: number; debtMills?: number; totalMills?: number };
+  aggregates?: {
+    opsMills?: number;
+    debtMills?: number;
+    /** Mills from levy lines not classified as operations or debt (e.g. summary "Total" rows). */
+    otherMills?: number;
+    totalMills?: number;
+  };
   levies?: LevyLineFromJson[];
 };
 

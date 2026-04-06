@@ -1,0 +1,34 @@
+---
+description: Avoid stacked "[thing] lines" CPA phrasing in user-facing copy; levy and mills are fine
+alwaysApply: true
+---
+
+# Plain language: avoid ambiguous "levy lines" style phrasing
+
+## Intent (spirit, not a word ban)
+
+The goal is **readability for the general public**, not a checklist of forbidden words.
+
+- **Words like *levy* and *mills* are fine** when they help people understand property tax and metro districts. They are normal Colorado / property-tax vocabulary.
+- The problem is the stacked, **accountant-style** pattern **"\[thing\] lines"** — e.g. **levy lines**, **district lines**, **mills lines** — which reads like **county-form or CPA shorthand** and assumes readers already know how mill levy PDFs are laid out. That is what to avoid in **user-facing** copy.
+- **Apply the spirit:** if phrasing sounds like it was copied from a spreadsheet column header, rewrite it. You do **not** need to purge every occurrence of "line" in isolation (e.g. "debt service lines" in a tight technical label may be acceptable if the surrounding UI already explains the idea).
+
+## What to avoid in primary UI
+
+Do **not** lean on **levy lines**, **district lines**, **mills lines**, or similar **"\[thing\] lines"** as the main way to explain the UI (visible text, button labels, hints, empty states, errors, `aria-label` / live region text meant for residents, hub cards, main flows).
+
+The project owner has repeatedly flagged this pattern as unintuitive for typical residents.
+
+## Scope
+
+- **Applies to:** Any UI string, in-app help, or resident-facing explanation you add or edit in this repo.
+- **Does not require renaming:** TypeScript identifiers, file names, JSON keys, or internal comments where "line" is a precise technical reference for developers. **Do** translate those concepts into plain language when they surface in the UI.
+
+## Say instead (examples)
+
+- **Rows** on the county **Tax District Levies** table, **entries** on your tax bill, **each part** of your rate, **breakdown**, **metro levy mills**, **each metro levy** — whatever fits the sentence without the stacked "lines" crutch.
+- Prefer **everyday words**; put long methodology or citations on `/sources` or in a definition aside when needed.
+
+## When editing existing copy
+
+If you touch a file that still uses the **levy lines**-style pattern in user-visible strings, **improve it** as part of the same change when it is reasonable.

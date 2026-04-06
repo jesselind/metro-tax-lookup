@@ -27,6 +27,8 @@ This file is meant to:
 
 **Conventions:** Never use smart quotes or smart apostrophes (curly " " ' '). Use only straight ASCII quotes and apostrophes (`"` and `'`, U+0022 and U+0027) in this doc, in code, and in UI copy. Smart quotes cause encoding and search/replace issues and inconsistent display.
 
+**User-facing copy:** Avoid stacked **"levy lines" / "district lines" / "mills lines"** phrasing in UI copy — it reads as CPA/county-form shorthand and confuses typical residents. **Levy** and **mills** are fine when used plainly. **Intent is spirit, not a word ban.** Standing rule: `.cursor/rules/plain-language-no-lines-jargon.mdc`.
+
 ---
 
 ## 1. High-Level Vision

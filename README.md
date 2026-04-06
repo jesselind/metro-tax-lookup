@@ -44,6 +44,8 @@ Details and citations are on the in-app Sources page (`/sources`).
 
 ## Development
 
+**UI copy (for contributors and AI):** Avoid the **"levy lines" / "district lines"** style accountant phrasing in user-facing strings; **levy** and **mills** are OK when clear. **Intent:** readable for the public, not a literal ban list — see `.cursor/rules/plain-language-no-lines-jargon.mdc`.
+
 **Glossary / term definitions:** All definition blocks live in `src/content/termDefinitions.tsx`. The Sources page renders **`AllTermDefinitionAsides`**; the home page renders **`TermMillsAside`**, **`TermLevyAside`**, and **`TermLgIdAside`** (after a successful PIN load). Levy line detail copy and layout live in `LevyLineDistrictDetailDialog.tsx`.
 
 Install deps and run the dev server:

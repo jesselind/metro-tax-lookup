@@ -60,6 +60,7 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 
 ### Audience, tone, and language (user-facing)
 
+- **Plain language (levy / mills OK; "levy lines" pattern not):** Avoid accountant-style **"levy lines" / "district lines" / "mills lines"** stacked phrasing in user-facing strings; **levy** and **mills** are fine when clear. Intent is **spirit** (readable for the public), not a ban on every word. See `.cursor/rules/plain-language-no-lines-jargon.mdc`.
 - **Who this is for:** The **general public** - including people whose eyes glaze over at **financial statements, spreadsheets, and dense government forms**. Write for them first. When copy reads like it was pasted from a county assessor or treasurer page, **consider rewriting** for warmth and clarity (exceptions are fine when accuracy requires it).
 - **How it should feel:** **Light, clear, and inviting** - quick to understand, low cognitive load, **enlightening** without being flip or fear-based (skip bait like "shocking" or "alarming" your bill). Prefer **everyday words**, short lines, and a calm confidence that the tool is on the user's side.
 - **Steer away from in primary UI** (headings, labels, buttons, hints, errors, empty states, hub cards, main flows): heavy **county website echo** (their jargon as the main story, or "same as the county search" as the value prop) and **piles of tax/assessor jargon** when plain language would do. **Prefer** explaining in human terms in the flow; **save** bureaucracy-shaped detail for people who want depth.
