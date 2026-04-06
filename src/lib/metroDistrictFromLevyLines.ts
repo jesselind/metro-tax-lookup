@@ -72,14 +72,13 @@ export function findMetroDistrictIdsFromCommittedLines(
 }
 
 /**
- * After a successful PIN load, derive which metro district IDs appear on the levy stack.
- * Returns undefined when there is no PIN-backed stack context (manual workbench only).
+ * Derive which metro district IDs appear on the levy stack from LG IDs on committed lines.
+ * Returns `undefined` when there are no lines yet. When lines exist but none match a metro
+ * district in bundled data, returns `no_metro_lgid_match` (PIN load or manual workbench).
  */
-export function metroFromLevyStackForPinLoad(
-  levyLoadedMeta: { pin: string } | null,
+export function metroFromLevyLines(
   levyLines: CommittedLevyLine[],
 ): MetroFromLevyStack | undefined {
-  if (!levyLoadedMeta) return undefined;
   if (levyLines.length === 0) return undefined;
   const districtIds = findMetroDistrictIdsFromCommittedLines(levyLines);
   if (districtIds.length > 0) return { kind: "match", districtIds };

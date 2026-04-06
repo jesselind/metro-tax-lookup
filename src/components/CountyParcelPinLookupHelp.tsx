@@ -10,8 +10,8 @@ import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 type CountyParcelPinLookupHelpProps = {
   /**
-   * When true, adds **Tax District Levies** / **2025 Mill Levy** guidance and the same
-   * screenshot toggles used under metro "Having trouble?" (for Add tile and total mills).
+   * When true, adds **Tax District Levies** / **2025 Mill Levy** guidance and screenshot
+   * toggles (for Add tile and total mills).
    */
   includeLevyTableScreenshots?: boolean;
 };

@@ -8,8 +8,7 @@ import { HelpPillButton } from "@/components/HelpPillButton";
 
 /**
  * Toggle screenshots for **2025 Mill Levy** on the county parcel page and a sample row
- * on **Tax District Levies**. Shared by metro "Having trouble?", PIN lookup help, and
- * the manual levy stack intro.
+ * on **Tax District Levies**. Shared by PIN lookup help and the manual levy stack intro.
  */
 export function CountyAssessorMillLevyFigures() {
   const [showCountyMillScreenshot, setShowCountyMillScreenshot] =

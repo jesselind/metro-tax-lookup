@@ -6,7 +6,6 @@ import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHel
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { LevyStackVisualization } from "@/components/LevyStackVisualization";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
-import { MetroHavingTroubleInfoDetails } from "@/components/MetroHavingTroubleInfoDetails";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { TermLevyAside, TermLgIdAside, TermMillsAside } from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
@@ -26,7 +25,11 @@ import {
   SITUS_INPUT_MAX_LEN,
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
-import { metroFromLevyStackForPinLoad } from "@/lib/metroDistrictFromLevyLines";
+import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
+import {
+  HOME_METRO_SECTION_HEADING_ID,
+  metroHomeSectionHeadingText,
+} from "@/lib/metroHomeSection";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import {
   CARD_BODY_CLASS,
@@ -248,9 +251,16 @@ export function HomeParcelAddressLookup() {
   }, [levyAwaitingTemplateMills, sumMills]);
 
   const homeMetroFromLevyStack = useMemo(
-    () => metroFromLevyStackForPinLoad(levyLoadedMeta, levyLines),
-    [levyLoadedMeta, levyLines],
+    () => metroFromLevyLines(levyLines),
+    [levyLines],
   );
+  const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
+  const homeMetroHeadingText = useMemo(() => {
+    if (homeMetroFromLevyStack?.kind !== "match") return "";
+    return metroHomeSectionHeadingText(
+      homeMetroFromLevyStack.districtIds.length,
+    );
+  }, [homeMetroFromLevyStack]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -919,27 +929,26 @@ export function HomeParcelAddressLookup() {
         </div>
       </section>
 
-      <section
-        className={CARD_CLASS_TOOL_OVERFLOW_VISIBLE}
-        aria-labelledby="home-metro-share-heading"
-      >
-        <h2 id="home-metro-share-heading" className={CARD_HEADER_CLASS}>
-          Metro district tax share
-        </h2>
-        <div
-          className={`${CARD_BODY_CLASS} ${CARD_BODY_ROUNDED_BOTTOM_CLASS} space-y-4`}
+      {showHomeMetroSection ? (
+        <section
+          className={CARD_CLASS_TOOL_OVERFLOW_VISIBLE}
+          aria-labelledby={HOME_METRO_SECTION_HEADING_ID}
         >
-          <MetroTaxShareFlow
-            idPrefix="home-metro"
-            prefillTotalMills={metroPrefillTotalMills}
-            metroFromLevyStack={homeMetroFromLevyStack}
-          />
-          <MetroDistrictInfoDetails />
-          {homeMetroFromLevyStack?.kind !== "no_metro_lgid_match" ? (
-            <MetroHavingTroubleInfoDetails />
-          ) : null}
-        </div>
-      </section>
+          <h2 id={HOME_METRO_SECTION_HEADING_ID} className={CARD_HEADER_CLASS}>
+            {homeMetroHeadingText}
+          </h2>
+          <div
+            className={`${CARD_BODY_CLASS} ${CARD_BODY_ROUNDED_BOTTOM_CLASS} space-y-4`}
+          >
+            <MetroTaxShareFlow
+              idPrefix="home-metro"
+              prefillTotalMills={metroPrefillTotalMills}
+              metroFromLevyStack={homeMetroFromLevyStack}
+            />
+            <MetroDistrictInfoDetails />
+          </div>
+        </section>
+      ) : null}
         </>
       ) : null}
 

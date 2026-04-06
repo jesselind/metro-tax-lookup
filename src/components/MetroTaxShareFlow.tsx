@@ -18,7 +18,6 @@ import {
 } from "@/lib/arapahoeCountyUrls";
 import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 import type { MetroFromLevyStack } from "@/lib/metroDistrictFromLevyLines";
-import { COLORADO_SPECIAL_DISTRICTS_MAP_URL } from "@/lib/dataSourceUrls";
 import {
   buildMetroLevyBarSegments,
   isMetroLevyDebtService,
@@ -122,7 +121,6 @@ export function MetroTaxShareFlow({
   metroFromLevyStack,
 }: MetroTaxShareFlowProps) {
   const p = idPrefix ? `${idPrefix}-` : "";
-  const flowHeadingId = `${p}flow-heading`;
 
   const [showResultDetails, setShowResultDetails] = useState(false);
 
@@ -355,19 +353,12 @@ export function MetroTaxShareFlow({
       "No metro districts were matched from your levy stack for this card.";
   }
 
-  const isNoAutoMatch = metroFromLevyStack?.kind === "no_metro_lgid_match";
-
   return (
     <>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {resultAnnouncement}
       </div>
-      <section aria-labelledby={flowHeadingId} className="">
-        <h2 id={flowHeadingId} className="sr-only">
-          Metro district tax share
-        </h2>
-
-        <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {showResultCard ? (
           <div
             role="region"
@@ -908,38 +899,7 @@ export function MetroTaxShareFlow({
               ) : null}
           </div>
         ) : null}
-
-        {isNoAutoMatch ? (
-          <div className="space-y-4">
-            <div
-              role="status"
-              aria-live="polite"
-              className="rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-sm text-amber-950 sm:text-base"
-            >
-              <p>
-                <span className="font-medium text-amber-950">
-                  No metro district was found on your levy stack.
-                </span>{" "}
-                This card only uses metro districts detected from your loaded levy
-                lines (LG ID). We could not match any line to a metro row in our
-                bundled county file, so metro share is not shown here. You can
-                still use the map to see districts in your area:{" "}
-                <a
-                  href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800"
-                >
-                  Colorado special districts map
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-                .
-              </p>
-            </div>
-          </div>
-        ) : null}
-        </div>
-      </section>
+      </div>
     </>
   );
 }
