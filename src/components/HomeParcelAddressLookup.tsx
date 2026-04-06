@@ -7,7 +7,7 @@ import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { LevyStackVisualization } from "@/components/LevyStackVisualization";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { TermLevyAside, TermLgIdAside, TermMillsAside } from "@/content/termDefinitions";
-import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
+import { btnOutlinePrimaryMd, btnPrimaryMd } from "@/lib/buttonClasses";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
   loadLevyStackFromPin,
@@ -41,34 +41,26 @@ const FIELD_LABEL_CLASS =
  */
 const FIELD_LABEL_RAIL = "mb-1 flex items-end md:mb-0";
 
-/** Full class strings so Tailwind can scan them; centralizes md 2-col vs lg 5-col placement. */
+/** Full class strings so Tailwind can scan them. Below md: single column stack; from md up: one label row + one input row (5 cols + Search). */
 const ADDRESS_LOOKUP_FORM_CLASS =
-  "grid w-full min-w-0 grid-cols-1 gap-y-2.5 gap-x-0 max-md:justify-items-stretch md:grid-cols-2 md:gap-3 md:gap-y-2 lg:grid-cols-[minmax(0,6rem)_minmax(0,8.5rem)_minmax(12rem,1fr)_minmax(0,7rem)_auto] lg:grid-rows-[auto_auto] lg:gap-x-3 lg:gap-y-2";
+  "grid w-full min-w-0 grid-cols-1 gap-y-2.5 gap-x-0 max-md:justify-items-stretch md:grid-cols-[minmax(0,6rem)_minmax(0,8.5rem)_minmax(12rem,1fr)_minmax(0,7rem)_auto] md:grid-rows-[auto_auto] md:gap-x-3 md:gap-y-2";
 
 const ADDRESS_FIELD_GRID_SHELL = "w-full min-w-0 md:contents";
 
 const addressSitusGrid = {
-  numberLabel:
-    "md:col-start-1 md:row-start-1 lg:col-start-1 lg:row-start-1",
-  numberInput:
-    "md:col-start-1 md:row-start-2 lg:col-start-1 lg:row-start-2",
-  suffixLabel:
-    "md:col-start-2 md:row-start-1 lg:col-start-2 lg:row-start-1",
-  suffixInput:
-    "md:col-start-2 md:row-start-2 lg:col-start-2 lg:row-start-2",
-  streetLabel:
-    "md:col-span-2 md:col-start-1 md:row-start-3 lg:col-span-1 lg:col-start-3 lg:row-start-1",
-  streetInput:
-    "md:col-span-2 md:col-start-1 md:row-start-4 lg:col-span-1 lg:col-start-3 lg:row-start-2",
-  unitLabel:
-    "md:col-start-1 md:row-start-5 lg:col-start-4 lg:row-start-1",
-  unitInput:
-    "md:col-start-1 md:row-start-6 lg:col-start-4 lg:row-start-2",
+  numberLabel: "md:col-start-1 md:row-start-1",
+  numberInput: "md:col-start-1 md:row-start-2",
+  suffixLabel: "md:col-start-2 md:row-start-1",
+  suffixInput: "md:col-start-2 md:row-start-2",
+  streetLabel: "md:col-start-3 md:row-start-1",
+  streetInput: "md:col-start-3 md:row-start-2",
+  unitLabel: "md:col-start-4 md:row-start-1",
+  unitInput: "md:col-start-4 md:row-start-2",
   actions:
-    "md:col-start-2 md:row-start-6 md:flex-row md:items-end md:gap-2 lg:col-start-5 lg:row-start-2 lg:flex-row lg:items-end",
+    "md:col-start-5 md:row-start-2 md:flex-row md:items-end md:gap-2",
 } as const;
 
-const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnOutlinePrimaryMd} inline-flex w-full min-w-0 justify-center sm:flex-1 md:flex-1 lg:w-auto lg:min-w-[7.5rem] lg:flex-none`;
+const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnPrimaryMd} inline-flex w-full min-w-0 justify-center md:w-auto md:min-w-[8.75rem] md:flex-none`;
 
 /** Shared shell for address summary, PIN, county help, and list callouts. */
 const ADDRESS_TILE_SURFACE_CLASS =
@@ -398,7 +390,7 @@ export function HomeParcelAddressLookup() {
         Property tax lookup and breakdown
       </h2>
       {!addressSearchLocked ? (
-        <div className={ADDRESS_LOOKUP_PANEL_CLASS}>
+        <div className="w-full min-w-0">
           <form
             className={ADDRESS_LOOKUP_FORM_CLASS}
             aria-label="Address lookup"
@@ -529,7 +521,25 @@ export function HomeParcelAddressLookup() {
                   className={ADDRESS_FORM_ACTION_BTN_CLASS}
                   disabled={busy}
                 >
-                  {busy ? "Searching…" : "Search"}
+                  {busy ? (
+                    "Searching…"
+                  ) : (
+                    <>
+                      <svg
+                        className="h-5 w-5 shrink-0 opacity-95"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.061l-3.329-3.328A7 7 0 012 9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Search
+                    </>
+                  )}
                 </button>
               </div>
             </div>

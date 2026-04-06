@@ -8,3 +8,4 @@ export const btnOutlinePrimaryMd =
   "btn-outline-primary btn-outline-primary--md";
 export const btnOutlineSecondaryMd =
   "btn-outline-secondary btn-outline-secondary--md";
+export const btnPrimaryMd = "btn-primary btn-primary--md";
