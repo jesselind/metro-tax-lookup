@@ -4,9 +4,12 @@ import Image from "next/image";
 import { useState } from "react";
 import parcelPinImg from "@/assets/images/Parcel-PIN.png";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
-import { HelpPillButton } from "@/components/HelpPillButton";
+import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH as ASSESSOR_SEARCH_URL } from "@/lib/arapahoeCountyUrls";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
+} from "@/lib/toolFlowStyles";
 
 type CountyParcelPinLookupHelpProps = {
   /**
@@ -49,14 +52,16 @@ export function CountyParcelPinLookupHelp({
         On the parcel record, find your <strong>parcel PIN</strong>.
       </p>
       <div className="space-y-3 pt-1">
-        <HelpPillButton
-          onClick={() => setShowParcelPinHelp((prev) => !prev)}
-          aria-expanded={showParcelPinHelp}
-        >
-          {showParcelPinHelp
-            ? "Hide PIN screenshot"
-            : "Show where to find your PIN"}
-        </HelpPillButton>
+        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+          <ToolOutlinedToggleButton
+            onClick={() => setShowParcelPinHelp((prev) => !prev)}
+            aria-expanded={showParcelPinHelp}
+          >
+            {showParcelPinHelp
+              ? "Hide PIN screenshot"
+              : "Show where to find your PIN"}
+          </ToolOutlinedToggleButton>
+        </div>
         {showParcelPinHelp ? (
           <div className="rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
             <figure>

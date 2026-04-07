@@ -10,6 +10,22 @@ You are helping build a public, static-data web tool that makes **Arapahoe-focus
 
 Implementation can be precise. **User-facing copy and layout should lean away from** county-site tone and spreadsheet vibes - **aim for** something people actually want to use.
 
+### Review and audit responses (mandatory - read before any review-style answer)
+
+This rule **overrides** the instinct to be balanced or reassuring. Ignoring it wastes the user's time.
+
+**Triggers:** The user asks for a **review**, **audit**, **final check**, **pre-commit check**, **pass**, or to **ensure / verify** something against **DRY, KISS, YAGNI, OWASP, anti-patterns, a11y**, security, or similar - including phrases like "anything needing to change" or "etc." in that spirit.
+
+**Output format:**
+
+- **Only** list **issues, risks, gaps, and actionable follow-ups** (what to fix, verify manually, or decide).
+- **Forbidden:** Sections or bullets on what is **fine**, **good**, **satisfactory**, **passing**, **already met**, **in good shape**, or **meets [principle]**; **praise** or **reassurance**; a **Summary** that mixes positives and negatives; **What we changed** framed only as praise; framing fixes as achievements.
+- **Forbidden:** Saying build, lint, or tests **passed** or **succeeded** unless the user explicitly asked for that command output.
+- If you **made edits** in the same turn: report **only remaining** issues after those edits (or one sentence if none).
+- If **nothing** is wrong after a sincere pass: **one short sentence** only, e.g. `No issues to flag from this pass.`
+
+**Scoped audits** (DRY, KISS, YAGNI, OWASP, a11y, etc.) use this same format: **negatives and actions only**, never confirmation that a principle was satisfied.
+
 ### Core preferences
 
 - Use clear, maintainable, well-typed code.
@@ -51,12 +67,7 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 - Apply YAGNI (don't build features or abstractions until they are needed).
 - Observe at least the OWASP Top 10 security guidelines in design and implementation.
 - Accessibility expectations are spelled out under **Accessibility (critical)** above; WCAG 2.1 AA is the minimum bar.
-
-**Review and audit responses (any type):** When the user asks for a **review, audit, final check, pre-commit check, a11y/contrast/SR/keyboard pass, security review, or similar**, output **only** what still needs attention: **recommendations, gaps, risks, follow-ups, or things not ready** — items they might have **missed** or should **verify manually**.
-
-Do **not** list what is **satisfactory**, **fine**, **already met**, or **passing**; do **not** praise, reassure, or balance with "what's good." Do **not** summarize that the build or lint succeeded (unless the user explicitly asked for command output). Those bury the signal. **Scoped audits** (DRY, KISS, YAGNI, OWASP, anti-patterns, a11y, etc.) use the same rule: **only negatives and actionable items**, not confirmation that principles were satisfied.
-
-If there is **nothing** to flag after a sincere pass, say so in **one short sentence** (e.g. "No issues to flag from this pass.").
+- **Review / audit output:** Follow **Review and audit responses (mandatory)** at the top of this file - no exceptions.
 
 ### Project-specific rules
 
@@ -76,6 +87,7 @@ If there is **nothing** to flag after a sincere pass, say so in **one short sent
 
 ### General AI behavior
 
+- **Reviews and audits:** When **Review and audit responses (mandatory)** applies, that format takes precedence over default reply length and tone (no "balanced" report).
 - **Default to short replies.** A few sentences or one short paragraph is often enough. Do not fire-hose lists of options, sub-options, or tangents. The user will ask to elaborate when they want depth.
 - **Answer the actual question** they asked; do not expand into a survey of alternatives unless they asked for options or a comparison.
 - Keep code and explanations concise.

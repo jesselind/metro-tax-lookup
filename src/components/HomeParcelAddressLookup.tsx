@@ -3,8 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
+import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
-import { LevyStackVisualization } from "@/components/LevyStackVisualization";
+import {
+  LevyStackVisualization,
+  type LevyStackVisualizationProps,
+} from "@/components/LevyStackVisualization";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import {
   TermActualValueAside,
@@ -48,6 +52,7 @@ import {
   PARCEL_SUMMARY_TILE_VALUE_CLASS,
   PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
   PARCEL_SUMMARY_VALUE_TILE_CLASS,
+  TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 
 const INPUT_ROW = `${INPUT_CLASS} min-w-0 w-full !max-w-none px-2 py-2 text-base sm:text-base`;
@@ -94,6 +99,9 @@ const HOME_DEFINITIONS_HEADING_CLASS =
 
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
+
+/** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
+const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
 
 const USD_WHOLE = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -416,6 +424,24 @@ export function HomeParcelAddressLookup({
     return hits.find((h) => h.pin === pin)?.label ?? null;
   }, [hits, trimmedParcelPin]);
 
+  const homeLevyStackProps: LevyStackVisualizationProps = {
+    lines: levyLines,
+    setLines: setLevyLines,
+    loadedParcelMeta: levyLoadedMeta,
+    awaitingTemplateMills: levyAwaitingTemplateMills,
+    setAwaitingTemplateMills: setLevyAwaitingTemplateMills,
+    templateMillDrafts: levyTemplateMillDrafts,
+    setTemplateMillDrafts: setLevyTemplateMillDrafts,
+    templateMillsError: levyTemplateMillsError,
+    setTemplateMillsError: setLevyTemplateMillsError,
+    onClearLoadedStack: clearParcelTemplateExtended,
+    allowLineEdit: true,
+    termDefinitionsOnHomePage: levyReadyForSummary,
+  };
+
+  const showMultiHitLevyIntroLead =
+    hits != null && hits.length > 1;
+
   return (
     <section
       className="w-full min-w-0 space-y-4 sm:space-y-5"
@@ -580,9 +606,9 @@ export function HomeParcelAddressLookup({
             </div>
           </form>
           {error ? (
-            <p className="mt-3 text-sm text-red-700" role="alert">
+            <InlineErrorCallout className="mt-3" liveRegion="polite">
               {error}
-            </p>
+            </InlineErrorCallout>
           ) : null}
         </div>
       ) : (
@@ -719,9 +745,9 @@ export function HomeParcelAddressLookup({
             </p>
           ) : null}
           {error ? (
-            <p className="mt-1 text-sm text-red-700" role="alert">
+            <InlineErrorCallout className="mt-1" liveRegion="polite">
               {error}
-            </p>
+            </InlineErrorCallout>
           ) : null}
         </div>
       )}
@@ -778,25 +804,26 @@ export function HomeParcelAddressLookup({
                   </button>
                 ) : null}
               </div>
-              {!showHomeLevyMetroAndHub ? (
-                <p className="mt-3 text-sm text-slate-700">
-                  <button
-                    type="button"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2"
-                    onClick={() => setHomeLevyWorkbenchOpen(true)}
-                  >
-                    Add levy lines without loading a PIN
-                  </button>
-                  <span className="font-normal text-slate-600">
-                    {" "}
-                    — opens the breakdown below. Copy rows from your county{" "}
-                    <strong className="font-semibold text-slate-800">
-                      Tax District Levies
-                    </strong>{" "}
-                    screen using <strong className="font-semibold text-slate-800">Add tile</strong>.
-                  </span>
-                </p>
-              ) : null}
+              <p className="mt-3 text-sm text-slate-700">
+                <a
+                  href={`#${HOME_LEVY_BREAKDOWN_ID}`}
+                  className={TERM_LINK_CLASS}
+                  onClick={() => setHomeLevyWorkbenchOpen(true)}
+                >
+                  Add levies without a PIN
+                </a>
+                <span className="font-normal text-slate-600">
+                  {" "}
+                  — use{" "}
+                  <strong className="font-semibold text-slate-800">Add tile</strong>
+                  {" "}
+                  in the levy section with rows from{" "}
+                  <strong className="font-semibold text-slate-800">
+                    Tax District Levies
+                  </strong>
+                  .
+                </span>
+              </p>
             </div>
           ) : null}
       {showCountyPinFallback ? (
@@ -874,29 +901,33 @@ export function HomeParcelAddressLookup({
             </div>
           ) : null}
           {levyLoadError ? (
-            <p className="text-sm text-red-700" role="alert">
-              {levyLoadError}
-            </p>
+            <InlineErrorCallout liveRegion="polite">{levyLoadError}</InlineErrorCallout>
           ) : null}
 
-      {showHomeLevyMetroAndHub ? (
+      {(showParcelPinSection || showHomeLevyMetroAndHub) ? (
         <div
-          id="home-levy-breakdown-heading"
-          className="space-y-5"
-          role="region"
-          aria-label="Property tax breakdown"
+          id={HOME_LEVY_BREAKDOWN_ID}
+          className={`scroll-mt-6 space-y-5 sm:scroll-mt-8 ${!showHomeLevyMetroAndHub ? "min-h-px" : ""}`}
+          role={showHomeLevyMetroAndHub ? "region" : undefined}
+          aria-label={showHomeLevyMetroAndHub ? "Property tax breakdown" : undefined}
         >
-          {showLevyIntroBlock ? (
+          {showHomeLevyMetroAndHub ? (
+          <>
+          {showLevyIntroBlock && !showCountyPinFallback ? (
             <div className="space-y-5">
-              <p className="text-sm text-slate-600 sm:text-base">
-                Nothing loaded from a PIN yet — use{" "}
-                <strong className="font-semibold text-slate-800">Load property data</strong>{" "}
-                when you have a PIN, or tap{" "}
-                <strong className="font-semibold text-slate-800">Add tile</strong>{" "}
-                below to type rows from your county{" "}
-                <strong className="font-semibold text-slate-800">Tax District Levies</strong>{" "}
-                screen.
-              </p>
+              {!showMultiHitLevyIntroLead ? (
+                <p className="text-sm text-slate-600 sm:text-base">
+                  Use{" "}
+                  <strong className="font-semibold text-slate-800">Add tile</strong>
+                  {" "}
+                  below for each row from your county{" "}
+                  <strong className="font-semibold text-slate-800">Tax District Levies</strong>{" "}
+                  table, or{" "}
+                  <strong className="font-semibold text-slate-800">Load property data</strong>
+                  {" "}
+                  when you have a PIN.
+                </p>
+              ) : null}
               <div
                 className={ADDRESS_LOOKUP_PANEL_CLASS}
                 aria-labelledby="home-levy-county-table-help-heading"
@@ -950,20 +981,7 @@ export function HomeParcelAddressLookup({
                 >
                   Where is your money going?
                 </h3>
-                <LevyStackVisualization
-                  lines={levyLines}
-                  setLines={setLevyLines}
-                  loadedParcelMeta={levyLoadedMeta}
-                  awaitingTemplateMills={levyAwaitingTemplateMills}
-                  setAwaitingTemplateMills={setLevyAwaitingTemplateMills}
-                  templateMillDrafts={levyTemplateMillDrafts}
-                  setTemplateMillDrafts={setLevyTemplateMillDrafts}
-                  templateMillsError={levyTemplateMillsError}
-                  setTemplateMillsError={setLevyTemplateMillsError}
-                  onClearLoadedStack={clearParcelTemplateExtended}
-                  allowLineEdit
-                  termDefinitionsOnHomePage={levyReadyForSummary}
-                />
+                <LevyStackVisualization {...homeLevyStackProps} />
               </div>
             </MetroTaxShareFlow>
           ) : (
@@ -972,23 +990,12 @@ export function HomeParcelAddressLookup({
               role="region"
               aria-label="Levy stack visualization"
             >
-              <LevyStackVisualization
-                lines={levyLines}
-                setLines={setLevyLines}
-                loadedParcelMeta={levyLoadedMeta}
-                awaitingTemplateMills={levyAwaitingTemplateMills}
-                setAwaitingTemplateMills={setLevyAwaitingTemplateMills}
-                templateMillDrafts={levyTemplateMillDrafts}
-                setTemplateMillDrafts={setLevyTemplateMillDrafts}
-                templateMillsError={levyTemplateMillsError}
-                setTemplateMillsError={setLevyTemplateMillsError}
-                onClearLoadedStack={clearParcelTemplateExtended}
-                allowLineEdit
-                termDefinitionsOnHomePage={levyReadyForSummary}
-              />
+              <LevyStackVisualization {...homeLevyStackProps} />
             </div>
           )}
 
+          </>
+          ) : null}
         </div>
       ) : null}
 

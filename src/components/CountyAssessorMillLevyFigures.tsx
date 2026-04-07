@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 import propertyPageImg from "@/assets/images/mill-levy-property-page.png";
 import millLevyDetailImg from "@/assets/images/mill-levy-detail.png";
-import { HelpPillButton } from "@/components/HelpPillButton";
+import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
+import { TOOL_DISCLOSURE_ROW_ALIGN_CLASS } from "@/lib/toolFlowStyles";
 
 /**
  * Toggle screenshots for **2025 Mill Levy** on the county parcel page and a sample row
@@ -19,14 +20,16 @@ export function CountyAssessorMillLevyFigures() {
   return (
     <div className="space-y-4">
       <div>
-        <HelpPillButton
-          onClick={() => setShowCountyMillScreenshot((prev) => !prev)}
-          aria-expanded={showCountyMillScreenshot}
-        >
-          {showCountyMillScreenshot
-            ? "Hide where to find total mills"
-            : "Show where to find total mills on the county site"}
-        </HelpPillButton>
+        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+          <ToolOutlinedToggleButton
+            onClick={() => setShowCountyMillScreenshot((prev) => !prev)}
+            aria-expanded={showCountyMillScreenshot}
+          >
+            {showCountyMillScreenshot
+              ? "Hide where to find total mills"
+              : "Show where to find total mills on the county site"}
+          </ToolOutlinedToggleButton>
+        </div>
         {showCountyMillScreenshot ? (
           <div className="mt-3 rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
             <figure>
@@ -53,14 +56,16 @@ export function CountyAssessorMillLevyFigures() {
         ) : null}
       </div>
       <div>
-        <HelpPillButton
-          onClick={() => setShowLevyTableScreenshot((prev) => !prev)}
-          aria-expanded={showLevyTableScreenshot}
-        >
-          {showLevyTableScreenshot
-            ? "Hide county levy table example"
-            : "Show Tax District Levies table on the county site"}
-        </HelpPillButton>
+        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+          <ToolOutlinedToggleButton
+            onClick={() => setShowLevyTableScreenshot((prev) => !prev)}
+            aria-expanded={showLevyTableScreenshot}
+          >
+            {showLevyTableScreenshot
+              ? "Hide county levy table example"
+              : "Show Tax District Levies table on the county site"}
+          </ToolOutlinedToggleButton>
+        </div>
         {showLevyTableScreenshot ? (
           <div className="mt-3 rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-700 sm:text-base">
             <figure>

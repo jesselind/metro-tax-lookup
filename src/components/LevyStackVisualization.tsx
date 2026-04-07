@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
+import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetailDialog";
 import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
@@ -455,9 +456,12 @@ export function LevyStackVisualization({
                             aria-invalid={editError != null}
                           />
                           {editError && (
-                            <p className="mt-1 text-xs text-red-700" role="alert">
+                            <InlineErrorCallout
+                              density="compact"
+                              className="mt-1"
+                            >
                               {editError}
-                            </p>
+                            </InlineErrorCallout>
                           )}
                         </div>
                         <div className="mt-auto flex flex-wrap gap-2">
@@ -616,9 +620,12 @@ export function LevyStackVisualization({
                             aria-invalid={addError != null}
                           />
                           {addError && (
-                            <p className="mt-1 text-xs text-red-700" role="alert">
+                            <InlineErrorCallout
+                              density="compact"
+                              className="mt-1"
+                            >
                               {addError}
-                            </p>
+                            </InlineErrorCallout>
                           )}
                         </div>
                       </div>
@@ -910,13 +917,13 @@ export function LevyStackVisualization({
             ))}
           </ul>
           {templateMillsError && (
-            <p
-              className="mt-3 text-sm text-red-700"
-              role="alert"
+            <InlineErrorCallout
               id={templateErrorId}
+              density="compact"
+              className="mt-3"
             >
               {templateMillsError}
-            </p>
+            </InlineErrorCallout>
           )}
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <button

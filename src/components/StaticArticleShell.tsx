@@ -6,6 +6,7 @@ import {
   btnOutlineSecondaryMd,
 } from "@/lib/buttonClasses";
 import {
+  PAGE_HERO_ACTION_BUTTON_CLASS,
   TOOL_PAGE_HERO_INTRO_GROUP_CLASS,
   TOOL_PAGE_INNER_CLASS_HUB,
   TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
@@ -37,7 +38,14 @@ export function StaticArticleShell({
     <main className="flex flex-col overflow-x-hidden bg-white text-slate-900">
       <div className={contentClassName ?? TOOL_PAGE_INNER_CLASS_HUB}>
         <div className={TOOL_PAGE_HERO_INTRO_GROUP_CLASS}>
-          <PageHero title={title} />
+          <PageHero
+            title={title}
+            actions={
+              <Link href="/" className={PAGE_HERO_ACTION_BUTTON_CLASS}>
+                Home
+              </Link>
+            }
+          />
           {typeof intro === "string" ? (
             <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>{intro}</p>
           ) : (
