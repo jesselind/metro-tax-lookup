@@ -221,13 +221,7 @@ export function TermActualValueAside() {
         <em>ballpark idea</em>
         , a value tied to the property, but it is the county&apos;s official figure for taxes, not
         a sale price, not a bank appraisal for a loan, and not a single private appraiser&apos;s
-        report. Those can all be different numbers for the same home.
-      </p>
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The actual value dollar amount on this page is for{" "}
-        <strong className="font-semibold text-slate-900">tax year 2025</strong>
-        {" "}
-        (same county parcel snapshot as the assessed value next to it). See{" "}
+        report. Those can all be different numbers for the same home. See{" "}
         <a href="#term-property-classification" className={TERM_LINK_CLASS}>
           Property classification
         </a>
@@ -255,12 +249,6 @@ export function TermAssessedValueAside() {
         is the amount your property tax is built from: the county takes your actual value and
         applies a percentage set by state law for your kind of property (home, land, business, and
         so on). That smaller number is what rates are multiplied against.
-      </p>
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The assessed value dollar amount on this page is for{" "}
-        <strong className="font-semibold text-slate-900">tax year 2025</strong>
-        {" "}
-        (same county parcel snapshot as the actual value above).
       </p>
     </aside>
   );

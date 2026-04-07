@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
@@ -74,36 +75,36 @@ export default function RootLayout({
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2">
-                  <a
+                  <Link
                     href="/"
                     className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                   >
                     Home
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/sources"
                     className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                   >
                     Sources
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/privacy"
                     className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                   >
                     Privacy
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/accessibility"
                     className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                   >
                     Accessibility
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/contact"
                     className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                   >
                     Contact
-                  </a>
+                  </Link>
                 </nav>
                 {SITE_CONFIG.githubRepoUrl ? (
                   <a

@@ -52,9 +52,11 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 - Observe at least the OWASP Top 10 security guidelines in design and implementation.
 - Accessibility expectations are spelled out under **Accessibility (critical)** above; WCAG 2.1 AA is the minimum bar.
 
-**Review and audit responses (any type):** When the user asks for a **review, audit, final check, pre-commit check, a11y/contrast/SR/keyboard pass, security review, or similar**, respond **only with gaps, risks, and follow-ups** — things they might have **missed** or should **verify manually**. Do **not** summarize what is already fine, what passed, that the build or lint succeeded (unless the user explicitly asked for a command result), balanced pros/cons, or "what's good" / "already in good shape" sections. Those bury the signal. If there is **nothing** to flag after a sincere pass, say so in **one short sentence** (e.g. "No issues to flag from this pass.").
+**Review and audit responses (any type):** When the user asks for a **review, audit, final check, pre-commit check, a11y/contrast/SR/keyboard pass, security review, or similar**, output **only** what still needs attention: **recommendations, gaps, risks, follow-ups, or things not ready** — items they might have **missed** or should **verify manually**.
 
-The same **negatives-only** rule applies to the scoped audits below (DRY, KISS, YAGNI, OWASP, etc.): only actionable or questionable items, not praise or reassurance lists.
+Do **not** list what is **satisfactory**, **fine**, **already met**, or **passing**; do **not** praise, reassure, or balance with "what's good." Do **not** summarize that the build or lint succeeded (unless the user explicitly asked for command output). Those bury the signal. **Scoped audits** (DRY, KISS, YAGNI, OWASP, anti-patterns, a11y, etc.) use the same rule: **only negatives and actionable items**, not confirmation that principles were satisfied.
+
+If there is **nothing** to flag after a sincere pass, say so in **one short sentence** (e.g. "No issues to flag from this pass.").
 
 ### Project-specific rules
 

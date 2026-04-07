@@ -81,11 +81,11 @@ export const LEVY_STACK_TILE_GRID_CLASS =
   "grid w-full min-w-0 gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr))]";
 
 /**
- * Parcel summary row (home): column on small screens (address full width, value pair side by side);
- * from sm up, tiles flow in a wrapping row (no horizontal scroll).
+ * Parcel summary row (home): wrapping flex row; tiles use {@link PARCEL_SUMMARY_TILE_CLASS} (max-content
+ * width, capped by max-w-full).
  */
 export const PARCEL_SUMMARY_ROW_CLASS =
-  "flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-start sm:gap-4";
+  "flex w-full min-w-0 flex-row flex-wrap items-stretch justify-start gap-3 sm:gap-4";
 
 /** Actual + assessed: always a row; `sm:contents` so tiles join the parent row at sm+ breakpoints. */
 export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS =
@@ -100,8 +100,8 @@ const PARCEL_SUMMARY_TILE_FRAME_BASE = `${DASHBOARD_TILE_RADIUS_CLASS} flex min-
 export const PARCEL_SUMMARY_TILE_BODY_CLASS =
   "flex min-h-0 min-w-0 flex-col justify-start gap-1.5 px-3.5 py-2.5 sm:px-4 sm:py-3";
 
-/** Address / status: full width when stacked; content-sized from sm up. */
-export const PARCEL_SUMMARY_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} w-full max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+/** Parcel summary tile: shrink-wraps to content (capped by max-w-full) so tiles share rows until they wrap. */
+export const PARCEL_SUMMARY_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} w-max max-w-full min-w-0`;
 
 /** Value tiles: equal width on small screens (fill pair row); content-sized from sm up with the address tile. */
 export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;

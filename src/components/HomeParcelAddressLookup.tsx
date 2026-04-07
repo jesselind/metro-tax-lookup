@@ -590,8 +590,24 @@ export function HomeParcelAddressLookup({
           <div
             className={PARCEL_SUMMARY_ROW_CLASS}
             role="region"
-            aria-label="Search result: address and parcel values"
+            aria-label="Parcel search result summary"
           >
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            levyLoadedMeta.parcelValuesTaxYear != null ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS}
+                id="home-parcel-tax-year"
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Tax year</p>
+                  <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                    {levyLoadedMeta.parcelValuesTaxYear}
+                  </p>
+                </div>
+              </div>
+            ) : null}
             {!busy &&
             levyLoadedMeta &&
             lockedAddressHeadline &&
@@ -654,44 +670,44 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             (levyLoadedMeta.parcelValues.totalActual != null ||
               levyLoadedMeta.parcelValues.totalAssessed != null) ? (
-              <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
-                {levyLoadedMeta.parcelValues.totalActual != null ? (
-                  <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
-                    <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                      <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                        <a
-                          id="actual-value-term-first"
-                          href="#term-actual-value"
-                          className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
-                        >
-                          Actual value
-                        </a>
-                      </p>
-                      <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                        {formatUsdWhole(levyLoadedMeta.parcelValues.totalActual)}
-                      </p>
+                <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
+                  {levyLoadedMeta.parcelValues.totalActual != null ? (
+                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
+                      <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                        <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                          <a
+                            id="actual-value-term-first"
+                            href="#term-actual-value"
+                            className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                          >
+                            Actual value
+                          </a>
+                        </p>
+                        <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                          {formatUsdWhole(levyLoadedMeta.parcelValues.totalActual)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : null}
-                {levyLoadedMeta.parcelValues.totalAssessed != null ? (
-                  <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
-                    <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                      <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                        <a
-                          id="assessed-value-term-first"
-                          href="#term-assessed-value"
-                          className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
-                        >
-                          Assessed value
-                        </a>
-                      </p>
-                      <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                        {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
-                      </p>
+                  ) : null}
+                  {levyLoadedMeta.parcelValues.totalAssessed != null ? (
+                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
+                      <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                        <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                          <a
+                            id="assessed-value-term-first"
+                            href="#term-assessed-value"
+                            className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                          >
+                            Assessed value
+                          </a>
+                        </p>
+                        <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                          {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : null}
-              </div>
+                  ) : null}
+                </div>
             ) : null}
           </div>
           {!busy &&
