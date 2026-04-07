@@ -34,8 +34,14 @@ import {
   displayAuthorityForLevyLine,
   newLevyLineId,
   type CommittedLevyLine,
+  type ParcelValuesFromExport,
   parseMills,
 } from "@/lib/committedLevyLine";
+import {
+  annualTaxDollarsFromAssessedMills,
+  parcelAssessedForDollarEstimate,
+} from "@/lib/annualTaxFromAssessedMills";
+import { formatUsdWhole } from "@/lib/formatUsd";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
 
@@ -72,6 +78,14 @@ const LEVY_TILE_PCT_CLASS =
   "pointer-events-none shrink-0 m-0 text-right font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] [font-size:calc(1.25rem+var(--pct-scale)*1.5rem)] sm:[font-size:calc(1.5rem+var(--pct-scale)*1.25rem)]";
 
 const TILE_DESC_MILLS_CLASS = "text-base sm:text-lg";
+
+/** Mills sit below the authority name; lighter than dollar estimate so % stays hero. */
+const TILE_MILLS_SUBTLE_CLASS =
+  "mt-1.5 font-mono font-medium tabular-nums text-white/75 [text-shadow:0_1px_2px_rgba(0,0,0,0.2)] text-sm sm:text-[0.9375rem]";
+
+/** Estimated annual levy; sits in the bottom stack with a fixed gap above the % (not below mills). */
+const LEVY_TILE_USD_CLASS =
+  "font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] text-[1.375rem] sm:text-[1.625rem]";
 
 function formatPct(p: number): string {
   if (!Number.isFinite(p)) return "0.0";
@@ -112,6 +126,8 @@ export type LevyStackVisualizationProps = {
     pin: string;
     tagShortDescr: string;
     levyAspxUrl: string;
+    /** When the PIN load included assessed value, tiles show estimated levy dollars. */
+    parcelValues?: ParcelValuesFromExport | null;
   } | null;
   awaitingTemplateMills: boolean;
   setAwaitingTemplateMills: (v: boolean) => void;
@@ -170,10 +186,22 @@ export function LevyStackVisualization({
     [loadedParcelMeta],
   );
 
+  /** Positive assessed value only; omit so we never show a fake $0 from missing data. */
+  const assessedForLevyDollars = useMemo((): number | null => {
+    return parcelAssessedForDollarEstimate(
+      loadedParcelMeta?.parcelValues?.totalAssessed,
+    );
+  }, [loadedParcelMeta]);
+
   const sumMills = useMemo(() => {
     const s = lines.reduce((acc, l) => acc + l.mills, 0);
     return Math.round(s * 1000) / 1000;
   }, [lines]);
+
+  const totalLevyDollarsRounded = useMemo(() => {
+    if (assessedForLevyDollars == null || sumMills <= 0) return null;
+    return annualTaxDollarsFromAssessedMills(assessedForLevyDollars, sumMills);
+  }, [assessedForLevyDollars, sumMills]);
 
   const lineItems = useMemo(
     () =>
@@ -402,6 +430,13 @@ export function LevyStackVisualization({
                 const pctScale = pctScaleForRank(index, tilesSorted.length);
                 const isEditing = editingId === item.id;
                 const sourceLine = lines.find((l) => l.id === item.id);
+                const lineDollarsRounded =
+                  assessedForLevyDollars != null
+                    ? annualTaxDollarsFromAssessedMills(
+                        assessedForLevyDollars,
+                        item.mills,
+                      )
+                    : null;
 
                 return (
                   <div
@@ -494,7 +529,11 @@ export function LevyStackVisualization({
                         <button
                           type="button"
                           className={`absolute inset-0 z-0 cursor-pointer ${DASHBOARD_TILE_RADIUS_CLASS} focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent`}
-                          aria-label={`View district details for ${item.authority}, ${formatMills(item.mills)} mills`}
+                          aria-label={
+                            lineDollarsRounded != null
+                              ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value`
+                              : `View district details for ${item.authority}, ${formatMills(item.mills)} mills`
+                          }
                           onClick={() => {
                             setTileActionsId(null);
                             cancelAddTile();
@@ -523,32 +562,42 @@ export function LevyStackVisualization({
                           <div
                             className={
                               allowLineEdit
-                                ? "grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-y-2 sm:gap-y-3"
-                                : "grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-y-2 sm:gap-y-3 pt-0"
+                                ? "grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-y-2 sm:gap-y-3"
+                                : "grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-y-2 sm:gap-y-3 pt-0"
                             }
                           >
-                            <div className="min-h-0 w-full min-w-0 self-start">
+                            <div
+                              className={`flex min-h-0 w-full min-w-0 flex-col justify-start${allowLineEdit ? " pr-11" : ""}`}
+                            >
                               <p
-                                className={`w-full min-w-0 font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${TILE_DESC_MILLS_CLASS} line-clamp-6${allowLineEdit ? " pr-11" : ""}`}
+                                className={`w-full min-w-0 font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${TILE_DESC_MILLS_CLASS} line-clamp-6`}
                               >
                                 {item.authority}
                               </p>
-                              <p
-                                className={`mt-2 font-mono font-semibold tabular-nums text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.25)] ${TILE_DESC_MILLS_CLASS}`}
-                              >
+                              <p className={TILE_MILLS_SUBTLE_CLASS}>
                                 {formatMills(item.mills)} mills
                               </p>
                             </div>
-                            <p
-                              className={LEVY_TILE_PCT_CLASS}
-                              style={
-                                {
-                                  "--pct-scale": pctScale,
-                                } as CSSProperties
-                              }
-                            >
-                              {pctLabel}%
-                            </p>
+                            <div className="flex w-full min-w-0 flex-col items-end gap-y-1 self-end sm:gap-y-1.5">
+                              {lineDollarsRounded != null ? (
+                                <p className={LEVY_TILE_USD_CLASS}>
+                                  <span className="sr-only">
+                                    Estimated annual levy from assessed value:{" "}
+                                  </span>
+                                  {formatUsdWhole(lineDollarsRounded)}
+                                </p>
+                              ) : null}
+                              <p
+                                className={LEVY_TILE_PCT_CLASS}
+                                style={
+                                  {
+                                    "--pct-scale": pctScale,
+                                  } as CSSProperties
+                                }
+                              >
+                                {pctLabel}%
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </>
@@ -676,6 +725,19 @@ export function LevyStackVisualization({
             <p className="text-sm text-slate-600">
               Tap a tile to see its share of your total mills and extra details
               when we can match it to public district records.
+              {assessedForLevyDollars != null ? (
+                <>
+                  {" "}
+                  Dollar amounts in this breakdown (levy tiles, total, and metro
+                  summary when shown) are{" "}
+                  <strong className="font-semibold text-slate-700">
+                    estimated annual
+                  </strong>{" "}
+                  taxes from your assessed value (mills × assessed ÷ 1000,
+                  rounded to the nearest dollar). Your county notice may differ
+                  slightly due to rounding or line-item rules.
+                </>
+              ) : null}
               {allowLineEdit ? (
                 <>
                   {" "}
@@ -698,7 +760,21 @@ export function LevyStackVisualization({
                 Total
               </span>
               <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <span className="font-mono text-xl font-semibold tabular-nums text-white sm:text-2xl">
+                {totalLevyDollarsRounded != null ? (
+                  <span className="text-xl font-bold tabular-nums text-white sm:text-2xl">
+                    <span className="sr-only">
+                      Estimated total annual levy from assessed value:{" "}
+                    </span>
+                    {formatUsdWhole(totalLevyDollarsRounded)}
+                  </span>
+                ) : null}
+                <span
+                  className={
+                    totalLevyDollarsRounded != null
+                      ? "font-mono text-lg font-medium tabular-nums text-white/85 sm:text-xl"
+                      : "font-mono text-xl font-semibold tabular-nums text-white sm:text-2xl"
+                  }
+                >
                   {formatMills(sumMills)} mills
                 </span>
                 <span className="text-xl font-semibold tabular-nums text-amber-200 sm:text-2xl">

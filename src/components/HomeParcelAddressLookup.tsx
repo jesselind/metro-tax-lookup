@@ -37,6 +37,7 @@ import {
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
+import { formatUsdWhole } from "@/lib/formatUsd";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -102,16 +103,6 @@ const AC_SECTION = "section-arapahoe-situs";
 
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
-
-const USD_WHOLE = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-function formatUsdWhole(n: number): string {
-  return USD_WHOLE.format(n);
-}
 
 export type HomeParcelAddressLookupProps = {
   /** Fires when the user is viewing parcel flow (`addressSearchLocked`) so the header can show Start over. */
@@ -438,6 +429,22 @@ export function HomeParcelAddressLookup({
     allowLineEdit: true,
     termDefinitionsOnHomePage: levyReadyForSummary,
   };
+
+  const levyStackSection = (
+    <div
+      className="space-y-3"
+      role="region"
+      aria-labelledby="home-levy-stack-subheading"
+    >
+      <h3
+        id="home-levy-stack-subheading"
+        className={DASHBOARD_SECTION_HEADING_CLASS}
+      >
+        Where is your money going?
+      </h3>
+      <LevyStackVisualization {...homeLevyStackProps} />
+    </div>
+  );
 
   const showMultiHitLevyIntroLead =
     hits != null && hits.length > 1;
@@ -969,29 +976,18 @@ export function HomeParcelAddressLookup({
               idPrefix="home-metro"
               prefillTotalMills={metroPrefillTotalMills}
               metroFromLevyStack={homeMetroFromLevyStack}
+              totalAssessedForEstimate={
+                levyLoadedMeta &&
+                typeof levyLoadedMeta.parcelValues.totalAssessed === "number" &&
+                levyLoadedMeta.parcelValues.totalAssessed > 0
+                  ? levyLoadedMeta.parcelValues.totalAssessed
+                  : null
+              }
             >
-              <div
-                className="space-y-3"
-                role="region"
-                aria-labelledby="home-levy-stack-subheading"
-              >
-                <h3
-                  id="home-levy-stack-subheading"
-                  className={DASHBOARD_SECTION_HEADING_CLASS}
-                >
-                  Where is your money going?
-                </h3>
-                <LevyStackVisualization {...homeLevyStackProps} />
-              </div>
+              {levyStackSection}
             </MetroTaxShareFlow>
           ) : (
-            <div
-              className="space-y-3"
-              role="region"
-              aria-label="Levy stack visualization"
-            >
-              <LevyStackVisualization {...homeLevyStackProps} />
-            </div>
+            levyStackSection
           )}
 
           </>

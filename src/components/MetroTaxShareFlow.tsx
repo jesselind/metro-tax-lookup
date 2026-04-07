@@ -9,6 +9,11 @@ import type {
   LevyLineFromJson,
   MetroDistrictOption,
 } from "@/lib/levyTypes";
+import {
+  annualTaxDollarsFromAssessedMills,
+  parcelAssessedForDollarEstimate,
+} from "@/lib/annualTaxFromAssessedMills";
+import { formatUsdWhole } from "@/lib/formatUsd";
 import levyData from "../../public/data/metro-levies-2025.json";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
@@ -121,6 +126,11 @@ export type MetroTaxShareFlowProps = {
   prefillTotalMills?: number | null;
   metroFromLevyStack?: MetroFromLevyStack;
   /**
+   * When positive (e.g. from parcel assessed value), metro headline tiles show
+   * estimated annual dollar amounts from mills × assessed ÷ 1000.
+   */
+  totalAssessedForEstimate?: number | null;
+  /**
    * When set (e.g. levy stack on the home page), renders between the headline
    * percent tiles and the metro breakdown so the stack appears first in reading order.
    */
@@ -131,6 +141,7 @@ export function MetroTaxShareFlow({
   idPrefix = "",
   prefillTotalMills = null,
   metroFromLevyStack,
+  totalAssessedForEstimate = null,
   children,
 }: MetroTaxShareFlowProps) {
   const p = idPrefix ? `${idPrefix}-` : "";
@@ -262,6 +273,34 @@ export function MetroTaxShareFlow({
     [perDistrictBundles],
   );
 
+  const combinedMetroDebtMills = useMemo(
+    () =>
+      perDistrictBundles.reduce(
+        (s, b) => s + debtMillsAllocatedForBundle(b),
+        0,
+      ),
+    [perDistrictBundles],
+  );
+
+  const metroShareDollars = useMemo(() => {
+    const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
+    if (assessed == null || totalDistrictMillsCombined <= MILLS_ROUND_EPS) {
+      return null;
+    }
+    return annualTaxDollarsFromAssessedMills(
+      assessed,
+      totalDistrictMillsCombined,
+    );
+  }, [totalAssessedForEstimate, totalDistrictMillsCombined]);
+
+  const debtShareDollars = useMemo(() => {
+    const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
+    if (assessed == null || combinedMetroDebtMills <= MILLS_ROUND_EPS) {
+      return null;
+    }
+    return annualTaxDollarsFromAssessedMills(assessed, combinedMetroDebtMills);
+  }, [totalAssessedForEstimate, combinedMetroDebtMills]);
+
   const { percentage: totalDistrictShare } = calculateSharePercentage(
     totalMills,
     totalDistrictMillsCombined,
@@ -282,16 +321,15 @@ export function MetroTaxShareFlow({
     if (totalMills <= 0) {
       return { debtShareOfTotal: 0, showDebtHeadline: false };
     }
-    const combinedDebt = perDistrictBundles.reduce(
-      (s, b) => s + debtMillsAllocatedForBundle(b),
-      0,
-    );
-    if (combinedDebt <= MILLS_ROUND_EPS) {
+    if (combinedMetroDebtMills <= MILLS_ROUND_EPS) {
       return { debtShareOfTotal: 0, showDebtHeadline: false };
     }
-    const { percentage } = calculateSharePercentage(totalMills, combinedDebt);
+    const { percentage } = calculateSharePercentage(
+      totalMills,
+      combinedMetroDebtMills,
+    );
     return { debtShareOfTotal: percentage, showDebtHeadline: true };
-  }, [perDistrictBundles, totalMills]);
+  }, [combinedMetroDebtMills, totalMills]);
 
   const taxRateSplitAnnouncement = useMemo(() => {
     if (totalMills <= 0) {
@@ -375,17 +413,25 @@ export function MetroTaxShareFlow({
       const scope = multiMetroParcel
         ? "your metro districts combined"
         : "your metro district";
-      return `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${scope}. Jump to detailed breakdown below.`;
+      const dollarPhrase =
+        metroShareDollars != null
+          ? ` Estimated annual ${formatUsdWhole(metroShareDollars)} from assessed value.`
+          : "";
+      return `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${scope}.${dollarPhrase} Jump to breakdown below.`;
     }
     return "No metro district mills on your property tax bill.";
-  }, [totalDistrictShare, multiMetroParcel]);
+  }, [totalDistrictShare, multiMetroParcel, metroShareDollars]);
 
   const metroDebtCardJumpLabel = useMemo(() => {
     const debtScope = multiMetroParcel
       ? "combined metro district debt"
       : "your metro district debt";
-    return `${debtShareOfTotal.toFixed(1)} percent of your property taxes pay off ${debtScope}. Jump to detailed breakdown below.`;
-  }, [debtShareOfTotal, multiMetroParcel]);
+    const dollarPhrase =
+      debtShareDollars != null
+        ? ` Estimated annual ${formatUsdWhole(debtShareDollars)} from assessed value.`
+        : "";
+    return `${debtShareOfTotal.toFixed(1)} percent of your property taxes pay off ${debtScope}.${dollarPhrase} Jump to breakdown below.`;
+  }, [debtShareOfTotal, multiMetroParcel, debtShareDollars]);
 
   const shareTileSurfaceClass = `flex h-full min-h-0 w-full max-w-full flex-col items-start overflow-hidden sm:w-max ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-100 px-3 py-4 text-left shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
   const debtTileSurfaceClass = `flex h-full min-h-0 w-full max-w-full flex-col items-start overflow-hidden sm:w-max ${DASHBOARD_TILE_RADIUS_CLASS} border border-red-800 bg-red-700 px-3 py-4 text-left text-white shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-red-900 hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:bg-red-700 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-red-700`;
@@ -399,11 +445,16 @@ export function MetroTaxShareFlow({
         <p className="break-words text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
           {totalDistrictShare.toFixed(1)}%
         </p>
-        <p className="mt-1 break-words text-pretty text-sm font-semibold leading-snug text-slate-600 sm:text-base">
+        {metroShareDollars != null ? (
+          <p className="mt-1 break-words font-bold tabular-nums leading-none text-slate-800 text-2xl sm:text-3xl">
+            {formatUsdWhole(metroShareDollars)}
+          </p>
+        ) : null}
+        <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-slate-600 sm:text-base">
           {totalDistrictShare > 0
             ? multiMetroParcel
-              ? "of your property taxes go to your metro districts (combined)"
-              : "of your property taxes go to your metro district"
+              ? "of your property taxes go to your metro districts (combined) each year"
+              : "of your property taxes go to your metro district each year"
               : "No metro district mills shown on your property tax bill"}
         </p>
       </span>
@@ -416,10 +467,15 @@ export function MetroTaxShareFlow({
         <p className="break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
           {debtShareOfTotal.toFixed(1)}%
         </p>
-        <p className="mt-1 break-words text-pretty text-sm font-semibold leading-snug text-white sm:text-base">
+        {debtShareDollars != null ? (
+          <p className="mt-1 break-words font-bold tabular-nums leading-none text-slate-50 text-2xl sm:text-3xl">
+            {formatUsdWhole(debtShareDollars)}
+          </p>
+        ) : null}
+        <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-white sm:text-base">
           {multiMetroParcel
-            ? "of your property taxes are paying off metro district debt (combined)"
-            : "of your property taxes are paying off your metro district's debt"}
+            ? "of your property taxes are paying off metro district debt (combined) each year"
+            : "of your property taxes are paying off your metro district's debt each year"}
         </p>
       </span>
     </span>
