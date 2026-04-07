@@ -37,7 +37,7 @@ export function HomePageClient() {
   }, [viewingParcel]);
 
   return (
-    <main className="flex min-h-screen flex-col overflow-x-hidden bg-white text-slate-900">
+    <main className="flex flex-col overflow-x-hidden bg-white text-slate-900">
       <div className={TOOL_PAGE_INNER_CLASS_HUB}>
         <div className={HOME_PAGE_HERO_INTRO_GROUP_CLASS}>
           <PageHero

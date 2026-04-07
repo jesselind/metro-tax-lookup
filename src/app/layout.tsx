@@ -75,6 +75,12 @@ export default function RootLayout({
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2">
                   <a
+                    href="/"
+                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+                  >
+                    Home
+                  </a>
+                  <a
                     href="/sources"
                     className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
                   >

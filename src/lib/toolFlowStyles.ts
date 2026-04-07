@@ -23,9 +23,11 @@ export const PAGE_HERO_ACTION_BUTTON_CLASS =
 
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
+ * Not `flex-1`: root layout uses `flex-1` on the page shell so the site footer stays at the
+ * bottom; growing this column would add empty scroll space on short pages.
  * Pair with {@link TOOL_PAGE_INNER_PB_TOOL} or {@link TOOL_PAGE_INNER_PB_ROOMY}.
  */
-export const TOOL_PAGE_INNER_BASE_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} flex-1 flex-col gap-4 px-4 pt-0`;
+export const TOOL_PAGE_INNER_BASE_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} flex-col gap-4 px-4 pt-0`;
 
 export const TOOL_PAGE_INNER_PB_TOOL = "pb-4 sm:pb-6";
 export const TOOL_PAGE_INNER_PB_ROOMY = "pb-6 sm:pb-10";
