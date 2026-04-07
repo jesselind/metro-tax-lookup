@@ -71,6 +71,10 @@ export const COUNTY_EXTERNAL_LINK_CLASS =
 export const TERM_LINK_CLASS =
   "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
+/** Glossary asides on `/sources` and the home-page definitions strip. */
+export const TERM_ASIDE_BASE =
+  "mt-5 w-full scroll-mt-24 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-5";
+
 /** Dashboard / tool tiles (parcel summary, metro, levy stack cards): shared corner radius. */
 export const DASHBOARD_TILE_RADIUS_CLASS = "rounded-xl";
 

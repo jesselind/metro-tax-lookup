@@ -1,13 +1,14 @@
 /**
  * Single source of truth for glossary / term definition blocks on `/sources`.
- * Modal-only UI help (e.g. two levy panels) lives in the levy line detail dialog, not here.
+ * Levy line explainers live only in the levy detail modal (`LevyExplainerModalSection`), not in this list.
  * Use explicit `{" "}` after inline elements (e.g. </strong>, </dfn>) so JSX does not collapse spaces.
  */
 
-import { CODE_INLINE_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
-
-export const TERM_ASIDE_BASE =
-  "mt-5 w-full scroll-mt-24 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-5";
+import {
+  CODE_INLINE_CLASS,
+  TERM_ASIDE_BASE,
+  TERM_LINK_CLASS,
+} from "@/lib/toolFlowStyles";
 
 export function TermJsonAside() {
   return (

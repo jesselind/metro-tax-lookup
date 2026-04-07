@@ -15,7 +15,7 @@ MIT-licensed; please attribute and verify with county source documents.
 | **Address + property tax bill** | `/` | Offline address → PIN (`arapahoe-situs-to-pins.json`), then **Your property tax bill**: levy stack from PIN (TAG lines), optional metro share above tiles when LG IDs match. Optional **Add levies without a PIN** opens the same card; use **Add tile** in the grid to copy rows from the county levy table. Editable tiles and table. |
 | **Metro district share** | `/` (same home card, above tiles) | Shown only when a levy line matches a metro district in `metro-levies-2025.json` (LG ID). Compares total mills to metro district mills; shows share of your property tax *bill* (by mills) that goes to the metro district (operations + debt). Uses the **same total mills as the levy stack** (sum of lines). There is **no manual district picker** and **no separate mills field**. |
 
-Static JSON under `public/data/` powers metro rates, Arapahoe PIN/TAG/situs indexes, levy stacks, and Colorado district metadata.
+Static JSON under `public/data/` powers metro rates, Arapahoe PIN/TAG/situs indexes, levy stacks, Colorado district metadata, and levy explainer copy (`levy-explainer-entries.json`).
 
 ## Use (for residents)
 
@@ -46,7 +46,7 @@ Details and citations are on the in-app Sources page (`/sources`).
 
 **UI copy (for contributors and AI):** Avoid the **"levy lines" / "district lines"** style accountant phrasing in user-facing strings; **levy** and **mills** are OK when clear. **Intent:** readable for the public, not a literal ban list — see `.cursor/rules/plain-language-no-lines-jargon.mdc`.
 
-**Glossary / term definitions:** All definition blocks live in `src/content/termDefinitions.tsx`. The Sources page renders **`AllTermDefinitionAsides`**; the home page renders the PIN, property classification, actual/assessed value, mills, levy, and LG ID asides (after a successful PIN load) so glossary anchors from the parcel summary and levy tiles resolve on-page. Levy line detail copy and layout live in `LevyLineDistrictDetailDialog.tsx`.
+**Glossary / term definitions:** Static terms live in `src/content/termDefinitions.tsx` (Sources + home definitions strip). **Levy line explainers** (short government level + what is it + expandable sources) live in `public/data/levy-explainer-entries.json`, matched in `src/lib/levyExplainer.ts`, rendered only in the levy detail modal (`LevyExplainerModalSection.tsx` + `LevyExplainerCitations.tsx`). Each `origin` has `heading`, `level`, and optional `detail` (statute cite, etc.). Add new levy types by appending to the JSON (`match`, `origin`, `whatIsIt`, `citationBlocks`).
 
 Install deps and run the dev server:
 

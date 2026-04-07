@@ -26,6 +26,10 @@ import {
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
 import {
+  fetchArapahoeLevyStacksJson,
+  fetchArapahoePinToTagJson,
+} from "@/lib/arapahoeParcelLevyData";
+import {
   buildSitusLookupKey,
   fetchArapahoeSitusToPinsJson,
   lookupPinsBySitusKey,
@@ -55,6 +59,15 @@ import {
   PARCEL_SUMMARY_VALUE_TILE_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+
+/**
+ * PIN + levy-stack JSON (~41MB) are needed right after situs lookup. Starting these fetches
+ * while situs (~19MB) downloads overlaps network time (same cached promises as loadLevyStackFromPin).
+ */
+function prefetchParcelLevyJsonBundle(): void {
+  void fetchArapahoePinToTagJson();
+  void fetchArapahoeLevyStacksJson();
+}
 
 const INPUT_ROW = `${INPUT_CLASS} min-w-0 w-full !max-w-none px-2 py-2 text-base sm:text-base`;
 const INPUT_PIN_ROW = `${INPUT_CLASS} w-full min-w-0 max-w-none px-2 py-2 text-base`;
@@ -323,6 +336,7 @@ export function HomeParcelAddressLookup({
     setAddressSearchLocked(true);
     setBusy(true);
     try {
+      prefetchParcelLevyJsonBundle();
       const data = await fetchArapahoeSitusToPinsJson();
       if (!data?.byKey) {
         setError(
@@ -795,6 +809,7 @@ export function HomeParcelAddressLookup({
                     className={INPUT_PIN_ROW}
                     value={parcelPin}
                     onChange={(e) => setParcelPin(e.target.value)}
+                    onFocus={() => prefetchParcelLevyJsonBundle()}
                     disabled={levyLoadBusy}
                     placeholder="from address search or county record"
                     aria-describedby="home-parcel-pin-hint"

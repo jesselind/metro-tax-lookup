@@ -62,6 +62,13 @@ function levyTileClass(index: number, isEditing: boolean): string {
   return `${base} min-h-0 p-4 sm:p-4`;
 }
 
+/**
+ * Metro-style lift + shadow, plus a darkening overlay on hover (::before sits under the transparent
+ * full-tile button; content stays pointer-events-none so clicks still reach the button).
+ */
+const LEVY_TILE_HOVER_CLASS =
+  "before:pointer-events-none before:absolute before:inset-0 before:z-0 before:rounded-xl before:bg-black/0 before:transition-colors before:duration-200 before:ease-out hover:before:bg-black/18 active:before:bg-black/10 motion-reduce:before:transition-none motion-reduce:hover:before:bg-black/0 motion-reduce:active:before:bg-black/0 transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-white/40 hover:shadow-xl active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+
 const TILE_GRADIENTS = [
   "bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-900 text-white",
   "bg-gradient-to-br from-teal-600 via-emerald-700 to-slate-900 text-white",
@@ -442,7 +449,7 @@ export function LevyStackVisualization({
                   <div
                     key={item.id}
                     className={`min-w-0 ${levyTileClass(index, isEditing)} ${
-                      !isEditing ? grad : ""
+                      !isEditing ? `${grad} ${LEVY_TILE_HOVER_CLASS}` : ""
                     }`}
                   >
                     {isEditing && sourceLine ? (
@@ -1026,6 +1033,8 @@ export function LevyStackVisualization({
       {detailContext && (
         <LevyLineDistrictDetailDialog
           authorityLabel={detailContext.authority}
+          levyLineCode={detailContext.line.levyLineCode}
+          sourceTagId={detailContext.line.sourceTagId}
           millsLabel={formatMills(detailContext.line.mills)}
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}

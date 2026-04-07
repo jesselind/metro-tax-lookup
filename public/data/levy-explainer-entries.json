@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "developmental-disability-levy",
+      "match": {
+        "labelContainsAll": ["developmental", "disab"]
+      },
+      "origin": {
+        "heading": "Government level",
+        "level": "State"
+      },
+      "whatIsIt": {
+        "paragraphs": [
+          "Part of your property tax that helps fund Colorado's intellectual and developmental disability services, including community-centered boards."
+        ]
+      },
+      "citationBlocks": [
+        {
+          "label": "Formal framework",
+          "afterLinksNote": "See Article 10 in the PDF (search for \"25.5-10\"). If that file is replaced, open the latest Title 25.5 PDF from OLLS.",
+          "links": [
+            {
+              "text": "Colorado Revised Statutes, Title 25.5 (official PDF)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-25.5.pdf"
+            },
+            {
+              "text": "OLLS CRS title downloads",
+              "url": "https://leg.colorado.gov/agencies/office-legislative-legal-services/2025-crs-titles-download"
+            }
+          ]
+        },
+        {
+          "label": "State program overview",
+          "links": [
+            {
+              "text": "Individuals with Intellectual and Developmental Disabilities (HCPF)",
+              "url": "https://hcpf.colorado.gov/individuals-with-intellectual-developmental-disabilities-services-supports"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

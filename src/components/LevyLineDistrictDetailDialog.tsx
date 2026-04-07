@@ -9,11 +9,17 @@ import { InfoDetails } from "@/components/InfoDetails";
 import { ModalPortal } from "@/components/ModalPortal";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
+import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSection";
+import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 
 type Props = {
   authorityLabel: string;
+  /** Mart levy line code when known (improves explainer matching). */
+  levyLineCode?: string;
+  /** County TAG / source tag when known. */
+  sourceTagId?: string;
   millsLabel: string;
   pctLabel: string;
   /** Null while JSON is still fetching from `/public/data/`. */
@@ -42,6 +48,8 @@ function formatMailingLines(r: SpecialDistrictRecord): string[] {
 
 export function LevyLineDistrictDetailDialog({
   authorityLabel,
+  levyLineCode,
+  sourceTagId,
   millsLabel,
   pctLabel,
   match,
@@ -126,6 +134,11 @@ export function LevyLineDistrictDetailDialog({
     normalizeLabel(match.record.name) !==
       normalizeLabel(dolaMatch.matchedLegalName);
 
+  const levyExplainerEntry = findLevyExplainerEntry(authorityLabel, {
+    levyLineCode,
+    sourceTagId,
+  });
+
   return (
     <ModalPortal>
       <div className="fixed inset-0 z-[100] flex min-h-[100dvh] w-full items-end justify-center sm:items-center sm:p-4">
@@ -162,6 +175,10 @@ export function LevyLineDistrictDetailDialog({
             </p>
 
             <div className="mt-4 space-y-3 pb-1 text-sm leading-relaxed text-slate-800 sm:text-base">
+              {levyExplainerEntry ? (
+                <LevyExplainerModalSection entry={levyExplainerEntry} />
+              ) : null}
+
               {dolaMatch && dolaMatch.uraHint && (
                 <p className="rounded-lg border border-violet-200 bg-violet-50/90 px-3 py-2 text-slate-800">
                   <strong className="font-semibold text-violet-950">Urban renewal / TIF</strong>
@@ -237,7 +254,7 @@ export function LevyLineDistrictDetailDialog({
                 (hasDirectoryMatch && match && match.kind !== "none")) && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    This taxing authority
+                    Taxing authority
                   </p>
                   <p className="mt-2 font-semibold leading-snug text-slate-900 sm:text-lg">
                     {primaryDisplayName}

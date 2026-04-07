@@ -798,6 +798,13 @@ export default function SourcesPage() {
           that tools like this one load. The wording does not always match. That is normal and does
           not mean your property is listed wrong.
         </p>
+        <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+          Levy-specific definitions (government level, what is it, sources) appear only in the levy
+          tile detail modal, from{" "}
+          <code className={CODE_INLINE_CLASS}>public/data/levy-explainer-entries.json</code>
+          {" "}
+          — not in this list.
+        </p>
         <AllTermDefinitionAsides />
       </section>
     </StaticArticleShell>

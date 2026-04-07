@@ -64,7 +64,7 @@ export function HomePageClient() {
                 Get a clear picture of your property tax bill.
               </span>
               <span className={HOME_LANDING_INTRO_LINE2_CLASS}>
-                Figure out where your money is actually going.
+                See where your money is actually going.
               </span>
             </p>
           ) : null}
