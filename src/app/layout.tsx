@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/SiteHeader";
 import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
@@ -37,7 +36,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased font-sans`}
       >
         <div className="flex min-h-screen flex-col">
-          <SiteHeader />
           <div className="flex-1">{children}</div>
           <footer className="border-t border-slate-200 bg-white">
             <div

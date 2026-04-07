@@ -58,6 +58,32 @@ export type ArapahoeLevyStacksFile = {
   stacksByTagId: Record<string, ArapahoeLevyStack>;
 };
 
+/** Per parcel from Main Parcel Table: TotalActual (market), TotalAssessed. */
+export type ArapahoePinToTagRow = {
+  tagId: string;
+  tagShortDescr: string;
+  /** Market / actual value (CSV TotalActual). Omitted in older bundles. */
+  totalActual?: number | null;
+  /** Assessed value (CSV TotalAssessed). Omitted in older bundles. */
+  totalAssessed?: number | null;
+  /** CSV TaxYear for this parcel row (preferred for value footnote). */
+  parcelTaxYear?: string | null;
+  /** County property class label (CSV PropertyClassDescr), e.g. Real, Improvement. */
+  propertyClassDescr?: string | null;
+};
+
+/** Title-case county property class for display (e.g. "RESIDENTIAL" -> "Residential"). */
+export function formatPropertyClassificationDisplay(
+  raw: string | null | undefined,
+): string | null {
+  const t = (raw ?? "").trim().replace(/\s+/g, " ");
+  if (!t) return null;
+  return t
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export type ArapahoePinToTagFile = {
   snapshot: {
     bundledAsOf: string;
@@ -69,7 +95,7 @@ export type ArapahoePinToTagFile = {
     dolaLevyColumn?: string | null;
   };
   pinDigits: number;
-  byPin: Record<string, { tagId: string; tagShortDescr: string }>;
+  byPin: Record<string, ArapahoePinToTagRow>;
 };
 
 /**

@@ -6,12 +6,20 @@ import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHel
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { LevyStackVisualization } from "@/components/LevyStackVisualization";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
-import { TermLevyAside, TermLgIdAside, TermMillsAside } from "@/content/termDefinitions";
+import {
+  TermActualValueAside,
+  TermAssessedValueAside,
+  TermLevyAside,
+  TermPropertyClassificationAside,
+  TermLgIdAside,
+  TermMillsAside,
+  TermPinAside,
+} from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd, btnPrimaryMd } from "@/lib/buttonClasses";
-import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
   loadLevyStackFromPin,
   type CommittedLevyLine,
+  type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
 import {
   buildSitusLookupKey,
@@ -26,7 +34,21 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
-import { COUNTY_EXTERNAL_LINK_CLASS, INPUT_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_TILE_RADIUS_CLASS,
+  INPUT_CLASS,
+  PARCEL_SUMMARY_ROW_CLASS,
+  PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
+  PARCEL_SUMMARY_TILE_BODY_CLASS,
+  PARCEL_SUMMARY_TILE_CLASS,
+  PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS,
+  PARCEL_SUMMARY_TILE_LABEL_CLASS,
+  PARCEL_SUMMARY_TILE_VALUE_CLASS,
+  PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
+  PARCEL_SUMMARY_VALUE_TILE_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const INPUT_ROW = `${INPUT_CLASS} min-w-0 w-full !max-w-none px-2 py-2 text-base sm:text-base`;
 const INPUT_PIN_ROW = `${INPUT_CLASS} w-full min-w-0 max-w-none px-2 py-2 text-base`;
@@ -62,9 +84,8 @@ const addressSitusGrid = {
 
 const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnPrimaryMd} inline-flex w-full min-w-0 justify-center md:w-auto md:min-w-[8.75rem] md:flex-none`;
 
-/** Shared shell for address summary, PIN, county help, and list callouts. */
-const ADDRESS_TILE_SURFACE_CLASS =
-  "rounded-lg border border-slate-200 bg-slate-50/80";
+/** Shared shell for county help, PIN fallback, and list callouts. */
+const ADDRESS_TILE_SURFACE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 
 const ADDRESS_LOOKUP_PANEL_CLASS = `${ADDRESS_TILE_SURFACE_CLASS} p-3 sm:p-4`;
 
@@ -74,7 +95,24 @@ const HOME_DEFINITIONS_HEADING_CLASS =
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
 
-export function HomeParcelAddressLookup() {
+const USD_WHOLE = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+function formatUsdWhole(n: number): string {
+  return USD_WHOLE.format(n);
+}
+
+export type HomeParcelAddressLookupProps = {
+  /** Fires when the user is viewing parcel flow (`addressSearchLocked`) so the header can show Start over. */
+  onViewingParcelChange?: (viewingParcel: boolean, reset: () => void) => void;
+};
+
+export function HomeParcelAddressLookup({
+  onViewingParcelChange,
+}: HomeParcelAddressLookupProps = {}) {
   const [streetNumber, setStreetNumber] = useState("");
   const [streetNumberSuffix, setStreetNumberSuffix] = useState("");
   const [streetName, setStreetName] = useState("");
@@ -91,6 +129,8 @@ export function HomeParcelAddressLookup() {
     pin: string;
     tagShortDescr: string;
     levyAspxUrl: string;
+    parcelValues: ParcelValuesFromExport;
+    parcelValuesTaxYear: string | null;
   } | null>(null);
   const [levyAwaitingTemplateMills, setLevyAwaitingTemplateMills] =
     useState(false);
@@ -109,18 +149,12 @@ export function HomeParcelAddressLookup() {
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
   /** After a successful address validation + search request; hides the field grid until Start over. */
   const [addressSearchLocked, setAddressSearchLocked] = useState(false);
-  const startOverButtonRef = useRef<HTMLButtonElement>(null);
   const prevAddressSearchLockedRef = useRef(false);
 
   const levyReadyForSummary =
     levyLoadedMeta != null &&
     !levyLoadError &&
     !levyLoadBusy;
-  const loadedTaxAuthCodeDisplay =
-    levyLoadedMeta != null
-      ? formatTaxAreaShortDescrDisplay(levyLoadedMeta.tagShortDescr)
-      : "";
-  const hasLoadedTaxAuthCode = loadedTaxAuthCodeDisplay.length > 0;
 
   /** Mobile autofill often ignores autocomplete=off on Unit; strip duplicate street lines. */
   useEffect(() => {
@@ -137,13 +171,10 @@ export function HomeParcelAddressLookup() {
     setUnit("");
   }, [unit, streetNumber, streetNumberSuffix, streetName]);
 
-  /** After search locks the UI, move focus off the removed submit control; on Start over, return to the first field. */
+  /** After Start over, return focus to the first address field. (Focus to header Start over is handled in HomePageClient.) */
   useEffect(() => {
     const wasLocked = prevAddressSearchLockedRef.current;
     prevAddressSearchLockedRef.current = addressSearchLocked;
-    if (addressSearchLocked && !wasLocked) {
-      startOverButtonRef.current?.focus();
-    }
     if (!addressSearchLocked && wasLocked) {
       document.getElementById("home-situs-number")?.focus();
     }
@@ -187,6 +218,8 @@ export function HomeParcelAddressLookup() {
         pin: result.matchedPin,
         tagShortDescr: result.tagShortDescr,
         levyAspxUrl: result.levyAspxUrl,
+        parcelValues: result.parcelValues,
+        parcelValuesTaxYear: result.parcelValuesTaxYear,
       });
     } finally {
       setLevyLoadBusy(false);
@@ -321,7 +354,7 @@ export function HomeParcelAddressLookup() {
     }
   }
 
-  function resetAddressForm() {
+  const resetAddressForm = useCallback(() => {
     setStreetNumber("");
     setStreetNumberSuffix("");
     setStreetName("");
@@ -331,7 +364,11 @@ export function HomeParcelAddressLookup() {
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
     clearAllLevyState();
-  }
+  }, [clearAllLevyState]);
+
+  useEffect(() => {
+    onViewingParcelChange?.(addressSearchLocked, resetAddressForm);
+  }, [addressSearchLocked, onViewingParcelChange, resetAddressForm]);
 
   const hasLevyContent =
     levyLines.length > 0 ||
@@ -345,8 +382,6 @@ export function HomeParcelAddressLookup() {
     !levyLoadedMeta &&
     !levyAwaitingTemplateMills &&
     !levyLoadError;
-  const startOverAriaLabel =
-    "Reset address lookup, parcel PIN, search results, and levy and metro sections on this page";
   const pinMatchesLoadedLevy =
     trimmedParcelPin.length > 0 &&
     levyLoadedMeta != null &&
@@ -551,78 +586,127 @@ export function HomeParcelAddressLookup() {
           ) : null}
         </div>
       ) : (
-        <div className="flex min-w-0 flex-row items-stretch gap-3">
+        <div className="min-w-0 space-y-3">
           <div
-            className={`${ADDRESS_LOOKUP_PANEL_CLASS} min-w-0 flex-1`}
+            className={PARCEL_SUMMARY_ROW_CLASS}
             role="region"
-            aria-label="Search result: matched address, PIN, and load status"
+            aria-label="Search result: address and parcel values"
           >
-            <div className="space-y-1">
-              {busy ? (
-                <p className="text-sm text-slate-600" aria-live="polite">
-                  Searching…
-                </p>
-              ) : null}
-              {!busy && lockedAddressHeadline ? (
-                <p className="text-base font-medium text-slate-900">
-                  {lockedAddressHeadline}
-                </p>
-              ) : null}
-              {!busy && levyReadyForSummary ? (
-                <p className="text-sm leading-snug text-slate-600">
-                  <span className="sr-only">Loaded parcel </span>
-                  <span className="font-mono font-semibold tabular-nums text-slate-900">
-                    {levyLoadedMeta.pin}
-                  </span>
-                  {hasLoadedTaxAuthCode ? (
-                    <span>
-                      {" "}
-                      · Taxing authority {loadedTaxAuthCodeDisplay}
-                    </span>
+            {!busy &&
+            levyLoadedMeta &&
+            lockedAddressHeadline &&
+            levyLoadedMeta.parcelValues.propertyClassification ? (
+              <div className={PARCEL_SUMMARY_TILE_CLASS} id="home-parcel-property-class">
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <a
+                      id="property-classification-term-first"
+                      href="#term-property-classification"
+                      className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                    >
+                      Property classification
+                    </a>
+                  </p>
+                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
+                    {levyLoadedMeta.parcelValues.propertyClassification}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {busy ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS}
+                aria-live="polite"
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Status</p>
+                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>Searching…</p>
+                </div>
+              </div>
+            ) : null}
+            {!busy && lockedAddressHeadline && !levyReadyForSummary ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS}
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
+                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>{lockedAddressHeadline}</p>
+                  {hits != null && hits.length === 1 && levyLoadBusy ? (
+                    <p className="text-sm text-slate-600" aria-live="polite">
+                      Loading your levy breakdown…
+                    </p>
                   ) : null}
-                </p>
-              ) : !busy &&
-                trimmedParcelPin.length > 0 &&
-                !levyReadyForSummary ? (
-                <p className="text-sm text-slate-600">
-                  <span className="sr-only">Parcel PIN </span>
-                  <span className="font-mono font-semibold tabular-nums text-slate-900">
-                    {trimmedParcelPin}
-                  </span>
-                </p>
-              ) : null}
-              {!busy && hits != null && hits.length === 1 && levyLoadBusy ? (
-                <p className="text-sm text-slate-600" aria-live="polite">
-                  Loading your levy breakdown…
-                </p>
-              ) : null}
-              {!busy &&
-              hits != null &&
-              hits.length > 1 &&
-              trimmedParcelPin.length === 0 ? (
-                <p className="text-sm text-slate-600">
-                  Pick the row that matches your property in the list below.
-                </p>
-              ) : null}
-              {error ? (
-                <p className="pt-1 text-sm text-red-700" role="alert">
-                  {error}
-                </p>
-              ) : null}
-            </div>
+                </div>
+              </div>
+            ) : null}
+            {!busy && levyReadyForSummary && levyLoadedMeta && lockedAddressHeadline ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS}
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
+                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>{lockedAddressHeadline}</p>
+                </div>
+              </div>
+            ) : null}
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            (levyLoadedMeta.parcelValues.totalActual != null ||
+              levyLoadedMeta.parcelValues.totalAssessed != null) ? (
+              <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
+                {levyLoadedMeta.parcelValues.totalActual != null ? (
+                  <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
+                    <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                      <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                        <a
+                          id="actual-value-term-first"
+                          href="#term-actual-value"
+                          className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                        >
+                          Actual value
+                        </a>
+                      </p>
+                      <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                        {formatUsdWhole(levyLoadedMeta.parcelValues.totalActual)}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+                {levyLoadedMeta.parcelValues.totalAssessed != null ? (
+                  <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
+                    <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                      <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                        <a
+                          id="assessed-value-term-first"
+                          href="#term-assessed-value"
+                          className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                        >
+                          Assessed value
+                        </a>
+                      </p>
+                      <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                        {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
-          <button
-            ref={startOverButtonRef}
-            type="button"
-            className={`${ADDRESS_TILE_SURFACE_CLASS} inline-flex w-[5.75rem] shrink-0 cursor-pointer flex-col items-center justify-center self-stretch px-2 py-3 text-center text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 sm:w-24 sm:px-3`}
-            onClick={resetAddressForm}
-            aria-label={startOverAriaLabel}
-          >
-            <span className="flex flex-col items-center leading-tight">
-              <span>Start</span>
-              <span>over</span>
-            </span>
-          </button>
+          {!busy &&
+          hits != null &&
+          hits.length > 1 &&
+          trimmedParcelPin.length === 0 ? (
+            <p className="text-sm text-slate-600">
+              Pick the row that matches your property in the list below.
+            </p>
+          ) : null}
+          {error ? (
+            <p className="mt-1 text-sm text-red-700" role="alert">
+              {error}
+            </p>
+          ) : null}
         </div>
       )}
       {showParcelPinSection ? (
@@ -838,43 +922,57 @@ export function HomeParcelAddressLookup() {
               idPrefix="home-metro"
               prefillTotalMills={metroPrefillTotalMills}
               metroFromLevyStack={homeMetroFromLevyStack}
-            />
-          ) : null}
-
-          <div className="space-y-3"
-            role="region"
-            aria-labelledby={
-              showHomeMetroSection
-                ? "home-levy-stack-subheading"
-                : undefined
-            }
-            aria-label={
-              showHomeMetroSection ? undefined : "Levy stack visualization"
-            }
-          >
-            {showHomeMetroSection ? (
-              <p
-                id="home-levy-stack-subheading"
-                className="text-sm font-normal leading-snug text-slate-500 sm:text-base"
+            >
+              <div
+                className="space-y-3"
+                role="region"
+                aria-labelledby="home-levy-stack-subheading"
               >
-                Your tax bill breakdown
-              </p>
-            ) : null}
-            <LevyStackVisualization
-              lines={levyLines}
-              setLines={setLevyLines}
-              loadedParcelMeta={levyLoadedMeta}
-              awaitingTemplateMills={levyAwaitingTemplateMills}
-              setAwaitingTemplateMills={setLevyAwaitingTemplateMills}
-              templateMillDrafts={levyTemplateMillDrafts}
-              setTemplateMillDrafts={setLevyTemplateMillDrafts}
-              templateMillsError={levyTemplateMillsError}
-              setTemplateMillsError={setLevyTemplateMillsError}
-              onClearLoadedStack={clearParcelTemplateExtended}
-              allowLineEdit
-              termDefinitionsOnHomePage={levyReadyForSummary}
-            />
-          </div>
+                <h3
+                  id="home-levy-stack-subheading"
+                  className={DASHBOARD_SECTION_HEADING_CLASS}
+                >
+                  Where is your money going?
+                </h3>
+                <LevyStackVisualization
+                  lines={levyLines}
+                  setLines={setLevyLines}
+                  loadedParcelMeta={levyLoadedMeta}
+                  awaitingTemplateMills={levyAwaitingTemplateMills}
+                  setAwaitingTemplateMills={setLevyAwaitingTemplateMills}
+                  templateMillDrafts={levyTemplateMillDrafts}
+                  setTemplateMillDrafts={setLevyTemplateMillDrafts}
+                  templateMillsError={levyTemplateMillsError}
+                  setTemplateMillsError={setLevyTemplateMillsError}
+                  onClearLoadedStack={clearParcelTemplateExtended}
+                  allowLineEdit
+                  termDefinitionsOnHomePage={levyReadyForSummary}
+                />
+              </div>
+            </MetroTaxShareFlow>
+          ) : (
+            <div
+              className="space-y-3"
+              role="region"
+              aria-label="Levy stack visualization"
+            >
+              <LevyStackVisualization
+                lines={levyLines}
+                setLines={setLevyLines}
+                loadedParcelMeta={levyLoadedMeta}
+                awaitingTemplateMills={levyAwaitingTemplateMills}
+                setAwaitingTemplateMills={setLevyAwaitingTemplateMills}
+                templateMillDrafts={levyTemplateMillDrafts}
+                setTemplateMillDrafts={setLevyTemplateMillDrafts}
+                templateMillsError={levyTemplateMillsError}
+                setTemplateMillsError={setLevyTemplateMillsError}
+                onClearLoadedStack={clearParcelTemplateExtended}
+                allowLineEdit
+                termDefinitionsOnHomePage={levyReadyForSummary}
+              />
+            </div>
+          )}
+
         </div>
       ) : null}
 
@@ -891,6 +989,10 @@ export function HomeParcelAddressLookup() {
             Key terms
           </h3>
           <div className="mt-4 space-y-4">
+            <TermPinAside />
+            <TermPropertyClassificationAside />
+            <TermActualValueAside />
+            <TermAssessedValueAside />
             <TermMillsAside />
             <TermLevyAside />
             <TermLgIdAside />

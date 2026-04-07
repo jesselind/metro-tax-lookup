@@ -25,11 +25,11 @@ The first home card is an **offline address → PIN** helper (`arapahoe-situs-to
 
 ### Metro district share (inside the bill card)
 
-After the levy stack has at least one line, the **metro district share** block (above the levy tiles) appears only when a line matches a metro district in bundled JSON (`metroFromLevyLines` in `src/lib/metroDistrictFromLevyLines.ts`). It uses the **same total mills as the levy stack** (sum of lines) and **derives metro district(s) only from the stack**. There is **no manual district selection** and **no separate mills field**; change lines in the stack if you need different numbers. If no line matches a metro district, that block is not shown. **Start over** lives only in the **Start with your address** card; it clears address search, PIN, levy stack, and metro state together.
+After the levy stack has at least one line, the **metro district share** block (above the levy tiles) appears only when a line matches a metro district in bundled JSON (`metroFromLevyLines` in `src/lib/metroDistrictFromLevyLines.ts`). It uses the **same total mills as the levy stack** (sum of lines) and **derives metro district(s) only from the stack**. There is **no manual district selection** and **no separate mills field**; change lines in the stack if you need different numbers. If no line matches a metro district, that block is not shown. **Start over** is in the page hero while you are in the locked address / parcel flow; it clears address search, PIN, levy stack, and metro state together.
 
 ### Your property tax bill (home page)
 
-1. Finish the address card: search by address and, if needed, enter or confirm **Parcel PIN**, then load the stack when prompted — or use **Add levy lines without loading a PIN** to open the breakdown and use **Add tile** for each row from **Tax District Levies**. After a successful PIN load, the address card collapses (toggle the header to reopen); the page scrolls to the levy section and moves keyboard focus to that heading (smooth scroll unless reduced motion is on).
+1. Finish the address card: search by address and, if needed, enter or confirm **Parcel PIN**, then load the stack when prompted — or use **Add levy lines without loading a PIN** to open the breakdown and use **Add tile** for each row from **Tax District Levies**. After a successful PIN load, the address card collapses (toggle the header to reopen); keyboard focus moves to **Start over** in the hero (smooth scroll unless reduced motion is on).
 2. County PIN path reads bundled JSON only; compare to the county **Tax District Levies** table when verifying.
 3. After a successful **PIN** load, **Definitions** (mills, levy, LG ID — same blocks as on `/sources`) appears at the bottom of `/`. The levy line modal shows one combined card (tax entity, LG ID, contact) with caveats when needed; matching LG ID between DOLA and the directory is treated as the strongest link. Bundled district JSON does not include phone numbers yet, so the UI cannot show them until a future data pass.
 
@@ -46,7 +46,7 @@ Details and citations are on the in-app Sources page (`/sources`).
 
 **UI copy (for contributors and AI):** Avoid the **"levy lines" / "district lines"** style accountant phrasing in user-facing strings; **levy** and **mills** are OK when clear. **Intent:** readable for the public, not a literal ban list — see `.cursor/rules/plain-language-no-lines-jargon.mdc`.
 
-**Glossary / term definitions:** All definition blocks live in `src/content/termDefinitions.tsx`. The Sources page renders **`AllTermDefinitionAsides`**; the home page renders **`TermMillsAside`**, **`TermLevyAside`**, and **`TermLgIdAside`** (after a successful PIN load). Levy line detail copy and layout live in `LevyLineDistrictDetailDialog.tsx`.
+**Glossary / term definitions:** All definition blocks live in `src/content/termDefinitions.tsx`. The Sources page renders **`AllTermDefinitionAsides`**; the home page renders the PIN, property classification, actual/assessed value, mills, levy, and LG ID asides (after a successful PIN load) so glossary anchors from the parcel summary and levy tiles resolve on-page. Levy line detail copy and layout live in `LevyLineDistrictDetailDialog.tsx`.
 
 Install deps and run the dev server:
 
@@ -106,6 +106,8 @@ No Python required. Uses committed `public/data/*`.
    ```
 
    That runs `tools/build_arapahoe_parcel_levy_index.py` and writes `public/data/arapahoe-levy-stacks-by-tag-id.json` and (unless `--skip-pin-map`) `public/data/arapahoe-pin-to-tag.json` plus `public/data/arapahoe-situs-to-pins.json` (situs lookup keys from `Main Parcel` → PIN list for the home-page address flow). The county **Tax District Levies** page uses `Levy.aspx?id=` with **TAGId** (county taxing authority ID), the same key as Field2 in the mart export — not an arbitrary parcel ID. See `PROJECT_CONTEXT.md` and the Sources page for methodology.
+
+   **`arapahoe-pin-to-tag.json` (PIN map):** Each PIN entry includes `tagId` and `tagShortDescr` plus optional fields read from **Main Parcel Table.csv** when present: `totalActual` and `totalAssessed` (from `TotalActual` / `TotalAssessed`), `parcelTaxYear` (`TaxYear`), and `propertyClassDescr` (`PropertyClassDescr`). The home page shows those values in the parcel summary after a PIN load; older pinned JSON without the extra keys still loads stacks but skips the new tiles until you rebuild.
 
    **Mart label overrides:** `tools/arapahoe_dola_authority_overrides.json` maps mart authority strings (uppercased) to DOLA legal names and optional `millsOverride` when fuzzy matching would pick the wrong entity or DOLA totals disagree with the county levy table. Example: **ARAPAHOE COUNTY L.E.A.** (code 4012) otherwise token-matches **Arapahoe County** and picked up the county mill rate instead of the Law Enforcement Authority line.
 

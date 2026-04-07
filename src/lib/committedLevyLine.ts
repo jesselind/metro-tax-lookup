@@ -7,11 +7,13 @@ import type {
   ArapahoeDolaMatch,
   ArapahoeLevyStackLine,
   ArapahoeLevyStacksFile,
+  ArapahoePinToTagRow,
 } from "@/lib/arapahoeParcelLevyData";
 import {
   displayMartAuthorityName,
   fetchArapahoeLevyStacksJson,
   fetchArapahoePinToTagJson,
+  formatPropertyClassificationDisplay,
   pinLookupCandidates,
 } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
@@ -93,6 +95,25 @@ function initialMillsFromStackLine(ln: ArapahoeLevyStackLine): number {
   return 0;
 }
 
+export type ParcelValuesFromExport = {
+  totalActual: number | null;
+  totalAssessed: number | null;
+  /** From Main Parcel PropertyClassDescr when present (e.g. Real, Improvement). */
+  propertyClassification: string | null;
+};
+
+function parcelValuesFromPinRow(row: ArapahoePinToTagRow): ParcelValuesFromExport {
+  const num = (v: unknown): number | null =>
+    typeof v === "number" && Number.isFinite(v) ? v : null;
+  return {
+    totalActual: num(row.totalActual),
+    totalAssessed: num(row.totalAssessed),
+    propertyClassification: formatPropertyClassificationDisplay(
+      row.propertyClassDescr,
+    ),
+  };
+}
+
 export type LoadLevyStackFromPinOk = {
   ok: true;
   lines: CommittedLevyLine[];
@@ -102,6 +123,9 @@ export type LoadLevyStackFromPinOk = {
   arapahoeStacksSnapshot: ArapahoeLevyStacksFile["snapshot"];
   awaitingTemplateMills: boolean;
   templateMillDrafts: Record<string, string>;
+  /** From Main Parcel export (same tax year as pin snapshot). */
+  parcelValues: ParcelValuesFromExport;
+  parcelValuesTaxYear: string | null;
 };
 
 export type LoadLevyStackFromPinResult =
@@ -135,7 +159,7 @@ export async function loadLevyStackFromPin(
       error: "Enter your parcel PIN (digits from the county record).",
     };
   }
-  let row: { tagId: string; tagShortDescr: string } | undefined;
+  let row: ArapahoePinToTagRow | undefined;
   let matchedPinKey = "";
   for (const k of candidates) {
     const hit = pins.byPin[k];
@@ -177,6 +201,11 @@ export async function loadLevyStackFromPin(
     sourceTagId: stack.tagId,
   }));
   const stackSum = nextLines.reduce((a, l) => a + l.mills, 0);
+  const pv = parcelValuesFromPinRow(row);
+  const yearFromParcel =
+    typeof row.parcelTaxYear === "string" && row.parcelTaxYear.trim()
+      ? row.parcelTaxYear.trim()
+      : null;
   return {
     ok: true,
     lines: nextLines,
@@ -188,6 +217,8 @@ export async function loadLevyStackFromPin(
     templateMillDrafts: Object.fromEntries(
       nextLines.map((l) => [l.id, formatMills(l.mills)] as const),
     ),
+    parcelValues: pv,
+    parcelValuesTaxYear: yearFromParcel ?? pins.snapshot.taxYear ?? null,
   };
 }
 

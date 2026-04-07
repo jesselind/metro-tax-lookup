@@ -28,12 +28,6 @@ export function TermJsonAside() {
         (filenames often end in <code className={CODE_INLINE_CLASS}>.json</code>) so the tools can
         run in your browser without a live database.
       </p>
-      <p className="mt-4 text-sm sm:text-base">
-        <a href="#json-term-first" className={TERM_LINK_CLASS}>
-          Back to first mention
-          <span className="sr-only"> in the introduction</span>
-        </a>
-      </p>
     </aside>
   );
 }
@@ -64,12 +58,6 @@ export function TermDataMartAside() {
         ) that you download as CSV from the portal and join offline — not a live API when you use
         the app.
       </p>
-      <p className="mt-4 text-sm sm:text-base">
-        <a href="#data-mart-term-first" className={TERM_LINK_CLASS}>
-          Back to first mention
-          <span className="sr-only"> on the home page</span>
-        </a>
-      </p>
     </aside>
   );
 }
@@ -96,11 +84,183 @@ export function TermTigerAside() {
         county polygons so district geometry can be intersected with official Census county
         boundaries at a known vintage.
       </p>
-      <p className="mt-4 text-sm sm:text-base">
-        <a href="#tiger-term-first" className={TERM_LINK_CLASS}>
-          Back to first mention
-          <span className="sr-only"> in Census TIGER subsection</span>
+    </aside>
+  );
+}
+
+export function TermPinAside() {
+  return (
+    <aside
+      id="term-pin"
+      tabIndex={-1}
+      className={TERM_ASIDE_BASE}
+      aria-labelledby="term-pin-title"
+    >
+      <p className="font-semibold text-slate-900" id="term-pin-title">
+        PIN
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">PIN</dfn>
+        {" "}
+        (parcel identification number) is the county&apos;s numeric identifier for a specific parcel
+        in Arapahoe&apos;s assessor records. It is usually nine digits. You find it on your parcel
+        record from the county property search; this tool uses it to match your address to levy
+        data. It is not the same as your LG ID or taxing authority code.
+      </p>
+    </aside>
+  );
+}
+
+export function TermPropertyClassificationAside() {
+  return (
+    <aside
+      id="term-property-classification"
+      tabIndex={-1}
+      className={TERM_ASIDE_BASE}
+      aria-labelledby="term-property-classification-title"
+    >
+      <p className="font-semibold text-slate-900" id="term-property-classification-title">
+        Property classification
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Property classification</dfn>
+        {" "}
+        is the county&apos;s broad category for your parcel in the parcel data behind this tool. It
+        tells the tax system what kind of property you have for assessment rules. It is not your
+        zoning label, not your neighborhood name, and not the same as actual or assessed value.
+        This tool shows it in the Property classification tile when that data includes a label.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        You will usually see one of these values in that tile:
+      </p>
+      <ul className="mt-2 list-disc space-y-2 pl-5 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <li>
+          <strong className="font-semibold text-slate-900">Improvement</strong>
+          {" "}
+          means the parcel has buildings or other structures on the land. Most homes with a house on
+          the lot show Improvement.
+        </li>
+        <li>
+          <strong className="font-semibold text-slate-900">Real</strong>
+          {" "}
+          is often used for land or simpler real-property rows (many vacant lots look like this).
+        </li>
+        <li>
+          <strong className="font-semibold text-slate-900">Personal</strong>
+          {" "}
+          refers to personal property (for example business equipment), not the typical house-and-land
+          parcel.
+        </li>
+        <li>
+          <strong className="font-semibold text-slate-900">PersProp</strong>
+          {" "}
+          is another personal-property label in the file (same general idea as Personal).
+        </li>
+        <li>
+          <strong className="font-semibold text-slate-900">StateAssessed</strong>
+          {" "}
+          means the value is handled under state assessment rules instead of the usual county path for
+          that row.
+        </li>
+        <li>
+          <strong className="font-semibold text-slate-900">Possessory</strong>
+          {" "}
+          covers possessory interests (for example some leases on public land).
+        </li>
+      </ul>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        Your assessment notice PDF often says{" "}
+        <strong className="font-semibold text-slate-900">Residential</strong>
+        {" "}
+        or{" "}
+        <strong className="font-semibold text-slate-900">Commercial</strong>
+        {" "}
+        in the property classification area. That wording is not wrong. For many single-family
+        homes, this tool shows{" "}
+        <strong className="font-semibold text-slate-900">Improvement</strong>
+        {" "}
+        in the classification tile even when the notice says Residential. Same parcel, two
+        different naming systems. That mismatch does not mean something is wrong with your
+        property.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        Your official county notice or parcel detail page is the place to confirm the fine print for
+        your situation.
+      </p>
+    </aside>
+  );
+}
+
+export function TermActualValueAside() {
+  return (
+    <aside
+      id="term-actual-value"
+      tabIndex={-1}
+      className={TERM_ASIDE_BASE}
+      aria-labelledby="term-actual-value-title"
+    >
+      <p className="font-semibold text-slate-900" id="term-actual-value-title">
+        Actual value
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Actual value</dfn>
+        {" "}
+        is the assessor&apos;s{" "}
+        <strong className="font-semibold text-slate-900">full</strong>
+        {" "}
+        value for your parcel on the public tax roll. The county uses that number before Colorado
+        applies the assessment rate for your property type. It is the starting point for your tax
+        bill, not the final taxed amount (that is assessed value).
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        Most people are used to thinking in terms of{" "}
+        <strong className="font-semibold text-slate-900">market value</strong>
+        {" "}
+        in everyday life: what similar homes sell for, a rough estimate from a website, or what you
+        might list the house for. Actual value is in that same{" "}
+        <em>ballpark idea</em>
+        , a value tied to the property, but it is the county&apos;s official figure for taxes, not
+        a sale price, not a bank appraisal for a loan, and not a single private appraiser&apos;s
+        report. Those can all be different numbers for the same home.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        The actual value dollar amount on this page is for{" "}
+        <strong className="font-semibold text-slate-900">tax year 2025</strong>
+        {" "}
+        (same county parcel snapshot as the assessed value next to it). See{" "}
+        <a href="#term-property-classification" className={TERM_LINK_CLASS}>
+          Property classification
         </a>
+        {" "}
+        for what labels like Improvement or Real mean in the county file.
+      </p>
+    </aside>
+  );
+}
+
+export function TermAssessedValueAside() {
+  return (
+    <aside
+      id="term-assessed-value"
+      tabIndex={-1}
+      className={TERM_ASIDE_BASE}
+      aria-labelledby="term-assessed-value-title"
+    >
+      <p className="font-semibold text-slate-900" id="term-assessed-value-title">
+        Assessed value
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Assessed value</dfn>
+        {" "}
+        is the amount your property tax is built from: the county takes your actual value and
+        applies a percentage set by state law for your kind of property (home, land, business, and
+        so on). That smaller number is what rates are multiplied against.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        The assessed value dollar amount on this page is for{" "}
+        <strong className="font-semibold text-slate-900">tax year 2025</strong>
+        {" "}
+        (same county parcel snapshot as the actual value above).
       </p>
     </aside>
   );
@@ -186,13 +346,20 @@ export function TermLgIdAside() {
   );
 }
 
-/** Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms. */
+/**
+ * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
+ * (PIN, property classification, actual/assessed value, mills, levy, LG ID).
+ */
 export function AllTermDefinitionAsides() {
   return (
     <>
       <TermJsonAside />
       <TermDataMartAside />
       <TermTigerAside />
+      <TermPinAside />
+      <TermPropertyClassificationAside />
+      <TermActualValueAside />
+      <TermAssessedValueAside />
       <TermMillsAside />
       <TermLevyAside />
       <TermLgIdAside />

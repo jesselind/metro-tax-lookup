@@ -70,6 +70,23 @@ def strip_field(s: str | None) -> str:
     return str(s).strip()
 
 
+def parse_parcel_value_cell(val: Any) -> float | None:
+    """Parse TotalActual / TotalAssessed from Main Parcel CSV; returns None if missing or invalid."""
+    if val is None:
+        return None
+    if isinstance(val, (int, float)):
+        if isinstance(val, float) and math.isnan(val):
+            return None
+        return float(val)
+    s = strip_field(str(val))
+    if not s:
+        return None
+    try:
+        return float(s.replace(",", ""))
+    except ValueError:
+        return None
+
+
 def parse_levy_mills_cell(val: Any) -> float | None:
     """Parse DOLA xlsx total levy cell; returns None if missing or invalid."""
     if val is None:
@@ -793,8 +810,8 @@ def read_mart_groups(path: Path) -> tuple[dict[str, list[dict[str, Any]]], str]:
     return by_tag, tax_year or ""
 
 
-def read_pin_map(path: Path) -> dict[str, dict[str, str]]:
-    out: dict[str, dict[str, str]] = {}
+def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         r = csv.DictReader(f)
         for row in r:
@@ -806,7 +823,18 @@ def read_pin_map(path: Path) -> dict[str, dict[str, str]]:
             if not tag_id:
                 continue
             if pin not in out:
-                out[pin] = {"tagId": tag_id, "tagShortDescr": short_d}
+                ta = parse_parcel_value_cell(row.get("TotalActual"))
+                ts = parse_parcel_value_cell(row.get("TotalAssessed"))
+                ty = strip_field(row.get("TaxYear", ""))
+                pclass = strip_field(row.get("PropertyClassDescr", ""))
+                out[pin] = {
+                    "tagId": tag_id,
+                    "tagShortDescr": short_d,
+                    "totalActual": ta,
+                    "totalAssessed": ts,
+                    "parcelTaxYear": ty or None,
+                    "propertyClassDescr": pclass or None,
+                }
     return out
 
 
@@ -866,7 +894,7 @@ def main() -> None:
 
     snapshot = {
         "bundledAsOf": bundled_as_of,
-        "source": "Arapahoe County datamart: Mart_TA_TAG + Main Parcel (Pin → TAGId)",
+        "source": "Arapahoe County datamart: Mart_TA_TAG + Main Parcel (Pin → TAGId, TotalActual, TotalAssessed)",
         "taxYear": tax_year or None,
         "dolaSource": str(args.dola_xlsx.name) if args.dola_xlsx.is_file() else None,
         "dolaRowCount": len(entities),

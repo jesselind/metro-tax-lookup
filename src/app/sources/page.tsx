@@ -538,6 +538,22 @@ export default function SourcesPage() {
             . It is not a private per-parcel serial number.
           </li>
           <li>
+            <strong>Property classification (field lineage):</strong> The home page tile copies
+            the{" "}
+            <code className={CODE_INLINE_CLASS}>PropertyClassDescr</code> column from{" "}
+            <code className={CODE_INLINE_CLASS}>Main Parcel Table.csv</code> into{" "}
+            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code> at build time. A
+            paper notice may still say Residential or Commercial for the same parcel; see{" "}
+            <Link
+              href="/sources#term-property-classification"
+              className={TOOL_ANCHOR}
+            >
+              Property classification
+            </Link>
+            {" "}
+            in Definitions.
+          </li>
+          <li>
             <strong>Build inputs (offline):</strong> The Python builder reads
             county mart CSVs from the{" "}
             <a
@@ -776,6 +792,12 @@ export default function SourcesPage() {
         <h2 id="definitions-heading" className={SECTION_H2}>
           Definitions
         </h2>
+        <p className="mt-4 text-base leading-relaxed text-slate-700 sm:text-lg">
+          Sometimes your paper notice uses one word and this site uses another for the same
+          property. The county writes the notice for people to read and publishes separate records
+          that tools like this one load. The wording does not always match. That is normal and does
+          not mean your property is listed wrong.
+        </p>
         <AllTermDefinitionAsides />
       </section>
     </StaticArticleShell>

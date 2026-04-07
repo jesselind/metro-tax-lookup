@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useState, type ReactNode } from "react";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import { calculateSharePercentage } from "@/lib/levyCalculator";
 import type {
@@ -19,6 +19,9 @@ import {
 } from "@/lib/arapahoeCountyUrls";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_TILE_RADIUS_CLASS,
+  METRO_PERCENT_TILES_GRID_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 import type { MetroFromLevyStack } from "@/lib/metroDistrictFromLevyLines";
@@ -117,19 +120,26 @@ export type MetroTaxShareFlowProps = {
   /** Sum of mills from the levy stack (home page); drives all metro share math. */
   prefillTotalMills?: number | null;
   metroFromLevyStack?: MetroFromLevyStack;
+  /**
+   * When set (e.g. levy stack on the home page), renders between the headline
+   * percent tiles and the metro breakdown so the stack appears first in reading order.
+   */
+  children?: ReactNode;
 };
 
 export function MetroTaxShareFlow({
   idPrefix = "",
   prefillTotalMills = null,
   metroFromLevyStack,
+  children,
 }: MetroTaxShareFlowProps) {
   const p = idPrefix ? `${idPrefix}-` : "";
 
-  const [showResultDetails, setShowResultDetails] = useState(false);
   const metroBreakdownPanelId = `${p}metro-breakdown-panel`;
-  const toggleResultDetails = () =>
-    setShowResultDetails((prev) => !prev);
+  /** Disclosure target for the Check the math table and levy-line cards (WCAG: aria-controls). */
+  const metroCheckMathPanelId = `${p}metro-check-math-panel`;
+  const metroCheckMathToggleId = `${p}metro-check-math-toggle`;
+  const [showCheckMath, setShowCheckMath] = useState(false);
 
   const levyJson = levyData as LevyDataFile;
   const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
@@ -360,111 +370,107 @@ export function MetroTaxShareFlow({
       "No metro districts were matched from your levy stack for this card.";
   }
 
-  const metroShareCardToggleLabel = useMemo(() => {
-    const toggle = showResultDetails
-      ? "hide breakdown details"
-      : "show breakdown details";
+  const metroShareCardJumpLabel = useMemo(() => {
     if (totalDistrictShare > 0) {
       const scope = multiMetroParcel
         ? "your metro districts combined"
         : "your metro district";
-      return `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${scope}. ${toggle}.`;
+      return `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${scope}. Jump to detailed breakdown below.`;
     }
-    return `No metro district mills on your property tax bill. ${toggle}.`;
-  }, [totalDistrictShare, multiMetroParcel, showResultDetails]);
+    return "No metro district mills on your property tax bill.";
+  }, [totalDistrictShare, multiMetroParcel]);
 
-  const metroDebtCardToggleLabel = useMemo(() => {
-    const toggle = showResultDetails
-      ? "hide breakdown details"
-      : "show breakdown details";
+  const metroDebtCardJumpLabel = useMemo(() => {
     const debtScope = multiMetroParcel
       ? "combined metro district debt"
       : "your metro district debt";
-    return `${debtShareOfTotal.toFixed(1)} percent of your property taxes pay off ${debtScope}. ${toggle}.`;
-  }, [debtShareOfTotal, multiMetroParcel, showResultDetails]);
+    return `${debtShareOfTotal.toFixed(1)} percent of your property taxes pay off ${debtScope}. Jump to detailed breakdown below.`;
+  }, [debtShareOfTotal, multiMetroParcel]);
 
-  return (
-    <>
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {resultAnnouncement}
-      </div>
-      {showResultCard ? (
-        <div
-          role="region"
-          aria-label="Metro district share"
-          className={`min-w-0 grid grid-cols-1 gap-4 sm:gap-6 ${
-            showDebtHeadline ? "sm:grid-cols-2" : ""
-          }`}
+  const shareTileSurfaceClass = `flex h-full min-h-0 w-full max-w-full flex-col items-start overflow-hidden sm:w-max ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-100 px-3 py-4 text-left shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
+  const debtTileSurfaceClass = `flex h-full min-h-0 w-full max-w-full flex-col items-start overflow-hidden sm:w-max ${DASHBOARD_TILE_RADIUS_CLASS} border border-red-800 bg-red-700 px-3 py-4 text-left text-white shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-red-900 hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:bg-red-700 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-red-700`;
+  /** In-page hash links; explicit pointer matches project interactive-surface rule (div tiles stay default). */
+  const shareTileLinkClass = `${shareTileSurfaceClass} cursor-pointer`;
+  const debtTileLinkClass = `${debtTileSurfaceClass} cursor-pointer`;
+
+  const shareTileInner = (
+    <span aria-hidden="true" className="flex min-w-0 w-full items-start">
+      <span className="min-w-0 flex-1 overflow-hidden">
+        <p className="break-words text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          {totalDistrictShare.toFixed(1)}%
+        </p>
+        <p className="mt-1 break-words text-pretty text-sm font-semibold leading-snug text-slate-600 sm:text-base">
+          {totalDistrictShare > 0
+            ? multiMetroParcel
+              ? "of your property taxes go to your metro districts (combined)"
+              : "of your property taxes go to your metro district"
+              : "No metro district mills shown on your property tax bill"}
+        </p>
+      </span>
+    </span>
+  );
+
+  const debtTileInner = (
+    <span aria-hidden="true" className="flex min-w-0 w-full items-start">
+      <span className="min-w-0 flex-1 overflow-hidden">
+        <p className="break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          {debtShareOfTotal.toFixed(1)}%
+        </p>
+        <p className="mt-1 break-words text-pretty text-sm font-semibold leading-snug text-white sm:text-base">
+          {multiMetroParcel
+            ? "of your property taxes are paying off metro district debt (combined)"
+            : "of your property taxes are paying off your metro district's debt"}
+        </p>
+      </span>
+    </span>
+  );
+
+  const metroShareBlock = showResultCard ? (
+    <div
+      className={`min-w-0 w-full max-w-full sm:w-fit ${METRO_PERCENT_TILES_GRID_CLASS}`}
+    >
+      {perDistrictBundles.length > 0 ? (
+        <a
+          href={`#${metroBreakdownPanelId}`}
+          className={shareTileLinkClass}
+          aria-label={metroShareCardJumpLabel}
         >
-          <button
-            type="button"
-            className="min-w-0 w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-100 px-3 py-4 text-left shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2"
-            aria-expanded={showResultDetails}
-            aria-controls={metroBreakdownPanelId}
-            aria-label={metroShareCardToggleLabel}
-            onClick={toggleResultDetails}
+          {shareTileInner}
+        </a>
+      ) : (
+        <div className={shareTileSurfaceClass}>{shareTileInner}</div>
+      )}
+      {showDebtHeadline ? (
+        perDistrictBundles.length > 0 ? (
+          <a
+            href={`#${metroBreakdownPanelId}`}
+            className={debtTileLinkClass}
+            aria-label={metroDebtCardJumpLabel}
           >
-            <span aria-hidden="true">
-              <p className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-                {totalDistrictShare.toFixed(1)}%
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-600 sm:text-base">
-                {totalDistrictShare > 0
-                  ? multiMetroParcel
-                    ? "of your property taxes go to your metro districts (combined)"
-                    : "of your property taxes go to your metro district"
-                    : "No metro district mills shown on your property tax bill"}
-              </p>
-            </span>
-          </button>
-          {showDebtHeadline ? (
-            <button
-              type="button"
-              className="min-w-0 w-full cursor-pointer rounded-xl border border-red-800 bg-red-700 px-3 py-4 text-left text-white shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-red-900 hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:bg-red-700 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-red-700"
-              aria-expanded={showResultDetails}
-              aria-controls={metroBreakdownPanelId}
-              aria-label={metroDebtCardToggleLabel}
-              onClick={toggleResultDetails}
-            >
-              <span aria-hidden="true">
-                <p className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                  {debtShareOfTotal.toFixed(1)}%
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white sm:text-base">
-                  {multiMetroParcel
-                    ? "of your property taxes are paying off metro district debt (combined)"
-                    : "of your property taxes are paying off your metro district's debt"}
-                </p>
-              </span>
-            </button>
-          ) : null}
-          {perDistrictBundles.length > 0 ? (
-            <div className="col-span-full">
-              <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
-                <ToolOutlinedToggleButton
-                  aria-expanded={showResultDetails}
-                  aria-controls={metroBreakdownPanelId}
-                  onClick={toggleResultDetails}
-                >
-                  {showResultDetails
-                    ? "Hide details"
-                    : "More details"}
-                </ToolOutlinedToggleButton>
-              </div>
-                  {showResultDetails ? (
+            {debtTileInner}
+          </a>
+        ) : (
+          <div className={debtTileSurfaceClass}>{debtTileInner}</div>
+        )
+      ) : null}
+    </div>
+  ) : null;
+
+  const metroDetailsBlock =
+    showResultCard && perDistrictBundles.length > 0 ? (
                     <div
                       id={metroBreakdownPanelId}
                       role="region"
-                      aria-label="Metro breakdown, sources, and explainer"
-                      className="mt-4 space-y-6 text-sm text-slate-800 sm:text-base"
+                      aria-labelledby={`${p}tax-rate-split-heading`}
+                      className="scroll-mt-6 space-y-6 text-sm text-slate-800 sm:text-base"
                     >
                       <div className="space-y-3">
-                        <p
+                        <h3
                           id={`${p}tax-rate-split-heading`}
-                          className="text-sm font-semibold text-slate-900 sm:text-base"
+                          className={DASHBOARD_SECTION_HEADING_CLASS}
                         >
                           Metro districts in relation to your bill
-                        </p>
+                        </h3>
                         <p id={`${p}tax-rate-split-desc`} className="sr-only">
                           {taxRateSplitAnnouncement} Percentages are each
                           part&apos;s share of your total property tax bill
@@ -693,12 +699,23 @@ export function MetroTaxShareFlow({
                       <div className="mt-4 sm:mt-5">
                         <MetroDistrictInfoDetails />
                       </div>
-                      <div className="space-y-3 border-t border-slate-200 pt-4">
-                        <div>
-                          <p className="font-semibold text-indigo-950">
-                            Check the math
-                          </p>
-                          <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+                      <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+                        <ToolOutlinedToggleButton
+                          id={metroCheckMathToggleId}
+                          aria-expanded={showCheckMath}
+                          aria-controls={metroCheckMathPanelId}
+                          onClick={() => setShowCheckMath((v) => !v)}
+                        >
+                          {showCheckMath ? "Hide the math" : "Check the math"}
+                        </ToolOutlinedToggleButton>
+                      </div>
+                      <div
+                        id={metroCheckMathPanelId}
+                        hidden={!showCheckMath}
+                        aria-labelledby={metroCheckMathToggleId}
+                        className="mt-3 space-y-3 border-t border-slate-200 pt-4"
+                      >
+                          <p className="text-xs text-slate-600 sm:text-sm">
                             {multiMetroParcel ? (
                               <>
                                 County mill levy file for{" "}
@@ -728,7 +745,6 @@ export function MetroTaxShareFlow({
                               </>
                             )}
                           </p>
-                        </div>
                         <div className="overflow-x-auto">
                           <table className="w-full min-w-[280px] border-collapse text-left text-xs sm:text-sm">
                             <caption className="sr-only">
@@ -878,41 +894,41 @@ export function MetroTaxShareFlow({
                             </Fragment>
                           ))}
                         </div>
+                        {perDistrictBundles.map((b) => (
+                          <div
+                            key={`levy-cards-${b.districtId}`}
+                            className="space-y-4 border-t border-slate-200 pt-4"
+                          >
+                            {multiMetroParcel ? (
+                              <p className="text-sm font-semibold text-slate-900 sm:text-base">
+                                {b.name}: levy lines from the county form
+                              </p>
+                            ) : null}
+                            <LevyLinesCard
+                              title="Debt service lines"
+                              description="Bonds and other debt line items from the county form."
+                              levies={b.metroDebtLevies}
+                              rateToMills={RATE_TO_MILLS}
+                              tone="debt"
+                              showAllLines
+                            />
+                            <LevyLinesCard
+                              title="Operations lines"
+                              description="Ongoing services and administration lines from the county form."
+                              levies={b.metroOpsLevies}
+                              rateToMills={RATE_TO_MILLS}
+                              showAllLines
+                            />
+                            <LevyLinesCard
+                              title="Other purposes"
+                              description="Parts of the rate not classified as operations or debt (for example summary totals)."
+                              levies={b.metroOtherLevies}
+                              rateToMills={RATE_TO_MILLS}
+                              showAllLines
+                            />
+                          </div>
+                        ))}
                       </div>
-                      {perDistrictBundles.map((b) => (
-                        <div
-                          key={`levy-cards-${b.districtId}`}
-                          className="space-y-4 border-t border-slate-200 pt-4"
-                        >
-                          {multiMetroParcel ? (
-                            <p className="text-sm font-semibold text-slate-900 sm:text-base">
-                              {b.name}: levy lines from the county form
-                            </p>
-                          ) : null}
-                          <LevyLinesCard
-                            title="Debt service lines"
-                            description="Bonds and other debt line items from the county form."
-                            levies={b.metroDebtLevies}
-                            rateToMills={RATE_TO_MILLS}
-                            tone="debt"
-                            showAllLines
-                          />
-                          <LevyLinesCard
-                            title="Operations lines"
-                            description="Ongoing services and administration lines from the county form."
-                            levies={b.metroOpsLevies}
-                            rateToMills={RATE_TO_MILLS}
-                            showAllLines
-                          />
-                          <LevyLinesCard
-                            title="Other purposes"
-                            description="Parts of the rate not classified as operations or debt (for example summary totals)."
-                            levies={b.metroOtherLevies}
-                            rateToMills={RATE_TO_MILLS}
-                            showAllLines
-                          />
-                        </div>
-                      ))}
                       <p className="text-[0.7rem] text-slate-500 sm:text-xs">
                         Based on Arapahoe County&apos;s{" "}
                         <a
@@ -956,11 +972,26 @@ export function MetroTaxShareFlow({
                         .
                       </p>
                     </div>
-                  ) : null}
-            </div>
-          ) : null}
+    ) : null;
+
+  return (
+    <>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {resultAnnouncement}
+      </div>
+      {showResultCard ? (
+        <div
+          role="region"
+          aria-label="Metro district share"
+          className="min-w-0 space-y-4 sm:space-y-6"
+        >
+          {metroShareBlock}
+          {children}
+          {metroDetailsBlock}
         </div>
-      ) : null}
+      ) : (
+        children ?? null
+      )}
     </>
   );
 }

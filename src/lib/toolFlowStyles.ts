@@ -3,17 +3,23 @@
 /** Main column cap (header, hero, footer, tools): wide on desktop, harmless on mobile. */
 export const SITE_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
 
-/** Full-width slate title bar (PageHero): viewport breakout; spacing below uses parent tool column gap. */
+/** Full-width slate title bar (PageHero): viewport breakout. */
 export const PAGE_HERO_OUTER_CLASS =
   "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2";
 
-export const PAGE_HERO_SLATE_BAR_CLASS = "bg-slate-700";
+/** Slate strip: flex so the constrained inner column stays vertically centered in the bar at any width. */
+export const PAGE_HERO_SLATE_BAR_CLASS =
+  "flex w-full items-center bg-slate-700";
 
-/** Constrained inner column + padding (aligns with {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
-export const PAGE_HERO_INNER_CLASS = `mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-4 sm:px-5 sm:py-5`;
+/** Constrained inner column + symmetric vertical padding (aligns with {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
+export const PAGE_HERO_INNER_CLASS = `mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-5 sm:px-5`;
 
 export const PAGE_HERO_TITLE_CLASS =
   "text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl";
+
+/** Slate hero secondary control (e.g. Start over). Smaller on mobile; larger from md up (same chrome). */
+export const PAGE_HERO_ACTION_BUTTON_CLASS =
+  "inline-flex shrink-0 items-center justify-center rounded-md border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm";
 
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
@@ -63,6 +69,70 @@ export const COUNTY_EXTERNAL_LINK_CLASS =
 export const TERM_LINK_CLASS =
   "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
+/** Dashboard / tool tiles (parcel summary, metro, levy stack cards): shared corner radius. */
+export const DASHBOARD_TILE_RADIUS_CLASS = "rounded-xl";
+
+/**
+ * Levy stack tiles: `auto-fill` + `minmax(min(100%, …), 1fr)` so columns wrap naturally at any viewport.
+ */
+export const LEVY_STACK_TILE_GRID_CLASS =
+  "grid w-full min-w-0 gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr))]";
+
+/**
+ * Parcel summary row (home): column on small screens (address full width, value pair side by side);
+ * from sm up, tiles flow in a wrapping row (no horizontal scroll).
+ */
+export const PARCEL_SUMMARY_ROW_CLASS =
+  "flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-start sm:gap-4";
+
+/** Actual + assessed: always a row; `sm:contents` so tiles join the parent row at sm+ breakpoints. */
+export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS =
+  "flex w-full min-w-0 flex-row flex-nowrap items-stretch gap-3 sm:contents";
+
+/**
+ * Parcel tiles: border + radius on the outer frame, padding + scroll on an inner body.
+ * Putting `overflow-x-auto` on the same element as `rounded-*` + `border` draws a double edge in some engines.
+ */
+const PARCEL_SUMMARY_TILE_FRAME_BASE = `${DASHBOARD_TILE_RADIUS_CLASS} flex min-h-0 min-w-0 flex-col overflow-hidden border border-slate-200/90 bg-white`;
+
+export const PARCEL_SUMMARY_TILE_BODY_CLASS =
+  "flex min-h-0 min-w-0 flex-col justify-start gap-1.5 px-3.5 py-2.5 sm:px-4 sm:py-3";
+
+/** Address / status: full width when stacked; content-sized from sm up. */
+export const PARCEL_SUMMARY_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} w-full max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+
+/** Value tiles: equal width on small screens (fill pair row); content-sized from sm up with the address tile. */
+export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+
+/** Glossary link inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: inherits uppercase + scale; slate underline. */
+export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
+  "text-inherit underline decoration-slate-400 decoration-1 underline-offset-[0.2em] hover:text-slate-600 hover:decoration-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
+
+export const PARCEL_SUMMARY_TILE_LABEL_CLASS =
+  "text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs";
+
+export const PARCEL_SUMMARY_TILE_VALUE_CLASS =
+  "text-xl font-semibold tabular-nums leading-tight tracking-tight text-slate-900 sm:text-2xl";
+
+export const PARCEL_SUMMARY_TILE_ADDRESS_CLASS =
+  "text-base font-semibold leading-snug tracking-tight text-slate-900 sm:text-lg";
+
+/**
+ * Metro percent cards: wrap into content-sized columns. Default grid `align-items: stretch`
+ * keeps tiles on the same row equal height; pair buttons with `flex flex-col items-start h-full`
+ * so copy stays top-aligned inside the tile.
+ */
+export const METRO_PERCENT_TILES_GRID_CLASS =
+  "grid min-w-0 justify-items-stretch gap-4 sm:justify-items-start sm:gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,10.5rem),max-content))]";
+
+/**
+ * Major section headings on the home metro + levy flow (e.g. levy stack, metro breakdown).
+ * Extra top margin so the title reads as a new beat vs. content above; pair the section body with
+ * `space-y-*` so spacing below the title stays tighter than the lead-in above.
+ */
+export const DASHBOARD_SECTION_HEADING_CLASS =
+  "mt-6 text-xl font-bold leading-tight tracking-tight text-slate-900 sm:mt-8 sm:text-2xl";
+
 /** Inline <code> in prose (Sources page, term definitions). Single class for consistent styling. */
 export const CODE_INLINE_CLASS =
   "rounded bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-900";
@@ -70,7 +140,7 @@ export const CODE_INLINE_CLASS =
 export const HELP_PILL_CLASS =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-1 disabled:cursor-not-allowed sm:text-base";
 
-/** Outlined white button for levy stack and metro More details toggles. */
+/** Outlined white button for levy stack disclosure toggles. */
 export const TOOL_OUTLINED_TOGGLE_BUTTON_CLASS =
   "inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 sm:w-auto sm:justify-start";
 

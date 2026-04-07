@@ -13,7 +13,13 @@ import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses"
 import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetailDialog";
 import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
-import { INPUT_CLASS, TERM_LINK_CLASS, TOOL_DISCLOSURE_ROW_ALIGN_CLASS } from "@/lib/toolFlowStyles";
+import {
+  DASHBOARD_TILE_RADIUS_CLASS,
+  INPUT_CLASS,
+  LEVY_STACK_TILE_GRID_CLASS,
+  TERM_LINK_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
+} from "@/lib/toolFlowStyles";
 import {
   ARAPAHOE_COUNTY_GEOID,
   matchSpecialDistrict,
@@ -32,17 +38,14 @@ import {
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
 
-const LEVY_TILES_GRID_CLASS =
-  "grid gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr))]";
-
 const ADD_TILE_GHOST_CLASS =
-  "relative flex min-h-[152px] min-w-0 flex-col justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/90 p-4 text-center shadow-sm transition-colors hover:border-indigo-400/80 hover:bg-indigo-50/40 sm:min-h-[168px] sm:p-5";
+  `relative flex min-h-[152px] min-w-0 flex-col justify-center gap-2 ${DASHBOARD_TILE_RADIUS_CLASS} border-2 border-dashed border-slate-300 bg-slate-50/90 p-4 text-center shadow-sm transition-colors hover:border-indigo-400/80 hover:bg-indigo-50/40 sm:min-h-[168px] sm:p-5`;
 const ADD_TILE_FORM_CLASS =
-  "relative flex min-h-[152px] min-w-0 flex-col gap-3 rounded-2xl border-2 border-indigo-400 bg-white p-3 shadow-lg ring-2 ring-indigo-300/80 sm:min-h-[168px] sm:p-4";
+  `relative flex min-h-[152px] min-w-0 flex-col gap-3 ${DASHBOARD_TILE_RADIUS_CLASS} border-2 border-indigo-400 bg-white p-3 shadow-lg ring-2 ring-indigo-300/80 sm:min-h-[168px] sm:p-4`;
 
 function levyTileClass(index: number, isEditing: boolean): string {
   const base =
-    "relative flex min-h-0 h-full flex-col gap-2 overflow-hidden rounded-2xl border border-white/20 shadow-md sm:gap-3";
+    `relative flex min-h-0 h-full flex-col gap-2 overflow-hidden ${DASHBOARD_TILE_RADIUS_CLASS} border border-white/20 shadow-md sm:gap-3`;
   if (isEditing) {
     return `${base} !border-indigo-400 !bg-white p-3 text-slate-900 shadow-lg ring-2 ring-indigo-300/80 sm:p-4`;
   }
@@ -62,7 +65,7 @@ const TILE_GRADIENTS = [
 ] as const;
 
 const TILE_OVERFLOW_BTN_CLASS =
-  "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-bl-lg rounded-tr-2xl bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
+  "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-bl-lg rounded-tr-xl bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
 
 const LEVY_TILE_PCT_CLASS =
   "pointer-events-none shrink-0 m-0 text-right font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] [font-size:calc(1.25rem+var(--pct-scale)*1.5rem)] sm:[font-size:calc(1.5rem+var(--pct-scale)*1.25rem)]";
@@ -188,6 +191,7 @@ export function LevyStackVisualization({
 
   const millsTermHref = termDefinitionsOnHomePage ? "#term-mills" : "/sources#term-mills";
   const levyTermHref = termDefinitionsOnHomePage ? "#term-levy" : "/sources#term-levy";
+  const pinTermHref = termDefinitionsOnHomePage ? "#term-pin" : "/sources#term-pin";
 
   function goToTermFromTileMenu(id: "term-mills" | "term-levy") {
     setTileActionsId(null);
@@ -390,7 +394,7 @@ export function LevyStackVisualization({
     <div className="space-y-5">
       {showLevyGrid && (
         <div className="space-y-3 sm:space-y-4">
-            <div className={LEVY_TILES_GRID_CLASS}>
+            <div className={LEVY_STACK_TILE_GRID_CLASS}>
               {tilesSorted.map((item, index) => {
                 const grad = TILE_GRADIENTS[index % TILE_GRADIENTS.length];
                 const pctLabel = formatPct(item.pct);
@@ -485,7 +489,7 @@ export function LevyStackVisualization({
                       <>
                         <button
                           type="button"
-                          className="absolute inset-0 z-0 cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+                          className={`absolute inset-0 z-0 cursor-pointer ${DASHBOARD_TILE_RADIUS_CLASS} focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent`}
                           aria-label={`View district details for ${item.authority}, ${formatMills(item.mills)} mills`}
                           onClick={() => {
                             setTileActionsId(null);
@@ -681,7 +685,7 @@ export function LevyStackVisualization({
             <div
               role="region"
               aria-label="Total mill levy for your stack"
-              className="flex min-h-[96px] w-full flex-col justify-center gap-2 rounded-2xl border-2 border-amber-400/85 bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 px-3 py-4 text-white ring-1 ring-white/15 sm:min-h-[88px] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5"
+              className={`flex min-h-[96px] w-full flex-col justify-center gap-2 ${DASHBOARD_TILE_RADIUS_CLASS} border-2 border-amber-400/85 bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 px-3 py-4 text-white ring-1 ring-white/15 sm:min-h-[88px] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5`}
             >
               <span className="text-3xl font-bold tracking-tight text-amber-100 sm:text-4xl">
                 Total
@@ -772,9 +776,25 @@ export function LevyStackVisualization({
       )}
 
       {loadedParcelMeta && lines.length > 0 ? (
-        <p className="text-xs text-slate-600">
-          Matched PIN {loadedParcelMeta.pin} · taxing authority{" "}
-          {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)} ·{" "}
+        <p className="rounded-xl border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm">
+          <span className="sr-only">Parcel match. </span>
+          Matched{" "}
+          <a
+            id="pin-term-first"
+            href={pinTermHref}
+            className={TERM_LINK_CLASS}
+          >
+            PIN
+          </a>{" "}
+          <span className="font-mono font-semibold tabular-nums text-slate-800">
+            {loadedParcelMeta.pin}
+          </span>
+          {" · "}
+          Taxing authority{" "}
+          <span className="font-medium text-slate-700">
+            {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}
+          </span>
+          {" · "}
           {safeLevyTableHref ? (
             <a
               href={safeLevyTableHref}
@@ -816,7 +836,14 @@ export function LevyStackVisualization({
           {loadedParcelMeta && (
             <div className="mt-1 space-y-2 text-sm leading-relaxed text-slate-700">
               <p>
-                PIN {loadedParcelMeta.pin} · taxing authority{" "}
+                <a href={pinTermHref} className={TERM_LINK_CLASS}>
+                  PIN
+                </a>{" "}
+                <span className="font-mono font-semibold tabular-nums text-slate-900">
+                  {loadedParcelMeta.pin}
+                </span>
+                {" · "}
+                Taxing authority{" "}
                 {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}.
               </p>
               <p>
@@ -941,7 +968,7 @@ export function LevyStackVisualization({
               role="dialog"
               aria-modal="true"
               aria-labelledby="tile-actions-heading"
-              className="relative z-10 w-full max-w-lg rounded-t-2xl border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-2xl"
+              className="relative z-10 w-full max-w-lg rounded-t-xl border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-xl"
             >
             <h3
               id="tile-actions-heading"
