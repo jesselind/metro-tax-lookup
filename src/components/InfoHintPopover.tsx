@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { InfoCircleGlyph } from "@/components/InfoCircleGlyph";
 
 type InfoHintPopoverProps = {
   children: ReactNode;
@@ -97,26 +98,14 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
         <button
           type="button"
           disabled={disabled}
-          className="inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-md p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-full p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
           aria-label={ariaLabel}
           aria-expanded={open}
           aria-controls={open ? contentId : undefined}
           aria-haspopup="true"
           onClick={() => setOpen((v) => !v)}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="size-3 sm:size-3.5"
-            aria-hidden
-          >
-            <path
-              fillRule="evenodd"
-              d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a1 1 0 100 2 1 1 0 000-2zm-.75 3.25a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0v-3.5z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <InfoCircleGlyph className="size-3 sm:size-3.5" />
         </button>
       )}
       {open ? (
