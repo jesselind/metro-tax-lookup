@@ -1,11 +1,11 @@
 {
-  "_comment": "Keys = Mart_TA_TAG Field6 (uppercased, trimmed). legalName = DOLA string for fuzzy match. taxEntityId filled at build time from property-tax-entities-export.xlsx when resolvable. millsOverride = use this mill value instead of DOLA levy column when county Levy.aspx disagrees (sets dolaMills + millsReason in JSON). ura=true = TIF/URA; may have no LGIS id.",
+  "_comment": "Keys = Mart_TA_TAG Field6 (uppercased, trimmed). legalName = DOLA string for fuzzy match. taxEntityId filled at build time from property-tax-entities-export.csv (or .xlsx if no CSV) when resolvable. millsOverride = use this mill value instead of DOLA levy column when county Levy.aspx disagrees (sets dolaMills + millsReason in JSON). ura=true = TIF/URA; may have no LGIS id.",
 
   "byAuthorityUpper": {
     "ARAPAHOE COUNTY": {
       "legalName": "Arapahoe County",
       "millsOverride": 15.959,
-      "note": "DOLA xlsx total levy for TE 03001/1 is 16.959; Arapahoe Levy.aspx line 2998 (2025 tax year) is 15.959. Override matches the county levy table so PIN stacks agree with Levy.aspx."
+      "note": "DOLA export total levy for TE 03001/1 is 16.959; Arapahoe Levy.aspx line 2998 (2025 tax year) is 15.959. Override matches the county levy table so PIN stacks agree with Levy.aspx."
     },
     "ARAPAHOE COUNTY L.E.A.": {
       "legalName": "Arapahoe Law Enforcement Authority",
@@ -14,7 +14,7 @@
     },
     "REGIONAL TRANSPORTATION": {
       "legalName": "Regional Transportation District",
-      "note": "County label omits district name; match DOLA RTD row when xlsx present."
+      "note": "County label omits district name; match DOLA RTD row when LGIS export is present."
     },
     "URBAN DRAINAGE & FLOOD": {
       "legalName": "Urban Drainage and Flood Control District",
@@ -32,7 +32,7 @@
     },
     "CITY OF AURORA": {
       "legalName": "Aurora",
-      "note": "DOLA xlsx uses municipality name without City of prefix (TE e.g. 64010/1)."
+      "note": "DOLA LGIS export uses municipality name without City of prefix (TE e.g. 64010/1)."
     },
     "CHERRY CREEK BASIN AUTH": {
       "legalName": "Cherry Creek Basin Water Quality Authority",

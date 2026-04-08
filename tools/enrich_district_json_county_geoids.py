@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-For each row in colorado-all-special-districts.json (from All Special Districts CSV),
+For each row in supporting-data/colorado-all-special-districts.json (from All Special Districts CSV),
 set countyGeoids: county GEOIDs (5-digit, e.g. 08005 for Arapahoe) where the
 district WKT intersects the TL GDB County layer.
 
@@ -12,7 +12,7 @@ Usage:
     --csv supporting-data/All_Special_Districts_in_Colorado_20260401.csv \\
     --gdb supporting-data/tlgdb_2025_a_08_co.gdb \\
     --layer County \\
-    --json public/data/colorado-all-special-districts.json
+    --json supporting-data/colorado-all-special-districts.json
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def main() -> None:
     ap.add_argument(
         "--json",
         type=Path,
-        default=ROOT / "public" / "data" / "colorado-all-special-districts.json",
+        default=ROOT / "supporting-data" / "colorado-all-special-districts.json",
     )
     args = ap.parse_args()
 

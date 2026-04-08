@@ -49,14 +49,15 @@ next-env.d.ts
 # Large Arapahoe assessor export (~100MB+); required to regenerate PIN map + stacks.
 supporting-data/Main Parcel Table (CSV)/
 
-# Optional DOLA tax-entity spreadsheet for certified mills in build_arapahoe_parcel_levy_index.py
-supporting-data/property-tax-entities-export.xlsx
+# Optional DOLA LGIS exports (prefer committed supporting-data/property-tax-entities-export.csv)
+*.xlsx
 
 # Colorado special-district shapefile bundle (dlall.*); only .dbf needed for export_special_district_directory.py
 supporting-data/dlall/
 
-# Statewide special-district export (~50MB); import script produces lean JSON in public/data/
+# Statewide special-district export (~50MB); import script writes lean JSON here (not shipped)
 supporting-data/All_Special_Districts_in_Colorado_*.csv
+supporting-data/colorado-all-special-districts.json
 
 # Census / GIS file geodatabases used by enrich_district_json_county_geoids.py (~150MB each)
 supporting-data/**/*.gdb/

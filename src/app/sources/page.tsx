@@ -25,6 +25,7 @@ import {
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "../../../public/data/metro-levies-2025.json";
 import { AllTermDefinitionAsides } from "@/content/termDefinitions";
+import { SourcesHashFocus } from "@/components/SourcesHashFocus";
 
 export const metadata = {
   title: "Sources | Property tax tools",
@@ -112,6 +113,7 @@ export default function SourcesPage() {
       }
       contentClassName={SOURCES_PAGE_INNER_CLASS}
     >
+      <SourcesHashFocus />
       <nav
         aria-label="On this page"
         className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
@@ -463,10 +465,12 @@ export default function SourcesPage() {
             <code className={CODE_INLINE_CLASS}>
               public/data/colorado-special-district-directory.json
             </code>{" "}
-            + optional{" "}
+            — LG ID contact rows from DOLA&apos;s LG tabular export, filtered to LGIDs
+            referenced in bundled levy stacks (
             <code className={CODE_INLINE_CLASS}>
-              colorado-all-special-districts.json
+              tools/build_district_directory_from_lg_export.py
             </code>
+            ).
           </li>
         </ul>
         <p className="mt-3 text-slate-700">
@@ -476,10 +480,27 @@ export default function SourcesPage() {
           <code className={CODE_INLINE_CLASS}>
             tools/build_arapahoe_parcel_levy_index.py
           </code>{" "}
-          on county CSV exports, optional DOLA xlsx, and{" "}
+          on county CSV exports, optional DOLA LGIS export as{" "}
+          <code className={CODE_INLINE_CLASS}>
+            supporting-data/property-tax-entities-export.csv
+          </code>{" "}
+          (or <code className={CODE_INLINE_CLASS}>.xlsx</code> locally when the CSV is
+          absent), and{" "}
           <code className={CODE_INLINE_CLASS}>
             tools/arapahoe_dola_authority_overrides.json
           </code>
+          .
+        </p>
+        <p className="mt-3 text-slate-700">
+          District contact bundle:{" "}
+          <code className={CODE_INLINE_CLASS}>npm run build:district-directory</code>
+          {" "}
+          (after{" "}
+          <code className={CODE_INLINE_CLASS}>npm run build:arapahoe-index</code>,
+          or when you refresh the LG CSV). See{" "}
+          <a href="#dola-lg-directory-export" className={TOOL_ANCHOR}>
+            DOLA LG directory (tabular CSV)
+          </a>
           .
         </p>
 
@@ -586,8 +607,10 @@ export default function SourcesPage() {
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
             ) as{" "}
-            <code className={CODE_INLINE_CLASS}>property-tax-entities-export.xlsx</code>{" "}
-            for certified mills and entity IDs when matching is safe, and{" "}
+            <code className={CODE_INLINE_CLASS}>property-tax-entities-export.csv</code>{" "}
+            (or <code className={CODE_INLINE_CLASS}>.xlsx</code> locally; the build script
+            prefers CSV when both exist) for certified mills and entity IDs when matching is
+            safe, and{" "}
             <code className={CODE_INLINE_CLASS}>
               tools/arapahoe_dola_authority_overrides.json
             </code>{" "}
@@ -626,13 +649,14 @@ export default function SourcesPage() {
             <code className={CODE_INLINE_CLASS}>
               colorado-special-district-directory.json
             </code>{" "}
-            (and optional merged GIS layers) does not change mills or share on the tile.
+            does not change mills or share on the tile.
             The line-detail modal shows <strong className="text-slate-900">one assembled</strong>
             {" "}
             answer: tax name/IDs from the DOLA join at build time plus address and website from{" "}
             <code className={CODE_INLINE_CLASS}>matchSpecialDistrict()</code> in{" "}
             <code className={CODE_INLINE_CLASS}>src/lib/specialDistrictMatch.ts</code>{" "}
-            (and an optional merged GIS layer). Those are still{" "}
+            against the bundled LG directory (rows keyed by LG ID, filtered to LGIDs referenced in
+            levy stacks). Those are still{" "}
             <strong className="text-slate-900">independent</strong> data paths for audit:{" "}
             <strong className="text-slate-900">(1) Tax record / DOLA linkage</strong> in{" "}
             <code className={CODE_INLINE_CLASS}>tools/build_arapahoe_parcel_levy_index.py</code>
@@ -649,11 +673,8 @@ export default function SourcesPage() {
             <Link href="#term-lg-id" className={TOOL_ANCHOR}>
               LG ID
             </Link>{" "}
-            in Definitions below. Counties, school districts, and cities are usually{" "}
-            <strong className="text-slate-900">not</strong>
-            {" "}
-            in the special-district registry, so you may see no contact listing while tile mills
-            still match your bill.
+            in Definitions below. If an LGID is missing from the DOLA LG export used for the
+            bundle, you may see no contact listing while tile mills still match your bill.
           </li>
           <li>
             <strong>Assessor fee line:</strong> The mart export can include an
@@ -667,34 +688,28 @@ export default function SourcesPage() {
           id="colorado-special-districts-dataset"
           className={`${SECTION_H3} !mt-8 scroll-mt-8`}
         >
-          Colorado statewide special districts (CSV)
+          Colorado statewide special districts (CSV, optional tooling)
         </h3>
         <p className="text-slate-700">
-          The lean file{" "}
+          The file{" "}
           <code className={CODE_INLINE_CLASS}>
-            public/data/colorado-all-special-districts.json
+            supporting-data/colorado-all-special-districts.json
           </code>{" "}
-          is produced offline from a tabular CSV export of the state&apos;s{" "}
-          <strong>All Special Districts in Colorado</strong> layer (example
-          filename{" "}
-          <code className={CODE_INLINE_CLASS}>
-            All_Special_Districts_in_Colorado_20260401.csv
-          </code>
-          ) via{" "}
+          can be produced offline from a tabular CSV export of the state&apos;s{" "}
+          <strong>All Special Districts in Colorado</strong> layer via{" "}
           <code className={CODE_INLINE_CLASS}>
             tools/import_colorado_district_layer_csv.py
           </code>
-          . From the same marketplace page, choose the CSV/tabular download (the
-          portal may offer other formats; the import expects CSV). Place large
-          CSVs under <code className={CODE_INLINE_CLASS}>supporting-data/</code>{" "}
-          (gitignored). Canonical page URL:{" "}
+          . The app runtime bundle uses{" "}
           <code className={CODE_INLINE_CLASS}>
-            src/lib/dataSourceUrls.ts
+            tools/build_district_directory_from_lg_export.py
           </code>{" "}
-          (<code className={CODE_INLINE_CLASS}>
+          instead (see below). Canonical marketplace URL:{" "}
+          <code className={CODE_INLINE_CLASS}>
             COLORADO_DATA_GOV_ALL_SPECIAL_DISTRICTS_DATASET
-          </code>
-          ).
+          </code>{" "}
+          in{" "}
+          <code className={CODE_INLINE_CLASS}>src/lib/dataSourceUrls.ts</code>.
         </p>
         <p className="mt-3 break-words">
           <a
@@ -709,32 +724,42 @@ export default function SourcesPage() {
         </p>
 
         <h3
-          id="dola-special-district-gis-dlall"
+          id="dola-lg-directory-export"
           className={`${SECTION_H3} !mt-8 scroll-mt-8`}
         >
-          DOLA special districts GIS (<code className={CODE_INLINE_CLASS}>dlall.dbf</code>)
+          DOLA LG directory (tabular CSV)
         </h3>
         <p className="text-slate-700">
           The file{" "}
           <code className={CODE_INLINE_CLASS}>
             public/data/colorado-special-district-directory.json
           </code>{" "}
-          is built offline from attribute table{" "}
+          is built with{" "}
+          <code className={CODE_INLINE_CLASS}>
+            tools/build_district_directory_from_lg_export.py
+          </code>
+          {" "}
+          from a full-state DOLA LG export (for example{" "}
+          <code className={CODE_INLINE_CLASS}>lg-export-all.csv</code> under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data-phase-2/</code>
+          ), keeping only rows whose{" "}
+          <code className={CODE_INLINE_CLASS}>LGID</code> appears in{" "}
+          <code className={CODE_INLINE_CLASS}>arapahoe-levy-stacks-by-tag-id.json</code>
+          {" "}
+          so bill-side LG IDs align with contact listings. The JSON{" "}
+          <code className={CODE_INLINE_CLASS}>_meta</code> field records the source CSV
+          name and any levy LGIDs missing from the export.
+        </p>
+        <p className="mt-3 text-slate-700">
+          Optional legacy tooling:{" "}
           <code className={CODE_INLINE_CLASS}>dlall.dbf</code> via{" "}
           <code className={CODE_INLINE_CLASS}>
             tools/export_special_district_directory.py
           </code>
-          . Download the Colorado special-district shapefile bundle from DOLA&apos;s
-          mapping project: open{" "}
-          <strong className="text-slate-900">Download</strong>, then{" "}
-          <strong className="text-slate-900">All Districts</strong>, and use{" "}
-          <code className={CODE_INLINE_CLASS}>dlall.dbf</code> from the extract (place
-          it under{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data/dlall/</code> in this
-          repo; gitignored). Boundaries and registry fields come from mixed sources per
-          DOLA&apos;s disclaimer on that site.
-        </p>
-        <p className="mt-3 break-words">
+          {" "}
+          (place the extract under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/dlall/</code>
+          , gitignored).{" "}
           <a
             href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
             target="_blank"
@@ -744,6 +769,7 @@ export default function SourcesPage() {
             Colorado Special District Mapping Project (DOLA GIS)
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
+          .
         </p>
 
         <h3
@@ -766,7 +792,10 @@ export default function SourcesPage() {
         </p>
         <p className="mt-3 text-slate-700">
           To attach those county GEOIDs to each row in{" "}
-          <code className={CODE_INLINE_CLASS}>colorado-all-special-districts.json</code>,{" "}
+          <code className={CODE_INLINE_CLASS}>
+            supporting-data/colorado-all-special-districts.json
+          </code>
+          ,{" "}
           <code className={CODE_INLINE_CLASS}>
             tools/enrich_district_json_county_geoids.py
           </code>{" "}

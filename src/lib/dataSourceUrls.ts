@@ -3,7 +3,8 @@
  */
 
 /**
- * DOLA LGIS — Property Tax Entities (export to xlsx for `build_arapahoe_parcel_levy_index.py`).
+ * DOLA LGIS — Property Tax Entities (export to CSV or xlsx for `build_arapahoe_parcel_levy_index.py`;
+ * the build script prefers `supporting-data/property-tax-entities-export.csv`).
  * Interactive site: accept terms, then export; not machine-scraped by this repo.
  */
 export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
@@ -11,9 +12,8 @@ export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
 
 /**
  * DOLA Colorado Special District Mapping Project (map UI + Download menu).
- * Offline: use Download → All Districts for the shapefile bundle; `dlall.dbf`
- * feeds `tools/export_special_district_directory.py` → `colorado-special-district-directory.json`.
- * Also linked from minimal metro path when LG ID does not match.
+ * Offline: optional legacy path: `dlall.dbf` → `tools/export_special_district_directory.py`.
+ * Runtime contact bundle: DOLA LG tabular export → `tools/build_district_directory_from_lg_export.py`.
  */
 export const COLORADO_SPECIAL_DISTRICTS_MAP_URL =
   "https://gis.dola.colorado.gov/CO_SpecialDistrict/";

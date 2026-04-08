@@ -10,6 +10,11 @@ export type SpecialDistrictRecord = {
   mailState: string | null;
   mailZip: string | null;
   lgTypeId: string | null;
+  /**
+   * DOLA Local Government Type from the LG tabular export (e.g. Metropolitan Districts).
+   * Resident-facing label: use `formatLocalGovernmentTypeForDisplay` in UI.
+   */
+  localGovernmentType?: string | null;
   /** Present on DOLA tabular exports; optional elsewhere. */
   lgStatus?: string | null;
   prevName: string | null;
@@ -32,6 +37,17 @@ export type SpecialDistrictDirectoryFile = {
     sourceCsv?: string;
     /** When countyGeoids were last attached (see enrich_district_json_county_geoids.py). */
     countyGeoidsAsOf?: string;
+  };
+  /**
+   * Build provenance for tools/build_district_directory_from_lg_export.py output.
+   */
+  _meta?: {
+    lgExportSourceCsv?: string;
+    lgExportBundledAt?: string;
+    levyStacksReference?: string;
+    referencedLgIdCount?: number;
+    directoryRowCount?: number;
+    missingLgIdsInExport?: string[];
   };
   districtCount: number;
   districts: SpecialDistrictRecord[];

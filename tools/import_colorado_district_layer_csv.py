@@ -20,7 +20,7 @@ Override paths:
 
   python3 tools/import_colorado_district_layer_csv.py \\
     --csv supporting-data/MyExport.csv \\
-    --out public/data/colorado-all-special-districts.json \\
+    --out supporting-data/colorado-all-special-districts.json \\
     --source-title "All Special Districts in Colorado"
 """
 
@@ -30,31 +30,24 @@ import argparse
 import csv
 import json
 import sys
-import re
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SUPPORT = ROOT / "supporting-data"
-PUBLIC_DATA = ROOT / "public" / "data"
+_TOOLS = Path(__file__).resolve().parent
+if str(_TOOLS) not in sys.path:
+    sys.path.insert(0, str(_TOOLS))
+from website_normalize import normalize_website  # noqa: E402
 
 PRESETS: dict[str, dict[str, str | Path]] = {
     "all": {
         "csv": SUPPORT / "All_Special_Districts_in_Colorado_20260401.csv",
-        "out": PUBLIC_DATA / "colorado-all-special-districts.json",
+        "out": SUPPORT / "colorado-all-special-districts.json",
         "title": "All Special Districts in Colorado",
     },
 }
-
-
-def normalize_website(raw: str) -> str | None:
-    t = raw.strip()
-    if not t or t.upper() == "NA":
-        return None
-    if re.match(r"^https?://", t, re.I):
-        return t
-    return f"https://{t.lstrip('/')}"
 
 
 def clean_str(raw: str | None) -> str | None:

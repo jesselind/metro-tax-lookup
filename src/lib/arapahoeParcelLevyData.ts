@@ -17,7 +17,7 @@ export type ArapahoeDolaMatch = {
   matchedLegalName?: string | null;
   score?: number | null;
   /**
-   * Certified total levy (mills) from the DOLA xlsx column when the mart line aligns
+   * Certified total levy (mills) from the DOLA LGIS export levy column when the mart line aligns
    * with the matched entity row (see millsReason when null on purpose).
    */
   mills?: number | null;
@@ -26,7 +26,7 @@ export type ArapahoeDolaMatch = {
    * millsOverride so the UI can explain the difference.
    */
   dolaMills?: number | null;
-  /** Set when mills is omitted because attaching the xlsx value would be misleading. */
+  /** Set when mills is omitted because attaching the DOLA levy value would be misleading. */
   millsReason?: "bond_purpose_mismatch" | "county_levy_table_override" | string;
 };
 

@@ -24,7 +24,6 @@ import {
 import {
   ARAPAHOE_COUNTY_GEOID,
   matchSpecialDistrict,
-  mergeDistrictDirectoryLayers,
 } from "@/lib/specialDistrictMatch";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
@@ -37,6 +36,8 @@ import {
   type ParcelValuesFromExport,
   parseMills,
 } from "@/lib/committedLevyLine";
+import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
+import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 import {
   annualTaxDollarsFromAssessedMills,
   parcelAssessedForDollarEstimate,
@@ -123,6 +124,112 @@ function EllipsisVerticalIcon({ className }: { className?: string }) {
         d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
       />
     </svg>
+  );
+}
+
+type TileActionsModalProps = {
+  actionLine: CommittedLevyLine;
+  allowLineEdit: boolean;
+  formatMills: (mills: number) => string;
+  goToTermFromTileMenu: (id: "term-mills" | "term-levy") => void;
+  beginEdit: (line: CommittedLevyLine) => void;
+  removeLine: (id: string) => void;
+  onDismiss: () => void;
+};
+
+function TileActionsModal({
+  actionLine,
+  allowLineEdit,
+  formatMills,
+  goToTermFromTileMenu,
+  beginEdit,
+  removeLine,
+  onDismiss,
+}: TileActionsModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useDialogFocusTrap(dialogRef);
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
+
+  return (
+    <ModalPortal>
+      <div className="fixed inset-0 z-[100] flex min-h-[100dvh] w-full items-end justify-center sm:items-center sm:p-4">
+        <button
+          type="button"
+          tabIndex={-1}
+          className="absolute inset-0 min-h-[100dvh] bg-black/45"
+          aria-label="Close menu"
+          onClick={onDismiss}
+        />
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tile-actions-heading"
+          className="relative z-10 w-full max-w-lg rounded-t-lg border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-lg"
+        >
+          <h3
+            ref={titleRef}
+            id="tile-actions-heading"
+            tabIndex={0}
+            className="pr-2 text-base font-semibold leading-snug text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-sky-600/50 focus-visible:ring-offset-2"
+          >
+            {displayAuthorityForLevyLine(actionLine.authority)}
+          </h3>
+          <div className="mt-1 space-y-1.5">
+            <p className="font-mono text-sm tabular-nums text-slate-600">
+              <span>{formatMills(actionLine.mills)}</span>{" "}
+              <button
+                type="button"
+                className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
+                onClick={() => goToTermFromTileMenu("term-mills")}
+              >
+                mills
+              </button>
+            </p>
+            <p className="text-sm text-slate-600">
+              One{" "}
+              <button
+                type="button"
+                className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-sm`}
+                onClick={() => goToTermFromTileMenu("term-levy")}
+              >
+                levy
+              </button>
+              {" "}
+              line among several on your parcel.
+            </p>
+          </div>
+          <div className="mt-4 flex flex-col gap-2">
+            <button
+              type="button"
+              className={`${btnOutlinePrimaryMd} w-full justify-center py-3 disabled:pointer-events-none disabled:opacity-50`}
+              disabled={!allowLineEdit}
+              onClick={() => beginEdit(actionLine)}
+            >
+              Edit line
+            </button>
+            <button
+              type="button"
+              className="w-full rounded-md border border-red-300 bg-white py-3 text-base font-medium text-red-900 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400/40 disabled:pointer-events-none disabled:opacity-50"
+              disabled={!allowLineEdit}
+              onClick={() => removeLine(actionLine.id)}
+            >
+              Remove line
+            </button>
+            <button
+              type="button"
+              className={`${btnOutlineSecondaryMd} w-full justify-center py-3`}
+              onClick={onDismiss}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </ModalPortal>
   );
 }
 
@@ -234,7 +341,7 @@ export function LevyStackVisualization({
     window.setTimeout(() => {
       if (termDefinitionsOnHomePage) {
         window.history.replaceState(null, "", `/#${id}`);
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        focusTermDefinitionById(id);
       } else {
         window.location.assign(`/sources#${id}`);
       }
@@ -245,19 +352,13 @@ export function LevyStackVisualization({
     if (!showResults || specialDistrictFetchStartedRef.current) return;
     specialDistrictFetchStartedRef.current = true;
     queueMicrotask(() => setSpecialDistrictLoading(true));
-    Promise.all([
-      fetch("/data/colorado-special-district-directory.json").then((r) => {
+    fetch("/data/colorado-special-district-directory.json")
+      .then((r) => {
         if (!r.ok) throw new Error(String(r.status));
         return r.json() as Promise<SpecialDistrictDirectoryFile>;
-      }),
-      fetch("/data/colorado-all-special-districts.json")
-        .then((r) =>
-          r.ok ? (r.json() as Promise<SpecialDistrictDirectoryFile>) : null,
-        )
-        .catch(() => null),
-    ])
-      .then(([special, layer]) => {
-        setSpecialDistrictFile(mergeDistrictDirectoryLayers(special, [layer]));
+      })
+      .then((special) => {
+        setSpecialDistrictFile(special);
         setSpecialDistrictError(null);
       })
       .catch(() => {
@@ -1032,6 +1133,7 @@ export function LevyStackVisualization({
 
       {detailContext && (
         <LevyLineDistrictDetailDialog
+          key={detailLineId ?? ""}
           authorityLabel={detailContext.authority}
           levyLineCode={detailContext.line.levyLineCode}
           sourceTagId={detailContext.line.sourceTagId}
@@ -1048,78 +1150,15 @@ export function LevyStackVisualization({
       )}
 
       {allowLineEdit && tileActionsId && actionLine && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[100] flex min-h-[100dvh] w-full items-end justify-center sm:items-center sm:p-4">
-            <button
-              type="button"
-              className="absolute inset-0 min-h-[100dvh] bg-black/45"
-              aria-label="Close menu"
-              onClick={() => setTileActionsId(null)}
-            />
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="tile-actions-heading"
-              className="relative z-10 w-full max-w-lg rounded-t-lg border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-lg"
-            >
-            <h3
-              id="tile-actions-heading"
-              className="pr-2 text-base font-semibold leading-snug text-slate-900"
-            >
-              {displayAuthorityForLevyLine(actionLine.authority)}
-            </h3>
-            <div className="mt-1 space-y-1.5">
-              <p className="font-mono text-sm tabular-nums text-slate-600">
-                <span>{formatMills(actionLine.mills)}</span>{" "}
-                <button
-                  type="button"
-                  className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
-                  onClick={() => goToTermFromTileMenu("term-mills")}
-                >
-                  mills
-                </button>
-              </p>
-              <p className="text-sm text-slate-600">
-                One{" "}
-                <button
-                  type="button"
-                  className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-sm`}
-                  onClick={() => goToTermFromTileMenu("term-levy")}
-                >
-                  levy
-                </button>
-                {" "}
-                line among several on your parcel.
-              </p>
-            </div>
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                type="button"
-                className={`${btnOutlinePrimaryMd} w-full justify-center py-3 disabled:pointer-events-none disabled:opacity-50`}
-                disabled={!allowLineEdit}
-                onClick={() => beginEdit(actionLine)}
-              >
-                Edit line
-              </button>
-              <button
-                type="button"
-                className="w-full rounded-md border border-red-300 bg-white py-3 text-base font-medium text-red-900 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400/40 disabled:pointer-events-none disabled:opacity-50"
-                disabled={!allowLineEdit}
-                onClick={() => removeLine(actionLine.id)}
-              >
-                Remove line
-              </button>
-              <button
-                type="button"
-                className={`${btnOutlineSecondaryMd} w-full justify-center py-3`}
-                onClick={() => setTileActionsId(null)}
-              >
-                Cancel
-              </button>
-            </div>
-            </div>
-          </div>
-        </ModalPortal>
+        <TileActionsModal
+          actionLine={actionLine}
+          allowLineEdit={allowLineEdit}
+          formatMills={formatMills}
+          goToTermFromTileMenu={goToTermFromTileMenu}
+          beginEdit={beginEdit}
+          removeLine={removeLine}
+          onDismiss={() => setTileActionsId(null)}
+        />
       )}
 
     </div>

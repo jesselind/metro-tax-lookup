@@ -15,11 +15,16 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import struct
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any, List, Tuple
+
+_TOOLS = Path(__file__).resolve().parent
+if str(_TOOLS) not in sys.path:
+    sys.path.insert(0, str(_TOOLS))
+from website_normalize import normalize_website  # noqa: E402
 
 
 def read_dbf_schema_and_records(path: Path) -> Tuple[List[Tuple[str, int]], List[dict[str, str]]]:
@@ -59,15 +64,6 @@ def read_dbf_schema_and_records(path: Path) -> Tuple[List[Tuple[str, int]], List
             rec[name] = chunk.decode("latin-1", errors="replace").strip()
         records.append(rec)
     return fields, records
-
-
-def normalize_website(raw: str) -> str:
-    t = raw.strip()
-    if not t:
-        return ""
-    if re.match(r"^https?://", t, re.I):
-        return t
-    return f"https://{t.lstrip('/')}"
 
 
 def main() -> None:

@@ -18,6 +18,7 @@ These apply to the levy detail dialog and optional explainer content (same UX go
 ## Where content lives
 
 - `public/data/levy-explainer-entries.json`
+- Offline **DOLA LGIS** tax-entity join (mills, tax entity ID, LG ID on each levy line for `dolaMatch`) is **not** part of explainer JSON; it is built by `tools/build_arapahoe_parcel_levy_index.py` from `supporting-data/property-tax-entities-export.csv` (DOLA export; local `.xlsx` only if CSV is absent). See `/sources` and README “Regenerating data.” Explainer **match** keys are independent except when you use `lgId` / `levyLineCode` fallbacks that align with bill data.
 - UI: `LevyExplainerModalSection` (government level, what is it, citations accordion)
 - Levy **line detail** shell (taxing authority, LG ID, Contact, disclosures): `LevyLineDistrictDetailDialog.tsx` — shared for **every** levy row; do not fork one-off copy per entity in that file.
 - Structural reference entry: **`developmental-disability-levy`** (shape and sections). Mart **`4528`** example: **`regional-transportation-district-levy`** (RTD, LG ID `64116`; county label `REGIONAL TRANSPORTATION`). Mart **`4713`** example: **`urban-drainage-south-platte-levy`** (Urban Drainage & Flood, South Platte Levy; LG ID `64174`, tax entity `64174/1`; county label `URBN DRNGE&FLD (S PLATTE)`).

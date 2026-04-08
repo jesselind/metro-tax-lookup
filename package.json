@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "3.4.3",
+  "version": "3.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,6 +8,7 @@
     "prebuild": "npm run validate:levy-explainer",
     "build": "next build",
     "build:arapahoe-index": "python3 tools/build_arapahoe_parcel_levy_index.py",
+    "build:district-directory": "python3 tools/build_district_directory_from_lg_export.py",
     "start": "next start",
     "lint": "eslint"
   },

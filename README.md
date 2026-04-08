@@ -30,12 +30,14 @@ Open `http://localhost:3000`.
 - Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
 
+**Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
+
 ## Data layout
 
 | Path | Role |
 | --- | --- |
 | `public/data/*.json` | Runtime app data served to the browser |
-| `supporting-data/` | Offline inputs/intermediate files for regeneration (mostly gitignored) |
+| `supporting-data/` | Offline inputs/intermediate files for regeneration (mostly gitignored; committed CSV where noted) |
 | `tools/*.py` | Offline extractors/index builders |
 
 ### Levy detail modal (`levy-explainer-entries.json`)
@@ -68,20 +70,30 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    npm run build:arapahoe-index
    ```
 
+   The script reads county mart CSVs and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/property-tax-entities-export.csv` (preferred; committed so forks can rebuild). If that file is missing, it falls back to `property-tax-entities-export.xlsx` locally. **`*.xlsx` is gitignored**; keep spreadsheets out of version control and use CSV for the canonical export.
+
    Outputs include:
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
    - `public/data/arapahoe-pin-to-tag.json`
    - `public/data/arapahoe-situs-to-pins.json`
 
-3. Rebuild metro levy JSON (year-specific script):
+3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):
+
+   ```bash
+   npm run build:district-directory
+   ```
+
+   Reads `supporting-data-phase-2/lg-export-all.csv` (or pass `--lg-csv`) and `public/data/arapahoe-levy-stacks-by-tag-id.json`. Writes `public/data/colorado-special-district-directory.json`. Run after `build:arapahoe-index` when levy stacks change, or when you refresh the LG CSV. If a levy LGID has no row in the export, `_meta.missingLgIdsInExport` lists it until the DOLA CSV or pipeline includes that ID.
+
+4. Rebuild metro levy JSON (year-specific script):
    - `tools/extract_metro_levies_2025.py` or `tools/extract_metro_levies_2026.py`
    - Source PDF goes in `supporting-data/Mill Levy Public Information Form.pdf`
    - Copy generated output to `public/data/metro-levies-YYYY.json`
 
-4. Optional district datasets:
-   - `tools/import_colorado_district_layer_csv.py`
-   - `tools/enrich_district_json_county_geoids.py`
-   - `tools/export_special_district_directory.py` — place the Colorado **dlall** GIS extract under `supporting-data/dlall/` (at minimum `dlall.dbf`; other sidecar files optional for this script) before running
+5. Optional legacy district tooling (not used for the app runtime bundle above):
+   - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`
+   - `tools/enrich_district_json_county_geoids.py` — reads that JSON and optional Census GDB under `supporting-data/`
+   - `tools/export_special_district_directory.py` — Colorado **dlall** GIS extract under `supporting-data/dlall/` (`dlall.dbf`)
 
 ## Contributor notes
 
