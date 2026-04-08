@@ -17,6 +17,8 @@ export type LevyExplainerEntry = {
     labelContainsAll?: string[];
     levyLineCode?: string;
     sourceTagId?: string;
+    /** DOLA / bill LG ID (digits; compared zero-padded to 5). Use with `labelContainsAll` when JSON omits `levyLineCode`. */
+    lgId?: string;
   };
   origin: {
     heading: string;
@@ -77,14 +79,41 @@ function entryMatchesSourceTag(
   return Boolean(m && m === sourceTagId.trim());
 }
 
+/** Align with bill/DOLA LG ID strings (digits only; zero-pad short ids to 5 digits). */
+export function normalizeLgIdForExplainer(raw: string | null | undefined): string {
+  const t = (raw ?? "").trim();
+  if (!t) return "";
+  const digits = t.replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.length <= 5 ? digits.padStart(5, "0") : digits;
+}
+
+/** LG ID path: entry has `lgId` and no `levyLineCode`; requires `labelContainsAll`. */
+function entryMatchesLgIdWithLabelGuard(
+  entry: LevyExplainerEntry,
+  normalizedOptionsLgId: string,
+  normalizedLabel: string,
+): boolean {
+  const lg = entry.match.lgId?.trim();
+  if (!lg) return false;
+  if (entry.match.levyLineCode?.trim()) return false;
+  if (normalizeLgIdForExplainer(lg) !== normalizedOptionsLgId) return false;
+  const frags = entry.match.labelContainsAll;
+  if (!frags?.length) return false;
+  return entryMatchesLabel(entry, normalizedLabel);
+}
+
 export type LevyExplainerLookupContext = {
   levyLineCode?: string;
   sourceTagId?: string;
+  /** From DOLA match on the levy row when present. */
+  lgId?: string;
 };
 
 /**
- * First matching explainer: levy line code, then source TAG id, then normalized authority label.
- * Add rows to `levy-explainer-entries.json`; keep `match` rules disjoint when possible.
+ * First matching explainer: levy line code, then LG ID + label (JSON without `levyLineCode`),
+ * then source TAG id, then `labelContainsAll`. Add rows in `levy-explainer-entries.json`; keep
+ * `match` rules disjoint when possible.
  */
 export function findLevyExplainerEntry(
   authorityLabel: string,
@@ -94,6 +123,15 @@ export function findLevyExplainerEntry(
   if (code) {
     for (const e of LEVY_EXPLAINER_ENTRIES) {
       if (entryMatchesLevyLineCode(e, code)) return e;
+    }
+  }
+  const optLg = normalizeLgIdForExplainer(options?.lgId);
+  if (optLg) {
+    const n = normalizeLevyAuthorityLabel(authorityLabel);
+    if (n) {
+      for (const e of LEVY_EXPLAINER_ENTRIES) {
+        if (entryMatchesLgIdWithLabelGuard(e, optLg, n)) return e;
+      }
     }
   }
   const tag = options?.sourceTagId?.trim() ?? "";

@@ -6,6 +6,7 @@
 
 import {
   CODE_INLINE_CLASS,
+  COUNTY_EXTERNAL_LINK_CLASS,
   TERM_ASIDE_BASE,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -277,6 +278,39 @@ export function TermLevyAside() {
   );
 }
 
+export function TermSpecialDistrictsAside() {
+  return (
+    <TermAside
+      id="term-special-districts"
+      title="Special districts"
+      titleId="term-special-districts-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        In Colorado, a{" "}
+        <dfn className="font-semibold not-italic text-slate-900">special district</dfn>
+        {" "}
+        is a local government that delivers a focused service (libraries, fire protection,
+        recreation, and others) and usually has its own{" "}
+        <strong className="font-semibold text-slate-900">property tax mill levy</strong>
+        {" "}
+        on parcels in its boundaries. It is not the same as the county or city government, though
+        boundaries can overlap. This tool shows special districts on your levy stack with their own
+        LG ID when the county data ties a row to state records. Colorado organizes this kind of
+        district under{" "}
+        <a
+          href="https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Colorado Revised Statutes, Title 32
+        </a>
+        .
+      </p>
+    </TermAside>
+  );
+}
+
 export function TermLgIdAside() {
   return (
     <TermAside id="term-lg-id" title="LG ID" titleId="term-lg-id-title">
@@ -309,7 +343,7 @@ export function TermTaxEntityAside() {
 
 /**
  * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
- * (PIN, property classification, actual/assessed value, mills, levy, LG ID, tax entity).
+ * (PIN, property classification, actual/assessed value, mills, levy, special districts, LG ID, tax entity).
  */
 export function AllTermDefinitionAsides() {
   return (
@@ -323,6 +357,7 @@ export function AllTermDefinitionAsides() {
       <TermAssessedValueAside />
       <TermMillsAside />
       <TermLevyAside />
+      <TermSpecialDistrictsAside />
       <TermLgIdAside />
       <TermTaxEntityAside />
     </>

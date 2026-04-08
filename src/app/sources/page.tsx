@@ -639,10 +639,12 @@ export default function SourcesPage() {
             (tax entity ID, LG ID, fuzzy name scores from county-to-DOLA only).{" "}
             <strong className="text-slate-900">(2) Directory contact match</strong> against bundled
             district JSON (Arapahoe boundary filtering for fuzzy matches). When the levy line has a
-            bill LG ID from the DOLA join, that ID selects the directory row first; otherwise the
-            label may supply an LG ID or a fuzzy name match. When LG ID matches across both, the
-            UI treats that as the strongest link; if only the name is fuzzy,
-            contact is shown with a caveat. See{" "}
+            bill LG ID from the DOLA join, that ID selects the directory row first; if no row exists
+            for that ID, the matcher may fall back to fuzzy name matching so users still see typical
+            registry contact patterns. Bill LG ID and directory LG ID may differ — public mail often
+            reflects administrative or management contacts. When LG ID matches across both, the UI
+            treats that as the strongest link; if only the name is fuzzy or IDs differ, contact is
+            shown with explanation. See{" "}
             <Link href="#term-lg-id" className={TOOL_ANCHOR}>
               LG ID
             </Link>{" "}
@@ -804,6 +806,23 @@ export default function SourcesPage() {
           <code className={CODE_INLINE_CLASS}>public/data/levy-explainer-entries.json</code>
           {" "}
           — not in this list.
+        </p>
+        <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+          New rows follow the same JSON shape as the existing explainers. The app picks which entry
+          applies in this order: levy line code when present, then LG ID with label keywords (when the
+          file does not set a line code), then source TAG id, then label keywords.
+        </p>
+        <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+          Explainers can link a phrase to a definition below (for example{" "}
+          <a href="#term-special-districts" className={TOOL_ANCHOR}>
+            Special districts
+          </a>
+          ) using a{" "}
+          <code className={CODE_INLINE_CLASS}>{"{{term:term-id|label}}"}</code>
+          {" "}
+          token in{" "}
+          <code className={CODE_INLINE_CLASS}>levy-explainer-entries.json</code>
+          .
         </p>
         <AllTermDefinitionAsides />
       </section>

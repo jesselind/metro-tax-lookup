@@ -2,6 +2,8 @@
 
 import type { LevyExplainerEntry } from "@/lib/levyExplainer";
 import { LevyExplainerCitationBlocks } from "@/components/LevyExplainerCitations";
+import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+import type { ReactNode } from "react";
 
 const DETAILS_SUMMARY_CLASS =
   "cursor-pointer list-none text-sm font-semibold text-slate-900 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-50 sm:text-base [&::-webkit-details-marker]:hidden";
@@ -9,11 +11,60 @@ const DETAILS_SUMMARY_CLASS =
 const CHEVRON_CLASS =
   "h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180";
 
+/** In-app term link: `{{term:term-special-districts|special district}}` */
+const TERM_LINK_TOKEN = /\{\{term:([^|]+)\|([^}]+)\}\}/g;
+
+const TERM_LINK_BTN_CLASS = `${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-base leading-relaxed sm:text-lg`;
+
+function paragraphWithTermLinks(
+  text: string,
+  paragraphKey: string,
+  onNavigateToTerm?: (termId: string) => void,
+): ReactNode {
+  const nodes: ReactNode[] = [];
+  let last = 0;
+  let tokenIndex = 0;
+  const re = new RegExp(TERM_LINK_TOKEN.source, "g");
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) {
+      nodes.push(text.slice(last, m.index));
+    }
+    const termId = m[1].trim();
+    const label = m[2];
+    if (onNavigateToTerm) {
+      nodes.push(
+        <button
+          key={`${paragraphKey}-tl-${tokenIndex}`}
+          type="button"
+          className={TERM_LINK_BTN_CLASS}
+          aria-label={`${label}: definition`}
+          onClick={() => {
+            onNavigateToTerm(termId);
+          }}
+        >
+          {label}
+        </button>,
+      );
+    } else {
+      nodes.push(label);
+    }
+    tokenIndex += 1;
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) {
+    nodes.push(text.slice(last));
+  }
+  return nodes.length === 1 && typeof nodes[0] === "string" ? nodes[0] : <>{nodes}</>;
+}
+
 type Props = {
   entry: LevyExplainerEntry;
+  /** When set, `{{term:id|label}}` in paragraphs becomes a button that calls this (e.g. scroll to Key terms). */
+  onNavigateToTerm?: (termId: string) => void;
 };
 
-export function LevyExplainerModalSection({ entry }: Props) {
+export function LevyExplainerModalSection({ entry, onNavigateToTerm }: Props) {
   const hasCitations = entry.citationBlocks.length > 0;
 
   return (
@@ -41,7 +92,11 @@ export function LevyExplainerModalSection({ entry }: Props) {
             key={`modal-wi-${entry.id}-${i}`}
             className={`text-base leading-relaxed text-slate-800 sm:text-lg ${i === 0 ? "mt-1.5" : "mt-2"}`}
           >
-            {p}
+            {paragraphWithTermLinks(
+              p,
+              `modal-wi-${entry.id}-${i}`,
+              onNavigateToTerm,
+            )}
           </p>
         ))}
 

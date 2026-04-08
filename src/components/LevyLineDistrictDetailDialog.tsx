@@ -10,6 +10,7 @@ import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
+import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 
@@ -84,7 +85,13 @@ export function LevyLineDistrictDetailDialog({
   const lgIdContactTrusted =
     hasDolaPanel && hasDirectoryMatch && lgIdsAligned && !lgIdConflict;
 
-  function navigateToTerm(id: "term-mills" | "term-lg-id" | "term-tax-entity") {
+  function navigateToTerm(
+    id:
+      | "term-mills"
+      | "term-lg-id"
+      | "term-tax-entity"
+      | "term-special-districts",
+  ) {
     onClose();
     window.setTimeout(() => {
       if (termDefinitionsOnHomePage) {
@@ -104,7 +111,7 @@ export function LevyLineDistrictDetailDialog({
     (dolaMatch.taxEntityId || dolaMatch.matchedLegalName) &&
     dolaMatch.confidence === "low" &&
     dolaMatch.method !== "override" ? (
-      <span className="inline-flex rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-950">
+      <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-800">
         Verify the district name on your bill.
       </span>
     ) : null;
@@ -136,7 +143,16 @@ export function LevyLineDistrictDetailDialog({
   const levyExplainerEntry = findLevyExplainerEntry(authorityLabel, {
     levyLineCode,
     sourceTagId,
+    lgId: dolaMatch?.lgId ?? undefined,
   });
+
+  const contactGovernmentKind = levyGovernmentContactKind(
+    authorityLabel,
+    levyExplainerEntry?.origin.level ?? null,
+    levyExplainerEntry != null,
+  );
+  const isSpecialDistrictContactContext =
+    contactGovernmentKind === "special_district_context";
 
   return (
     <ModalPortal>
@@ -175,7 +191,19 @@ export function LevyLineDistrictDetailDialog({
 
             <div className="mt-4 space-y-3 pb-3 text-sm leading-relaxed text-slate-800 sm:text-base">
               {levyExplainerEntry ? (
-                <LevyExplainerModalSection entry={levyExplainerEntry} />
+                <LevyExplainerModalSection
+                  entry={levyExplainerEntry}
+                  onNavigateToTerm={(termId) => {
+                    if (
+                      termId === "term-mills" ||
+                      termId === "term-lg-id" ||
+                      termId === "term-tax-entity" ||
+                      termId === "term-special-districts"
+                    ) {
+                      navigateToTerm(termId);
+                    }
+                  }}
+                />
               ) : null}
 
               {dolaMatch && dolaMatch.uraHint && (
@@ -202,34 +230,6 @@ export function LevyLineDistrictDetailDialog({
                       your tile still match your bill.
                     </>
                   )}
-                </p>
-              )}
-
-              {hasDolaPanel && hasDirectoryMatch && lgIdConflict && (
-                <p
-                  className="rounded-md border border-amber-200 bg-amber-50/90 px-3 py-2 text-amber-950"
-                  role="status"
-                >
-                  The address and website below may not match this district. Check the name on your
-                  bill before you use them.
-                  <span className="mt-1 block text-xs text-amber-900/90">
-                    LG ID on your bill (
-                    <span className="font-mono tabular-nums">{dolaLg}</span>
-                    ) does not match the contact listing (
-                    <span className="font-mono tabular-nums">{dirLg}</span>
-                    ).
-                  </span>
-                </p>
-              )}
-
-              {showContactUncertainty && (
-                <p
-                  className="rounded-md border border-amber-200 bg-amber-50/90 px-3 py-2 text-amber-950"
-                  role="status"
-                >
-                  We believe the website and address below belong to this taxing authority, but we
-                  cannot fully verify the match from the name alone. Confirm on your bill before you
-                  rely on them.
                 </p>
               )}
 
@@ -316,6 +316,91 @@ export function LevyLineDistrictDetailDialog({
                     ) : null}
                   </dl>
 
+                  {hasDolaPanel && hasDirectoryMatch && lgIdConflict && (
+                    <div className="mt-3 border-t border-slate-200/90 pt-3" role="status">
+                      <div className="rounded-md border border-slate-200/70 bg-white/50 px-3 py-2.5 text-slate-800">
+                        <p className="text-sm leading-snug text-slate-800">
+                          <span className="font-medium text-slate-900">
+                            Contact uses a different public listing ID.
+                          </span>{" "}
+                          Your bill lists LG ID{" "}
+                          <span className="font-mono tabular-nums text-slate-800">{dolaLg}</span>
+                          ; the Contact section below comes from directory LG ID{" "}
+                          <span className="font-mono tabular-nums text-slate-800">{dirLg}</span>.
+                        </p>
+                        <details className="group mt-2 border-t border-slate-200/80 pt-2">
+                          <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-slate-600 hover:text-slate-800 [&::-webkit-details-marker]:hidden">
+                            <svg
+                              aria-hidden
+                              className="h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 group-open:rotate-90"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Why two LG IDs?
+                          </summary>
+                          <div className="mt-2 space-y-2 pl-6 text-xs leading-relaxed text-slate-600">
+                            <p>
+                              Your tax record and the state&apos;s district contact list do not
+                              always use the same ID for the same row. That is common. It does not
+                              mean your bill is wrong about who levies this tax.
+                            </p>
+                            {isSpecialDistrictContactContext ? (
+                              <p>
+                                The{" "}
+                                <strong className="font-semibold text-slate-800">
+                                  taxing authority
+                                </strong>{" "}
+                                above is who levies this tax. The{" "}
+                                <strong className="font-semibold text-slate-800">Contact</strong>{" "}
+                                block comes from a different directory row than your bill ID.
+                                Special districts often list mailing or administrative addresses that
+                                are shared with another district or handled by a third-party
+                                administrator. Two listing IDs often differ because tax and contact
+                                data are not keyed the same way. The address may not be that
+                                district&apos;s main public office.
+                              </p>
+                            ) : (
+                              <p>
+                                The{" "}
+                                <strong className="font-semibold text-slate-800">
+                                  taxing authority
+                                </strong>{" "}
+                                above is who levies this tax. The{" "}
+                                <strong className="font-semibold text-slate-800">Contact</strong>{" "}
+                                block comes from a different directory row than your bill ID. That
+                                listing may show another government office, a shared public
+                                building, or mail for administrative reasons. Two listing IDs often
+                                differ because tax and contact data are not keyed the same way. The
+                                address may not be that agency&apos;s main public office.
+                              </p>
+                            )}
+                            <p>
+                              If you call or write, confirm you are reaching the right office for
+                              this levy.
+                            </p>
+                          </div>
+                        </details>
+                      </div>
+                    </div>
+                  )}
+
+                  {showContactUncertainty && (
+                    <p
+                      className="mt-3 border-t border-slate-200/90 pt-3 text-sm leading-snug text-slate-700"
+                      role="status"
+                    >
+                      We believe the Contact section below matches this taxing authority, but we
+                      cannot fully verify it from the name alone. Confirm on your bill before you
+                      rely on it.
+                    </p>
+                  )}
+
                   {dolaNameWarningPill ? <div className="mt-2">{dolaNameWarningPill}</div> : null}
 
                   {dolaMatch &&
@@ -336,9 +421,12 @@ export function LevyLineDistrictDetailDialog({
                   )}
 
                   {hasDirectoryMatch && match && match.kind !== "none" ? (
-                    <>
+                    <div className="mt-3 border-t border-slate-200/90 pt-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Contact
+                      </p>
                       {districtWebsiteHref ? (
-                        <p className="mt-3 border-t border-slate-200/90 pt-3">
+                        <p className="mt-2">
                           <a
                             href={districtWebsiteHref}
                             target="_blank"
@@ -351,7 +439,13 @@ export function LevyLineDistrictDetailDialog({
                         </p>
                       ) : null}
                       {formatMailingLines(match.record).length > 0 ? (
-                        <div className="mt-3 border-t border-slate-200/90 pt-3">
+                        <div
+                          className={
+                            districtWebsiteHref
+                              ? "mt-3 border-t border-slate-200/80 pt-3"
+                              : "mt-2"
+                          }
+                        >
                           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                             Address
                           </p>
@@ -365,16 +459,48 @@ export function LevyLineDistrictDetailDialog({
                         </div>
                       ) : null}
                       {snapshot ? (
-                        <p className="mt-3 border-t border-slate-200/90 pt-3 text-xs text-slate-500">
+                        <p className="mt-3 text-xs text-slate-500">
                           Contact info as of {snapshot.bundledAsOf}
                         </p>
                       ) : null}
-                    </>
+                      {!lgIdConflict ? (
+                        <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                          {isSpecialDistrictContactContext ? (
+                            <>
+                              Public listings for special districts often show mailing or
+                              administrative addresses. They may be shared with another district or
+                              a management contact. Confirm using the taxing authority name on
+                              your bill.
+                            </>
+                          ) : (
+                            <>
+                              Public listings often show mailing or administrative addresses. They
+                              may point to another government office, a shared building, or a third
+                              party. Confirm using the taxing authority name on your bill.
+                            </>
+                          )}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : !directoryLoading && !directoryError && hasDolaPanel ? (
-                    <p className="mt-3 border-t border-slate-200/90 pt-3 text-sm text-slate-600">
-                      No address or website in our special-district directory for this district
-                      (counties, schools, and cities are often not listed there).
-                    </p>
+                    <div className="mt-3 space-y-2 border-t border-slate-200/90 pt-3 text-sm leading-relaxed text-slate-600">
+                      <p>
+                        No verified contact listing in our bundled district directory for this
+                        authority ID. Counties, schools, and cities are often not in that registry.
+                      </p>
+                      <p>
+                        <span className="font-semibold text-slate-800">How to inquire:</span> Use the
+                        taxing authority name, tax entity, and LG ID on your bill or county property
+                        tax page to find the right office or official contacts. See{" "}
+                        <a
+                          href="/sources#levy-breakdown-tool"
+                          className={`${TERM_LINK_CLASS} cursor-pointer`}
+                        >
+                          Sources
+                        </a>{" "}
+                        for how we match levy data.
+                      </p>
+                    </div>
                   ) : null}
                 </div>
               )}

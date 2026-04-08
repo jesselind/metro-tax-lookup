@@ -19,6 +19,7 @@ import {
   TermLgIdAside,
   TermMillsAside,
   TermPinAside,
+  TermSpecialDistrictsAside,
   TermTaxEntityAside,
 } from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd, btnPrimaryMd } from "@/lib/buttonClasses";
@@ -1038,6 +1039,7 @@ export function HomeParcelAddressLookup({
             <TermActualValueAside />
             <TermAssessedValueAside />
             <TermLevyAside />
+            <TermSpecialDistrictsAside />
             <TermLgIdAside />
             <TermMillsAside />
             <TermPinAside />

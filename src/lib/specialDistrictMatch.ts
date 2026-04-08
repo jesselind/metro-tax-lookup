@@ -89,7 +89,10 @@ export type SpecialDistrictMatchOptions = {
   /**
    * LG ID from the county/DOLA join on the levy line (e.g. bill-side match).
    * When set, the directory row for this ID is used first (before parsing the
-   * authority label or fuzzy name matching).
+   * authority label or fuzzy name matching). If no row exists for that ID (or the
+   * row fails the county filter), we still fall back to fuzzy name matching so
+   * users can see typical registry contact patterns; the UI explains when bill
+   * LG ID and directory LG ID differ (e.g. administrative or management listings).
    */
   preferredLgId?: string | null;
 };

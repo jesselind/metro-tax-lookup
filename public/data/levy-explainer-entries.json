@@ -4,6 +4,8 @@
     {
       "id": "developmental-disability-levy",
       "match": {
+        "levyLineCode": "2999",
+        "lgId": "03001",
         "labelContainsAll": ["developmental", "disab"]
       },
       "origin": {
@@ -12,7 +14,7 @@
       },
       "whatIsIt": {
         "paragraphs": [
-          "Part of your property tax that helps fund Colorado's intellectual and developmental disability services, including community-centered boards."
+          "A state-level public service system in Colorado for people with intellectual and developmental disabilities. Funding supports programs and service networks, including community-centered boards that coordinate local access."
         ]
       },
       "citationBlocks": [
@@ -36,6 +38,90 @@
             {
               "text": "Individuals with Intellectual and Developmental Disabilities (HCPF)",
               "url": "https://hcpf.colorado.gov/individuals-with-intellectual-developmental-disabilities-services-supports"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arapahoe-library-district-levy",
+      "match": {
+        "levyLineCode": "4026",
+        "lgId": "64005",
+        "labelContainsAll": ["arapahoe", "library"]
+      },
+      "origin": {
+        "heading": "Government level",
+        "level": "Library district"
+      },
+      "whatIsIt": {
+        "paragraphs": [
+          "A {{term:term-special-districts|special district}} local government that operates public library services in its legal service area, including branches, collections, and community programs. Some cities in the county run separate city library systems; this levy is for the district shown above, not those city systems."
+        ]
+      },
+      "citationBlocks": [
+        {
+          "label": "Formal framework",
+          "afterLinksNote": "Library districts and public libraries are in Title 24. Open the latest Title 24 PDF from OLLS if the year changes.",
+          "links": [
+            {
+              "text": "Colorado Revised Statutes, Title 24 (official PDF)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-24.pdf"
+            },
+            {
+              "text": "OLLS CRS title downloads",
+              "url": "https://leg.colorado.gov/agencies/office-legislative-legal-services/2025-crs-titles-download"
+            }
+          ]
+        },
+        {
+          "label": "District overview",
+          "links": [
+            {
+              "text": "Who we are (funding and service area)",
+              "url": "https://www.arapahoelibraries.org/about"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "regional-transportation-district-levy",
+      "match": {
+        "levyLineCode": "4528",
+        "lgId": "64116",
+        "labelContainsAll": ["regional", "transportation"]
+      },
+      "origin": {
+        "heading": "Government level",
+        "level": "Regional transportation district"
+      },
+      "whatIsIt": {
+        "paragraphs": [
+          "A multi-county {{term:term-special-districts|special district}} local government that plans and operates regional transit (bus, rail, and related services) in its service area. Property tax is one funding source; the district also uses other revenue such as sales tax."
+        ]
+      },
+      "citationBlocks": [
+        {
+          "label": "Formal framework",
+          "afterLinksNote": "Regional transportation districts are organized under Title 32. If the PDF is replaced, open the latest Title 32 from OLLS and search for \"Regional Transportation\" or \"32-9\".",
+          "links": [
+            {
+              "text": "Colorado Revised Statutes, Title 32 (official PDF)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf"
+            },
+            {
+              "text": "OLLS CRS title downloads",
+              "url": "https://leg.colorado.gov/agencies/office-legislative-legal-services/2025-crs-titles-download"
+            }
+          ]
+        },
+        {
+          "label": "District overview",
+          "links": [
+            {
+              "text": "About RTD (service area and governance)",
+              "url": "https://www.rtd-denver.com/about-rtd"
             }
           ]
         }

@@ -4,6 +4,10 @@ Static Next.js app that helps residents understand Arapahoe property-tax levy br
 
 Not affiliated with Arapahoe County. Informational only. Verify with official county sources. Not legal or tax advice.
 
+## Product aim (taxpayer empowerment)
+
+The tool is for **residents and concerned citizens**, not only for reproducing county tables. The chief aim is to **empower taxpayers** with clearer context about **who** levies a tax, **identifiers** that tie to public records, and **where to inquire** when something is unclear. When structure is **obfuscated** (by complexity or by how data is published), the app should **shed light** rather than hide behind empty states — including the reality that **districts may use private administrators or shared mailing addresses**, in plain language and without naming specific firms unless citable. When a data match is uncertain, prefer **calm, actionable guidance** (bill names and IDs, county/treasurer paths, `/sources`) over **alarm-only** UI. When **bill LG ID** and **directory LG ID** differ, we still show **state registry** contact where we have it, with framing: public mail often reflects **administration or management**, not a single tidy join to tax-line IDs. Narrative methodology lives on the in-app **`/sources`** page; this README stays technical for contributors.
+
 ## Purpose of this README
 
 This file is for repository visitors and contributors: setup, architecture-at-a-glance, and data pipeline commands.
@@ -33,6 +37,18 @@ Open `http://localhost:3000`.
 | `public/data/*.json` | Runtime app data served to the browser |
 | `supporting-data/` | Offline inputs/intermediate files for regeneration (mostly gitignored) |
 | `tools/*.py` | Offline extractors/index builders |
+
+### Levy detail modal (`levy-explainer-entries.json`)
+
+Plain JSON drives the levy tile detail modal (government level, what it is, citations). Use **`developmental-disability-levy`** as the reference shape for new entries. Examples in the file include Mart line **`2999`** (developmental disability) and **`4026`** (Arapahoe Library District).
+
+**Matcher order:** levy line code (Mart code) → LG ID + label keywords (only when `levyLineCode` is omitted in JSON) → source TAG id → `labelContainsAll`. The dialog passes DOLA `lgId` when the row has a match.
+
+**Coverage queue:** `python3 tools/list_levy_explainer_queue.py` prints unique bundled `(line code, LG ID, authority)` rows.
+
+**Validation:** `npm run validate:levy-explainer` checks JSON shape, link URLs, and duplicate match keys (also runs automatically before `npm run build`).
+
+**In-app term links in explainer copy:** use `{{term:term-id|link label}}` (for example `{{term:term-special-districts|special district}}`). The levy detail modal turns that into a control that jumps to the matching Key terms / Sources definition.
 
 ## Regenerating data (full pipeline)
 
