@@ -67,7 +67,7 @@ function levyTileClass(index: number, isEditing: boolean): string {
  * full-tile button; content stays pointer-events-none so clicks still reach the button).
  */
 const LEVY_TILE_HOVER_CLASS =
-  "before:pointer-events-none before:absolute before:inset-0 before:z-0 before:rounded-xl before:bg-black/0 before:transition-colors before:duration-200 before:ease-out hover:before:bg-black/18 active:before:bg-black/10 motion-reduce:before:transition-none motion-reduce:hover:before:bg-black/0 motion-reduce:active:before:bg-black/0 transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-white/40 hover:shadow-xl active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+  "before:pointer-events-none before:absolute before:inset-0 before:z-0 before:rounded-lg before:bg-black/0 before:transition-colors before:duration-200 before:ease-out hover:before:bg-black/18 active:before:bg-black/10 motion-reduce:before:transition-none motion-reduce:hover:before:bg-black/0 motion-reduce:active:before:bg-black/0 transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-white/40 hover:shadow-xl active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0";
 
 const TILE_GRADIENTS = [
   "bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-900 text-white",
@@ -79,7 +79,7 @@ const TILE_GRADIENTS = [
 ] as const;
 
 const TILE_OVERFLOW_BTN_CLASS =
-  "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-bl-lg rounded-tr-xl bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
+  "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-bl-md rounded-tr-lg bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
 
 const LEVY_TILE_PCT_CLASS =
   "pointer-events-none shrink-0 m-0 text-right font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] [font-size:calc(1.25rem+var(--pct-scale)*1.5rem)] sm:[font-size:calc(1.5rem+var(--pct-scale)*1.25rem)]";
@@ -866,7 +866,7 @@ export function LevyStackVisualization({
       )}
 
       {loadedParcelMeta && lines.length > 0 ? (
-        <p className="rounded-xl border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm">
+        <p className="rounded-lg border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm">
           <span className="sr-only">Parcel match. </span>
           Matched{" "}
           <a
@@ -901,7 +901,7 @@ export function LevyStackVisualization({
       ) : null}
 
       {awaitingTemplateMills && lines.length > 0 && (
-        <div className="rounded-lg border-2 border-indigo-300/80 bg-indigo-50/50 p-3 sm:p-4">
+        <div className="rounded-md border-2 border-indigo-300/80 bg-indigo-50/50 p-3 sm:p-4">
           <p className="text-sm font-semibold text-indigo-950 sm:text-base">
             Enter{" "}
             <a
@@ -1060,7 +1060,7 @@ export function LevyStackVisualization({
               role="dialog"
               aria-modal="true"
               aria-labelledby="tile-actions-heading"
-              className="relative z-10 w-full max-w-lg rounded-t-xl border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-xl"
+              className="relative z-10 w-full max-w-lg rounded-t-lg border border-slate-200 bg-white p-4 shadow-2xl sm:rounded-lg"
             >
             <h3
               id="tile-actions-heading"

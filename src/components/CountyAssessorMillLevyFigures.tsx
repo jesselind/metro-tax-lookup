@@ -42,7 +42,7 @@ export function CountyAssessorMillLevyFigures() {
                 <Image
                   src={propertyPageImg}
                   alt="Arapahoe County property page with 2025 Mill Levy highlighted."
-                  className="w-full rounded border border-slate-400"
+                  className="w-full rounded-md border border-slate-400"
                   width={800}
                   height={500}
                 />
@@ -78,7 +78,7 @@ export function CountyAssessorMillLevyFigures() {
                 <Image
                   src={millLevyDetailImg}
                   alt="County Tax District Levies table with a sample district row highlighted."
-                  className="w-full rounded border border-slate-400"
+                  className="w-full rounded-md border border-slate-400"
                   width={800}
                   height={500}
                 />

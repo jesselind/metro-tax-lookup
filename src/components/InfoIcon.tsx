@@ -1,7 +1,7 @@
 export function InfoIcon() {
   return (
     <span
-      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-900 text-white"
+      className="flex h-4 w-4 shrink-0 items-center justify-center rounded-md bg-indigo-900 text-white"
       aria-hidden
     >
       <svg

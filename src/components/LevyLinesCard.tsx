@@ -76,7 +76,7 @@ export function LevyLinesCard({
                 {(levy.rateMillsCurrent * rateToMills).toFixed(3)} mills
               </span>
               {levy.taborExempt && (
-                <span className="mt-1 inline-flex items-center justify-center rounded-full border border-amber-900 bg-amber-50 px-1.5 pb-0.5 pt-1 text-[0.55rem] font-semibold uppercase leading-none tracking-wide text-amber-900">
+                <span className="mt-1 inline-flex items-center justify-center rounded-md border border-amber-900 bg-amber-50 px-1.5 pb-0.5 pt-1 text-[0.55rem] font-semibold uppercase leading-none tracking-wide text-amber-900">
                   TABOR-exempt
                 </span>
               )}

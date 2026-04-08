@@ -68,7 +68,7 @@ summary {
   }
   /** Solid primary (hero actions). Pair: btn-primary btn-primary--md */
   .btn-primary {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-indigo-800/25 bg-indigo-700 font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55;
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55;
   }
   .btn-primary--md {
     @apply min-h-11 px-5 py-2.5 text-base;

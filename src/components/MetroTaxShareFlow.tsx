@@ -539,7 +539,7 @@ export function MetroTaxShareFlow({
                           {multiMetroParcel ? (
                             <div className="space-y-2">
                               <div
-                                className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                                className="h-5 w-full overflow-hidden rounded-md border border-slate-300 bg-slate-100 shadow-inner"
                                 aria-hidden="true"
                               >
                                 <div className="flex h-full w-full">
@@ -605,7 +605,7 @@ export function MetroTaxShareFlow({
                                                   )}
                                                 </span>
                                                 {debtService ? (
-                                                  <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
+                                                  <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded-md bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
                                                     Debt passed on to you
                                                   </span>
                                                 ) : null}
@@ -636,7 +636,7 @@ export function MetroTaxShareFlow({
                               return (
                                 <div key={b.districtId} className="space-y-2">
                                   <div
-                                    className="h-5 w-full overflow-hidden rounded-full border border-slate-300 bg-slate-100 shadow-inner"
+                                    className="h-5 w-full overflow-hidden rounded-md border border-slate-300 bg-slate-100 shadow-inner"
                                     aria-hidden="true"
                                   >
                                     <div className="flex h-full w-full">
@@ -696,7 +696,7 @@ export function MetroTaxShareFlow({
                                                     )}
                                                   </span>
                                                   {debtService ? (
-                                                    <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
+                                                    <span className="inline-flex min-h-5 max-w-[min(100%,14rem)] shrink-0 items-center justify-center rounded-md bg-red-700 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-white shadow-sm sm:text-[0.65rem]">
                                                       Debt passed on to you
                                                     </span>
                                                   ) : null}

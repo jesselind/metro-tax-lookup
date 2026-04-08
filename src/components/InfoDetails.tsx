@@ -17,7 +17,7 @@ type InfoDetailsProps = {
 };
 
 const DEFAULT_WRAPPER_CLASS =
-  "w-full overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
+  "w-full overflow-hidden rounded-lg border border-indigo-400 bg-indigo-50";
 
 export function InfoDetails({
   title,

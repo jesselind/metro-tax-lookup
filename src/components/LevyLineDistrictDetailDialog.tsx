@@ -105,7 +105,7 @@ export function LevyLineDistrictDetailDialog({
     (dolaMatch.taxEntityId || dolaMatch.matchedLegalName) &&
     dolaMatch.confidence === "low" &&
     dolaMatch.method !== "override" ? (
-      <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-950">
+      <span className="inline-flex rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-950">
         Verify the district name on your bill.
       </span>
     ) : null;
@@ -152,7 +152,7 @@ export function LevyLineDistrictDetailDialog({
           role="dialog"
           aria-modal="true"
           aria-labelledby="levy-line-detail-heading"
-          className="relative z-10 flex max-h-[min(90dvh,44rem)] w-full max-w-xl flex-col overflow-hidden rounded-t-xl border border-slate-200 bg-white shadow-2xl sm:rounded-xl"
+          className="relative z-10 flex max-h-[min(90dvh,44rem)] w-full max-w-xl flex-col overflow-hidden rounded-t-lg border border-slate-200 bg-white shadow-2xl sm:rounded-lg"
         >
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-4 sm:px-5 sm:pt-5">
             <h3
@@ -180,14 +180,14 @@ export function LevyLineDistrictDetailDialog({
               ) : null}
 
               {dolaMatch && dolaMatch.uraHint && (
-                <p className="rounded-lg border border-violet-200 bg-violet-50/90 px-3 py-2 text-slate-800">
+                <p className="rounded-md border border-violet-200 bg-violet-50/90 px-3 py-2 text-slate-800">
                   <strong className="font-semibold text-violet-950">Urban renewal / TIF</strong>
                   {" "}
                   — use mills from your county property tax page or tax bill.
                 </p>
               )}
               {dolaMatch && dolaMatch.method === "skipped" && (
-                <p className="rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-slate-700">
+                <p className="rounded-md border border-slate-200 bg-slate-50/90 px-3 py-2 text-slate-700">
                   {dolaMatch.skipReason === "assessor_fee" ? (
                     <>
                       <strong className="font-semibold text-slate-900">County fee</strong>
@@ -208,7 +208,7 @@ export function LevyLineDistrictDetailDialog({
 
               {hasDolaPanel && hasDirectoryMatch && lgIdConflict && (
                 <p
-                  className="rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2 text-amber-950"
+                  className="rounded-md border border-amber-200 bg-amber-50/90 px-3 py-2 text-amber-950"
                   role="status"
                 >
                   The address and website below may not match this district. Check the name on your
@@ -225,7 +225,7 @@ export function LevyLineDistrictDetailDialog({
 
               {showContactUncertainty && (
                 <p
-                  className="rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2 text-amber-950"
+                  className="rounded-md border border-amber-200 bg-amber-50/90 px-3 py-2 text-amber-950"
                   role="status"
                 >
                   We believe the website and address below belong to this taxing authority, but we
@@ -235,14 +235,14 @@ export function LevyLineDistrictDetailDialog({
               )}
 
               {dolaMatch && dolaMatch.method === "none" && !dolaMatch.uraHint && (
-                <p className="rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-slate-700">
+                <p className="rounded-md border border-slate-200 bg-slate-50/90 px-3 py-2 text-slate-700">
                   We could not add the extra state cross-check for this district. The mills on your
                   tile still match your bill.
                 </p>
               )}
 
               {directoryError && (
-                <p className="rounded-lg border border-red-200 bg-red-50/90 px-3 py-2 text-red-900">
+                <p className="rounded-md border border-red-200 bg-red-50/90 px-3 py-2 text-red-900">
                   {directoryError}
                 </p>
               )}
@@ -252,7 +252,7 @@ export function LevyLineDistrictDetailDialog({
 
               {(hasDolaPanel ||
                 (hasDirectoryMatch && match && match.kind !== "none")) && (
-                <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 sm:p-4">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/90 p-3 sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Taxing authority
                   </p>
@@ -363,7 +363,7 @@ export function LevyLineDistrictDetailDialog({
               )}
 
               {!directoryLoading && !directoryError && match && match.kind === "none" && !hasDolaPanel && (
-                <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 sm:p-4">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/90 p-3 sm:p-4">
                   <p className="font-medium text-slate-900">No directory match for this line</p>
                   <p className="mt-1 text-sm text-slate-700">
                     This registry covers many special districts (metro, fire, water, etc.), not
@@ -383,7 +383,7 @@ export function LevyLineDistrictDetailDialog({
                 </p>
               </InfoDetails>
 
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 sm:p-4">
                 <p className="text-base leading-relaxed text-slate-800 sm:text-lg">
                   <dfn className="font-semibold not-italic text-slate-900">LG ID</dfn>
                   {" "}

@@ -37,9 +37,9 @@ export default function ContactPage() {
       <section className="mt-8">
         <a
           href={CONTACT_MAILTO}
-          className="group flex max-w-lg flex-col gap-5 rounded-xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 p-6 text-left no-underline shadow-sm ring-slate-200/60 transition duration-200 hover:border-indigo-200 hover:shadow-md hover:ring-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-6 sm:p-8"
+          className="group flex max-w-lg flex-col gap-5 rounded-lg border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 p-6 text-left no-underline shadow-sm ring-slate-200/60 transition duration-200 hover:border-indigo-200 hover:shadow-md hover:ring-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-6 sm:p-8"
         >
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 shadow-inner ring-1 ring-indigo-200/60 transition group-hover:bg-indigo-200/80 group-hover:text-indigo-900">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 shadow-inner ring-1 ring-indigo-200/60 transition group-hover:bg-indigo-200/80 group-hover:text-indigo-900">
             <MailIcon className="h-8 w-8" />
           </div>
           <div className="min-w-0 flex-1">

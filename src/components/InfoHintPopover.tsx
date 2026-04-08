@@ -97,7 +97,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
         <button
           type="button"
           disabled={disabled}
-          className="inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-full p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-md p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
           aria-label={ariaLabel}
           aria-expanded={open}
           aria-controls={open ? contentId : undefined}

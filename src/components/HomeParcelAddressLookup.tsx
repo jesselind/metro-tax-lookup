@@ -5,6 +5,7 @@ import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLe
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
+import { InfoIcon } from "@/components/InfoIcon";
 import {
   LevyStackVisualization,
   type LevyStackVisualizationProps,
@@ -626,6 +627,16 @@ export function HomeParcelAddressLookup({
               </div>
             </div>
           </form>
+          <div
+            className="mt-3 flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+            role="note"
+            aria-label="County availability"
+          >
+            <span className="mt-0.5">
+              <InfoIcon />
+            </span>
+            <p>Arapahoe County only. More coming soon.</p>
+          </div>
           {error ? (
             <InlineErrorCallout className="mt-3" liveRegion="polite">
               {error}

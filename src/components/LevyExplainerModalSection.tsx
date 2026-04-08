@@ -18,7 +18,7 @@ export function LevyExplainerModalSection({ entry }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-slate-200/95 bg-gradient-to-b from-white to-slate-50/80 p-4 shadow-sm sm:p-5">
+      <div className="rounded-lg border border-slate-200/95 bg-gradient-to-b from-white to-slate-50/80 p-4 shadow-sm sm:p-5">
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {entry.origin.heading}
         </p>
@@ -32,7 +32,7 @@ export function LevyExplainerModalSection({ entry }: Props) {
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-sky-200/90 bg-gradient-to-b from-sky-50 to-sky-50/70 p-4 shadow-sm sm:p-5">
+      <div className="rounded-lg border border-sky-200/90 bg-gradient-to-b from-sky-50 to-sky-50/70 p-4 shadow-sm sm:p-5">
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-sky-900/75">
           What is it?
         </p>

@@ -74,7 +74,7 @@ export function CountyParcelPinLookupHelp({
                 <Image
                   src={parcelPinImg}
                   alt="County parcel record screenshot with the parcel PIN location highlighted."
-                  className="w-full rounded border border-slate-400"
+                  className="w-full rounded-md border border-slate-400"
                   width={800}
                   height={650}
                   sizes="(max-width: 768px) 100vw, 42rem"

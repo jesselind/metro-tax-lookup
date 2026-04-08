@@ -1,5 +1,10 @@
 /** Shared layout classes for multi-step tool flows (metro tax, levy breakdown, etc.). */
 
+/** Radius scale: keep to two surface levels + tiny inline chips (DRY/KISS). */
+export const RADIUS_INLINE_CLASS = "rounded";
+export const RADIUS_CONTROL_CLASS = "rounded-md";
+export const RADIUS_SURFACE_CLASS = "rounded-lg";
+
 /** Main column cap (header, hero, footer, tools): wide on desktop, harmless on mobile. */
 export const SITE_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
 
@@ -19,7 +24,7 @@ export const PAGE_HERO_TITLE_CLASS =
 
 /** Slate hero secondary control (e.g. Start over). Smaller on mobile; larger from md up (same chrome). */
 export const PAGE_HERO_ACTION_BUTTON_CLASS =
-  "inline-flex shrink-0 items-center justify-center rounded-md border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm";
+  `inline-flex shrink-0 items-center justify-center ${RADIUS_CONTROL_CLASS} border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm`;
 
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
@@ -73,10 +78,10 @@ export const TERM_LINK_CLASS =
 
 /** Glossary asides on `/sources` and the home-page definitions strip. */
 export const TERM_ASIDE_BASE =
-  "mt-5 w-full scroll-mt-24 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-5";
+  `mt-5 w-full scroll-mt-24 ${RADIUS_SURFACE_CLASS} border border-slate-200 bg-slate-50 p-4 sm:p-5`;
 
 /** Dashboard / tool tiles (parcel summary, metro, levy stack cards): shared corner radius. */
-export const DASHBOARD_TILE_RADIUS_CLASS = "rounded-xl";
+export const DASHBOARD_TILE_RADIUS_CLASS = RADIUS_SURFACE_CLASS;
 
 /**
  * Levy stack tiles: `auto-fill` + `minmax(min(100%, …), 1fr)` so columns wrap naturally at any viewport.
@@ -141,27 +146,27 @@ export const DASHBOARD_SECTION_HEADING_CLASS =
 
 /** Inline <code> in prose (Sources page, term definitions). Single class for consistent styling. */
 export const CODE_INLINE_CLASS =
-  "rounded bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-900";
+  `${RADIUS_INLINE_CLASS} bg-slate-100 px-1 py-0.5 font-mono text-sm text-slate-900`;
 
 /**
  * Single disclosure toggle for show/hide controls: county help screenshots, levy table view,
  * metro "Check the math", etc. Pair with {@link TOOL_DISCLOSURE_ROW_ALIGN_CLASS}.
  */
 export const TOOL_OUTLINED_TOGGLE_BUTTON_CLASS =
-  "inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 sm:w-auto sm:justify-start";
+  `inline-flex w-full cursor-pointer items-center justify-center gap-2 ${RADIUS_CONTROL_CLASS} border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 sm:w-auto sm:justify-start`;
 
 /** Wrapper so outlined toggles span the card column on mobile and stay left-aligned. */
 export const TOOL_DISCLOSURE_ROW_ALIGN_CLASS = "flex w-full justify-start";
 
 export const INPUT_CLASS =
-  "block w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30";
+  `block w-full max-w-xs ${RADIUS_CONTROL_CLASS} border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30`;
 
 export const CARD_CLASS_CLIPPED =
-  "overflow-hidden rounded-xl border border-slate-700 bg-slate-700";
+  `overflow-hidden ${RADIUS_SURFACE_CLASS} border border-slate-700 bg-slate-700`;
 
 /** Same shell as {@link CARD_CLASS_CLIPPED} but overflow visible (e.g. popovers that must not clip). */
 export const CARD_CLASS_TOOL_OVERFLOW_VISIBLE =
-  "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
+  `overflow-visible ${RADIUS_SURFACE_CLASS} border border-slate-700 bg-slate-700`;
 
 export const CARD_HEADER_CLASS =
   "px-4 py-3 text-base font-semibold text-white sm:px-5";
@@ -181,9 +186,9 @@ export const CARD_BODY_CLASS = `bg-white ${CARD_BODY_PADDING_X} ${CARD_BODY_PADD
 /**
  * Bottom radius for the white panel under a slate header when the outer shell uses
  * {@link CARD_CLASS_TOOL_OVERFLOW_VISIBLE} (no section clipping). Use the same radius as the
- * shell (`rounded-xl` / 12px) so the white fill meets the border curve instead of square wedges.
+ * shell (`rounded-lg`) so the white fill meets the border curve instead of square wedges.
  */
-export const CARD_BODY_ROUNDED_BOTTOM_CLASS = "rounded-b-xl";
+export const CARD_BODY_ROUNDED_BOTTOM_CLASS = "rounded-b-lg";
 
 /** Hub home: full-card link (one tab stop, stretched hit target). Pair with hub header/body classes. */
 export const TOOL_CARD_LINK_CLASS =
@@ -197,13 +202,13 @@ export const TOOL_CARD_HUB_BODY_CLASS = `${CARD_BODY_CLASS} transition-colors du
 
 /** For steps with a combobox or popover that must escape the card clipping. */
 export const CARD_CLASS_DROPDOWN =
-  "overflow-visible rounded-xl border border-slate-700 bg-slate-700";
+  `overflow-visible ${RADIUS_SURFACE_CLASS} border border-slate-700 bg-slate-700`;
 
 export const CARD_HEADER_CLASS_DROPDOWN =
   "px-4 py-3 text-base font-semibold text-white sm:px-5";
 
-export const CARD_BODY_CLASS_DROPDOWN = `rounded-b-xl bg-white ${CARD_BODY_PADDING_X} ${CARD_BODY_PADDING_Y}`;
+export const CARD_BODY_CLASS_DROPDOWN = `rounded-b-lg bg-white ${CARD_BODY_PADDING_X} ${CARD_BODY_PADDING_Y}`;
 
 /** Full width of parent card body; text still wraps naturally inside. */
 export const INFO_DETAILS_WIDE_CLASS =
-  "w-full overflow-hidden rounded-xl border border-indigo-400 bg-indigo-50";
+  `w-full overflow-hidden ${RADIUS_SURFACE_CLASS} border border-indigo-400 bg-indigo-50`;
