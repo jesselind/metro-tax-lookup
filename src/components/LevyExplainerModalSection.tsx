@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Levy explainer: government level + short "What is it?" + citations behind "More detail and sources".
+ * Keep visible copy brief; defer depth to the accordion and links (see docs/levy-explainer-authoring.md).
+ */
 import type { LevyExplainerEntry } from "@/lib/levyExplainer";
 import { LevyExplainerCitationBlocks } from "@/components/LevyExplainerCitations";
 import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";

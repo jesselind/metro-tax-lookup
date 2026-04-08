@@ -22,6 +22,7 @@ The project owner has repeatedly flagged this pattern as unintuitive for typical
 ## Scope
 
 - **Applies to:** Any UI string, in-app help, or resident-facing explanation you add or edit in this repo.
+- **Levy explainer JSON** (`public/data/levy-explainer-entries.json`): See **`docs/levy-explainer-authoring.md`** (tone, structure, validation).
 - **Does not require renaming:** TypeScript identifiers, file names, JSON keys, or internal comments where "line" is a precise technical reference for developers. **Do** translate those concepts into plain language when they surface in the UI.
 
 ## Say instead (examples)

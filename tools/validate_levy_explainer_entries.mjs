@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Validates public/data/levy-explainer-entries.json: shape, match rules, and duplicate keys
- * that would make lookup order ambiguous. No dependencies (Node 18+).
+ * Validates public/data/levy-explainer-entries.json: shape, match rules, duplicate keys
+ * that would make lookup order ambiguous, and no em dash (U+2014) in resident-facing strings.
+ * No dependencies (Node 18+).
  *
  * Usage: node tools/validate_levy_explainer_entries.mjs
  */
@@ -38,6 +39,17 @@ function isNonEmptyString(s) {
 function fail(msg) {
   console.error(`levy-explainer validation: ${msg}`);
   process.exit(1);
+}
+
+/** Em dash U+2014: disallowed in explainer JSON copy (prefer comma or period). */
+const EM_DASH = /\u2014/;
+
+function assertNoEmDash(str, context) {
+  if (typeof str !== "string" || !str.length) return;
+  if (EM_DASH.test(str)) {
+    const preview = str.length > 120 ? `${str.slice(0, 120)}...` : str;
+    fail(`${context}: must not contain em dash (U+2014); use comma or period. Found in: ${JSON.stringify(preview)}`);
+  }
 }
 
 const raw = readFileSync(path, "utf8");
@@ -102,14 +114,19 @@ for (const entry of data.entries) {
   if (!origin || typeof origin !== "object") fail(`[${id}] missing \`origin\``);
   if (!isNonEmptyString(origin.heading)) fail(`[${id}] origin.heading required`);
   if (!isNonEmptyString(origin.level)) fail(`[${id}] origin.level required`);
+  assertNoEmDash(origin.heading, `[${id}] origin.heading`);
+  assertNoEmDash(origin.level, `[${id}] origin.level`);
+  if (isNonEmptyString(origin.detail)) assertNoEmDash(origin.detail, `[${id}] origin.detail`);
 
   const wi = entry.whatIsIt;
   if (!wi || typeof wi !== "object") fail(`[${id}] missing \`whatIsIt\``);
   if (!Array.isArray(wi.paragraphs) || wi.paragraphs.length === 0) {
     fail(`[${id}] whatIsIt.paragraphs must be a non-empty array`);
   }
-  for (const p of wi.paragraphs) {
+  for (let pi = 0; pi < wi.paragraphs.length; pi++) {
+    const p = wi.paragraphs[pi];
     if (!isNonEmptyString(p)) fail(`[${id}] whatIsIt.paragraphs must be non-empty strings`);
+    assertNoEmDash(p, `[${id}] whatIsIt.paragraphs[${pi}]`);
   }
 
   if (!Array.isArray(entry.citationBlocks)) {
@@ -119,12 +136,17 @@ for (const entry of data.entries) {
     const block = entry.citationBlocks[i];
     if (!block || typeof block !== "object") fail(`[${id}] citationBlocks[${i}] invalid`);
     if (!isNonEmptyString(block.label)) fail(`[${id}] citationBlocks[${i}].label required`);
+    assertNoEmDash(block.label, `[${id}] citationBlocks[${i}].label`);
+    if (isNonEmptyString(block.afterLinksNote)) {
+      assertNoEmDash(block.afterLinksNote, `[${id}] citationBlocks[${i}].afterLinksNote`);
+    }
     if (!Array.isArray(block.links)) fail(`[${id}] citationBlocks[${i}].links must be an array`);
     for (let j = 0; j < block.links.length; j++) {
       const link = block.links[j];
       if (!link || typeof link !== "object") fail(`[${id}] link invalid`);
       if (!isNonEmptyString(link.text)) fail(`[${id}] link text required`);
       if (!isNonEmptyString(link.url)) fail(`[${id}] link url required`);
+      assertNoEmDash(link.text, `[${id}] citationBlocks[${i}].links[${j}].text`);
       const u = link.url.trim();
       if (!u.startsWith("https://") && !u.startsWith("http://")) {
         fail(`[${id}] link url must start with http:// or https://`);

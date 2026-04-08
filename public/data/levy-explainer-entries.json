@@ -126,6 +126,53 @@
           ]
         }
       ]
+    },
+    {
+      "id": "urban-drainage-south-platte-levy",
+      "match": {
+        "levyLineCode": "4713",
+        "lgId": "64174",
+        "labelContainsAll": ["platte", "drnge"]
+      },
+      "origin": {
+        "heading": "Government level",
+        "level": "Urban drainage district"
+      },
+      "whatIsIt": {
+        "paragraphs": [
+          "Regional {{term:term-special-districts|special district}} for stormwater and flood control. This row is the South Platte levy share; a main district levy may appear on the same bill.",
+          "The district rebranded: they go by Mile High Flood District (MHFD) now. Urban Drainage and Flood Control District (UDFCD) is the older legal name, and it still shows up in state law and on many county tax labels, so your bill can read differently from the district website. Same organization, not a merger or a second district."
+        ]
+      },
+      "citationBlocks": [
+        {
+          "label": "Formal framework",
+          "afterLinksNote": "Urban drainage and flood control districts are organized under Article 11 in Title 32. If the PDF is replaced, open the latest Title 32 from OLLS and search for \"32-11\" or \"Urban Drainage\".",
+          "links": [
+            {
+              "text": "Colorado Revised Statutes, Title 32 (official PDF)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf"
+            },
+            {
+              "text": "OLLS CRS title downloads",
+              "url": "https://leg.colorado.gov/agencies/office-legislative-legal-services/2025-crs-titles-download"
+            }
+          ]
+        },
+        {
+          "label": "District overview",
+          "links": [
+            {
+              "text": "About MHFD (Mile High Flood District)",
+              "url": "https://www.mhfd.org/about/"
+            },
+            {
+              "text": "Our history (UDFCD to MHFD)",
+              "url": "https://www.mhfd.org/our-history"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

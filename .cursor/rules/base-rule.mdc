@@ -48,6 +48,7 @@ This rule **overrides** the instinct to be balanced or reassuring. Ignoring it w
 - **Supporting detail below:** Metadata (e.g. matched PIN, TAG id, verification links), extra links, and explanatory accordions belong **under** the primary content for users who want to dig deeper - not stacked above tiles, charts, or key results.
 - **Avoid redundancy:** Do not repeat the same idea in a subsection heading and the parent card title; one clear label per region is enough.
 - **Light separators:** Do not use extra horizontal rules or heavy borders between adjacent blocks that are already part of one flow (e.g. between a help accordion and a mode toggle). Separate only when it genuinely aids scanning.
+- **Levy line detail modals and explainer JSON** (`public/data/levy-explainer-entries.json`): See **`docs/levy-explainer-authoring.md`** (modal pattern, tone, validation).
 
 ### Accessibility (critical)
 

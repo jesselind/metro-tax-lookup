@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Levy line detail modal: essentials first (title, mills, explainer if present), then IDs and contact,
+ * with longer LG/directory nuance in <details> where needed. Follow docs/levy-explainer-authoring.md;
+ * entity-specific explainer JSON is optional.
+ */
 import type { ArapahoeDolaMatch } from "@/lib/arapahoeParcelLevyData";
 import type {
   SpecialDistrictMatch,

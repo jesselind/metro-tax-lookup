@@ -795,17 +795,15 @@ export default function SourcesPage() {
           Definitions
         </h2>
         <p className="mt-4 text-base leading-relaxed text-slate-700 sm:text-lg">
-          Sometimes your paper notice uses one word and this site uses another for the same
-          property. The county writes the notice for people to read and publishes separate records
-          that tools like this one load. The wording does not always match. That is normal and does
-          not mean your property is listed wrong.
+          Your paper notice and this site may use different words for the same parcel. The county
+          prints notices for residents and maintains separate data for tools like this one, so labels
+          do not always match. That is normal and does not mean your parcel record is wrong.
         </p>
         <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
           Levy-specific definitions (government level, what is it, sources) appear only in the levy
           tile detail modal, from{" "}
           <code className={CODE_INLINE_CLASS}>public/data/levy-explainer-entries.json</code>
-          {" "}
-          — not in this list.
+          , not in this list.
         </p>
         <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
           New rows follow the same JSON shape as the existing explainers. The app picks which entry

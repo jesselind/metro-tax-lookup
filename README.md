@@ -42,11 +42,13 @@ Open `http://localhost:3000`.
 
 Plain JSON drives the levy tile detail modal (government level, what it is, citations). Use **`developmental-disability-levy`** as the reference shape for new entries. Examples in the file include Mart line **`2999`** (developmental disability) and **`4026`** (Arapahoe Library District).
 
+Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not every row has a JSON explainer; the shell still follows that hierarchy.
+
 **Matcher order:** levy line code (Mart code) → LG ID + label keywords (only when `levyLineCode` is omitted in JSON) → source TAG id → `labelContainsAll`. The dialog passes DOLA `lgId` when the row has a match.
 
 **Coverage queue:** `python3 tools/list_levy_explainer_queue.py` prints unique bundled `(line code, LG ID, authority)` rows.
 
-**Validation:** `npm run validate:levy-explainer` checks JSON shape, link URLs, and duplicate match keys (also runs automatically before `npm run build`).
+**Validation:** `npm run validate:levy-explainer` checks JSON shape, link URLs, duplicate match keys, and no em dash (U+2014) in resident-facing strings (also runs automatically before `npm run build`).
 
 **In-app term links in explainer copy:** use `{{term:term-id|link label}}` (for example `{{term:term-special-districts|special district}}`). The levy detail modal turns that into a control that jumps to the matching Key terms / Sources definition.
 
