@@ -3,11 +3,11 @@
 Read Colorado special-district shapefile attributes (dlall.dbf) and write a JSON
 bundle for the levy stack tool: LG ID, name, website, mailing address.
 
-Default input: ../../Resources-and-references/dlall/dlall.dbf (sibling Assessor repo layout).
+Default input: supporting-data/dlall/dlall.dbf (Colorado GIS bundle; not committed).
 
 Usage:
   python3 tools/export_special_district_directory.py \\
-    --dbf ../../Resources-and-references/dlall/dlall.dbf \\
+    --dbf supporting-data/dlall/dlall.dbf \\
     --out public/data/colorado-special-district-directory.json
 """
 
@@ -75,8 +75,8 @@ def main() -> None:
     ap.add_argument(
         "--dbf",
         type=Path,
-        default=Path(__file__).resolve().parents[2]
-        / "Resources-and-references"
+        default=Path(__file__).resolve().parents[1]
+        / "supporting-data"
         / "dlall"
         / "dlall.dbf",
     )

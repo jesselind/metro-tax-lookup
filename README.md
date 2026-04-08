@@ -81,7 +81,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 4. Optional district datasets:
    - `tools/import_colorado_district_layer_csv.py`
    - `tools/enrich_district_json_county_geoids.py`
-   - `tools/export_special_district_directory.py`
+   - `tools/export_special_district_directory.py` — place the Colorado **dlall** GIS extract under `supporting-data/dlall/` (at minimum `dlall.dbf`; other sidecar files optional for this script) before running
 
 ## Contributor notes
 

@@ -1,9 +1,9 @@
 {
   "snapshot": {
-    "bundledAsOf": "2026-04-02",
+    "bundledAsOf": "2026-04-08",
     "source": "Colorado data.colorado.gov \u2014 All Special Districts in Colorado (tabular export; geometry omitted). DOLA. District county GEOIDs from WKT \u2229 tlgdb_2025_a_08_co.gdb layer 'County' (EPSG:4269); CSV All_Special_Districts_in_Colorado_20260401.csv.",
     "sourceCsv": "All_Special_Districts_in_Colorado_20260401.csv",
-    "countyGeoidsAsOf": "2026-04-02"
+    "countyGeoidsAsOf": "2026-04-08"
   },
   "districtCount": 3679,
   "districts": [

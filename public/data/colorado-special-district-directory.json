@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "bundledAsOf": "2026-04-01",
+    "bundledAsOf": "2026-04-08",
     "source": "Colorado special district GIS export (dlall / Districts_All attributes, WGS84). Fields from DOLA-style local government registry join; boundaries from mixed sources per row `source` attribute."
   },
   "districtCount": 3679,

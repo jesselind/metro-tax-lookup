@@ -52,6 +52,9 @@ supporting-data/Main Parcel Table (CSV)/
 # Optional DOLA tax-entity spreadsheet for certified mills in build_arapahoe_parcel_levy_index.py
 supporting-data/property-tax-entities-export.xlsx
 
+# Colorado special-district shapefile bundle (dlall.*); only .dbf needed for export_special_district_directory.py
+supporting-data/dlall/
+
 # Statewide special-district export (~50MB); import script produces lean JSON in public/data/
 supporting-data/All_Special_Districts_in_Colorado_*.csv
 

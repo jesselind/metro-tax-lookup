@@ -9,7 +9,12 @@
 export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
   "https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf";
 
-/** DOLA statewide special districts map (linked from minimal metro path when LG ID does not match). */
+/**
+ * DOLA Colorado Special District Mapping Project (map UI + Download menu).
+ * Offline: use Download → All Districts for the shapefile bundle; `dlall.dbf`
+ * feeds `tools/export_special_district_directory.py` → `colorado-special-district-directory.json`.
+ * Also linked from minimal metro path when LG ID does not match.
+ */
 export const COLORADO_SPECIAL_DISTRICTS_MAP_URL =
   "https://gis.dola.colorado.gov/CO_SpecialDistrict/";
 

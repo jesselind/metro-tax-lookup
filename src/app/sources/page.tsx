@@ -19,6 +19,7 @@ import type { LevyDataFile } from "@/lib/levyTypes";
 import {
   CENSUS_TIGER_GDB25_COLORADO_ZIP,
   COLORADO_DATA_GOV_ALL_SPECIAL_DISTRICTS_DATASET,
+  COLORADO_SPECIAL_DISTRICTS_MAP_URL,
   DOLA_LGIS_PROPERTY_TAX_ENTITIES,
 } from "@/lib/dataSourceUrls";
 import { SITE_CONFIG } from "@/lib/siteConfig";
@@ -703,6 +704,44 @@ export default function SourcesPage() {
             className={TOOL_ANCHOR}
           >
             Map of All Special Districts in Colorado (data.colorado.gov)
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </p>
+
+        <h3
+          id="dola-special-district-gis-dlall"
+          className={`${SECTION_H3} !mt-8 scroll-mt-8`}
+        >
+          DOLA special districts GIS (<code className={CODE_INLINE_CLASS}>dlall.dbf</code>)
+        </h3>
+        <p className="text-slate-700">
+          The file{" "}
+          <code className={CODE_INLINE_CLASS}>
+            public/data/colorado-special-district-directory.json
+          </code>{" "}
+          is built offline from attribute table{" "}
+          <code className={CODE_INLINE_CLASS}>dlall.dbf</code> via{" "}
+          <code className={CODE_INLINE_CLASS}>
+            tools/export_special_district_directory.py
+          </code>
+          . Download the Colorado special-district shapefile bundle from DOLA&apos;s
+          mapping project: open{" "}
+          <strong className="text-slate-900">Download</strong>, then{" "}
+          <strong className="text-slate-900">All Districts</strong>, and use{" "}
+          <code className={CODE_INLINE_CLASS}>dlall.dbf</code> from the extract (place
+          it under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/dlall/</code> in this
+          repo; gitignored). Boundaries and registry fields come from mixed sources per
+          DOLA&apos;s disclaimer on that site.
+        </p>
+        <p className="mt-3 break-words">
+          <a
+            href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TOOL_ANCHOR}
+          >
+            Colorado Special District Mapping Project (DOLA GIS)
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
         </p>
