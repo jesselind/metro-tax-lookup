@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
+import { MailContactCard } from "@/components/MailContactCard";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { InfoIcon } from "@/components/InfoIcon";
 import {
@@ -23,6 +24,10 @@ import {
   TermTaxEntityAside,
 } from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd, btnPrimaryMd } from "@/lib/buttonClasses";
+import {
+  CONTACT_EMAIL,
+  REPORT_PROBLEM_MAILTO_HREF,
+} from "@/lib/contact";
 import {
   loadLevyStackFromPin,
   type CommittedLevyLine,
@@ -422,6 +427,15 @@ export function HomeParcelAddressLookup({
   /** PIN entry + workbench shortcut stay hidden until address search needs a manual PIN path. */
   const showParcelPinSection =
     showCountyPinFallback || (hits != null && hits.length > 1);
+
+  /**
+   * Accuracy / report email callout: not on the empty address form; only after a submitted
+   * search yielded matches or the county PIN fallback path (no address matches).
+   */
+  const showHomeAccuracyFeedbackAside =
+    levyReadyForSummary &&
+    addressSearchLocked &&
+    ((hits != null && hits.length > 0) || showCountyPinFallback);
 
   /** County situs line for the matched or chosen row — not the raw typed search. */
   const lockedAddressHeadline = useMemo((): string | null => {
@@ -1024,29 +1038,41 @@ export function HomeParcelAddressLookup({
       ) : null}
 
       {levyReadyForSummary ? (
-        <div
-          id="page-definitions"
-          className="scroll-mt-6 border-t border-slate-200 pt-6 sm:pt-8"
-          aria-labelledby="home-page-definitions-heading"
-        >
-          <h3
-            id="home-page-definitions-heading"
-            className={HOME_DEFINITIONS_HEADING_CLASS}
+        <>
+          {showHomeAccuracyFeedbackAside ? (
+            <aside aria-label="Accuracy and feedback">
+              <MailContactCard
+                href={REPORT_PROBLEM_MAILTO_HREF}
+                kicker="Feedback"
+                primaryLine={CONTACT_EMAIL}
+                secondary="We aim for accuracy. If something looks wrong, let us know. This link opens your mail app with a short form ready to fill in."
+              />
+            </aside>
+          ) : null}
+          <div
+            id="page-definitions"
+            className="scroll-mt-6 border-t border-slate-200 pt-6 sm:pt-8"
+            aria-labelledby="home-page-definitions-heading"
           >
-            Key terms
-          </h3>
-          <div className="mt-4 space-y-4">
-            <TermActualValueAside />
-            <TermAssessedValueAside />
-            <TermLevyAside />
-            <TermSpecialDistrictsAside />
-            <TermLgIdAside />
-            <TermMillsAside />
-            <TermPinAside />
-            <TermPropertyClassificationAside />
-            <TermTaxEntityAside />
+            <h3
+              id="home-page-definitions-heading"
+              className={HOME_DEFINITIONS_HEADING_CLASS}
+            >
+              Key terms
+            </h3>
+            <div className="mt-4 space-y-4">
+              <TermActualValueAside />
+              <TermAssessedValueAside />
+              <TermLevyAside />
+              <TermSpecialDistrictsAside />
+              <TermLgIdAside />
+              <TermMillsAside />
+              <TermPinAside />
+              <TermPropertyClassificationAside />
+              <TermTaxEntityAside />
+            </div>
           </div>
-        </div>
+        </>
       ) : null}
     </section>
   );

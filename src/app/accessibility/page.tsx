@@ -1,4 +1,5 @@
 import { StaticArticleShell } from "@/components/StaticArticleShell";
+import { CONTACT_EMAIL, CONTACT_MAILTO_HREF } from "@/lib/contact";
 
 export const metadata = {
   title: "Accessibility statement | Metro district tax share",
@@ -21,10 +22,10 @@ export default function AccessibilityPage() {
           screen reader output, color contrast, or clarity of instructions),
           please email{" "}
           <a
-            href="mailto:metro.tax.lookup@pm.me"
+            href={CONTACT_MAILTO_HREF}
             className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
           >
-            metro.tax.lookup@pm.me
+            {CONTACT_EMAIL}
           </a>
           . If you can, include:
         </p>

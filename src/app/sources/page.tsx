@@ -22,6 +22,10 @@ import {
   COLORADO_SPECIAL_DISTRICTS_MAP_URL,
   DOLA_LGIS_PROPERTY_TAX_ENTITIES,
 } from "@/lib/dataSourceUrls";
+import {
+  CONTACT_EMAIL,
+  SOURCES_BROKEN_GITHUB_MAILTO_HREF,
+} from "@/lib/contact";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "../../../public/data/metro-levies-2025.json";
 import { AllTermDefinitionAsides } from "@/content/termDefinitions";
@@ -843,11 +847,8 @@ export default function SourcesPage() {
           <p className="text-slate-700">
             Source code link is temporarily unavailable due to site
             configuration. If this persists, please contact{" "}
-            <a
-              href="mailto:metro.tax.lookup@pm.me?subject=Broken%20GitHub%20source%20link%20on%20Sources%20page"
-              className={TOOL_ANCHOR}
-            >
-              metro.tax.lookup@pm.me
+            <a href={SOURCES_BROKEN_GITHUB_MAILTO_HREF} className={TOOL_ANCHOR}>
+              {CONTACT_EMAIL}
             </a>
             .
           </p>
