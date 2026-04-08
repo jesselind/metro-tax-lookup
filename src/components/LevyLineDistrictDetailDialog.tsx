@@ -5,7 +5,6 @@ import type {
   SpecialDistrictMatch,
   SpecialDistrictRecord,
 } from "@/lib/specialDistrictMatch";
-import { InfoDetails } from "@/components/InfoDetails";
 import { ModalPortal } from "@/components/ModalPortal";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
@@ -85,7 +84,7 @@ export function LevyLineDistrictDetailDialog({
   const lgIdContactTrusted =
     hasDolaPanel && hasDirectoryMatch && lgIdsAligned && !lgIdConflict;
 
-  function navigateToTerm(id: "term-mills" | "term-levy" | "term-lg-id") {
+  function navigateToTerm(id: "term-mills" | "term-lg-id" | "term-tax-entity") {
     onClose();
     window.setTimeout(() => {
       if (termDefinitionsOnHomePage) {
@@ -174,7 +173,7 @@ export function LevyLineDistrictDetailDialog({
               {pctLabel}% of your property tax
             </p>
 
-            <div className="mt-4 space-y-3 pb-1 text-sm leading-relaxed text-slate-800 sm:text-base">
+            <div className="mt-4 space-y-3 pb-3 text-sm leading-relaxed text-slate-800 sm:text-base">
               {levyExplainerEntry ? (
                 <LevyExplainerModalSection entry={levyExplainerEntry} />
               ) : null}
@@ -271,13 +270,31 @@ export function LevyLineDistrictDetailDialog({
                   <dl className="mt-3 space-y-1.5 font-mono text-xs text-slate-800 sm:text-sm">
                     {dolaMatch && dolaMatch.taxEntityId ? (
                       <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-                        <dt className="text-slate-500">Tax entity</dt>
+                        <dt className="text-slate-500">
+                          <button
+                            type="button"
+                            className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-xs sm:text-sm`}
+                            onClick={() => navigateToTerm("term-tax-entity")}
+                            aria-label="Tax entity definition"
+                          >
+                            Tax entity
+                          </button>
+                        </dt>
                         <dd>{dolaMatch.taxEntityId}</dd>
                       </div>
                     ) : null}
                     {dolaLg || dirLg ? (
                       <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-                        <dt className="text-slate-500">LG ID</dt>
+                        <dt className="text-slate-500">
+                          <button
+                            type="button"
+                            className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-xs sm:text-sm`}
+                            onClick={() => navigateToTerm("term-lg-id")}
+                            aria-label="LG ID definition"
+                          >
+                            LG ID
+                          </button>
+                        </dt>
                         <dd>
                           {lgIdConflict ? (
                             <>
@@ -372,32 +389,16 @@ export function LevyLineDistrictDetailDialog({
                 </div>
               )}
 
-              <InfoDetails title="Where this comes from">
-                <p>
-                  Names and IDs here come from state tax records; address and website come from
-                  Colorado&apos;s special-district directory when we find a listing. Matching{" "}
-                  <strong className="font-semibold text-slate-900">LG ID</strong>
-                  {" "}
-                  in both places is our strongest check. If we only had a close name match, we flag
-                  it in the note above. The rate for this row is at the top of this window.
-                </p>
-              </InfoDetails>
-
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 sm:p-4">
-                <p className="text-base leading-relaxed text-slate-800 sm:text-lg">
-                  <dfn className="font-semibold not-italic text-slate-900">LG ID</dfn>
-                  {" "}
-                  (local government ID) is Colorado&apos;s numeric identifier for this taxing
-                  district in state records.{" "}
-                  <button
-                    type="button"
-                    className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-base sm:text-lg`}
-                    onClick={() => navigateToTerm("term-lg-id")}
-                  >
-                    Full definition
-                  </button>
-                </p>
-              </div>
+              <p className="text-sm text-slate-600">
+                Want details on data sources and matching?{" "}
+                <a
+                  href="/sources#levy-breakdown-tool"
+                  className={`${TERM_LINK_CLASS} cursor-pointer`}
+                >
+                  See Sources
+                </a>
+                .
+              </p>
             </div>
           </div>
 

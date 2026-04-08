@@ -66,8 +66,6 @@ This rule **overrides** the instinct to be balanced or reassuring. Ignoring it w
 - Follow DRY (don't repeat yourself) and KISS (keep it simple).
 - Apply YAGNI (don't build features or abstractions until they are needed).
 - Observe at least the OWASP Top 10 security guidelines in design and implementation.
-- Accessibility expectations are spelled out under **Accessibility (critical)** above; WCAG 2.1 AA is the minimum bar.
-- **Review / audit output:** Follow **Review and audit responses (mandatory)** at the top of this file - no exceptions.
 
 ### Project-specific rules
 
@@ -80,6 +78,8 @@ This rule **overrides** the instinct to be balanced or reassuring. Ignoring it w
 - **Plain language (levy / mills OK; "levy lines" pattern not):** Avoid accountant-style **"levy lines" / "district lines" / "mills lines"** stacked phrasing in user-facing strings; **levy** and **mills** are fine when clear. Intent is **spirit** (readable for the public), not a ban on every word. See `.cursor/rules/plain-language-no-lines-jargon.mdc`.
 - **Who this is for:** The **general public** - including people whose eyes glaze over at **financial statements, spreadsheets, and dense government forms**. Write for them first. When copy reads like it was pasted from a county assessor or treasurer page, **consider rewriting** for warmth and clarity (exceptions are fine when accuracy requires it).
 - **How it should feel:** **Light, clear, and inviting** - quick to understand, low cognitive load, **enlightening** without being flip or fear-based (skip bait like "shocking" or "alarming" your bill). Prefer **everyday words**, short lines, and a calm confidence that the tool is on the user's side.
+- **Show, do not just tell:** Prefer UI/UX that demonstrates meaning directly (clear labels, hierarchy, affordances, examples, context in place) over extra explanatory prose. Use text to support interaction, not replace it.
+- **Define assumed knowledge:** Treat undefined jargon/acronyms as a product bug risk. On first meaningful use, either define inline in plain language or link to an in-app definition. Assume mixed familiarity (from farmers to accountants) and avoid relying on insider tax/government shorthand.
 - **Steer away from in primary UI** (headings, labels, buttons, hints, errors, empty states, hub cards, main flows): heavy **county website echo** (their jargon as the main story, or "same as the county search" as the value prop) and **piles of tax/assessor jargon** when plain language would do. **Prefer** explaining in human terms in the flow; **save** bureaucracy-shaped detail for people who want depth.
 - **When jargon is needed:** Lead with **plain language in the UI**; put **precise terms, methodology, or citations** on **`/sources`** (or another dedicated in-app explanation), with a **first-use definition or footnote** there when you introduce something technical. Occasional terms in the UI are OK if wrapped in plain English.
 - **Human-friendly documentation:** Put methodology, provenance, citations, audit guidance, and **definitions of technical terms** on the **in-app Sources** page (`/sources`). The repo **README** stays **technical** (developers, GitHub, pipeline). Do **not** paste long narrative methodology into README - **cross-link `/sources`**. On Sources, spell out or link jargon on **first substantive use** (e.g. **JSON** with an in-page definition or footnote), not only in README.
@@ -87,11 +87,8 @@ This rule **overrides** the instinct to be balanced or reassuring. Ignoring it w
 
 ### General AI behavior
 
-- **Reviews and audits:** When **Review and audit responses (mandatory)** applies, that format takes precedence over default reply length and tone (no "balanced" report).
 - **Default to short replies.** A few sentences or one short paragraph is often enough. Do not fire-hose lists of options, sub-options, or tangents. The user will ask to elaborate when they want depth.
-- **Answer the actual question** they asked; do not expand into a survey of alternatives unless they asked for options or a comparison.
 - Keep code and explanations concise.
 - Explain non-trivial changes or design choices briefly when suggesting edits.
-- When the user asks a question, answer it directly before proposing or performing implementation work.
 - Prefer the user to run terminal/CLI commands; only suggest commands, and assume non-trivial commands may be rejected or run manually by the user.
 - Do not run any `git` commands (status/diff/log/commit/push/etc.) unless the user explicitly asks you to run them.

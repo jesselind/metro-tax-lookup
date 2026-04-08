@@ -9,6 +9,29 @@ import {
   TERM_ASIDE_BASE,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import type { ReactNode } from "react";
+
+type TermAsideProps = {
+  id: string;
+  title: string;
+  titleId: string;
+  children: ReactNode;
+};
+
+/**
+ * Shared wrapper for glossary cards so structure, semantics, and styling stay consistent
+ * across `/sources` and home-page key terms.
+ */
+function TermAside({ id, title, titleId, children }: TermAsideProps) {
+  return (
+    <aside id={id} tabIndex={-1} className={TERM_ASIDE_BASE} aria-labelledby={titleId}>
+      <p className="font-semibold text-slate-900" id={titleId}>
+        {title}
+      </p>
+      {children}
+    </aside>
+  );
+}
 
 export function TermJsonAside() {
   return (
@@ -91,42 +114,26 @@ export function TermTigerAside() {
 
 export function TermPinAside() {
   return (
-    <aside
-      id="term-pin"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-pin-title"
-    >
-      <p className="font-semibold text-slate-900" id="term-pin-title">
-        PIN
-      </p>
+    <TermAside id="term-pin" title="PIN" titleId="term-pin-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">PIN</dfn>
-        {" "}
-        (parcel identification number) is the county&apos;s numeric identifier for a specific parcel
+        Parcel identification number is the county&apos;s numeric identifier for a specific parcel
         in Arapahoe&apos;s assessor records. It is usually nine digits. You find it on your parcel
         record from the county property search; this tool uses it to match your address to levy
-        data. It is not the same as your LG ID or taxing authority code.
+        data. It is not the same as your LG ID or tax entity.
       </p>
-    </aside>
+    </TermAside>
   );
 }
 
 export function TermPropertyClassificationAside() {
   return (
-    <aside
+    <TermAside
       id="term-property-classification"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-property-classification-title"
+      title="Property classification"
+      titleId="term-property-classification-title"
     >
-      <p className="font-semibold text-slate-900" id="term-property-classification-title">
-        Property classification
-      </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">Property classification</dfn>
-        {" "}
-        is the county&apos;s broad category for your parcel in the parcel data behind this tool. It
+        This is the county&apos;s broad category for your parcel in the parcel data behind this tool. It
         tells the tax system what kind of property you have for assessment rules. It is not your
         zoning label, not your neighborhood name, and not the same as actual or assessed value.
         This tool shows it in the Property classification tile when that data includes a label.
@@ -188,25 +195,15 @@ export function TermPropertyClassificationAside() {
         Your official county notice or parcel detail page is the place to confirm the fine print for
         your situation.
       </p>
-    </aside>
+    </TermAside>
   );
 }
 
 export function TermActualValueAside() {
   return (
-    <aside
-      id="term-actual-value"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-actual-value-title"
-    >
-      <p className="font-semibold text-slate-900" id="term-actual-value-title">
-        Actual value
-      </p>
+    <TermAside id="term-actual-value" title="Actual value" titleId="term-actual-value-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">Actual value</dfn>
-        {" "}
-        is the assessor&apos;s{" "}
+        This is the assessor&apos;s{" "}
         <strong className="font-semibold text-slate-900">full</strong>
         {" "}
         value for your parcel on the public tax roll. The county uses that number before Colorado
@@ -229,70 +226,40 @@ export function TermActualValueAside() {
         {" "}
         for what labels like Improvement or Real mean in the county file.
       </p>
-    </aside>
+    </TermAside>
   );
 }
 
 export function TermAssessedValueAside() {
   return (
-    <aside
-      id="term-assessed-value"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-assessed-value-title"
-    >
-      <p className="font-semibold text-slate-900" id="term-assessed-value-title">
-        Assessed value
-      </p>
+    <TermAside id="term-assessed-value" title="Assessed value" titleId="term-assessed-value-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">Assessed value</dfn>
-        {" "}
-        is the amount your property tax is built from: the county takes your actual value and
+        This is the amount your property tax is built from: the county takes your actual value and
         applies a percentage set by state law for your kind of property (home, land, business, and
         so on). That smaller number is what rates are multiplied against.
       </p>
-    </aside>
+    </TermAside>
   );
 }
 
 export function TermMillsAside() {
   return (
-    <aside
-      id="term-mills"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-mills-title"
-    >
-      <p className="font-semibold text-slate-900" id="term-mills-title">
-        Mills
-      </p>
+    <TermAside id="term-mills" title="Mills" titleId="term-mills-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">Mills</dfn>
-        {" "}
-        are how Colorado shows each line&apos;s share of your bill. Think of them as &quot;how many
+        Colorado uses mills to show each line&apos;s share of your bill. Think of them as &quot;how many
         dollars of tax per thousand dollars of taxable value&quot; for that line. You mostly need
         them to compare one row to another and to match the county table — you do not need to do
         the math yourself here.
       </p>
-    </aside>
+    </TermAside>
   );
 }
 
 export function TermLevyAside() {
   return (
-    <aside
-      id="term-levy"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-levy-title"
-    >
-      <p className="font-semibold text-slate-900" id="term-levy-title">
-        Levy
-      </p>
+    <TermAside id="term-levy" title="Levy" titleId="term-levy-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        A <dfn className="font-semibold not-italic text-slate-900">levy</dfn>
-        {" "}
-        is a taxing district&apos;s{" "}
+        This is a taxing district&apos;s{" "}
         <strong className="font-semibold text-slate-900">certified property tax rate</strong>
         {" "}
         for a given year, usually expressed in{" "}
@@ -306,38 +273,43 @@ export function TermLevyAside() {
         rate from every district that taxes your parcel (schools, county, metro district, and
         others).
       </p>
-    </aside>
+    </TermAside>
   );
 }
 
 export function TermLgIdAside() {
   return (
-    <aside
-      id="term-lg-id"
-      tabIndex={-1}
-      className={TERM_ASIDE_BASE}
-      aria-labelledby="term-lg-id-title"
-    >
-      <p className="font-semibold text-slate-900" id="term-lg-id-title">
-        LG ID
-      </p>
+    <TermAside id="term-lg-id" title="LG ID" titleId="term-lg-id-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">LG ID</dfn>
-        {" "}
-        is Colorado&apos;s numeric identifier for a local government or taxing district in state
+        Colorado&apos;s numeric identifier for a local government or taxing district in state
         records. The same ID appears across your county levy table, DOLA property-tax data, and
         (when present) the special-district directory. It is{" "}
         <strong className="font-semibold text-slate-900">not</strong>
         {" "}
         your parcel PIN or account number.
       </p>
-    </aside>
+    </TermAside>
+  );
+}
+
+export function TermTaxEntityAside() {
+  return (
+    <TermAside id="term-tax-entity" title="Tax entity" titleId="term-tax-entity-title">
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        This is the state-record identifier for the taxing authority tied to a levy row. In this tool,
+        it helps connect county levy rows to Colorado Department of Local Affairs (DOLA) records at
+        build time. It is{" "}
+        <strong className="font-semibold text-slate-900">not</strong>
+        {" "}
+        your parcel PIN, and it is different from LG ID.
+      </p>
+    </TermAside>
   );
 }
 
 /**
  * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
- * (PIN, property classification, actual/assessed value, mills, levy, LG ID).
+ * (PIN, property classification, actual/assessed value, mills, levy, LG ID, tax entity).
  */
 export function AllTermDefinitionAsides() {
   return (
@@ -352,6 +324,7 @@ export function AllTermDefinitionAsides() {
       <TermMillsAside />
       <TermLevyAside />
       <TermLgIdAside />
+      <TermTaxEntityAside />
     </>
   );
 }

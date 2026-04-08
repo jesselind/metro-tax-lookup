@@ -19,6 +19,7 @@ import {
   TermLgIdAside,
   TermMillsAside,
   TermPinAside,
+  TermTaxEntityAside,
 } from "@/content/termDefinitions";
 import { btnOutlinePrimaryMd, btnPrimaryMd } from "@/lib/buttonClasses";
 import {
@@ -1034,13 +1035,14 @@ export function HomeParcelAddressLookup({
             Key terms
           </h3>
           <div className="mt-4 space-y-4">
-            <TermPinAside />
-            <TermPropertyClassificationAside />
             <TermActualValueAside />
             <TermAssessedValueAside />
-            <TermMillsAside />
             <TermLevyAside />
             <TermLgIdAside />
+            <TermMillsAside />
+            <TermPinAside />
+            <TermPropertyClassificationAside />
+            <TermTaxEntityAside />
           </div>
         </div>
       ) : null}
