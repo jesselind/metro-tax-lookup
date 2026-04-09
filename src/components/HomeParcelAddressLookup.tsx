@@ -12,6 +12,7 @@ import {
   type LevyStackVisualizationProps,
 } from "@/components/LevyStackVisualization";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
+import { ParcelTermPopoverPanel } from "@/content/termDefinitionBodies";
 import {
   TermActualValueAside,
   TermAssessedValueAside,
@@ -67,13 +68,18 @@ import {
   PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
   PARCEL_SUMMARY_TILE_BODY_CLASS,
   PARCEL_SUMMARY_TILE_CLASS,
+  PARCEL_SUMMARY_TILE_CLASS_POPOVER,
   PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS,
   PARCEL_SUMMARY_TILE_LABEL_CLASS,
   PARCEL_SUMMARY_TILE_VALUE_CLASS,
   PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
-  PARCEL_SUMMARY_VALUE_TILE_CLASS,
+  PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+
+/** Wider, scrollable panel for parcel summary term popovers (label copy can run long). */
+const PARCEL_TERM_POPOVER_PANEL_CLASS =
+  "max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain";
 
 /**
  * PIN + levy-stack JSON (~41MB) are needed right after situs lookup. Starting these fetches
@@ -901,17 +907,23 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             lockedAddressHeadline &&
             levyLoadedMeta.parcelValues.propertyClassification ? (
-              <div className={PARCEL_SUMMARY_TILE_CLASS} id="home-parcel-property-class">
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
+                id="home-parcel-property-class"
+              >
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <a
-                      id="property-classification-term-first"
-                      href="#term-property-classification"
-                      className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <InfoHintPopover
+                      textTrigger="Property classification"
+                      textTriggerId="property-classification-term-first"
+                      textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                      ariaLabel="Brief definition of property classification."
+                      disabled={busy}
+                      panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                     >
-                      Property classification
-                    </a>
-                  </p>
+                      <ParcelTermPopoverPanel termId="term-property-classification" />
+                    </InfoHintPopover>
+                  </div>
                   <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
                     {levyLoadedMeta.parcelValues.propertyClassification}
                   </p>
@@ -954,19 +966,22 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             levyLoadedMeta.parcelValues.ownerList != null ? (
               <div
-                className={PARCEL_SUMMARY_TILE_CLASS}
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-owner-list"
               >
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <a
-                      id="owner-list-term-first"
-                      href="#term-owner-list"
-                      className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <InfoHintPopover
+                      textTrigger="Owner on record"
+                      textTriggerId="owner-list-term-first"
+                      textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                      ariaLabel="Brief definition of owner on record."
+                      disabled={busy}
+                      panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                     >
-                      Owner on record
-                    </a>
-                  </p>
+                      <ParcelTermPopoverPanel termId="term-owner-list" />
+                    </InfoHintPopover>
+                  </div>
                   <p className="max-w-full break-words text-base font-semibold leading-snug text-slate-900 sm:text-lg">
                     {levyLoadedMeta.parcelValues.ownerList}
                   </p>
@@ -980,17 +995,22 @@ export function HomeParcelAddressLookup({
               levyLoadedMeta.parcelValues.totalAssessed != null) ? (
                 <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
                   {levyLoadedMeta.parcelValues.totalActual != null ? (
-                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
+                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}>
                       <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                        <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                          <a
-                            id="actual-value-term-first"
-                            href="#term-actual-value"
-                            className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                        <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                          <InfoHintPopover
+                            textTrigger="Actual value"
+                            textTriggerId="actual-value-term-first"
+                            textTriggerClassName={
+                              PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS
+                            }
+                            ariaLabel="Brief definition of actual value."
+                            disabled={busy}
+                            panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                           >
-                            Actual value
-                          </a>
-                        </p>
+                            <ParcelTermPopoverPanel termId="term-actual-value" />
+                          </InfoHintPopover>
+                        </div>
                         <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                           {formatUsdWhole(levyLoadedMeta.parcelValues.totalActual)}
                         </p>
@@ -998,17 +1018,22 @@ export function HomeParcelAddressLookup({
                     </div>
                   ) : null}
                   {levyLoadedMeta.parcelValues.totalAssessed != null ? (
-                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS}>
+                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}>
                       <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                        <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                          <a
-                            id="assessed-value-term-first"
-                            href="#term-assessed-value"
-                            className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                        <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                          <InfoHintPopover
+                            textTrigger="Assessed value"
+                            textTriggerId="assessed-value-term-first"
+                            textTriggerClassName={
+                              PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS
+                            }
+                            ariaLabel="Brief definition of assessed value."
+                            disabled={busy}
+                            panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                           >
-                            Assessed value
-                          </a>
-                        </p>
+                            <ParcelTermPopoverPanel termId="term-assessed-value" />
+                          </InfoHintPopover>
+                        </div>
                         <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                           {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
                         </p>

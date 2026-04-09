@@ -104,20 +104,36 @@ export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS =
  * Parcel tiles: border + radius on the outer frame, padding + scroll on an inner body.
  * Putting `overflow-x-auto` on the same element as `rounded-*` + `border` draws a double edge in some engines.
  */
-const PARCEL_SUMMARY_TILE_FRAME_BASE = `${DASHBOARD_TILE_RADIUS_CLASS} flex min-h-0 min-w-0 flex-col overflow-hidden border border-slate-200/90 bg-white`;
+const PARCEL_SUMMARY_TILE_FRAME_BASE = `${DASHBOARD_TILE_RADIUS_CLASS} flex min-h-0 min-w-0 flex-col border border-slate-200/90 bg-white`;
+
+const PARCEL_SUMMARY_TILE_FRAME_CLIPPED = `${PARCEL_SUMMARY_TILE_FRAME_BASE} overflow-hidden`;
+
+/** Same frame as parcel tiles but overflow visible so label popovers are not clipped. */
+const PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE = `${PARCEL_SUMMARY_TILE_FRAME_BASE} overflow-visible`;
 
 export const PARCEL_SUMMARY_TILE_BODY_CLASS =
   "flex min-h-0 min-w-0 flex-col justify-start gap-1.5 px-3.5 py-2.5 sm:px-4 sm:py-3";
 
 /** Parcel summary tile: shrink-wraps to content (capped by max-w-full) so tiles share rows until they wrap. */
-export const PARCEL_SUMMARY_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} w-max max-w-full min-w-0`;
+export const PARCEL_SUMMARY_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIPPED} w-max max-w-full min-w-0`;
+
+/**
+ * Parcel summary tile when the label uses a floating definition popover ({@link PARCEL_SUMMARY_TILE_CLASS} clips).
+ */
+export const PARCEL_SUMMARY_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0`;
 
 /** Value tiles: equal width on small screens (fill pair row); content-sized from sm up with the address tile. */
-export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_BASE} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIPPED} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
 
-/** Glossary link inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: inherits uppercase + scale; slate underline. */
+/** Value tile variant for label popovers (see {@link PARCEL_SUMMARY_TILE_CLASS_POPOVER}). */
+export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+
+/**
+ * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale; slate underline.
+ * `uppercase` is explicit so `<button>` triggers (popover) stay all-caps like plain label text.
+ */
 export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
-  "text-inherit underline decoration-slate-400 decoration-1 underline-offset-[0.2em] hover:text-slate-600 hover:decoration-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
+  "text-inherit uppercase underline decoration-slate-400 decoration-1 underline-offset-[0.2em] hover:text-slate-600 hover:decoration-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
 
 export const PARCEL_SUMMARY_TILE_LABEL_CLASS =
   "text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs";

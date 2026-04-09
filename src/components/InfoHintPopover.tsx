@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { InfoCircleGlyph } from "@/components/InfoCircleGlyph";
 
 type InfoHintPopoverProps = {
   children: ReactNode;
   disabled?: boolean;
+  /** Merged into the floating panel (e.g. wider max-width or scroll). */
+  panelClassName?: string;
 } & (
   | {
       /** Shown to screen readers; keep short. Icon mode only. */
@@ -27,7 +36,7 @@ type InfoHintPopoverProps = {
 );
 
 const PANEL_BASE =
-  "absolute z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug text-slate-700 shadow-lg";
+  "absolute z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case text-slate-700 shadow-lg";
 
 /**
  * Toggles a small floating note; click outside or Escape closes.
@@ -38,6 +47,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
   const {
     children,
     disabled = false,
+    panelClassName,
     ariaLabel,
     textTrigger,
     textTriggerId,
@@ -45,8 +55,43 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
   } = props;
 
   const [open, setOpen] = useState(false);
+  const [textPanelLeftPx, setTextPanelLeftPx] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
+
+  const isText = textTrigger != null && textTriggerId != null;
+
+  useLayoutEffect(() => {
+    if (!open || !isText) return;
+    const margin = 16;
+    const clampPanelLeft = () => {
+      const wrap = wrapRef.current;
+      const panel = panelRef.current;
+      if (!wrap || !panel) return;
+      const wrapLeft = wrap.getBoundingClientRect().left;
+      const panelWidth = panel.getBoundingClientRect().width;
+      const vw = window.innerWidth;
+      let left = 0;
+      if (wrapLeft + panelWidth > vw - margin) {
+        left = vw - margin - wrapLeft - panelWidth;
+      }
+      if (wrapLeft + left < margin) {
+        left = margin - wrapLeft;
+      }
+      setTextPanelLeftPx(left);
+    };
+    clampPanelLeft();
+    const onResize = () => clampPanelLeft();
+    window.addEventListener("resize", onResize);
+    const ro = new ResizeObserver(() => clampPanelLeft());
+    const panelEl = panelRef.current;
+    if (panelEl) ro.observe(panelEl);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
+    };
+  }, [open, isText]);
 
   useEffect(() => {
     if (!open) return;
@@ -64,8 +109,6 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       document.removeEventListener("pointerdown", onPointer, true);
     };
   }, [open]);
-
-  const isText = textTrigger != null && textTriggerId != null;
 
   return (
     <div
@@ -110,14 +153,16 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       )}
       {open ? (
         <div
+          ref={panelRef}
           id={contentId}
           role="region"
           aria-live="polite"
           className={
             isText
-              ? `${PANEL_BASE} left-0 top-full mt-1`
-              : `${PANEL_BASE} left-full top-1/2 ml-1 -translate-y-1/2`
+              ? `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} top-full mt-1`
+              : `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} left-full top-1/2 ml-1 -translate-y-1/2`
           }
+          style={isText ? { left: textPanelLeftPx } : undefined}
         >
           {children}
         </div>

@@ -1,11 +1,12 @@
 /**
- * Single source for glossary copy: brief (levy modal) + full (Key terms / sources asides).
- * Keep wording aligned; edit here, not in two places.
+ * Single source for glossary copy: brief (levy modal + parcel summary popovers) + full (Key terms / sources asides).
+ * Brief paragraphs share the same typography as in-modal levy definitions (`BRIEF_P`). Levy-line explainers use
+ * `levyModalTermRegistry`; parcel summary tiles use `parcelSummaryTermBriefRegistry`. Keep wording aligned.
  */
 
 import type { FC } from "react";
 import type { LevyModalTermId } from "@/lib/levyModalTermIds";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 const BRIEF_P =
   "text-sm leading-relaxed text-slate-800 sm:text-base";
@@ -169,6 +170,129 @@ export function TermTaxEntityFullBody() {
       {" "}
       your parcel PIN, and it is different from LG ID.
     </p>
+  );
+}
+
+const POPOVER_FOOTER_LINK_P =
+  "mt-2 border-t border-slate-100 pt-2 text-xs leading-snug text-slate-600";
+
+function TermPopoverKeyTermsLink(props: { termId: string; label: string }) {
+  const { termId, label } = props;
+  return (
+    <p className={POPOVER_FOOTER_LINK_P}>
+      <a
+        href={`#${termId}`}
+        className={TERM_LINK_CLASS}
+        aria-label={`Full ${label} definition in Key terms`}
+      >
+        Full definition in Key terms
+      </a>
+    </p>
+  );
+}
+
+/** Home parcel summary tiles: same brief pattern as levy modal (`BRIEF_P`); full copy in Key terms asides. */
+export function TermPropertyClassificationBriefBody() {
+  return (
+    <>
+      <p className={BRIEF_P}>
+        The county&apos;s broad category for your parcel in the data behind this tool. It steers
+        assessment rules. It is not zoning, not your neighborhood name, and not the same as
+        actual or assessed value.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        Values like{" "}
+        <strong className="font-semibold text-slate-900">Improvement</strong>
+        {" "}
+        or{" "}
+        <strong className="font-semibold text-slate-900">Real</strong>
+        {" "}
+        come from the assessor file; your paper notice may use different wording (for example
+        Residential) for the same parcel.
+      </p>
+    </>
+  );
+}
+
+export function TermOwnerListBriefBody() {
+  return (
+    <>
+      <p className={BRIEF_P}>
+        Names from the county&apos;s public tax roll for this parcel, often formatted like the
+        assessor file (for example several owners separated by commas). Use them to confirm you
+        picked the right property when the address alone is not enough.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        This is not proof of who lives there today or legal title by itself. For official
+        ownership, use recorded deeds and the county parcel record.
+      </p>
+    </>
+  );
+}
+
+export function TermActualValueBriefBody() {
+  return (
+    <>
+      <p className={BRIEF_P}>
+        The assessor&apos;s full value for your parcel on the public tax roll before Colorado
+        applies the assessment rate for your property type. It is the starting point for your tax
+        bill, not the amount rates are multiplied against (that is assessed value).
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        It is in the same general idea as market value, but it is the county&apos;s official tax
+        figure — not a sale price, bank appraisal, or a single private appraiser&apos;s report.
+      </p>
+    </>
+  );
+}
+
+export function TermAssessedValueBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The amount your property tax is built from: the county applies a percentage set by state
+      law for your kind of property to your actual value. Mill levies apply to this smaller
+      number.
+    </p>
+  );
+}
+
+export const PARCEL_SUMMARY_TERM_IDS = [
+  "term-property-classification",
+  "term-owner-list",
+  "term-actual-value",
+  "term-assessed-value",
+] as const;
+
+export type ParcelSummaryTermId = (typeof PARCEL_SUMMARY_TERM_IDS)[number];
+
+/**
+ * Brief + title for parcel summary popovers. Levy modal uses `levyModalTermRegistry` (levy-line explainer terms only);
+ * these four are home-summary-only but use the same brief body pattern.
+ */
+export const parcelSummaryTermBriefRegistry: Record<
+  ParcelSummaryTermId,
+  { title: string; Brief: FC }
+> = {
+  "term-property-classification": {
+    title: "Property classification",
+    Brief: TermPropertyClassificationBriefBody,
+  },
+  "term-owner-list": { title: "Owner on record", Brief: TermOwnerListBriefBody },
+  "term-actual-value": { title: "Actual value", Brief: TermActualValueBriefBody },
+  "term-assessed-value": {
+    title: "Assessed value",
+    Brief: TermAssessedValueBriefBody,
+  },
+};
+
+export function ParcelTermPopoverPanel(props: { termId: ParcelSummaryTermId }) {
+  const { termId } = props;
+  const { title, Brief } = parcelSummaryTermBriefRegistry[termId];
+  return (
+    <>
+      <Brief />
+      <TermPopoverKeyTermsLink termId={termId} label={title} />
+    </>
   );
 }
 

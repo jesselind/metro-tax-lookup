@@ -1,6 +1,6 @@
 /**
- * Terms that have in-modal brief copy (see `termDefinitionBodies.tsx`).
- * JSON explainers and modal UI should only wire interactive definitions for these ids.
+ * Levy-line explainer terms that have in-modal brief copy (`levyModalTermRegistry` in `termDefinitionBodies.tsx`).
+ * Parcel summary tiles use separate ids (`parcelSummaryTermBriefRegistry`); do not add those to JSON explainers.
  */
 
 export const LEVY_MODAL_TERM_IDS = [
