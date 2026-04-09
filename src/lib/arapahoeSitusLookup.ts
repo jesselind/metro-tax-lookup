@@ -69,6 +69,268 @@ export function trySplitSitusAutofillLine(raw: string): {
   };
 }
 
+/**
+ * Strip a trailing unit fragment (Apt 2, Unit 3B, #4, Ste 100) from one address line.
+ * Best-effort for single-field entry; does not handle every format.
+ */
+function stripTrailingUnitFromAddressLine(raw: string): { line: string; unit: string } {
+  const trimmed = raw.trim();
+  if (!trimmed) return { line: "", unit: "" };
+  const re =
+    /^(.*?)\s+(?:(?:APT|APARTMENT|UNIT|STE|SUITE)\s*[#.]?\s*|#)\s*([A-Za-z0-9/-]+)\s*$/i;
+  const m = trimmed.match(re);
+  if (!m || !m[1] || m[1].trim().length < 1) {
+    return { line: trimmed, unit: "" };
+  }
+  return { line: m[1].trim(), unit: m[2].trim() };
+}
+
+export const SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN = 200;
+
+/**
+ * Parse one user line (street address) into the four situs inputs used by lookup.
+ * Returns null only when the string is empty or far too long.
+ */
+export function parseSimpleAddressLineForSitusLookup(raw: string): {
+  streetNumber: string;
+  streetNumberSuffix: string;
+  streetName: string;
+  unit: string;
+} | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN + 64) return null;
+  const { line, unit } = stripTrailingUnitFromAddressLine(trimmed);
+  const split = trySplitSitusAutofillLine(line);
+  if (split) {
+    return {
+      streetNumber: split.streetNumber,
+      streetNumberSuffix: split.streetNumberSuffix,
+      streetName: split.streetName,
+      unit,
+    };
+  }
+  return {
+    streetNumber: line,
+    streetNumberSuffix: "",
+    streetName: "",
+    unit,
+  };
+}
+
+/** Same token sets as in tools/build_arapahoe_parcel_levy_index.py street normalization. */
+const STREET_DIR_TOKENS = new Set([
+  "N",
+  "S",
+  "E",
+  "W",
+  "NE",
+  "NW",
+  "SE",
+  "SW",
+  "NORTH",
+  "SOUTH",
+  "EAST",
+  "WEST",
+  "NORTHEAST",
+  "NORTHWEST",
+  "SOUTHEAST",
+  "SOUTHWEST",
+]);
+
+const STREET_TYPE_TOKENS = new Set([
+  "ST",
+  "STREET",
+  "AVE",
+  "AVENUE",
+  "RD",
+  "ROAD",
+  "BLVD",
+  "BOULEVARD",
+  "DR",
+  "DRIVE",
+  "LN",
+  "LANE",
+  "CT",
+  "COURT",
+  "CIR",
+  "CIRCLE",
+  "WAY",
+  "PL",
+  "PLACE",
+  "PKWY",
+  "PARKWAY",
+  "TRL",
+  "TRAIL",
+  "LOOP",
+  "TER",
+  "TERR",
+  "TERRACE",
+  "TPKE",
+  "TURNPIKE",
+  "HWY",
+  "HIGHWAY",
+  "BL",
+  "PATH",
+  "PLZ",
+  "PLAZA",
+  "RUN",
+  "COVE",
+  "PASS",
+  "ALLEY",
+  "ALY",
+  "BEND",
+  "XING",
+  "CROSSING",
+  "POINT",
+  "PT",
+  "COMMONS",
+  "MALL",
+]);
+
+const US_STATE_ABBREV = new Set([
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC",
+]);
+
+/** Built once; alternation is fixed abbreviations only (no user input in the pattern). */
+const US_STATE_TRAILING_RE = new RegExp(
+  `(?:,\\s*)?\\b(?:${[...US_STATE_ABBREV].sort().join("|")})\\b\\s*$`,
+  "i",
+);
+
+/** Do not strip these when they appear after the last street-type token (e.g. "STE 200"). */
+const WORDS_TO_KEEP_AFTER_STREET_TYPE = new Set([
+  "SUITE",
+  "STE",
+  "UNIT",
+  "APT",
+  "APARTMENT",
+  "LOT",
+  "PHASE",
+  "BLDG",
+  "BUILDING",
+  "TRLR",
+  "TRAILER",
+  "SPACE",
+  "SPC",
+]);
+
+function normStreetTokenForLocality(w: string): string {
+  return w.replace(/\./g, "").toUpperCase();
+}
+
+/**
+ * Remove trailing city / state / ZIP and similar junk from a street-name fragment so
+ * lookup keys align with county situs (road name only).
+ */
+function sanitizeSitusStreetNameLineForLookup(raw: string): string {
+  let s = raw.trim().replace(/\s+/g, " ");
+  if (!s) return "";
+
+  if (s.includes(",")) {
+    const firstSeg = s.split(",")[0].trim();
+    const tks = firstSeg.split(/\s+/).filter(Boolean);
+    const hasStreetType = tks.some((w) =>
+      STREET_TYPE_TOKENS.has(normStreetTokenForLocality(w)),
+    );
+    if (hasStreetType && firstSeg.length > 0) {
+      s = firstSeg;
+    }
+  }
+
+  let prev = "";
+  while (prev !== s) {
+    prev = s;
+    s = s.replace(/(?:,\s*)?\b\d{5}(?:-\d{4})?\s*$/i, "").trim();
+    s = s.replace(US_STATE_TRAILING_RE, "").trim();
+  }
+
+  const tokens = s.split(/\s+/).filter(Boolean);
+  if (tokens.length <= 1) return s;
+
+  let lastTypeIdx = -1;
+  for (let i = 0; i < tokens.length; i++) {
+    if (STREET_TYPE_TOKENS.has(normStreetTokenForLocality(tokens[i]!))) {
+      lastTypeIdx = i;
+    }
+  }
+  if (lastTypeIdx < 0) return s;
+
+  let end = tokens.length;
+  while (end > lastTypeIdx + 1) {
+    const w = tokens[end - 1]!;
+    const u = normStreetTokenForLocality(w);
+    if (/^\d{5}(?:-\d{4})?$/.test(w)) {
+      end -= 1;
+      continue;
+    }
+    if (US_STATE_ABBREV.has(u)) {
+      end -= 1;
+      continue;
+    }
+    if (WORDS_TO_KEEP_AFTER_STREET_TYPE.has(u)) {
+      break;
+    }
+    if (/^[A-Za-z]+$/.test(w) && u.length >= 4) {
+      end -= 1;
+      continue;
+    }
+    break;
+  }
+
+  return tokens.slice(0, end).join(" ");
+}
+
 function normAddrCompareKey(s: string): string {
   return s
     .trim()
@@ -147,6 +409,10 @@ export function resolveSitusFieldsForLookup(
   if (situsUnitLooksLikeStreetAutofillDuplicate(unitTrim, num, suffix, nameRaw)) {
     unitTrim = "";
     clearUnitToState = true;
+  }
+
+  if (nameRaw.length > 0) {
+    nameRaw = sanitizeSitusStreetNameLineForLookup(nameRaw);
   }
 
   return {
@@ -258,75 +524,6 @@ export function validateArapahoeSitusToPinsPayload(
     byKey: safeByKey,
   };
 }
-
-const STREET_DIR_TOKENS = new Set([
-  "N",
-  "S",
-  "E",
-  "W",
-  "NE",
-  "NW",
-  "SE",
-  "SW",
-  "NORTH",
-  "SOUTH",
-  "EAST",
-  "WEST",
-  "NORTHEAST",
-  "NORTHWEST",
-  "SOUTHEAST",
-  "SOUTHWEST",
-]);
-
-const STREET_TYPE_TOKENS = new Set([
-  "ST",
-  "STREET",
-  "AVE",
-  "AVENUE",
-  "RD",
-  "ROAD",
-  "BLVD",
-  "BOULEVARD",
-  "DR",
-  "DRIVE",
-  "LN",
-  "LANE",
-  "CT",
-  "COURT",
-  "CIR",
-  "CIRCLE",
-  "WAY",
-  "PL",
-  "PLACE",
-  "PKWY",
-  "PARKWAY",
-  "TRL",
-  "TRAIL",
-  "LOOP",
-  "TER",
-  "TERR",
-  "TERRACE",
-  "TPKE",
-  "TURNPIKE",
-  "HWY",
-  "HIGHWAY",
-  "BL",
-  "PATH",
-  "PLZ",
-  "PLAZA",
-  "RUN",
-  "COVE",
-  "PASS",
-  "ALLEY",
-  "ALY",
-  "BEND",
-  "XING",
-  "CROSSING",
-  "POINT",
-  "PT",
-  "COMMONS",
-  "MALL",
-]);
 
 export function normalizeStreetNameKey(raw: string): string {
   const s = raw.trim().toUpperCase();

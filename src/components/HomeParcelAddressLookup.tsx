@@ -47,10 +47,12 @@ import {
   fetchArapahoeSitusToPinsJson,
   lookupPinsBySitusKey,
   normalizeStreetNameKey,
+  parseSimpleAddressLineForSitusLookup,
   resolveSitusFieldsForLookup,
   situsUnitLooksLikeStreetAutofillDuplicate,
   SITUS_AUTOFILL_LINE1_MAX_LEN,
   SITUS_INPUT_MAX_LEN,
+  SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN,
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
@@ -95,7 +97,11 @@ const FIELD_LABEL_CLASS =
  */
 const FIELD_LABEL_RAIL = "mb-1 flex items-end md:mb-0";
 
-/** Full class strings so Tailwind can scan them. Below md: single column stack; from md up: one label row + one input row (5 cols + Search). */
+/** Single-line first step: label row + input row + Search (md: one row). */
+const SIMPLE_ADDRESS_FORM_CLASS =
+  "grid w-full min-w-0 grid-cols-1 gap-y-2.5 gap-x-0 md:grid-cols-[1fr_auto] md:items-end md:gap-x-3";
+
+/** Below md: single column stack; from md up: one label row + one input row (5 cols + Search). */
 const ADDRESS_LOOKUP_FORM_CLASS =
   "grid w-full min-w-0 grid-cols-1 gap-y-2.5 gap-x-0 max-md:justify-items-stretch md:grid-cols-[minmax(0,6rem)_minmax(0,8.5rem)_minmax(12rem,1fr)_minmax(0,7rem)_auto] md:grid-rows-[auto_auto] md:gap-x-3 md:gap-y-2";
 
@@ -130,14 +136,20 @@ const AC_SECTION = "section-arapahoe-situs";
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
 
+const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
+
 export type HomeParcelAddressLookupProps = {
-  /** Fires when the user is viewing parcel flow (`addressSearchLocked`) so the header can show Start over. */
+  /** Fires when the header should offer Start over (any active address / result / PIN path). */
   onViewingParcelChange?: (viewingParcel: boolean, reset: () => void) => void;
 };
 
 export function HomeParcelAddressLookup({
   onViewingParcelChange,
 }: HomeParcelAddressLookupProps = {}) {
+  const [simpleAddressLine, setSimpleAddressLine] = useState("");
+  /** After a first-line search returns no match or many matches, show the four-field form. */
+  const [showAdvancedAddressFields, setShowAdvancedAddressFields] =
+    useState(false);
   const [streetNumber, setStreetNumber] = useState("");
   const [streetNumberSuffix, setStreetNumberSuffix] = useState("");
   const [streetName, setStreetName] = useState("");
@@ -173,9 +185,15 @@ export function HomeParcelAddressLookup({
 
   /** Opens levy / metro / hub without a PIN load (user builds the stack with Add tile). */
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
-  /** After a successful address validation + search request; hides the field grid until Start over. */
+  /** True after a single PIN match or after the user picks a row from multiple matches. */
   const [addressSearchLocked, setAddressSearchLocked] = useState(false);
   const prevAddressSearchLockedRef = useRef(false);
+
+  const headerOfferStartOver =
+    addressSearchLocked ||
+    showAdvancedAddressFields ||
+    showCountyPinFallback ||
+    (hits != null && hits.length > 0);
 
   const levyReadyForSummary =
     levyLoadedMeta != null &&
@@ -197,14 +215,20 @@ export function HomeParcelAddressLookup({
     setUnit("");
   }, [unit, streetNumber, streetNumberSuffix, streetName]);
 
-  /** After Start over, return focus to the first address field. (Focus to header Start over is handled in HomePageClient.) */
+  /** After Start over, return focus to the first visible address field. */
   useEffect(() => {
     const wasLocked = prevAddressSearchLockedRef.current;
     prevAddressSearchLockedRef.current = addressSearchLocked;
     if (!addressSearchLocked && wasLocked) {
-      document.getElementById("home-situs-number")?.focus();
+      document
+        .getElementById(
+          showAdvancedAddressFields
+            ? "home-situs-number"
+            : "home-address-simple-line",
+        )
+        ?.focus();
     }
-  }, [addressSearchLocked]);
+  }, [addressSearchLocked, showAdvancedAddressFields]);
 
   const clearAllLevyState = useCallback(() => {
     setLevyLines([]);
@@ -297,24 +321,44 @@ export function HomeParcelAddressLookup({
     setError(null);
     setHits(null);
     setShowCountyPinFallback(false);
+    setAddressSearchLocked(false);
 
-    const { resolved, syncNumberFieldsToState, clearUnitToState } =
-      resolveSitusFieldsForLookup(
+    const useAdvanced = showAdvancedAddressFields;
+
+    let resolvedBlock: ReturnType<typeof resolveSitusFieldsForLookup>;
+    if (!useAdvanced) {
+      const rawSimple = simpleAddressLine.trim();
+      if (!rawSimple) {
+        setError("Enter your street address.");
+        return;
+      }
+      const parsed = parseSimpleAddressLineForSitusLookup(simpleAddressLine);
+      if (!parsed) {
+        setError("That address line is too long. Shorten it and try again.");
+        return;
+      }
+      resolvedBlock = resolveSitusFieldsForLookup(
+        parsed.streetNumber,
+        parsed.streetNumberSuffix,
+        parsed.streetName,
+        parsed.unit,
+      );
+    } else {
+      resolvedBlock = resolveSitusFieldsForLookup(
         streetNumber,
         streetNumberSuffix,
         streetName,
         unit,
       );
+    }
+
+    const { resolved, clearUnitToState } = resolvedBlock;
     const { num, suffix, nameRaw, unitTrim } = resolved;
 
-    if (syncNumberFieldsToState) {
-      setStreetNumber(resolved.num);
-      setStreetNumberSuffix(resolved.suffix);
-      setStreetName(resolved.nameRaw);
-    }
-    if (clearUnitToState) {
-      setUnit("");
-    }
+    setStreetNumber(resolved.num);
+    setStreetNumberSuffix(resolved.suffix);
+    setStreetName(resolved.nameRaw);
+    setUnit(clearUnitToState ? "" : resolved.unitTrim);
 
     if (num.length > SITUS_INPUT_MAX_LEN.streetNumber) {
       setError("Street number is too long.");
@@ -333,11 +377,19 @@ export function HomeParcelAddressLookup({
       return;
     }
     if (!num || !/\d/.test(num)) {
-      setError("Enter the number (digits).");
+      setError(
+        useAdvanced
+          ? "Enter the street number (digits)."
+          : "Start with the building number (digits), then the street — for example 1234 Main Street.",
+      );
       return;
     }
     if (!nameRaw) {
-      setError("Enter a street name.");
+      setError(
+        useAdvanced
+          ? "Enter a street name."
+          : "Include the street name after the number — for example 1234 Main Street.",
+      );
       return;
     }
     const nameNorm = normalizeStreetNameKey(nameRaw);
@@ -348,7 +400,6 @@ export function HomeParcelAddressLookup({
       return;
     }
 
-    setAddressSearchLocked(true);
     setBusy(true);
     try {
       prefetchParcelLevyJsonBundle();
@@ -366,16 +417,26 @@ export function HomeParcelAddressLookup({
       }
       const list = lookupPinsBySitusKey(data, key);
       if (list.length === 0) {
+        if (!useAdvanced) {
+          setShowAdvancedAddressFields(true);
+          setError(
+            "No property matched that address. Use the fields in this form to fix the street name, unit, or spelling, then search again.",
+          );
+          return;
+        }
         setShowCountyPinFallback(true);
         setError(
-          "No property matched. Check spelling, add a unit if this is a multi-unit building, or confirm the address is in Arapahoe County.",
+          "Still no match. Use your Parcel PIN from the county site (see the help section), or double-check spelling and unit.",
         );
         return;
       }
       setHits(list);
       if (list.length === 1) {
+        setAddressSearchLocked(true);
         setParcelPin(list[0].pin);
         void loadLevyStack(list[0].pin);
+      } else {
+        setShowAdvancedAddressFields(true);
       }
     } finally {
       setBusy(false);
@@ -383,6 +444,8 @@ export function HomeParcelAddressLookup({
   }
 
   const resetAddressForm = useCallback(() => {
+    setSimpleAddressLine("");
+    setShowAdvancedAddressFields(false);
     setStreetNumber("");
     setStreetNumberSuffix("");
     setStreetName("");
@@ -395,8 +458,8 @@ export function HomeParcelAddressLookup({
   }, [clearAllLevyState]);
 
   useEffect(() => {
-    onViewingParcelChange?.(addressSearchLocked, resetAddressForm);
-  }, [addressSearchLocked, onViewingParcelChange, resetAddressForm]);
+    onViewingParcelChange?.(headerOfferStartOver, resetAddressForm);
+  }, [headerOfferStartOver, onViewingParcelChange, resetAddressForm]);
 
   const hasLevyContent =
     levyLines.length > 0 ||
@@ -497,9 +560,42 @@ export function HomeParcelAddressLookup({
       </h2>
       {!addressSearchLocked ? (
         <div className="w-full min-w-0">
+          {error ? (
+            <InlineErrorCallout
+              id={HOME_ADDRESS_LOOKUP_ERROR_ID}
+              className="mb-3"
+              liveRegion="polite"
+            >
+              {error}
+            </InlineErrorCallout>
+          ) : null}
+          {showAdvancedAddressFields ? (
+            <div className="mb-3">
+              <p className="text-sm font-medium text-slate-800">Refine address</p>
+              {hits != null && hits.length > 1 ? (
+                <p className="mt-1 text-sm text-slate-600">
+                  If none of the matching rows is yours, adjust these fields and
+                  search again. You can also pick a row in the list or use your
+                  PIN from the county site.
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-slate-600">
+                  Adjust number, street name, or unit if needed, then search
+                  again.
+                </p>
+              )}
+            </div>
+          ) : null}
           <form
-            className={ADDRESS_LOOKUP_FORM_CLASS}
+            className={
+              showAdvancedAddressFields
+                ? ADDRESS_LOOKUP_FORM_CLASS
+                : SIMPLE_ADDRESS_FORM_CLASS
+            }
             aria-label="Address lookup"
+            aria-describedby={
+              error ? HOME_ADDRESS_LOOKUP_ERROR_ID : undefined
+            }
             noValidate
             aria-busy={busy}
             onSubmit={(e) => {
@@ -507,148 +603,208 @@ export function HomeParcelAddressLookup({
               void onLookup();
             }}
           >
-            <div className={ADDRESS_FIELD_GRID_SHELL}>
-              <div
-                className={`${FIELD_LABEL_RAIL} ${addressSitusGrid.numberLabel}`}
-              >
-                <label
-                  htmlFor="home-situs-number"
-                  className={FIELD_LABEL_CLASS}
-                >
-                  Number
-                </label>
-              </div>
-              <input
-                id="home-situs-number"
-                type="text"
-                name="situs_line1"
-                inputMode="text"
-                enterKeyHint="next"
-                autoComplete={`${AC_SECTION} address-line1`}
-                spellCheck={false}
-                maxLength={SITUS_AUTOFILL_LINE1_MAX_LEN}
-                className={`${INPUT_ROW} ${addressSitusGrid.numberInput}`}
-                value={streetNumber}
-                onChange={(e) => setStreetNumber(e.target.value)}
-                onBlur={(e) => applySitusBlurSplit(e.target.value, "number")}
-                disabled={busy}
-              />
-            </div>
-            <div className={ADDRESS_FIELD_GRID_SHELL}>
-              <div
-                className={`${FIELD_LABEL_RAIL} min-w-0 ${addressSitusGrid.suffixLabel}`}
-              >
-                <InfoHintPopover
-                  textTrigger="Suffix"
-                  textTriggerId="home-situs-suffix-label-trigger"
-                  textTriggerClassName={FIELD_LABEL_CLASS}
-                  ariaLabel="Optional letters or fraction after the street number (example: 1/2)."
-                  disabled={busy}
-                >
-                  <span className="whitespace-nowrap">Ex. 3721 1/2</span>:{" "}
-                  <span className="font-medium">3721</span> in the Number field,{" "}
-                  <span className="font-medium">1/2</span> here.
-                </InfoHintPopover>
-              </div>
-              <input
-                id="home-situs-number-suffix"
-                type="text"
-                name="arapahoe_situs_number_suffix"
-                enterKeyHint="next"
-                autoComplete="off"
-                spellCheck={false}
-                maxLength={SITUS_INPUT_MAX_LEN.numberSuffix}
-                className={`${INPUT_ROW} ${addressSitusGrid.suffixInput}`}
-                aria-labelledby="home-situs-suffix-label-trigger"
-                value={streetNumberSuffix}
-                onChange={(e) => setStreetNumberSuffix(e.target.value)}
-                disabled={busy}
-                placeholder="optional"
-              />
-            </div>
-            <div className={ADDRESS_FIELD_GRID_SHELL}>
-              <div
-                className={`${FIELD_LABEL_RAIL} ${addressSitusGrid.streetLabel}`}
-              >
-                <label
-                  htmlFor="home-situs-street"
-                  className={FIELD_LABEL_CLASS}
-                >
-                  Street name
-                </label>
-              </div>
-              <input
-                id="home-situs-street"
-                type="text"
-                name="arapahoe_situs_street_name"
-                enterKeyHint="next"
-                autoComplete="off"
-                spellCheck={false}
-                maxLength={SITUS_INPUT_MAX_LEN.streetName}
-                className={`${INPUT_ROW} ${addressSitusGrid.streetInput}`}
-                value={streetName}
-                onChange={(e) => setStreetName(e.target.value)}
-                onBlur={(e) => applySitusBlurSplit(e.target.value, "street")}
-                disabled={busy}
-                placeholder="e.g. Holly or South Holly Circle"
-              />
-            </div>
-            <div className={ADDRESS_FIELD_GRID_SHELL}>
-              <div
-                className={`${FIELD_LABEL_RAIL} ${addressSitusGrid.unitLabel}`}
-              >
-                <label htmlFor="home-situs-unit" className={FIELD_LABEL_CLASS}>
-                  Unit
-                </label>
-              </div>
-              <input
-                id="home-situs-unit"
-                type="text"
-                name="situs_unit"
-                enterKeyHint="done"
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck={false}
-                maxLength={SITUS_INPUT_MAX_LEN.unit}
-                className={`${INPUT_ROW} ${addressSitusGrid.unitInput}`}
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                disabled={busy}
-                placeholder="optional"
-              />
-            </div>
-            <div className="flex w-full min-w-0 flex-col md:contents">
-              <div
-                className={`flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 ${addressSitusGrid.actions}`}
-              >
-                <button
-                  type="submit"
-                  className={ADDRESS_FORM_ACTION_BTN_CLASS}
-                  disabled={busy}
-                >
-                  {busy ? (
-                    "Searching…"
-                  ) : (
-                    <>
-                      <svg
-                        className="h-5 w-5 shrink-0 opacity-95"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.061l-3.329-3.328A7 7 0 012 9z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Search
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+            {!showAdvancedAddressFields ? (
+              <>
+                <div className="flex min-w-0 flex-col gap-y-1">
+                  <label
+                    htmlFor="home-address-simple-line"
+                    className={FIELD_LABEL_CLASS}
+                  >
+                    Street address
+                  </label>
+                  <input
+                    id="home-address-simple-line"
+                    type="text"
+                    name="address-line1"
+                    inputMode="text"
+                    enterKeyHint="search"
+                    autoComplete={`${AC_SECTION} address-line1`}
+                    autoCorrect="off"
+                    autoCapitalize="sentences"
+                    spellCheck={false}
+                    maxLength={SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN}
+                    className={INPUT_ROW}
+                    value={simpleAddressLine}
+                    onChange={(e) => setSimpleAddressLine(e.target.value)}
+                    disabled={busy}
+                    placeholder="e.g. 1234 South Holly Street, Apt 2"
+                  />
+                </div>
+                <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 md:w-auto md:flex-none md:flex-col md:justify-end">
+                  <button
+                    type="submit"
+                    className={ADDRESS_FORM_ACTION_BTN_CLASS}
+                    disabled={busy}
+                  >
+                    {busy ? (
+                      "Searching…"
+                    ) : (
+                      <>
+                        <svg
+                          className="h-5 w-5 shrink-0 opacity-95"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.061l-3.329-3.328A7 7 0 012 9z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Search
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={ADDRESS_FIELD_GRID_SHELL}>
+                  <div
+                    className={`${FIELD_LABEL_RAIL} ${addressSitusGrid.numberLabel}`}
+                  >
+                    <label
+                      htmlFor="home-situs-number"
+                      className={FIELD_LABEL_CLASS}
+                    >
+                      Street number
+                    </label>
+                  </div>
+                  <input
+                    id="home-situs-number"
+                    type="text"
+                    name="situs_line1"
+                    inputMode="text"
+                    enterKeyHint="next"
+                    autoComplete={`${AC_SECTION} address-line1`}
+                    spellCheck={false}
+                    maxLength={SITUS_AUTOFILL_LINE1_MAX_LEN}
+                    className={`${INPUT_ROW} ${addressSitusGrid.numberInput}`}
+                    value={streetNumber}
+                    onChange={(e) => setStreetNumber(e.target.value)}
+                    onBlur={(e) => applySitusBlurSplit(e.target.value, "number")}
+                    disabled={busy}
+                  />
+                </div>
+                <div className={ADDRESS_FIELD_GRID_SHELL}>
+                  <div
+                    className={`${FIELD_LABEL_RAIL} min-w-0 ${addressSitusGrid.suffixLabel}`}
+                  >
+                    <InfoHintPopover
+                      textTrigger="Suffix"
+                      textTriggerId="home-situs-suffix-label-trigger"
+                      textTriggerClassName={FIELD_LABEL_CLASS}
+                      ariaLabel="Optional letters or fraction after the street number (example: 1/2)."
+                      disabled={busy}
+                    >
+                      <span className="whitespace-nowrap">Ex. 3721 1/2</span>:{" "}
+                      <span className="font-medium">3721</span> in the street
+                      number field, <span className="font-medium">1/2</span>{" "}
+                      here.
+                    </InfoHintPopover>
+                  </div>
+                  <input
+                    id="home-situs-number-suffix"
+                    type="text"
+                    name="arapahoe_situs_number_suffix"
+                    enterKeyHint="next"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={SITUS_INPUT_MAX_LEN.numberSuffix}
+                    className={`${INPUT_ROW} ${addressSitusGrid.suffixInput}`}
+                    aria-labelledby="home-situs-suffix-label-trigger"
+                    value={streetNumberSuffix}
+                    onChange={(e) => setStreetNumberSuffix(e.target.value)}
+                    disabled={busy}
+                    placeholder="optional"
+                  />
+                </div>
+                <div className={ADDRESS_FIELD_GRID_SHELL}>
+                  <div
+                    className={`${FIELD_LABEL_RAIL} ${addressSitusGrid.streetLabel}`}
+                  >
+                    <label
+                      htmlFor="home-situs-street"
+                      className={FIELD_LABEL_CLASS}
+                    >
+                      Street name
+                    </label>
+                  </div>
+                  <input
+                    id="home-situs-street"
+                    type="text"
+                    name="arapahoe_situs_street_name"
+                    enterKeyHint="next"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={SITUS_INPUT_MAX_LEN.streetName}
+                    className={`${INPUT_ROW} ${addressSitusGrid.streetInput}`}
+                    value={streetName}
+                    onChange={(e) => setStreetName(e.target.value)}
+                    onBlur={(e) => applySitusBlurSplit(e.target.value, "street")}
+                    disabled={busy}
+                    placeholder="e.g. Holly or South Holly Circle"
+                  />
+                </div>
+                <div className={ADDRESS_FIELD_GRID_SHELL}>
+                  <div
+                    className={`${FIELD_LABEL_RAIL} ${addressSitusGrid.unitLabel}`}
+                  >
+                    <label htmlFor="home-situs-unit" className={FIELD_LABEL_CLASS}>
+                      Unit
+                    </label>
+                  </div>
+                  <input
+                    id="home-situs-unit"
+                    type="text"
+                    name="situs_unit"
+                    enterKeyHint="done"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    maxLength={SITUS_INPUT_MAX_LEN.unit}
+                    className={`${INPUT_ROW} ${addressSitusGrid.unitInput}`}
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                    disabled={busy}
+                    placeholder="optional"
+                  />
+                </div>
+                <div className="flex w-full min-w-0 flex-col md:contents">
+                  <div
+                    className={`flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 ${addressSitusGrid.actions}`}
+                  >
+                    <button
+                      type="submit"
+                      className={ADDRESS_FORM_ACTION_BTN_CLASS}
+                      disabled={busy}
+                    >
+                      {busy ? (
+                        "Searching…"
+                      ) : (
+                        <>
+                          <svg
+                            className="h-5 w-5 shrink-0 opacity-95"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.061l-3.329-3.328A7 7 0 012 9z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Search
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </form>
           <div
             className="mt-3 flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
@@ -660,10 +816,62 @@ export function HomeParcelAddressLookup({
             </span>
             <p>Arapahoe County only. More coming soon.</p>
           </div>
-          {error ? (
-            <InlineErrorCallout className="mt-3" liveRegion="polite">
-              {error}
-            </InlineErrorCallout>
+          {hits != null && hits.length > 1 ? (
+            <div
+              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mt-4`}
+              role="region"
+              aria-live="polite"
+              aria-label="Matching properties"
+            >
+              <p className="mb-2 text-sm font-semibold text-slate-900">
+                {hits.length} properties matched — pick the row that matches your
+                unit or legal description
+              </p>
+              <p className="mb-3 text-sm text-slate-700">
+                Not sure which PIN is yours? Open your parcel on the{" "}
+                <a
+                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={COUNTY_EXTERNAL_LINK_CLASS}
+                >
+                  county property search
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>{" "}
+                and compare the PIN to the address, unit, or legal description.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
+                {hits.map((h) => (
+                  <li
+                    key={h.pin}
+                    className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div className="min-w-0">
+                        <span className="font-mono font-semibold text-slate-900">
+                          {h.pin}
+                        </span>
+                        <span className="mt-1 block text-slate-700">
+                          {h.label}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
+                        disabled={levyLoadBusy}
+                        onClick={() => {
+                          setAddressSearchLocked(true);
+                          setParcelPin(h.pin);
+                          void loadLevyStack(h.pin);
+                        }}
+                      >
+                        Use this property
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : null}
         </div>
       ) : (
@@ -917,62 +1125,6 @@ export function HomeParcelAddressLookup({
               <p className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-700">
                 Enter that PIN in the <strong>Parcel PIN</strong> section above.
               </p>
-            </div>
-          ) : null}
-      {hits && hits.length > 1 ? (
-            <div
-              className={ADDRESS_LOOKUP_PANEL_CLASS}
-              role="region"
-              aria-live="polite"
-              aria-label="Matching properties"
-            >
-              <p className="mb-2 text-sm font-semibold text-slate-900">
-                {hits.length} properties matched — pick the row that matches
-                your unit or legal description
-              </p>
-              <p className="mb-3 text-sm text-slate-700">
-                Not sure which PIN is yours? Open your parcel on the{" "}
-                <a
-                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={COUNTY_EXTERNAL_LINK_CLASS}
-                >
-                  county property search
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>{" "}
-                and compare the PIN to the address, unit, or legal description.
-              </p>
-              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
-                {hits.map((h) => (
-                  <li
-                    key={h.pin}
-                    className="rounded-md border border-slate-200 bg-white px-3 py-3"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                      <div className="min-w-0">
-                        <span className="font-mono font-semibold text-slate-900">
-                          {h.pin}
-                        </span>
-                        <span className="mt-1 block text-slate-700">
-                          {h.label}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
-                        disabled={levyLoadBusy}
-                        onClick={() => {
-                          setParcelPin(h.pin);
-                          void loadLevyStack(h.pin);
-                        }}
-                      >
-                        Use this property
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
             </div>
           ) : null}
           {levyLoadError ? (
