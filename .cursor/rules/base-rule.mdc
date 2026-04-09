@@ -12,6 +12,8 @@ You are helping build a public, static-data web tool that makes **Arapahoe-focus
 
 Implementation can be precise. **User-facing copy and layout should lean away from** county-site tone and spreadsheet vibes - **aim for** something people actually want to use.
 
+**Concrete copy rules:** `.cursor/rules/educational-copy-tone.mdc` (educational tone, plain language, bill-centered explanations) and `.cursor/rules/plain-language-no-lines-jargon.mdc` (avoid stacked "[thing] lines" phrasing in primary UI).
+
 ### Review and audit responses (mandatory - read before any review-style answer)
 
 This rule **overrides** the instinct to be balanced or reassuring. Ignoring it wastes the user's time.

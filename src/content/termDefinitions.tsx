@@ -1,12 +1,19 @@
 /**
- * Single source of truth for glossary / term definition blocks on `/sources`.
+ * Glossary aside blocks for Key terms and `/sources` definitions.
+ * Body copy is authored in `termDefinitionBodies.tsx` (brief + full single source).
  * Levy line explainers live only in the levy detail modal (`LevyExplainerModalSection`), not in this list.
  * Use explicit `{" "}` after inline elements (e.g. </strong>, </dfn>) so JSX does not collapse spaces.
  */
 
 import {
+  TermLevyFullBody,
+  TermLgIdFullBody,
+  TermMillsFullBody,
+  TermSpecialDistrictsFullBody,
+  TermTaxEntityFullBody,
+} from "@/content/termDefinitionBodies";
+import {
   CODE_INLINE_CLASS,
-  COUNTY_EXTERNAL_LINK_CLASS,
   TERM_ASIDE_BASE,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -246,12 +253,7 @@ export function TermAssessedValueAside() {
 export function TermMillsAside() {
   return (
     <TermAside id="term-mills" title="Mills" titleId="term-mills-title">
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Colorado uses mills to show each line&apos;s share of your bill. Think of them as &quot;how many
-        dollars of tax per thousand dollars of taxable value&quot; for that line. You mostly need
-        them to compare one row to another and to match the county table — you do not need to do
-        the math yourself here.
-      </p>
+      <TermMillsFullBody />
     </TermAside>
   );
 }
@@ -259,21 +261,7 @@ export function TermMillsAside() {
 export function TermLevyAside() {
   return (
     <TermAside id="term-levy" title="Levy" titleId="term-levy-title">
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        This is a taxing district&apos;s{" "}
-        <strong className="font-semibold text-slate-900">certified property tax rate</strong>
-        {" "}
-        for a given year, usually expressed in{" "}
-        <strong className="font-semibold text-slate-900">mills</strong>
-        . Your{" "}
-        <strong className="font-semibold text-slate-900">mill levy</strong>
-        {" "}
-        on the assessor page is the{" "}
-        <strong className="font-semibold text-slate-900">combined</strong>
-        {" "}
-        rate from every district that taxes your parcel (schools, county, metro district, and
-        others).
-      </p>
+      <TermLevyFullBody />
     </TermAside>
   );
 }
@@ -285,28 +273,7 @@ export function TermSpecialDistrictsAside() {
       title="Special districts"
       titleId="term-special-districts-title"
     >
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        In Colorado, a{" "}
-        <dfn className="font-semibold not-italic text-slate-900">special district</dfn>
-        {" "}
-        is a local government that delivers a focused service (libraries, fire protection,
-        recreation, and others) and usually has its own{" "}
-        <strong className="font-semibold text-slate-900">property tax mill levy</strong>
-        {" "}
-        on parcels in its boundaries. It is not the same as the county or city government, though
-        boundaries can overlap. This tool shows special districts on your levy stack with their own
-        LG ID when the county data ties a row to state records. Colorado organizes this kind of
-        district under{" "}
-        <a
-          href="https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Colorado Revised Statutes, Title 32
-        </a>
-        .
-      </p>
+      <TermSpecialDistrictsFullBody />
     </TermAside>
   );
 }
@@ -314,14 +281,7 @@ export function TermSpecialDistrictsAside() {
 export function TermLgIdAside() {
   return (
     <TermAside id="term-lg-id" title="LG ID" titleId="term-lg-id-title">
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Colorado&apos;s numeric identifier for a local government or taxing district in state
-        records. The same ID appears across your county levy table, DOLA property-tax data, and
-        (when present) the special-district directory. It is{" "}
-        <strong className="font-semibold text-slate-900">not</strong>
-        {" "}
-        your parcel PIN or account number.
-      </p>
+      <TermLgIdFullBody />
     </TermAside>
   );
 }
@@ -329,14 +289,7 @@ export function TermLgIdAside() {
 export function TermTaxEntityAside() {
   return (
     <TermAside id="term-tax-entity" title="Tax entity" titleId="term-tax-entity-title">
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        This is the state-record identifier for the taxing authority tied to a levy row. In this tool,
-        it helps connect county levy rows to Colorado Department of Local Affairs (DOLA) records at
-        build time. It is{" "}
-        <strong className="font-semibold text-slate-900">not</strong>
-        {" "}
-        your parcel PIN, and it is different from LG ID.
-      </p>
+      <TermTaxEntityFullBody />
     </TermAside>
   );
 }

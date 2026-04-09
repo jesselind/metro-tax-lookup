@@ -1,11 +1,12 @@
 "use client";
 
+import { flushSync } from "react-dom";
+
 /**
- * Levy line detail modal: essentials first (title, mills, explainer if present), then IDs and contact,
- * with longer LG/directory nuance in <details> where needed. Follow docs/levy-explainer-authoring.md;
- * entity-specific explainer JSON is optional.
+ * Levy line detail modal: title and mills, then government type (when known), then entity-specific
+ * JSON explainer ("What is it?") if present, then contact and sources. Follow docs/levy-explainer-authoring.md.
  */
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ArapahoeDolaMatch } from "@/lib/arapahoeParcelLevyData";
 import type {
   SpecialDistrictMatch,
@@ -20,7 +21,10 @@ import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
+import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
+import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
 import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
+import { isLevyModalTermId, type LevyModalTermId } from "@/lib/levyModalTermIds";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 
 type Props = {
@@ -39,8 +43,7 @@ type Props = {
   directoryError: string | null;
   snapshot: { bundledAsOf: string; source: string; sourceCsv?: string } | null;
   /**
-   * When true, term links scroll to `/#term-*` on this page (Definitions shown after PIN load).
-   * Otherwise navigate to `/sources#term-*`.
+   * When true, in-modal term panels can offer "View full definition in Key terms" (same-page hash).
    */
   termDefinitionsOnHomePage?: boolean;
   onClose: () => void;
@@ -78,10 +81,32 @@ export function LevyLineDistrictDetailDialog({
   const hasDirectoryContactInfo =
     Boolean(districtWebsiteHref) || mailingLinesForRecord.length > 0;
 
-  const dolaGovernmentTypeLabel =
-    match && match.kind !== "none"
-      ? formatLocalGovernmentTypeForDisplay(match.record.localGovernmentType)
-      : null;
+  const levyExplainerEntry = findLevyExplainerEntry(authorityLabel, {
+    levyLineCode,
+    sourceTagId,
+    lgId: dolaMatch?.lgId ?? undefined,
+  });
+
+  /**
+   * Government *type* label for the "What's this?" card: prefer DOLA directory export when
+   * matched; otherwise JSON explainer `origin.level` (government level — not the entity-specific
+   * "What is it?" paragraphs).
+   */
+  const governmentTypeDisplayLabel = useMemo((): string | null => {
+    if (match && match.kind !== "none") {
+      const fromDirectory = formatLocalGovernmentTypeForDisplay(
+        match.record.localGovernmentType,
+      );
+      if (fromDirectory) return fromDirectory;
+    }
+    if (levyExplainerEntry) {
+      const raw = levyExplainerEntry.origin.level?.trim();
+      if (raw) {
+        return formatLocalGovernmentTypeForDisplay(raw) ?? raw;
+      }
+    }
+    return null;
+  }, [match, levyExplainerEntry]);
 
   const hasDolaPanel = Boolean(
     dolaMatch &&
@@ -104,23 +129,59 @@ export function LevyLineDistrictDetailDialog({
   const lgIdContactTrusted =
     hasDolaPanel && hasDirectoryMatch && lgIdsAligned && !lgIdConflict;
 
-  function navigateToTerm(
-    id:
-      | "term-mills"
-      | "term-lg-id"
-      | "term-tax-entity"
-      | "term-special-districts",
-  ) {
-    onClose();
-    window.setTimeout(() => {
-      if (termDefinitionsOnHomePage) {
-        window.history.replaceState(null, "", `/#${id}`);
-        focusTermDefinitionById(id);
-      } else {
-        window.location.assign(`/sources#${id}`);
+  const [inlineDefinition, setInlineDefinition] =
+    useState<LevyModalInlineDefinitionVariant | null>(null);
+  const inlineDefPanelId = useId();
+  /** Last control that opened the inline definition panel (for focus return on close). */
+  const lastInlineDefTriggerRef = useRef<HTMLElement | null>(null);
+
+  const closeInlineDefinition = useCallback(
+    (options?: { refocusTrigger?: boolean }) => {
+      const refocus = options?.refocusTrigger !== false;
+      setInlineDefinition(null);
+      if (refocus) {
+        queueMicrotask(() => {
+          const el = lastInlineDefTriggerRef.current;
+          if (el && document.body.contains(el)) {
+            el.focus();
+          }
+        });
       }
+    },
+    [],
+  );
+
+  const openInlineDefinition = useCallback((next: LevyModalInlineDefinitionVariant) => {
+    const ae = document.activeElement;
+    if (ae instanceof HTMLElement && ae !== document.body) {
+      lastInlineDefTriggerRef.current = ae;
+    }
+    setInlineDefinition(next);
+  }, []);
+
+  function handleViewFullTermDefinition(id: LevyModalTermId) {
+    // Close the levy modal synchronously before scrolling; otherwise React 18 may batch
+    // updates and the portal can still be visible when focus moves to Key terms.
+    flushSync(() => {
+      onClose();
+    });
+    window.setTimeout(() => {
+      window.history.replaceState(null, "", `/#${id}`);
+      focusTermDefinitionById(id);
     }, 0);
   }
+
+  useEffect(() => {
+    if (!inlineDefinition) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.repeat) return;
+      e.preventDefault();
+      e.stopPropagation();
+      closeInlineDefinition();
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [inlineDefinition, closeInlineDefinition]);
 
   const dolaNameWarningPill =
     !lgIdContactTrusted &&
@@ -158,12 +219,6 @@ export function LevyLineDistrictDetailDialog({
     dolaMatch?.matchedLegalName &&
     normalizeLabel(match.record.name) !==
       normalizeLabel(dolaMatch.matchedLegalName);
-
-  const levyExplainerEntry = findLevyExplainerEntry(authorityLabel, {
-    levyLineCode,
-    sourceTagId,
-    lgId: dolaMatch?.lgId ?? undefined,
-  });
 
   const contactGovernmentKind = levyGovernmentContactKind(
     authorityLabel,
@@ -211,7 +266,19 @@ export function LevyLineDistrictDetailDialog({
               <button
                 type="button"
                 className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
-                onClick={() => navigateToTerm("term-mills")}
+                aria-expanded={
+                  inlineDefinition?.kind === "term" &&
+                  inlineDefinition.id === "term-mills"
+                }
+                aria-controls={
+                  inlineDefinition?.kind === "term" &&
+                  inlineDefinition.id === "term-mills"
+                    ? inlineDefPanelId
+                    : undefined
+                }
+                onClick={() =>
+                  openInlineDefinition({ kind: "term", id: "term-mills" })
+                }
               >
                 mills
               </button>
@@ -220,38 +287,62 @@ export function LevyLineDistrictDetailDialog({
             </p>
 
             <div className="mt-4 space-y-3 pb-3 text-sm leading-relaxed text-slate-800 sm:text-base">
-              {levyExplainerEntry ? (
-                <LevyExplainerModalSection
-                  entry={levyExplainerEntry}
-                  onNavigateToTerm={(termId) => {
-                    if (
-                      termId === "term-mills" ||
-                      termId === "term-lg-id" ||
-                      termId === "term-tax-entity" ||
-                      termId === "term-special-districts"
-                    ) {
-                      navigateToTerm(termId);
-                    }
-                  }}
-                />
-              ) : !directoryLoading &&
-                !directoryError &&
-                dolaGovernmentTypeLabel ? (
+              {governmentTypeDisplayLabel ? (
                 <div
                   className="rounded-lg border border-slate-200/95 bg-gradient-to-b from-white to-slate-50/80 p-4 shadow-sm sm:p-5"
                   role="region"
                   aria-labelledby="levy-detail-government-type-label"
                 >
-                  <p
-                    id="levy-detail-government-type-label"
-                    className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500"
-                  >
-                    Government type
-                  </p>
-                  <p className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[1.65rem] sm:leading-tight">
-                    {dolaGovernmentTypeLabel}
-                  </p>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p
+                        id="levy-detail-government-type-label"
+                        className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500"
+                      >
+                        Government type
+                      </p>
+                      <p className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[1.65rem] sm:leading-tight">
+                        {governmentTypeDisplayLabel}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="shrink-0 text-xs font-medium text-sky-800 underline decoration-sky-800/40 underline-offset-2 outline-none transition hover:text-sky-950 focus-visible:ring-2 focus-visible:ring-sky-600/50 focus-visible:ring-offset-2"
+                      aria-expanded={
+                        inlineDefinition?.kind === "gov" &&
+                        inlineDefinition.displayLabel === governmentTypeDisplayLabel
+                      }
+                      aria-controls={
+                        inlineDefinition?.kind === "gov" &&
+                        inlineDefinition.displayLabel === governmentTypeDisplayLabel
+                          ? inlineDefPanelId
+                          : undefined
+                      }
+                      aria-label={`What is ${governmentTypeDisplayLabel}? Colorado government type`}
+                      onClick={() =>
+                        openInlineDefinition({
+                          kind: "gov",
+                          displayLabel: governmentTypeDisplayLabel,
+                        })
+                      }
+                    >
+                      What&apos;s this?
+                    </button>
+                  </div>
                 </div>
+              ) : null}
+              {levyExplainerEntry ? (
+                <LevyExplainerModalSection
+                  entry={levyExplainerEntry}
+                  onNavigateToTerm={(termId) => {
+                    if (!isLevyModalTermId(termId)) return;
+                    openInlineDefinition({ kind: "term", id: termId });
+                  }}
+                  termDefinitionPanelId={inlineDefPanelId}
+                  activeInlineTermId={
+                    inlineDefinition?.kind === "term" ? inlineDefinition.id : null
+                  }
+                />
               ) : null}
 
               {dolaMatch && dolaMatch.uraHint && (
@@ -333,8 +424,23 @@ export function LevyLineDistrictDetailDialog({
                           <button
                             type="button"
                             className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-xs sm:text-sm`}
-                            onClick={() => navigateToTerm("term-tax-entity")}
+                            aria-expanded={
+                              inlineDefinition?.kind === "term" &&
+                              inlineDefinition.id === "term-tax-entity"
+                            }
+                            aria-controls={
+                              inlineDefinition?.kind === "term" &&
+                              inlineDefinition.id === "term-tax-entity"
+                                ? inlineDefPanelId
+                                : undefined
+                            }
                             aria-label="Tax entity definition"
+                            onClick={() =>
+                              openInlineDefinition({
+                                kind: "term",
+                                id: "term-tax-entity",
+                              })
+                            }
                           >
                             Tax entity
                           </button>
@@ -348,8 +454,20 @@ export function LevyLineDistrictDetailDialog({
                           <button
                             type="button"
                             className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-xs sm:text-sm`}
-                            onClick={() => navigateToTerm("term-lg-id")}
+                            aria-expanded={
+                              inlineDefinition?.kind === "term" &&
+                              inlineDefinition.id === "term-lg-id"
+                            }
+                            aria-controls={
+                              inlineDefinition?.kind === "term" &&
+                              inlineDefinition.id === "term-lg-id"
+                                ? inlineDefPanelId
+                                : undefined
+                            }
                             aria-label="LG ID definition"
+                            onClick={() =>
+                              openInlineDefinition({ kind: "term", id: "term-lg-id" })
+                            }
                           >
                             LG ID
                           </button>
@@ -577,6 +695,16 @@ export function LevyLineDistrictDetailDialog({
                 </a>
                 .
               </p>
+
+              {inlineDefinition ? (
+                <LevyModalInlineDefinitionPanel
+                  panelId={inlineDefPanelId}
+                  variant={inlineDefinition}
+                  onClose={() => closeInlineDefinition()}
+                  termDefinitionsOnHomePage={termDefinitionsOnHomePage}
+                  onViewFullTermDefinition={handleViewFullTermDefinition}
+                />
+              ) : null}
             </div>
           </div>
 
@@ -585,6 +713,7 @@ export function LevyLineDistrictDetailDialog({
               type="button"
               className={`${btnOutlineSecondaryMd} w-full justify-center py-3`}
               onClick={onClose}
+              aria-label="Close levy details"
             >
               Close
             </button>

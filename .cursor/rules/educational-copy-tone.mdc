@@ -1,0 +1,39 @@
+---
+description: Resident-facing copy — educational tone, plain language, bill-centered (Key terms, modals, UI)
+alwaysApply: true
+---
+
+# Educational copy tone (resident-facing)
+
+This app is **educational first**. Copy should feel like a **clear explanation**, not a government catalog or data dictionary.
+
+## Audience and bar
+
+- Aim for roughly **middle-school readability**: plain words, **short sentences**, **one main idea per paragraph**.
+- Readers are **smart** but not steeped in **DOLA**, registry, or assessor-office jargon. If a sentence only makes sense to someone who already works in county tax data, **split it** or **swap the term for what it does on their bill or notice**.
+- **Lint (informal):** Would this sound OK **read aloud** to a curious neighbor? If not, revise.
+
+## What to prioritize
+
+- **“What this means for your bill”** — connection to money, rows, IDs they can verify — over abstract classification or process trivia up front.
+- **Warmth and clarity** over density. The usual county-site failure mode is **opacity and stacking**, not lack of precision — you can stay **accurate** and still sound **human**.
+- Prefer **one helpful sentence** to three accurate but empty ones.
+
+## Scope (when this rule applies)
+
+Use this lens for **new or edited** resident-facing text, including:
+
+- Key terms and glossary asides (`termDefinitions.tsx`, `termDefinitionBodies.tsx`)
+- In-modal definition briefs (`localGovernmentTypeBrief.ts`, `governmentTypeBriefBody.tsx`, levy detail dialog)
+- Levy explainer JSON (`public/data/levy-explainer-entries.json`) — also follow `docs/levy-explainer-authoring.md`
+- Hub / dashboard UI strings, hints, errors, and `aria-label` text meant for residents (not dev-only comments)
+
+It does **not** require rewriting unrelated files just because they are open; apply when **touching** copy in scope.
+
+## Related rules
+
+- **`plain-language-no-lines-jargon.mdc`** — avoid accountant-style “[thing] lines” phrasing in primary UI; levy and mills as words are fine when they help.
+
+## Focused passes
+
+A **full tone pass** (e.g. Key terms + modal briefs only) is a **deliberate editorial task**, not implied by every code change. When the user asks for that pass, treat it as a **single coordinated edit** with this checklist in mind.

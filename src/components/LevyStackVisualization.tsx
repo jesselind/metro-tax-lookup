@@ -254,8 +254,7 @@ export type LevyStackVisualizationProps = {
   onClearLoadedStack: () => void;
   allowLineEdit: boolean;
   /**
-   * When true, levy line detail and term links scroll to `/#term-*` on the home page
-   * (Definitions on `/` after a successful PIN load); otherwise `/sources#term-*`.
+   * When true, levy modal can offer "View full definition in Key terms" (definitions are on `/`).
    */
   termDefinitionsOnHomePage?: boolean;
 };
@@ -332,19 +331,15 @@ export function LevyStackVisualization({
   const showLevyGrid =
     !awaitingTemplateMills && (lines.length > 0 || allowLineEdit);
 
-  const millsTermHref = termDefinitionsOnHomePage ? "#term-mills" : "/sources#term-mills";
-  const levyTermHref = termDefinitionsOnHomePage ? "#term-levy" : "/sources#term-levy";
-  const pinTermHref = termDefinitionsOnHomePage ? "#term-pin" : "/sources#term-pin";
+  const millsTermHref = "#term-mills";
+  const levyTermHref = "#term-levy";
+  const pinTermHref = "#term-pin";
 
   function goToTermFromTileMenu(id: "term-mills" | "term-levy") {
     setTileActionsId(null);
     window.setTimeout(() => {
-      if (termDefinitionsOnHomePage) {
-        window.history.replaceState(null, "", `/#${id}`);
-        focusTermDefinitionById(id);
-      } else {
-        window.location.assign(`/sources#${id}`);
-      }
+      window.history.replaceState(null, "", `/#${id}`);
+      focusTermDefinitionById(id);
     }, 0);
   }
 

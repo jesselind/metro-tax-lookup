@@ -23,7 +23,11 @@ import {
   TermSpecialDistrictsAside,
   TermTaxEntityAside,
 } from "@/content/termDefinitions";
-import { btnOutlinePrimaryMd, btnPrimaryMd } from "@/lib/buttonClasses";
+import {
+  btnOutlinePrimaryMd,
+  btnOutlineSecondaryMd,
+  btnPrimaryMd,
+} from "@/lib/buttonClasses";
 import {
   CONTACT_EMAIL,
   REPORT_PROBLEM_MAILTO_HREF,
@@ -1061,15 +1065,36 @@ export function HomeParcelAddressLookup({
               Key terms
             </h3>
             <div className="mt-4 space-y-4">
+              {/* Alphabetical by title (Actual value, Assessed value, …) */}
               <TermActualValueAside />
               <TermAssessedValueAside />
               <TermLevyAside />
-              <TermSpecialDistrictsAside />
               <TermLgIdAside />
               <TermMillsAside />
               <TermPinAside />
               <TermPropertyClassificationAside />
+              <TermSpecialDistrictsAside />
               <TermTaxEntityAside />
+            </div>
+            <div className="mt-6 flex justify-center sm:justify-start">
+              <button
+                type="button"
+                className={`${btnOutlineSecondaryMd} px-4 py-2 text-sm`}
+                onClick={() => {
+                  let movedFocus = false;
+                  const focusPageTop = () => {
+                    if (movedFocus) return;
+                    movedFocus = true;
+                    document.getElementById("page-top")?.focus({ preventScroll: true });
+                  };
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  window.addEventListener("scrollend", focusPageTop, { once: true });
+                  window.setTimeout(focusPageTop, 600);
+                }}
+                aria-label="Back to top of page"
+              >
+                Back to top
+              </button>
             </div>
           </div>
         </>
