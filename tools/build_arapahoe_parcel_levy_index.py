@@ -889,7 +889,7 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                 ts = parse_parcel_value_cell(row.get("TotalAssessed"))
                 ty = strip_field(row.get("TaxYear", ""))
                 pclass = strip_field(row.get("PropertyClassDescr", ""))
-                out[pin] = {
+                rec: dict[str, Any] = {
                     "tagId": tag_id,
                     "tagShortDescr": short_d,
                     "totalActual": ta,
@@ -897,6 +897,10 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                     "parcelTaxYear": ty or None,
                     "propertyClassDescr": pclass or None,
                 }
+                owner_list = strip_field(row.get("OwnerList", ""))
+                if owner_list:
+                    rec["ownerList"] = owner_list
+                out[pin] = rec
     return out
 
 
@@ -966,7 +970,7 @@ def main() -> None:
 
     snapshot = {
         "bundledAsOf": bundled_as_of,
-        "source": "Arapahoe County datamart: Mart_TA_TAG + Main Parcel (Pin → TAGId, TotalActual, TotalAssessed)",
+        "source": "Arapahoe County datamart: Mart_TA_TAG + Main Parcel (Pin → TAGId, OwnerList, values)",
         "taxYear": tax_year or None,
         "dolaSource": str(dola_path.name) if dola_path.is_file() else None,
         "dolaRowCount": len(entities),

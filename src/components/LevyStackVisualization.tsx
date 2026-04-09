@@ -15,6 +15,7 @@ import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetai
 import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import {
+  COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   INPUT_CLASS,
   LEVY_STACK_TILE_GRID_CLASS,
@@ -42,6 +43,7 @@ import {
   annualTaxDollarsFromAssessedMills,
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
+import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { formatUsdWhole } from "@/lib/formatUsd";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
@@ -238,6 +240,8 @@ export type LevyStackVisualizationProps = {
   setLines: React.Dispatch<React.SetStateAction<CommittedLevyLine[]>>;
   loadedParcelMeta: {
     pin: string;
+    /** Tax area id; county Levy.aspx uses this query value. */
+    tagId: string;
     tagShortDescr: string;
     levyAspxUrl: string;
     /** When the PIN load included assessed value, tiles show estimated levy dollars. */
@@ -962,38 +966,61 @@ export function LevyStackVisualization({
       )}
 
       {loadedParcelMeta && lines.length > 0 ? (
-        <p className="rounded-lg border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm">
-          <span className="sr-only">Parcel match. </span>
-          Matched{" "}
-          <a
-            id="pin-term-first"
-            href={pinTermHref}
-            className={TERM_LINK_CLASS}
-          >
-            PIN
-          </a>{" "}
-          <span className="font-mono font-semibold tabular-nums text-slate-800">
-            {loadedParcelMeta.pin}
-          </span>
-          {" · "}
-          Taxing authority{" "}
-          <span className="font-medium text-slate-700">
-            {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}
-          </span>
-          {" · "}
-          {safeLevyTableHref ? (
+        <div
+          className="space-y-2 rounded-lg border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm"
+          role="region"
+          aria-label="Parcel match and county links"
+        >
+          <p>
+            <span className="sr-only">Parcel match. </span>
+            Matched{" "}
             <a
-              href={safeLevyTableHref}
+              id="pin-term-first"
+              href={pinTermHref}
+              className={TERM_LINK_CLASS}
+            >
+              PIN
+            </a>{" "}
+            <span className="font-mono font-semibold tabular-nums text-slate-800">
+              {loadedParcelMeta.pin}
+            </span>
+            {" · "}
+            TAG ID{" "}
+            <span className="font-mono font-semibold tabular-nums text-slate-800">
+              {loadedParcelMeta.tagId}
+            </span>
+            {" · "}
+            Taxing authority{" "}
+            <span className="font-medium text-slate-700">
+              {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}
+            </span>
+            {" · "}
+            {safeLevyTableHref ? (
+              <a
+                href={safeLevyTableHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-700 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+              >
+                Open county levy table
+              </a>
+            ) : (
+              <span className="text-slate-600">Open county levy table</span>
+            )}
+          </p>
+          <p>
+            <a
+              href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-indigo-700 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+              className={COUNTY_EXTERNAL_LINK_CLASS}
             >
-              Open county levy table
-            </a>
-          ) : (
-            <span className="text-slate-600">Open county levy table</span>
-          )}
-        </p>
+              County property search
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>{" "}
+            — find the full parcel record (legal description, sales, notices).
+          </p>
+        </div>
       ) : null}
 
       {awaitingTemplateMills && lines.length > 0 && (

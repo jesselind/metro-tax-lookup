@@ -70,6 +70,8 @@ export type ArapahoePinToTagRow = {
   parcelTaxYear?: string | null;
   /** County property class label (CSV PropertyClassDescr), e.g. Real, Improvement. */
   propertyClassDescr?: string | null;
+  /** Tax roll owner list (CSV OwnerList) when present. */
+  ownerList?: string | null;
 };
 
 /** Title-case county property class for display (e.g. "RESIDENTIAL" -> "Residential"). */

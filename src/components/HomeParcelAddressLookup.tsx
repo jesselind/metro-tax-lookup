@@ -19,6 +19,7 @@ import {
   TermPropertyClassificationAside,
   TermLgIdAside,
   TermMillsAside,
+  TermOwnerListAside,
   TermPinAside,
   TermSpecialDistrictsAside,
   TermTaxEntityAside,
@@ -53,8 +54,8 @@ import {
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
-import { formatUsdWhole } from "@/lib/formatUsd";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import { formatUsdWhole } from "@/lib/formatUsd";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
@@ -151,6 +152,7 @@ export function HomeParcelAddressLookup({
   const [levyLines, setLevyLines] = useState<CommittedLevyLine[]>([]);
   const [levyLoadedMeta, setLevyLoadedMeta] = useState<{
     pin: string;
+    tagId: string;
     tagShortDescr: string;
     levyAspxUrl: string;
     parcelValues: ParcelValuesFromExport;
@@ -240,6 +242,7 @@ export function HomeParcelAddressLookup({
       setLevyTemplateMillDrafts(result.templateMillDrafts);
       setLevyLoadedMeta({
         pin: result.matchedPin,
+        tagId: result.tagId,
         tagShortDescr: result.tagShortDescr,
         levyAspxUrl: result.levyAspxUrl,
         parcelValues: result.parcelValues,
@@ -718,14 +721,19 @@ export function HomeParcelAddressLookup({
                 </div>
               </div>
             ) : null}
-            {!busy && lockedAddressHeadline && !levyReadyForSummary ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS}
-              >
+            {!busy &&
+            lockedAddressHeadline &&
+            (!levyReadyForSummary || levyLoadedMeta) ? (
+              <div className={PARCEL_SUMMARY_TILE_CLASS}>
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
                   <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
-                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>{lockedAddressHeadline}</p>
-                  {hits != null && hits.length === 1 && levyLoadBusy ? (
+                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
+                    {lockedAddressHeadline}
+                  </p>
+                  {!levyReadyForSummary &&
+                  hits != null &&
+                  hits.length === 1 &&
+                  levyLoadBusy ? (
                     <p className="text-sm text-slate-600" aria-live="polite">
                       Loading your levy breakdown…
                     </p>
@@ -733,13 +741,27 @@ export function HomeParcelAddressLookup({
                 </div>
               </div>
             ) : null}
-            {!busy && levyReadyForSummary && levyLoadedMeta && lockedAddressHeadline ? (
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            levyLoadedMeta.parcelValues.ownerList != null ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS}
+                id="home-parcel-owner-list"
               >
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
-                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>{lockedAddressHeadline}</p>
+                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <a
+                      id="owner-list-term-first"
+                      href="#term-owner-list"
+                      className={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                    >
+                      Owner on record
+                    </a>
+                  </p>
+                  <p className="max-w-full break-words text-base font-semibold leading-snug text-slate-900 sm:text-lg">
+                    {levyLoadedMeta.parcelValues.ownerList}
+                  </p>
                 </div>
               </div>
             ) : null}
@@ -1071,6 +1093,7 @@ export function HomeParcelAddressLookup({
               <TermLevyAside />
               <TermLgIdAside />
               <TermMillsAside />
+              <TermOwnerListAside />
               <TermPinAside />
               <TermPropertyClassificationAside />
               <TermSpecialDistrictsAside />

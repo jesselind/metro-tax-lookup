@@ -250,6 +250,31 @@ export function TermAssessedValueAside() {
   );
 }
 
+export function TermOwnerListAside() {
+  return (
+    <TermAside
+      id="term-owner-list"
+      title="Owner on record"
+      titleId="term-owner-list-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        This is the{" "}
+        <dfn className="font-semibold not-italic text-slate-900">owner list</dfn>
+        {" "}
+        from the county&apos;s public tax roll for this parcel: who appears on the assessment
+        record, often formatted as it is in the assessor file (for example multiple owners separated
+        by commas). It helps you confirm you are looking at the right property when the address
+        alone is not enough.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        It is not proof of who lives there today, who pays the mortgage, or legal title by itself.
+        For official ownership documents, use recorded deeds and the county&apos;s own parcel
+        record.
+      </p>
+    </TermAside>
+  );
+}
+
 export function TermMillsAside() {
   return (
     <TermAside id="term-mills" title="Mills" titleId="term-mills-title">
@@ -308,6 +333,7 @@ export function AllTermDefinitionAsides() {
       <TermPropertyClassificationAside />
       <TermActualValueAside />
       <TermAssessedValueAside />
+      <TermOwnerListAside />
       <TermMillsAside />
       <TermLevyAside />
       <TermSpecialDistrictsAside />

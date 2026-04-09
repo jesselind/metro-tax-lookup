@@ -100,17 +100,25 @@ export type ParcelValuesFromExport = {
   totalAssessed: number | null;
   /** From Main Parcel PropertyClassDescr when present (e.g. Real, Improvement). */
   propertyClassification: string | null;
+  /** From Main Parcel OwnerList when present (public tax roll). */
+  ownerList?: string | null;
 };
 
 function parcelValuesFromPinRow(row: ArapahoePinToTagRow): ParcelValuesFromExport {
   const num = (v: unknown): number | null =>
     typeof v === "number" && Number.isFinite(v) ? v : null;
+  const str = (v: unknown): string | null => {
+    if (typeof v !== "string") return null;
+    const t = v.trim();
+    return t.length > 0 ? t : null;
+  };
   return {
     totalActual: num(row.totalActual),
     totalAssessed: num(row.totalAssessed),
     propertyClassification: formatPropertyClassificationDisplay(
       row.propertyClassDescr,
     ),
+    ownerList: str(row.ownerList),
   };
 }
 
@@ -118,6 +126,8 @@ export type LoadLevyStackFromPinOk = {
   ok: true;
   lines: CommittedLevyLine[];
   matchedPin: string;
+  /** Tax area id (TAGId) from Main Parcel; same id as county Levy.aspx?id= */
+  tagId: string;
   tagShortDescr: string;
   levyAspxUrl: string;
   arapahoeStacksSnapshot: ArapahoeLevyStacksFile["snapshot"];
@@ -210,6 +220,7 @@ export async function loadLevyStackFromPin(
     ok: true,
     lines: nextLines,
     matchedPin: matchedPinKey,
+    tagId: row.tagId,
     tagShortDescr: row.tagShortDescr,
     levyAspxUrl: stack.levyAspxUrl,
     arapahoeStacksSnapshot: stacks.snapshot,

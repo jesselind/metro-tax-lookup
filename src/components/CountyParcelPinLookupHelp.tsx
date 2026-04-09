@@ -5,7 +5,7 @@ import { useState } from "react";
 import parcelPinImg from "@/assets/images/Parcel-PIN.png";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
-import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH as ASSESSOR_SEARCH_URL } from "@/lib/arapahoeCountyUrls";
+import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
@@ -33,7 +33,7 @@ export function CountyParcelPinLookupHelp({
       <p className="text-base text-slate-800 sm:text-lg">
         Go to the county{" "}
         <a
-          href={ASSESSOR_SEARCH_URL}
+          href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
           target="_blank"
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
