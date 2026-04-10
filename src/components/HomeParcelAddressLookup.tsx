@@ -633,7 +633,7 @@ export function HomeParcelAddressLookup({
                     value={simpleAddressLine}
                     onChange={(e) => setSimpleAddressLine(e.target.value)}
                     disabled={busy}
-                    placeholder="e.g. 1234 South Holly Street, Apt 2"
+                    placeholder="e.g. 1234 South Holly Street"
                   />
                 </div>
                 <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 md:w-auto md:flex-none md:flex-col md:justify-end">
@@ -820,7 +820,7 @@ export function HomeParcelAddressLookup({
             <span className="mt-0.5">
               <InfoIcon />
             </span>
-            <p>Arapahoe County only. More coming soon.</p>
+            <p>Arapahoe County only.</p>
           </div>
           {hits != null && hits.length > 1 ? (
             <div
