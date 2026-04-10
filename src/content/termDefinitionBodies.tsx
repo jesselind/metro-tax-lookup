@@ -212,9 +212,8 @@ export function TermOwnerListBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        Who appears on the county&apos;s public tax roll for this parcel, often comma-separated
-        like the assessor export. Use it to confirm you matched the right property when the
-        address is not enough.
+        Who appears on the county&apos;s public tax roll for this parcel. Use it to confirm you
+        matched the right property when the address is not enough.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
         Not a current residency list or proof of legal title by itself. For ownership, check
@@ -269,7 +268,7 @@ export const parcelSummaryTermBriefRegistry: Record<
     title: "Property classification",
     Brief: TermPropertyClassificationBriefBody,
   },
-  "term-owner-list": { title: "Owner on record", Brief: TermOwnerListBriefBody },
+  "term-owner-list": { title: "Owner of record", Brief: TermOwnerListBriefBody },
   "term-actual-value": { title: "Actual value", Brief: TermActualValueBriefBody },
   "term-assessed-value": {
     title: "Assessed value",

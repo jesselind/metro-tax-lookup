@@ -36,7 +36,7 @@ type InfoHintPopoverProps = {
 );
 
 const PANEL_BASE =
-  "absolute z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case text-slate-700 shadow-lg";
+  "absolute z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
 
 /**
  * Toggles a small floating note; click outside or Escape closes.

@@ -253,7 +253,7 @@ export function TermOwnerListAside() {
   return (
     <TermAside
       id="term-owner-list"
-      title="Owner on record"
+      title="Owner of record"
       titleId="term-owner-list-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">

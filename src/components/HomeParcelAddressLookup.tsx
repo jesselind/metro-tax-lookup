@@ -972,10 +972,10 @@ export function HomeParcelAddressLookup({
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
                   <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
                     <InfoHintPopover
-                      textTrigger="Owner on record"
+                      textTrigger="Owner of record"
                       textTriggerId="owner-list-term-first"
                       textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
-                      ariaLabel="Brief definition of owner on record."
+                      ariaLabel="Brief definition of owner of record."
                       disabled={busy}
                       panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                     >
