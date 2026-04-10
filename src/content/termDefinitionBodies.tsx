@@ -128,10 +128,9 @@ export function TermLgIdBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">LG ID</strong>
       {" "}
-      is Colorado&apos;s numeric identifier for a local government in state records. It is{" "}
-      <strong className="font-semibold text-slate-900">not</strong>
-      {" "}
-      your parcel PIN or account number.
+      is Colorado&apos;s numeric identifier for a local government in state records. The same ID
+      shows up across county levy data, DOLA property-tax records, and the district directory when
+      the county supplies it.
     </p>
   );
 }
@@ -141,10 +140,7 @@ export function TermLgIdFullBody() {
     <p className={FULL_P}>
       Colorado&apos;s numeric identifier for a local government or taxing district in state
       records. The same ID appears across your county levy table, DOLA property-tax data, and
-      (when present) the special-district directory. It is{" "}
-      <strong className="font-semibold text-slate-900">not</strong>
-      {" "}
-      your parcel PIN or account number.
+      (when present) the special-district directory.
     </p>
   );
 }
@@ -154,8 +150,8 @@ export function TermTaxEntityBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">Tax entity</strong>
       {" "}
-      is the state-record identifier for the taxing authority on this levy row. It is not your
-      PIN and it differs from LG ID.
+      is the state-record ID for the taxing authority on this levy row. This tool uses it to match
+      the row to property-tax data from the Colorado Department of Local Affairs (DOLA).
     </p>
   );
 }
@@ -165,10 +161,7 @@ export function TermTaxEntityFullBody() {
     <p className={FULL_P}>
       This is the state-record identifier for the taxing authority tied to a levy row. In this tool,
       it helps connect county levy rows to Colorado Department of Local Affairs (DOLA) records at
-      build time. It is{" "}
-      <strong className="font-semibold text-slate-900">not</strong>
-      {" "}
-      your parcel PIN, and it is different from LG ID.
+      build time.
     </p>
   );
 }
@@ -196,19 +189,20 @@ export function TermPropertyClassificationBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        The county&apos;s broad category for your parcel in the data behind this tool. It steers
-        assessment rules. It is not zoning, not your neighborhood name, and not the same as
-        actual or assessed value.
+        How the county labels your parcel for assessment in this data — which rules and rates
+        apply. This is not zoning.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
-        Values like{" "}
+        The file may show{" "}
         <strong className="font-semibold text-slate-900">Improvement</strong>
         {" "}
         or{" "}
         <strong className="font-semibold text-slate-900">Real</strong>
         {" "}
-        come from the assessor file; your paper notice may use different wording (for example
-        Residential) for the same parcel.
+        while your notice says something like{" "}
+        <strong className="font-semibold text-slate-900">Residential</strong>
+        {" "}
+        for the same parcel.
       </p>
     </>
   );
@@ -218,13 +212,13 @@ export function TermOwnerListBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        Names from the county&apos;s public tax roll for this parcel, often formatted like the
-        assessor file (for example several owners separated by commas). Use them to confirm you
-        picked the right property when the address alone is not enough.
+        Who appears on the county&apos;s public tax roll for this parcel, often comma-separated
+        like the assessor export. Use it to confirm you matched the right property when the
+        address is not enough.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
-        This is not proof of who lives there today or legal title by itself. For official
-        ownership, use recorded deeds and the county parcel record.
+        Not a current residency list or proof of legal title by itself. For ownership, check
+        recorded deeds and the county parcel record.
       </p>
     </>
   );
@@ -234,13 +228,12 @@ export function TermActualValueBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        The assessor&apos;s full value for your parcel on the public tax roll before Colorado
-        applies the assessment rate for your property type. It is the starting point for your tax
-        bill, not the amount rates are multiplied against (that is assessed value).
+        The assessor&apos;s full value on the public tax roll before the assessment rate for your
+        property type is applied. Mill levies apply to assessed value, not this number.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
-        It is in the same general idea as market value, but it is the county&apos;s official tax
-        figure — not a sale price, bank appraisal, or a single private appraiser&apos;s report.
+        In the same ballpark as market value, but it is the county&apos;s official figure for
+        taxes — not a sale price, loan appraisal, or one private appraiser&apos;s opinion.
       </p>
     </>
   );
@@ -249,9 +242,8 @@ export function TermActualValueBriefBody() {
 export function TermAssessedValueBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The amount your property tax is built from: the county applies a percentage set by state
-      law for your kind of property to your actual value. Mill levies apply to this smaller
-      number.
+      The taxable base for your bill: your actual value times the state assessment percentage for
+      your property type. Each district&apos;s mill levy applies to this number.
     </p>
   );
 }

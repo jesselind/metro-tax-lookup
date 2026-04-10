@@ -127,7 +127,7 @@ export function TermPinAside() {
         Parcel identification number is the county&apos;s numeric identifier for a specific parcel
         in Arapahoe&apos;s assessor records. It is usually nine digits. You find it on your parcel
         record from the county property search; this tool uses it to match your address to levy
-        data. It is not the same as your LG ID or tax entity.
+        data.
       </p>
     </TermAside>
   );
@@ -141,10 +141,9 @@ export function TermPropertyClassificationAside() {
       titleId="term-property-classification-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        This is the county&apos;s broad category for your parcel in the parcel data behind this tool. It
-        tells the tax system what kind of property you have for assessment rules. It is not your
-        zoning label, not your neighborhood name, and not the same as actual or assessed value.
-        This tool shows it in the Property classification tile when that data includes a label.
+        This is how the county labels your parcel type for assessment in the parcel data behind this
+        tool — which rules and rates apply. It is not zoning. This tool shows the label in the
+        Property classification tile when the export includes one.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         You will usually see one of these values in that tile:
