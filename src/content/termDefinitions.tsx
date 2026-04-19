@@ -384,7 +384,8 @@ export function TermTaxEntityAside() {
 
 /**
  * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
- * (PIN, property classification, actual/assessed value, comps, mills, levy, special districts, LG ID, TAG, tax entity).
+ * (PIN, property classification, actual value, assessed value, comps, owner of record, mills, levy,
+ * special districts, LG ID, TAG, tax entity).
  * Parcel is defined on the home dashboard Key terms only (after address flow + PIN load).
  */
 export function AllTermDefinitionAsides() {

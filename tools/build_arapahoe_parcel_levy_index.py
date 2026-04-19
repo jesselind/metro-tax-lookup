@@ -73,6 +73,7 @@ LEVY_ASPX_BASE = "https://parcelsearch.arapahoegov.com/Levy.aspx?id="
 
 
 def strip_field(s: str | None) -> str:
+    """Return a trimmed string, treating None as empty."""
     if s is None:
         return ""
     return str(s).strip()
@@ -123,6 +124,7 @@ def mart_line_looks_bond_purpose(authority_upper: str) -> bool:
 
 
 def dola_name_looks_bond_purpose(legal_name: str) -> bool:
+    """True when a DOLA legal name reads like bond or debt service."""
     u = strip_field(legal_name).upper()
     if "BOND" in u:
         return True
@@ -132,6 +134,7 @@ def dola_name_looks_bond_purpose(legal_name: str) -> bool:
 
 
 def normalize_pin(raw: str) -> str:
+    """Digits-only PIN, zero-padded to nine characters for map keys."""
     digits = re.sub(r"\D", "", raw)
     if not digits:
         return ""
@@ -238,6 +241,7 @@ def normalize_street_number_key(primary: str, range_or_suffix: str) -> str:
 
 
 def normalize_unit_key(raw: str) -> str:
+    """Uppercase unit string with non-alphanumerics removed (situs lookup)."""
     s = strip_field(raw).upper()
     if not s:
         return ""
@@ -245,6 +249,7 @@ def normalize_unit_key(raw: str) -> str:
 
 
 def row_situs_lookup_key(row: dict[str, str]) -> str | None:
+    """Stable num|name|unit key for one Main Parcel row, or None if unusable."""
     num = normalize_street_number_key(row.get("SAAddrNumber", ""), row.get("SAStreetNumberSfx", ""))
     name = normalize_street_name_key(row.get("SAStreetName", ""))
     unit = normalize_unit_key(row.get("SAUnitNumber", ""))
@@ -259,6 +264,7 @@ def row_situs_lookup_key(row: dict[str, str]) -> str | None:
 
 
 def format_situs_label(row: dict[str, str]) -> str:
+    """Human-readable situs line for UI labels (falls back to PIN)."""
     n = strip_field(row.get("SAAddrNumber", ""))
     pre = strip_field(row.get("SAPredirectional", ""))
     name = strip_field(row.get("SAStreetName", ""))
@@ -351,7 +357,9 @@ def mart_row_maps(fieldnames: list[str] | None) -> dict[str, str]:
         }
     # Named export (future)
     lower = {strip_field(h).lower(): strip_field(h) for h in fieldnames}
+
     def pick(*candidates: str) -> str | None:
+        """Return the first header present in fieldnames (case-insensitive)."""
         for c in candidates:
             if c.lower() in lower:
                 return lower[c.lower()]
@@ -369,6 +377,7 @@ def mart_row_maps(fieldnames: list[str] | None) -> dict[str, str]:
 
 
 def sort_line_code(code: str) -> tuple[int, str]:
+    """Sort key so numeric codes order first, ASSRFEES last, other codes between."""
     c = strip_field(code).upper()
     if c == "ASSRFEES":
         return (2, c)
@@ -407,6 +416,7 @@ def normalize_for_match(name: str) -> str:
 
 
 def load_overrides(path: Path) -> dict[str, dict[str, Any]]:
+    """Load DOLA authority overrides keyed by uppercase mart authority label."""
     if not path.is_file():
         return {}
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -557,6 +567,7 @@ def _entities_from_dola_table_rows(
     idx_county: int | None,
     idx_levy: int | None,
 ) -> list[dict[str, Any]]:
+    """Build normalized entity dicts from DOLA table rows (Arapahoe rows only)."""
     entities: list[dict[str, Any]] = []
     for row in rows:
         if row is None:
@@ -597,6 +608,7 @@ def _entities_from_dola_table_rows(
 
 
 def load_dola_entities_csv(csv_path: Path) -> tuple[list[dict[str, Any]], str | None]:
+    """Parse DOLA Property Tax Entities export from CSV; returns (entities, levy header name)."""
     with csv_path.open(newline="", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
         try:
@@ -622,6 +634,7 @@ def load_dola_entities_csv(csv_path: Path) -> tuple[list[dict[str, Any]], str | 
 
 
 def load_dola_entities_xlsx(xlsx_path: Path) -> tuple[list[dict[str, Any]], str | None]:
+    """Parse DOLA export from xlsx via openpyxl; returns (entities, levy header name)."""
     try:
         from openpyxl import load_workbook
     except ImportError:
@@ -712,6 +725,7 @@ def dola_match_for_mart_line(
 
 
 def _te_id_str(x: Any) -> str:
+    """String form of a tax entity id, stripped, or empty when missing."""
     if x is None:
         return ""
     return strip_field(str(x))
@@ -735,6 +749,7 @@ def match_dola_line(
     entities: list[dict[str, Any]],
     overrides: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
+    """Resolve one mart authority line to a DOLA tax entity (override, fuzzy, or none)."""
     au = strip_field(authority_upper).upper()
     ovr = overrides.get(au)
     query_base = normalize_for_match(authority_upper)
@@ -742,6 +757,7 @@ def match_dola_line(
         query_base = normalize_for_match(str(ovr["legalName"]))
 
     def ura_extra() -> dict[str, Any]:
+        """Optional flag when an override marks an urban renewal context."""
         if ovr and ovr.get("ura"):
             return {"uraHint": True}
         return {}
@@ -838,6 +854,7 @@ def match_dola_line(
 
 
 def read_mart_groups(path: Path) -> tuple[dict[str, list[dict[str, Any]]], str]:
+    """Read Mart_TA_TAG CSV into TAGId -> levy line rows plus tax year string."""
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         r = csv.DictReader(f)
         maps = mart_row_maps(r.fieldnames)
@@ -873,6 +890,7 @@ def read_mart_groups(path: Path) -> tuple[dict[str, list[dict[str, Any]]], str]:
 
 
 def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
+    """First Main Parcel row per PIN for tag and values; AIN may be filled from a later row if missing."""
     out: dict[str, dict[str, Any]] = {}
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         r = csv.DictReader(f)
@@ -904,10 +922,16 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                 if ain:
                     rec["ain"] = ain
                 out[pin] = rec
+            else:
+                rec = out[pin]
+                ain = strip_field(row.get("AIN", ""))
+                if ain and not rec.get("ain"):
+                    rec["ain"] = ain
     return out
 
 
 def main() -> None:
+    """CLI entry: read county exports, join DOLA, write public/data JSON artifacts."""
     ap = argparse.ArgumentParser(description="Build Arapahoe parcel levy index JSON.")
     ap.add_argument("--main-parcel", type=Path, default=DEFAULT_MAIN)
     ap.add_argument("--mart-ta-tag", type=Path, default=DEFAULT_MART)

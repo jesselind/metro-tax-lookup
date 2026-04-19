@@ -1007,7 +1007,7 @@ export function LevyStackVisualization({
                 href={safeLevyTableHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cursor-pointer text-indigo-700 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+                className={COUNTY_EXTERNAL_LINK_CLASS}
               >
                 Open county levy table
               </a>
@@ -1036,7 +1036,7 @@ export function LevyStackVisualization({
             Enter{" "}
             <a
               href={millsTermHref}
-              className="cursor-pointer underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+              className={TERM_LINK_CLASS}
             >
               mills
             </a>{" "}
@@ -1046,7 +1046,7 @@ export function LevyStackVisualization({
             Each row is one{" "}
             <a
               href={levyTermHref}
-              className="cursor-pointer font-medium text-indigo-950 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+              className={TERM_LINK_CLASS}
             >
               levy
             </a>
@@ -1075,7 +1075,7 @@ export function LevyStackVisualization({
                     href={safeLevyTableHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="cursor-pointer text-indigo-800 underline decoration-indigo-400/70 underline-offset-2"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
                   >
                     levy table
                   </a>

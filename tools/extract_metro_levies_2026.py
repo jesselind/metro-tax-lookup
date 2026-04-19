@@ -43,6 +43,8 @@ class RawRow:
 
 @dataclass
 class Levy:
+  """One normalized levy purpose line for a district."""
+
   purposeRaw: str
   purposeCategory: str
   rateMillsCurrent: Optional[float]
@@ -61,6 +63,8 @@ class Levy:
 
 @dataclass
 class Aggregates:
+  """Summed mills by purpose category plus audit row ids."""
+
   opsMills: float
   debtMills: float
   otherMills: float
@@ -70,6 +74,8 @@ class Aggregates:
 
 @dataclass
 class District:
+  """One local government block from the mill levy PDF."""
+
   districtId: str
   countyId: str
   lgid: str
@@ -116,6 +122,7 @@ def extract_lines(pdf_path: Path) -> List[RawRow]:
 
 
 def _parse_float(value: Any) -> Optional[float]:
+  """Parse a numeric cell; commas allowed, '-' means missing."""
   if value is None:
     return None
   text = str(value).strip()
@@ -132,6 +139,7 @@ def _parse_float(value: Any) -> Optional[float]:
 
 
 def _parse_bool(value: Any) -> Optional[bool]:
+  """Parse y/n style flags from PDF tokens."""
   if value is None:
     return None
   text = str(value).strip().lower()
@@ -145,6 +153,7 @@ def _parse_bool(value: Any) -> Optional[bool]:
 
 
 def _classify_district_type(name: str) -> str:
+  """Coarse district type label (metro, city, school, county, other)."""
   n = name.lower()
   if "metropolitan district" in n or "metro district" in n or "metropolitan improvement district" in n:
     return "metro"
@@ -203,15 +212,18 @@ def _classify_purpose(purpose: str) -> str:
 
 
 def _build_district_id(county_id: str, lgid: str, subdistrict: Optional[str]) -> str:
+  """Stable district key matching the app schema."""
   sub = subdistrict if subdistrict not in (None, "", "-") else "0"
   return f"{county_id}-{lgid}-{sub}"
 
 
 def _tokenize(line: str) -> List[str]:
+  """Split a PDF text line on whitespace."""
   return line.split()
 
 
 def _looks_like_county_and_lgid(tokens: List[str]) -> bool:
+  """True when tokens start with two numeric ids (county and LG)."""
   if len(tokens) < 3:
     return False
   if not tokens[0].isdigit():
@@ -521,6 +533,7 @@ def write_outputs(
 
 
 def main() -> None:
+  """CLI: read mill levy PDF, write normalized JSON and raw audit file."""
   parser = argparse.ArgumentParser(
     description="Extract metropolitan district levies for 2026 into JSON."
   )
