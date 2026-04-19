@@ -100,7 +100,7 @@ export type ParcelValuesFromExport = {
   totalAssessed: number | null;
   /** From Main Parcel PropertyClassDescr when present (e.g. Real, Improvement). */
   propertyClassification: string | null;
-  /** From Main Parcel OwnerList when present (public tax roll). */
+  /** From Main Parcel OwnerList when present (county public owner listing). */
   ownerList?: string | null;
 };
 
@@ -136,6 +136,8 @@ export type LoadLevyStackFromPinOk = {
   /** From Main Parcel export (same tax year as pin snapshot). */
   parcelValues: ParcelValuesFromExport;
   parcelValuesTaxYear: string | null;
+  /** Main Parcel AIN when present in pin map (county comps grid PDF). */
+  ain: string | null;
 };
 
 export type LoadLevyStackFromPinResult =
@@ -216,6 +218,8 @@ export async function loadLevyStackFromPin(
     typeof row.parcelTaxYear === "string" && row.parcelTaxYear.trim()
       ? row.parcelTaxYear.trim()
       : null;
+  const ainFromRow =
+    typeof row.ain === "string" && row.ain.trim() ? row.ain.trim() : null;
   return {
     ok: true,
     lines: nextLines,
@@ -230,6 +234,7 @@ export async function loadLevyStackFromPin(
     ),
     parcelValues: pv,
     parcelValuesTaxYear: yearFromParcel ?? pins.snapshot.taxYear ?? null,
+    ain: ainFromRow,
   };
 }
 

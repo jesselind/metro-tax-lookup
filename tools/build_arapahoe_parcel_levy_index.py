@@ -4,7 +4,7 @@ Build Arapahoe parcel → levy stack index from county datamart CSV exports.
 
 Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
-  - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr } (large; see --skip-pin-map)
+  - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
 
 Mart_TA_TAG: supporting-data/.../Tax Authority Groups and Tax Authorities.csv
@@ -900,6 +900,9 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                 owner_list = strip_field(row.get("OwnerList", ""))
                 if owner_list:
                     rec["ownerList"] = owner_list
+                ain = strip_field(row.get("AIN", ""))
+                if ain:
+                    rec["ain"] = ain
                 out[pin] = rec
     return out
 
@@ -970,7 +973,7 @@ def main() -> None:
 
     snapshot = {
         "bundledAsOf": bundled_as_of,
-        "source": "Arapahoe County datamart: Mart_TA_TAG + Main Parcel (Pin → TAGId, OwnerList, values)",
+        "source": "Arapahoe County datamart: Mart_TA_TAG + Main Parcel (Pin → TAGId, AIN, OwnerList, values)",
         "taxYear": tax_year or None,
         "dolaSource": str(dola_path.name) if dola_path.is_file() else None,
         "dolaRowCount": len(entities),

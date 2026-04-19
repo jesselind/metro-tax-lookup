@@ -30,7 +30,7 @@ export function TermMillsFullBody() {
     <p className={FULL_P}>
       Colorado uses mills to show each line&apos;s share of your bill. Think of them as &quot;how many
       dollars of tax per thousand dollars of taxable value&quot; for that line. You mostly need
-      them to compare one row to another and to match the county table — you do not need to do
+      them to compare one row to another and to match the county table. You do not need to do
       the math yourself here.
     </p>
   );
@@ -42,7 +42,7 @@ export function TermLevyBriefBody() {
       A <strong className="font-semibold text-slate-900">levy</strong>
       {" "}
       is a taxing district&apos;s certified property tax rate for the year, usually in mills. Your
-      combined mill levy is the sum of every district that taxes your parcel.
+      combined mill levy is the sum of every district that taxes your property.
     </p>
   );
 }
@@ -189,7 +189,7 @@ export function TermPropertyClassificationBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        How the county labels your parcel for assessment in this data — which rules and rates
+        How the county labels your property for assessment in this data, which rules and rates
         apply. This is not zoning.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
@@ -202,7 +202,7 @@ export function TermPropertyClassificationBriefBody() {
         while your notice says something like{" "}
         <strong className="font-semibold text-slate-900">Residential</strong>
         {" "}
-        for the same parcel.
+        for the same property.
       </p>
     </>
   );
@@ -212,12 +212,12 @@ export function TermOwnerListBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        Who appears on the county&apos;s public tax roll for this parcel. Use it to confirm you
+        Who appears on the county&apos;s public property record for what you looked up. Use it to confirm you
         matched the right property when the address is not enough.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
         Not a current residency list or proof of legal title by itself. For ownership, check
-        recorded deeds and the county parcel record.
+        recorded deeds and the county property record.
       </p>
     </>
   );
@@ -227,12 +227,12 @@ export function TermActualValueBriefBody() {
   return (
     <>
       <p className={BRIEF_P}>
-        The assessor&apos;s full value on the public tax roll before the assessment rate for your
+        The assessor&apos;s full value in the county&apos;s public records before the assessment rate for your
         property type is applied. Mill levies apply to assessed value, not this number.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
         In the same ballpark as market value, but it is the county&apos;s official figure for
-        taxes — not a sale price, loan appraisal, or one private appraiser&apos;s opinion.
+        taxes, not a sale price, loan appraisal, or one private appraiser&apos;s opinion.
       </p>
     </>
   );
@@ -247,18 +247,30 @@ export function TermAssessedValueBriefBody() {
   );
 }
 
+export function TermCompsBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Comps</strong>
+      {" "}
+      means properties the county treats as similar to yours so it can land on an approximate
+      value for the tax side of things.
+    </p>
+  );
+}
+
 export const PARCEL_SUMMARY_TERM_IDS = [
   "term-property-classification",
   "term-owner-list",
   "term-actual-value",
   "term-assessed-value",
+  "term-comps",
 ] as const;
 
 export type ParcelSummaryTermId = (typeof PARCEL_SUMMARY_TERM_IDS)[number];
 
 /**
  * Brief + title for parcel summary popovers. Levy modal uses `levyModalTermRegistry` (levy-line explainer terms only);
- * these four are home-summary-only but use the same brief body pattern.
+ * these are home-summary-only but use the same brief body pattern.
  */
 export const parcelSummaryTermBriefRegistry: Record<
   ParcelSummaryTermId,
@@ -274,6 +286,7 @@ export const parcelSummaryTermBriefRegistry: Record<
     title: "Assessed value",
     Brief: TermAssessedValueBriefBody,
   },
+  "term-comps": { title: "Comps", Brief: TermCompsBriefBody },
 };
 
 export function ParcelTermPopoverPanel(props: { termId: ParcelSummaryTermId }) {
