@@ -134,11 +134,11 @@ def dola_name_looks_bond_purpose(legal_name: str) -> bool:
 
 
 def normalize_pin(raw: str) -> str:
-    """Digits-only PIN, zero-padded to nine characters for map keys."""
+    """Digits-only PIN, exactly nine digits (zero-padded) for map keys."""
     digits = re.sub(r"\D", "", raw)
     if not digits:
         return ""
-    return digits.zfill(9)[:20]
+    return digits.zfill(9)[:9]
 
 
 # Situs lookup keys must stay in sync with src/lib/arapahoeSitusLookup.ts (home address flow).
