@@ -900,9 +900,9 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                 continue
             tag_id = strip_field(row.get("TAGId", ""))
             short_d = strip_field(row.get("TAGShortDescr", ""))
-            if not tag_id:
-                continue
             if pin not in out:
+                if not tag_id:
+                    continue
                 ta = parse_parcel_value_cell(row.get("TotalActual"))
                 ts = parse_parcel_value_cell(row.get("TotalAssessed"))
                 ty = strip_field(row.get("TaxYear", ""))
