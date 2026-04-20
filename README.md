@@ -74,7 +74,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
    Outputs include:
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
-   - `public/data/arapahoe-pin-to-tag.json`
+   - `public/data/arapahoe-pin-to-tag.json` (per PIN: `tagId`, values, `ain` from Main Parcel for the county comps grid PDF link)
    - `public/data/arapahoe-situs-to-pins.json`
 
 3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):

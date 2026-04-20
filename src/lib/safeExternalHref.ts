@@ -39,3 +39,23 @@ export function safeArapahoeLevyAspxUrl(
     return null;
   }
 }
+
+/**
+ * County comps grid PDF download (AIN from Main Parcel export).
+ * https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=…
+ */
+export function safeArapahoeCompsGridPdfUrl(
+  ainRaw: string | null | undefined,
+): string | null {
+  const ain = String(ainRaw ?? "").trim();
+  if (!ain) return null;
+  try {
+    const url = new URL("https://parcelsearch.arapahoegov.com/FileDownload.ashx");
+    if (url.hostname.toLowerCase() !== ARAPAHOE_PARCEL_LEVY_HOST) return null;
+    if (!url.pathname.toLowerCase().endsWith("/filedownload.ashx")) return null;
+    url.searchParams.set("AIN", ain);
+    return url.href;
+  } catch {
+    return null;
+  }
+}

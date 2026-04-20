@@ -124,10 +124,12 @@ export function TermPinAside() {
   return (
     <TermAside id="term-pin" title="PIN" titleId="term-pin-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Parcel identification number is the county&apos;s numeric identifier for a specific parcel
-        in Arapahoe&apos;s assessor records. It is usually nine digits. You find it on your parcel
-        record from the county property search; this tool uses it to match your address to levy
-        data.
+        PIN is short for{" "}
+        <dfn className="font-semibold not-italic text-slate-900">property identification number</dfn>
+        {": "}
+        the county&apos;s numeric code for one property in Arapahoe&apos;s records. It is usually
+        nine digits. You find it on the record from the county property search; this tool uses it to
+        match your address to levy data.
       </p>
     </TermAside>
   );
@@ -213,7 +215,7 @@ export function TermActualValueAside() {
         This is the assessor&apos;s{" "}
         <strong className="font-semibold text-slate-900">full</strong>
         {" "}
-        value for your parcel on the public tax roll. The county uses that number before Colorado
+        value for your parcel in the county&apos;s public records. The county uses that number before Colorado
         applies the assessment rate for your property type. It is the starting point for your tax
         bill, not the final taxed amount (that is assessed value).
       </p>
@@ -249,6 +251,51 @@ export function TermAssessedValueAside() {
   );
 }
 
+export function TermCompsAside() {
+  return (
+    <TermAside id="term-comps" title="Comps" titleId="term-comps-title">
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Comps</dfn>
+        {" "}
+        is short for <strong className="font-semibold text-slate-900">comparables</strong>
+        {": "}
+        similar homes or lots the county sets next to yours so it can land on an{" "}
+        <strong className="font-semibold text-slate-900">approximate value</strong>
+        {" "}
+        for the tax side of the work. Same word sometimes shows up when people buy or sell; here it
+        always means the county&apos;s own comparison list, not a bank appraisal for a loan and not
+        a realtor packet.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        The Comps tile opens the county PDF in a new tab from{" "}
+        <span className="whitespace-nowrap">parcelsearch.arapahoegov.com</span>
+        . This site does not host that file. We only pass which property you matched so the right
+        file loads.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermParcelAside() {
+  return (
+    <TermAside id="term-parcel" title="Parcel" titleId="term-parcel-title">
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        When the county says{" "}
+        <dfn className="font-semibold not-italic text-slate-900">parcel</dfn>
+        , they mean one place they count on its own: a stretch of land, a house and yard, a town
+        lot, a farmstead, whatever they tied to one address or one legal description. Taxes and
+        values for that spot stay bundled together under that name.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        Most folks would say &quot;the place&quot; or &quot;our land.&quot; Forms and county web
+        pages use <strong className="font-semibold text-slate-900">parcel</strong>
+        {" "}
+        instead.
+      </p>
+    </TermAside>
+  );
+}
+
 export function TermOwnerListAside() {
   return (
     <TermAside
@@ -260,7 +307,7 @@ export function TermOwnerListAside() {
         This is the{" "}
         <dfn className="font-semibold not-italic text-slate-900">owner list</dfn>
         {" "}
-        from the county&apos;s public tax roll for this parcel: who appears on the assessment
+        from the county&apos;s public property record for this parcel: who appears on the assessment
         record, often formatted as it is in the assessor file (for example multiple owners separated
         by commas). It helps you confirm you are looking at the right property when the address
         alone is not enough.
@@ -310,6 +357,23 @@ export function TermLgIdAside() {
   );
 }
 
+export function TermTagAside() {
+  return (
+    <TermAside id="term-tag" title="TAG" titleId="term-tag-title">
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">TAG</dfn>
+        {" "}
+        stands for <strong className="font-semibold text-slate-900">tax authority group</strong>
+        . That is the county name for one shared list of district levies that many properties follow
+        together. <strong className="font-semibold text-slate-900">TAG ID</strong>
+        {" "}
+        is the number for that list. It is not your PIN; many places can share one TAG ID while each
+        keeps its own PIN.
+      </p>
+    </TermAside>
+  );
+}
+
 export function TermTaxEntityAside() {
   return (
     <TermAside id="term-tax-entity" title="Tax entity" titleId="term-tax-entity-title">
@@ -320,7 +384,9 @@ export function TermTaxEntityAside() {
 
 /**
  * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
- * (PIN, property classification, actual/assessed value, mills, levy, special districts, LG ID, tax entity).
+ * (PIN, property classification, actual value, assessed value, comps, owner of record, mills, levy,
+ * special districts, LG ID, TAG, tax entity).
+ * Parcel is defined on the home dashboard Key terms only (after address flow + PIN load).
  */
 export function AllTermDefinitionAsides() {
   return (
@@ -332,11 +398,13 @@ export function AllTermDefinitionAsides() {
       <TermPropertyClassificationAside />
       <TermActualValueAside />
       <TermAssessedValueAside />
+      <TermCompsAside />
       <TermOwnerListAside />
       <TermMillsAside />
       <TermLevyAside />
       <TermSpecialDistrictsAside />
       <TermLgIdAside />
+      <TermTagAside />
       <TermTaxEntityAside />
     </>
   );

@@ -338,6 +338,7 @@ export function LevyStackVisualization({
   const millsTermHref = "#term-mills";
   const levyTermHref = "#term-levy";
   const pinTermHref = "#term-pin";
+  const tagTermHref = "#term-tag";
 
   function goToTermFromTileMenu(id: "term-mills" | "term-levy") {
     setTileActionsId(null);
@@ -969,10 +970,10 @@ export function LevyStackVisualization({
         <div
           className="space-y-2 rounded-lg border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm"
           role="region"
-          aria-label="Parcel match and county links"
+          aria-label="Loaded property and county links"
         >
           <p>
-            <span className="sr-only">Parcel match. </span>
+            <span className="sr-only">Property match. </span>
             Matched{" "}
             <a
               id="pin-term-first"
@@ -985,7 +986,13 @@ export function LevyStackVisualization({
               {loadedParcelMeta.pin}
             </span>
             {" · "}
-            TAG ID{" "}
+            <a
+              id="tag-term-first"
+              href={tagTermHref}
+              className={TERM_LINK_CLASS}
+            >
+              TAG ID
+            </a>{" "}
             <span className="font-mono font-semibold tabular-nums text-slate-800">
               {loadedParcelMeta.tagId}
             </span>
@@ -1000,7 +1007,7 @@ export function LevyStackVisualization({
                 href={safeLevyTableHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-700 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+                className={COUNTY_EXTERNAL_LINK_CLASS}
               >
                 Open county levy table
               </a>
@@ -1029,7 +1036,7 @@ export function LevyStackVisualization({
             Enter{" "}
             <a
               href={millsTermHref}
-              className="underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+              className={TERM_LINK_CLASS}
             >
               mills
             </a>{" "}
@@ -1039,7 +1046,7 @@ export function LevyStackVisualization({
             Each row is one{" "}
             <a
               href={levyTermHref}
-              className="font-medium text-indigo-950 underline decoration-indigo-400/70 underline-offset-2 hover:text-indigo-900"
+              className={TERM_LINK_CLASS}
             >
               levy
             </a>
@@ -1068,7 +1075,7 @@ export function LevyStackVisualization({
                     href={safeLevyTableHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-indigo-800 underline decoration-indigo-400/70 underline-offset-2"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
                   >
                     levy table
                   </a>

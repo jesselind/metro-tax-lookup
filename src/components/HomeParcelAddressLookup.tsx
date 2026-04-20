@@ -16,13 +16,16 @@ import { ParcelTermPopoverPanel } from "@/content/termDefinitionBodies";
 import {
   TermActualValueAside,
   TermAssessedValueAside,
+  TermCompsAside,
   TermLevyAside,
   TermPropertyClassificationAside,
   TermLgIdAside,
   TermMillsAside,
   TermOwnerListAside,
+  TermParcelAside,
   TermPinAside,
   TermSpecialDistrictsAside,
+  TermTagAside,
   TermTaxEntityAside,
 } from "@/content/termDefinitions";
 import {
@@ -58,6 +61,7 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import { safeArapahoeCompsGridPdfUrl } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -175,6 +179,7 @@ export function HomeParcelAddressLookup({
     levyAspxUrl: string;
     parcelValues: ParcelValuesFromExport;
     parcelValuesTaxYear: string | null;
+    ain: string | null;
   } | null>(null);
   const [levyAwaitingTemplateMills, setLevyAwaitingTemplateMills] =
     useState(false);
@@ -277,6 +282,7 @@ export function HomeParcelAddressLookup({
         levyAspxUrl: result.levyAspxUrl,
         parcelValues: result.parcelValues,
         parcelValuesTaxYear: result.parcelValuesTaxYear,
+        ain: result.ain,
       });
     } finally {
       setLevyLoadBusy(false);
@@ -287,6 +293,11 @@ export function HomeParcelAddressLookup({
     const s = levyLines.reduce((acc, l) => acc + l.mills, 0);
     return Math.round(s * 1000) / 1000;
   }, [levyLines]);
+
+  const homeCompsGridPdfHref = useMemo(
+    () => safeArapahoeCompsGridPdfUrl(levyLoadedMeta?.ain),
+    [levyLoadedMeta?.ain],
+  );
 
   const metroPrefillTotalMills = useMemo(() => {
     if (levyAwaitingTemplateMills) return null;
@@ -885,7 +896,7 @@ export function HomeParcelAddressLookup({
           <div
             className={PARCEL_SUMMARY_ROW_CLASS}
             role="region"
-            aria-label="Parcel search result summary"
+            aria-label="Property search result summary"
           >
             {!busy &&
             levyReadyForSummary &&
@@ -958,6 +969,53 @@ export function HomeParcelAddressLookup({
                       Loading your levy breakdown…
                     </p>
                   ) : null}
+                </div>
+              </div>
+            ) : null}
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            homeCompsGridPdfHref ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
+                id="home-parcel-comps"
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <InfoHintPopover
+                      textTrigger="Comps"
+                      textTriggerId="comps-term-first"
+                      textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                      ariaLabel="Brief definition of comps."
+                      disabled={busy}
+                      panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                    >
+                      <ParcelTermPopoverPanel termId="term-comps" />
+                    </InfoHintPopover>
+                  </div>
+                  <a
+                    href={homeCompsGridPdfHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                    aria-label="Open county comps grid PDF for this property (opens in a new tab)"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                      aria-hidden
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                      />
+                    </svg>
+                  </a>
                 </div>
               </div>
             ) : null}
@@ -1264,16 +1322,19 @@ export function HomeParcelAddressLookup({
               Key terms
             </h3>
             <div className="mt-4 space-y-4">
-              {/* Alphabetical by title (Actual value, Assessed value, …) */}
+              {/* Alphabetical by title (Actual value, Assessed value, Comps, …) */}
               <TermActualValueAside />
               <TermAssessedValueAside />
+              <TermCompsAside />
               <TermLevyAside />
               <TermLgIdAside />
               <TermMillsAside />
               <TermOwnerListAside />
+              <TermParcelAside />
               <TermPinAside />
               <TermPropertyClassificationAside />
               <TermSpecialDistrictsAside />
+              <TermTagAside />
               <TermTaxEntityAside />
             </div>
             <div className="mt-6 flex justify-center sm:justify-start">

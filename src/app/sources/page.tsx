@@ -547,7 +547,12 @@ export default function SourcesPage() {
             <strong className="text-slate-900">Business personal property</strong>{" "}
             is out of scope (different county workflow; not in this situs index).
             Levy stack loading by PIN uses{" "}
-            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>. Nothing
+            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>, which
+            includes each parcel&apos;s <code className={CODE_INLINE_CLASS}>ain</code>{" "}
+            from Main Parcel when you rebuild the index so the levy panel can link to
+            the county comps grid PDF (
+            <code className={CODE_INLINE_CLASS}>FileDownload.ashx?AIN=…</code>
+            ). Nothing
             is sent to our servers. Address fields are length-capped in the
             browser; bundled situs JSON is validated for expected shape after
             load before lookup runs.
