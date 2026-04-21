@@ -6,7 +6,7 @@
   },
   "_meta": {
     "lgExportSourceCsv": "lg-export-all.csv",
-    "lgExportBundledAt": "2026-04-21T20:08:11Z",
+    "lgExportBundledAt": "2026-04-21T21:36:24Z",
     "levyStacksReference": "arapahoe-levy-stacks-by-tag-id.json",
     "propertyTaxEntitiesFallbackCsv": "property-tax-entities-export.csv",
     "certifyingCountyForPropertyTaxFallback": "Arapahoe",
@@ -2014,7 +2014,7 @@
       "name": "Tollgate Crossing Metropolitan District No. 2",
       "abbrevName": null,
       "websiteUrl": "https://www.tollgatecrossingmetro.org/",
-      "mailAddress": "9351 Grant Street, Ste 500,",
+      "mailAddress": "9351 Grant Street, Ste 500",
       "altAddress": "c/o Brightstar District Management",
       "mailCity": "Thornton",
       "mailState": "CO",

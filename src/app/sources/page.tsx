@@ -756,7 +756,9 @@ export default function SourcesPage() {
           <code className={CODE_INLINE_CLASS}>arapahoe-levy-stacks-by-tag-id.json</code>
           {" "}
           so bill-side LG IDs align with contact listings. The JSON{" "}
-          <code className={CODE_INLINE_CLASS}>_meta</code> field records the LG export
+          <code className={CODE_INLINE_CLASS}>_meta</code>
+          {" "}
+          field records the LG export
           file name, the optional{" "}
           <code className={CODE_INLINE_CLASS}>property-tax-entities-export.csv</code>{" "}
           fallback file name when present, which levy LGIDs were filled from that

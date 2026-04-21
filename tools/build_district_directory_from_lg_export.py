@@ -44,6 +44,15 @@ from dola_lgis_property_tax_entities_csv import (  # noqa: E402
 from website_normalize import normalize_website  # noqa: E402
 
 
+def normalize_mailing_field(raw: str | None) -> str | None:
+    """Trim LG export noise: empty/NA, trailing commas and spaces on addresses."""
+    s = (raw or "").strip()
+    if not s or s.upper() == "NA":
+        return None
+    s = s.rstrip(", \t").strip()
+    return s or None
+
+
 def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
     data = json.loads(path.read_text(encoding="utf-8"))
     out: set[str] = set()
@@ -83,8 +92,7 @@ def load_lg_csv(path: Path) -> tuple[list[dict[str, Any]], str]:
             if not name:
                 continue
             abbrev = None
-            alt_raw = nr.get("Alternate Address") or ""
-            alt_address = alt_raw.strip() if alt_raw.strip() and alt_raw.upper() != "NA" else None
+            alt_address = normalize_mailing_field(nr.get("Alternate Address"))
             lg_type = (nr.get("Local Government Type") or "").strip() or None
 
             districts.append(
@@ -93,7 +101,7 @@ def load_lg_csv(path: Path) -> tuple[list[dict[str, Any]], str]:
                     "name": name,
                     "abbrevName": abbrev,
                     "websiteUrl": normalize_website(nr.get("Website URL") or ""),
-                    "mailAddress": (nr.get("Mailing Address") or "").strip() or None,
+                    "mailAddress": normalize_mailing_field(nr.get("Mailing Address")),
                     "altAddress": alt_address,
                     "mailCity": (nr.get("Mailing City") or "").strip() or None,
                     "mailState": (nr.get("Mailing State") or "").strip() or None,

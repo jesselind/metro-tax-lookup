@@ -656,24 +656,30 @@ def _entities_from_dola_table_rows(
 
 def load_dola_entities_csv(
     csv_path: Path, certifying_county: str = "Arapahoe"
-) -> tuple[list[dict[str, Any]], str | None]:
-    """Parse DOLA Property Tax Entities export from CSV; returns (entities, levy header name)."""
+) -> tuple[list[dict[str, Any]], str | None, bool]:
+    """
+    Parse DOLA Property Tax Entities export from CSV.
+
+    Returns (entities, levy_header_or_none, county_filter_applied). The third value is
+    True only when a Certifying County column exists and rows are restricted to ccu.
+    """
     ccu = strip_field(certifying_county).upper()
     if not ccu:
         print("DOLA CSV: empty certifying county; skipping DOLA join.", file=sys.stderr)
-        return [], None
+        return [], None, False
     with csv_path.open(newline="", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
         try:
             header_row = next(reader)
         except StopIteration:
-            return [], None
+            return [], None, False
         headers = [strip_field(str(h) if h is not None else "") for h in header_row]
         parsed = _dola_column_indices(headers)
         if parsed is None:
             print("Could not detect name column in DOLA CSV; skipping DOLA join.", file=sys.stderr)
-            return [], None
+            return [], None, False
         idx_name, idx_entity, idx_lgid, idx_county, idx_levy = parsed
+        county_filter_applied = idx_county is not None
         if idx_county is None:
             print(
                 "DOLA CSV: no Certifying County column; using all rows (may duplicate Tax Entity IDs across counties).",
@@ -683,23 +689,23 @@ def load_dola_entities_csv(
         entities = _entities_from_dola_table_rows(
             reader, idx_name, idx_entity, idx_lgid, idx_county, idx_levy, ccu
         )
-        return entities, levy_header
+        return entities, levy_header, county_filter_applied
 
 
 def load_dola_entities_xlsx(
     xlsx_path: Path, certifying_county: str = "Arapahoe"
-) -> tuple[list[dict[str, Any]], str | None]:
-    """Parse DOLA export from xlsx via openpyxl; returns (entities, levy header name)."""
+) -> tuple[list[dict[str, Any]], str | None, bool]:
+    """Parse DOLA export from xlsx via openpyxl; returns (entities, levy header name, county_filter_applied)."""
     try:
         from openpyxl import load_workbook
     except ImportError:
         print("openpyxl required for DOLA xlsx; skipping DOLA join.", file=sys.stderr)
-        return [], None
+        return [], None, False
 
     ccu = strip_field(certifying_county).upper()
     if not ccu:
         print("DOLA xlsx: empty certifying county; skipping DOLA join.", file=sys.stderr)
-        return [], None
+        return [], None, False
     wb = load_workbook(xlsx_path, read_only=True, data_only=True)
     try:
         ws = wb.active
@@ -707,13 +713,14 @@ def load_dola_entities_xlsx(
         try:
             header_row = next(rows)
         except StopIteration:
-            return [], None
+            return [], None, False
         headers = [strip_field(str(h) if h is not None else "") for h in header_row]
         parsed = _dola_column_indices(headers)
         if parsed is None:
             print("Could not detect name column in DOLA xlsx; skipping DOLA join.", file=sys.stderr)
-            return [], None
+            return [], None, False
         idx_name, idx_entity, idx_lgid, idx_county, idx_levy = parsed
+        county_filter_applied = idx_county is not None
         if idx_county is None:
             print(
                 "DOLA xlsx: no Certifying County column; using all rows (may duplicate Tax Entity IDs across counties).",
@@ -723,29 +730,29 @@ def load_dola_entities_xlsx(
         entities = _entities_from_dola_table_rows(
             rows, idx_name, idx_entity, idx_lgid, idx_county, idx_levy, ccu
         )
-        return entities, levy_header
+        return entities, levy_header, county_filter_applied
     finally:
         wb.close()
 
 
 def load_dola_entities(
     path: Path, certifying_county: str = "Arapahoe"
-) -> tuple[list[dict[str, Any]], str | None]:
+) -> tuple[list[dict[str, Any]], str | None, bool]:
     """
     Load DOLA Tax Entity rows for one certifying county (avoids duplicate TE IDs across
     certifying counties when the export includes a county column). Attaches levyMills from
     the export's total levy column when present.
-    Accepts .csv (UTF-8) or .xlsx. Returns (entities, levy_column_header_or_none).
+    Accepts .csv (UTF-8) or .xlsx. Returns (entities, levy_column_header_or_none, county_filter_applied).
     """
     if not path.is_file():
-        return [], None
+        return [], None, False
     suf = path.suffix.lower()
     if suf == ".csv":
         return load_dola_entities_csv(path, certifying_county)
     if suf in (".xlsx", ".xlsm"):
         return load_dola_entities_xlsx(path, certifying_county)
     print(f"Unsupported DOLA export format (expected .csv or .xlsx): {path}", file=sys.stderr)
-    return [], None
+    return [], None, False
 
 
 def dola_match_for_mart_line(
@@ -1025,7 +1032,9 @@ def main() -> None:
     overrides = load_overrides(args.overrides)
     dola_path = args.dola_export if args.dola_export is not None else default_dola_export_path()
     dola_cc = strip_field(args.dola_certifying_county) or "Arapahoe"
-    entities, levy_col_header = load_dola_entities(dola_path, dola_cc)
+    entities, levy_col_header, dola_county_filter_applied = load_dola_entities(
+        dola_path, dola_cc
+    )
     entities_by_te_id = build_entities_by_te_id(entities)
     if entities:
         print(
@@ -1073,7 +1082,7 @@ def main() -> None:
         "taxYear": tax_year or None,
         "dolaSource": str(dola_path.name) if dola_path.is_file() else None,
         "dolaRowCount": len(entities),
-        "dolaCertifyingCounty": dola_cc,
+        "dolaCertifyingCounty": dola_cc if dola_county_filter_applied else None,
         "dolaLevyColumn": levy_col_header,
     }
 

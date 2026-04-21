@@ -15,7 +15,16 @@ from pathlib import Path
 
 
 def normalize_csv_row_keys(row: dict[str, str]) -> dict[str, str]:
-    return {k.rstrip(":").strip(): (v or "").strip() for k, v in row.items()}
+    """Strip colon-suffixed DictReader headers; skip None keys (overflow cells)."""
+    out: dict[str, str] = {}
+    for k, v in row.items():
+        if k is None:
+            continue
+        ks = str(k).rstrip(":").strip()
+        if not ks:
+            continue
+        out[ks] = (v or "").strip() if v is not None else ""
+    return out
 
 
 def normalize_lg_id_key(raw: str) -> str | None:
@@ -51,6 +60,20 @@ def load_lgid_to_entity_name_for_certifying_county(
 
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames or ()
+        norm_headers = {
+            str(h).rstrip(":").strip()
+            for h in fieldnames
+            if h is not None and str(h).strip()
+        }
+        if "Certifying County" not in norm_headers:
+            print(
+                "Property Tax Entities CSV: no Certifying County column; "
+                "skipping LGID name fallback (would otherwise match zero rows).",
+                file=sys.stderr,
+            )
+            return {}
+
         for raw in reader:
             nr = normalize_csv_row_keys(raw)
             county = (nr.get("Certifying County") or "").strip().upper()
