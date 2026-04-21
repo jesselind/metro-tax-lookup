@@ -1017,7 +1017,12 @@ def main() -> None:
     ap.add_argument(
         "--dola-certifying-county",
         default="Arapahoe",
-        help="Certifying county label in the DOLA export (case-insensitive). Rows from other counties are skipped.",
+        help=(
+            "Case-insensitive certifying county label for the DOLA export. "
+            "If the file has a Certifying County column, only matching rows are used and "
+            "the snapshot records dolaCertifyingCounty. "
+            "If that column is missing, all rows are used and dolaCertifyingCounty is omitted."
+        ),
     )
     ap.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)

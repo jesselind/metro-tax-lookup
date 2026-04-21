@@ -14,13 +14,20 @@ import sys
 from pathlib import Path
 
 
+def normalize_csv_header_label(h: object) -> str:
+    """Strip UTF-8 BOM, colon suffix, and outer whitespace from a DictReader header."""
+    if h is None:
+        return ""
+    return str(h).lstrip("\ufeff").rstrip(":").strip()
+
+
 def normalize_csv_row_keys(row: dict[str, str]) -> dict[str, str]:
     """Strip colon-suffixed DictReader headers; skip None keys (overflow cells)."""
     out: dict[str, str] = {}
     for k, v in row.items():
         if k is None:
             continue
-        ks = str(k).rstrip(":").strip()
+        ks = normalize_csv_header_label(k)
         if not ks:
             continue
         out[ks] = (v or "").strip() if v is not None else ""
@@ -65,9 +72,7 @@ def load_lgid_to_entity_name_for_certifying_county(
         reader = csv.DictReader(f)
         fieldnames = reader.fieldnames or ()
         norm_headers = {
-            str(h).rstrip(":").strip()
-            for h in fieldnames
-            if h is not None and str(h).strip()
+            nh for h in fieldnames if (nh := normalize_csv_header_label(h))
         }
         if "Certifying County" not in norm_headers:
             print(
