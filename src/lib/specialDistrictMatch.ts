@@ -45,8 +45,12 @@ export type SpecialDistrictDirectoryFile = {
     lgExportSourceCsv?: string;
     lgExportBundledAt?: string;
     levyStacksReference?: string;
+    propertyTaxEntitiesFallbackCsv?: string | null;
+    propertyTaxEntitiesCountyFilterApplied?: boolean;
+    certifyingCountyForPropertyTaxFallback?: string | null;
     referencedLgIdCount?: number;
     directoryRowCount?: number;
+    lgIdsFilledFromPropertyTaxEntities?: string[];
     missingLgIdsInExport?: string[];
   };
   districtCount: number;

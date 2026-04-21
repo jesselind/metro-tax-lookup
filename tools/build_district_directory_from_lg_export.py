@@ -9,6 +9,9 @@ aligned with Property Tax Entity / bill-side LG IDs.
 Inputs:
   - DOLA "lg export" CSV (default: supporting-data-phase-2/lg-export-all.csv)
   - Levy stacks JSON (default: public/data/arapahoe-levy-stacks-by-tag-id.json)
+  - Optional: DOLA LGIS Property Tax Entities CSV (default: supporting-data/property-tax-entities-export.csv)
+    used only when a referenced LGID is missing from the LG directory export (name-only fallback row).
+    Use --certifying-county to match that CSV's certifying county column (default: Arapahoe).
 
 Usage:
   python3 tools/build_district_directory_from_lg_export.py
@@ -30,23 +33,24 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 _TOOLS = Path(__file__).resolve().parent
+DEFAULT_PROPERTY_TAX_ENTITIES = ROOT / "supporting-data" / "property-tax-entities-export.csv"
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
+from dola_lgis_property_tax_entities_csv import (  # noqa: E402
+    load_lgid_to_entity_name_for_certifying_county,
+    normalize_csv_row_keys,
+    normalize_lg_id_key,
+)
 from website_normalize import normalize_website  # noqa: E402
 
 
-def normalize_lg_id(raw: str) -> str | None:
-    """Match JS padLgId / lgIdKeyFromRaw: 5-digit key for directory lookup."""
-    digits = "".join(c for c in raw if c.isdigit())
-    if not digits:
+def normalize_mailing_field(raw: str | None) -> str | None:
+    """Trim LG export noise: empty/NA, trailing commas and spaces on addresses."""
+    s = (raw or "").strip()
+    s = s.rstrip(", \t").strip()
+    if not s or s.upper() == "NA":
         return None
-    if len(digits) >= 6:
-        return digits[:5]
-    return digits.zfill(5)
-
-
-def normalize_csv_row_keys(row: dict[str, str]) -> dict[str, str]:
-    return {k.rstrip(":").strip(): (v or "").strip() for k, v in row.items()}
+    return s
 
 
 def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
@@ -62,7 +66,7 @@ def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
             s = str(lg).strip()
             if not s:
                 continue
-            nid = normalize_lg_id(s)
+            nid = normalize_lg_id_key(s)
             if nid:
                 out.add(nid)
     return out
@@ -81,15 +85,14 @@ def load_lg_csv(path: Path) -> tuple[list[dict[str, Any]], str]:
         for raw in reader:
             nr = normalize_csv_row_keys(raw)
             lg_raw = (nr.get("LGID") or "").strip()
-            lg_id = normalize_lg_id(lg_raw) if lg_raw else None
+            lg_id = normalize_lg_id_key(lg_raw) if lg_raw else None
             if not lg_id:
                 continue
             name = (nr.get("Local Government Name") or "").strip()
             if not name:
                 continue
             abbrev = None
-            alt_raw = nr.get("Alternate Address") or ""
-            alt_address = alt_raw.strip() if alt_raw.strip() and alt_raw.upper() != "NA" else None
+            alt_address = normalize_mailing_field(nr.get("Alternate Address"))
             lg_type = (nr.get("Local Government Type") or "").strip() or None
 
             districts.append(
@@ -98,7 +101,7 @@ def load_lg_csv(path: Path) -> tuple[list[dict[str, Any]], str]:
                     "name": name,
                     "abbrevName": abbrev,
                     "websiteUrl": normalize_website(nr.get("Website URL") or ""),
-                    "mailAddress": (nr.get("Mailing Address") or "").strip() or None,
+                    "mailAddress": normalize_mailing_field(nr.get("Mailing Address")),
                     "altAddress": alt_address,
                     "mailCity": (nr.get("Mailing City") or "").strip() or None,
                     "mailState": (nr.get("Mailing State") or "").strip() or None,
@@ -113,6 +116,28 @@ def load_lg_csv(path: Path) -> tuple[list[dict[str, Any]], str]:
 
     districts.sort(key=lambda d: (d["lgId"], d["name"]))
     return districts, path.name
+
+
+def minimal_district_row_from_entity_name(lg_id: str, legal_name: str) -> dict[str, Any]:
+    """Directory row shape aligned with load_lg_csv; contact fields null until LG export has a row."""
+    return {
+        "lgId": lg_id,
+        "name": legal_name,
+        "abbrevName": None,
+        "websiteUrl": None,
+        "mailAddress": None,
+        "altAddress": None,
+        "mailCity": None,
+        "mailState": None,
+        "mailZip": None,
+        "lgTypeId": None,
+        "localGovernmentType": None,
+        "prevName": None,
+        "source": (
+            "DOLA LGIS Property Tax Entities export (fallback; row absent from LG directory CSV)"
+        ),
+        "lastUpdate": None,
+    }
 
 
 def main() -> None:
@@ -134,6 +159,23 @@ def main() -> None:
         type=Path,
         default=ROOT / "public" / "data" / "colorado-special-district-directory.json",
     )
+    ap.add_argument(
+        "--property-tax-entities",
+        type=Path,
+        default=DEFAULT_PROPERTY_TAX_ENTITIES,
+        help=(
+            "DOLA LGIS Property Tax Entities CSV for name-only fallback rows when an LGID "
+            "is referenced in levy stacks but missing from --lg-csv. Pass a non-existent path to disable."
+        ),
+    )
+    ap.add_argument(
+        "--certifying-county",
+        default="Arapahoe",
+        help=(
+            "Certifying county label in the Property Tax Entities CSV (case-insensitive). "
+            "Fallback rows are built only from rows matching this county."
+        ),
+    )
     args = ap.parse_args()
 
     if not args.lg_csv.is_file():
@@ -153,21 +195,58 @@ def main() -> None:
         else:
             missing.append(lg)
 
+    pt_path = args.property_tax_entities
+    if pt_path.is_file():
+        name_by_lg, pt_county_filter_applied = load_lgid_to_entity_name_for_certifying_county(
+            pt_path, args.certifying_county
+        )
+    else:
+        name_by_lg, pt_county_filter_applied = {}, False
+    filled_from_pt: list[str] = []
+    still_missing: list[str] = []
+    for lg in missing:
+        nm = name_by_lg.get(lg)
+        if nm:
+            filtered.append(minimal_district_row_from_entity_name(lg, nm))
+            filled_from_pt.append(lg)
+        else:
+            still_missing.append(lg)
+    missing = still_missing
+    filtered.sort(key=lambda d: (d["lgId"], d["name"]))
+
     bundled_date = date.today().isoformat()
     export_stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if filled_from_pt:
+        snapshot_source = (
+            "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; "
+            "fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory."
+        )
+    else:
+        snapshot_source = (
+            "DOLA LG tabular export, filtered to LGIDs referenced in bundled Arapahoe levy stacks."
+        )
 
     out_obj: dict[str, Any] = {
         "snapshot": {
             "bundledAsOf": bundled_date,
-            "source": "DOLA LG tabular export, filtered to LGIDs referenced in bundled Arapahoe levy stacks.",
+            "source": snapshot_source,
             "sourceCsv": source_csv_name,
         },
         "_meta": {
             "lgExportSourceCsv": source_csv_name,
             "lgExportBundledAt": export_stamp,
             "levyStacksReference": args.levy_stacks.name,
+            "propertyTaxEntitiesFallbackCsv": pt_path.name if pt_path.is_file() else None,
+            "propertyTaxEntitiesCountyFilterApplied": pt_county_filter_applied,
+            "certifyingCountyForPropertyTaxFallback": (
+                (args.certifying_county.strip() or None)
+                if pt_county_filter_applied
+                else None
+            ),
             "referencedLgIdCount": len(wanted),
             "directoryRowCount": len(filtered),
+            "lgIdsFilledFromPropertyTaxEntities": sorted(filled_from_pt),
             "missingLgIdsInExport": missing,
         },
         "districtCount": len(filtered),
