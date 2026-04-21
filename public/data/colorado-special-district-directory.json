@@ -1,12 +1,12 @@
 {
   "snapshot": {
     "bundledAsOf": "2026-04-21",
-    "source": "DOLA LG tabular export, filtered to LGIDs referenced in bundled Arapahoe levy stacks.",
+    "source": "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory.",
     "sourceCsv": "lg-export-all.csv"
   },
   "_meta": {
     "lgExportSourceCsv": "lg-export-all.csv",
-    "lgExportBundledAt": "2026-04-21T22:21:45Z",
+    "lgExportBundledAt": "2026-04-21T22:32:27Z",
     "levyStacksReference": "arapahoe-levy-stacks-by-tag-id.json",
     "propertyTaxEntitiesFallbackCsv": "property-tax-entities-export.csv",
     "propertyTaxEntitiesCountyFilterApplied": true,

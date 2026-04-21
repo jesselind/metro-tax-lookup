@@ -217,10 +217,20 @@ def main() -> None:
     bundled_date = date.today().isoformat()
     export_stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    if pt_path.is_file():
+        snapshot_source = (
+            "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; "
+            "fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory."
+        )
+    else:
+        snapshot_source = (
+            "DOLA LG tabular export, filtered to LGIDs referenced in bundled Arapahoe levy stacks."
+        )
+
     out_obj: dict[str, Any] = {
         "snapshot": {
             "bundledAsOf": bundled_date,
-            "source": "DOLA LG tabular export, filtered to LGIDs referenced in bundled Arapahoe levy stacks.",
+            "source": snapshot_source,
             "sourceCsv": source_csv_name,
         },
         "_meta": {

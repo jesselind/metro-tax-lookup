@@ -667,7 +667,7 @@ def load_dola_entities_csv(
     if not ccu:
         print("DOLA CSV: empty certifying county; skipping DOLA join.", file=sys.stderr)
         return [], None, False
-    with csv_path.open(newline="", encoding="utf-8", errors="replace") as f:
+    with csv_path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
         reader = csv.reader(f)
         try:
             header_row = next(reader)
@@ -742,7 +742,7 @@ def load_dola_entities(
     Load DOLA Tax Entity rows for one certifying county (avoids duplicate TE IDs across
     certifying counties when the export includes a county column). Attaches levyMills from
     the export's total levy column when present.
-    Accepts .csv (UTF-8) or .xlsx. Returns (entities, levy_column_header_or_none, county_filter_applied).
+    Accepts .csv (UTF-8, optional BOM) or .xlsx. Returns (entities, levy_column_header_or_none, county_filter_applied).
     """
     if not path.is_file():
         return [], None, False
