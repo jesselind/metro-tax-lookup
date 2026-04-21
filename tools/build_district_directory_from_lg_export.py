@@ -47,10 +47,10 @@ from website_normalize import normalize_website  # noqa: E402
 def normalize_mailing_field(raw: str | None) -> str | None:
     """Trim LG export noise: empty/NA, trailing commas and spaces on addresses."""
     s = (raw or "").strip()
+    s = s.rstrip(", \t").strip()
     if not s or s.upper() == "NA":
         return None
-    s = s.rstrip(", \t").strip()
-    return s or None
+    return s
 
 
 def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
@@ -217,7 +217,7 @@ def main() -> None:
     bundled_date = date.today().isoformat()
     export_stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    if pt_path.is_file():
+    if filled_from_pt:
         snapshot_source = (
             "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; "
             "fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory."
