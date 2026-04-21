@@ -386,6 +386,55 @@ def sort_line_code(code: str) -> tuple[int, str]:
     return (1, c)
 
 
+def _mart_status_rank(status: str) -> int:
+    """Rank mart row status by trust: active first, inactive last."""
+    st = strip_field(status).upper()
+    if st == "A":
+        return 0
+    if st == "":
+        return 1
+    if st == "I":
+        return 2
+    return 3
+
+
+def _effective_year_number(raw: str | None) -> int:
+    """Effective year as int for tie-breaks; unknown values sort last."""
+    t = strip_field(raw)
+    if t.isdigit():
+        return int(t)
+    return -1
+
+
+def collapse_mart_tag_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Deduplicate repeated mart levy rows within one TAG.
+
+    County exports can include both active and inactive versions of the same
+    authority/code pair. Keep one canonical row per pair:
+      1) prefer status A over blank over I/other
+      2) if tied, keep the newest effectiveYear
+      3) if still tied, keep the first seen row
+    """
+    best_by_key: dict[tuple[str, str], dict[str, Any]] = {}
+    best_rank: dict[tuple[str, str], tuple[int, int, int]] = {}
+    for idx, ln in enumerate(lines):
+        key = (
+            strip_field(str(ln.get("code") or "")).upper(),
+            strip_field(str(ln.get("authorityNameUpper") or "")).upper(),
+        )
+        rank = (
+            _mart_status_rank(str(ln.get("status") or "")),
+            -_effective_year_number(str(ln.get("effectiveYear") or "")),
+            idx,
+        )
+        prev = best_rank.get(key)
+        if prev is None or rank < prev:
+            best_rank[key] = rank
+            best_by_key[key] = ln
+    return list(best_by_key.values())
+
+
 def normalize_for_match(name: str) -> str:
     """
     Shared normalization for mart authority labels and DOLA legal names before
@@ -400,14 +449,11 @@ def normalize_for_match(name: str) -> str:
     s = s.replace("#", " ")
     s = re.sub(r"[^A-Z0-9\s]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
-    repl = (
-        (" DIST ", " DISTRICT "),
-        (" DIST", " DISTRICT"),
-        (" SCH ", " SCHOOL "),
-        (" S SUBURBAN ", " SOUTH SUBURBAN "),
-    )
-    for a, b in repl:
-        s = s.replace(a, b)
+    s = re.sub(r"\bDIST\b", "DISTRICT", s)
+    s = re.sub(r"\bSCH\b", "SCHOOL", s)
+    s = re.sub(r"\bVLG\b", "VILLAGE", s)
+    s = re.sub(r"\bMD\b", "METROPOLITAN DISTRICT", s)
+    s = re.sub(r"\bS SUBURBAN\b", "SOUTH SUBURBAN", s)
     # Typo occasionally seen in exports
     s = s.replace("DISTRRICT", "DISTRICT")
     # Mart lines often say METRO; DOLA legal names say METROPOLITAN
@@ -566,8 +612,9 @@ def _entities_from_dola_table_rows(
     idx_lgid: int | None,
     idx_county: int | None,
     idx_levy: int | None,
+    certifying_county_upper: str,
 ) -> list[dict[str, Any]]:
-    """Build normalized entity dicts from DOLA table rows (Arapahoe rows only)."""
+    """Build normalized entity dicts from DOLA table rows filtered to one certifying county."""
     entities: list[dict[str, Any]] = []
     for row in rows:
         if row is None:
@@ -577,7 +624,7 @@ def _entities_from_dola_table_rows(
             continue
         if idx_county is not None and idx_county < len(cells):
             cty = strip_field(str(cells[idx_county] if cells[idx_county] is not None else ""))
-            if cty.upper() != "ARAPAHOE":
+            if cty.upper() != certifying_county_upper:
                 continue
         legal = cells[idx_name]
         if legal is None or strip_field(str(legal)) == "":
@@ -607,8 +654,14 @@ def _entities_from_dola_table_rows(
     return entities
 
 
-def load_dola_entities_csv(csv_path: Path) -> tuple[list[dict[str, Any]], str | None]:
+def load_dola_entities_csv(
+    csv_path: Path, certifying_county: str = "Arapahoe"
+) -> tuple[list[dict[str, Any]], str | None]:
     """Parse DOLA Property Tax Entities export from CSV; returns (entities, levy header name)."""
+    ccu = strip_field(certifying_county).upper()
+    if not ccu:
+        print("DOLA CSV: empty certifying county; skipping DOLA join.", file=sys.stderr)
+        return [], None
     with csv_path.open(newline="", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
         try:
@@ -628,12 +681,14 @@ def load_dola_entities_csv(csv_path: Path) -> tuple[list[dict[str, Any]], str | 
             )
         levy_header = headers[idx_levy] if idx_levy is not None else None
         entities = _entities_from_dola_table_rows(
-            reader, idx_name, idx_entity, idx_lgid, idx_county, idx_levy
+            reader, idx_name, idx_entity, idx_lgid, idx_county, idx_levy, ccu
         )
         return entities, levy_header
 
 
-def load_dola_entities_xlsx(xlsx_path: Path) -> tuple[list[dict[str, Any]], str | None]:
+def load_dola_entities_xlsx(
+    xlsx_path: Path, certifying_county: str = "Arapahoe"
+) -> tuple[list[dict[str, Any]], str | None]:
     """Parse DOLA export from xlsx via openpyxl; returns (entities, levy header name)."""
     try:
         from openpyxl import load_workbook
@@ -641,6 +696,10 @@ def load_dola_entities_xlsx(xlsx_path: Path) -> tuple[list[dict[str, Any]], str 
         print("openpyxl required for DOLA xlsx; skipping DOLA join.", file=sys.stderr)
         return [], None
 
+    ccu = strip_field(certifying_county).upper()
+    if not ccu:
+        print("DOLA xlsx: empty certifying county; skipping DOLA join.", file=sys.stderr)
+        return [], None
     wb = load_workbook(xlsx_path, read_only=True, data_only=True)
     try:
         ws = wb.active
@@ -662,26 +721,29 @@ def load_dola_entities_xlsx(xlsx_path: Path) -> tuple[list[dict[str, Any]], str 
             )
         levy_header = headers[idx_levy] if idx_levy is not None else None
         entities = _entities_from_dola_table_rows(
-            rows, idx_name, idx_entity, idx_lgid, idx_county, idx_levy
+            rows, idx_name, idx_entity, idx_lgid, idx_county, idx_levy, ccu
         )
         return entities, levy_header
     finally:
         wb.close()
 
 
-def load_dola_entities(path: Path) -> tuple[list[dict[str, Any]], str | None]:
+def load_dola_entities(
+    path: Path, certifying_county: str = "Arapahoe"
+) -> tuple[list[dict[str, Any]], str | None]:
     """
-    Load DOLA Tax Entity rows for Arapahoe County only (avoids duplicate TE IDs across
-    certifying counties). Attaches levyMills from the export's total levy column when present.
+    Load DOLA Tax Entity rows for one certifying county (avoids duplicate TE IDs across
+    certifying counties when the export includes a county column). Attaches levyMills from
+    the export's total levy column when present.
     Accepts .csv (UTF-8) or .xlsx. Returns (entities, levy_column_header_or_none).
     """
     if not path.is_file():
         return [], None
     suf = path.suffix.lower()
     if suf == ".csv":
-        return load_dola_entities_csv(path)
+        return load_dola_entities_csv(path, certifying_county)
     if suf in (".xlsx", ".xlsm"):
-        return load_dola_entities_xlsx(path)
+        return load_dola_entities_xlsx(path, certifying_county)
     print(f"Unsupported DOLA export format (expected .csv or .xlsx): {path}", file=sys.stderr)
     return [], None
 
@@ -945,6 +1007,11 @@ def main() -> None:
         help="DOLA LGIS Property Tax Entities export (.csv or .xlsx). "
         "Default: supporting-data/property-tax-entities-export.csv if present, else .xlsx.",
     )
+    ap.add_argument(
+        "--dola-certifying-county",
+        default="Arapahoe",
+        help="Certifying county label in the DOLA export (case-insensitive). Rows from other counties are skipped.",
+    )
     ap.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     ap.add_argument("--skip-pin-map", action="store_true", help="Only emit stacks-by-tag-id JSON.")
@@ -957,10 +1024,14 @@ def main() -> None:
 
     overrides = load_overrides(args.overrides)
     dola_path = args.dola_export if args.dola_export is not None else default_dola_export_path()
-    entities, levy_col_header = load_dola_entities(dola_path)
+    dola_cc = strip_field(args.dola_certifying_county) or "Arapahoe"
+    entities, levy_col_header = load_dola_entities(dola_path, dola_cc)
     entities_by_te_id = build_entities_by_te_id(entities)
     if entities:
-        print(f"DOLA entities loaded: {len(entities)} (Arapahoe certifying county only)", file=sys.stderr)
+        print(
+            f"DOLA entities loaded: {len(entities)} (certifying county {dola_cc} only)",
+            file=sys.stderr,
+        )
         if levy_col_header:
             print(f"DOLA levy column: {levy_col_header}", file=sys.stderr)
     else:
@@ -973,7 +1044,8 @@ def main() -> None:
 
     stacks: dict[str, Any] = {}
     for tag_id, lines in by_tag_raw.items():
-        lines_sorted = sorted(lines, key=lambda x: sort_line_code(x["code"]))
+        lines_collapsed = collapse_mart_tag_lines(lines)
+        lines_sorted = sorted(lines_collapsed, key=lambda x: sort_line_code(x["code"]))
         built_lines = []
         for ln in lines_sorted:
             dola = dola_match_for_mart_line(
@@ -1001,7 +1073,7 @@ def main() -> None:
         "taxYear": tax_year or None,
         "dolaSource": str(dola_path.name) if dola_path.is_file() else None,
         "dolaRowCount": len(entities),
-        "dolaCertifyingCounty": "Arapahoe",
+        "dolaCertifyingCounty": dola_cc,
         "dolaLevyColumn": levy_col_header,
     }
 
