@@ -1037,10 +1037,13 @@ def main() -> None:
     )
     entities_by_te_id = build_entities_by_te_id(entities)
     if entities:
-        print(
-            f"DOLA entities loaded: {len(entities)} (certifying county {dola_cc} only)",
-            file=sys.stderr,
-        )
+        if dola_county_filter_applied:
+            print(
+                f"DOLA entities loaded: {len(entities)} (certifying county {dola_cc} only)",
+                file=sys.stderr,
+            )
+        else:
+            print(f"DOLA entities loaded: {len(entities)}", file=sys.stderr)
         if levy_col_header:
             print(f"DOLA levy column: {levy_col_header}", file=sys.stderr)
     else:

@@ -90,7 +90,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
    Reads `supporting-data-phase-2/lg-export-all.csv` (or pass `--lg-csv`) and `public/data/arapahoe-levy-stacks-by-tag-id.json`. Writes `public/data/colorado-special-district-directory.json`. Run after `build:arapahoe-index` when levy stacks change, or when you refresh the LG CSV.
 
-   When an LGID appears on a levy stack but is missing from the LG directory CSV, the script adds a minimal name-only row from `supporting-data/property-tax-entities-export.csv` (same committed DOLA export used for levy matching) and records those LGIDs under `_meta.lgIdsFilledFromPropertyTaxEntities`. Optional `--certifying-county` (default `Arapahoe`) must match the export's certifying county column for fallback rows. Anything still absent from both sources remains in `_meta.missingLgIdsInExport`.
+   When an LGID appears on a levy stack but is missing from the LG directory CSV, the script adds a minimal name-only row from `supporting-data/property-tax-entities-export.csv` (same committed DOLA export used for levy matching) and records those LGIDs under `_meta.lgIdsFilledFromPropertyTaxEntities`. Optional `--certifying-county` (default `Arapahoe`) must match the export's certifying county column for fallback rows; `_meta.propertyTaxEntitiesCountyFilterApplied` records whether that column was present and `_meta.certifyingCountyForPropertyTaxFallback` is set only when the filter ran. Anything still absent from both sources remains in `_meta.missingLgIdsInExport`.
 
 4. Rebuild metro levy JSON (year-specific script):
    - `tools/extract_metro_levies_2025.py` or `tools/extract_metro_levies_2026.py`

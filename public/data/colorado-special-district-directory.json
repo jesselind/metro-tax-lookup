@@ -6,9 +6,10 @@
   },
   "_meta": {
     "lgExportSourceCsv": "lg-export-all.csv",
-    "lgExportBundledAt": "2026-04-21T21:36:24Z",
+    "lgExportBundledAt": "2026-04-21T22:05:33Z",
     "levyStacksReference": "arapahoe-levy-stacks-by-tag-id.json",
     "propertyTaxEntitiesFallbackCsv": "property-tax-entities-export.csv",
+    "propertyTaxEntitiesCountyFilterApplied": true,
     "certifyingCountyForPropertyTaxFallback": "Arapahoe",
     "referencedLgIdCount": 365,
     "directoryRowCount": 365,

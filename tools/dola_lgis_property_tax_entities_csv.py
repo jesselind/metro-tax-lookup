@@ -40,17 +40,20 @@ def normalize_lg_id_key(raw: str) -> str | None:
 def load_lgid_to_entity_name_for_certifying_county(
     path: Path,
     certifying_county: str,
-) -> dict[str, str]:
+) -> tuple[dict[str, str], bool]:
     """
     Map normalized LGID (5 digits) to DOLA tax entity legal name for one certifying county.
 
     First matching row wins when multiple tax entities share one LGID prefix (rare).
+
+    Returns (name_by_lg_id, county_filter_applied). The bool is True only when the CSV
+    has a Certifying County column and rows were filtered by certifying_county.
     """
     if not path.is_file():
-        return {}
+        return {}, False
     want = certifying_county.strip().upper()
     if not want:
-        return {}
+        return {}, False
 
     out: dict[str, str] = {}
     try:
@@ -72,7 +75,7 @@ def load_lgid_to_entity_name_for_certifying_county(
                 "skipping LGID name fallback (would otherwise match zero rows).",
                 file=sys.stderr,
             )
-            return {}
+            return {}, False
 
         for raw in reader:
             nr = normalize_csv_row_keys(raw)
@@ -92,4 +95,4 @@ def load_lgid_to_entity_name_for_certifying_county(
             if not name:
                 continue
             out.setdefault(nid, name)
-    return out
+    return out, True

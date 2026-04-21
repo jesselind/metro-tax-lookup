@@ -196,11 +196,12 @@ def main() -> None:
             missing.append(lg)
 
     pt_path = args.property_tax_entities
-    name_by_lg = (
-        load_lgid_to_entity_name_for_certifying_county(pt_path, args.certifying_county)
-        if pt_path.is_file()
-        else {}
-    )
+    if pt_path.is_file():
+        name_by_lg, pt_county_filter_applied = load_lgid_to_entity_name_for_certifying_county(
+            pt_path, args.certifying_county
+        )
+    else:
+        name_by_lg, pt_county_filter_applied = {}, False
     filled_from_pt: list[str] = []
     still_missing: list[str] = []
     for lg in missing:
@@ -227,7 +228,12 @@ def main() -> None:
             "lgExportBundledAt": export_stamp,
             "levyStacksReference": args.levy_stacks.name,
             "propertyTaxEntitiesFallbackCsv": pt_path.name if pt_path.is_file() else None,
-            "certifyingCountyForPropertyTaxFallback": args.certifying_county.strip() or None,
+            "propertyTaxEntitiesCountyFilterApplied": pt_county_filter_applied,
+            "certifyingCountyForPropertyTaxFallback": (
+                (args.certifying_county.strip() or None)
+                if pt_county_filter_applied
+                else None
+            ),
             "referencedLgIdCount": len(wanted),
             "directoryRowCount": len(filtered),
             "lgIdsFilledFromPropertyTaxEntities": sorted(filled_from_pt),

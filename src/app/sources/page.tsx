@@ -762,8 +762,9 @@ export default function SourcesPage() {
           file name, the optional{" "}
           <code className={CODE_INLINE_CLASS}>property-tax-entities-export.csv</code>{" "}
           fallback file name when present, which levy LGIDs were filled from that
-          fallback (name-only rows when the LG CSV has no row), the certifying county
-          filter used for that fallback, and any LGIDs still missing from both sources.
+          fallback (name-only rows when the LG CSV has no row), whether the property-tax
+          CSV certifying-county filter actually ran, the county label when it did, and
+          any LGIDs still missing from both sources.
         </p>
         <p className="mt-3 text-slate-700">
           Optional legacy tooling:{" "}
