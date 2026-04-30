@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# Metro Tax Lookup - Arapahoe County
+# Copyright (C) 2026 Jesse Lind
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
 """
 Convert Colorado DOLA / data.colorado.gov district CSV exports to lean JSON for
 the levy stack tool. WKT geometry columns are ignored (not written to JSON).

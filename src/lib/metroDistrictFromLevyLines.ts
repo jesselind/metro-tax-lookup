@@ -1,3 +1,8 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
 import type { LevyDataFile, LevyDistrictFromJson } from "@/lib/levyTypes";
 import levyData from "../../public/data/metro-levies-2025.json";

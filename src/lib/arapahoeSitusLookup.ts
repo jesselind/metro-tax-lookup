@@ -1,3 +1,8 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
 /**
  * Offline situs -> PIN lookup built by tools/build_arapahoe_parcel_levy_index.py
  * (public/data/arapahoe-situs-to-pins.json).
