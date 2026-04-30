@@ -1,3 +1,8 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
 /**
  * Levy stack lines committed in the UI (PIN load or manual entry), shared by
  * the levy breakdown tool and the home-page stack preview.

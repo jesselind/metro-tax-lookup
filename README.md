@@ -111,4 +111,10 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 ## License
 
-MIT. See `LICENSE`.
+This repository is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+This means you are free to use, modify, and distribute this code — including for forks targeting other counties or jurisdictions — provided that any modified version you deploy is also released under AGPL-3.0 with its source code publicly available. You may not deploy a modified version as a closed-source or proprietary service.
+
+Commercial use is permitted only if the above conditions are met. If you need a separate licensing arrangement, contact metro.tax.lookup@pm.me.
+
+See `LICENSE` for the full license text.
