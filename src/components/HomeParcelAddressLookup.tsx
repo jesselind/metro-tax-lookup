@@ -147,6 +147,11 @@ const AC_SECTION = "section-arapahoe-situs";
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
+const DEMO_SOURCE_PIN = "035457397";
+const DEMO_DISPLAY_PIN = "000000000";
+const DEMO_ADDRESS_LABEL = "1234 Example Lane, Watkins";
+const DEMO_OWNER_LIST = "John Doe, Jane Doe";
+const DEMO_PROPERTY_CLASSIFICATION = "Residential";
 
 export type HomeParcelAddressLookupProps = {
   /** Fires when the header should offer Start over (any active address / result / PIN path). */
@@ -198,6 +203,9 @@ export function HomeParcelAddressLookup({
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
   /** True after a single PIN match or after the user picks a row from multiple matches. */
   const [addressSearchLocked, setAddressSearchLocked] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [compsFallbackOpen, setCompsFallbackOpen] = useState(false);
+  const compsFallbackWrapRef = useRef<HTMLDivElement>(null);
   const prevAddressSearchLockedRef = useRef(false);
 
   const headerOfferStartOver =
@@ -261,33 +269,51 @@ export function HomeParcelAddressLookup({
     setLevyTemplateMillsError(null);
   }
 
-  const loadLevyStack = useCallback(async (pin: string) => {
+  const loadLevyStack = useCallback(
+    async (
+      pin: string,
+      opts?: {
+        demoMode?: boolean;
+      },
+    ) => {
     setLevyLoadError(null);
     setLevyTemplateMillsError(null);
     setLevyLoadBusy(true);
+    setIsDemoMode(Boolean(opts?.demoMode));
     try {
       const result = await loadLevyStackFromPin(pin);
       if (!result.ok) {
         setLevyLoadError(result.error);
         return;
       }
-      setParcelPin(result.matchedPin);
+      const displayPin = opts?.demoMode ? DEMO_DISPLAY_PIN : result.matchedPin;
       setLevyLines(result.lines);
       setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
       setLevyTemplateMillDrafts(result.templateMillDrafts);
+      setParcelPin(displayPin);
       setLevyLoadedMeta({
-        pin: result.matchedPin,
+        pin: displayPin,
         tagId: result.tagId,
         tagShortDescr: result.tagShortDescr,
         levyAspxUrl: result.levyAspxUrl,
-        parcelValues: result.parcelValues,
+        parcelValues: opts?.demoMode
+          ? {
+              ...result.parcelValues,
+              ownerList: DEMO_OWNER_LIST,
+              propertyClassification:
+                result.parcelValues.propertyClassification ??
+                DEMO_PROPERTY_CLASSIFICATION,
+            }
+          : result.parcelValues,
         parcelValuesTaxYear: result.parcelValuesTaxYear,
-        ain: result.ain,
+        ain: opts?.demoMode ? null : result.ain,
       });
     } finally {
       setLevyLoadBusy(false);
     }
-  }, []);
+    },
+    [],
+  );
 
   const sumMills = useMemo(() => {
     const s = levyLines.reduce((acc, l) => acc + l.mills, 0);
@@ -334,6 +360,7 @@ export function HomeParcelAddressLookup({
 
   async function onLookup() {
     if (busy) return;
+    setIsDemoMode(false);
     clearAllLevyState();
     setError(null);
     setHits(null);
@@ -471,12 +498,58 @@ export function HomeParcelAddressLookup({
     setHits(null);
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
+    setIsDemoMode(false);
     clearAllLevyState();
   }, [clearAllLevyState]);
+
+  async function onLoadDemoProperty() {
+    if (busy || levyLoadBusy) return;
+    setIsDemoMode(true);
+    clearAllLevyState();
+    setError(null);
+    setShowAdvancedAddressFields(false);
+    setShowCountyPinFallback(false);
+    setAddressSearchLocked(true);
+    setSimpleAddressLine("");
+    setStreetNumber("");
+    setStreetNumberSuffix("");
+    setStreetName("");
+    setUnit("");
+    setHits([{ pin: DEMO_DISPLAY_PIN, label: DEMO_ADDRESS_LABEL }]);
+    setParcelPin(DEMO_DISPLAY_PIN);
+    await loadLevyStack(DEMO_SOURCE_PIN, { demoMode: true });
+  }
 
   useEffect(() => {
     onViewingParcelChange?.(headerOfferStartOver, resetAddressForm);
   }, [headerOfferStartOver, onViewingParcelChange, resetAddressForm]);
+
+  useEffect(() => {
+    if (!compsFallbackOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const wrap = compsFallbackWrapRef.current;
+      if (wrap && !wrap.contains(event.target as Node)) {
+        setCompsFallbackOpen(false);
+      }
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setCompsFallbackOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [compsFallbackOpen]);
+
+  useEffect(() => {
+    if (!isDemoMode || homeCompsGridPdfHref) {
+      setCompsFallbackOpen(false);
+    }
+  }, [isDemoMode, homeCompsGridPdfHref]);
 
   const hasLevyContent =
     levyLines.length > 0 ||
@@ -566,6 +639,24 @@ export function HomeParcelAddressLookup({
 
   const showMultiHitLevyIntroLead =
     hits != null && hits.length > 1;
+  const compsIcon = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="size-6"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+      />
+    </svg>
+  );
+  const compsFallbackPopoverId = "home-comps-fallback-popover";
 
   return (
     <section
@@ -824,14 +915,26 @@ export function HomeParcelAddressLookup({
             )}
           </form>
           <div
-            className="mt-3 flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+            className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
             role="note"
             aria-label="County availability"
           >
-            <span className="mt-0.5">
-              <InfoIcon />
-            </span>
-            <p>Arapahoe County only.</p>
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex items-start gap-2 text-sm text-slate-700">
+                <span className="mt-0.5">
+                  <InfoIcon />
+                </span>
+                <p>Arapahoe County only.</p>
+              </div>
+              <button
+                type="button"
+                className={`${btnOutlineSecondaryMd} w-auto shrink-0 cursor-pointer justify-center whitespace-nowrap px-3 py-2 text-sm`}
+                onClick={() => void onLoadDemoProperty()}
+                disabled={busy || levyLoadBusy}
+              >
+                Try demo property
+              </button>
+            </div>
           </div>
           {hits != null && hits.length > 1 ? (
             <div
@@ -972,10 +1075,7 @@ export function HomeParcelAddressLookup({
                 </div>
               </div>
             ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            homeCompsGridPdfHref ? (
+            {!busy && levyReadyForSummary && levyLoadedMeta ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-comps"
@@ -993,29 +1093,59 @@ export function HomeParcelAddressLookup({
                       <ParcelTermPopoverPanel termId="term-comps" />
                     </InfoHintPopover>
                   </div>
-                  <a
-                    href={homeCompsGridPdfHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-                    aria-label="Open county comps grid PDF for this property (opens in a new tab)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                      aria-hidden
+                  {homeCompsGridPdfHref ? (
+                    <a
+                      href={homeCompsGridPdfHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                      aria-label="Open county comps grid PDF for this property (opens in a new tab)"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                      />
-                    </svg>
-                  </a>
+                      {compsIcon}
+                    </a>
+                  ) : isDemoMode ? (
+                    <div
+                      className="relative flex justify-center"
+                      ref={compsFallbackWrapRef}
+                    >
+                      <button
+                        type="button"
+                        className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        aria-label="Comps PDF is unavailable for this property"
+                        aria-expanded={compsFallbackOpen}
+                        aria-controls={
+                          compsFallbackOpen ? compsFallbackPopoverId : undefined
+                        }
+                        onClick={() => setCompsFallbackOpen((v) => !v)}
+                      >
+                        {compsIcon}
+                      </button>
+                      {compsFallbackOpen ? (
+                        <div
+                          id={compsFallbackPopoverId}
+                          role="region"
+                          aria-live="polite"
+                          className="absolute top-full z-20 mt-2 w-64 max-w-[min(16rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-snug text-slate-700 shadow-lg"
+                        >
+                          <>
+                            Demo mode does not include a comps PDF. Select{" "}
+                            <strong className="font-semibold text-slate-900">
+                              Start over
+                            </strong>
+                            , then enter your address to load your county comps
+                            grid.
+                          </>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <span
+                      className="flex justify-center text-slate-600"
+                      aria-label="Comps link unavailable"
+                    >
+                      {compsIcon}
+                    </span>
+                  )}
                 </div>
               </div>
             ) : null}
