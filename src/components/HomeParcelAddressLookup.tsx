@@ -928,7 +928,7 @@ export function HomeParcelAddressLookup({
               </div>
               <button
                 type="button"
-                className={`${btnOutlineSecondaryMd} w-auto shrink-0 cursor-pointer justify-center whitespace-nowrap px-3 py-2 text-sm`}
+                className={`${btnOutlineSecondaryMd} w-auto shrink-0 justify-center whitespace-nowrap px-3 py-2 text-sm disabled:cursor-not-allowed`}
                 onClick={() => void onLoadDemoProperty()}
                 disabled={busy || levyLoadBusy}
               >
@@ -1123,7 +1123,7 @@ export function HomeParcelAddressLookup({
                       {compsFallbackOpen ? (
                         <div
                           id={compsFallbackPopoverId}
-                          role="region"
+                          role="status"
                           aria-live="polite"
                           className="absolute top-full z-20 mt-2 w-64 max-w-[min(16rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-snug text-slate-700 shadow-lg"
                         >
