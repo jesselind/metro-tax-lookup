@@ -1141,7 +1141,8 @@ export function HomeParcelAddressLookup({
                   ) : (
                     <span
                       className="flex justify-center text-slate-600"
-                      aria-label="Comps link unavailable"
+                      role="img"
+                      aria-label="Comps unavailable"
                     >
                       {compsIcon}
                     </span>
