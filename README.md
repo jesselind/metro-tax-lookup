@@ -58,6 +58,8 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 1. Create Python env and install deps:
 
+   Offline `tools/*.py` scripts expect **Python 3.10+** (for example union types like `str | None` and `collections.abc` typing patterns).
+
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate   # Windows: .venv\Scripts\activate
