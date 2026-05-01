@@ -174,7 +174,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
           className={
             iconTriggerChildren != null
               ? `${ICON_TRIGGER_BTN_BASE} ${iconTriggerButtonClassName ?? "rounded-md text-slate-600"}`
-              : "inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-full p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
+              : "inline-flex size-[1.125rem] cursor-pointer items-center justify-center border-0 bg-transparent rounded-full p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
           }
           aria-label={ariaLabel}
           aria-expanded={open}

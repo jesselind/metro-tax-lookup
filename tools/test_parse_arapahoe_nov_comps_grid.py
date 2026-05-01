@@ -10,6 +10,7 @@ from parse_arapahoe_nov_comps_grid import (
     CANONICAL_ROWS,
     DEFINITIONS_PATH,
     LOGICAL_DATE,
+    LOGICAL_INDICATOR,
     LOGICAL_MONEY,
     LOGICAL_SECTION,
     LOGICAL_STRING,
@@ -41,7 +42,7 @@ class ParseHelpersTests(unittest.TestCase):
         self.assertIsNone(parse_date("2024-04-15"))
 
     def test_parse_cell_blank_and_masked(self) -> None:
-        row = CanonicalRow("DWELLING", "dwelling", "indicator")
+        row = CanonicalRow("DWELLING", "dwelling", LOGICAL_INDICATOR)
         blank = parse_cell("", row)
         self.assertFalse(blank["parse_ok"])
         self.assertEqual(blank["parse_note"], "blank cell")

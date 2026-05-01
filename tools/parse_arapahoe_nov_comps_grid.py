@@ -20,7 +20,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     import pdfplumber
@@ -154,6 +154,121 @@ def parse_date(raw: str) -> str | None:
     return dt.strftime("%Y-%m-%d")
 
 
+def _handle_logical_money(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    n = parse_money(raw)
+    if n is None:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "invalid money format",
+        }
+    return {"raw_text": raw, "parsed": n, "parse_ok": True}
+
+
+def _handle_logical_int(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    n = parse_integer(raw)
+    if n is None:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "invalid integer format",
+        }
+    return {"raw_text": raw, "parsed": n, "parse_ok": True}
+
+
+def _handle_logical_float(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    n = parse_number(raw)
+    if n is None:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "invalid numeric format",
+        }
+    return {"raw_text": raw, "parsed": n, "parse_ok": True}
+
+
+def _handle_logical_year(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    n = parse_integer(raw)
+    if n is None:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "invalid year format",
+        }
+    if n == 0:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "year 0 treated as missing",
+        }
+    if n < 1800 or n > 2100:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "year outside expected range",
+        }
+    return {"raw_text": raw, "parsed": n, "parse_ok": True}
+
+
+def _handle_logical_date(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    parsed = parse_date(raw)
+    if parsed is None:
+        return {
+            "raw_text": raw,
+            "parsed": None,
+            "parse_ok": False,
+            "parse_note": "invalid date format",
+        }
+    return {"raw_text": raw, "parsed": parsed, "parse_ok": True}
+
+
+def _handle_logical_indicator(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    n = parse_integer(raw)
+    if n in (0, 1):
+        return {"raw_text": raw, "parsed": n, "parse_ok": True}
+    return {
+        "raw_text": raw,
+        "parsed": None,
+        "parse_ok": False,
+        "parse_note": "expected 0 or 1 indicator",
+    }
+
+
+def _handle_logical_string(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    return {"raw_text": raw, "parsed": raw, "parse_ok": True}
+
+
+def _handle_logical_section(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    return {"raw_text": raw, "parsed": raw, "parse_ok": True}
+
+
+def _handle_logical_unsupported(raw: str, row: CanonicalRow) -> dict[str, Any]:
+    return {
+        "raw_text": raw,
+        "parsed": None,
+        "parse_ok": False,
+        "parse_note": f"unsupported logical type {row.logical_type}",
+    }
+
+
+LOGICAL_HANDLERS: dict[str, Callable[[str, CanonicalRow], dict[str, Any]]] = {
+    LOGICAL_MONEY: _handle_logical_money,
+    LOGICAL_INT: _handle_logical_int,
+    LOGICAL_FLOAT: _handle_logical_float,
+    LOGICAL_YEAR: _handle_logical_year,
+    LOGICAL_DATE: _handle_logical_date,
+    LOGICAL_INDICATOR: _handle_logical_indicator,
+    LOGICAL_STRING: _handle_logical_string,
+    LOGICAL_SECTION: _handle_logical_section,
+}
+
+
 def parse_cell(raw_text: str, row: CanonicalRow) -> dict[str, Any]:
     raw = normalize_space(raw_text)
     if not raw:
@@ -179,98 +294,10 @@ def parse_cell(raw_text: str, row: CanonicalRow) -> dict[str, Any]:
             "parse_note": "masked sentinel",
         }
 
-    if row.logical_type == LOGICAL_SECTION:
-        return {"raw_text": raw, "parsed": raw, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_STRING:
-        return {"raw_text": raw, "parsed": raw, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_MONEY:
-        n = parse_money(raw)
-        if n is None:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "invalid money format",
-            }
-        return {"raw_text": raw, "parsed": n, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_INT:
-        n = parse_integer(raw)
-        if n is None:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "invalid integer format",
-            }
-        return {"raw_text": raw, "parsed": n, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_FLOAT:
-        n = parse_number(raw)
-        if n is None:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "invalid numeric format",
-            }
-        return {"raw_text": raw, "parsed": n, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_YEAR:
-        n = parse_integer(raw)
-        if n is None:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "invalid year format",
-            }
-        if n == 0:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "year 0 treated as missing",
-            }
-        if n < 1800 or n > 2100:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "year outside expected range",
-            }
-        return {"raw_text": raw, "parsed": n, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_DATE:
-        parsed = parse_date(raw)
-        if parsed is None:
-            return {
-                "raw_text": raw,
-                "parsed": None,
-                "parse_ok": False,
-                "parse_note": "invalid date format",
-            }
-        return {"raw_text": raw, "parsed": parsed, "parse_ok": True}
-
-    if row.logical_type == LOGICAL_INDICATOR:
-        n = parse_integer(raw)
-        if n in (0, 1):
-            return {"raw_text": raw, "parsed": n, "parse_ok": True}
-        return {
-            "raw_text": raw,
-            "parsed": None,
-            "parse_ok": False,
-            "parse_note": "expected 0 or 1 indicator",
-        }
-
-    return {
-        "raw_text": raw,
-        "parsed": None,
-        "parse_ok": False,
-        "parse_note": f"unsupported logical type {row.logical_type}",
-    }
+    handler = LOGICAL_HANDLERS.get(row.logical_type)
+    if handler is not None:
+        return handler(raw, row)
+    return _handle_logical_unsupported(raw, row)
 
 
 def build_row_label_lookup() -> list[tuple[str, CanonicalRow]]:
@@ -387,7 +414,7 @@ def find_header_line(lines: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
     return min(candidates, key=lambda ln: float(ln[0]["top"]))
 
 
-def extract_grid(pdf_path: Path, include_definitions: bool = True) -> dict[str, Any]:
+def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[str, Any]:
     with pdfplumber.open(pdf_path) as pdf:
         if len(pdf.pages) < 2:
             raise RuntimeError("Expected at least 2 pages in NOV PDF")
