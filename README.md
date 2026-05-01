@@ -102,6 +102,15 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - `tools/enrich_district_json_county_geoids.py` — reads that JSON and optional Census GDB under `supporting-data/`
    - `tools/export_special_district_directory.py` — Colorado **dlall** GIS extract under `supporting-data/dlall/` (`dlall.dbf`)
 
+6. Optional NOV comps grid extractor (experimental tooling; not used by the Next.js bundle):
+   - `tools/parse_arapahoe_nov_comps_grid.py` reads **page 2** of a Notice-of-Valuation-style PDF when it carries the six-column comps grid (subject + five sales). It uses `pdfplumber` geometry + column bands, not line-table extraction.
+   - Pair with `tools/nov_comps_grid_definitions.json` for resident-facing `layTitle` / `layBody` strings plus `official` citation placeholders (county-first; UAD Appendix D called out only as formatting-discipline context).
+   - Put real PDF samples under `supporting-data/_private/` (gitignored). Example default path in the script matches that layout.
+   - Example (writes JSON): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out /tmp/nov-grid.json`
+   - Omit bundled definitions with `--skip-definitions` when you only want extracted cells.
+   - Tests: `npm run test:nov-comps-parser` (also runs via `npm run build` / `prebuild`).
+   - Treat JSON output as **sensitive** (parcel or address text); do not commit extracted files.
+
 ## Contributor notes
 
 - Keep user-facing prose plain-language and avoid accountant-style "levy lines" phrasing.

@@ -209,8 +209,6 @@ export function HomeParcelAddressLookup({
   /** True after a single PIN match or after the user picks a row from multiple matches. */
   const [addressSearchLocked, setAddressSearchLocked] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [compsFallbackOpen, setCompsFallbackOpen] = useState(false);
-  const compsFallbackWrapRef = useRef<HTMLDivElement>(null);
   const prevAddressSearchLockedRef = useRef(false);
 
   const headerOfferStartOver =
@@ -529,33 +527,6 @@ export function HomeParcelAddressLookup({
     onViewingParcelChange?.(headerOfferStartOver, resetAddressForm);
   }, [headerOfferStartOver, onViewingParcelChange, resetAddressForm]);
 
-  useEffect(() => {
-    if (!compsFallbackOpen) return;
-    const onPointerDown = (event: PointerEvent) => {
-      const wrap = compsFallbackWrapRef.current;
-      if (wrap && !wrap.contains(event.target as Node)) {
-        setCompsFallbackOpen(false);
-      }
-    };
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setCompsFallbackOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("keydown", onEscape);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("keydown", onEscape);
-    };
-  }, [compsFallbackOpen]);
-
-  useEffect(() => {
-    if (!isDemoMode || homeCompsGridPdfHref) {
-      setCompsFallbackOpen(false);
-    }
-  }, [isDemoMode, homeCompsGridPdfHref]);
-
   const hasLevyContent =
     levyLines.length > 0 ||
     levyAwaitingTemplateMills ||
@@ -661,8 +632,6 @@ export function HomeParcelAddressLookup({
       />
     </svg>
   );
-  const compsFallbackPopoverId = "home-comps-fallback-popover";
-
   return (
     <section
       className="w-full min-w-0 space-y-4 sm:space-y-5"
@@ -1109,39 +1078,23 @@ export function HomeParcelAddressLookup({
                       {compsIcon}
                     </a>
                   ) : isDemoMode ? (
-                    <div
-                      className="relative flex justify-center"
-                      ref={compsFallbackWrapRef}
-                    >
-                      <button
-                        type="button"
-                        className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-                        aria-label="Comps PDF is unavailable for this property"
-                        aria-expanded={compsFallbackOpen}
-                        aria-controls={
-                          compsFallbackOpen ? compsFallbackPopoverId : undefined
-                        }
-                        onClick={() => setCompsFallbackOpen((v) => !v)}
+                    <div className="flex justify-center">
+                      <InfoHintPopover
+                        ariaLabel="Comps PDF is unavailable for this property"
+                        disabled={busy}
+                        iconPanelBelow
+                        iconTriggerChildren={compsIcon}
+                        iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] rounded-md text-slate-600 outline-offset-2 transition-colors focus-visible:ring-offset-2"
                       >
-                        {compsIcon}
-                      </button>
-                      {compsFallbackOpen ? (
-                        <div
-                          id={compsFallbackPopoverId}
-                          role="status"
-                          aria-live="polite"
-                          className="absolute top-full z-20 mt-2 w-64 max-w-[min(16rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-snug text-slate-700 shadow-lg"
-                        >
-                          <>
-                            Demo mode does not include a comps PDF. Select{" "}
-                            <strong className="font-semibold text-slate-900">
-                              Start over
-                            </strong>
-                            , then enter your address to load your county comps
-                            grid.
-                          </>
-                        </div>
-                      ) : null}
+                        <>
+                          Demo mode does not include a comps PDF. Select{" "}
+                          <strong className="font-semibold text-slate-900">
+                            Start over
+                          </strong>
+                          {", "}
+                          then enter your address to load your county comps grid.
+                        </>
+                      </InfoHintPopover>
                     </div>
                   ) : (
                     <span

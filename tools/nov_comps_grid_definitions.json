@@ -1,0 +1,254 @@
+{
+  "columns": {
+    "subject": {
+      "layTitle": "Subject column",
+      "layBody": "This column holds the parcel the notice is centered on.",
+      "official": [
+        "TODO: Anchor this label to county NOV comps grid wording (not imported from USPAP or UAD)."
+      ]
+    },
+    "sale_1": {
+      "layTitle": "Comparable sale column 1",
+      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
+      "official": [
+        "TODO: Arapahoe comparable grid methodology citation when available.",
+        "This tool is informational; comparable selection is modeled by the county schedule."
+      ]
+    },
+    "sale_2": {
+      "layTitle": "Comparable sale column 2",
+      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
+      "official": [
+        "TODO: Arapahoe comparable grid methodology citation when available.",
+        "This tool is informational; comparable selection is modeled by the county schedule."
+      ]
+    },
+    "sale_3": {
+      "layTitle": "Comparable sale column 3",
+      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
+      "official": [
+        "TODO: Arapahoe comparable grid methodology citation when available.",
+        "This tool is informational; comparable selection is modeled by the county schedule."
+      ]
+    },
+    "sale_4": {
+      "layTitle": "Comparable sale column 4",
+      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
+      "official": [
+        "TODO: Arapahoe comparable grid methodology citation when available.",
+        "This tool is informational; comparable selection is modeled by the county schedule."
+      ]
+    },
+    "sale_5": {
+      "layTitle": "Comparable sale column 5",
+      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
+      "official": [
+        "TODO: Arapahoe comparable grid methodology citation when available.",
+        "This tool is informational; comparable selection is modeled by the county schedule."
+      ]
+    }
+  },
+  "rows": {
+    "parcel_id": {
+      "layTitle": "PIN",
+      "layBody": "The county parcel identification number as printed here (often 9 digits once formatting is trimmed). Compare to your bill or county record when verifying identity.",
+      "official": [
+        "TODO: Arapahoe PIN zero-padding rule for comps vs NOV print.",
+        "Secondary formatting discipline: Legacy UAD 2.6 Appendix D (currency and reporting strictness norms) does not redefine county PIN meanings."
+      ]
+    },
+    "street_number": {
+      "layTitle": "Street number",
+      "layBody": "The numeric portion of the situs street address.",
+      "official": ["TODO: Arapahoe situs formatting glossary if available."]
+    },
+    "street_name": {
+      "layTitle": "Street name",
+      "layBody": "Street name without the trailing street type suffix.",
+      "official": ["TODO: Arapahoe situs abbreviation rules when available."]
+    },
+    "street_type": {
+      "layTitle": "Street type",
+      "layBody": "County suffix like ST or CIR that follows the street name.",
+      "official": ["TODO: Arapahoe USPS-style vs internal abbreviations if published."]
+    },
+    "apt_number": {
+      "layTitle": "Unit",
+      "layBody": "Unit label when tracked. Blank vs masked placeholders mean the grid does not display a unit; that is different from verifying whether a condo unit exists elsewhere.",
+      "official": ["TODO: Arapahoe unit field definition on comps extracts."]
+    },
+    "dwelling": {
+      "layTitle": "Dwelling flag",
+      "layBody": "County-style yes or no indicator for dwelling classification.",
+      "official": ["TODO: Enumerate acceptable codes across NOV comps samples before asserting meaning."]
+    },
+    "time_adj_sale_price": {
+      "layTitle": "Time-adjusted sale price (detail block)",
+      "layBody": "Modeled comparable sale amount after the county schedules it to match the appraisal date. It is not the same concept as today's market list price.",
+      "official": [
+        "Secondary reporting-format discipline reference: Legacy UAD 2.6 Appendix D (currency fields). County layout still wins.",
+        "TODO: Cite county time-adjust method summary."
+      ]
+    },
+    "original_sale_price": {
+      "layTitle": "Contract sale price",
+      "layBody": "County reference sale amount before modeled adjustments.",
+      "official": [
+        "Secondary formatting reference: Legacy UAD 2.6 Appendix D (currency).",
+        "TODO: Tie wording to deed or contract terminology Arapahoe uses."
+      ]
+    },
+    "concessions_and_pp": {
+      "layTitle": "Concessions (meaning uncertain)",
+      "layBody": "Often seller credits or other offsets that require adjustment versus the naked sale price.",
+      "official": [
+        "TODO: Arapahoe definition for PP and concessions on this worksheet (label is ambiguous in PDF alone).",
+        "Secondary reference only: Legacy UAD 2.6 Appendix D for currency punctuation discipline."
+      ]
+    },
+    "parcel_number": {
+      "layTitle": "County parcel number",
+      "layBody": "Internal parcel-account string formatted by the county. Keep it verbatim for records calls.",
+      "official": ["TODO: Crosswalk parcel number versus PIN wording from assessor glossary."]
+    },
+    "neighborhood": {
+      "layTitle": "Neighborhood code",
+      "layBody": "Internal neighborhood bucket for comparable pooling, usually numeric.",
+      "official": ["TODO: Map published neighborhood code glossary if permitted."]
+    },
+    "neighborhood_group": {
+      "layTitle": "Neighborhood group",
+      "layBody": "Broader roll-up grouping when narrower neighborhoods lack sales.",
+      "official": ["TODO: Describe county widening rules with a methodology cite."]
+    },
+    "luc": {
+      "layTitle": "Land use code (county)",
+      "layBody": "County grouping code for allowable land-use context inside their models.",
+      "official": ["TODO: DOLA assessor glossary or county codebook excerpt."]
+    },
+    "allocated_land_val": {
+      "layTitle": "Land allocation",
+      "layBody": "County-modeled land allocation inside the modeled value breakdown.",
+      "official": [
+        "Secondary formatting reference: Legacy UAD 2.6 Appendix D (currency).",
+        "TODO: Cite statutory or methodology note tying land-vs-improvement split."
+      ]
+    },
+    "improvement_type": {
+      "layTitle": "Building type label",
+      "layBody": "High-level modeled improvement category.",
+      "official": ["TODO: Explain county improvement code book when available."]
+    },
+    "improvement_style": {
+      "layTitle": "Building style label",
+      "layBody": "More granular improvement style wording within the modeled type bucket.",
+      "official": ["TODO: Explain county coding when available."]
+    },
+    "year_built": {
+      "layTitle": "Year built",
+      "layBody": "Original construction vintage when known. Printed zero means unavailable or none for modeling.",
+      "official": ["TODO: Explain assessor sourcing for effective year."]
+    },
+    "remodel_year": {
+      "layTitle": "Remodel year",
+      "layBody": "Major modeled remodel indicator when populated. Printed zero reads as none.",
+      "official": ["TODO: County definition of remodeled vs maintenance."]
+    },
+    "valuation_grade": {
+      "layTitle": "Quality or condition grade",
+      "layBody": "County shorthand grade for modeled quality versus condition tiers.",
+      "official": ["TODO: Narrate grade ladders from assessor materials."]
+    },
+    "living_area": {
+      "layTitle": "Above-grade living area",
+      "layBody": "Finished living-area square footage per county appraisal rules.",
+      "official": [
+        "TODO: Cite CRS or assessor bulletin for measured area norms.",
+        "Secondary reference: Appendix D mentions precision expectations for quantitative fields generally."
+      ]
+    },
+    "basement_garden_lvl": {
+      "layTitle": "Basement or garden level area",
+      "layBody": "County square footage bucket for partially below-grade shells.",
+      "official": ["TODO: Match county sketch instructions."]
+    },
+    "finish_bsmt_grdn_lvl": {
+      "layTitle": "Finished basement or garden level",
+      "layBody": "Finished portion counted inside basement or garden stacks.",
+      "official": ["TODO: County finishing definition."]
+    },
+    "walkout_basement": {
+      "layTitle": "Walkout basement area",
+      "layBody": "Walk-out basement modeled square footage when flagged.",
+      "official": ["TODO: County breakout rules."]
+    },
+    "attached_garage": {
+      "layTitle": "Attached garage area",
+      "layBody": "Garage modeled square footage attached to the dwelling.",
+      "official": ["TODO: County breakout rules."]
+    },
+    "detached_garage": {
+      "layTitle": "Detached garage area or flag",
+      "layBody": "Detached garage modeled evidence. Sometimes prints as zero-area.",
+      "official": ["TODO: Clarify modeled zero versus missing when sample varies."]
+    },
+    "open_porch": {
+      "layTitle": "Open porch area",
+      "layBody": "Open porch modeled footprint.",
+      "official": ["TODO: County breakout rules."]
+    },
+    "deck_terrace": {
+      "layTitle": "Deck or terrace area",
+      "layBody": "Deck modeled footprint counted for adjustments.",
+      "official": ["TODO: County breakout rules."]
+    },
+    "total_bath_count": {
+      "layTitle": "Bathroom count",
+      "layBody": "Composite bathroom measure; half baths sometimes print as halves.",
+      "official": ["TODO: County rounding rules."]
+    },
+    "fireplaces": {
+      "layTitle": "Fireplaces",
+      "layBody": "Count of modeled fireplaces influencing adjustments.",
+      "official": ["TODO: County fireplaces definition."]
+    },
+    "second_residence": {
+      "layTitle": "Second residence flag",
+      "layBody": "County-coded second-home indicator when modeled.",
+      "official": ["TODO: Clarify CRS meaning beyond this grid."]
+    },
+    "regression_valuation": {
+      "layTitle": "Regression indication",
+      "layBody": "Statistical modeled indication from county regression schedule.",
+      "official": ["TODO: Cite appeals brief or methodology pamphlet."]
+    },
+    "valuation_label": {
+      "layTitle": "Valuation subsection",
+      "layBody": "Section heading for summarized dollars at the worksheet bottom.",
+      "official": ["TODO: Explain NOV comps footer layout."]
+    },
+    "sale_date": {
+      "layTitle": "Sale date",
+      "layBody": "County recorded sale-event date comparable uses.",
+      "official": [
+        "Secondary formatting reference: Legacy UAD 2.6 Appendix D (date discipline). Conflicts defer to county print.",
+        "TODO: Clarify deed date vs closing date wording."
+      ]
+    },
+    "valuation_time_adj_sale_price": {
+      "layTitle": "Time-adjusted sale price (valuation block)",
+      "layBody": "Repeated time-adjust reference near the summarized valuation lines; treat semantics as distinct JSON key until more samples prove alignment.",
+      "official": ["TODO: Explain duplicate label meaning with screenshots or county notes."]
+    },
+    "adjusted_sale_price": {
+      "layTitle": "Adjusted comparable price",
+      "layBody": "County comparable price after modeled attribute adjustments versus the subject parcel.",
+      "official": ["TODO: Explain adjustment grid vs gross sale amounts."]
+    },
+    "adj_mkt": {
+      "layTitle": "Adjusted market reference",
+      "layBody": "Final modeled market reconciliation cell the county labeled here. Printed blanks in sale slots still mean no additional figures on this row.",
+      "official": ["TODO: County definition relative to preceding adjustment lines."]
+    }
+  }
+}

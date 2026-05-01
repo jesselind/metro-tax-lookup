@@ -46,6 +46,10 @@ next-env.d.ts
 # work with npm install + npm run dev. Large county/state inputs stay under
 # supporting-data/ but are gitignored here; see README "Data and reproducibility".
 
+# Local-only samples (PII, one-off PDFs) - keep out of version control
+supporting-data/_private/
+!supporting-data/_private/.gitkeep
+
 # Large Arapahoe assessor export (~100MB+); required to regenerate PIN map + stacks.
 supporting-data/Main Parcel Table (CSV)/
 

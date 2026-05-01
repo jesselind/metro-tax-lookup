@@ -15,6 +15,9 @@ import {
 } from "react";
 import { InfoCircleGlyph } from "@/components/InfoCircleGlyph";
 
+const ICON_TRIGGER_BTN_BASE =
+  "inline-flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 outline-none transition hover:bg-slate-100/90 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40";
+
 type InfoHintPopoverProps = {
   children: ReactNode;
   disabled?: boolean;
@@ -27,6 +30,18 @@ type InfoHintPopoverProps = {
       textTrigger?: never;
       textTriggerId?: never;
       textTriggerClassName?: never;
+      /**
+       * Icon mode: replace the default (i) glyph (e.g. comps PDF icon). Pair with
+       * {@link iconTriggerButtonClassName} for hit target and shape.
+       */
+      iconTriggerChildren?: ReactNode;
+      /** Merged after {@link ICON_TRIGGER_BTN_BASE} when {@link iconTriggerChildren} is set. */
+      iconTriggerButtonClassName?: string;
+      /**
+       * Icon mode: anchor the panel below the trigger and clamp to the viewport (same
+       * behavior as text triggers). Use in tight tiles instead of opening to the right.
+       */
+      iconPanelBelow?: boolean;
     }
   | {
       /**
@@ -37,6 +52,9 @@ type InfoHintPopoverProps = {
       textTrigger: string;
       textTriggerId: string;
       textTriggerClassName?: string;
+      iconTriggerChildren?: never;
+      iconTriggerButtonClassName?: never;
+      iconPanelBelow?: never;
     }
 );
 
@@ -47,6 +65,7 @@ const PANEL_BASE =
  * Toggles a small floating note; click outside or Escape closes.
  * - **Icon** (default): compact (i) beside labels.
  * - **Text**: underlined label text as trigger (avoids icon/label baseline fights).
+ * - **Icon, panel below**: optional `iconPanelBelow` (and optional `iconTriggerChildren`) for tight tiles.
  */
 export function InfoHintPopover(props: InfoHintPopoverProps) {
   const {
@@ -57,18 +76,22 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
     textTrigger,
     textTriggerId,
     textTriggerClassName,
+    iconTriggerChildren,
+    iconTriggerButtonClassName,
+    iconPanelBelow = false,
   } = props;
 
   const [open, setOpen] = useState(false);
-  const [textPanelLeftPx, setTextPanelLeftPx] = useState(0);
+  const [belowPanelLeftPx, setBelowPanelLeftPx] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
 
   const isText = textTrigger != null && textTriggerId != null;
+  const useBelowClamp = isText || iconPanelBelow;
 
   useLayoutEffect(() => {
-    if (!open || !isText) return;
+    if (!open || !useBelowClamp) return;
     const margin = 16;
     const clampPanelLeft = () => {
       const wrap = wrapRef.current;
@@ -84,7 +107,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       if (wrapLeft + left < margin) {
         left = margin - wrapLeft;
       }
-      setTextPanelLeftPx(left);
+      setBelowPanelLeftPx(left);
     };
     clampPanelLeft();
     const onResize = () => clampPanelLeft();
@@ -96,7 +119,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       window.removeEventListener("resize", onResize);
       ro.disconnect();
     };
-  }, [open, isText]);
+  }, [open, useBelowClamp]);
 
   useEffect(() => {
     if (!open) return;
@@ -120,7 +143,9 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       className={
         isText
           ? "relative inline-block min-w-0 max-w-full shrink leading-none"
-          : "relative inline-flex shrink-0 leading-none"
+          : iconPanelBelow
+            ? "relative inline-flex min-w-0 max-w-full shrink-0 leading-none"
+            : "relative inline-flex shrink-0 leading-none"
       }
       ref={wrapRef}
     >
@@ -146,14 +171,22 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
         <button
           type="button"
           disabled={disabled}
-          className="inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-full p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
+          className={
+            iconTriggerChildren != null
+              ? `${ICON_TRIGGER_BTN_BASE} ${iconTriggerButtonClassName ?? "rounded-md text-slate-600"}`
+              : "inline-flex size-[1.125rem] cursor-pointer items-center justify-center rounded-full p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:size-4 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40"
+          }
           aria-label={ariaLabel}
           aria-expanded={open}
           aria-controls={open ? contentId : undefined}
           aria-haspopup="true"
           onClick={() => setOpen((v) => !v)}
         >
-          <InfoCircleGlyph className="size-3 sm:size-3.5" />
+          {iconTriggerChildren != null ? (
+            iconTriggerChildren
+          ) : (
+            <InfoCircleGlyph className="size-3 sm:size-3.5" />
+          )}
         </button>
       )}
       {open ? (
@@ -163,11 +196,11 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
           role="region"
           aria-live="polite"
           className={
-            isText
+            useBelowClamp
               ? `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} top-full mt-1`
               : `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} left-full top-1/2 ml-1 -translate-y-1/2`
           }
-          style={isText ? { left: textPanelLeftPx } : undefined}
+          style={useBelowClamp ? { left: belowPanelLeftPx } : undefined}
         >
           {children}
         </div>
