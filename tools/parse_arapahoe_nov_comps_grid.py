@@ -17,10 +17,11 @@ import argparse
 import json
 import re
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 try:
     import pdfplumber
