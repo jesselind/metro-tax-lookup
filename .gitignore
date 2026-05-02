@@ -50,10 +50,6 @@ next-env.d.ts
 supporting-data/_private/
 !supporting-data/_private/.gitkeep
 
-# Comps grid preview: generated from tools/parse_arapahoe_nov_comps_grid.py against a local PDF;
-# may mirror real situs from public notices — keep local-only if you prefer not to ship it.
-src/lib/hardcodedCompsGridPreview.ts
-
 # Large Arapahoe assessor export (~100MB+); required to regenerate PIN map + stacks.
 supporting-data/Main Parcel Table (CSV)/
 

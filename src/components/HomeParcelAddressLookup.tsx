@@ -66,7 +66,6 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
-import { HARDCODED_COMPS_GRID_PREVIEW } from "@/lib/hardcodedCompsGridPreview";
 import { safeArapahoeCompsGridPdfUrl } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
@@ -86,48 +85,10 @@ import {
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
-import novCompsGridDefinitions from "../../tools/nov_comps_grid_definitions.json";
 
 /** Wider, scrollable panel for parcel summary term popovers (label copy can run long). */
 const PARCEL_TERM_POPOVER_PANEL_CLASS =
   "max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain";
-
-type NovCompsDefEntry = {
-  layTitle: string;
-  layBody: string;
-  official: string[];
-};
-
-function novCompsDefinitionPopoverBody(def: NovCompsDefEntry) {
-  return (
-    <>
-      <p className="text-sm font-semibold text-slate-900">{def.layTitle}</p>
-      <p className="mt-2 text-xs leading-relaxed text-slate-700 sm:text-sm">
-        {def.layBody}
-      </p>
-      {def.official.length > 0 ? (
-        <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-slate-600">
-          {def.official.map((line, oi) => (
-            <li key={oi}>{line}</li>
-          ))}
-        </ul>
-      ) : null}
-    </>
-  );
-}
-
-const COMPS_FIELD_HEADER_CLASS =
-  "w-48 min-w-[12rem] max-w-[12rem] border-r border-slate-300 bg-slate-100 px-3 py-2.5 text-left text-sm font-semibold text-slate-900 sm:px-4";
-const COMPS_SUBJECT_HEADER_CLASS =
-  "min-w-[9rem] max-w-[11rem] border-r border-slate-300 bg-slate-100 px-3 py-2.5 text-center text-sm font-semibold text-slate-900 sm:px-4";
-const COMPS_FIELD_CELL_CLASS =
-  "w-48 min-w-[12rem] max-w-[12rem] border-r border-slate-200 px-3 py-2 align-top sm:px-4";
-const COMPS_SUBJECT_CELL_CLASS =
-  "min-w-[9rem] max-w-[11rem] border-r border-slate-200 px-3 py-2 align-top sm:px-4";
-const COMPS_SALE_CELL_CLASS =
-  "min-w-[7.25rem] max-w-[12rem] whitespace-normal px-3 py-2 align-top text-xs sm:min-w-[8rem] sm:px-4 sm:text-sm";
-const COMPS_SCROLL_WRAP_CLASS =
-  "overflow-auto overscroll-contain [scrollbar-gutter:stable]";
 
 /**
  * PIN + levy-stack JSON (~41MB) are needed right after situs lookup. Starting these fetches
@@ -189,9 +150,6 @@ const AC_SECTION = "section-arapahoe-situs";
 
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
-
-/** In-page comps summary region (below levy stack); dashboard tile scrolls here. */
-const HOME_COMPS_SECTION_ID = "home-comps-section";
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
 const DEMO_SOURCE_PIN = "035457397";
@@ -675,32 +633,6 @@ export function HomeParcelAddressLookup({
     </svg>
   );
 
-  const scrollToHomeCompsSection = useCallback(() => {
-    const el = document.getElementById(HOME_COMPS_SECTION_ID);
-    el?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.requestAnimationFrame(() => {
-      document.getElementById("home-comps-heading")?.focus({ preventScroll: true });
-    });
-  }, []);
-
-  const compsScrollToSectionIcon = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="size-6"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="m19.5 8.25-7.5 7.5-7.5-7.5"
-      />
-    </svg>
-  );
-
   return (
     <section
       className="w-full min-w-0 space-y-4 sm:space-y-5"
@@ -1075,7 +1007,6 @@ export function HomeParcelAddressLookup({
                       textTriggerId="property-classification-term-first"
                       textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
                       ariaLabel="Brief definition of property classification."
-                      disabled={busy}
                       panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                     >
                       <ParcelTermPopoverPanel termId="term-property-classification" />
@@ -1121,37 +1052,6 @@ export function HomeParcelAddressLookup({
             {!busy && levyReadyForSummary && levyLoadedMeta ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
-                id="home-parcel-comps"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <InfoHintPopover
-                      textTrigger="Comps"
-                      textTriggerId="comps-term-first"
-                      textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
-                      ariaLabel="Brief definition of comps."
-                      disabled={busy}
-                      panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
-                    >
-                      <ParcelTermPopoverPanel termId="term-comps" />
-                    </InfoHintPopover>
-                  </div>
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={scrollToHomeCompsSection}
-                      className="flex min-h-[2.5rem] min-w-[2.5rem] cursor-pointer items-center justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-                      aria-label="Scroll to comps section on this page"
-                    >
-                      {compsScrollToSectionIcon}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-            {!busy && levyReadyForSummary && levyLoadedMeta ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-comps-pdf"
               >
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
@@ -1161,7 +1061,6 @@ export function HomeParcelAddressLookup({
                       textTriggerId="comps-pdf-term-first"
                       textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
                       ariaLabel="Brief definition of comps and the county PDF."
-                      disabled={busy}
                       panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                     >
                       <ParcelTermPopoverPanel termId="term-comps" />
@@ -1181,10 +1080,9 @@ export function HomeParcelAddressLookup({
                     <div className="flex justify-center">
                       <InfoHintPopover
                         ariaLabel="Comps PDF is unavailable for this property"
-                        disabled={busy}
                         iconPanelBelow
                         iconTriggerChildren={compsIcon}
-                        iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] rounded-md text-slate-600 outline-offset-2 transition-colors focus-visible:ring-offset-2"
+                        iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors focus-visible:ring-offset-2"
                       >
                         <>
                           Demo mode does not include a comps PDF. Select{" "}
@@ -1192,18 +1090,64 @@ export function HomeParcelAddressLookup({
                             Start over
                           </strong>
                           {", "}
-                          then enter your address to load your county comps grid.
+                          then enter your address to open your county comps PDF.
                         </>
                       </InfoHintPopover>
                     </div>
                   ) : (
-                    <span
-                      className="flex justify-center text-slate-600"
-                      role="img"
-                      aria-label="Comps unavailable"
+                    <div
+                      className="space-y-2"
+                      role="status"
+                      aria-live="polite"
                     >
-                      {compsIcon}
-                    </span>
+                      <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
+                        No county comps PDF from here: this PIN is missing an
+                        assessor parcel id (AIN) in the bundled parcel index.
+                      </p>
+                      <div className="flex justify-center sm:justify-start">
+                        <InfoHintPopover
+                          ariaLabel="Why there is no comps PDF link for this property"
+                          iconPanelBelow
+                          iconTriggerChildren={compsIcon}
+                          iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors focus-visible:ring-offset-2"
+                        >
+                          <>
+                            <p className="text-sm leading-relaxed text-slate-800">
+                              We build the county link from your PIN&apos;s AIN in
+                              the situs-to-PIN bundle. If that field is empty, we
+                              cannot form{" "}
+                              <span className="whitespace-nowrap">
+                                FileDownload.ashx?AIN=…
+                              </span>{" "}
+                              safely.
+                            </p>
+                            <p className="mt-3 text-sm leading-relaxed text-slate-800">
+                              Open{" "}
+                              <a
+                                href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={COUNTY_EXTERNAL_LINK_CLASS}
+                              >
+                                Arapahoe property search
+                                <span className="sr-only">
+                                  {" "}
+                                  (opens in a new tab)
+                                </span>
+                              </a>
+                              {" "}
+                              to reach your parcel and comps from the county. For
+                              how the bundle is built, see{" "}
+                              <a href="/sources" className={TERM_LINK_CLASS}>
+                                Sources
+                              </a>
+                              {" "}
+                              and the README.
+                            </p>
+                          </>
+                        </InfoHintPopover>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1223,7 +1167,6 @@ export function HomeParcelAddressLookup({
                       textTriggerId="owner-list-term-first"
                       textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
                       ariaLabel="Brief definition of owner of record."
-                      disabled={busy}
                       panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                     >
                       <ParcelTermPopoverPanel termId="term-owner-list" />
@@ -1252,7 +1195,6 @@ export function HomeParcelAddressLookup({
                               PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS
                             }
                             ariaLabel="Brief definition of actual value."
-                            disabled={busy}
                             panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                           >
                             <ParcelTermPopoverPanel termId="term-actual-value" />
@@ -1275,7 +1217,6 @@ export function HomeParcelAddressLookup({
                               PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS
                             }
                             ariaLabel="Brief definition of assessed value."
-                            disabled={busy}
                             panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                           >
                             <ParcelTermPopoverPanel termId="term-assessed-value" />
@@ -1489,210 +1430,6 @@ export function HomeParcelAddressLookup({
 
       {levyReadyForSummary ? (
         <>
-          <section
-            id={HOME_COMPS_SECTION_ID}
-            className="scroll-mt-6 space-y-4 border-t border-slate-200 pt-6 sm:scroll-mt-8 sm:pt-8"
-            aria-labelledby="home-comps-heading"
-          >
-            <h3
-              id="home-comps-heading"
-              tabIndex={-1}
-              className={DASHBOARD_SECTION_HEADING_CLASS}
-            >
-              Comps
-            </h3>
-            <div
-              className={`${ADDRESS_TILE_SURFACE_CLASS} overflow-visible border-t border-slate-200 p-0`}
-              role="region"
-              aria-label="Comps grid preview (sample values)"
-            >
-              <div
-                className={COMPS_SCROLL_WRAP_CLASS}
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                  <table className="w-max min-w-max max-w-none border-collapse text-left text-sm text-slate-900">
-                    <caption className="sr-only">
-                      Comps grid preview: sample values in the same structure as the offline
-                      parser JSON, for comparison to the county PDF. Table scrolls normally
-                      in both directions when needed.
-                    </caption>
-                    <thead>
-                      <tr className="border-b border-slate-400">
-                        <th scope="col" className={COMPS_FIELD_HEADER_CLASS}>
-                          Field
-                        </th>
-                        <th scope="col" className={COMPS_SUBJECT_HEADER_CLASS}>
-                          <InfoHintPopover
-                            textTrigger="SUBJECT"
-                            textTriggerId="comps-col-subject-def"
-                            textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} text-sm`}
-                            ariaLabel="Subject column: brief definition"
-                            panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
-                          >
-                            {novCompsDefinitionPopoverBody(
-                              novCompsGridDefinitions.columns.subject,
-                            )}
-                          </InfoHintPopover>
-                        </th>
-                        {HARDCODED_COMPS_GRID_PREVIEW.grid.columns
-                          .filter((c) => c.key !== "subject")
-                          .map((col) => {
-                            const colDef =
-                              novCompsGridDefinitions.columns[
-                                col.key as keyof typeof novCompsGridDefinitions.columns
-                              ];
-                            return (
-                              <th
-                                key={col.key}
-                                scope="col"
-                                className="min-w-[7.25rem] bg-slate-100 px-3 py-2.5 text-center text-sm font-semibold text-slate-900 sm:min-w-[8rem] sm:px-4"
-                              >
-                                <InfoHintPopover
-                                  textTrigger={col.label}
-                                  textTriggerId={`comps-col-${col.key}-def`}
-                                  textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} text-sm`}
-                                  ariaLabel={`${col.label}: brief definition`}
-                                  panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
-                                >
-                                  {novCompsDefinitionPopoverBody(colDef)}
-                                </InfoHintPopover>
-                              </th>
-                            );
-                          })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {HARDCODED_COMPS_GRID_PREVIEW.grid.canonical_row_order.map(
-                        (rowKey) => {
-                          const columnCount =
-                            HARDCODED_COMPS_GRID_PREVIEW.grid.columns.length;
-                          const rowFromGrid =
-                            HARDCODED_COMPS_GRID_PREVIEW.grid.rows[rowKey];
-                          const rowDefEntry = novCompsGridDefinitions.rows[
-                            rowKey as keyof typeof novCompsGridDefinitions.rows
-                          ] as NovCompsDefEntry | undefined;
-                          const missingRowLabelFallback = rowKey
-                            .replace(/_/g, " ")
-                            .replace(/\b\w/g, (ch) => ch.toUpperCase());
-                          const row =
-                            rowFromGrid ??
-                            ({
-                              pdf_label:
-                                rowDefEntry?.layTitle ?? missingRowLabelFallback,
-                              json_key: rowKey,
-                              logical_type: "string",
-                              cells: Array.from({ length: columnCount }, () => ({
-                                raw_text: "",
-                                parsed: null,
-                                parse_ok: false,
-                                parse_note: "missing row in preview payload",
-                              })),
-                            } as unknown as (typeof HARDCODED_COMPS_GRID_PREVIEW.grid.rows)[keyof typeof HARDCODED_COMPS_GRID_PREVIEW.grid.rows]);
-                          const isSyntheticRow = rowFromGrid == null;
-                          const rowDef: NovCompsDefEntry = rowDefEntry ?? {
-                            layTitle: row.pdf_label,
-                            layBody:
-                              "We have not added a plain-language explainer for this row yet.",
-                            official: [],
-                          };
-                          const isSectionDividerRow =
-                            !isSyntheticRow &&
-                            (row.logical_type === "section_marker" ||
-                              row.cells.every((cell) => {
-                                const trimmed = cell.raw_text.trim();
-                                return !trimmed || /^\*+$/.test(trimmed);
-                              }));
-                          const subjectCell = row.cells[0];
-                          const saleCells = row.cells.slice(1);
-                          const renderCellText = (rawText: string): string | null => {
-                            const trimmed = rawText.trim();
-                            if (!trimmed || /^\*+$/.test(trimmed)) {
-                              return null;
-                            }
-                            return rawText;
-                          };
-                          const subjectText = renderCellText(subjectCell.raw_text);
-                          if (isSectionDividerRow) {
-                            return (
-                              <tr
-                                key={rowKey}
-                                className="border-y border-slate-300 bg-slate-100"
-                              >
-                                <th
-                                  scope="row"
-                                  colSpan={HARDCODED_COMPS_GRID_PREVIEW.grid.columns.length + 1}
-                                  className="px-4 py-2 text-left"
-                                >
-                                  <InfoHintPopover
-                                    textTrigger={row.pdf_label}
-                                    textTriggerId={`comps-row-${rowKey}-def`}
-                                    textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} text-xs font-semibold tracking-wide text-slate-900 uppercase sm:text-sm`}
-                                    ariaLabel={`Definition: ${rowDef.layTitle}`}
-                                    panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
-                                  >
-                                    {novCompsDefinitionPopoverBody(rowDef)}
-                                  </InfoHintPopover>
-                                </th>
-                              </tr>
-                            );
-                          }
-                          return (
-                            <tr
-                              key={rowKey}
-                              className="border-b border-slate-200 odd:bg-white even:bg-slate-50/80"
-                            >
-                              <th scope="row" className={COMPS_FIELD_CELL_CLASS}>
-                                <InfoHintPopover
-                                  textTrigger={row.pdf_label}
-                                  textTriggerId={`comps-row-${rowKey}-def`}
-                                  textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} normal-case text-left text-xs tracking-normal sm:text-sm`}
-                                  ariaLabel={`Definition: ${rowDef.layTitle}`}
-                                  panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
-                                >
-                                  {novCompsDefinitionPopoverBody(rowDef)}
-                                </InfoHintPopover>
-                              </th>
-                              <td className={COMPS_SUBJECT_CELL_CLASS}>
-                                <div
-                                  className={`font-mono text-[0.8125rem] leading-snug sm:text-sm ${
-                                    subjectCell.parse_ok
-                                      ? "text-slate-800"
-                                      : "text-slate-500"
-                                  }`}
-                                >
-                                  {subjectText ? (
-                                    subjectText
-                                  ) : (
-                                    <span className="text-slate-400">—</span>
-                                  )}
-                                </div>
-                              </td>
-                              {saleCells.map((cell, saleIdx) => {
-                                const cellText = renderCellText(cell.raw_text);
-                                return (
-                                  <td
-                                    key={`${rowKey}-sale-${saleIdx}`}
-                                    className={`${COMPS_SALE_CELL_CLASS} ${cell.parse_ok ? "text-slate-800" : "text-slate-500"}`}
-                                  >
-                                    {cellText ? (
-                                      <span className="font-mono text-[0.8125rem] leading-snug sm:text-sm">
-                                        {cellText}
-                                      </span>
-                                    ) : (
-                                      <span className="text-slate-400">—</span>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        },
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-            </div>
-          </section>
           {showHomeAccuracyFeedbackAside ? (
             <aside aria-label="Accuracy and feedback">
               <MailContactCard

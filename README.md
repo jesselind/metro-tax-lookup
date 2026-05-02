@@ -25,7 +25,7 @@ Open `http://localhost:3000`.
 
 ## App overview
 
-- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share. The summary row includes a **Comps** control (scrolls to the in-page comps section) and **Comps PDF** (county grid file in a new tab when AIN is available). The comps section currently shows a **static JSON-shaped preview** (`src/lib/hardcodedCompsGridPreview.ts`) for layout QA; it is not tied to the Python parser at runtime.
+- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share. The summary row includes **Comps PDF** (county comps grid file in a new tab when AIN is available from the parcel index). Offline parsing of county NOV-style comps grids lives under `tools/` for QA only; it is not used at runtime.
 - Fallback path: users can add levy rows manually without PIN.
 - Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.

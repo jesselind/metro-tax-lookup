@@ -2,6 +2,8 @@
 
 Ephemeral doc for multi-agent handoff. Do not treat as product copy or `/sources` methodology.
 
+**Shipped app (2026-05):** The live UI only adds an external **Comps PDF** link when the bundled parcel row includes an **AIN** (`safeArapahoeCompsGridPdfUrl`). There is **no** in-page comps grid table. Sections below about grid UI, popovers per row, and offline JSON shape describe **tooling / future work**, not current resident-facing screens.
+
 ## Goal (original thread)
 
 Prototype extraction around **Arapahoe county-provided comps** context. The app today links the **comps grid PDF** via AIN:
