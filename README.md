@@ -25,7 +25,7 @@ Open `http://localhost:3000`.
 
 ## App overview
 
-- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share.
+- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share. The summary row includes a **Comps** control (scrolls to the in-page comps section) and **Comps PDF** (county grid file in a new tab when AIN is available). The comps section currently shows a **static JSON-shaped preview** (`src/lib/hardcodedCompsGridPreview.ts`) for layout QA; it is not tied to the Python parser at runtime.
 - Fallback path: users can add levy rows manually without PIN.
 - Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
@@ -108,7 +108,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - `tools/parse_arapahoe_nov_comps_grid.py` reads **page 2** of a Notice-of-Valuation-style PDF when it carries the six-column comps grid (subject + five sales). It uses `pdfplumber` geometry + column bands, not line-table extraction.
    - Pair with `tools/nov_comps_grid_definitions.json` for resident-facing `layTitle` / `layBody` strings plus `official` citation placeholders (county-first; UAD Appendix D called out only as formatting-discipline context).
    - Put real PDF samples under `supporting-data/_private/` (gitignored). Example default path in the script matches that layout.
-   - Example (writes JSON): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out /tmp/nov-grid.json`
+   - Example (writes JSON next to your PDF, still gitignored): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out supporting-data/_private/nov-grid-out.json`
    - Omit bundled definitions with `--skip-definitions` when you only want extracted cells.
    - Tests: `npm run test:nov-comps-parser` (also runs via `npm run build` / `prebuild`).
    - Treat JSON output as **sensitive** (parcel or address text); do not commit extracted files.

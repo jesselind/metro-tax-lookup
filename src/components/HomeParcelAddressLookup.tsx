@@ -66,6 +66,7 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import { HARDCODED_COMPS_GRID_PREVIEW } from "@/lib/hardcodedCompsGridPreview";
 import { safeArapahoeCompsGridPdfUrl } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
@@ -85,10 +86,48 @@ import {
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import novCompsGridDefinitions from "../../tools/nov_comps_grid_definitions.json";
 
 /** Wider, scrollable panel for parcel summary term popovers (label copy can run long). */
 const PARCEL_TERM_POPOVER_PANEL_CLASS =
   "max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain";
+
+type NovCompsDefEntry = {
+  layTitle: string;
+  layBody: string;
+  official: string[];
+};
+
+function novCompsDefinitionPopoverBody(def: NovCompsDefEntry) {
+  return (
+    <>
+      <p className="text-sm font-semibold text-slate-900">{def.layTitle}</p>
+      <p className="mt-2 text-xs leading-relaxed text-slate-700 sm:text-sm">
+        {def.layBody}
+      </p>
+      {def.official.length > 0 ? (
+        <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-slate-600">
+          {def.official.map((line, oi) => (
+            <li key={oi}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
+    </>
+  );
+}
+
+const COMPS_FIELD_HEADER_CLASS =
+  "w-48 min-w-[12rem] max-w-[12rem] border-r border-slate-300 bg-slate-100 px-3 py-2.5 text-left text-sm font-semibold text-slate-900 sm:px-4";
+const COMPS_SUBJECT_HEADER_CLASS =
+  "min-w-[9rem] max-w-[11rem] border-r border-slate-300 bg-slate-100 px-3 py-2.5 text-center text-sm font-semibold text-slate-900 sm:px-4";
+const COMPS_FIELD_CELL_CLASS =
+  "w-48 min-w-[12rem] max-w-[12rem] border-r border-slate-200 px-3 py-2 align-top sm:px-4";
+const COMPS_SUBJECT_CELL_CLASS =
+  "min-w-[9rem] max-w-[11rem] border-r border-slate-200 px-3 py-2 align-top sm:px-4";
+const COMPS_SALE_CELL_CLASS =
+  "min-w-[7.25rem] max-w-[12rem] whitespace-normal px-3 py-2 align-top text-xs sm:min-w-[8rem] sm:px-4 sm:text-sm";
+const COMPS_SCROLL_WRAP_CLASS =
+  "overflow-auto overscroll-contain [scrollbar-gutter:stable]";
 
 /**
  * PIN + levy-stack JSON (~41MB) are needed right after situs lookup. Starting these fetches
@@ -150,6 +189,9 @@ const AC_SECTION = "section-arapahoe-situs";
 
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
+
+/** In-page comps summary region (below levy stack); dashboard tile scrolls here. */
+const HOME_COMPS_SECTION_ID = "home-comps-section";
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
 const DEMO_SOURCE_PIN = "035457397";
@@ -632,6 +674,33 @@ export function HomeParcelAddressLookup({
       />
     </svg>
   );
+
+  const scrollToHomeCompsSection = useCallback(() => {
+    const el = document.getElementById(HOME_COMPS_SECTION_ID);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.requestAnimationFrame(() => {
+      document.getElementById("home-comps-heading")?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  const compsScrollToSectionIcon = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="size-6"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+      />
+    </svg>
+  );
+
   return (
     <section
       className="w-full min-w-0 space-y-4 sm:space-y-5"
@@ -1067,6 +1136,37 @@ export function HomeParcelAddressLookup({
                       <ParcelTermPopoverPanel termId="term-comps" />
                     </InfoHintPopover>
                   </div>
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={scrollToHomeCompsSection}
+                      className="flex min-h-[2.5rem] min-w-[2.5rem] cursor-pointer items-center justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                      aria-label="Scroll to comps section on this page"
+                    >
+                      {compsScrollToSectionIcon}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            {!busy && levyReadyForSummary && levyLoadedMeta ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
+                id="home-parcel-comps-pdf"
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <InfoHintPopover
+                      textTrigger="Comps PDF"
+                      textTriggerId="comps-pdf-term-first"
+                      textTriggerClassName={PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS}
+                      ariaLabel="Brief definition of comps and the county PDF."
+                      disabled={busy}
+                      panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                    >
+                      <ParcelTermPopoverPanel termId="term-comps" />
+                    </InfoHintPopover>
+                  </div>
                   {homeCompsGridPdfHref ? (
                     <a
                       href={homeCompsGridPdfHref}
@@ -1389,6 +1489,189 @@ export function HomeParcelAddressLookup({
 
       {levyReadyForSummary ? (
         <>
+          <section
+            id={HOME_COMPS_SECTION_ID}
+            className="scroll-mt-6 space-y-4 border-t border-slate-200 pt-6 sm:scroll-mt-8 sm:pt-8"
+            aria-labelledby="home-comps-heading"
+          >
+            <h3
+              id="home-comps-heading"
+              tabIndex={-1}
+              className={DASHBOARD_SECTION_HEADING_CLASS}
+            >
+              Comps
+            </h3>
+            <div
+              className={`${ADDRESS_TILE_SURFACE_CLASS} overflow-visible border-t border-slate-200 p-0`}
+              role="region"
+              aria-label="Comps grid preview (sample values)"
+            >
+              <div
+                className={COMPS_SCROLL_WRAP_CLASS}
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                  <table className="w-max min-w-max max-w-none border-collapse text-left text-sm text-slate-900">
+                    <caption className="sr-only">
+                      Comps grid preview: sample values in the same structure as the offline
+                      parser JSON, for comparison to the county PDF. Table scrolls normally
+                      in both directions when needed.
+                    </caption>
+                    <thead>
+                      <tr className="border-b border-slate-400">
+                        <th scope="col" className={COMPS_FIELD_HEADER_CLASS}>
+                          Field
+                        </th>
+                        <th scope="col" className={COMPS_SUBJECT_HEADER_CLASS}>
+                          <InfoHintPopover
+                            textTrigger="SUBJECT"
+                            textTriggerId="comps-col-subject-def"
+                            textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} text-sm`}
+                            ariaLabel="Subject column: brief definition"
+                            panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                          >
+                            {novCompsDefinitionPopoverBody(
+                              novCompsGridDefinitions.columns.subject,
+                            )}
+                          </InfoHintPopover>
+                        </th>
+                        {HARDCODED_COMPS_GRID_PREVIEW.grid.columns
+                          .filter((c) => c.key !== "subject")
+                          .map((col) => {
+                            const colDef =
+                              novCompsGridDefinitions.columns[
+                                col.key as keyof typeof novCompsGridDefinitions.columns
+                              ];
+                            return (
+                              <th
+                                key={col.key}
+                                scope="col"
+                                className="min-w-[7.25rem] bg-slate-100 px-3 py-2.5 text-center text-sm font-semibold text-slate-900 sm:min-w-[8rem] sm:px-4"
+                              >
+                                <InfoHintPopover
+                                  textTrigger={col.label}
+                                  textTriggerId={`comps-col-${col.key}-def`}
+                                  textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} text-sm`}
+                                  ariaLabel={`${col.label}: brief definition`}
+                                  panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                                >
+                                  {novCompsDefinitionPopoverBody(colDef)}
+                                </InfoHintPopover>
+                              </th>
+                            );
+                          })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {HARDCODED_COMPS_GRID_PREVIEW.grid.canonical_row_order.map(
+                        (rowKey) => {
+                          const row =
+                            HARDCODED_COMPS_GRID_PREVIEW.grid.rows[rowKey];
+                          const rowDefEntry = novCompsGridDefinitions.rows[
+                            rowKey as keyof typeof novCompsGridDefinitions.rows
+                          ] as NovCompsDefEntry | undefined;
+                          const rowDef: NovCompsDefEntry = rowDefEntry ?? {
+                            layTitle: row.pdf_label,
+                            layBody:
+                              "We have not added a plain-language explainer for this row yet.",
+                            official: [],
+                          };
+                          const isSectionDividerRow =
+                            row.logical_type === "section_marker" ||
+                            row.cells.every((cell) => {
+                              const trimmed = cell.raw_text.trim();
+                              return !trimmed || /^\*+$/.test(trimmed);
+                            });
+                          const subjectCell = row.cells[0];
+                          const saleCells = row.cells.slice(1);
+                          const renderCellText = (rawText: string): string | null => {
+                            const trimmed = rawText.trim();
+                            if (!trimmed || /^\*+$/.test(trimmed)) {
+                              return null;
+                            }
+                            return rawText;
+                          };
+                          const subjectText = renderCellText(subjectCell.raw_text);
+                          if (isSectionDividerRow) {
+                            return (
+                              <tr
+                                key={rowKey}
+                                className="border-y border-slate-300 bg-slate-100"
+                              >
+                                <th
+                                  scope="row"
+                                  colSpan={HARDCODED_COMPS_GRID_PREVIEW.grid.columns.length + 1}
+                                  className="px-4 py-2 text-left"
+                                >
+                                  <InfoHintPopover
+                                    textTrigger={row.pdf_label}
+                                    textTriggerId={`comps-row-${rowKey}-def`}
+                                    textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} text-xs font-semibold tracking-wide text-slate-900 uppercase sm:text-sm`}
+                                    ariaLabel={`Definition: ${rowDef.layTitle}`}
+                                    panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                                  >
+                                    {novCompsDefinitionPopoverBody(rowDef)}
+                                  </InfoHintPopover>
+                                </th>
+                              </tr>
+                            );
+                          }
+                          return (
+                            <tr
+                              key={rowKey}
+                              className="border-b border-slate-200 odd:bg-white even:bg-slate-50/80"
+                            >
+                              <th scope="row" className={COMPS_FIELD_CELL_CLASS}>
+                                <InfoHintPopover
+                                  textTrigger={row.pdf_label}
+                                  textTriggerId={`comps-row-${rowKey}-def`}
+                                  textTriggerClassName={`${PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS} normal-case text-left text-xs tracking-normal sm:text-sm`}
+                                  ariaLabel={`Definition: ${rowDef.layTitle}`}
+                                  panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                                >
+                                  {novCompsDefinitionPopoverBody(rowDef)}
+                                </InfoHintPopover>
+                              </th>
+                              <td className={COMPS_SUBJECT_CELL_CLASS}>
+                                <div
+                                  className={`font-mono text-[0.8125rem] leading-snug sm:text-sm ${
+                                    subjectCell.parse_ok
+                                      ? "text-slate-800"
+                                      : "text-slate-500"
+                                  }`}
+                                >
+                                  {subjectText ? (
+                                    subjectText
+                                  ) : (
+                                    <span className="text-slate-400">—</span>
+                                  )}
+                                </div>
+                              </td>
+                              {saleCells.map((cell, saleIdx) => {
+                                const cellText = renderCellText(cell.raw_text);
+                                return (
+                                  <td
+                                    key={`${rowKey}-sale-${saleIdx}`}
+                                    className={`${COMPS_SALE_CELL_CLASS} ${cell.parse_ok ? "text-slate-800" : "text-slate-500"}`}
+                                  >
+                                    {cellText ? (
+                                      <span className="font-mono text-[0.8125rem] leading-snug sm:text-sm">
+                                        {cellText}
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-400">—</span>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        },
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+          </section>
           {showHomeAccuracyFeedbackAside ? (
             <aside aria-label="Accuracy and feedback">
               <MailContactCard

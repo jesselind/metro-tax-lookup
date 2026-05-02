@@ -474,8 +474,8 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
                 tokens = [
                     w
                     for w in line
-                    if float(w["x0"]) >= left
-                    and float(w["x0"]) < right
+                    if ((float(w["x0"]) + float(w["x1"])) / 2.0) >= left
+                    and ((float(w["x0"]) + float(w["x1"])) / 2.0) < right
                     and float(w["x0"]) > LABEL_X_CUTOFF
                     and float(w["x0"]) < right_edge + 2
                 ]
@@ -489,6 +489,7 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
                 "logical_type": row_def.logical_type,
                 "cells": [parse_cell(raw, row_def) for raw in cells_raw],
             }
+
 
         for row in CANONICAL_ROWS:
             if row.json_key in output_rows:

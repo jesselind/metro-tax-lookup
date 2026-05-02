@@ -272,7 +272,13 @@ export function TermCompsAside() {
         a realtor packet.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The Comps tile opens the county PDF in a new tab from{" "}
+        The{" "}
+        <strong className="font-semibold text-slate-900">Comps</strong>
+        {" "}
+        tile moves you to the comps section on this page (where the grid view will live). The{" "}
+        <strong className="font-semibold text-slate-900">Comps PDF</strong>
+        {" "}
+        tile opens the county file in a new tab from{" "}
         <span className="whitespace-nowrap">parcelsearch.arapahoegov.com</span>
         . This site does not host that file. We only pass which property you matched so the right
         file loads.

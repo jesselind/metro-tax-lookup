@@ -557,7 +557,13 @@ export default function SourcesPage() {
             from Main Parcel when you rebuild the index so the levy panel can link to
             the county comps grid PDF (
             <code className={CODE_INLINE_CLASS}>FileDownload.ashx?AIN=…</code>
-            ). Nothing
+            ) through the home{" "}
+            <strong className="text-slate-900">Comps PDF</strong>
+            {" "}
+            control.{" "}
+            <strong className="text-slate-900">Comps</strong>
+            {" "}
+            scrolls to the on-page comps section (grid view is still in progress). Nothing
             is sent to our servers. Address fields are length-capped in the
             browser; bundled situs JSON is validated for expected shape after
             load before lookup runs.
