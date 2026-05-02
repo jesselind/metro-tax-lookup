@@ -23,12 +23,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-try:
-    import pdfplumber
-except ImportError:
-    print("Install dependencies: pip install -r tools/requirements.txt", file=sys.stderr)
-    raise
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = Path(__file__).resolve().parent
@@ -416,6 +410,11 @@ def find_header_line(lines: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
 
 
 def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[str, Any]:
+    try:
+        import pdfplumber
+    except ImportError:
+        print("Install dependencies: pip install -r tools/requirements.txt", file=sys.stderr)
+        raise
     with pdfplumber.open(pdf_path) as pdf:
         if len(pdf.pages) < 2:
             raise RuntimeError("Expected at least 2 pages in NOV PDF")
