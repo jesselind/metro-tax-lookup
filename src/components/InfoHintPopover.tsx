@@ -59,7 +59,7 @@ type InfoHintPopoverProps = {
 );
 
 const PANEL_BASE =
-  "absolute z-[999] w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
+  "absolute z-40 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
 
 /**
  * Toggles a small floating note; click outside or Escape closes.
@@ -142,10 +142,10 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
     <div
       className={
         isText
-          ? `relative inline-block min-w-0 max-w-full shrink leading-none ${open ? "z-[999]" : ""}`
+          ? `relative inline-block min-w-0 max-w-full shrink leading-none ${open ? "z-40" : ""}`
           : iconPanelBelow
-            ? `relative inline-flex min-w-0 max-w-full shrink-0 leading-none ${open ? "z-[999]" : ""}`
-            : `relative inline-flex shrink-0 leading-none ${open ? "z-[999]" : ""}`
+            ? `relative inline-flex min-w-0 max-w-full shrink-0 leading-none ${open ? "z-40" : ""}`
+            : `relative inline-flex shrink-0 leading-none ${open ? "z-40" : ""}`
       }
       ref={wrapRef}
     >

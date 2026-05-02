@@ -1564,11 +1564,31 @@ export function HomeParcelAddressLookup({
                     <tbody>
                       {HARDCODED_COMPS_GRID_PREVIEW.grid.canonical_row_order.map(
                         (rowKey) => {
-                          const row =
+                          const columnCount =
+                            HARDCODED_COMPS_GRID_PREVIEW.grid.columns.length;
+                          const rowFromGrid =
                             HARDCODED_COMPS_GRID_PREVIEW.grid.rows[rowKey];
                           const rowDefEntry = novCompsGridDefinitions.rows[
                             rowKey as keyof typeof novCompsGridDefinitions.rows
                           ] as NovCompsDefEntry | undefined;
+                          const missingRowLabelFallback = rowKey
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (ch) => ch.toUpperCase());
+                          const row =
+                            rowFromGrid ??
+                            ({
+                              pdf_label:
+                                rowDefEntry?.layTitle ?? missingRowLabelFallback,
+                              json_key: rowKey,
+                              logical_type: "string",
+                              cells: Array.from({ length: columnCount }, () => ({
+                                raw_text: "",
+                                parsed: null,
+                                parse_ok: false,
+                                parse_note: "missing row in preview payload",
+                              })),
+                            } as unknown as (typeof HARDCODED_COMPS_GRID_PREVIEW.grid.rows)[keyof typeof HARDCODED_COMPS_GRID_PREVIEW.grid.rows]);
+                          const isSyntheticRow = rowFromGrid == null;
                           const rowDef: NovCompsDefEntry = rowDefEntry ?? {
                             layTitle: row.pdf_label,
                             layBody:
@@ -1576,11 +1596,12 @@ export function HomeParcelAddressLookup({
                             official: [],
                           };
                           const isSectionDividerRow =
-                            row.logical_type === "section_marker" ||
-                            row.cells.every((cell) => {
-                              const trimmed = cell.raw_text.trim();
-                              return !trimmed || /^\*+$/.test(trimmed);
-                            });
+                            !isSyntheticRow &&
+                            (row.logical_type === "section_marker" ||
+                              row.cells.every((cell) => {
+                                const trimmed = cell.raw_text.trim();
+                                return !trimmed || /^\*+$/.test(trimmed);
+                              }));
                           const subjectCell = row.cells[0];
                           const saleCells = row.cells.slice(1);
                           const renderCellText = (rawText: string): string | null => {
