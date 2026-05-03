@@ -24,10 +24,8 @@ from pathlib import Path
 from typing import Any
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = Path(__file__).resolve().parent
 DEFINITIONS_PATH = TOOLS_DIR / "nov_comps_grid_definitions.json"
-DEFAULT_PDF = REPO_ROOT / "supporting-data" / "_private" / "Traditional-Notice-of-Valuation-656.pdf"
 
 MASK_RE = re.compile(r"^\*+$")
 INT_RE = re.compile(r"^-?\d+$")
@@ -566,7 +564,7 @@ def main() -> int:
             "Output can include parcel or address text from the PDF; do not commit or paste raw output."
         )
     )
-    parser.add_argument("--pdf", type=Path, default=DEFAULT_PDF, help="Input PDF path.")
+    parser.add_argument("--pdf", type=Path, required=True, help="Input PDF path.")
     parser.add_argument("--out", type=Path, default=None, help="Optional output JSON file path.")
     parser.add_argument("--indent", type=int, default=2, help="JSON indentation.")
     parser.add_argument(
