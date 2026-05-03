@@ -434,7 +434,12 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
         output_rows: dict[str, dict[str, Any]] = {}
         time_adj_seen = 0
 
-        for line in lines:
+        # Top-to-bottom pass: discover one label line per canonical row (same matching rules as before).
+        lines_by_top = sorted(lines, key=lambda ln: float(ln[0]["top"]))
+        label_events: list[tuple[float, CanonicalRow]] = []
+        seen_json_keys: set[str] = set()
+
+        for line in lines_by_top:
             row_top = float(line[0]["top"])
             if row_top <= header_top + ROW_Y_TOLERANCE:
                 continue
@@ -465,20 +470,32 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
             if row_def is None:
                 continue
 
-            if row_def.json_key in output_rows:
+            if row_def.json_key in seen_json_keys:
                 continue
+            seen_json_keys.add(row_def.json_key)
+            label_events.append((row_top, row_def))
 
+        label_events.sort(key=lambda t: t[0])
+
+        # Second pass: for each label row, take all clustered lines from this baseline down to the
+        # next recognized label baseline so wrapped cell text on following baselines is included.
+        for i, (row_top, row_def) in enumerate(label_events):
+            band_bottom = label_events[i + 1][0] if i + 1 < len(label_events) else 1e12
+            band_lines = [
+                ln for ln in lines_by_top if row_top <= float(ln[0]["top"]) < band_bottom
+            ]
             cells_raw: list[str] = []
             for left, right in bounds:
                 tokens = [
                     w
-                    for w in line
+                    for ln in band_lines
+                    for w in ln
                     if ((float(w["x0"]) + float(w["x1"])) / 2.0) >= left
                     and ((float(w["x0"]) + float(w["x1"])) / 2.0) < right
                     and float(w["x0"]) > LABEL_X_CUTOFF
                     and float(w["x0"]) < right_edge + 2
                 ]
-                tokens.sort(key=lambda w: float(w["x0"]))
+                tokens.sort(key=lambda w: (float(w["top"]), float(w["x0"])))
                 raw_text = normalize_space(" ".join(str(w["text"]) for w in tokens))
                 cells_raw.append(raw_text)
 
