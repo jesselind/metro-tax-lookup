@@ -475,8 +475,6 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
             seen_json_keys.add(row_def.json_key)
             label_events.append((row_top, row_def))
 
-        label_events.sort(key=lambda t: t[0])
-
         # Second pass: for each label row, take all clustered lines from this baseline down to the
         # next recognized label baseline so wrapped cell text on following baselines is included.
         for i, (row_top, row_def) in enumerate(label_events):
