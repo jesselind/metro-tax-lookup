@@ -1,7 +1,8 @@
 {
   "source": {
-    "pdf_path": "src/data/nov-comps-grid-fallback.json",
-    "page_index": 1
+    "pdf_path": "fallback-placeholder",
+    "page_index": 1,
+    "source_note": "Synthetic fallback for local tooling; not extracted from a PDF."
   },
   "grid": {
     "mask_sentinel_hint": "CI/offline placeholder: six columns preserved; masked row uses literal asterisk runs in raw_text like parser output.",

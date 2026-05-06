@@ -13,16 +13,39 @@
  * neighborhood group cells only.
  */
 
-import demoGridData from "@/data/nov-comps-grid-try-demo-property.json";
+import demoGridData from "../data/nov-comps-grid-try-demo-property.json";
 import definitionsBundle from "../../tools/nov_comps_grid_definitions.json";
-import type { NovCompsGridPayload } from "@/lib/novCompsGridTypes";
+import {
+  isNovCompsGridPayload,
+  parseNovCompsGridDefinitionRows,
+  type NovCompsGridPayload,
+} from "@/lib/novCompsGridTypes";
 
-const base = demoGridData as NovCompsGridPayload;
+if (!isNovCompsGridPayload(demoGridData)) {
+  throw new Error(
+    "nov-comps-grid-try-demo-property.json failed validation: expected NovCompsGridPayload (grid.columns, grid.canonical_row_order, grid.rows with cells, and optional source/definitions/limitations matching the parser output shape).",
+  );
+}
+
+const base: NovCompsGridPayload = demoGridData;
+
+function buildNovCompsGridDefinitions(
+  fromPayload: NovCompsGridPayload["definitions"] | undefined,
+  bundleRows: unknown,
+): NovCompsGridPayload["definitions"] {
+  if (fromPayload !== undefined) {
+    return fromPayload;
+  }
+  return {
+    columns: {},
+    rows: parseNovCompsGridDefinitionRows(bundleRows),
+  };
+}
 
 export const novCompsGridDemoPayload: NovCompsGridPayload = {
   ...base,
-  definitions: (base.definitions ?? {
-    columns: {},
-    rows: definitionsBundle.rows ?? {},
-  }) as NovCompsGridPayload["definitions"],
+  definitions: buildNovCompsGridDefinitions(
+    base.definitions,
+    definitionsBundle.rows,
+  ),
 };

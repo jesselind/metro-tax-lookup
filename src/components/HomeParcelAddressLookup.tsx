@@ -1076,6 +1076,7 @@ export function HomeParcelAddressLookup({
                     </InfoHintPopover>
                   </div>
                   {homeCompsGridPdfHref ? (
+                    // TODO(comps-pdf-hosted-unavailable): Revisit by 2026-09-01 or when a filed tracker issue closes — remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false in src/lib/safeExternalHref.ts once county-hosted comps PDFs (FileDownload.ashx) download reliably again. Replace this line with GitHub issue #____ when created for traceability.
                     ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
                       <div className="flex justify-center">
                         <InfoHintPopover
@@ -1122,7 +1123,7 @@ export function HomeParcelAddressLookup({
                         href={homeCompsGridPdfHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                         aria-label="Open county comps grid PDF for this property (opens in a new tab)"
                       >
                         {compsIcon}

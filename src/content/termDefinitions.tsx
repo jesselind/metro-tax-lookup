@@ -668,7 +668,7 @@ export function TermTaxEntityAside() {
  * Parcel is defined on the home dashboard Key terms only (after address flow + PIN load).
  *
  * @param showNovCompsGridRowKeyTerms — Include the four NOV comps grid row asides (they end with
- *   &quot;Back to comps grid&quot;). Use **true** only when the comps grid is on-screen (Try demo
+ *   "Back to comps grid"). Use **true** only when the comps grid is on-screen (Try demo
  *   property). Sources omits these by default because the grid is not embedded there.
  */
 export function AllTermDefinitionAsides(props?: {

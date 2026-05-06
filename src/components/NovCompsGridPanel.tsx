@@ -24,6 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
 import {
   novCompsGridRowFragmentId,
   type NovCompsGridCell,
@@ -370,9 +371,19 @@ function NovCompsGridFilled(props: NovCompsGridFilledProps) {
                       ) : null}
                       {compsKeyTerm ? (
                         <Popover.Close asChild>
-                          <a href={compsKeyTerm.href} className={POPOVER_LINK_CLASS}>
+                          <button
+                            type="button"
+                            className={`${POPOVER_LINK_CLASS} text-left`}
+                            onClick={() => {
+                              const id = compsKeyTerm.href.replace(/^#/, "");
+                              window.setTimeout(() => {
+                                window.history.replaceState(null, "", `/#${id}`);
+                                focusTermDefinitionById(id);
+                              }, 0);
+                            }}
+                          >
                             {compsKeyTerm.label}
-                          </a>
+                          </button>
                         </Popover.Close>
                       ) : null}
                     </Popover.Content>
