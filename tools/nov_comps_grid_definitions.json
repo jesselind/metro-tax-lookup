@@ -1,254 +1,222 @@
 {
-  "columns": {
-    "subject": {
-      "layTitle": "Subject column",
-      "layBody": "This column holds the parcel the notice is centered on.",
-      "official": [
-        "TODO: Anchor this label to county NOV comps grid wording (not imported from USPAP or UAD)."
-      ]
-    },
-    "sale_1": {
-      "layTitle": "Comparable sale column 1",
-      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
-      "official": [
-        "TODO: Arapahoe comparable grid methodology citation when available.",
-        "This tool is informational; comparable selection is modeled by the county schedule."
-      ]
-    },
-    "sale_2": {
-      "layTitle": "Comparable sale column 2",
-      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
-      "official": [
-        "TODO: Arapahoe comparable grid methodology citation when available.",
-        "This tool is informational; comparable selection is modeled by the county schedule."
-      ]
-    },
-    "sale_3": {
-      "layTitle": "Comparable sale column 3",
-      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
-      "official": [
-        "TODO: Arapahoe comparable grid methodology citation when available.",
-        "This tool is informational; comparable selection is modeled by the county schedule."
-      ]
-    },
-    "sale_4": {
-      "layTitle": "Comparable sale column 4",
-      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
-      "official": [
-        "TODO: Arapahoe comparable grid methodology citation when available.",
-        "This tool is informational; comparable selection is modeled by the county schedule."
-      ]
-    },
-    "sale_5": {
-      "layTitle": "Comparable sale column 5",
-      "layBody": "Comparable sale columns list properties used as modeled comparison points.",
-      "official": [
-        "TODO: Arapahoe comparable grid methodology citation when available.",
-        "This tool is informational; comparable selection is modeled by the county schedule."
-      ]
-    }
-  },
   "rows": {
     "parcel_id": {
-      "layTitle": "PIN",
-      "layBody": "The county parcel identification number as printed here (often 9 digits once formatting is trimmed). Compare to your bill or county record when verifying identity.",
+      "layTitle": "Parcel ID",
+      "layBody": "The county PIN (Parcel Identification Number) for the property.",
+      "countyWording": "PIN",
       "official": [
-        "TODO: Arapahoe PIN zero-padding rule for comps vs NOV print.",
-        "Secondary formatting discipline: Legacy UAD 2.6 Appendix D (currency and reporting strictness norms) does not redefine county PIN meanings."
+        "Arapahoe parcel record field label: \"PIN\".",
+        "In this comps grid data, Parcel ID aligns to the county PIN value."
       ]
     },
     "street_number": {
       "layTitle": "Street number",
-      "layBody": "The numeric portion of the situs street address.",
-      "official": ["TODO: Arapahoe situs formatting glossary if available."]
+      "layBody": "The house or building number from the property address.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "street_name": {
       "layTitle": "Street name",
-      "layBody": "Street name without the trailing street type suffix.",
-      "official": ["TODO: Arapahoe situs abbreviation rules when available."]
+      "layBody": "The street name without the part that tells you road type (like ST or AVE).",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "street_type": {
       "layTitle": "Street type",
-      "layBody": "County suffix like ST or CIR that follows the street name.",
-      "official": ["TODO: Arapahoe USPS-style vs internal abbreviations if published."]
+      "layBody": "The suffix on the address, such as ST, RD, or CIR.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "apt_number": {
       "layTitle": "Unit",
-      "layBody": "Unit label when tracked. Blank vs masked placeholders mean the grid does not display a unit; that is different from verifying whether a condo unit exists elsewhere.",
-      "official": ["TODO: Arapahoe unit field definition on comps extracts."]
+      "layBody": "Unit or apartment label when the county lists one. If blank, the county did not provide a unit number for that property in its comps data.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "dwelling": {
-      "layTitle": "Dwelling flag",
-      "layBody": "County-style yes or no indicator for dwelling classification.",
-      "official": ["TODO: Enumerate acceptable codes across NOV comps samples before asserting meaning."]
+      "layTitle": "Dwelling",
+      "layBody": "County section heading for facts about the building itself.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "time_adj_sale_price": {
-      "layTitle": "Time-adjusted sale price (detail block)",
-      "layBody": "Modeled comparable sale amount after the county schedules it to match the appraisal date. It is not the same concept as today's market list price.",
+      "layTitle": "Time-adjusted sale price",
+      "layBody": "The sale price of a comparable home (a home used for comparison) after the county removes concessions (seller credits or deal extras) and personal property (items like appliances or furniture), then adjusts for market changes up to the valuation date (the date the county values properties for this cycle). This puts older sales on the same dollar timeline as newer sales.",
+      "countyWording": "Time-Adjusted Sale Price is the sale price minus deductions (allowable declared personal property and concessions) then adjusted for time.",
       "official": [
-        "Secondary reporting-format discipline reference: Legacy UAD 2.6 Appendix D (currency fields). County layout still wins.",
-        "TODO: Cite county time-adjust method summary."
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"Time-Adjusted Sale Price is the sale price minus deductions (allowable declared personal property and concessions) then adjusted for time.\"",
+        "Arapahoe County Assessor, same document: \"all sales adjusted for time to the statutory appraisal date of June 30, 2024.\"",
+        "C.R.S. 39-1-104(10.2)."
       ]
     },
     "original_sale_price": {
-      "layTitle": "Contract sale price",
-      "layBody": "County reference sale amount before modeled adjustments.",
+      "layTitle": "Original sale price",
+      "layBody": "The sale amount at closing (deed or contract) before county time adjustment and other county comp-sheet adjustments.",
+      "countyWording": "Sale price recorded via deed with the Clerk & Recorder.",
       "official": [
-        "Secondary formatting reference: Legacy UAD 2.6 Appendix D (currency).",
-        "TODO: Tie wording to deed or contract terminology Arapahoe uses."
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"Original Sales Price Sale price recorded via deed with the Clerk & Recorder.\""
       ]
     },
     "concessions_and_pp": {
-      "layTitle": "Concessions (meaning uncertain)",
-      "layBody": "Often seller credits or other offsets that require adjustment versus the naked sale price.",
+      "layTitle": "Concessions and PP",
+      "layBody": "Dollars removed from a sale price for personal property (items like appliances or furniture) and concessions (seller-paid credits or other deal terms). The county removes these so it compares real estate value, not extras from the deal.",
+      "countyWording": "Concessions and PP Amount deducted from sale price for personal property and concessions.",
       "official": [
-        "TODO: Arapahoe definition for PP and concessions on this worksheet (label is ambiguous in PDF alone).",
-        "Secondary reference only: Legacy UAD 2.6 Appendix D for currency punctuation discipline."
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"Concessions and PP Amount deducted from sale price for personal property and concessions.\""
       ]
     },
     "parcel_number": {
-      "layTitle": "County parcel number",
-      "layBody": "Internal parcel-account string formatted by the county. Keep it verbatim for records calls.",
-      "official": ["TODO: Crosswalk parcel number versus PIN wording from assessor glossary."]
+      "layTitle": "Parcel number",
+      "layBody": "The county AIN (Assessor's Identification Number) for the same property.",
+      "countyWording": "AIN",
+      "official": [
+        "Arapahoe parcel record field label: \"AIN\".",
+        "In this comps grid data, Parcel number aligns to the county AIN value."
+      ]
     },
     "neighborhood": {
-      "layTitle": "Neighborhood code",
-      "layBody": "Internal neighborhood bucket for comparable pooling, usually numeric.",
-      "official": ["TODO: Map published neighborhood code glossary if permitted."]
+      "layTitle": "Neighborhood",
+      "layBody": "A county code for the local area around your property, used when picking comparison sales.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "neighborhood_group": {
       "layTitle": "Neighborhood group",
-      "layBody": "Broader roll-up grouping when narrower neighborhoods lack sales.",
-      "official": ["TODO: Describe county widening rules with a methodology cite."]
+      "layBody": "A larger county area grouping used when there are not enough sales in one smaller neighborhood code.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "luc": {
-      "layTitle": "Land use code (county)",
-      "layBody": "County grouping code for allowable land-use context inside their models.",
-      "official": ["TODO: DOLA assessor glossary or county codebook excerpt."]
+      "layTitle": "LUC",
+      "layBody": "Land Use Code (LUC): the county's category for how the property is used (for example residential, commercial, or agricultural) for valuation work.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "allocated_land_val": {
-      "layTitle": "Land allocation",
-      "layBody": "County-modeled land allocation inside the modeled value breakdown.",
-      "official": [
-        "Secondary formatting reference: Legacy UAD 2.6 Appendix D (currency).",
-        "TODO: Cite statutory or methodology note tying land-vs-improvement split."
-      ]
+      "layTitle": "Allocated land value",
+      "layBody": "The part of total value the county assigns to the land only (separate from buildings).",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "improvement_type": {
-      "layTitle": "Building type label",
-      "layBody": "High-level modeled improvement category.",
-      "official": ["TODO: Explain county improvement code book when available."]
+      "layTitle": "Improvement type",
+      "layBody": "The broad building category in county records (for example single-family home or townhome).",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "improvement_style": {
-      "layTitle": "Building style label",
-      "layBody": "More granular improvement style wording within the modeled type bucket.",
-      "official": ["TODO: Explain county coding when available."]
+      "layTitle": "Improvement style",
+      "layBody": "A more specific style label inside that category (for example ranch or two-story).",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "year_built": {
       "layTitle": "Year built",
-      "layBody": "Original construction vintage when known. Printed zero means unavailable or none for modeling.",
-      "official": ["TODO: Explain assessor sourcing for effective year."]
+      "layBody": "Year the main structure was built. A printed zero usually means unknown or not used on this row.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "remodel_year": {
       "layTitle": "Remodel year",
-      "layBody": "Major modeled remodel indicator when populated. Printed zero reads as none.",
-      "official": ["TODO: County definition of remodeled vs maintenance."]
+      "layBody": "Year of a major remodel if the county tracked one. Zero usually means none listed.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "valuation_grade": {
-      "layTitle": "Quality or condition grade",
-      "layBody": "County shorthand grade for modeled quality versus condition tiers.",
-      "official": ["TODO: Narrate grade ladders from assessor materials."]
-    },
-    "living_area": {
-      "layTitle": "Above-grade living area",
-      "layBody": "Finished living-area square footage per county appraisal rules.",
+      "layTitle": "Valuation grade",
+      "layBody": "A county quality-and-condition code for the home (materials, finish level, and overall condition). It is not a school grade. Different letters or numbers mean different quality levels in the county system.",
       "official": [
-        "TODO: Cite CRS or assessor bulletin for measured area norms.",
-        "Secondary reference: Appendix D mentions precision expectations for quantitative fields generally."
+        "Home Key terms includes resident expansion (anchor id term-nov-comps-valuation-grade); county does not publish a full grade ladder in the compsheet TASP PDF cited elsewhere.",
+        "No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."
       ]
     },
+    "living_area": {
+      "layTitle": "Living area",
+      "layBody": "Finished living space above ground, in square feet, measured by county rules for this notice.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
+    },
     "basement_garden_lvl": {
-      "layTitle": "Basement or garden level area",
-      "layBody": "County square footage bucket for partially below-grade shells.",
-      "official": ["TODO: Match county sketch instructions."]
+      "layTitle": "Basement or garden level",
+      "layBody": "Square feet of basement or partly below-ground space before splitting it into finished and unfinished areas.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "finish_bsmt_grdn_lvl": {
       "layTitle": "Finished basement or garden level",
-      "layBody": "Finished portion counted inside basement or garden stacks.",
-      "official": ["TODO: County finishing definition."]
+      "layBody": "Square footage of finished basement or garden-level living space.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "walkout_basement": {
-      "layTitle": "Walkout basement area",
-      "layBody": "Walk-out basement modeled square footage when flagged.",
-      "official": ["TODO: County breakout rules."]
+      "layTitle": "Walkout basement",
+      "layBody": "Square feet counted for a basement with a door that opens directly outside.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "attached_garage": {
-      "layTitle": "Attached garage area",
-      "layBody": "Garage modeled square footage attached to the dwelling.",
-      "official": ["TODO: County breakout rules."]
+      "layTitle": "Attached garage",
+      "layBody": "Garage space attached to the house, in square feet.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "detached_garage": {
-      "layTitle": "Detached garage area or flag",
-      "layBody": "Detached garage modeled evidence. Sometimes prints as zero-area.",
-      "official": ["TODO: Clarify modeled zero versus missing when sample varies."]
+      "layTitle": "Detached garage",
+      "layBody": "Garage space separate from the house. Zero may mean none or not modeled.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "open_porch": {
-      "layTitle": "Open porch area",
-      "layBody": "Open porch modeled footprint.",
-      "official": ["TODO: County breakout rules."]
+      "layTitle": "Open porch",
+      "layBody": "Open porch area in square feet.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "deck_terrace": {
-      "layTitle": "Deck or terrace area",
-      "layBody": "Deck modeled footprint counted for adjustments.",
-      "official": ["TODO: County breakout rules."]
+      "layTitle": "Deck or terrace",
+      "layBody": "Deck or terrace area in square feet.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "total_bath_count": {
-      "layTitle": "Bathroom count",
-      "layBody": "Composite bathroom measure; half baths sometimes print as halves.",
-      "official": ["TODO: County rounding rules."]
+      "layTitle": "Total bath count",
+      "layBody": "Total bathrooms counted by the county, with half baths shown as fractions (for example 2.5).",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "fireplaces": {
       "layTitle": "Fireplaces",
-      "layBody": "Count of modeled fireplaces influencing adjustments.",
-      "official": ["TODO: County fireplaces definition."]
+      "layBody": "Number of fireplaces counted for the model.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "second_residence": {
-      "layTitle": "Second residence flag",
-      "layBody": "County-coded second-home indicator when modeled.",
-      "official": ["TODO: Clarify CRS meaning beyond this grid."]
+      "layTitle": "Second residence",
+      "layBody": "Whether the county marks this property as a second home (not the primary home) for valuation modeling.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "regression_valuation": {
-      "layTitle": "Regression indication",
-      "layBody": "Statistical modeled indication from county regression schedule.",
-      "official": ["TODO: Cite appeals brief or methodology pamphlet."]
+      "layTitle": "Regression valuation",
+      "layBody": "A value the county calculates with a math model using many sales at once. The county compares your property's model value with each comparison property's model value and applies that difference as one single dollar adjustment.",
+      "countyWording": "Each property is assigned a regression value through Multiple Regression Analysis which indicates a market value of the property.",
+      "official": [
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"Each property is assigned a regression value through Multiple Regression Analysis which indicates a market value of the property.\"",
+        "Arapahoe County Assessor, same document: \"The difference between the subject and comparable regression values ... is calculated and applied to the comparable TASP as a lump sum adjustment to indicate a value for the subject.\""
+      ]
     },
     "valuation_label": {
-      "layTitle": "Valuation subsection",
-      "layBody": "Section heading for summarized dollars at the worksheet bottom.",
-      "official": ["TODO: Explain NOV comps footer layout."]
+      "layTitle": "Valuation",
+      "layBody": "County section heading for the dollar summary portion of the comps sheet.",
+      "official": ["No explicit row definition found in Arapahoe County TASP explainer as of 2026-05-06."]
     },
     "sale_date": {
       "layTitle": "Sale date",
-      "layBody": "County recorded sale-event date comparable uses.",
+      "layBody": "The date of the comparable sale the county is using in this column.",
+      "countyWording": "Month, day, and year of sale must be between 07/01/22 and 06/30/24. (24 Months)",
       "official": [
-        "Secondary formatting reference: Legacy UAD 2.6 Appendix D (date discipline). Conflicts defer to county print.",
-        "TODO: Clarify deed date vs closing date wording."
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"Month, day, and year of sale must be between 07/01/22 and 06/30/24. (24 Months)\""
       ]
     },
     "valuation_time_adj_sale_price": {
-      "layTitle": "Time-adjusted sale price (valuation block)",
-      "layBody": "Repeated time-adjust reference near the summarized valuation lines; treat semantics as distinct JSON key until more samples prove alignment.",
-      "official": ["TODO: Explain duplicate label meaning with screenshots or county notes."]
+      "layTitle": "Time-adjusted sale price (valuation section)",
+      "layBody": "Same meaning as time-adjusted sale price above: the sale price updated for market changes between the sale date and the valuation date.",
+      "countyWording": "Time-Adjusted Sale Price is the sale price minus deductions (allowable declared personal property and concessions) then adjusted for time.",
+      "official": [
+        "Same source and definition as time_adj_sale_price: Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026)."
+      ]
     },
     "adjusted_sale_price": {
-      "layTitle": "Adjusted comparable price",
-      "layBody": "County comparable price after modeled attribute adjustments versus the subject parcel.",
-      "official": ["TODO: Explain adjustment grid vs gross sale amounts."]
+      "layTitle": "Adjusted sale price",
+      "layBody": "A comparison home's price after time adjustment and after county dollar adjustments for differences from your home (for example size, basement area, and condition/quality code).",
+      "countyWording": "An indication of value for the subject property determined from the sale of a comparable property. The difference between the subject and comparable regression values is calculated and applied to the comparable TASP as a lump sum adjustment to indicate a value for the subject.",
+      "official": [
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"An indication of value for the subject property determined from the sale of a comparable property. The difference between the subject and comparable regression values ... is calculated and applied to the comparable TASP as a lump sum adjustment to indicate a value for the subject.\""
+      ]
     },
     "adj_mkt": {
-      "layTitle": "Adjusted market reference",
-      "layBody": "Final modeled market reconciliation cell the county labeled here. Printed blanks in sale slots still mean no additional figures on this row.",
-      "official": ["TODO: County definition relative to preceding adjustment lines."]
+      "layTitle": "ADJ MKT",
+      "layBody": "Adjusted market value. This is the county's final value indication after its comp-sheet adjustments. If a sale column is blank here, the county did not publish a value for that column on the comps sheet.",
+      "countyWording": "Weighted estimate for the subject based on the five comparable adjusted sale prices giving more weight to the most comparable sales.",
+      "official": [
+        "Arapahoe County Assessor, Comp Sheet Layout and Time Adjusted Sales Prices (2025/2026): \"Weighted estimate for the subject based on the five comparable adjusted sale prices giving more weight to the most comparable sales.\""
+      ]
     }
   }
 }

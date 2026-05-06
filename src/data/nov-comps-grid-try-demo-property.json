@@ -1,0 +1,1448 @@
+{
+  "source": {
+    "pdf_path": "Traditional-Notice-of-Valuation-656.pdf",
+    "page_index": 1
+  },
+  "grid": {
+    "mask_sentinel_hint": "Long runs of asterisks denote masked omission in county PDF grids; normalize to parsed null with masked sentinel metadata.",
+    "columns": [
+      {
+        "index": 0,
+        "key": "subject",
+        "label": "SUBJECT"
+      },
+      {
+        "index": 1,
+        "key": "sale_1",
+        "label": "SALE 1"
+      },
+      {
+        "index": 2,
+        "key": "sale_2",
+        "label": "SALE 2"
+      },
+      {
+        "index": 3,
+        "key": "sale_3",
+        "label": "SALE 3"
+      },
+      {
+        "index": 4,
+        "key": "sale_4",
+        "label": "SALE 4"
+      },
+      {
+        "index": 5,
+        "key": "sale_5",
+        "label": "SALE 5"
+      }
+    ],
+    "canonical_row_order": [
+      "parcel_id",
+      "street_number",
+      "street_name",
+      "street_type",
+      "apt_number",
+      "dwelling",
+      "time_adj_sale_price",
+      "original_sale_price",
+      "concessions_and_pp",
+      "parcel_number",
+      "neighborhood",
+      "neighborhood_group",
+      "luc",
+      "allocated_land_val",
+      "improvement_type",
+      "improvement_style",
+      "year_built",
+      "remodel_year",
+      "valuation_grade",
+      "living_area",
+      "basement_garden_lvl",
+      "finish_bsmt_grdn_lvl",
+      "walkout_basement",
+      "attached_garage",
+      "detached_garage",
+      "open_porch",
+      "deck_terrace",
+      "total_bath_count",
+      "fireplaces",
+      "second_residence",
+      "regression_valuation",
+      "valuation_label",
+      "sale_date",
+      "valuation_time_adj_sale_price",
+      "adjusted_sale_price",
+      "adj_mkt"
+    ],
+    "rows": {
+      "parcel_id": {
+        "pdf_label": "PARCEL ID",
+        "json_key": "parcel_id",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "056789012",
+            "parsed": "056789012",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "055678901012",
+            "parsed": "055678901012",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "054567890123",
+            "parsed": "054567890123",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "053456789034",
+            "parsed": "053456789034",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "052345678945",
+            "parsed": "052345678945",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "051234567890",
+            "parsed": "051234567890",
+            "parse_ok": true
+          }
+        ]
+      },
+      "street_number": {
+        "pdf_label": "STREET #",
+        "json_key": "street_number",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "824 N",
+            "parsed": "824 N",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "610 W",
+            "parsed": "610 W",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "7290 S",
+            "parsed": "7290 S",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "7185 S",
+            "parsed": "7185 S",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "7230 S",
+            "parsed": "7230 S",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "840 N",
+            "parsed": "840 N",
+            "parse_ok": true
+          }
+        ]
+      },
+      "street_name": {
+        "pdf_label": "STREET",
+        "json_key": "street_name",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "MAPLEWOOD",
+            "parsed": "MAPLEWOOD",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "MAPLEWOOD",
+            "parsed": "MAPLEWOOD",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "BROOKWAY",
+            "parsed": "BROOKWAY",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "BROOKWAY",
+            "parsed": "BROOKWAY",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "RIDGE VIEW",
+            "parsed": "RIDGE VIEW",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "MAPLEWOOD",
+            "parsed": "MAPLEWOOD",
+            "parse_ok": true
+          }
+        ]
+      },
+      "street_type": {
+        "pdf_label": "STREET TYPE",
+        "json_key": "street_type",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "CIR",
+            "parsed": "CIR",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "CIR",
+            "parsed": "CIR",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "DR",
+            "parsed": "DR",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "DR",
+            "parsed": "DR",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "CIR",
+            "parsed": "CIR",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "CIR",
+            "parsed": "CIR",
+            "parse_ok": true
+          }
+        ]
+      },
+      "apt_number": {
+        "pdf_label": "APT #",
+        "json_key": "apt_number",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          }
+        ]
+      },
+      "dwelling": {
+        "pdf_label": "DWELLING",
+        "json_key": "dwelling",
+        "logical_type": "indicator",
+        "cells": [
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "masked sentinel"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "masked sentinel"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "masked sentinel"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "masked sentinel"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "masked sentinel"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "masked sentinel"
+          }
+        ]
+      },
+      "time_adj_sale_price": {
+        "pdf_label": "Time Adj Sale Price",
+        "json_key": "time_adj_sale_price",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "512900",
+            "parsed": 512900,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "730900",
+            "parsed": 730900,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "710500",
+            "parsed": 710500,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "678900",
+            "parsed": 678900,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "561400",
+            "parsed": 561400,
+            "parse_ok": true
+          }
+        ]
+      },
+      "original_sale_price": {
+        "pdf_label": "Original Sale Price",
+        "json_key": "original_sale_price",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "498000",
+            "parsed": 498000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "725000",
+            "parsed": 725000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "725000",
+            "parsed": 725000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "640500",
+            "parsed": 640500,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "550000",
+            "parsed": 550000,
+            "parse_ok": true
+          }
+        ]
+      },
+      "concessions_and_pp": {
+        "pdf_label": "Concessions and PP",
+        "json_key": "concessions_and_pp",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "-1300",
+            "parsed": -1300,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "-5000",
+            "parsed": -5000,
+            "parse_ok": true
+          }
+        ]
+      },
+      "parcel_number": {
+        "pdf_label": "Parcel Number",
+        "json_key": "parcel_number",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "3098-22-1-03-014",
+            "parsed": "3098-22-1-03-014",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "3098-22-1-05-022",
+            "parsed": "3098-22-1-05-022",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "4088-11-3-12-008",
+            "parsed": "4088-11-3-12-008",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "4088-11-3-12-016",
+            "parsed": "4088-11-3-12-016",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "4088-11-2-08-011",
+            "parsed": "4088-11-2-08-011",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "3098-22-1-05-018",
+            "parsed": "3098-22-1-05-018",
+            "parse_ok": true
+          }
+        ]
+      },
+      "neighborhood": {
+        "pdf_label": "Neighborhood",
+        "json_key": "neighborhood",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "1182",
+            "parsed": "1182",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1182",
+            "parsed": "1182",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "415",
+            "parsed": "415",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "415",
+            "parsed": "415",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "415",
+            "parsed": "415",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1182",
+            "parsed": "1182",
+            "parse_ok": true
+          }
+        ]
+      },
+      "neighborhood_group": {
+        "pdf_label": "Neighborhood Group",
+        "json_key": "neighborhood_group",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "108432",
+            "parsed": "108432",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "108432",
+            "parsed": "108432",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "108432",
+            "parsed": "108432",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "108432",
+            "parsed": "108432",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "108432",
+            "parsed": "108432",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "108432",
+            "parsed": "108432",
+            "parse_ok": true
+          }
+        ]
+      },
+      "luc": {
+        "pdf_label": "LUC",
+        "json_key": "luc",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "1220",
+            "parsed": "1220",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1220",
+            "parsed": "1220",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1220",
+            "parsed": "1220",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1220",
+            "parsed": "1220",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1220",
+            "parsed": "1220",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1220",
+            "parsed": "1220",
+            "parse_ok": true
+          }
+        ]
+      },
+      "allocated_land_val": {
+        "pdf_label": "Allocated Land Val",
+        "json_key": "allocated_land_val",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "180000",
+            "parsed": 180000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "180000",
+            "parsed": 180000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "210000",
+            "parsed": 210000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "210000",
+            "parsed": 210000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "210000",
+            "parsed": 210000,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "180000",
+            "parsed": 180000,
+            "parse_ok": true
+          }
+        ]
+      },
+      "improvement_type": {
+        "pdf_label": "Improvement Type",
+        "json_key": "improvement_type",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "Traditional",
+            "parsed": "Traditional",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Traditional",
+            "parsed": "Traditional",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Traditional",
+            "parsed": "Traditional",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Traditional",
+            "parsed": "Traditional",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Traditional",
+            "parsed": "Traditional",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Traditional",
+            "parsed": "Traditional",
+            "parse_ok": true
+          }
+        ]
+      },
+      "improvement_style": {
+        "pdf_label": "Improvement Style",
+        "json_key": "improvement_style",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "Multi-Level",
+            "parsed": "Multi-Level",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1 Story/Ranch",
+            "parsed": "1 Story/Ranch",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Multi-Level",
+            "parsed": "Multi-Level",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Multi-Level",
+            "parsed": "Multi-Level",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "Multi-Level",
+            "parsed": "Multi-Level",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2 Story",
+            "parsed": "2 Story",
+            "parse_ok": true
+          }
+        ]
+      },
+      "year_built": {
+        "pdf_label": "Year Built",
+        "json_key": "year_built",
+        "logical_type": "year",
+        "cells": [
+          {
+            "raw_text": "1987",
+            "parsed": 1987,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1984",
+            "parsed": 1984,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1986",
+            "parsed": 1986,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1985",
+            "parsed": 1985,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1984",
+            "parsed": 1984,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1984",
+            "parsed": 1984,
+            "parse_ok": true
+          }
+        ]
+      },
+      "remodel_year": {
+        "pdf_label": "Remodel Year",
+        "json_key": "remodel_year",
+        "logical_type": "year",
+        "cells": [
+          {
+            "raw_text": "2014",
+            "parsed": 2014,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "year 0 treated as missing"
+          },
+          {
+            "raw_text": "2008",
+            "parsed": 2008,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2016",
+            "parsed": 2016,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2014",
+            "parsed": 2014,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "year 0 treated as missing"
+          }
+        ]
+      },
+      "valuation_grade": {
+        "pdf_label": "Valuation Grade",
+        "json_key": "valuation_grade",
+        "logical_type": "string",
+        "cells": [
+          {
+            "raw_text": "C",
+            "parsed": "C",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "C",
+            "parsed": "C",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "C",
+            "parsed": "C",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "C",
+            "parsed": "C",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "C",
+            "parsed": "C",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "C",
+            "parsed": "C",
+            "parse_ok": true
+          }
+        ]
+      },
+      "living_area": {
+        "pdf_label": "Living Area",
+        "json_key": "living_area",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "851",
+            "parsed": 851,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "837",
+            "parsed": 837,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "926",
+            "parsed": 926,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "956",
+            "parsed": 956,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1119",
+            "parsed": 1119,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1203",
+            "parsed": 1203,
+            "parse_ok": true
+          }
+        ]
+      },
+      "basement_garden_lvl": {
+        "pdf_label": "Basement/Garden lvl",
+        "json_key": "basement_garden_lvl",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "851",
+            "parsed": 851,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "640",
+            "parsed": 640,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "880",
+            "parsed": 880,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "390",
+            "parsed": 390,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1119",
+            "parsed": 1119,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "655",
+            "parsed": 655,
+            "parse_ok": true
+          }
+        ]
+      },
+      "finish_bsmt_grdn_lvl": {
+        "pdf_label": "Finish Bsmt/Grdn lvl",
+        "json_key": "finish_bsmt_grdn_lvl",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "399",
+            "parsed": 399,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "640",
+            "parsed": 640,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "718",
+            "parsed": 718,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "390",
+            "parsed": 390,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "504",
+            "parsed": 504,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "524",
+            "parsed": 524,
+            "parse_ok": true
+          }
+        ]
+      },
+      "walkout_basement": {
+        "pdf_label": "Walkout Basement",
+        "json_key": "walkout_basement",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          }
+        ]
+      },
+      "attached_garage": {
+        "pdf_label": "Attached Garage",
+        "json_key": "attached_garage",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "399",
+            "parsed": 399,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "418",
+            "parsed": 418,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "440",
+            "parsed": 440,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "440",
+            "parsed": 440,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "480",
+            "parsed": 480,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "399",
+            "parsed": 399,
+            "parse_ok": true
+          }
+        ]
+      },
+      "detached_garage": {
+        "pdf_label": "Detached Garage",
+        "json_key": "detached_garage",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          }
+        ]
+      },
+      "open_porch": {
+        "pdf_label": "Open Porch",
+        "json_key": "open_porch",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "54",
+            "parsed": 54,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "83",
+            "parsed": 83,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "341",
+            "parsed": 341,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "104",
+            "parsed": 104,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "88",
+            "parsed": 88,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "288",
+            "parsed": 288,
+            "parse_ok": true
+          }
+        ]
+      },
+      "deck_terrace": {
+        "pdf_label": "Deck/Terrace",
+        "json_key": "deck_terrace",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "80",
+            "parsed": 80,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "144",
+            "parsed": 144,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "453",
+            "parsed": 453,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "250",
+            "parsed": 250,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "330",
+            "parsed": 330,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "287",
+            "parsed": 287,
+            "parse_ok": true
+          }
+        ]
+      },
+      "total_bath_count": {
+        "pdf_label": "Total Bath Count",
+        "json_key": "total_bath_count",
+        "logical_type": "number",
+        "cells": [
+          {
+            "raw_text": "2",
+            "parsed": 2.0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2",
+            "parsed": 2.0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2",
+            "parsed": 2.0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2",
+            "parsed": 2.0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2",
+            "parsed": 2.0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "2",
+            "parsed": 2.0,
+            "parse_ok": true
+          }
+        ]
+      },
+      "fireplaces": {
+        "pdf_label": "Fireplaces",
+        "json_key": "fireplaces",
+        "logical_type": "integer",
+        "cells": [
+          {
+            "raw_text": "1",
+            "parsed": 1,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1",
+            "parsed": 1,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1",
+            "parsed": 1,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1",
+            "parsed": 1,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1",
+            "parsed": 1,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "1",
+            "parsed": 1,
+            "parse_ok": true
+          }
+        ]
+      },
+      "second_residence": {
+        "pdf_label": "2nd Residence",
+        "json_key": "second_residence",
+        "logical_type": "indicator",
+        "cells": [
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "0",
+            "parsed": 0,
+            "parse_ok": true
+          }
+        ]
+      },
+      "regression_valuation": {
+        "pdf_label": "Regression Valuation",
+        "json_key": "regression_valuation",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "527028",
+            "parsed": 527028,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "508023",
+            "parsed": 508023,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "682606",
+            "parsed": 682606,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "661912",
+            "parsed": 661912,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "667435",
+            "parsed": 667435,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "549841",
+            "parsed": 549841,
+            "parse_ok": true
+          }
+        ]
+      },
+      "valuation_label": {
+        "pdf_label": "VALUATION",
+        "json_key": "valuation_label",
+        "logical_type": "section_marker",
+        "cells": [
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          }
+        ]
+      },
+      "sale_date": {
+        "pdf_label": "SALE DATE",
+        "json_key": "sale_date",
+        "logical_type": "date",
+        "cells": [
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "8/18/2022",
+            "parsed": "2022-08-18",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "4/15/2024",
+            "parsed": "2024-04-15",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "7/8/2022",
+            "parsed": "2022-07-08",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "10/10/2022",
+            "parsed": "2022-10-10",
+            "parse_ok": true
+          },
+          {
+            "raw_text": "8/17/2022",
+            "parsed": "2022-08-17",
+            "parse_ok": true
+          }
+        ]
+      },
+      "valuation_time_adj_sale_price": {
+        "pdf_label": "Time Adj Sale Price",
+        "json_key": "valuation_time_adj_sale_price",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "512,900",
+            "parsed": 512900,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "730,900",
+            "parsed": 730900,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "710,500",
+            "parsed": 710500,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "678,900",
+            "parsed": 678900,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "561,400",
+            "parsed": 561400,
+            "parse_ok": true
+          }
+        ]
+      },
+      "adjusted_sale_price": {
+        "pdf_label": "Adjusted Sale Price",
+        "json_key": "adjusted_sale_price",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "531,905",
+            "parsed": 531905,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "575,322",
+            "parsed": 575322,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "575,616",
+            "parsed": 575616,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "538,493",
+            "parsed": 538493,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "538,587",
+            "parsed": 538587,
+            "parse_ok": true
+          }
+        ]
+      },
+      "adj_mkt": {
+        "pdf_label": "ADJ MKT $",
+        "json_key": "adj_mkt",
+        "logical_type": "money_usd",
+        "cells": [
+          {
+            "raw_text": "551,854",
+            "parsed": 551854,
+            "parse_ok": true
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          }
+        ]
+      }
+    }
+  },
+  "limitations": [
+    "Parser targets NOV page 2 six-column layout (subject + sale 1..5).",
+    "Line-based table extraction is not used; parser relies on text geometry and x-bands.",
+    "County print format wins when it diverges from strict UAD-style formatting.",
+    "This tooling is informational, not appraisal software; USPAP and UAD are cited for discipline and language care, not for claiming compliance."
+  ]
+}

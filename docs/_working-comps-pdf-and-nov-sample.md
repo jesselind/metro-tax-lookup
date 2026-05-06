@@ -2,7 +2,7 @@
 
 Ephemeral doc for multi-agent handoff. Do not treat as product copy or `/sources` methodology.
 
-**Shipped app (2026-05):** The live UI only adds an external **Comps PDF** link when the bundled parcel row includes an **AIN** (`safeArapahoeCompsGridPdfUrl`). There is **no** in-page comps grid table. Sections below about grid UI, popovers per row, and offline JSON shape describe **tooling / future work**, not current resident-facing screens.
+**Shipped app (2026-05):** The live UI adds an external **Comps PDF** link when the bundled parcel row includes an **AIN** (`safeArapahoeCompsGridPdfUrl`). After a levy load, **Try demo property** loads an in-page **Comps grid** (`NovCompsGridPanel`) from committed **`src/data/nov-comps-grid-try-demo-property.json`** (parser-shape demo; redacted sample copy). **`supporting-data/_private/nov-grid-out.json`** is **not imported by Next.js**. It holds **local parser output**: if missing before `npm run dev` / `npm run build`, `tools/ensure_nov_grid_for_build.mjs` seeds it from **`src/data/nov-comps-grid-fallback.json`** only so scripts and tooling can keep writing the same predictable path on disk (see README and `src/lib/novCompsGridSamplePayload.ts`).
 
 ## Goal (original thread)
 
@@ -15,22 +15,51 @@ Prototype extraction around **Arapahoe county-provided comps** context. The app 
 ## Sample on disk (local only)
 
 - Path: `supporting-data/_private/Traditional-Notice-of-Valuation-656.pdf` (entire `supporting-data/_private/` directory is gitignored)
-- **This is a Notice of Valuation (NOV)**. Page 1 is the typical NOV/appeal worksheet shell; **page 2 embeds a wide comps grid** (subject column plus five sale columns). That is still **not the same artifact** as the county **`FileDownload.ashx` comps grid export**, but it is a useful **layout surrogate** until that export is available again.
+- **This is a Notice of Valuation (NOV)**. Page 1 is the typical NOV/appeal worksheet shell; **page 2 embeds a wide comps grid** (on the local sample: **one subject column plus five sale columns**). Other notices or the separate **`FileDownload.ashx`** comps export may use **a different number of sale columns**; treat column count as **data-driven**, not fixed. The NOV PDF is still **not the same artifact** as `FileDownload.ashx`, but it is a useful **layout surrogate** until that export is available again.
 - **Privacy:** contains PII. Keep under `supporting-data/_private/` (gitignored; see `.gitignore`). If Git ever tracked it, `.gitignore` alone will not remove it from history or index.
 - **Chat / doc hygiene:** do not paste full grids with addresses or parcel numbers into issues, PRs, or permanent docs. Keep raw dumps local; this file records **structure and methodology only**.
 
+## Dashboard comps grid + parser output contract
+
+**Parser output JSON:** **`supporting-data/_private/nov-grid-out.json`** (from `tools/parse_arapahoe_nov_comps_grid.py` or hand edits) stays the **reference shape for the parser and tooling**. The **bundled dashboard** consumes **`src/data/nov-comps-grid-try-demo-property.json`** (Try demo property only) until you deliberately wire broader imports later. **`ensure_nov_grid_for_build`** copies **`nov-comps-grid-fallback.json`** to `nov-grid-out.json` **only when missing**, so offline runs always have **one predictable path** on disk; the **Next.js bundle never imports** `nov-grid-out.json`. Parser output keeps the **same JSON shape** conceptually; cell/column **counts** may vary by document.
+
+**Placement:** Main **dashboard**, immediately **before** the Give feedback card. Levy tiles and the comps grid are **equally important** in the flow.
+
+**Presentation:**
+
+- **Static** mirror of what the county printed for this notice cycle (no sort, filter, or row hide that would change meaning vs the PDF). Wrong or misleading views are a bigger risk than a dense table. **Primary interactions:** scrolling (horizontal + vertical scrollport for sticky header); row-label **Radix Popover** term help where definitions exist.
+- **Pinned columns:** TanStack column pinning for the label column plus the first data column, inside the same scrollport as sticky `thead` (see `NovCompsGridPanel` layout checklist).
+- **Do not** recreate PDF **asterisk band** separators as UI chrome; use normal typography and spacing.
+
+**Rows and columns:**
+
+- Render **like-for-like** from JSON. **Never omit a row** the payload includes. **Cells:** if the modeled value is empty, show **nothing**; if the county/source string is an em dash (or other literal punctuation), show **that character**—do not substitute decorative dashes or placeholders unless the JSON already encodes them.
+- **Column count is not fixed:** render **one `<th>` / `<td>` per entry** in `grid.columns` (subject first, then each sale column in PDF order). The local sample has **six** columns total (1 subject + 5 sales); other parcels or PDF classes may differ.
+
+**Definitions (row labels only):**
+
+- The **first column** holds PDF row labels that apply across subject + comps. Where **`tools/nov_comps_grid_definitions.json`** supplies both `layTitle` and `layBody` for that row key, the label is a **Radix Popover** trigger (not `InfoHintPopover`). **No popover** if there is no definition. **Column headers** (`SUBJECT`, `SALE n`) are **not** a v1 definition surface.
+- **Source of truth for shipped copy:** **`tools/nov_comps_grid_definitions.json`** (merged by the parser and by the sample loader when the grid JSON has no definitions block). This working doc is brainstorming only; fix it when it disagrees with that file.
+
+**Copy / empty states:**
+
+- Section heading: **Comps grid**; when the grid renders, a **short intro line** states provenance (county notice / linked comps PDF) and that underlined labels open explanations.
+- If there is **no comps grid payload** for the parcel/session, show a **compact placeholder card** (e.g. no comps grid found). Initial development can use **sample JSON**; implement the fallback so non-grid cases can be tested later.
+
+**Out of scope for this branch:** print stylesheet for the grid.
+
 ## NOV page 2 - comps grid shape (no values)
 
-Human-reviewed structure for the local sample (do not treat as universal until we have 2-3 NOVs and at least one `FileDownload.ashx` PDF):
+Human-reviewed structure for the **local sample** (do not treat counts as universal until we have 2-3 NOVs and at least one `FileDownload.ashx` PDF):
 
-- **Columns:** 6 total - **1 subject** + **5 sales** (`SALE 1` ... `SALE 5`), each introduced by a column header row.
+- **Columns (sample):** **1 subject** + **5 sales** (`SALE 1` ... `SALE 5`), each introduced by a column header row (**6** data columns). Elsewhere: **UI and parsers must tolerate a variable number of sale columns** per document.
 - **Rows:** long vertical attribute list (parcel id, street tokens, dwelling flags, neighborhood codes, land/improvement detail, adjustments, then valuation block with sale dates and price series).
-- **Masked cells:** asterisk runs (`*************`) appear as placeholders in several attribute rows (treat as null/omitted visually, not as literal strings if possible).
+- **Masked cells:** asterisk runs (`*************`) appear in `raw_text` for several rows; the **Comps grid UI** prints `raw_text` in each column slot so columns stay aligned (same as the PDF band). Typed `parsed` may still be null per parser rules.
 - **`pdfplumber` note:** line-based `extract_tables()` returned **0** tables on page 2 for this file, despite the grid reading as a table to humans. Expect to use **text + geometry** (word clustering), explicit anchors (`SUBJECT`, `SALE n`), or **text** table settings - not ruled-line detection alone.
 
 ## Canonical comps grid row labels (v1 must-map)
 
-These are the **row keys** shared across the six columns on NOV page 2 for the local sample.
+These are the **row keys** shared across **all data columns** (subject + each sale column) on NOV page 2 for the local sample.
 
 ### USPAP-aligned rigor (engineering interpretation)
 
@@ -75,18 +104,12 @@ For **this project**, we only need Fannie/UAD materials in one narrow way: **har
 
 ### Resident-facing explanations (product requirement)
 
-**Requirement:** every comps grid row label needs a **plain-language** explanation for everyday readers (not a popover requirement - popover is an implementation detail).
-
-Recommended UX patterns (pick one per platform constraints):
-
-- **Row label + (i) hint** using `InfoHintPopover` (already used elsewhere in the app) for dense grids.
-- **"What these rows mean"** drawer/accordion above the grid for mobile (reduces 40 tiny targets).
-- **Glossary page** deep link ("Open full glossary") when definitions run long.
+**Requirement:** row labels that have definitions need **plain-language** copy for everyday readers. **Dashboard:** surface that copy through **Radix Popover** on eligible first-column labels (see **Dashboard comps grid + parser output contract**).
 
 Copy rules:
 
-- Prefer **what it means on your notice** and **why it can differ** across columns (subject vs each sale).
-- If a label is ambiguous (`PP`, dense codes), say so plainly and point to **county** documentation when we have it; do not fake precision.
+- Prefer **what it means on your notice** in everyday words. Row meanings usually apply the same way in every column; call out subject vs sale only when it truly matters.
+- If a label is ambiguous (`PP`, dense codes), explain it plainly without inventing county precision; optional TODO in `official` for a future county cite.
 
 Minimum per cell (each intersection of row label x column):
 
@@ -94,7 +117,7 @@ Minimum per cell (each intersection of row label x column):
 - `parsed` (typed value or null)
 - `parse_ok` (boolean) + short `parse_note` when false (examples: masked sentinel, ambiguous date, currency symbols, wrapped tokens)
 
-**Comparable set expectations for this grid:** 1 subject + up to 5 sales. Parser should emit `sale_slots = 5` even when a column is empty, so downstream code can reason about missing comps without reshaping.
+**Comparable set expectations:** Always **one subject** column in `grid.columns[0]` for NOV page-2 style grids encountered so far; **one or more sale** columns follow in header order. **Sale count is not a global constant** across parcels or PDF types. The **v1 sample parser** may still emit **placeholder slots** for empty sale columns on that sample only; the **dashboard table** simply renders **whatever columns exist** in the JSON. Do not assume "always five comps" in UI layout tests.
 
 **Duplicates in the PDF wording:** `Time Adj Sale Price` appears twice in the human reading (once in the attribute stack, again near the valuation block). Keep **two distinct JSON keys** (`time_adj_sale_price` vs `valuation_time_adj_sale_price`) until a second NOV proves a stable single meaning.
 
@@ -137,7 +160,7 @@ Minimum per cell (each intersection of row label x column):
 | `Adjusted Sale Price` | `adjusted_sale_price` | Money (USD) | `number` USD | |
 | `ADJ MKT $` | `adj_mkt` | Money (USD) | `number` USD | |
 
-**Header rows (also must-map as metadata, not row keys):** `SUBJECT`, `SALE 1` ... `SALE 5` (store as `grid.columns[]` in order).
+**Header rows (also must-map as metadata, not row keys):** `SUBJECT`, then `SALE 1` ... `SALE N` as printed (store as `grid.columns[]` in left-to-right order; **N** varies by document).
 
 ### Definition contract (dual track: official + lay)
 
@@ -205,7 +228,7 @@ This table is the **`definition.layTitle` + `definition.layBody` seed** for each
 
 ## Field mapping guidance (what "full map" means here)
 
-For the **comps grid**, "full map" for v1 means: **every row label in the canonical list above**, plus the **six column headers**, with six cells each (masked cells normalized to null).
+For the **comps grid**, "full map" for v1 means: **every row label in the canonical list above**, plus **`grid.columns` as emitted** (one header slot per data column), with **one cell object per row per column** (masked cells normalized to null). Cell count per row **equals** `len(grid.columns)`.
 
 For the rest of the NOV (page 1 and narrative blocks), mapping remains **tiered** unless a product decision explicitly needs more:
 
@@ -233,7 +256,7 @@ Still **needs a direct sample** of the export. When available, duplicate the met
 | JSON key (proposed) | User/job meaning | Tier | Where it lives in PDF (anchor) | Extraction approach | Validation |
 | --- | --- | --- | --- | --- | --- |
 | `parcel.pin` | Subject PIN | A | Row `PARCEL ID` / `Parcel Number` under `SUBJECT` | Column slice under `SUBJECT` header | 9-digit normalization; match input PIN when run as harness |
-| `comps[]` | Up to five adjusted sales | B | Columns `SALE 1` ... `SALE 5` | Parse per-column vertical stacks; align rows by shared attribute labels | Row count parity across columns; dates parse; money fields parse |
+| `comps[]` | Adjusted sales (variable count) | B | Columns `SALE 1` ... `SALE N` as printed | Parse per-column vertical stacks; align rows by shared attribute labels | Row count parity across columns; dates parse; money fields parse |
 | `comps[].saleDate` | Contract / deed date (as printed) | B | Rows under `SALE DATE` | Same | Date sanity vs stated tax year context |
 | `comps[].adjustedSalePrice` | County-adjusted price column | B | Near `Adjusted Sale Price` / `ADJ MKT $` region | Same | Monotonic checks only if business rule exists; else cite-only |
 
@@ -243,8 +266,8 @@ Focus on **page 2 grid** if the near-term goal is comps extraction practice.
 
 | JSON key (proposed) | User/job meaning | Tier | Where it lives in PDF (anchor) | Extraction approach | Validation |
 | --- | --- | --- | --- | --- | --- |
-| `grid.columns` | Column order + labels | A | `SUBJECT`, `SALE 1` ... `SALE 5` | Header row scan | Exactly six columns in order |
-| `grid.rows` | All canonical row labels | A | See **Canonical comps grid row labels** | Align cells into six x-bands keyed by left label | Every canonical label present (or explicitly null row with reason) |
+| `grid.columns` | Column order + labels | A | `SUBJECT`, then `SALE 1` ... `SALE N` | Header row scan | Order matches PDF; length is **1 + N** sale columns (**N** is document-specific) |
+| `grid.rows` | All canonical row labels | A | See **Canonical comps grid row labels** | Align cells into **one x-band per** `grid.columns` entry, keyed by left label | Every canonical label present (or explicitly null row with reason) |
 | `grid.cells[label][column]` | Typed cell objects | A | Intersection of label row and column band | Geometry-first; parse per canonical table | Always includes `raw_text`, `parsed`, `parse_ok`, optional `parse_note` |
 | `grid.maskSentinel` | Asterisk placeholder runs | C | Cells that visually read blank | Treat `*************` as null | Ensure not confused with literal `0` |
 
@@ -312,6 +335,7 @@ If `extract_tables()` is slow or hangs on a page, skip that page or bound work (
 | 2026-04-30 | Human review | Read NOV page 2 structure | Confirms **six-column** comps matrix: subject + five sales; long attribute list; masked cells present | Implement page-2 parser using anchors + x-band column slicing; validate on additional NOV PDFs and on `FileDownload.ashx` export when site returns |
 | 2026-04-30 | Human review | NOV page 2 comps grid screenshot (local sample; not pasted here) | **Layout:** row labels plus subject + five sale columns; shaded label/subject strip; asterisk bands under headers and around **DWELLING** / **VALUATION** (supports geometry-first parse, not line-table extraction). **Parsing:** valuation block money may include **comma thousands separators**; upper attribute rows often plain integers; **`0` is common real data** (do not treat as null by default). **`ADJ MKT $`** can be **filled only under subject** with sale cells visually blank; still emit **six slots** with empty `raw_text` / null `parsed` as needed. **Risk:** long street names can be **multi-token or clipped** in a column; join tokens per x-band, do not assume one word per cell. | Fold these rules into parser tests and money normalizers; re-check after first real `FileDownload.ashx` PDF |
 | 2026-05-01 | Agent | Implemented `tools/parse_arapahoe_nov_comps_grid.py` + `tools/nov_comps_grid_definitions.json` + unit tests | Offline extractor emits six slots per canonical row (`grid.rows`), merges dual-track definitions when JSON present, documents masked asterisk handling + limitations in payload. Validated locally against `_private` NOV sample (counts only in repo notes). | Compare layout against real `FileDownload.ashx` comps PDF when county export is available; widen parcel-id normalization only after corpus proof |
+| 2026-05-03 | Human + doc pass | Product + UI contract for in-page grid | **Variable sale column count** (do not hard-code five sales in UI). Dashboard: static `<table>`, bounded **overflow** scrollport with sticky `thead`; **Comps grid** heading only, before Give feedback; **Radix `Popover`** (not `InfoHintPopover`) on eligible **first-column** row labels; **TanStack column pinning** for row labels plus **first data column**; placeholder card when there is **no payload**; print out of scope this branch. | Implement dashboard section + wire definitions; extend parser when second PDF proves different **N** |
 
 ## Cleanup
 

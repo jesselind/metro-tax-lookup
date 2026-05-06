@@ -25,7 +25,7 @@ Open `http://localhost:3000`.
 
 ## App overview
 
-- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share. The summary row includes **Comps PDF** (county comps grid file in a new tab when AIN is available from the parcel index). Offline parsing of county NOV-style comps grids lives under `tools/` for QA only; it is not used at runtime.
+- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share. The summary row includes **Comps PDF** (county comps grid PDF when AIN is available from the parcel index). While county-hosted downloads are unreliable, the control explains that and offers an optional direct county link (`ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE` in `src/lib/safeExternalHref.ts` toggles this). **Comps grid**: only **Try demo property** loads the in-page grid today, from committed **`src/data/nov-comps-grid-try-demo-property.json`** (fork of sample parser output with fictional parcel id, street #, street name, parcel number, neighborhood, and neighborhood group cells only). Optional in-app per-parcel grid wiring is not shipped yet. **`supporting-data/_private/nov-grid-out.json`** is a conventional **parser output / sanity-check** path (gitignored): write extractions there when you want a stable file to diff or hand off; the app bundle never imports it, and we may not ship that exact pattern again. **`npm run test:nov-comps-parser`** exercises the parser module with unit tests (it does not require that JSON file). Refresh the committed Try-demo JSON separately when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI. **`npm run dev`** / **`npm run build`** run `tools/ensure_nov_grid_for_build.mjs`, which seeds **`supporting-data/_private/nov-grid-out.json`** from **`src/data/nov-comps-grid-fallback.json`** only when the file is missing (minimal shape for optional local tooling). Row help text merges from `tools/nov_comps_grid_definitions.json` when the grid JSON has no definitions block. Some row popovers link to **Key terms** on the home page for longer code context (LUC, improvement type/style, valuation grade).
 - Fallback path: users can add levy rows manually without PIN.
 - Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
@@ -106,9 +106,9 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 6. Optional NOV comps grid extractor (experimental tooling; not used by the Next.js bundle):
    - `tools/parse_arapahoe_nov_comps_grid.py` reads **page 2** of a Notice-of-Valuation-style PDF when it carries the six-column comps grid (subject + five sales). It uses `pdfplumber` geometry + column bands, not line-table extraction.
-   - Pair with `tools/nov_comps_grid_definitions.json` for resident-facing `layTitle` / `layBody` strings plus `official` citation placeholders (county-first; UAD Appendix D called out only as formatting-discipline context).
+   - Pair with `tools/nov_comps_grid_definitions.json` for plain-language `layTitle` / `layBody` row help plus optional `official` notes for maintainers (county citations when available).
    - Put real PDF samples under `supporting-data/_private/` (gitignored). Example default path in the script matches that layout.
-   - Example (writes JSON next to your PDF, still gitignored): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out supporting-data/_private/nov-grid-out.json`
+   - Example (writes JSON for local runs and **parser tests**; gitignored): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out supporting-data/_private/nov-grid-out.json`
    - Omit bundled definitions with `--skip-definitions` when you only want extracted cells.
    - Tests: `npm run test:nov-comps-parser` (also runs via `npm run build` / `prebuild`).
    - Treat JSON output as **sensitive** (parcel or address text); do not commit extracted files.

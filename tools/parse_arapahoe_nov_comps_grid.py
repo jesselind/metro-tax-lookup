@@ -321,16 +321,13 @@ def merge_definitions_optional(payload: dict[str, Any], bundle: dict[str, Any]) 
 
 def definitions_coverage_guard(bundle: dict[str, Any]) -> None:
     rows = bundle.get("rows") or {}
-    cols = bundle.get("columns") or {}
     missing_rows = [
         row.json_key for row in CANONICAL_ROWS if row.json_key not in rows
     ]
-    required_cols = ["subject"] + [f"sale_{idx}" for idx in range(1, 6)]
-    missing_cols = [key for key in required_cols if key not in cols]
-    if missing_rows or missing_cols:
+    if missing_rows:
         raise RuntimeError(
-            "Definition bundle is missing rows or columns: "
-            f"missing_rows={missing_rows}; missing_cols={missing_cols}"
+            "Definition bundle is missing row entries: "
+            f"missing_rows={missing_rows}"
         )
 
 

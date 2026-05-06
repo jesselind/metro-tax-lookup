@@ -46,6 +46,13 @@ export function safeArapahoeLevyAspxUrl(
 }
 
 /**
+ * When true, the home "Comps PDF" control explains that county-hosted download
+ * may fail before navigating. Flip to false once FileDownload.ashx comps PDFs
+ * are reliably available again from the county dashboard.
+ */
+export const ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE = true;
+
+/**
  * County comps grid PDF download (AIN from Main Parcel export).
  * https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=…
  */

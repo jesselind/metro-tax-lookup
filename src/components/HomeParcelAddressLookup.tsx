@@ -17,11 +17,16 @@ import {
   type LevyStackVisualizationProps,
 } from "@/components/LevyStackVisualization";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
+import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelTermPopoverPanel } from "@/content/termDefinitionBodies";
 import {
   TermActualValueAside,
   TermAssessedValueAside,
   TermCompsAside,
+  TermNovCompsImprovementStyleAside,
+  TermNovCompsImprovementTypeAside,
+  TermNovCompsLucAside,
+  TermNovCompsValuationGradeAside,
   TermLevyAside,
   TermPropertyClassificationAside,
   TermLgIdAside,
@@ -66,7 +71,11 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
-import { safeArapahoeCompsGridPdfUrl } from "@/lib/safeExternalHref";
+import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
+import {
+  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE,
+  safeArapahoeCompsGridPdfUrl,
+} from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -1067,15 +1076,58 @@ export function HomeParcelAddressLookup({
                     </InfoHintPopover>
                   </div>
                   {homeCompsGridPdfHref ? (
-                    <a
-                      href={homeCompsGridPdfHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-                      aria-label="Open county comps grid PDF for this property (opens in a new tab)"
-                    >
-                      {compsIcon}
-                    </a>
+                    ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+                      <div className="flex justify-center">
+                        <InfoHintPopover
+                          ariaLabel="County-hosted comps PDF may be unavailable while files are updated"
+                          iconPanelBelow
+                          iconTriggerChildren={compsIcon}
+                          panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
+                          iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        >
+                          <div className="text-sm leading-relaxed text-slate-800">
+                            <p>
+                              The county is updating files while notices and
+                              valuations go out. The hosted comps PDF may not
+                              download, and the county site sometimes shows{" "}
+                              <span className="font-medium text-slate-900">
+                                File not found
+                              </span>
+                              . That message comes from the county server, not
+                              from this site.
+                            </p>
+                            <p className="mt-2">
+                              If you still want to try, use the link below. It
+                              opens the county PDF in a new tab.
+                            </p>
+                            <p className="mt-3">
+                              <a
+                                href={homeCompsGridPdfHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={COUNTY_EXTERNAL_LINK_CLASS}
+                              >
+                                Try opening the county PDF anyway
+                                <span className="sr-only">
+                                  {" "}
+                                  (opens in a new tab)
+                                </span>
+                              </a>
+                            </p>
+                          </div>
+                        </InfoHintPopover>
+                      </div>
+                    ) : (
+                      <a
+                        href={homeCompsGridPdfHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex cursor-pointer justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        aria-label="Open county comps grid PDF for this property (opens in a new tab)"
+                      >
+                        {compsIcon}
+                      </a>
+                    )
                   ) : isDemoMode ? (
                     <div className="flex justify-center">
                       <InfoHintPopover
@@ -1430,6 +1482,9 @@ export function HomeParcelAddressLookup({
 
       {levyReadyForSummary ? (
         <>
+          {isDemoMode ? (
+            <NovCompsGridPanel payload={novCompsGridDemoPayload} />
+          ) : null}
           {showHomeAccuracyFeedbackAside ? (
             <aside aria-label="Accuracy and feedback">
               <MailContactCard
@@ -1452,10 +1507,18 @@ export function HomeParcelAddressLookup({
               Key terms
             </h3>
             <div className="mt-4 space-y-4">
-              {/* Alphabetical by title (Actual value, Assessed value, Comps, …) */}
+              {/* Roughly glossary order; comps grid rows follow TermCompsAside */}
               <TermActualValueAside />
               <TermAssessedValueAside />
               <TermCompsAside />
+              {isDemoMode ? (
+                <>
+                  <TermNovCompsImprovementTypeAside />
+                  <TermNovCompsImprovementStyleAside />
+                  <TermNovCompsLucAside />
+                  <TermNovCompsValuationGradeAside />
+                </>
+              ) : null}
               <TermLevyAside />
               <TermLgIdAside />
               <TermMillsAside />
