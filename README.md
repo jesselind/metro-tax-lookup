@@ -25,7 +25,18 @@ Open `http://localhost:3000`.
 
 ## App overview
 
-- Main route `/`: address to PIN lookup from bundled JSON, then levy stack and metro share.
+- Main route `/`: address-to-PIN lookup from bundled JSON, then levy stack and metro share.
+
+- **Comps PDF:** The summary row offers **Comps PDF** (county comps grid PDF when AIN is available from the parcel index). County-hosted downloads can be unreliable; the control explains that and may offer an optional direct county link. Toggle **`ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE`** in **`src/lib/safeExternalHref.ts`** to switch that behavior.
+
+- **Demo comps grid:** Only **Try demo property** loads the in-page grid today, from **`src/data/nov-comps-grid-try-demo-property.json`** (fork of sample parser output with fictional parcel id, street #, street name, parcel number, neighborhood, and neighborhood group cells only). In-app per-parcel grid wiring is not shipped yet.
+
+- **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
+
+- **Tests and dev/build:** **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run ci:test:nov-comps-parser`** is the same command for CI pipelines (Python required). **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+
+- **Row help and Key terms:** Row help merges from **`tools/nov_comps_grid_definitions.json`** when the grid JSON has no definitions block. Some row popovers link to **Key terms** on the home page for longer code context (LUC, improvement type/style, valuation grade).
+
 - Fallback path: users can add levy rows manually without PIN.
 - Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
@@ -57,6 +68,8 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 ## Regenerating data (full pipeline)
 
 1. Create Python env and install deps:
+
+   Offline `tools/*.py` scripts expect **Python 3.10+** (for example union types like `str | None` and `collections.abc` typing patterns).
 
    ```bash
    python3 -m venv .venv
@@ -101,6 +114,15 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`
    - `tools/enrich_district_json_county_geoids.py` — reads that JSON and optional Census GDB under `supporting-data/`
    - `tools/export_special_district_directory.py` — Colorado **dlall** GIS extract under `supporting-data/dlall/` (`dlall.dbf`)
+
+6. Optional NOV comps grid extractor (experimental tooling; not used by the Next.js bundle):
+   - `tools/parse_arapahoe_nov_comps_grid.py` reads **page 2** of a Notice-of-Valuation-style PDF when it carries the six-column comps grid (subject + five sales). It uses `pdfplumber` geometry + column bands, not line-table extraction.
+   - Pair with `tools/nov_comps_grid_definitions.json` for plain-language `layTitle` / `layBody` row help plus optional `official` notes for maintainers (county citations when available).
+   - Put real PDF samples under `supporting-data/_private/` (gitignored). Example default path in the script matches that layout.
+   - Example (writes JSON for local runs and **parser tests**; gitignored): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out supporting-data/_private/nov-grid-out.json`
+   - Omit bundled definitions with `--skip-definitions` when you only want extracted cells.
+   - Tests: `npm run test:nov-comps-parser` or `npm run ci:test:nov-comps-parser` (not part of `prebuild`; run in CI or locally when changing the parser).
+   - Treat JSON output as **sensitive** (parcel or address text); do not commit extracted files.
 
 ## Contributor notes
 

@@ -18,6 +18,7 @@ import {
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
   ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF,
   ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF,
+  ARAPAHOE_COMP_SHEET_PDF_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import type { LevyDataFile } from "@/lib/levyTypes";
@@ -557,7 +558,59 @@ export default function SourcesPage() {
             from Main Parcel when you rebuild the index so the levy panel can link to
             the county comps grid PDF (
             <code className={CODE_INLINE_CLASS}>FileDownload.ashx?AIN=…</code>
-            ). Nothing
+            ) through the home{" "}
+            <strong className="text-slate-900">Comps PDF</strong>
+            {" "}
+            control. The in-page{" "}
+            <strong className="text-slate-900">Comps grid</strong>
+            {" "}
+            table matches the offline NOV parser output shape. Until per-parcel
+            data is wired on the home dashboard, the grid preview appears only for{" "}
+            <strong className="text-slate-900">Try demo property</strong>, using
+            committed demo JSON (
+            <code className={CODE_INLINE_CLASS}>
+              src/data/nov-comps-grid-try-demo-property.json
+            </code>
+            ), a fork of sample parser output with fictional parcel id, street #, street name, parcel
+            number, neighborhood, and neighborhood group cells only. Regenerate that fork when the
+            sample PDF changes. The conventional parser output path{" "}
+            <code className={CODE_INLINE_CLASS}>
+              supporting-data/_private/nov-grid-out.json
+            </code>
+            {" "}
+            is gitignored and used when you run the extractor locally; a minimal placeholder may be
+            copied there at build time when the file is absent. When the grid file does not embed its own definitions block, row labels can link to short resident-facing definitions merged from{" "}
+            <code className={CODE_INLINE_CLASS}>tools/nov_comps_grid_definitions.json</code>
+            . Those definitions are grounded in the county&apos;s comp sheet explainer (
+            <a
+              href={ARAPAHOE_COMP_SHEET_PDF_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={TOOL_ANCHOR}
+            >
+              Comp Sheet Layout and Time Adjusted Sales Prices
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            ). Definitions stay in plain language for residents while the{" "}
+            <code className={CODE_INLINE_CLASS}>official</code>
+            {" "}
+            notes preserve county citation text for maintainers.
+            {" "}
+            A few rows (for example land use code, improvement type or style, and valuation grade) link
+            from the small popover on <strong className="text-slate-900">Try demo property</strong> (when
+            the comps grid is visible) to matching{" "}
+            <Link href="/#term-nov-comps-luc" className={TOOL_ANCHOR}>
+              Key terms on the home page
+            </Link>
+            {" "}
+            (for example LUC) with longer context and, where the state publishes them, code examples.
+            Choose{" "}
+            <strong className="text-slate-900">Try demo property</strong>
+            {" "}
+            before following those anchors; cold links skip to ids that render only after that demo
+            path loads levy data on the home page.
+            {" "}
+            Nothing
             is sent to our servers. Address fields are length-capped in the
             browser; bundled situs JSON is validated for expected shape after
             load before lookup runs.

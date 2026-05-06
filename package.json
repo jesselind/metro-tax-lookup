@@ -1,19 +1,24 @@
 {
   "name": "metro-tax-lookup",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
+    "predev": "node tools/ensure_nov_grid_for_build.mjs",
     "dev": "next dev",
     "validate:levy-explainer": "node tools/validate_levy_explainer_entries.mjs",
-    "prebuild": "npm run validate:levy-explainer",
+    "prebuild": "node tools/ensure_nov_grid_for_build.mjs && npm run validate:levy-explainer",
+    "ci:test:nov-comps-parser": "npm run test:nov-comps-parser",
     "build": "next build",
     "build:arapahoe-index": "python3 tools/build_arapahoe_parcel_levy_index.py",
     "build:district-directory": "python3 tools/build_district_directory_from_lg_export.py",
+    "test:nov-comps-parser": "python3 -m unittest discover -s tools -p test_parse_arapahoe_nov_comps_grid.py -q",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-popover": "^1.1.15",
+    "@tanstack/react-table": "^8.21.3",
     "next": "16.2.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"

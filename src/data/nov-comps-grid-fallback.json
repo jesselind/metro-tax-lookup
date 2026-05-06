@@ -1,0 +1,136 @@
+{
+  "source": {
+    "pdf_path": "fallback-placeholder",
+    "page_index": 1,
+    "source_note": "Synthetic fallback for local tooling; not extracted from a PDF."
+  },
+  "grid": {
+    "mask_sentinel_hint": "CI/offline placeholder: six columns preserved; masked row uses literal asterisk runs in raw_text like parser output.",
+    "columns": [
+      { "index": 0, "key": "subject", "label": "SUBJECT" },
+      { "index": 1, "key": "sale_1", "label": "SALE 1" },
+      { "index": 2, "key": "sale_2", "label": "SALE 2" },
+      { "index": 3, "key": "sale_3", "label": "SALE 3" },
+      { "index": 4, "key": "sale_4", "label": "SALE 4" },
+      { "index": 5, "key": "sale_5", "label": "SALE 5" }
+    ],
+    "canonical_row_order": [
+      "parcel_id",
+      "street_number",
+      "valuation_label",
+      "adj_mkt"
+    ],
+    "rows": {
+      "parcel_id": {
+        "pdf_label": "PARCEL ID",
+        "json_key": "parcel_id",
+        "logical_type": "string",
+        "cells": [
+          { "raw_text": "000000000", "parsed": "000000000", "parse_ok": true },
+          { "raw_text": "111111111", "parsed": "111111111", "parse_ok": true },
+          { "raw_text": "222222222", "parsed": "222222222", "parse_ok": true },
+          { "raw_text": "333333333", "parsed": "333333333", "parse_ok": true },
+          { "raw_text": "444444444", "parsed": "444444444", "parse_ok": true },
+          { "raw_text": "555555555", "parsed": "555555555", "parse_ok": true }
+        ]
+      },
+      "street_number": {
+        "pdf_label": "STREET #",
+        "json_key": "street_number",
+        "logical_type": "string",
+        "cells": [
+          { "raw_text": "1", "parsed": "1", "parse_ok": true },
+          { "raw_text": "2", "parsed": "2", "parse_ok": true },
+          { "raw_text": "3", "parsed": "3", "parse_ok": true },
+          { "raw_text": "4", "parsed": "4", "parse_ok": true },
+          { "raw_text": "5", "parsed": "5", "parse_ok": true },
+          { "raw_text": "6", "parsed": "6", "parse_ok": true }
+        ]
+      },
+      "valuation_label": {
+        "pdf_label": "VALUATION",
+        "json_key": "valuation_label",
+        "logical_type": "section_marker",
+        "cells": [
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          },
+          {
+            "raw_text": "*************",
+            "parsed": null,
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
+          }
+        ]
+      },
+      "adj_mkt": {
+        "pdf_label": "ADJ MKT $",
+        "json_key": "adj_mkt",
+        "logical_type": "money_usd",
+        "cells": [
+          { "raw_text": "100", "parsed": 100, "parse_ok": true },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          },
+          {
+            "raw_text": "",
+            "parsed": null,
+            "parse_ok": false,
+            "parse_note": "blank cell"
+          }
+        ]
+      }
+    }
+  },
+  "limitations": [
+    "Placeholder grid for builds without supporting-data/_private/nov-grid-out.json."
+  ]
+}
