@@ -270,43 +270,43 @@
       "dwelling": {
         "pdf_label": "DWELLING",
         "json_key": "dwelling",
-        "logical_type": "indicator",
+        "logical_type": "section_marker",
         "cells": [
           {
             "raw_text": "*************",
             "parsed": null,
-            "parse_ok": false,
-            "parse_note": "masked sentinel"
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
           },
           {
             "raw_text": "*************",
             "parsed": null,
-            "parse_ok": false,
-            "parse_note": "masked sentinel"
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
           },
           {
             "raw_text": "*************",
             "parsed": null,
-            "parse_ok": false,
-            "parse_note": "masked sentinel"
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
           },
           {
             "raw_text": "*************",
             "parsed": null,
-            "parse_ok": false,
-            "parse_note": "masked sentinel"
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
           },
           {
             "raw_text": "*************",
             "parsed": null,
-            "parse_ok": false,
-            "parse_note": "masked sentinel"
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
           },
           {
             "raw_text": "*************",
             "parsed": null,
-            "parse_ok": false,
-            "parse_note": "masked sentinel"
+            "parse_ok": true,
+            "parse_note": "masked section placeholder"
           }
         ]
       },

@@ -18,7 +18,7 @@ import {
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
   ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF,
   ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF,
-  COMP_SHEET_PDF_URL,
+  ARAPAHOE_COMP_SHEET_PDF_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import type { LevyDataFile } from "@/lib/levyTypes";
@@ -583,7 +583,7 @@ export default function SourcesPage() {
             <code className={CODE_INLINE_CLASS}>tools/nov_comps_grid_definitions.json</code>
             . Those definitions are grounded in the county&apos;s comp sheet explainer (
             <a
-              href={COMP_SHEET_PDF_URL}
+              href={ARAPAHOE_COMP_SHEET_PDF_URL}
               target="_blank"
               rel="noopener noreferrer"
               className={TOOL_ANCHOR}

@@ -1167,7 +1167,11 @@ export function HomeParcelAddressLookup({
                           <>
                             <p className="text-sm leading-relaxed text-slate-800">
                               We build the county link from your PIN&apos;s AIN in
-                              the situs-to-PIN bundle. If that field is empty, we
+                              the bundled{" "}
+                              <span className="font-mono text-xs sm:text-sm">
+                                arapahoe-pin-to-tag.json
+                              </span>
+                              . If that field is empty, we
                               cannot form{" "}
                               <span className="whitespace-nowrap">
                                 FileDownload.ashx?AIN=…
@@ -1194,8 +1198,7 @@ export function HomeParcelAddressLookup({
                               <a href="/sources" className={TERM_LINK_CLASS}>
                                 Sources
                               </a>
-                              {" "}
-                              and the README.
+                              .
                             </p>
                           </>
                         </InfoHintPopover>

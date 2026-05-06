@@ -28,7 +28,7 @@ export const ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF =
   "https://files.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/Mill%20Levy%20Public%20Information%20Form.pdf";
 
 /** County comps sheet layout explainer PDF (NOV comps grid column context). */
-export const COMP_SHEET_PDF_URL =
+export const ARAPAHOE_COMP_SHEET_PDF_URL =
   "https://files.arapahoeco.gov/Assessor/Sales%20Reports/Compsheet%20Layout%20and%20Time%20Adjusted%20Sales%20Prices.pdf";
 
 export const ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB =

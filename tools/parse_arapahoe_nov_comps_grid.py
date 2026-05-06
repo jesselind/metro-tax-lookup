@@ -60,7 +60,7 @@ CANONICAL_ROWS: list[CanonicalRow] = [
     CanonicalRow("STREET", "street_name", LOGICAL_STRING),
     CanonicalRow("STREET TYPE", "street_type", LOGICAL_STRING),
     CanonicalRow("APT #", "apt_number", LOGICAL_STRING),
-    CanonicalRow("DWELLING", "dwelling", LOGICAL_INDICATOR),
+    CanonicalRow("DWELLING", "dwelling", LOGICAL_SECTION),
     CanonicalRow("Time Adj Sale Price", "time_adj_sale_price", LOGICAL_MONEY),
     CanonicalRow("Original Sale Price", "original_sale_price", LOGICAL_MONEY),
     CanonicalRow("Concessions and PP", "concessions_and_pp", LOGICAL_MONEY),

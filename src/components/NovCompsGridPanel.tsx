@@ -23,6 +23,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent,
 } from "react";
 import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
 import {
@@ -489,6 +490,34 @@ function NovCompsGridFilled(props: NovCompsGridFilledProps) {
     setScrollFadeRight(canScrollX && scrollLeft + clientWidth < scrollWidth - epsilon);
   }, []);
 
+  const handleScrollRegionKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const step = Math.round(el.clientWidth * 0.5) || 48;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        el.scrollBy({ left: -step, behavior: "smooth" });
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        el.scrollBy({ left: step, behavior: "smooth" });
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else if (event.key === "End") {
+        event.preventDefault();
+        el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
+      } else if (event.key === "PageUp") {
+        event.preventDefault();
+        el.scrollBy({ left: -el.clientWidth, behavior: "smooth" });
+      } else if (event.key === "PageDown") {
+        event.preventDefault();
+        el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
+      }
+    },
+    [],
+  );
+
   useLayoutEffect(() => {
     updateColumnSizing();
     updateHorizontalScrollFades();
@@ -524,8 +553,12 @@ function NovCompsGridFilled(props: NovCompsGridFilledProps) {
         <div className="relative">
           <div
             ref={scrollRef}
-            className={TABLE_SCROLLPORT}
+            role="region"
+            tabIndex={0}
+            aria-label="Comparable sales worksheet table. Use arrow keys, Page Up, Page Down, Home, or End to scroll horizontally when columns extend past the screen."
+            className={`${TABLE_SCROLLPORT} outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2`}
             onScroll={updateHorizontalScrollFades}
+            onKeyDown={handleScrollRegionKeyDown}
           >
           <table className={TABLE_CLASS}>
             <caption className="sr-only">

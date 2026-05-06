@@ -211,8 +211,21 @@ export function isNovCompsGridPayload(
     return false;
   }
   if (!isRecord(grid.rows)) return false;
-  for (const key of Object.keys(grid.rows)) {
-    if (!isNovCompsGridRowBlock(grid.rows[key])) return false;
+  const rowsRecord = grid.rows;
+  const colCount = grid.columns.length;
+
+  for (const orderedKey of grid.canonical_row_order) {
+    if (!Object.prototype.hasOwnProperty.call(rowsRecord, orderedKey)) {
+      return false;
+    }
+  }
+
+  for (const key of Object.keys(rowsRecord)) {
+    const rowVal = rowsRecord[key];
+    if (!isNovCompsGridRowBlock(rowVal)) return false;
+    const row = rowVal as NovCompsGridRowBlock;
+    if (row.json_key !== key) return false;
+    if (row.cells.length !== colCount) return false;
   }
   return true;
 }

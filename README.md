@@ -33,7 +33,7 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (same ensure script, levy explainer validation, then parser tests) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run ci:test:nov-comps-parser`** is the same command for CI pipelines (Python required). **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
 
 - **Row help and Key terms:** Row help merges from **`tools/nov_comps_grid_definitions.json`** when the grid JSON has no definitions block. Some row popovers link to **Key terms** on the home page for longer code context (LUC, improvement type/style, valuation grade).
 
@@ -121,7 +121,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - Put real PDF samples under `supporting-data/_private/` (gitignored). Example default path in the script matches that layout.
    - Example (writes JSON for local runs and **parser tests**; gitignored): `source .venv/bin/activate && python3 tools/parse_arapahoe_nov_comps_grid.py --pdf supporting-data/_private/<your-file>.pdf --out supporting-data/_private/nov-grid-out.json`
    - Omit bundled definitions with `--skip-definitions` when you only want extracted cells.
-   - Tests: `npm run test:nov-comps-parser` (also runs via `npm run build` / `prebuild`).
+   - Tests: `npm run test:nov-comps-parser` or `npm run ci:test:nov-comps-parser` (not part of `prebuild`; run in CI or locally when changing the parser).
    - Treat JSON output as **sensitive** (parcel or address text); do not commit extracted files.
 
 ## Contributor notes
