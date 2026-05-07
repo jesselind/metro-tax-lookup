@@ -429,7 +429,7 @@ function NovCompsGridMobileCards({
         const rowHeaderId = novCompsGridRowFragmentId(compsRow.rowKey);
         if (compsRow.isSectionRow) {
           return (
-            <li key={compsRow.rowKey} className="scroll-mt-24 sm:scroll-mt-28">
+            <li key={compsRow.rowKey} className="scroll-mt-24">
               <h3
                 id={rowHeaderId}
                 className="rounded-lg border border-slate-200 bg-slate-200 px-3 py-2.5 text-sm font-semibold uppercase tracking-wide text-slate-800"
@@ -440,7 +440,7 @@ function NovCompsGridMobileCards({
           );
         }
         return (
-          <li key={compsRow.rowKey} className="scroll-mt-24 sm:scroll-mt-28">
+          <li key={compsRow.rowKey} className="scroll-mt-24">
             <article
               className={`overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm ${compsRow.isLastThreeRows ? "font-semibold text-slate-900" : ""}`}
               aria-labelledby={rowHeaderId}
