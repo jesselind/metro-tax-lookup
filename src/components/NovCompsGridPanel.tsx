@@ -184,8 +184,23 @@ function useMinWidthSm(): boolean {
   return useSyncExternalStore(subscribeMinSm, getMinSmSnapshot, getMinSmServerSnapshot);
 }
 
+/** Safe segment for mobile `dt` ids; keeps ids HTML-friendly and stable vs parser column keys. */
+function sanitizeColumnKeyForMobileDtIds(columnKey: string): string {
+  const lower = columnKey.toLowerCase();
+  const dashed = lower.replace(/[^a-z0-9_-]/g, "-");
+  const collapsed = dashed.replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+  if (collapsed.length === 0) {
+    return "c";
+  }
+  if (/^\d/.test(collapsed)) {
+    return `c-${collapsed}`;
+  }
+  return collapsed;
+}
+
 function mobileFieldColumnDtId(rowKey: string, columnKey: string) {
-  return `${novCompsGridRowFragmentId(rowKey)}-f-${columnKey}`;
+  const sanitizedKey = sanitizeColumnKeyForMobileDtIds(columnKey);
+  return `${novCompsGridRowFragmentId(rowKey)}-f-${sanitizedKey}`;
 }
 
 function padCells(cells: NovCompsGridCell[], colCount: number): NovCompsGridCell[] {
