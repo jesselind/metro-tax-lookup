@@ -245,3 +245,13 @@ export function novCompsGridRowFragmentId(rowKey: string): string {
   const safe = slug.length > 0 ? slug : "_";
   return `${PREFIX}${safe}`;
 }
+
+/** Stable `id` for comps grid column headers (`headers` linkage, mobile `dt`); same slug rules as row fragments. */
+export function novCompsGridColumnHeaderId(columnKey: string): string {
+  const PREFIX = "nov-comps-col-";
+  const trimmed = columnKey.trim();
+  const hyphenated = trimmed.replace(/\s+/g, "-");
+  const slug = hyphenated.replace(/[^A-Za-z0-9\-_.:]/g, "");
+  const safe = slug.length > 0 ? slug : "_";
+  return `${PREFIX}${safe}`;
+}

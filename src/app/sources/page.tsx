@@ -564,7 +564,11 @@ export default function SourcesPage() {
             control. The in-page{" "}
             <strong className="text-slate-900">Comps grid</strong>
             {" "}
-            table matches the offline NOV parser output shape. Until per-parcel
+            table matches the offline NOV parser output shape. On the home demo, the section title
+            is an underlined control that opens a short worksheet summary (the same pattern as
+            underlined field names in the table); on smaller screens, the same data appears as
+            a scrollable list of field cards, each showing that row&apos;s value for your property
+            alongside each comparable sale, instead of the wide worksheet table. Until per-parcel
             data is wired on the home dashboard, the grid preview appears only for{" "}
             <strong className="text-slate-900">Try demo property</strong>, using
             committed demo JSON (
