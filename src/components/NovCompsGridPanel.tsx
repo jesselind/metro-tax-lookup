@@ -478,6 +478,7 @@ function NovCompsGridMobileCards({
                     >
                       <dt id={dtId} className="text-sm font-semibold text-slate-600">
                         <span className="text-slate-800">{plainLanguageColumnLabel(col.key)}</span>
+                        {" "}
                         <span className="ml-1 font-normal normal-case text-slate-500">
                           ({col.label})
                         </span>
