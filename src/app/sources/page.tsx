@@ -561,7 +561,10 @@ export default function SourcesPage() {
             ) through the home{" "}
             <strong className="text-slate-900">Comps PDF</strong>
             {" "}
-            control. The in-page{" "}
+            control. That county download often returns{" "}
+            <strong className="text-slate-900">File not found</strong>
+            {" "}
+            from the county server. The in-page{" "}
             <strong className="text-slate-900">Comps grid</strong>
             {" "}
             table matches the offline NOV parser output shape. On the home demo, the section title

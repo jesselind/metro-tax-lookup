@@ -46,9 +46,9 @@ export function safeArapahoeLevyAspxUrl(
 }
 
 /**
- * When true, the home "Comps PDF" control explains that county-hosted download
- * may fail before navigating. Flip to false once FileDownload.ashx comps PDFs
- * are reliably available again from the county dashboard.
+ * When true, the home "Comps PDF" control explains that the county-hosted
+ * FileDownload.ashx download often fails. Flip to false once that URL works
+ * again or the county documents a replacement public comps PDF path.
  */
 export const ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE = true;
 

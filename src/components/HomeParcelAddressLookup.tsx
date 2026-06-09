@@ -1076,11 +1076,11 @@ export function HomeParcelAddressLookup({
                     </InfoHintPopover>
                   </div>
                   {homeCompsGridPdfHref ? (
-                    // TODO(comps-pdf-hosted-unavailable): Revisit by 2026-09-01 or when a filed tracker issue closes — remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false in src/lib/safeExternalHref.ts once county-hosted comps PDFs (FileDownload.ashx) download reliably again. Replace this line with GitHub issue #____ when created for traceability.
+                    // TODO(comps-pdf-hosted-unavailable): Remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false in src/lib/safeExternalHref.ts once county-hosted comps PDFs (FileDownload.ashx) download reliably again or the county documents a new public URL.
                     ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
                       <div className="flex justify-center">
                         <InfoHintPopover
-                          ariaLabel="County-hosted comps PDF may be unavailable while files are updated"
+                          ariaLabel="County comps PDF is unavailable at this link"
                           iconPanelBelow
                           iconTriggerChildren={compsIcon}
                           panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
@@ -1088,18 +1088,14 @@ export function HomeParcelAddressLookup({
                         >
                           <div className="text-sm leading-relaxed text-slate-800">
                             <p>
-                              The county is updating files while notices and
-                              valuations go out. The hosted comps PDF may not
-                              download, and the county site sometimes shows{" "}
+                              County comps PDFs that used to download from this
+                              link are no longer available. The county site may
+                              show{" "}
                               <span className="font-medium text-slate-900">
                                 File not found
                               </span>
-                              . That message comes from the county server, not
-                              from this site.
-                            </p>
-                            <p className="mt-2">
-                              If you still want to try, use the link below. It
-                              opens the county PDF in a new tab.
+                              {" "}
+                              — that comes from the county server, not this site.
                             </p>
                             <p className="mt-3">
                               <a
