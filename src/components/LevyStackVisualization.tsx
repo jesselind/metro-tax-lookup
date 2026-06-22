@@ -33,7 +33,10 @@ import {
 } from "@/lib/specialDistrictMatch";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
-import { safeArapahoeLevyAspxUrl } from "@/lib/safeExternalHref";
+import {
+  safeArapahoeLevyAspxUrl,
+  safeArapahoeParcelRecordUrl,
+} from "@/lib/safeExternalHref";
 import {
   applyParcelTemplateMills,
   displayAuthorityForLevyLine,
@@ -249,6 +252,8 @@ export type LevyStackVisualizationProps = {
     tagId: string;
     tagShortDescr: string;
     levyAspxUrl: string;
+    /** Main Parcel AIN when present (county PPINum.aspx parcel record). */
+    ain?: string | null;
     /** When the PIN load included assessed value, tiles show estimated levy dollars. */
     parcelValues?: ParcelValuesFromExport | null;
   } | null;
@@ -306,6 +311,11 @@ export function LevyStackVisualization({
         ? safeArapahoeLevyAspxUrl(loadedParcelMeta.levyAspxUrl)
         : null,
     [loadedParcelMeta],
+  );
+
+  const safeParcelRecordHref = useMemo(
+    () => safeArapahoeParcelRecordUrl(loadedParcelMeta?.ain),
+    [loadedParcelMeta?.ain],
   );
 
   /** Positive assessed value only; omit so we never show a fake $0 from missing data. */
@@ -973,54 +983,79 @@ export function LevyStackVisualization({
 
       {loadedParcelMeta && lines.length > 0 ? (
         <div
-          className="space-y-2 rounded-lg border border-slate-200/90 bg-slate-50/90 px-3 py-2.5 text-xs leading-snug text-slate-600 shadow-sm sm:px-4 sm:text-sm"
+          className="space-y-3 rounded-lg border border-slate-200/90 bg-slate-50/90 px-4 py-4 shadow-sm sm:px-5"
           role="region"
-          aria-label="Loaded property and county links"
+          aria-labelledby="levy-county-compare-heading"
         >
-          <p>
-            <span className="sr-only">Property match. </span>
-            Matched{" "}
-            <a
-              id="pin-term-first"
-              href={pinTermHref}
-              className={TERM_LINK_CLASS}
+          <div>
+            <h4
+              id="levy-county-compare-heading"
+              className="text-sm font-semibold text-slate-900 sm:text-base"
             >
-              PIN
-            </a>{" "}
-            <span className="font-mono font-semibold tabular-nums text-slate-800">
-              {loadedParcelMeta.pin}
-            </span>
-            {" · "}
-            <a
-              id="tag-term-first"
-              href={tagTermHref}
-              className={TERM_LINK_CLASS}
-            >
-              TAG ID
-            </a>{" "}
-            <span className="font-mono font-semibold tabular-nums text-slate-800">
-              {loadedParcelMeta.tagId}
-            </span>
-            {" · "}
-            Taxing authority{" "}
-            <span className="font-medium text-slate-700">
-              {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}
-            </span>
-            {" · "}
-            {safeLevyTableHref ? (
+              See how the county displays your data
+            </h4>
+            <p className="mt-1.5 text-xs leading-snug text-slate-600 sm:text-sm">
+              <span className="sr-only">Property match. </span>
+              Matched{" "}
               <a
-                href={safeLevyTableHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={COUNTY_EXTERNAL_LINK_CLASS}
+                id="pin-term-first"
+                href={pinTermHref}
+                className={TERM_LINK_CLASS}
               >
-                Open county levy table
-              </a>
-            ) : (
-              <span className="text-slate-600">Open county levy table</span>
-            )}
-          </p>
-          <p>
+                PIN
+              </a>{" "}
+              <span className="font-mono font-semibold tabular-nums text-slate-800">
+                {loadedParcelMeta.pin}
+              </span>
+              {" · "}
+              <a
+                id="tag-term-first"
+                href={tagTermHref}
+                className={TERM_LINK_CLASS}
+              >
+                TAG ID
+              </a>{" "}
+              <span className="font-mono font-semibold tabular-nums text-slate-800">
+                {loadedParcelMeta.tagId}
+              </span>
+              {" · "}
+              Taxing authority{" "}
+              <span className="font-medium text-slate-700">
+                {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}
+              </span>
+            </p>
+          </div>
+          {safeParcelRecordHref || safeLevyTableHref ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              {safeParcelRecordHref ? (
+                <a
+                  href={safeParcelRecordHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${btnOutlinePrimaryMd} w-full justify-center sm:w-auto`}
+                >
+                  Open county parcel record
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              ) : null}
+              {safeLevyTableHref ? (
+                <a
+                  href={safeLevyTableHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${
+                    safeParcelRecordHref
+                      ? btnOutlineSecondaryMd
+                      : btnOutlinePrimaryMd
+                  } w-full justify-center sm:w-auto`}
+                >
+                  Open county levy table
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+          <p className="text-xs leading-snug text-slate-600 sm:text-sm">
             <a
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
@@ -1029,8 +1064,18 @@ export function LevyStackVisualization({
             >
               County property search
               <span className="sr-only"> (opens in a new tab)</span>
-            </a>{" "}
-            — find the full parcel record (legal description, sales, notices).
+            </a>
+            {safeParcelRecordHref ? (
+              <>
+                {" "}
+                — look up a different parcel by address or PIN.
+              </>
+            ) : (
+              <>
+                {" "}
+                — find the full parcel record (legal description, sales, notices).
+              </>
+            )}
           </p>
         </div>
       ) : null}

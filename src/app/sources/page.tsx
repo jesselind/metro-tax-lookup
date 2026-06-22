@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import Link from "next/link";
+import { CountyCompsPdfSourcesAvailabilityNote } from "@/components/CountyCompsPdfGuidance";
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import {
   CODE_INLINE_CLASS,
@@ -561,10 +562,7 @@ export default function SourcesPage() {
             ) through the home{" "}
             <strong className="text-slate-900">Comps PDF</strong>
             {" "}
-            control. That county download often returns{" "}
-            <strong className="text-slate-900">File not found</strong>
-            {" "}
-            from the county server. The in-page{" "}
+            control. <CountyCompsPdfSourcesAvailabilityNote /> The in-page{" "}
             <strong className="text-slate-900">Comps grid</strong>
             {" "}
             table matches the offline NOV parser output shape. On the home demo, the section title

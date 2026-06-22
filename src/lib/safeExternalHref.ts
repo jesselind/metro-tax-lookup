@@ -46,11 +46,31 @@ export function safeArapahoeLevyAspxUrl(
 }
 
 /**
- * When true, the home "Comps PDF" control explains that the county-hosted
- * FileDownload.ashx download often fails. Flip to false once that URL works
- * again or the county documents a replacement public comps PDF path.
+ * When true, the home "Comps PDF" control explains county FileDownload.ashx
+ * availability per the Assessor's office (see countyCompsPdfGuidance.ts). Flip
+ * to false once downloads work reliably again.
  */
 export const ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE = true;
+
+/**
+ * County parcel record page for one property (AIN from Main Parcel export).
+ * https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=…
+ */
+export function safeArapahoeParcelRecordUrl(
+  ainRaw: string | null | undefined,
+): string | null {
+  const ain = String(ainRaw ?? "").trim();
+  if (!ain) return null;
+  try {
+    const url = new URL("https://parcelsearch.arapahoegov.com/PPINum.aspx");
+    if (url.hostname.toLowerCase() !== ARAPAHOE_PARCEL_LEVY_HOST) return null;
+    if (!url.pathname.toLowerCase().endsWith("/ppinum.aspx")) return null;
+    url.searchParams.set("PPINum", ain);
+    return url.href;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * County comps grid PDF download (AIN from Main Parcel export).
