@@ -562,7 +562,9 @@ export default function SourcesPage() {
             ) through the home{" "}
             <strong className="text-slate-900">Comps PDF</strong>
             {" "}
-            control. <CountyCompsPdfSourcesAvailabilityNote /> The in-page{" "}
+            control. <CountyCompsPdfSourcesAvailabilityNote />
+            {" "}
+            The in-page{" "}
             <strong className="text-slate-900">Comps grid</strong>
             {" "}
             table matches the offline NOV parser output shape. On the home demo, the section title

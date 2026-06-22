@@ -982,9 +982,8 @@ export function LevyStackVisualization({
       )}
 
       {loadedParcelMeta && lines.length > 0 ? (
-        <div
+        <section
           className="space-y-3 rounded-lg border border-slate-200/90 bg-slate-50/90 px-4 py-4 shadow-sm sm:px-5"
-          role="region"
           aria-labelledby="levy-county-compare-heading"
         >
           <div>
@@ -1077,7 +1076,7 @@ export function LevyStackVisualization({
               </>
             )}
           </p>
-        </div>
+        </section>
       ) : null}
 
       {awaitingTemplateMills && lines.length > 0 && (

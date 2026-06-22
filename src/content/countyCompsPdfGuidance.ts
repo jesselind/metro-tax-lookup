@@ -23,7 +23,7 @@ export const COUNTY_COMPS_PDF_ASSESSOR_PREFIX = "Per the Assessor's office: ";
 
 /** Body after the assessor prefix (popover and inline notes). */
 export const COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION =
-  "the website posts comparables for the current notice year only, and a county system limitation keeps 2025 notices off the site. In this non-revaluation cycle, a file appears online only when your value changed from 2025 to 2026; if it did not, your prior comparables still apply. Full notices for every parcel are expected after 2027 postcards (late April or early May).";
+  "the website posts comparables for the current notice year only. A county system limitation keeps 2025 notices off the site. This is not a year when every property gets a full reassessment. A new file appears online only if your value changed from 2025 to 2026. If it did not change, your prior comparables still apply. Full notices for every parcel are expected after 2027 postcards go out, in late April or early May.";
 
 export const COUNTY_COMPS_PDF_SOURCES_LEAD =
   "That county download often returns";
