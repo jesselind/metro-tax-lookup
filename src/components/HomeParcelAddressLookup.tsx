@@ -7,6 +7,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
+import { CountyCompsPdfUnavailablePopoverBody } from "@/components/CountyCompsPdfGuidance";
+import { COUNTY_COMPS_PDF_POPOVER_ARIA_LABEL } from "@/content/countyCompsPdfGuidance";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
@@ -1076,42 +1078,19 @@ export function HomeParcelAddressLookup({
                     </InfoHintPopover>
                   </div>
                   {homeCompsGridPdfHref ? (
-                    // TODO(comps-pdf-hosted-unavailable): Remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false in src/lib/safeExternalHref.ts once county-hosted comps PDFs (FileDownload.ashx) download reliably again or the county documents a new public URL.
+                    // TODO(comps-pdf-hosted-unavailable): Remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
                     ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
                       <div className="flex justify-center">
                         <InfoHintPopover
-                          ariaLabel="County comps PDF is unavailable at this link"
+                          ariaLabel={COUNTY_COMPS_PDF_POPOVER_ARIA_LABEL}
                           iconPanelBelow
                           iconTriggerChildren={compsIcon}
                           panelClassName={PARCEL_TERM_POPOVER_PANEL_CLASS}
                           iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                         >
-                          <div className="text-sm leading-relaxed text-slate-800">
-                            <p>
-                              County comps PDFs that used to download from this
-                              link are no longer available. The county site may
-                              show{" "}
-                              <span className="font-medium text-slate-900">
-                                File not found
-                              </span>
-                              {" "}
-                              — that comes from the county server, not this site.
-                            </p>
-                            <p className="mt-3">
-                              <a
-                                href={homeCompsGridPdfHref}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={COUNTY_EXTERNAL_LINK_CLASS}
-                              >
-                                Try opening the county PDF anyway
-                                <span className="sr-only">
-                                  {" "}
-                                  (opens in a new tab)
-                                </span>
-                              </a>
-                            </p>
-                          </div>
+                          <CountyCompsPdfUnavailablePopoverBody
+                            countyHref={homeCompsGridPdfHref}
+                          />
                         </InfoHintPopover>
                       </div>
                     ) : (

@@ -18,10 +18,18 @@ import {
   TermTaxEntityFullBody,
 } from "@/content/termDefinitionBodies";
 import {
+  COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST,
+  COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST,
+  COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION,
+  COUNTY_COMPS_PDF_ASSESSOR_PREFIX,
+  COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST,
+} from "@/content/countyCompsPdfGuidance";
+import {
   ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE,
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
 } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridRowFragmentId } from "@/lib/novCompsGridTypes";
+import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
 import {
   CODE_INLINE_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -281,10 +289,19 @@ export function TermCompsAside() {
         The{" "}
         <strong className="font-semibold text-slate-900">Comps PDF</strong>
         {" "}
-        control opens the county file in a new tab from{" "}
-        <span className="whitespace-nowrap">parcelsearch.arapahoegov.com</span>
-        . This site does not host that file. We only pass which property you matched so the right
-        file loads.
+        control links to the county comparables file on{" "}
+        <span className="whitespace-nowrap">
+          {COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST}
+        </span>
+        {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+          <>
+            {COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST}
+            {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
+            {COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION}
+          </>
+        ) : (
+          COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST
+        )}
       </p>
     </TermAside>
   );
