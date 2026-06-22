@@ -63,8 +63,6 @@ export function safeArapahoeParcelRecordUrl(
   if (!ain) return null;
   try {
     const url = new URL("https://parcelsearch.arapahoegov.com/PPINum.aspx");
-    if (url.hostname.toLowerCase() !== ARAPAHOE_PARCEL_LEVY_HOST) return null;
-    if (!url.pathname.toLowerCase().endsWith("/ppinum.aspx")) return null;
     url.searchParams.set("PPINum", ain);
     return url.href;
   } catch {
@@ -83,8 +81,6 @@ export function safeArapahoeCompsGridPdfUrl(
   if (!ain) return null;
   try {
     const url = new URL("https://parcelsearch.arapahoegov.com/FileDownload.ashx");
-    if (url.hostname.toLowerCase() !== ARAPAHOE_PARCEL_LEVY_HOST) return null;
-    if (!url.pathname.toLowerCase().endsWith("/filedownload.ashx")) return null;
     url.searchParams.set("AIN", ain);
     return url.href;
   } catch {

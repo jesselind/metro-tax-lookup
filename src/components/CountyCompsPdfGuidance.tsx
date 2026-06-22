@@ -63,7 +63,8 @@ export function CountyCompsPdfSourcesAvailabilityNote() {
     <>
       {COUNTY_COMPS_PDF_SOURCES_LEAD}{" "}
       <strong className="text-slate-900">{COUNTY_COMPS_PDF_NO_FILE_FOUND}</strong>
-      . {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
+      {". "}
+      {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
       {COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION}
     </>
   );
