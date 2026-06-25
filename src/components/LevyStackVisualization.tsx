@@ -5,14 +5,7 @@
 
 "use client";
 
-import {
-  type CSSProperties,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
@@ -61,16 +54,13 @@ const ADD_TILE_GHOST_CLASS =
 const ADD_TILE_FORM_CLASS =
   `relative flex min-h-[152px] min-w-0 flex-col gap-3 ${DASHBOARD_TILE_RADIUS_CLASS} border-2 border-indigo-400 bg-white p-3 shadow-lg ring-2 ring-indigo-300/80 sm:min-h-[168px] sm:p-4`;
 
-function levyTileClass(index: number, isEditing: boolean): string {
+function levyTileClass(isEditing: boolean): string {
   const base =
     `relative flex min-h-0 h-full flex-col gap-2 overflow-hidden ${DASHBOARD_TILE_RADIUS_CLASS} border border-white/20 shadow-md sm:gap-3`;
   if (isEditing) {
     return `${base} !border-indigo-400 !bg-white p-3 text-slate-900 shadow-lg ring-2 ring-indigo-300/80 sm:p-4`;
   }
-  if (index === 0) {
-    return `${base} min-h-[152px] p-5 sm:min-h-[168px] sm:p-6`;
-  }
-  return `${base} min-h-0 p-4 sm:p-4`;
+  return `${base} min-h-[152px] p-4 sm:min-h-[168px] sm:p-4`;
 }
 
 /**
@@ -79,6 +69,12 @@ function levyTileClass(index: number, isEditing: boolean): string {
  */
 const LEVY_TILE_HOVER_CLASS =
   "before:pointer-events-none before:absolute before:inset-0 before:z-0 before:rounded-lg before:bg-black/0 before:transition-colors before:duration-200 before:ease-out hover:before:bg-black/18 active:before:bg-black/10 motion-reduce:before:transition-none motion-reduce:hover:before:bg-black/0 motion-reduce:active:before:bg-black/0 transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-white/40 hover:shadow-xl active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+
+/** Inset ring stays visible inside overflow-hidden tiles when the full-tile or overflow button is focused. */
+const LEVY_TILE_FOCUS_CLASS =
+  "focus-within:shadow-[inset_0_0_0_3px_rgba(255,255,255,0.95)] forced-colors:focus-within:shadow-none forced-colors:focus-within:outline forced-colors:focus-within:outline-2 forced-colors:focus-within:outline-[Highlight]";
+
+const LEVY_TILE_OPEN_BTN_CLASS = `absolute inset-0 z-0 cursor-pointer ${DASHBOARD_TILE_RADIUS_CLASS} focus:outline-none focus-visible:z-[2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white forced-colors:focus-visible:outline-[Highlight]`;
 
 const TILE_GRADIENTS = [
   "bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-900 text-white",
@@ -90,10 +86,14 @@ const TILE_GRADIENTS = [
 ] as const;
 
 const TILE_OVERFLOW_BTN_CLASS =
-  "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-bl-md rounded-tr-lg bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
+  "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center rounded-bl-md rounded-tr-lg bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
 
 const LEVY_TILE_PCT_CLASS =
-  "pointer-events-none shrink-0 m-0 text-right font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] [font-size:calc(1.25rem+var(--pct-scale)*1.5rem)] sm:[font-size:calc(1.5rem+var(--pct-scale)*1.25rem)]";
+  "pointer-events-none shrink-0 m-0 text-right text-2xl font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] sm:text-[2.25rem]";
+
+/** Decorative; full-tile button carries the accessible name. */
+const LEVY_TILE_DETAILS_CUE_CLASS =
+  "pointer-events-none shrink-0 self-end text-sm font-semibold text-white/90 underline decoration-white/50 underline-offset-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.25)] group-hover:text-white group-hover:decoration-white/80 group-active:text-white group-focus-within:text-white group-focus-within:decoration-white group-focus-within:decoration-2 motion-reduce:transition-none";
 
 const TILE_DESC_MILLS_CLASS = "text-base sm:text-lg";
 
@@ -110,11 +110,6 @@ function formatPct(p: number): string {
   if (p >= 10) return p.toFixed(1);
   if (p >= 1) return p.toFixed(1);
   return p.toFixed(2);
-}
-
-function pctScaleForRank(tileIndex: number, tileCount: number): number {
-  if (tileCount <= 1) return 1;
-  return 1 - tileIndex / (tileCount - 1);
 }
 
 function EllipsisVerticalIcon({ className }: { className?: string }) {
@@ -550,7 +545,6 @@ export function LevyStackVisualization({
               {tilesSorted.map((item, index) => {
                 const grad = TILE_GRADIENTS[index % TILE_GRADIENTS.length];
                 const pctLabel = formatPct(item.pct);
-                const pctScale = pctScaleForRank(index, tilesSorted.length);
                 const isEditing = editingId === item.id;
                 const sourceLine = lines.find((l) => l.id === item.id);
                 const lineDollarsRounded =
@@ -564,8 +558,10 @@ export function LevyStackVisualization({
                 return (
                   <div
                     key={item.id}
-                    className={`min-w-0 ${levyTileClass(index, isEditing)} ${
-                      !isEditing ? `${grad} ${LEVY_TILE_HOVER_CLASS}` : ""
+                    className={`min-w-0 ${levyTileClass(isEditing)} ${
+                      !isEditing
+                        ? `group ${grad} ${LEVY_TILE_HOVER_CLASS} ${LEVY_TILE_FOCUS_CLASS}`
+                        : ""
                     }`}
                   >
                     {isEditing && sourceLine ? (
@@ -651,7 +647,7 @@ export function LevyStackVisualization({
                       <>
                         <button
                           type="button"
-                          className={`absolute inset-0 z-0 cursor-pointer ${DASHBOARD_TILE_RADIUS_CLASS} focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent`}
+                          className={LEVY_TILE_OPEN_BTN_CLASS}
                           aria-label={
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value`
@@ -682,13 +678,7 @@ export function LevyStackVisualization({
                           </button>
                         ) : null}
                         <div className="pointer-events-none relative z-[1] flex h-full min-h-0 flex-1 flex-col">
-                          <div
-                            className={
-                              allowLineEdit
-                                ? "grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-y-2 sm:gap-y-3"
-                                : "grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-y-2 sm:gap-y-3 pt-0"
-                            }
-                          >
+                          <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-y-2 sm:gap-y-3">
                             <div
                               className={`flex min-h-0 w-full min-w-0 flex-col justify-start${allowLineEdit ? " pr-11" : ""}`}
                             >
@@ -701,25 +691,26 @@ export function LevyStackVisualization({
                                 {formatMills(item.mills)} mills
                               </p>
                             </div>
-                            <div className="flex w-full min-w-0 flex-col items-end gap-y-1 self-end sm:gap-y-1.5">
-                              {lineDollarsRounded != null ? (
-                                <p className={LEVY_TILE_USD_CLASS}>
-                                  <span className="sr-only">
-                                    Estimated annual levy from assessed value:{" "}
-                                  </span>
-                                  {formatUsdWhole(lineDollarsRounded)}
-                                </p>
-                              ) : null}
-                              <p
-                                className={LEVY_TILE_PCT_CLASS}
-                                style={
-                                  {
-                                    "--pct-scale": pctScale,
-                                  } as CSSProperties
-                                }
+                            <div className="flex w-full min-w-0 items-end justify-between gap-3 self-end">
+                              <span
+                                className={LEVY_TILE_DETAILS_CUE_CLASS}
+                                aria-hidden
                               >
-                                {pctLabel}%
-                              </p>
+                                Details ›
+                              </span>
+                              <div className="flex min-w-0 flex-col items-end gap-y-1 sm:gap-y-1.5">
+                                {lineDollarsRounded != null ? (
+                                  <p className={LEVY_TILE_USD_CLASS}>
+                                    <span className="sr-only">
+                                      Estimated annual levy from assessed value:{" "}
+                                    </span>
+                                    {formatUsdWhole(lineDollarsRounded)}
+                                  </p>
+                                ) : null}
+                                <p className={LEVY_TILE_PCT_CLASS}>
+                                  {pctLabel}%
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -845,34 +836,33 @@ export function LevyStackVisualization({
               ) : null}
             </div>
 
-            <p className="text-sm text-slate-600">
-              Tap a tile to see its share of your total mills and extra details
-              when we can match it to public district records.
-              {assessedForLevyDollars != null ? (
-                <>
-                  {" "}
-                  Dollar amounts in this breakdown (levy tiles, total, and metro
-                  summary when shown) are{" "}
-                  <strong className="font-semibold text-slate-700">
-                    estimated annual
-                  </strong>{" "}
-                  taxes from your assessed value (mills × assessed ÷ 1000,
-                  rounded to the nearest dollar). Your county notice may differ
-                  slightly due to rounding or line-item rules.
-                </>
-              ) : null}
-              {allowLineEdit ? (
-                <>
-                  {" "}
-                  Use <strong className="font-semibold text-slate-800">Add tile</strong>{" "}
-                  to add another row from your county{" "}
-                  <strong className="font-semibold text-slate-800">
-                    Tax District Levies
-                  </strong>{" "}
-                  list.
-                </>
-              ) : null}
-            </p>
+            {(assessedForLevyDollars != null || allowLineEdit) && (
+              <p className="text-sm text-slate-600">
+                {assessedForLevyDollars != null ? (
+                  <>
+                    Dollar amounts in this breakdown (levy tiles, total, and metro
+                    summary when shown) are{" "}
+                    <strong className="font-semibold text-slate-700">
+                      estimated annual
+                    </strong>{" "}
+                    taxes from your assessed value (mills × assessed ÷ 1000,
+                    rounded to the nearest dollar). Your county notice may differ
+                    slightly due to rounding or line-item rules.
+                  </>
+                ) : null}
+                {allowLineEdit ? (
+                  <>
+                    {assessedForLevyDollars != null ? " " : null}
+                    Use <strong className="font-semibold text-slate-800">Add tile</strong>{" "}
+                    to add another row from your county{" "}
+                    <strong className="font-semibold text-slate-800">
+                      Tax District Levies
+                    </strong>{" "}
+                    list.
+                  </>
+                ) : null}
+              </p>
+            )}
 
             <div
               role="region"

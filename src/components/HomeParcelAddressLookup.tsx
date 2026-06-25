@@ -613,6 +613,7 @@ export function HomeParcelAddressLookup({
       className="space-y-3"
       role="region"
       aria-labelledby="home-levy-stack-subheading"
+      aria-describedby="home-levy-stack-intro"
     >
       <h3
         id="home-levy-stack-subheading"
@@ -620,6 +621,14 @@ export function HomeParcelAddressLookup({
       >
         Where is your money going?
       </h3>
+      <p id="home-levy-stack-intro" className="text-sm text-slate-600">
+        Each colored tile is one part of your tax bill.{" "}
+        <strong className="font-semibold text-slate-800">
+          Select a tile
+        </strong>
+        {" "}
+        for district details and how to follow up.
+      </p>
       <LevyStackVisualization {...homeLevyStackProps} />
     </div>
   );
