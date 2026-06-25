@@ -72,7 +72,9 @@ const LEVY_TILE_HOVER_CLASS =
 
 /** Inset ring stays visible inside overflow-hidden tiles when the full-tile or overflow button is focused. */
 const LEVY_TILE_FOCUS_CLASS =
-  "focus-within:shadow-[inset_0_0_0_3px_rgba(255,255,255,0.95)]";
+  "focus-within:shadow-[inset_0_0_0_3px_rgba(255,255,255,0.95)] forced-colors:focus-within:shadow-none forced-colors:focus-within:outline forced-colors:focus-within:outline-2 forced-colors:focus-within:outline-[Highlight]";
+
+const LEVY_TILE_OPEN_BTN_CLASS = `absolute inset-0 z-0 cursor-pointer ${DASHBOARD_TILE_RADIUS_CLASS} focus:outline-none focus-visible:z-[2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white forced-colors:focus-visible:outline-[Highlight]`;
 
 const TILE_GRADIENTS = [
   "bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-900 text-white",
@@ -645,7 +647,7 @@ export function LevyStackVisualization({
                       <>
                         <button
                           type="button"
-                          className={`absolute inset-0 z-0 cursor-pointer ${DASHBOARD_TILE_RADIUS_CLASS} focus:outline-none focus-visible:outline-none`}
+                          className={LEVY_TILE_OPEN_BTN_CLASS}
                           aria-label={
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value`
