@@ -50,6 +50,9 @@ next-env.d.ts
 supporting-data/_private/
 !supporting-data/_private/.gitkeep
 
+# Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
+docs/_working/
+
 # Large Arapahoe assessor export (~100MB+); required to regenerate PIN map + stacks.
 supporting-data/Main Parcel Table (CSV)/
 

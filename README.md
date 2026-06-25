@@ -14,6 +14,8 @@ This file is for repository visitors and contributors: setup, architecture-at-a-
 
 For user-facing methodology, definitions, and citations, use the in-app `/sources` page.
 
+**Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`.
+
 ## Quick start
 
 ```bash
