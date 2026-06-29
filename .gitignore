@@ -42,9 +42,8 @@ yarn-error.log*
 next-env.d.ts
 
 # --- Data policy (metro-tax-lookup) ---
-# Runtime and audit JSON live under public/data/ and are committed so forks
-# work with npm install + npm run dev. Large county/state inputs stay under
-# supporting-data/ but are gitignored here; see README "Data and reproducibility".
+# Runtime JSON under public/data/ is committed so forks work with npm install + npm run dev.
+# Large county/state exports stay local (gitignored). Download URLs: /sources and README.
 
 # Local-only samples (PII, one-off PDFs) - keep out of version control
 supporting-data/_private/
@@ -53,17 +52,22 @@ supporting-data/_private/
 # Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
 docs/_working/
 
-# Large Arapahoe assessor export (~100MB+); required to regenerate PIN map + stacks.
-supporting-data/Main Parcel Table (CSV)/
+# County Assessor Data Mart CSVs + portal layout guides (weekly refresh; not committed)
+supporting-data/**/*.csv
+!supporting-data/property-tax-entities-export.csv
+supporting-data/**/*.docx
 
-# Optional DOLA LGIS exports (prefer committed supporting-data/property-tax-entities-export.csv)
+# DOLA LGIS spreadsheets (prefer committed property-tax-entities-export.csv)
 *.xlsx
+
+# Local staging for full county mart downloads and DOLA LG directory export
+supporting-data-phase-3/
+supporting-data-phase-2/
 
 # Colorado special-district shapefile bundle (dlall.*); only .dbf needed for export_special_district_directory.py
 supporting-data/dlall/
 
-# Statewide special-district export (~50MB); import script writes lean JSON here (not shipped)
-supporting-data/All_Special_Districts_in_Colorado_*.csv
+# Statewide special-district import intermediate JSON (not shipped in public/data)
 supporting-data/colorado-all-special-districts.json
 
 # Census / GIS file geodatabases used by enrich_district_json_county_geoids.py (~150MB each)

@@ -50,7 +50,7 @@ Open `http://localhost:3000`.
 | Path | Role |
 | --- | --- |
 | `public/data/*.json` | Runtime app data served to the browser |
-| `supporting-data/` | Offline inputs/intermediate files for regeneration (mostly gitignored; committed CSV where noted) |
+| `supporting-data/` | Offline inputs for regeneration (mostly gitignored; see `/sources` — **Keeping bundled data current**) |
 | `tools/*.py` | Offline extractors/index builders |
 
 ### Levy detail modal (`levy-explainer-entries.json`)

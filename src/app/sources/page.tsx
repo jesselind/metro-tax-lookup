@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { CountyCompsPdfSourcesAvailabilityNote } from "@/components/CountyCompsPdfGuidance";
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import {
@@ -90,6 +91,27 @@ function TigerFirstMention() {
       title="Jump to definition below."
     >
       TIGER
+    </a>
+  );
+}
+
+/** README pipeline section — rebuild commands live there, not on this page. */
+function ReadmeDataPipelineLink({ children }: { children: ReactNode }) {
+  const href = SITE_CONFIG.githubRepoUrl
+    ? `${SITE_CONFIG.githubRepoUrl}#regenerating-data-full-pipeline`
+    : null;
+  if (!href) {
+    return <>{children}</>;
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={TOOL_ANCHOR}
+    >
+      {children}
+      <span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }
@@ -252,14 +274,11 @@ export default function SourcesPage() {
         <p className="text-slate-700">
           The tool loads{" "}
           <code className={CODE_INLINE_CLASS}>public/data/metro-levies-2025.json</code>
-          . That file is built offline from the county PDF below using{" "}
-          <code className={CODE_INLINE_CLASS}>tools/extract_metro_levies_*.py</code>.
-          Metro rows in that JSON include <code className={CODE_INLINE_CLASS}>lgid</code>
-          ; the home-page match uses the same LG ID values attached to each row in your
-          stack when{" "}
-          <code className={CODE_INLINE_CLASS}>tools/build_arapahoe_parcel_levy_index.py</code>{" "}
-          aligns county mart data with DOLA (see levy breakdown methodology below).
-          The metro card does not offer a manual district choice; it only uses LG IDs
+          , processed offline from the county PDF below. Metro rows include{" "}
+          <code className={CODE_INLINE_CLASS}>lgid</code>; the home-page match uses
+          the same LG ID values on your levy stack when county mart data is joined
+          with DOLA in the bundled Arapahoe files (see levy breakdown below). The
+          metro card does not offer a manual district choice; it only uses LG IDs
           that appear on your loaded stack.
         </p>
         {bundledLabel && bundledIso ? (
@@ -316,13 +335,9 @@ export default function SourcesPage() {
         </h3>
         <p className="text-slate-700">
           These are official Arapahoe County publications. They are{" "}
-          <strong className="text-slate-900">not</strong> read by{" "}
-          <code className={CODE_INLINE_CLASS}>extract_metro_levies_*.py</code> when
-          generating{" "}
-          <code className={CODE_INLINE_CLASS}>public/data/metro-levies-*.json</code>.
-          URLs are versioned by tax year; update{" "}
-          <code className={CODE_INLINE_CLASS}>src/lib/arapahoeCountyUrls.ts</code> when
-          the county publishes new files.
+          <strong className="text-slate-900">not</strong> imported into{" "}
+          <code className={CODE_INLINE_CLASS}>public/data/metro-levies-*.json</code>
+          . URLs are versioned by tax year.
         </p>
         <p className="mt-3 text-slate-700">
           The county lists these and other levy PDFs on its{" "}
@@ -476,43 +491,116 @@ export default function SourcesPage() {
             <code className={CODE_INLINE_CLASS}>
               public/data/colorado-special-district-directory.json
             </code>{" "}
-            — LG ID contact rows from DOLA&apos;s LG tabular export, filtered to LGIDs
-            referenced in bundled levy stacks (
-            <code className={CODE_INLINE_CLASS}>
-              tools/build_district_directory_from_lg_export.py
-            </code>
-            ).
+            — LG ID contact rows from DOLA&apos;s LG tabular export, filtered to
+            LGIDs referenced in bundled levy stacks.
           </li>
         </ul>
         <p className="mt-3 text-slate-700">
-          Built with{" "}
-          <code className={CODE_INLINE_CLASS}>npm run build:arapahoe-index</code>,
-          which runs{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/build_arapahoe_parcel_levy_index.py
-          </code>{" "}
-          on county CSV exports, optional DOLA LGIS export as{" "}
+          Those Arapahoe bundles are built offline from county Data Mart CSVs joined
+          with DOLA Property Tax Entities (and a small checked-in override list for
+          known edge cases). The district directory adds registry contact fields from
+          DOLA&apos;s LG export. See{" "}
+          <a href="#refreshing-bundled-data" className={TOOL_ANCHOR}>
+            Keeping bundled data current
+          </a>{" "}
+          for what is committed vs downloaded, and the{" "}
+          <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>{" "}
+          for how maintainers rebuild files.
+        </p>
+
+        <h3
+          id="refreshing-bundled-data"
+          className={`${SECTION_H3} !mt-8 scroll-mt-8`}
+        >
+          Keeping bundled data current
+        </h3>
+        <p className="text-slate-700">
+          The app serves static <JsonFirstMention /> from this repository at
+          runtime — not live county or state APIs. Official exports flow{" "}
+          <strong className="text-slate-900">county and state download → local
+          copy (mostly gitignored) → bundled files under</strong>{" "}
+          <code className={CODE_INLINE_CLASS}>public/data/</code>{" "}
+          <strong className="text-slate-900">→ what you see in the UI</strong>.
+          Maintainers refresh upstream files on the schedules below, then rebuild
+          bundles using the{" "}
+          <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>{" "}
+          (not repeated here).
+        </p>
+        <p className="mt-3 text-slate-700">
+          <strong className="text-slate-900">What stays out of git:</strong> Large
+          raw exports remain on your machine (see the data-policy block in{" "}
+          <code className={CODE_INLINE_CLASS}>.gitignore</code>). That includes
+          county Data Mart CSVs and portal layout guides, DOLA LG directory CSVs
+          under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data-phase-2/</code>,
+          full mart staging under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data-phase-3/</code>,
+          and other bulky inputs named there. One small DOLA file is committed
+          so clones can rebuild levy matching:{" "}
           <code className={CODE_INLINE_CLASS}>
             supporting-data/property-tax-entities-export.csv
-          </code>{" "}
-          (or <code className={CODE_INLINE_CLASS}>.xlsx</code> locally when the CSV is
-          absent), and{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/arapahoe_dola_authority_overrides.json
           </code>
           .
         </p>
         <p className="mt-3 text-slate-700">
-          District contact bundle:{" "}
-          <code className={CODE_INLINE_CLASS}>npm run build:district-directory</code>
-          {" "}
-          (after{" "}
-          <code className={CODE_INLINE_CLASS}>npm run build:arapahoe-index</code>,
-          or when you refresh the LG CSV). See{" "}
-          <a href="#dola-lg-directory-export" className={TOOL_ANCHOR}>
-            DOLA LG directory (tabular CSV)
+          <strong className="text-slate-900">
+            County Data Mart (refreshed about weekly):
+          </strong>{" "}
+          The Assessor updates mart tables on a weekly cadence (often Saturday).
+          After you download current CSVs from the{" "}
+          <a
+            href={ARAPAHOE_ASSESSOR_DATA_MART_EXPORT}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TOOL_ANCHOR}
+          >
+            Assessor Data Mart
+            <span className="sr-only"> (opens in a new tab)</span>
           </a>
-          .
+          , copy them into{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/</code> using the
+          folder layout described in the{" "}
+          <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>
+          , then commit refreshed{" "}
+          <code className={CODE_INLINE_CLASS}>public/data/arapahoe-*.json</code>{" "}
+          so forks pick up the new snapshot. Each bundle records a{" "}
+          <code className={CODE_INLINE_CLASS}>bundledAsOf</code> date the UI can
+          show when results look stale.
+        </p>
+        <p className="mt-3 text-slate-700">
+          <strong className="text-slate-900">
+            DOLA LGIS Property Tax Entities:
+          </strong>{" "}
+          Refresh when mills or entity IDs change (certification season and when
+          DOLA posts updates). Re-export from{" "}
+          <a
+            href={DOLA_LGIS_PROPERTY_TAX_ENTITIES}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TOOL_ANCHOR}
+          >
+            publicLGTaxEntities
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          , replace{" "}
+          <code className={CODE_INLINE_CLASS}>
+            property-tax-entities-export.csv
+          </code>
+          , then rebuild the Arapahoe bundles and district directory per the{" "}
+          <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>.
+        </p>
+        <p className="mt-3 text-slate-700">
+          <strong className="text-slate-900">Metro levy PDF:</strong> The annual
+          certification form drives{" "}
+          <code className={CODE_INLINE_CLASS}>metro-levies-*.json</code>. Refresh
+          when the county publishes a new form — not on the mart weekly schedule.
+        </p>
+        <p className="mt-3 text-slate-700">
+          <strong className="text-slate-900">Suggested maintainer rhythm:</strong>{" "}
+          After each county mart drop, refresh Arapahoe bundles if parcel or levy
+          data may have changed; spot-check a reference PIN on the county site.
+          Rebuild the district directory when levy stacks or the DOLA LG export
+          changes.
         </p>
 
         <h3 className={`${SECTION_H3} !mt-8`}>Sources and how they connect</h3>
@@ -528,11 +616,8 @@ export default function SourcesPage() {
             <strong className="text-slate-900">Enter</strong> from any field. The
             browser loads{" "}
             <code className={CODE_INLINE_CLASS}>arapahoe-situs-to-pins.json</code> and
-            matches keys the same way{" "}
-            <code className={CODE_INLINE_CLASS}>
-              tools/build_arapahoe_parcel_levy_index.py
-            </code>{" "}
-            builds them from <code className={CODE_INLINE_CLASS}>Main Parcel</code>; use
+            matches keys the same way the bundled situs index is built from{" "}
+            <code className={CODE_INLINE_CLASS}>Main Parcel</code>; use
             the county{" "}
             <a
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
@@ -556,7 +641,7 @@ export default function SourcesPage() {
             Levy stack loading by PIN uses{" "}
             <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>, which
             includes each parcel&apos;s <code className={CODE_INLINE_CLASS}>ain</code>{" "}
-            from Main Parcel when you rebuild the index so the levy panel can link to
+            from Main Parcel in the bundled index so the levy panel can link to
             the county comps grid PDF (
             <code className={CODE_INLINE_CLASS}>FileDownload.ashx?AIN=…</code>
             ) through the home{" "}
@@ -585,10 +670,11 @@ export default function SourcesPage() {
               supporting-data/_private/nov-grid-out.json
             </code>
             {" "}
-            is gitignored and used when you run the extractor locally; a minimal placeholder may be
-            copied there at build time when the file is absent. When the grid file does not embed its own definitions block, row labels can link to short resident-facing definitions merged from{" "}
-            <code className={CODE_INLINE_CLASS}>tools/nov_comps_grid_definitions.json</code>
-            . Those definitions are grounded in the county&apos;s comp sheet explainer (
+            is gitignored local parser output; a minimal placeholder may exist when
+            the file is absent. When the grid file does not embed its own definitions
+            block, row labels can link to short resident-facing definitions bundled
+            with the repository. Those definitions are grounded in the county&apos;s
+            comp sheet explainer (
             <a
               href={ARAPAHOE_COMP_SHEET_PDF_URL}
               target="_blank"
@@ -666,9 +752,14 @@ export default function SourcesPage() {
             <code className={CODE_INLINE_CLASS}>
               Tax Authority Groups and Tax Authorities.csv
             </code>{" "}
-            (export those tables from the mart one at a time, Data Format
+            (export each table from the mart one at a time, Data Format
             Comma-delimited Text File, then place under{" "}
-            <code className={CODE_INLINE_CLASS}>supporting-data/</code> in the repo),
+            <code className={CODE_INLINE_CLASS}>supporting-data/</code> locally —
+            those CSVs are gitignored; see{" "}
+            <a href="#refreshing-bundled-data" className={TOOL_ANCHOR}>
+              Keeping bundled data current
+            </a>
+            ),
             optionally export <strong>Property Tax Entities</strong> from DOLA
             LGIS (
             <a
@@ -682,17 +773,8 @@ export default function SourcesPage() {
             </a>
             ) as{" "}
             <code className={CODE_INLINE_CLASS}>property-tax-entities-export.csv</code>{" "}
-            (or <code className={CODE_INLINE_CLASS}>.xlsx</code> locally; the build script
-            prefers CSV when both exist) for certified mills and entity IDs when matching is
-            safe, and{" "}
-            <code className={CODE_INLINE_CLASS}>
-              tools/arapahoe_dola_authority_overrides.json
-            </code>{" "}
-            for known edge cases. See the script docstring in{" "}
-            <code className={CODE_INLINE_CLASS}>
-              tools/build_arapahoe_parcel_levy_index.py
-            </code>{" "}
-            for exact paths and ASSRFEES handling.
+            for certified mills and entity IDs when matching is safe, plus a
+            small checked-in override list for known edge cases.
           </li>
           <li>
             <strong>County parcel GIS (optional):</strong> The file geodatabase{" "}
@@ -732,10 +814,9 @@ export default function SourcesPage() {
             against the bundled LG directory (rows keyed by LG ID, filtered to LGIDs referenced in
             levy stacks). Those are still{" "}
             <strong className="text-slate-900">independent</strong> data paths for audit:{" "}
-            <strong className="text-slate-900">(1) Tax record / DOLA linkage</strong> in{" "}
-            <code className={CODE_INLINE_CLASS}>tools/build_arapahoe_parcel_levy_index.py</code>
-            {" "}
-            (tax entity ID, LG ID, fuzzy name scores from county-to-DOLA only).{" "}
+            <strong className="text-slate-900">(1) Tax record / DOLA linkage</strong> at
+            bundle build time (tax entity ID, LG ID, fuzzy name scores from
+            county-to-DOLA only).{" "}
             <strong className="text-slate-900">(2) Directory contact match</strong> against bundled
             district JSON (Arapahoe boundary filtering for fuzzy matches). When the levy line has a
             bill LG ID from the DOLA join, that ID selects the directory row first; if no row exists
@@ -765,25 +846,10 @@ export default function SourcesPage() {
           Colorado statewide special districts (CSV, optional tooling)
         </h3>
         <p className="text-slate-700">
-          The file{" "}
-          <code className={CODE_INLINE_CLASS}>
-            supporting-data/colorado-all-special-districts.json
-          </code>{" "}
-          can be produced offline from a tabular CSV export of the state&apos;s{" "}
-          <strong>All Special Districts in Colorado</strong> layer via{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/import_colorado_district_layer_csv.py
-          </code>
-          . The app runtime bundle uses{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/build_district_directory_from_lg_export.py
-          </code>{" "}
-          instead (see below). Canonical marketplace URL:{" "}
-          <code className={CODE_INLINE_CLASS}>
-            COLORADO_DATA_GOV_ALL_SPECIAL_DISTRICTS_DATASET
-          </code>{" "}
-          in{" "}
-          <code className={CODE_INLINE_CLASS}>src/lib/dataSourceUrls.ts</code>.
+          A tabular CSV export of the state&apos;s{" "}
+          <strong>All Special Districts in Colorado</strong> layer can be used for
+          optional offline experiments. The app runtime bundle uses the DOLA LG
+          directory export (see below), not this statewide layer directly.
         </p>
         <p className="mt-3 break-words">
           <a
@@ -804,19 +870,24 @@ export default function SourcesPage() {
           DOLA LG directory (tabular CSV)
         </h3>
         <p className="text-slate-700">
-          The file{" "}
           <code className={CODE_INLINE_CLASS}>
             public/data/colorado-special-district-directory.json
           </code>{" "}
-          is built with{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/build_district_directory_from_lg_export.py
-          </code>
-          {" "}
-          from a full-state DOLA LG export (for example{" "}
+          is built from a full-state DOLA LG export (for example{" "}
           <code className={CODE_INLINE_CLASS}>lg-export-all.csv</code> under{" "}
           <code className={CODE_INLINE_CLASS}>supporting-data-phase-2/</code>
-          ), keeping only rows whose{" "}
+          ; download from DOLA&apos;s{" "}
+          <a
+            href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TOOL_ANCHOR}
+          >
+            Special District Mapping Project
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          {" "}
+          export menu — gitignored locally), keeping only rows whose{" "}
           <code className={CODE_INLINE_CLASS}>LGID</code> appears in{" "}
           <code className={CODE_INLINE_CLASS}>arapahoe-levy-stacks-by-tag-id.json</code>
           {" "}
@@ -832,15 +903,11 @@ export default function SourcesPage() {
           any LGIDs still missing from both sources.
         </p>
         <p className="mt-3 text-slate-700">
-          Optional legacy tooling:{" "}
-          <code className={CODE_INLINE_CLASS}>dlall.dbf</code> via{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/export_special_district_directory.py
-          </code>
-          {" "}
-          (place the extract under{" "}
+          Optional legacy tooling: Colorado <strong>dlall</strong> GIS extract
+          under{" "}
           <code className={CODE_INLINE_CLASS}>supporting-data/dlall/</code>
-          , gitignored).{" "}
+          {" "}
+          (gitignored).{" "}
           <a
             href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
             target="_blank"
@@ -872,21 +939,12 @@ export default function SourcesPage() {
           candidates geographically, not only by string similarity.
         </p>
         <p className="mt-3 text-slate-700">
-          To attach those county GEOIDs to each row in{" "}
-          <code className={CODE_INLINE_CLASS}>
-            supporting-data/colorado-all-special-districts.json
-          </code>
-          ,{" "}
-          <code className={CODE_INLINE_CLASS}>
-            tools/enrich_district_json_county_geoids.py
-          </code>{" "}
-          intersects district geometry with the Census <strong>County</strong>{" "}
-          layer inside the Colorado file geodatabase{" "}
+          An optional enrichment step can attach those county GEOIDs to statewide
+          district rows by intersecting boundaries with the Census{" "}
+          <strong>County</strong> layer inside the Colorado file geodatabase{" "}
           <code className={CODE_INLINE_CLASS}>tlgdb_2025_a_08_co.gdb</code>. Download
-          the official zip, unzip into{" "}
+          the official zip and unzip into{" "}
           <code className={CODE_INLINE_CLASS}>supporting-data/</code> (gitignored).
-          Update <code className={CODE_INLINE_CLASS}>src/lib/dataSourceUrls.ts</code>{" "}
-          when you switch TIGER vintages.
         </p>
         <p className="mt-3 break-words">
           <a
@@ -918,7 +976,9 @@ export default function SourcesPage() {
               GitHub
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
-            .
+            . The{" "}
+            <ReadmeDataPipelineLink>README</ReadmeDataPipelineLink>{" "}
+            documents setup and how to regenerate bundled data files.
           </p>
         ) : (
           <p className="text-slate-700">

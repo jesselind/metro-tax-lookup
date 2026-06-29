@@ -88,8 +88,9 @@ const TILE_GRADIENTS = [
 const TILE_OVERFLOW_BTN_CLASS =
   "absolute right-2 top-2 z-20 flex h-11 min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center rounded-bl-md rounded-tr-lg bg-transparent text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60";
 
+/** Hero share % — fixed size (not viewport-gated): single-column tiles are full-width on phone. */
 const LEVY_TILE_PCT_CLASS =
-  "pointer-events-none shrink-0 m-0 text-right text-2xl font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)] sm:text-[2.25rem]";
+  "pointer-events-none shrink-0 m-0 text-right text-4xl font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)]";
 
 /** Decorative; full-tile button carries the accessible name. */
 const LEVY_TILE_DETAILS_CUE_CLASS =
@@ -101,9 +102,9 @@ const TILE_DESC_MILLS_CLASS = "text-base sm:text-lg";
 const TILE_MILLS_SUBTLE_CLASS =
   "mt-1.5 font-mono font-medium tabular-nums text-white/75 [text-shadow:0_1px_2px_rgba(0,0,0,0.2)] text-sm sm:text-[0.9375rem]";
 
-/** Estimated annual levy; sits in the bottom stack with a fixed gap above the % (not below mills). */
+/** Estimated annual levy; fixed size (not viewport-gated) — see LEVY_TILE_PCT_CLASS. */
 const LEVY_TILE_USD_CLASS =
-  "font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] text-[1.375rem] sm:text-[1.625rem]";
+  "font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] text-[1.625rem]";
 
 function formatPct(p: number): string {
   if (!Number.isFinite(p)) return "0.0";
