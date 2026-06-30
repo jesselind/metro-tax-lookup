@@ -156,8 +156,8 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
           disabled={disabled}
           className={
             textTriggerClassName
-              ? `${textTriggerClassName} cursor-pointer border-0 bg-transparent p-0 text-left underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40`
-              : "cursor-pointer border-0 bg-transparent p-0 text-left text-xs font-medium text-slate-700 underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:text-sm disabled:cursor-not-allowed disabled:opacity-40"
+              ? `${textTriggerClassName} max-w-full whitespace-normal break-words cursor-pointer border-0 bg-transparent p-0 text-left underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40`
+              : "max-w-full whitespace-normal break-words cursor-pointer border-0 bg-transparent p-0 text-left text-xs font-medium text-slate-700 underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:text-sm disabled:cursor-not-allowed disabled:opacity-40"
           }
           aria-expanded={open}
           aria-controls={open ? contentId : undefined}

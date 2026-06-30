@@ -11,6 +11,7 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
+  - arapahoe-parcel-record-by-pin.json.gz — Pin → Main Parcel county-record fields (gzip; lazy load after levy; see --skip-pin-map)
 
 Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
@@ -33,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import json
 import math
 import re
@@ -964,6 +966,70 @@ def read_mart_groups(path: Path) -> tuple[dict[str, list[dict[str, Any]]], str]:
     return by_tag, tax_year or ""
 
 
+# Mart LegalDescr often prefixes human text with subdivision/block/lot keys (~83% of rows).
+_LEGAL_DESCR_PREFIX_RE = re.compile(
+    r"^SubdivisionCd\s+\S+\s+SubdivisionName\s+.+?\s+Block\s+\S+\s+Lot\s+\S+\s+",
+    re.IGNORECASE,
+)
+
+
+def legal_descr_display_tail(full: str) -> str:
+    """Strip mart subdivision/block/lot prefix when present; else return trimmed full string."""
+    s = strip_field(full)
+    if not s:
+        return ""
+    m = _LEGAL_DESCR_PREFIX_RE.match(s)
+    if m:
+        tail = s[m.end() :].strip()
+        return tail if tail else s
+    return s
+
+
+def _optional_str(row: dict[str, str], key: str) -> str | None:
+    t = strip_field(row.get(key, ""))
+    return t if t else None
+
+
+def read_parcel_record_map(path: Path) -> dict[str, dict[str, Any]]:
+    """First Main Parcel row per PIN — extended county parcel record fields for lazy UI load."""
+    out: dict[str, dict[str, Any]] = {}
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            pin = normalize_pin(strip_field(row.get("Pin", "")))
+            if not pin or pin in out:
+                continue
+            legal_full = _optional_str(row, "LegalDescr")
+            legal_display = (
+                legal_descr_display_tail(legal_full) if legal_full else None
+            )
+            rec: dict[str, Any] = {
+                "ain": _optional_str(row, "AIN"),
+                "situsAddress": _optional_str(row, "SAFreeFormAddr"),
+                "situsCity": _optional_str(row, "SACity"),
+                "ownerList": _optional_str(row, "OwnerList"),
+                "ownerDeliveryAddress": _optional_str(row, "CurDeliveryAddr"),
+                "ownerCityStateZip": _optional_str(row, "CurLastLine"),
+                "legalDescrFull": legal_full,
+                "legalDescrDisplay": legal_display,
+                "subdivisionCd": _optional_str(row, "SubdivisionCd"),
+                "subdivisionName": _optional_str(row, "SubdivisionName"),
+                "taxRollDescr": _optional_str(row, "TaxRollDescr"),
+                "propertyClassDescr": _optional_str(row, "PropertyClassDescr"),
+                "totalActual": parse_parcel_value_cell(row.get("TotalActual")),
+                "improvementActual": parse_parcel_value_cell(
+                    row.get("ImprovementActual")
+                ),
+                "landActual": parse_parcel_value_cell(row.get("LandActual")),
+                "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
+                "stateUseCd": _optional_str(row, "StateUseCd"),
+                "parcelTaxYear": _optional_str(row, "TaxYear"),
+                "assessmentYear": _optional_str(row, "AssessmentYear"),
+            }
+            out[pin] = rec
+    return out
+
+
 def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
     """First Main Parcel row per PIN for tag and values; AIN may be filled from a later row if missing."""
     out: dict[str, dict[str, Any]] = {}
@@ -981,6 +1047,7 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                 ta = parse_parcel_value_cell(row.get("TotalActual"))
                 ts = parse_parcel_value_cell(row.get("TotalAssessed"))
                 ty = strip_field(row.get("TaxYear", ""))
+                ay = strip_field(row.get("AssessmentYear", ""))
                 pclass = strip_field(row.get("PropertyClassDescr", ""))
                 rec: dict[str, Any] = {
                     "tagId": tag_id,
@@ -988,6 +1055,7 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
                     "totalActual": ta,
                     "totalAssessed": ts,
                     "parcelTaxYear": ty or None,
+                    "assessmentYear": ay or None,
                     "propertyClassDescr": pclass or None,
                 }
                 owner_list = strip_field(row.get("OwnerList", ""))
@@ -1110,7 +1178,11 @@ def main() -> None:
             encoding="utf-8",
         )
         print(f"Wrote {stacks_path} ({len(stacks)} TAG stacks)", file=sys.stderr)
-        print("Skipping arapahoe-pin-to-tag.json and arapahoe-situs-to-pins.json (--skip-pin-map).", file=sys.stderr)
+        print(
+            "Skipping arapahoe-pin-to-tag.json, arapahoe-situs-to-pins.json, "
+            "and arapahoe-parcel-record-by-pin.json.gz (--skip-pin-map).",
+            file=sys.stderr,
+        )
         return
 
     pin_map = read_pin_map(args.main_parcel)
@@ -1163,6 +1235,32 @@ def main() -> None:
     sm = situs_path.stat().st_size / (1024 * 1024)
     print(
         f"Wrote {situs_path} ({len(situs_map)} keys, {sm:.2f} MiB)",
+        file=sys.stderr,
+    )
+
+    parcel_record_map = read_parcel_record_map(args.main_parcel)
+    parcel_snapshot = {
+        "bundledAsOf": bundled_as_of,
+        "source": (
+            "Arapahoe County datamart: Main Parcel county-record fields "
+            "(lazy load after levy)"
+        ),
+        "taxYear": tax_year or None,
+    }
+    parcel_path_gz = args.out_dir / "arapahoe-parcel-record-by-pin.json.gz"
+    parcel_payload = json.dumps(
+        {
+            "snapshot": parcel_snapshot,
+            "pinDigits": 9,
+            "byPin": parcel_record_map,
+        },
+        separators=sep,
+    )
+    with gzip.open(parcel_path_gz, "wt", encoding="utf-8", compresslevel=9) as gz:
+        gz.write(parcel_payload)
+    pm = parcel_path_gz.stat().st_size / (1024 * 1024)
+    print(
+        f"Wrote {parcel_path_gz} ({len(parcel_record_map)} pins, {pm:.2f} MiB gzip)",
         file=sys.stderr,
     )
 

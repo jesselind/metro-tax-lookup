@@ -4,7 +4,7 @@ reviews:
     - path: "**/*.{tsx,jsx}"
       instructions: |
         User-facing JSX prose: do not rely on literal whitespace or line breaks after closing
-        inline tags (strong, code, a, Link, dfn, em, span). When more text follows in the
-        same sentence, use explicit {" "} between the closing tag and the next word or
-        punctuation chunk. Keep punctuation in string expressions when needed (e.g.
-        </code>{"). "}That includes). See .cursor/rules/jsx-whitespace.mdc.
+        inline tags (strong, b, code, a, Link, dfn, em, span, and similar inline
+        elements). When more text follows in the same sentence, use explicit {" "}
+        between the closing tag and the next word when needed. Keep punctuation attached
+        in string expressions (e.g. </code>{"; "}That includes). See .cursor/rules/jsx-whitespace.mdc.

@@ -28,7 +28,6 @@ import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 import {
   safeArapahoeLevyAspxUrl,
-  safeArapahoeParcelRecordUrl,
 } from "@/lib/safeExternalHref";
 import {
   applyParcelTemplateMills,
@@ -44,7 +43,6 @@ import {
   annualTaxDollarsFromAssessedMills,
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
-import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { formatUsdWhole } from "@/lib/formatUsd";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
@@ -96,11 +94,11 @@ const LEVY_TILE_PCT_CLASS =
 const LEVY_TILE_DETAILS_CUE_CLASS =
   "pointer-events-none shrink-0 self-end text-sm font-semibold text-white/90 underline decoration-white/50 underline-offset-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.25)] group-hover:text-white group-hover:decoration-white/80 group-active:text-white group-focus-within:text-white group-focus-within:decoration-white group-focus-within:decoration-2 motion-reduce:transition-none";
 
-const TILE_DESC_MILLS_CLASS = "text-base sm:text-lg";
+const TILE_DESC_MILLS_CLASS = "text-lg font-semibold leading-snug sm:text-xl";
 
-/** Mills sit below the authority name; lighter than dollar estimate so % stays hero. */
+/** Mills below authority — full white for contrast on gradient tiles (rem-based). */
 const TILE_MILLS_SUBTLE_CLASS =
-  "mt-1.5 font-mono font-medium tabular-nums text-white/75 [text-shadow:0_1px_2px_rgba(0,0,0,0.2)] text-sm sm:text-[0.9375rem]";
+  "mt-1.5 font-mono text-base font-semibold tabular-nums text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] sm:text-lg";
 
 /** Estimated annual levy; fixed size (not viewport-gated) — see LEVY_TILE_PCT_CLASS. */
 const LEVY_TILE_USD_CLASS =
@@ -309,11 +307,6 @@ export function LevyStackVisualization({
     [loadedParcelMeta],
   );
 
-  const safeParcelRecordHref = useMemo(
-    () => safeArapahoeParcelRecordUrl(loadedParcelMeta?.ain),
-    [loadedParcelMeta?.ain],
-  );
-
   /** Positive assessed value only; omit so we never show a fake $0 from missing data. */
   const assessedForLevyDollars = useMemo((): number | null => {
     return parcelAssessedForDollarEstimate(
@@ -349,7 +342,6 @@ export function LevyStackVisualization({
   const millsTermHref = "#term-mills";
   const levyTermHref = "#term-levy";
   const pinTermHref = "#term-pin";
-  const tagTermHref = "#term-tag";
 
   function goToTermFromTileMenu(id: "term-mills" | "term-levy") {
     setTileActionsId(null);
@@ -885,7 +877,7 @@ export function LevyStackVisualization({
                 <span
                   className={
                     totalLevyDollarsRounded != null
-                      ? "font-mono text-lg font-medium tabular-nums text-white/85 sm:text-xl"
+                      ? "font-mono text-lg font-semibold tabular-nums text-white sm:text-xl"
                       : "font-mono text-xl font-semibold tabular-nums text-white sm:text-2xl"
                   }
                 >
@@ -971,104 +963,6 @@ export function LevyStackVisualization({
           ) : null}
         </div>
       )}
-
-      {loadedParcelMeta && lines.length > 0 ? (
-        <section
-          className="space-y-3 rounded-lg border border-slate-200/90 bg-slate-50/90 px-4 py-4 shadow-sm sm:px-5"
-          aria-labelledby="levy-county-compare-heading"
-        >
-          <div>
-            <h4
-              id="levy-county-compare-heading"
-              className="text-sm font-semibold text-slate-900 sm:text-base"
-            >
-              See how the county displays your data
-            </h4>
-            <p className="mt-1.5 text-xs leading-snug text-slate-600 sm:text-sm">
-              <span className="sr-only">Property match. </span>
-              Matched{" "}
-              <a
-                id="pin-term-first"
-                href={pinTermHref}
-                className={TERM_LINK_CLASS}
-              >
-                PIN
-              </a>{" "}
-              <span className="font-mono font-semibold tabular-nums text-slate-800">
-                {loadedParcelMeta.pin}
-              </span>
-              {" · "}
-              <a
-                id="tag-term-first"
-                href={tagTermHref}
-                className={TERM_LINK_CLASS}
-              >
-                TAG ID
-              </a>{" "}
-              <span className="font-mono font-semibold tabular-nums text-slate-800">
-                {loadedParcelMeta.tagId}
-              </span>
-              {" · "}
-              Taxing authority{" "}
-              <span className="font-medium text-slate-700">
-                {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}
-              </span>
-            </p>
-          </div>
-          {safeParcelRecordHref || safeLevyTableHref ? (
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              {safeParcelRecordHref ? (
-                <a
-                  href={safeParcelRecordHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${btnOutlinePrimaryMd} w-full justify-center sm:w-auto`}
-                >
-                  Open county parcel record
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              ) : null}
-              {safeLevyTableHref ? (
-                <a
-                  href={safeLevyTableHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${
-                    safeParcelRecordHref
-                      ? btnOutlineSecondaryMd
-                      : btnOutlinePrimaryMd
-                  } w-full justify-center sm:w-auto`}
-                >
-                  Open county levy table
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              ) : null}
-            </div>
-          ) : null}
-          <p className="text-xs leading-snug text-slate-600 sm:text-sm">
-            <a
-              href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={COUNTY_EXTERNAL_LINK_CLASS}
-            >
-              County property search
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            {safeParcelRecordHref ? (
-              <>
-                {" "}
-                — look up a different parcel by address or PIN.
-              </>
-            ) : (
-              <>
-                {" "}
-                — find the full parcel record (legal description, sales, notices).
-              </>
-            )}
-          </p>
-        </section>
-      ) : null}
 
       {awaitingTemplateMills && lines.length > 0 && (
         <div className="rounded-md border-2 border-indigo-300/80 bg-indigo-50/50 p-3 sm:p-4">

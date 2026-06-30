@@ -282,8 +282,7 @@ export default function SourcesPage() {
           <code className={CODE_INLINE_CLASS}>public/data/metro-levies-2025.json</code>
           {", processed offline from the county PDF below. Metro rows include "}
           <code className={CODE_INLINE_CLASS}>lgid</code>
-          {" "}
-          ; the home-page match uses the same LG ID values on your levy stack when county mart data is joined
+          {"; the home-page match uses the same LG ID values on your levy stack when county mart data is joined"}
           with DOLA in the bundled Arapahoe files (see levy breakdown below). The
           metro card does not offer a manual district choice; it only uses LG IDs
           that appear on your loaded stack.
@@ -501,6 +500,21 @@ export default function SourcesPage() {
           </li>
           <li>
             <code className={CODE_INLINE_CLASS}>
+              public/data/arapahoe-parcel-record-by-pin.json.gz
+            </code>{" "}
+            — extended Main Parcel fields (owner, situs, legal description, appraised
+            and assessed values) for the home{" "}
+            <strong className="font-semibold text-slate-900">Property details</strong>{" "}
+            panel. Gzip keeps the bundle under GitHub size limits (~15 MiB for the
+            full county PIN map). Value row labels use{" "}
+            <code className={CODE_INLINE_CLASS}>AssessmentYear</code> from the export
+            (the year on the county parcel record, e.g. 2026 Appraised Value), not{" "}
+            <code className={CODE_INLINE_CLASS}>TaxYear</code> (levy roll year). The browser
+            fetches this file only after a PIN levy load succeeds; it is not part of the
+            address-search prefetch.
+          </li>
+          <li>
+            <code className={CODE_INLINE_CLASS}>
               public/data/colorado-special-district-directory.json
             </code>{" "}
             — LG ID contact rows from DOLA&apos;s LG tabular export, filtered to
@@ -597,8 +611,7 @@ export default function SourcesPage() {
           >
             publicLGTaxEntities
             <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-          , replace{" "}
+          </a>{", replace "}
           <code className={CODE_INLINE_CLASS}>
             property-tax-entities-export.csv
           </code>
@@ -637,8 +650,7 @@ export default function SourcesPage() {
             {" "}
             and matches keys the same way the bundled situs index is built from{" "}
             <code className={CODE_INLINE_CLASS}>Main Parcel</code>
-            {" "}
-            ; use the county{" "}
+            {"; use the county "}
             <a
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
@@ -821,8 +833,7 @@ export default function SourcesPage() {
             </a>{" "}
             page (
             <strong className="text-slate-900">Arapahoe County Open GIS Data</strong>
-            {" "}
-            ; Assessor Maps/GIS). For our export we selected{" "}
+            {"; Assessor Maps/GIS). For our export we selected "}
             <strong className="text-slate-900">PARCELS</strong>
             {" "}
             as the GIS layer,{" "}
@@ -914,8 +925,7 @@ export default function SourcesPage() {
           is built from a full-state DOLA LG export (for example{" "}
           <code className={CODE_INLINE_CLASS}>lg-export-all.csv</code> under{" "}
           <code className={CODE_INLINE_CLASS}>supporting-data/dola/</code>
-          {" "}
-          ; download from DOLA&apos;s{" "}
+          {"; download from DOLA&apos;s "}
           <a
             href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
             target="_blank"

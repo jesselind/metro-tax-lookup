@@ -44,6 +44,8 @@ next-env.d.ts
 # --- Data policy (metro-tax-lookup) ---
 # Runtime JSON under public/data/ is committed so forks work with npm install + npm run dev.
 # Large county/state exports stay local (gitignored). Download URLs: /sources and README.
+# Uncompressed parcel-record bundle is build output only; commit the .json.gz artifact (~15 MiB).
+public/data/arapahoe-parcel-record-by-pin.json
 
 # Local-only samples (PII, one-off PDFs) - keep out of version control
 supporting-data/_private/

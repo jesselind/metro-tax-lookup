@@ -6,7 +6,8 @@
 /**
  * Single source for glossary copy: brief (levy modal + parcel summary popovers) + full (Key terms / sources asides).
  * Brief paragraphs share the same typography as in-modal levy definitions (`BRIEF_P`). Levy-line explainers use
- * `levyModalTermRegistry`; parcel summary tiles use `parcelSummaryTermBriefRegistry`. Keep wording aligned.
+ * `levyModalTermRegistry`; parcel summary tiles and property details use `parcelGlossaryTermBriefRegistry`
+ * via `ParcelGlossaryPopoverTrigger`. Keep wording aligned.
  */
 
 import type { FC } from "react";
@@ -239,16 +240,32 @@ export function TermActualValueBriefBody() {
         In the same ballpark as market value, but it is the county&apos;s official figure for
         taxes, not a sale price, loan appraisal, or one private appraiser&apos;s opinion.
       </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        On the county{" "}
+        <strong className="font-semibold text-slate-900">parcel record</strong>
+        , this row is labeled{" "}
+        <strong className="font-semibold text-slate-900">Appraised (Total)</strong>
+        .
+      </p>
     </>
   );
 }
 
 export function TermAssessedValueBriefBody() {
   return (
-    <p className={BRIEF_P}>
-      The taxable base for your bill: your actual value times the state assessment percentage for
-      your property type. Each district&apos;s mill levy applies to this number.
-    </p>
+    <>
+      <p className={BRIEF_P}>
+        The taxable base for your bill: your actual value times the state assessment percentage for
+        your property type. Each district&apos;s mill levy applies to this number.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        On the county{" "}
+        <strong className="font-semibold text-slate-900">parcel record</strong>
+        , the total row is labeled{" "}
+        <strong className="font-semibold text-slate-900">Assessed (Total)</strong>
+        .
+      </p>
+    </>
   );
 }
 
@@ -263,23 +280,148 @@ export function TermCompsBriefBody() {
   );
 }
 
+export function TermAinBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">AIN</strong>
+      {" "}
+      (assessor identification number) is the county&apos;s formatted id for your parcel on{" "}
+      <span className="whitespace-nowrap">PPINum.aspx</span>
+      . It is different from the nine-digit{" "}
+      <strong className="font-semibold text-slate-900">PIN</strong>
+      , though both identify the same property.
+    </p>
+  );
+}
+
+export function TermSitusAddressBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Situs</strong>
+      {" "}
+      means where the property sits on the ground. This is the assessor&apos;s street address for
+      the parcel, which can differ from an owner&apos;s mailing address.
+    </p>
+  );
+}
+
+export function TermPhotoSketchBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The county parcel record can show an aerial photo and a building sketch. This tool links out
+      to the county page; we do not embed those images here.
+    </p>
+  );
+}
+
+export function TermLegalDescriptionBriefBody() {
+  return (
+    <>
+      <p className={BRIEF_P}>
+        The formal description of your land from plats and deeds — lot, block, subdivision, and
+        exceptions. Use it to confirm you matched the right parcel when the street address is not
+        enough.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        The county export often starts with a long subdivision prefix. We show a shorter display
+        line when we can strip that prefix; you can expand the full export text to compare.
+      </p>
+    </>
+  );
+}
+
+export function TermAppraisedBuildingBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The building or improvement portion of appraised value — structures on the land, not the land
+      itself. County export column: Improvement Actual.
+    </p>
+  );
+}
+
+export function TermAppraisedLandBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The land portion of appraised value before Colorado&apos;s assessment rate is applied.
+      County export column: Land Actual.
+    </p>
+  );
+}
+
+export function TermAssessedBuildingBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Taxable value assigned to buildings after assessment rules. The county page may show this
+      split; our current Main Parcel export only includes assessed total, so this row may show no
+      data until we join additional county tables.
+    </p>
+  );
+}
+
+export function TermAssessedLandBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Taxable value assigned to land after assessment rules. The county page may show this split;
+      our current Main Parcel export only includes assessed total, so this row may show no data
+      until we join additional county tables.
+    </p>
+  );
+}
+
+export function TermParcelRecordBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The county calls this your{" "}
+      <strong className="font-semibold text-slate-900">parcel record</strong>
+      . We list the same field labels in the same order so you can compare side-by-side with the
+      county online page.
+    </p>
+  );
+}
+
+/** Wider, scrollable panel for parcel glossary popovers (summary tiles + property details). */
+export const PARCEL_GLOSSARY_POPOVER_PANEL_CLASS =
+  "max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain";
+
+export const PARCEL_GLOSSARY_TERM_IDS = [
+  "term-property-classification",
+  "term-owner-list",
+  "term-actual-value",
+  "term-assessed-value",
+  "term-comps",
+  "term-ain",
+  "term-situs-address",
+  "term-photo-sketch",
+  "term-legal-description",
+  "term-appraised-total",
+  "term-appraised-building",
+  "term-appraised-land",
+  "term-assessed-total",
+  "term-assessed-building",
+  "term-assessed-land",
+  "term-parcel-record",
+] as const;
+
+export type ParcelGlossaryTermId = (typeof PARCEL_GLOSSARY_TERM_IDS)[number];
+
+/** @deprecated Use {@link PARCEL_GLOSSARY_TERM_IDS} */
 export const PARCEL_SUMMARY_TERM_IDS = [
   "term-property-classification",
   "term-owner-list",
   "term-actual-value",
   "term-assessed-value",
   "term-comps",
-] as const;
+] as const satisfies readonly ParcelGlossaryTermId[];
 
-export type ParcelSummaryTermId = (typeof PARCEL_SUMMARY_TERM_IDS)[number];
+export type ParcelSummaryTermId = ParcelGlossaryTermId;
 
 /**
- * Brief + title for parcel summary popovers. Levy modal uses `levyModalTermRegistry` (levy-line explainer terms only);
- * these are home-summary-only but use the same brief body pattern.
+ * Brief + title for parcel summary tiles and property details panel. Levy modal uses
+ * `levyModalTermRegistry` (levy-line explainer terms only); these use the same brief body pattern.
  */
-export const parcelSummaryTermBriefRegistry: Record<
-  ParcelSummaryTermId,
-  { title: string; Brief: FC }
+export const parcelGlossaryTermBriefRegistry: Record<
+  ParcelGlossaryTermId,
+  { title: string; Brief: FC; /** Key terms anchor when different from popover id */ keyTermsId?: string }
 > = {
   "term-property-classification": {
     title: "Property classification",
@@ -292,15 +434,68 @@ export const parcelSummaryTermBriefRegistry: Record<
     Brief: TermAssessedValueBriefBody,
   },
   "term-comps": { title: "Comps", Brief: TermCompsBriefBody },
+  "term-ain": { title: "AIN", Brief: TermAinBriefBody },
+  "term-situs-address": {
+    title: "Situs address",
+    Brief: TermSitusAddressBriefBody,
+  },
+  "term-photo-sketch": {
+    title: "Photo / sketch",
+    Brief: TermPhotoSketchBriefBody,
+  },
+  "term-legal-description": {
+    title: "Legal description",
+    Brief: TermLegalDescriptionBriefBody,
+  },
+  "term-appraised-total": {
+    title: "Appraised (Total)",
+    Brief: TermActualValueBriefBody,
+    keyTermsId: "term-actual-value",
+  },
+  "term-appraised-building": {
+    title: "Appraised (Building)",
+    Brief: TermAppraisedBuildingBriefBody,
+    keyTermsId: "term-actual-value",
+  },
+  "term-appraised-land": {
+    title: "Appraised (Land)",
+    Brief: TermAppraisedLandBriefBody,
+    keyTermsId: "term-actual-value",
+  },
+  "term-assessed-total": {
+    title: "Assessed (Total)",
+    Brief: TermAssessedValueBriefBody,
+    keyTermsId: "term-assessed-value",
+  },
+  "term-assessed-building": {
+    title: "Assessed (Building)",
+    Brief: TermAssessedBuildingBriefBody,
+    keyTermsId: "term-assessed-value",
+  },
+  "term-assessed-land": {
+    title: "Assessed (Land)",
+    Brief: TermAssessedLandBriefBody,
+    keyTermsId: "term-assessed-value",
+  },
+  "term-parcel-record": {
+    title: "Property details",
+    Brief: TermParcelRecordBriefBody,
+  },
 };
 
-export function ParcelTermPopoverPanel(props: { termId: ParcelSummaryTermId }) {
+/** @deprecated Use {@link parcelGlossaryTermBriefRegistry} */
+export const parcelSummaryTermBriefRegistry = parcelGlossaryTermBriefRegistry;
+
+export function ParcelTermPopoverPanel(props: { termId: ParcelGlossaryTermId }) {
   const { termId } = props;
-  const { title, Brief } = parcelSummaryTermBriefRegistry[termId];
+  const { title, Brief, keyTermsId } = parcelGlossaryTermBriefRegistry[termId];
   return (
     <>
       <Brief />
-      <TermPopoverKeyTermsLink termId={termId} label={title} />
+      <TermPopoverKeyTermsLink
+        termId={keyTermsId ?? termId}
+        label={title}
+      />
     </>
   );
 }
