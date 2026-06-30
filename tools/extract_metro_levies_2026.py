@@ -15,8 +15,8 @@ Usage (from project root, after installing dependencies listed in
 `tools/requirements.txt`):
 
   python tools/extract_metro_levies_2026.py \\
-    --pdf supporting-data/2026\\ Certification\\ of\\ Levies\\ and\\ Revenues.pdf \\
-    --out supporting-data/metro-levies-2026.json
+    --pdf supporting-data/certs/2026\\ Certification\\ of\\ Levies\\ and\\ Revenues.pdf \\
+    --out supporting-data/metro-levies/metro-levies-2026.json
 
 You will likely need to tweak the column names / filters below once
 you see how the PDF renders on your machine, but this gives us a
@@ -498,7 +498,7 @@ def normalize_metro_districts_from_lines(raw_rows: List[RawRow]) -> Dict[str, An
     "source": {
       "type": "mill_levy_public_information",
       "title": "Mill Levy Public Information pursuant to C.R.S. 39-1-125 (1)(c) for Tax Year 2025/Budget Year 2026",
-      "file": "supporting-data/Mill Levy Public Information Form.pdf",
+      "file": "supporting-data/certs/Mill Levy Public Information Form.pdf",
     },
     "schema": {
       "districtId": "string; stable key `${countyId}-${lgid}-${subdistrict || '0'}`",
@@ -531,7 +531,7 @@ def write_outputs(
   raw_path = out_path.with_name(out_path.stem + "-raw.json")
   raw_payload = {
     "year": 2026,
-    "sourceFile": "supporting-data/Mill Levy Public Information Form.pdf",
+    "sourceFile": "supporting-data/certs/Mill Levy Public Information Form.pdf",
     "rows": [asdict(r) for r in raw_rows],
   }
   raw_path.write_text(json.dumps(raw_payload, indent=2), encoding="utf-8")
@@ -545,13 +545,13 @@ def main() -> None:
   parser.add_argument(
     "--pdf",
     type=Path,
-    default=Path("supporting-data/Mill Levy Public Information Form.pdf"),
+    default=Path("supporting-data/certs/Mill Levy Public Information Form.pdf"),
     help="Path to the Mill Levy Public Information Form PDF.",
   )
   parser.add_argument(
     "--out",
     type=Path,
-    default=Path("supporting-data/metro-levies-2026.json"),
+    default=Path("supporting-data/metro-levies/metro-levies-2026.json"),
     help="Path to write the normalized JSON file.",
   )
 

@@ -464,7 +464,7 @@ export function HomeParcelAddressLookup({
       const data = await fetchArapahoeSitusToPinsJson();
       if (!data?.byKey) {
         setError(
-          "Address lookup data is missing. Run npm run build:arapahoe-index with Main Parcel Table.csv in supporting-data (see README).",
+          "Address lookup data is missing. Run npm run build:arapahoe-index with county mart CSVs in supporting-data/county-mart (see README).",
         );
         return;
       }

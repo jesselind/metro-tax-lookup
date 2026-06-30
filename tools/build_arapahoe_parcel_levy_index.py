@@ -12,9 +12,9 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
 
-Mart_TA_TAG: supporting-data/.../Tax Authority Groups and Tax Authorities.csv
-Main parcel: supporting-data/.../Main Parcel Table.csv
-Optional DOLA: supporting-data/property-tax-entities-export.csv or .xlsx (LGIS Property Tax Entities:
+Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
+Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
+Optional DOLA: supporting-data/dola/property-tax-entities-export.csv or .xlsx (LGIS Property Tax Entities:
   https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf — canonical key src/lib/dataSourceUrls.ts DOLA_LGIS_PROPERTY_TAX_ENTITIES)
 
 Run from repo root:
@@ -49,21 +49,22 @@ except ImportError:
     raise
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+SUPPORTING_DATA = REPO_ROOT / "supporting-data"
+COUNTY_MART = SUPPORTING_DATA / "county-mart"
+DOLA_DIR = SUPPORTING_DATA / "dola"
 
 DEFAULT_MAIN = (
-    REPO_ROOT
-    / "supporting-data"
+    COUNTY_MART
     / "Main Parcel Table (CSV)"
     / "Main Parcel Table.csv"
 )
 DEFAULT_MART = (
-    REPO_ROOT
-    / "supporting-data"
+    COUNTY_MART
     / "Tax Authority Groups and Tax Authorities (CSV)"
     / "Tax Authority Groups and Tax Authorities.csv"
 )
-DEFAULT_DOLA_CSV = REPO_ROOT / "supporting-data" / "property-tax-entities-export.csv"
-DEFAULT_DOLA_XLSX = REPO_ROOT / "supporting-data" / "property-tax-entities-export.xlsx"
+DEFAULT_DOLA_CSV = DOLA_DIR / "property-tax-entities-export.csv"
+DEFAULT_DOLA_XLSX = DOLA_DIR / "property-tax-entities-export.xlsx"
 
 
 def default_dola_export_path() -> Path:
@@ -1017,7 +1018,7 @@ def main() -> None:
         dest="dola_export",
         metavar="PATH",
         help="DOLA LGIS Property Tax Entities export (.csv or .xlsx). "
-        "Default: supporting-data/property-tax-entities-export.csv if present, else .xlsx.",
+        "Default: supporting-data/dola/property-tax-entities-export.csv if present, else .xlsx.",
     )
     ap.add_argument(
         "--dola-certifying-county",

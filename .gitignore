@@ -53,22 +53,15 @@ supporting-data/_private/
 docs/_working/
 
 # County Assessor Data Mart CSVs + portal layout guides (weekly refresh; not committed)
+# Drop full mart export under supporting-data/county-mart/ (portal folder names unchanged).
 supporting-data/**/*.csv
-!supporting-data/property-tax-entities-export.csv
+!supporting-data/dola/property-tax-entities-export.csv
 supporting-data/**/*.docx
 
 # DOLA LGIS spreadsheets (prefer committed property-tax-entities-export.csv)
 *.xlsx
 
-# Local staging for full county mart downloads and DOLA LG directory export
-supporting-data-phase-3/
-supporting-data-phase-2/
+# Optional legacy / enrichment inputs (gitignored bulk under supporting-data/refs/)
+supporting-data/refs/
 
-# Colorado special-district shapefile bundle (dlall.*); only .dbf needed for export_special_district_directory.py
-supporting-data/dlall/
-
-# Statewide special-district import intermediate JSON (not shipped in public/data)
-supporting-data/colorado-all-special-districts.json
-
-# Census / GIS file geodatabases used by enrich_district_json_county_geoids.py (~150MB each)
-supporting-data/**/*.gdb/
+# Census / GIS file geodatabases (~150MB each; live under refs/gis/ when present)

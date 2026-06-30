@@ -5,7 +5,7 @@
 # See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 """
-For each row in supporting-data/colorado-all-special-districts.json (from All Special Districts CSV),
+For each row in supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json (from All Special Districts CSV),
 set countyGeoids: county GEOIDs (5-digit, e.g. 08005 for Arapahoe) where the
 district WKT intersects the TL GDB County layer.
 
@@ -14,10 +14,10 @@ Requires: geopandas, pandas (see tools/requirements.txt).
 Usage:
   .venv/bin/python tools/enrich_district_json_county_geoids.py
   .venv/bin/python tools/enrich_district_json_county_geoids.py \\
-    --csv supporting-data/All_Special_Districts_in_Colorado_20260401.csv \\
-    --gdb supporting-data/tlgdb_2025_a_08_co.gdb \\
+    --csv supporting-data/refs/colorado-special-districts/All_Special_Districts_in_Colorado_20260401.csv \\
+    --gdb supporting-data/refs/gis/tlgdb_2025_a_08_co.gdb \\
     --layer County \\
-    --json supporting-data/colorado-all-special-districts.json
+    --json supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json
 """
 
 from __future__ import annotations
@@ -38,18 +38,18 @@ def main() -> None:
     ap.add_argument(
         "--csv",
         type=Path,
-        default=ROOT / "supporting-data" / "All_Special_Districts_in_Colorado_20260401.csv",
+        default=ROOT / "supporting-data" / "refs" / "colorado-special-districts" / "All_Special_Districts_in_Colorado_20260401.csv",
     )
     ap.add_argument(
         "--gdb",
         type=Path,
-        default=ROOT / "supporting-data" / "tlgdb_2025_a_08_co.gdb",
+        default=ROOT / "supporting-data" / "refs" / "gis" / "tlgdb_2025_a_08_co.gdb",
     )
     ap.add_argument("--layer", default="County", help="GDB layer name (default County).")
     ap.add_argument(
         "--json",
         type=Path,
-        default=ROOT / "supporting-data" / "colorado-all-special-districts.json",
+        default=ROOT / "supporting-data" / "refs" / "colorado-special-districts" / "colorado-all-special-districts.json",
     )
     args = ap.parse_args()
 

@@ -12,9 +12,9 @@ This replaces the older GIS dlall + data.gov merge: one pipeline, LGID-keyed con
 aligned with Property Tax Entity / bill-side LG IDs.
 
 Inputs:
-  - DOLA "lg export" CSV (default: supporting-data-phase-2/lg-export-all.csv)
+  - DOLA "lg export" CSV (default: supporting-data/dola/lg-export-all.csv)
   - Levy stacks JSON (default: public/data/arapahoe-levy-stacks-by-tag-id.json)
-  - Optional: DOLA LGIS Property Tax Entities CSV (default: supporting-data/property-tax-entities-export.csv)
+  - Optional: DOLA LGIS Property Tax Entities CSV (default: supporting-data/dola/property-tax-entities-export.csv)
     used only when a referenced LGID is missing from the LG directory export (name-only fallback row).
     Use --certifying-county to match that CSV's certifying county column (default: Arapahoe).
 
@@ -38,7 +38,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 _TOOLS = Path(__file__).resolve().parent
-DEFAULT_PROPERTY_TAX_ENTITIES = ROOT / "supporting-data" / "property-tax-entities-export.csv"
+DEFAULT_PROPERTY_TAX_ENTITIES = ROOT / "supporting-data" / "dola" / "property-tax-entities-export.csv"
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 from dola_lgis_property_tax_entities_csv import (  # noqa: E402
@@ -150,7 +150,7 @@ def main() -> None:
     ap.add_argument(
         "--lg-csv",
         type=Path,
-        default=ROOT / "supporting-data-phase-2" / "lg-export-all.csv",
+        default=ROOT / "supporting-data" / "dola" / "lg-export-all.csv",
         help="DOLA LG export CSV (full state list).",
     )
     ap.add_argument(

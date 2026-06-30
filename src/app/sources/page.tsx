@@ -127,7 +127,9 @@ export default function SourcesPage() {
       intro={
         <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>
           These tools use publicly available Arapahoe County and Colorado records
-          bundled into static <JsonFirstMention /> in this project. Nothing
+          bundled into static <JsonFirstMention />
+          {" "}
+          in this project. Nothing
           is scraped from county websites when you click buttons in the app.
           This page serves two needs: <strong className="font-semibold text-slate-900">
             verification without code
@@ -195,8 +197,8 @@ export default function SourcesPage() {
           LG ID (from the DOLA bundle, or the digits before the slash in the LGIS
           tax entity ID when the export omits a separate LG ID) matches the{" "}
           <code className={CODE_INLINE_CLASS}>lgid</code> on a metro row in{" "}
-          <code className={CODE_INLINE_CLASS}>metro-levies-2025.json</code>. There is
-          no manual district picker; if no row carries a matching ID, the card explains
+          <code className={CODE_INLINE_CLASS}>metro-levies-2025.json</code>
+          {". "}There is no manual district picker; if no row carries a matching ID, the card explains
           that and links to the statewide special districts map. When more than one metro
           district appears on your stack, the headline uses <strong>combined</strong>{" "}
           certified metro mills and the rate split shows <strong>one</strong> stacked
@@ -204,7 +206,9 @@ export default function SourcesPage() {
           mills field on that card). Use{" "}
           <strong className="text-slate-900">Start over</strong> in the address card to
           reset the home page flow. Old URL{" "}
-          <code className={CODE_INLINE_CLASS}>/metro-tax-lookup</code> redirects to{" "}
+          <code className={CODE_INLINE_CLASS}>/metro-tax-lookup</code>
+          {" "}
+          redirects to{" "}
           <code className={CODE_INLINE_CLASS}>/</code>.
         </p>
 
@@ -223,7 +227,8 @@ export default function SourcesPage() {
             <strong className="text-slate-900">total mill levy</strong> and the
             metro-related parts of your rate (for example{" "}
             <strong className="text-slate-900">debt service</strong> and{" "}
-            <strong className="text-slate-900">operations</strong>), using the
+            <strong className="text-slate-900">operations</strong>
+            {"), using the"}
             county&apos;s labels — wording varies. For a quick manual check, total
             mills and metro debt are usually the easiest figures to compare first.
             In the app, the metro card always uses your <strong>full stack total</strong>{" "}
@@ -255,10 +260,11 @@ export default function SourcesPage() {
             PDF with related levy documents. You can also use the direct PDF link
             (same file as under{" "}
             <strong className="text-slate-900">Official sources</strong>{" "}
-            below). Find your metropolitan district by{" "}
-            <strong className="text-slate-900">name or LGID</strong>. That
-            schedule shows how the county publishes{" "}
-            <strong className="text-slate-900">operations vs debt service</strong>{" "}
+            below).             Find your metropolitan district by{" "}
+            <strong className="text-slate-900">name or LGID</strong>
+            {". "}That schedule shows how the county publishes{" "}
+            <strong className="text-slate-900">operations vs debt service</strong>
+            {" "}
             mills — the same split the app uses when it shows metro debt share
             (when applicable).
           </li>
@@ -274,9 +280,10 @@ export default function SourcesPage() {
         <p className="text-slate-700">
           The tool loads{" "}
           <code className={CODE_INLINE_CLASS}>public/data/metro-levies-2025.json</code>
-          , processed offline from the county PDF below. Metro rows include{" "}
-          <code className={CODE_INLINE_CLASS}>lgid</code>; the home-page match uses
-          the same LG ID values on your levy stack when county mart data is joined
+          {", processed offline from the county PDF below. Metro rows include "}
+          <code className={CODE_INLINE_CLASS}>lgid</code>
+          {" "}
+          ; the home-page match uses the same LG ID values on your levy stack when county mart data is joined
           with DOLA in the bundled Arapahoe files (see levy breakdown below). The
           metro card does not offer a manual district choice; it only uses LG IDs
           that appear on your loaded stack.
@@ -335,9 +342,11 @@ export default function SourcesPage() {
         </h3>
         <p className="text-slate-700">
           These are official Arapahoe County publications. They are{" "}
-          <strong className="text-slate-900">not</strong> imported into{" "}
+          <strong className="text-slate-900">not</strong>
+          {" "}
+          imported into{" "}
           <code className={CODE_INLINE_CLASS}>public/data/metro-levies-*.json</code>
-          . URLs are versioned by tax year.
+          {". "}URLs are versioned by tax year.
         </p>
         <p className="mt-3 text-slate-700">
           The county lists these and other levy PDFs on its{" "}
@@ -409,13 +418,15 @@ export default function SourcesPage() {
           <Link href="/" className={TOOL_ANCHOR}>
             home page
           </Link>
-          , the levy breakdown can load your taxing lines from your parcel PIN using offline
-          county <DataMartFirstMention />
+          {", the levy breakdown can load your taxing lines from your parcel PIN using offline county "}
+          <DataMartFirstMention />
           {"-style exports "}
           joined in this repo, then match lines to
           Colorado&apos;s public district and property-tax-entity data where
-          possible. Clicking <strong>Load stack</strong> only reads bundled JSON
-          from this site — no live requests to the county.
+          possible. Clicking{" "}
+          <strong>Load stack</strong>
+          {" "}
+          only reads bundled JSON from this site — no live requests to the county.
         </p>
 
         <h3 className={`${SECTION_H3} !mt-6`}>
@@ -443,8 +454,9 @@ export default function SourcesPage() {
           <li>
             Open <strong className="text-slate-900">Tax District Levies</strong>{" "}
             for that parcel (linked from the parcel page). You will see a table:
-            each <strong className="text-slate-900">taxing authority</strong> and
-            its mills, plus a total. Compare that list to what the tool shows after
+            each <strong className="text-slate-900">taxing authority</strong>
+            {" "}
+            and its mills, plus a total. Compare that list to what the tool shows after
             you load by PIN or add lines with Add tile — they should align.
           </li>
           <li>
@@ -480,8 +492,8 @@ export default function SourcesPage() {
             </code>{" "}
             — lookup key from Main Parcel situs fields: merged house number (mart{" "}
             <code className={CODE_INLINE_CLASS}>SAAddrNumber</code> + optional{" "}
-            <code className={CODE_INLINE_CLASS}>SAStreetNumberSfx</code>, same join as
-            the home form), normalized street name (direction and street-type
+            <code className={CODE_INLINE_CLASS}>SAStreetNumberSfx</code>
+            {", same join as the home form), normalized street name (direction and street-type"}
             tokens stripped, including spelled-out compass words when typed),
             optional unit → matching PINs and labels. One address can
             match many parcels (for example large buildings); the home page lists
@@ -515,8 +527,9 @@ export default function SourcesPage() {
           Keeping bundled data current
         </h3>
         <p className="text-slate-700">
-          The app serves static <JsonFirstMention /> from this repository at
-          runtime — not live county or state APIs. Official exports flow{" "}
+          The app serves static <JsonFirstMention />
+          {" "}
+          from this repository at runtime — not live county or state APIs. Official exports flow{" "}
           <strong className="text-slate-900">county and state download → local
           copy (mostly gitignored) → bundled files under</strong>{" "}
           <code className={CODE_INLINE_CLASS}>public/data/</code>{" "}
@@ -527,18 +540,20 @@ export default function SourcesPage() {
           (not repeated here).
         </p>
         <p className="mt-3 text-slate-700">
-          <strong className="text-slate-900">What stays out of git:</strong> Large
-          raw exports remain on your machine (see the data-policy block in{" "}
-          <code className={CODE_INLINE_CLASS}>.gitignore</code>). That includes
-          county Data Mart CSVs and portal layout guides, DOLA LG directory CSVs
-          under{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data-phase-2/</code>,
-          full mart staging under{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data-phase-3/</code>,
-          and other bulky inputs named there. One small DOLA file is committed
+          <strong className="text-slate-900">What stays out of git:</strong>
+          {" "}
+          Large raw exports remain on your machine (see the data-policy block in{" "}
+          <code className={CODE_INLINE_CLASS}>.gitignore</code>
+          {"). "}That includes county Data Mart CSVs and portal layout guides under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/county-mart/</code>
+          {", DOLA LG directory CSVs under "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/dola/</code>
+          {", optional statewide refs under "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/refs/</code>
+          {", and other bulky inputs named there. One small DOLA file is committed "}
           so clones can rebuild levy matching:{" "}
           <code className={CODE_INLINE_CLASS}>
-            supporting-data/property-tax-entities-export.csv
+            supporting-data/dola/property-tax-entities-export.csv
           </code>
           .
         </p>
@@ -558,14 +573,15 @@ export default function SourcesPage() {
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
           , copy them into{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data/</code> using the
-          folder layout described in the{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/county-mart/</code>{" "}
+          using the portal&apos;s folder names (see the{" "}
           <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>
-          , then commit refreshed{" "}
+          {"), then commit refreshed "}
           <code className={CODE_INLINE_CLASS}>public/data/arapahoe-*.json</code>{" "}
           so forks pick up the new snapshot. Each bundle records a{" "}
-          <code className={CODE_INLINE_CLASS}>bundledAsOf</code> date the UI can
-          show when results look stale.
+          <code className={CODE_INLINE_CLASS}>bundledAsOf</code>
+          {" "}
+          date the UI can show when results look stale.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="text-slate-900">
@@ -586,14 +602,15 @@ export default function SourcesPage() {
           <code className={CODE_INLINE_CLASS}>
             property-tax-entities-export.csv
           </code>
-          , then rebuild the Arapahoe bundles and district directory per the{" "}
+          {", then rebuild the Arapahoe bundles and district directory per the "}
           <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>.
         </p>
         <p className="mt-3 text-slate-700">
-          <strong className="text-slate-900">Metro levy PDF:</strong> The annual
-          certification form drives{" "}
-          <code className={CODE_INLINE_CLASS}>metro-levies-*.json</code>. Refresh
-          when the county publishes a new form — not on the mart weekly schedule.
+          <strong className="text-slate-900">Metro levy PDF:</strong>
+          {" "}
+          The annual certification form drives{" "}
+          <code className={CODE_INLINE_CLASS}>metro-levies-*.json</code>
+          {". "}Refresh when the county publishes a new form — not on the mart weekly schedule.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="text-slate-900">Suggested maintainer rhythm:</strong>{" "}
@@ -607,18 +624,21 @@ export default function SourcesPage() {
         <ul className="list-disc space-y-2 pl-5 text-slate-700">
           <li>
             <strong>Parcel and PIN:</strong> On the home page you can match a PIN
-            for <strong className="text-slate-900">real property</strong> using
-            bundled situs fields: main house number plus optional number suffix
-            (mart <code className={CODE_INLINE_CLASS}>SAStreetNumberSfx</code>, e.g. a
-            fraction), street name with direction and type stripped for matching,
+            for <strong className="text-slate-900">real property</strong>
+            {" "}
+            using bundled situs fields: main house number plus optional number suffix
+            (mart <code className={CODE_INLINE_CLASS}>SAStreetNumberSfx</code>
+            {", e.g. a fraction), street name with direction and type stripped for matching,"}
             and optional unit. Submit with{" "}
             <strong className="text-slate-900">Search</strong> or{" "}
             <strong className="text-slate-900">Enter</strong> from any field. The
             browser loads{" "}
-            <code className={CODE_INLINE_CLASS}>arapahoe-situs-to-pins.json</code> and
-            matches keys the same way the bundled situs index is built from{" "}
-            <code className={CODE_INLINE_CLASS}>Main Parcel</code>; use
-            the county{" "}
+            <code className={CODE_INLINE_CLASS}>arapahoe-situs-to-pins.json</code>
+            {" "}
+            and matches keys the same way the bundled situs index is built from{" "}
+            <code className={CODE_INLINE_CLASS}>Main Parcel</code>
+            {" "}
+            ; use the county{" "}
             <a
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
@@ -639,10 +659,11 @@ export default function SourcesPage() {
             <strong className="text-slate-900">Business personal property</strong>{" "}
             is out of scope (different county workflow; not in this situs index).
             Levy stack loading by PIN uses{" "}
-            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>, which
-            includes each parcel&apos;s <code className={CODE_INLINE_CLASS}>ain</code>{" "}
-            from Main Parcel in the bundled index so the levy panel can link to
-            the county comps grid PDF (
+            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>
+            {", which includes each parcel&apos;s "}
+            <code className={CODE_INLINE_CLASS}>ain</code>
+            {" "}
+            from Main Parcel in the bundled index so the levy panel can link to the county comps grid PDF (
             <code className={CODE_INLINE_CLASS}>FileDownload.ashx?AIN=…</code>
             ) through the home{" "}
             <strong className="text-slate-900">Comps PDF</strong>
@@ -658,8 +679,8 @@ export default function SourcesPage() {
             a scrollable list of field cards, each showing that row&apos;s value for your property
             alongside each comparable sale, instead of the wide worksheet table. Until per-parcel
             data is wired on the home dashboard, the grid preview appears only for{" "}
-            <strong className="text-slate-900">Try demo property</strong>, using
-            committed demo JSON (
+            <strong className="text-slate-900">Try demo property</strong>
+            {", using committed demo JSON ("}
             <code className={CODE_INLINE_CLASS}>
               src/data/nov-comps-grid-try-demo-property.json
             </code>
@@ -713,19 +734,26 @@ export default function SourcesPage() {
             Your parcel maps to a county taxing authority (TAGId). The
             county&apos;s online levy table
             uses the same id in{" "}
-            <code className={CODE_INLINE_CLASS}>Levy.aspx?id=…</code> on{" "}
+            <code className={CODE_INLINE_CLASS}>Levy.aspx?id=…</code>
+            {" "}
+            on{" "}
             <span className="whitespace-nowrap">
               parcelsearch.arapahoegov.com
             </span>
-            . It is not a private per-parcel serial number.
+            {". "}It is not a private per-parcel serial number.
           </li>
           <li>
             <strong>Property classification (field lineage):</strong> The home page tile copies
             the{" "}
-            <code className={CODE_INLINE_CLASS}>PropertyClassDescr</code> column from{" "}
-            <code className={CODE_INLINE_CLASS}>Main Parcel Table.csv</code> into{" "}
-            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code> at build time. A
-            paper notice may still say Residential or Commercial for the same parcel; see{" "}
+            <code className={CODE_INLINE_CLASS}>PropertyClassDescr</code>
+            {" "}
+            column from{" "}
+            <code className={CODE_INLINE_CLASS}>Main Parcel Table.csv</code>
+            {" "}
+            into{" "}
+            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>
+            {" "}
+            at build time. A paper notice may still say Residential or Commercial for the same parcel; see{" "}
             <Link
               href="/sources#term-property-classification"
               className={TOOL_ANCHOR}
@@ -754,12 +782,12 @@ export default function SourcesPage() {
             </code>{" "}
             (export each table from the mart one at a time, Data Format
             Comma-delimited Text File, then place under{" "}
-            <code className={CODE_INLINE_CLASS}>supporting-data/</code> locally —
-            those CSVs are gitignored; see{" "}
+            <code className={CODE_INLINE_CLASS}>supporting-data/county-mart/</code>{" "}
+            locally — those CSVs are gitignored; see{" "}
             <a href="#refreshing-bundled-data" className={TOOL_ANCHOR}>
               Keeping bundled data current
             </a>
-            ),
+            {"), "}
             optionally export <strong>Property Tax Entities</strong> from DOLA
             LGIS (
             <a
@@ -778,8 +806,10 @@ export default function SourcesPage() {
           </li>
           <li>
             <strong>County parcel GIS (optional):</strong> The file geodatabase{" "}
-            <code className={CODE_INLINE_CLASS}>AssessorParcels_WGS.gdb</code> comes
-            from the county{" "}
+            <code className={CODE_INLINE_CLASS}>AssessorParcels_WGS.gdb</code> under{" "}
+            <code className={CODE_INLINE_CLASS}>supporting-data/refs/gis/</code>
+            {" "}
+            comes from the county{" "}
             <a
               href={ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE}
               target="_blank"
@@ -789,15 +819,22 @@ export default function SourcesPage() {
               GIS Data Download
               <span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
-            page (<strong className="text-slate-900">Arapahoe County Open GIS Data</strong>
+            page (
+            <strong className="text-slate-900">Arapahoe County Open GIS Data</strong>
+            {" "}
             ; Assessor Maps/GIS). For our export we selected{" "}
-            <strong className="text-slate-900">PARCELS</strong> as the GIS layer,{" "}
-            <strong className="text-slate-900">FILE GEODATABASE</strong> as the
-            data format, and{" "}
-            <strong className="text-slate-900">DECIMAL DEGREES (WGS84)</strong> as
-            the projection — that matches the parcels + WGS +{" "}
-            <code className={CODE_INLINE_CLASS}>.gdb</code> naming. The current PIN and
-            levy-stack JSON builder uses mart CSVs, not this GDB; keep it for
+            <strong className="text-slate-900">PARCELS</strong>
+            {" "}
+            as the GIS layer,{" "}
+            <strong className="text-slate-900">FILE GEODATABASE</strong>
+            {" "}
+            as the data format, and{" "}
+            <strong className="text-slate-900">DECIMAL DEGREES (WGS84)</strong>
+            {" "}
+            as the projection — that matches the parcels + WGS +{" "}
+            <code className={CODE_INLINE_CLASS}>.gdb</code>
+            {" "}
+            naming. The current PIN and levy-stack JSON builder uses mart CSVs, not this GDB; keep it for
             local GIS or future map work.
           </li>
           <li>
@@ -806,7 +843,8 @@ export default function SourcesPage() {
               colorado-special-district-directory.json
             </code>{" "}
             does not change mills or share on the tile.
-            The line-detail modal shows <strong className="text-slate-900">one assembled</strong>
+            The line-detail modal shows{" "}
+            <strong className="text-slate-900">one assembled</strong>
             {" "}
             answer: tax name/IDs from the DOLA join at build time plus address and website from{" "}
             <code className={CODE_INLINE_CLASS}>matchSpecialDistrict()</code> in{" "}
@@ -864,7 +902,7 @@ export default function SourcesPage() {
         </p>
 
         <h3
-          id="dola-lg-directory-export"
+          id="dola-export"
           className={`${SECTION_H3} !mt-8 scroll-mt-8`}
         >
           DOLA LG directory (tabular CSV)
@@ -875,7 +913,8 @@ export default function SourcesPage() {
           </code>{" "}
           is built from a full-state DOLA LG export (for example{" "}
           <code className={CODE_INLINE_CLASS}>lg-export-all.csv</code> under{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data-phase-2/</code>
+          <code className={CODE_INLINE_CLASS}>supporting-data/dola/</code>
+          {" "}
           ; download from DOLA&apos;s{" "}
           <a
             href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
@@ -903,9 +942,10 @@ export default function SourcesPage() {
           any LGIDs still missing from both sources.
         </p>
         <p className="mt-3 text-slate-700">
-          Optional legacy tooling: Colorado <strong>dlall</strong> GIS extract
-          under{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data/dlall/</code>
+          Optional legacy tooling: Colorado <strong>dlall</strong>
+          {" "}
+          GIS extract under{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/refs/gis/dlall/</code>
           {" "}
           (gitignored).{" "}
           <a
@@ -916,35 +956,41 @@ export default function SourcesPage() {
           >
             Colorado Special District Mapping Project (DOLA GIS)
             <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-          .
+          </a>.
         </p>
 
         <h3
           id="census-tiger-gdb"
           className={`${SECTION_H3} !mt-8 scroll-mt-8`}
         >
-          Census <TigerFirstMention /> (optional enrichment)
+          Census <TigerFirstMention />
+          {" "}
+          (optional enrichment)
         </h3>
         <p className="text-slate-700">
           The optional statewide layer merged into the district directory has many
           special districts with similar names across counties. When the app
           matches a county levy line to that layer by fuzzy name, it should only
           consider districts that actually intersect{" "}
-          <strong className="text-slate-900">Arapahoe County</strong> — otherwise
-          the wrong district&apos;s contact info or LG ID could win a
+          <strong className="text-slate-900">Arapahoe County</strong>
+          {" "}
+          — otherwise the wrong district&apos;s contact info or LG ID could win a
           text-only match. The enrichment step records which Census county GEOIDs
-          (for example <code className={CODE_INLINE_CLASS}>08005</code> for Arapahoe)
-          each district&apos;s boundary touches, so the matcher can filter
+          (for example <code className={CODE_INLINE_CLASS}>08005</code>
+          {" "}
+          for Arapahoe) each district&apos;s boundary touches, so the matcher can filter
           candidates geographically, not only by string similarity.
         </p>
         <p className="mt-3 text-slate-700">
           An optional enrichment step can attach those county GEOIDs to statewide
           district rows by intersecting boundaries with the Census{" "}
-          <strong>County</strong> layer inside the Colorado file geodatabase{" "}
-          <code className={CODE_INLINE_CLASS}>tlgdb_2025_a_08_co.gdb</code>. Download
-          the official zip and unzip into{" "}
-          <code className={CODE_INLINE_CLASS}>supporting-data/</code> (gitignored).
+          <strong>County</strong>
+          {" "}
+          layer inside the Colorado file geodatabase{" "}
+          <code className={CODE_INLINE_CLASS}>tlgdb_2025_a_08_co.gdb</code>
+          {". "}Download the official zip and unzip into{" "}
+          <code className={CODE_INLINE_CLASS}>supporting-data/refs/gis/</code>{" "}
+          (gitignored).
         </p>
         <p className="mt-3 break-words">
           <a
@@ -1009,7 +1055,7 @@ export default function SourcesPage() {
           Levy-specific definitions (government level, what is it, sources) appear only in the levy
           tile detail modal, from{" "}
           <code className={CODE_INLINE_CLASS}>public/data/levy-explainer-entries.json</code>
-          , not in this list.
+          {", not in this list."}
         </p>
         <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
           New rows follow the same JSON shape as the existing explainers. The app picks which entry

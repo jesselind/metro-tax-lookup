@@ -25,7 +25,7 @@ Override paths:
 
   python3 tools/import_colorado_district_layer_csv.py \\
     --csv supporting-data/MyExport.csv \\
-    --out supporting-data/colorado-all-special-districts.json \\
+    --out supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json \\
     --source-title "All Special Districts in Colorado"
 """
 
@@ -48,8 +48,8 @@ from website_normalize import normalize_website  # noqa: E402
 
 PRESETS: dict[str, dict[str, str | Path]] = {
     "all": {
-        "csv": SUPPORT / "All_Special_Districts_in_Colorado_20260401.csv",
-        "out": SUPPORT / "colorado-all-special-districts.json",
+        "csv": SUPPORT / "refs" / "colorado-special-districts" / "All_Special_Districts_in_Colorado_20260401.csv",
+        "out": SUPPORT / "refs" / "colorado-special-districts" / "colorado-all-special-districts.json",
         "title": "All Special Districts in Colorado",
     },
 }

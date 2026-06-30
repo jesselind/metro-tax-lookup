@@ -9,7 +9,7 @@
 
 /**
  * DOLA LGIS — Property Tax Entities (export to CSV or xlsx for `build_arapahoe_parcel_levy_index.py`;
- * the build script prefers `supporting-data/property-tax-entities-export.csv`).
+ * the build script prefers `supporting-data/dola/property-tax-entities-export.csv`).
  * Interactive site: accept terms, then export; not machine-scraped by this repo.
  */
 export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
@@ -17,7 +17,7 @@ export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
 
 /**
  * DOLA Colorado Special District Mapping Project (map UI + Download menu).
- * Offline: optional legacy path: `dlall.dbf` → `tools/export_special_district_directory.py`.
+ * Offline: optional legacy path: `refs/gis/dlall/dlall.dbf` → `tools/export_special_district_directory.py`.
  * Runtime contact bundle: DOLA LG tabular export → `tools/build_district_directory_from_lg_export.py`.
  */
 export const COLORADO_SPECIAL_DISTRICTS_MAP_URL =
@@ -27,7 +27,7 @@ export const COLORADO_SPECIAL_DISTRICTS_MAP_URL =
 export const COLORADO_DATA_GOV_ALL_SPECIAL_DISTRICTS_DATASET =
   "https://data.colorado.gov/Local-Aggregation/Map-of-All-Special-Districts-in-Colorado/dm2a-biqr";
 
-/** TIGER/Line GDB (Colorado, 2025 vintage). Unzip to `tlgdb_2025_a_08_co.gdb` for `enrich_district_json_county_geoids.py`. */
+/** TIGER/Line GDB (Colorado, 2025 vintage). Unzip to `supporting-data/refs/gis/tlgdb_2025_a_08_co.gdb` for `enrich_district_json_county_geoids.py`. */
 export const CENSUS_TIGER_GDB25_COLORADO_ZIP =
   "https://www2.census.gov/geo/tiger/TGRGDB25/tlgdb_2025_a_08_co.gdb.zip";
 

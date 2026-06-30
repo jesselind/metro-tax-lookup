@@ -50,7 +50,13 @@ Open `http://localhost:3000`.
 | Path | Role |
 | --- | --- |
 | `public/data/*.json` | Runtime app data served to the browser |
-| `supporting-data/` | Offline inputs for regeneration (mostly gitignored; see `/sources` — **Keeping bundled data current**) |
+| `supporting-data/county-mart/` | Latest full Arapahoe Assessor Data Mart download (portal folder names; replace on weekly refresh) |
+| `supporting-data/dola/` | DOLA exports: committed `property-tax-entities-export.csv` + gitignored `lg-export-all.csv` |
+| `supporting-data/certs/` | Levy certification PDFs (source for metro levy extract scripts) |
+| `supporting-data/metro-levies/` | Extract script outputs (`metro-levies-*.json`; copy to `public/data/` when refreshing) |
+| `supporting-data/refs/` | Optional statewide GIS / district layer inputs (gitignored bulk) |
+| `supporting-data/_private/` | PII samples, NOV parser output (gitignored) |
+| `supporting-data/` | Parent for all offline regeneration inputs (see `/sources` — **Keeping bundled data current**) |
 | `tools/*.py` | Offline extractors/index builders |
 
 ### Levy detail modal (`levy-explainer-entries.json`)
@@ -85,7 +91,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    npm run build:arapahoe-index
    ```
 
-   The script reads county mart CSVs and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/property-tax-entities-export.csv` (preferred; committed so forks can rebuild). If that file is missing, it falls back to `property-tax-entities-export.xlsx` locally. **`*.xlsx` is gitignored**; keep spreadsheets out of version control and use CSV for the canonical export.
+   The script reads county mart CSVs from `supporting-data/county-mart/` (Main Parcel + Tax Authority Groups tables) and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/dola/property-tax-entities-export.csv` (preferred; committed so forks can rebuild). If that file is missing, it falls back to `property-tax-entities-export.xlsx` in the same folder locally. **`*.xlsx` is gitignored**; keep spreadsheets out of version control and use CSV for the canonical export.
 
    Build behavior notes:
    - Within each TAG, repeated authority rows are collapsed to one canonical row per `code + authority`: active (`A`) rows are preferred over inactive (`I`), then newest `effectiveYear`.
@@ -103,19 +109,19 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    npm run build:district-directory
    ```
 
-   Reads `supporting-data-phase-2/lg-export-all.csv` (or pass `--lg-csv`) and `public/data/arapahoe-levy-stacks-by-tag-id.json`. Writes `public/data/colorado-special-district-directory.json`. Run after `build:arapahoe-index` when levy stacks change, or when you refresh the LG CSV.
+   Reads `supporting-data/dola/lg-export-all.csv` (or pass `--lg-csv`) and `public/data/arapahoe-levy-stacks-by-tag-id.json`. Writes `public/data/colorado-special-district-directory.json`. Run after `build:arapahoe-index` when levy stacks change, or when you refresh the LG CSV.
 
-   When an LGID appears on a levy stack but is missing from the LG directory CSV, the script adds a minimal name-only row from `supporting-data/property-tax-entities-export.csv` (same committed DOLA export used for levy matching) and records those LGIDs under `_meta.lgIdsFilledFromPropertyTaxEntities`. Optional `--certifying-county` (default `Arapahoe`) must match the export's certifying county column for fallback rows; `_meta.propertyTaxEntitiesCountyFilterApplied` records whether that column was present and `_meta.certifyingCountyForPropertyTaxFallback` is set only when the filter ran. Anything still absent from both sources remains in `_meta.missingLgIdsInExport`.
+   When an LGID appears on a levy stack but is missing from the LG directory CSV, the script adds a minimal name-only row from `supporting-data/dola/property-tax-entities-export.csv` (same committed DOLA export used for levy matching) and records those LGIDs under `_meta.lgIdsFilledFromPropertyTaxEntities`. Optional `--certifying-county` (default `Arapahoe`) must match the export's certifying county column for fallback rows; `_meta.propertyTaxEntitiesCountyFilterApplied` records whether that column was present and `_meta.certifyingCountyForPropertyTaxFallback` is set only when the filter ran. Anything still absent from both sources remains in `_meta.missingLgIdsInExport`.
 
 4. Rebuild metro levy JSON (year-specific script):
    - `tools/extract_metro_levies_2025.py` or `tools/extract_metro_levies_2026.py`
-   - Source PDF goes in `supporting-data/Mill Levy Public Information Form.pdf`
-   - Copy generated output to `public/data/metro-levies-YYYY.json`
+   - Source PDF goes in `supporting-data/certs/` (Mill Levy Public Information Form; 2026 script may use the Certification of Levies PDF)
+   - Outputs land in `supporting-data/metro-levies/`; copy to `public/data/metro-levies-YYYY.json`
 
 5. Optional legacy district tooling (not used for the app runtime bundle above):
-   - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`
-   - `tools/enrich_district_json_county_geoids.py` — reads that JSON and optional Census GDB under `supporting-data/`
-   - `tools/export_special_district_directory.py` — Colorado **dlall** GIS extract under `supporting-data/dlall/` (`dlall.dbf`)
+   - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`
+   - `tools/enrich_district_json_county_geoids.py` — reads that JSON and optional Census GDB under `supporting-data/refs/gis/`
+   - `tools/export_special_district_directory.py` — Colorado **dlall** GIS extract under `supporting-data/refs/gis/dlall/` (`dlall.dbf`)
 
 6. Optional NOV comps grid extractor (experimental tooling; not used by the Next.js bundle):
    - `tools/parse_arapahoe_nov_comps_grid.py` reads **page 2** of a Notice-of-Valuation-style PDF when it carries the six-column comps grid (subject + five sales). It uses `pdfplumber` geometry + column bands, not line-table extraction.
