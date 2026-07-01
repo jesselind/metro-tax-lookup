@@ -71,8 +71,10 @@ export type ArapahoePinToTagRow = {
   totalActual?: number | null;
   /** Assessed value (CSV TotalAssessed). Omitted in older bundles. */
   totalAssessed?: number | null;
-  /** CSV TaxYear for this parcel row (preferred for value footnote). */
+  /** CSV TaxYear (levy roll year; not the county notice year on appraised/assessed labels). */
   parcelTaxYear?: string | null;
+  /** CSV AssessmentYear — year on county parcel record value headers (e.g. 2026 Appraised Value). */
+  assessmentYear?: string | null;
   /** County property class label (CSV PropertyClassDescr), e.g. Real, Improvement. */
   propertyClassDescr?: string | null;
   /** County owner listing from export (CSV OwnerList) when present. */
@@ -105,6 +107,40 @@ export type ArapahoePinToTagFile = {
   };
   pinDigits: number;
   byPin: Record<string, ArapahoePinToTagRow>;
+};
+
+/** Extended Main Parcel fields for the property details panel (lazy load after levy). */
+export type ArapahoeParcelRecordRow = {
+  ain?: string | null;
+  situsAddress?: string | null;
+  situsCity?: string | null;
+  ownerList?: string | null;
+  ownerDeliveryAddress?: string | null;
+  ownerCityStateZip?: string | null;
+  legalDescrFull?: string | null;
+  legalDescrDisplay?: string | null;
+  subdivisionCd?: string | null;
+  subdivisionName?: string | null;
+  taxRollDescr?: string | null;
+  propertyClassDescr?: string | null;
+  totalActual?: number | null;
+  improvementActual?: number | null;
+  landActual?: number | null;
+  totalAssessed?: number | null;
+  stateUseCd?: string | null;
+  parcelTaxYear?: string | null;
+  /** County parcel record notice year (CSV AssessmentYear). */
+  assessmentYear?: string | null;
+};
+
+export type ArapahoeParcelRecordByPinFile = {
+  snapshot: {
+    bundledAsOf: string;
+    source: string;
+    taxYear?: string | null;
+  };
+  pinDigits: number;
+  byPin: Record<string, ArapahoeParcelRecordRow>;
 };
 
 /**
@@ -151,6 +187,29 @@ export function formatTaxAreaShortDescrDisplay(raw: string): string {
 
 let stacksCache: Promise<ArapahoeLevyStacksFile | null> | null = null;
 let pinCache: Promise<ArapahoePinToTagFile | null> | null = null;
+let parcelRecordCache: Promise<ArapahoeParcelRecordByPinFile | null> | null =
+  null;
+
+/** Browser gzip JSON bundle (e.g. parcel record by PIN). */
+async function fetchGzipJson<T>(
+  url: string,
+  timeoutMs = 120_000,
+): Promise<T | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok || !res.body) return null;
+    if (typeof DecompressionStream === "undefined") return null;
+    const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
+    const text = await new Response(stream).text();
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 /** Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads. */
 export function fetchArapahoeLevyStacksJson(): Promise<ArapahoeLevyStacksFile | null> {
@@ -172,8 +231,40 @@ export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null
   return pinCache;
 }
 
+/**
+ * Lazy fetch — start only after levy path succeeds; never joined with levy prefetch.
+ * Property details panel fields from Main Parcel export.
+ */
+export function fetchArapahoeParcelRecordByPinJson(): Promise<ArapahoeParcelRecordByPinFile | null> {
+  if (!parcelRecordCache) {
+    parcelRecordCache = fetchGzipJson<ArapahoeParcelRecordByPinFile>(
+      "/data/arapahoe-parcel-record-by-pin.json.gz",
+    ).then((data) => {
+      if (data === null) {
+        parcelRecordCache = null;
+      }
+      return data;
+    });
+  }
+  return parcelRecordCache;
+}
+
+/** Resolve one parcel record row from a loaded file (9-digit PIN candidates). */
+export function lookupParcelRecordRow(
+  pinInput: string,
+  file: ArapahoeParcelRecordByPinFile,
+): ArapahoeParcelRecordRow | null {
+  const candidates = pinLookupCandidates(pinInput);
+  for (const k of candidates) {
+    const hit = file.byPin[k];
+    if (hit) return hit;
+  }
+  return null;
+}
+
 export function clearArapahoeParcelDataCache(): void {
   stacksCache = null;
   pinCache = null;
+  parcelRecordCache = null;
   clearArapahoeSitusDataCache();
 }

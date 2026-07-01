@@ -6,7 +6,7 @@
   "source": {
     "type": "mill_levy_public_information",
     "title": "Mill Levy Public Information pursuant to C.R.S. 39-1-125 (1)(c) for Tax Year 2024/Budget Year 2025",
-    "file": "supporting-data/Mill Levy Public Information Form.pdf"
+    "file": "supporting-data/certs/Mill Levy Public Information Form.pdf"
   },
   "schema": {
     "districtId": "string; stable key `${countyId}-${lgid}-${subdistrict || '0'}`",

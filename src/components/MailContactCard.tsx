@@ -9,7 +9,7 @@ import {
   MAIL_CONTACT_CARD_BODY_CLASS,
   MAIL_CONTACT_CARD_ICON_SHELL_CLASS,
   MAIL_CONTACT_CARD_KICKER_CLASS,
-  MAIL_CONTACT_CARD_LINK_CLASS,
+  mailContactCardLinkClass,
   MAIL_CONTACT_CARD_MAIL_ICON_CLASS,
   MAIL_CONTACT_CARD_PRIMARY_LINE_CLASS,
   MAIL_CONTACT_CARD_SECONDARY_CLASS,
@@ -20,6 +20,8 @@ export type MailContactCardProps = {
   kicker: string;
   primaryLine: ReactNode;
   secondary: ReactNode;
+  /** Span the parent content column (e.g. home dashboard below the two-column levy layout). */
+  fullWidth?: boolean;
 };
 
 /** Mail CTA card: shared layout for /contact and in-flow feedback (e.g. home dashboard). */
@@ -28,9 +30,10 @@ export function MailContactCard({
   kicker,
   primaryLine,
   secondary,
+  fullWidth = false,
 }: MailContactCardProps) {
   return (
-    <a href={href} className={MAIL_CONTACT_CARD_LINK_CLASS}>
+    <a href={href} className={mailContactCardLinkClass(fullWidth)}>
       <div className={MAIL_CONTACT_CARD_ICON_SHELL_CLASS}>
         <MailIcon className={MAIL_CONTACT_CARD_MAIL_ICON_CLASS} />
       </div>

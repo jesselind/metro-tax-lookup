@@ -1,5 +1,5 @@
 ---
-description: JSX/React prose — explicit space after inline tags so words do not run together
+description: JSX/React prose — explicit space after inline tags so words do not run together. CodeRabbit: see .coderabbit.yaml path_instructions for **/*.{tsx,jsx}.
 alwaysApply: true
 ---
 

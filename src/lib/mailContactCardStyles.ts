@@ -12,8 +12,12 @@
  * Mobile: centered column (icon on top, copy below) so it reads as an intentional card, not a cramped
  * side-by-side row. sm+: horizontal row (media-object style).
  */
-export const MAIL_CONTACT_CARD_LINK_CLASS =
-  "group flex max-w-lg flex-col items-center gap-4 rounded-lg border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 p-6 text-center no-underline shadow-sm ring-slate-200/60 transition duration-200 hover:border-indigo-200 hover:shadow-md hover:ring-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-6 sm:p-8 sm:text-left";
+const MAIL_CONTACT_CARD_LINK_BASE_CLASS =
+  "group flex flex-col items-center gap-4 rounded-lg border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/80 to-indigo-50/40 p-6 text-center no-underline shadow-sm ring-slate-200/60 transition duration-200 hover:border-indigo-200 hover:shadow-md hover:ring-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-6 sm:p-8 sm:text-left";
+
+export function mailContactCardLinkClass(fullWidth = false): string {
+  return `${MAIL_CONTACT_CARD_LINK_BASE_CLASS} ${fullWidth ? "w-full" : "max-w-lg"}`;
+}
 
 /** Slightly larger tile on narrow screens so the top glyph anchors the layout. */
 export const MAIL_CONTACT_CARD_ICON_SHELL_CLASS =

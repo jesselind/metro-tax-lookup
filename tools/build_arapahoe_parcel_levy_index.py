@@ -11,10 +11,11 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
+  - arapahoe-parcel-record-by-pin.json.gz — Pin → Main Parcel county-record fields (gzip; lazy load after levy; see --skip-pin-map)
 
-Mart_TA_TAG: supporting-data/.../Tax Authority Groups and Tax Authorities.csv
-Main parcel: supporting-data/.../Main Parcel Table.csv
-Optional DOLA: supporting-data/property-tax-entities-export.csv or .xlsx (LGIS Property Tax Entities:
+Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
+Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
+Optional DOLA: supporting-data/dola/property-tax-entities-export.csv or .xlsx (LGIS Property Tax Entities:
   https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf — canonical key src/lib/dataSourceUrls.ts DOLA_LGIS_PROPERTY_TAX_ENTITIES)
 
 Run from repo root:
@@ -33,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import json
 import math
 import re
@@ -49,21 +51,22 @@ except ImportError:
     raise
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+SUPPORTING_DATA = REPO_ROOT / "supporting-data"
+COUNTY_MART = SUPPORTING_DATA / "county-mart"
+DOLA_DIR = SUPPORTING_DATA / "dola"
 
 DEFAULT_MAIN = (
-    REPO_ROOT
-    / "supporting-data"
+    COUNTY_MART
     / "Main Parcel Table (CSV)"
     / "Main Parcel Table.csv"
 )
 DEFAULT_MART = (
-    REPO_ROOT
-    / "supporting-data"
+    COUNTY_MART
     / "Tax Authority Groups and Tax Authorities (CSV)"
     / "Tax Authority Groups and Tax Authorities.csv"
 )
-DEFAULT_DOLA_CSV = REPO_ROOT / "supporting-data" / "property-tax-entities-export.csv"
-DEFAULT_DOLA_XLSX = REPO_ROOT / "supporting-data" / "property-tax-entities-export.xlsx"
+DEFAULT_DOLA_CSV = DOLA_DIR / "property-tax-entities-export.csv"
+DEFAULT_DOLA_XLSX = DOLA_DIR / "property-tax-entities-export.xlsx"
 
 
 def default_dola_export_path() -> Path:
@@ -285,29 +288,108 @@ def format_situs_label(row: dict[str, str]) -> str:
     return line1 or strip_field(row.get("Pin", ""))
 
 
-def build_situs_to_pins(path: Path) -> dict[str, list[dict[str, str]]]:
-    """Pin -> one label each; multiple parcels can share the same lookup key."""
-    by_key: dict[str, dict[str, str]] = {}
+def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
+    legal_full = _optional_str(row, "LegalDescr")
+    legal_display = legal_descr_display_tail(legal_full) if legal_full else None
+    return {
+        "ain": _optional_str(row, "AIN"),
+        "situsAddress": _optional_str(row, "SAFreeFormAddr"),
+        "situsCity": _optional_str(row, "SACity"),
+        "ownerList": _optional_str(row, "OwnerList"),
+        "ownerDeliveryAddress": _optional_str(row, "CurDeliveryAddr"),
+        "ownerCityStateZip": _optional_str(row, "CurLastLine"),
+        "legalDescrFull": legal_full,
+        "legalDescrDisplay": legal_display,
+        "subdivisionCd": _optional_str(row, "SubdivisionCd"),
+        "subdivisionName": _optional_str(row, "SubdivisionName"),
+        "taxRollDescr": _optional_str(row, "TaxRollDescr"),
+        "propertyClassDescr": _optional_str(row, "PropertyClassDescr"),
+        "totalActual": parse_parcel_value_cell(row.get("TotalActual")),
+        "improvementActual": parse_parcel_value_cell(row.get("ImprovementActual")),
+        "landActual": parse_parcel_value_cell(row.get("LandActual")),
+        "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
+        "stateUseCd": _optional_str(row, "StateUseCd"),
+        "parcelTaxYear": _optional_str(row, "TaxYear"),
+        "assessmentYear": _optional_str(row, "AssessmentYear"),
+    }
+
+
+def _pin_map_first_row(row: dict[str, str]) -> dict[str, Any] | None:
+    tag_id = strip_field(row.get("TAGId", ""))
+    if not tag_id:
+        return None
+    short_d = strip_field(row.get("TAGShortDescr", ""))
+    rec: dict[str, Any] = {
+        "tagId": tag_id,
+        "tagShortDescr": short_d,
+        "totalActual": parse_parcel_value_cell(row.get("TotalActual")),
+        "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
+        "parcelTaxYear": strip_field(row.get("TaxYear", "")) or None,
+        "assessmentYear": strip_field(row.get("AssessmentYear", "")) or None,
+        "propertyClassDescr": strip_field(row.get("PropertyClassDescr", "")) or None,
+    }
+    owner_list = strip_field(row.get("OwnerList", ""))
+    if owner_list:
+        rec["ownerList"] = owner_list
+    ain = strip_field(row.get("AIN", ""))
+    if ain:
+        rec["ain"] = ain
+    return rec
+
+
+def _accumulate_situs_row(
+    by_key: dict[str, dict[str, str]],
+    row: dict[str, str],
+    pin: str,
+) -> None:
+    lk = row_situs_lookup_key(row)
+    if not lk:
+        return
+    label = format_situs_label(row)
+    if lk not in by_key:
+        by_key[lk] = {}
+    if pin not in by_key[lk]:
+        by_key[lk][pin] = label
+
+
+def read_main_parcel_maps(
+    path: Path,
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, str]]], dict[str, dict[str, Any]]]:
+    """One pass over Main Parcel: pin map, situs index, and parcel record map."""
+    pin_map: dict[str, dict[str, Any]] = {}
+    situs_by_key: dict[str, dict[str, str]] = {}
+    parcel_record_map: dict[str, dict[str, Any]] = {}
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         r = csv.DictReader(f)
         for row in r:
             pin = normalize_pin(strip_field(row.get("Pin", "")))
             if not pin:
                 continue
-            lk = row_situs_lookup_key(row)
-            if not lk:
-                continue
-            label = format_situs_label(row)
-            if lk not in by_key:
-                by_key[lk] = {}
-            # Duplicate PIN rows in the export share the same situs; keep one label.
-            if pin not in by_key[lk]:
-                by_key[lk][pin] = label
-    out: dict[str, list[dict[str, str]]] = {}
-    for k, pin_map in by_key.items():
-        items = [{"pin": p, "label": pin_map[p]} for p in sorted(pin_map.keys())]
-        out[k] = items
-    return merge_aggregate_situs_keys(out)
+            _accumulate_situs_row(situs_by_key, row, pin)
+            if pin not in parcel_record_map:
+                parcel_record_map[pin] = _parcel_record_from_row(row)
+            if pin not in pin_map:
+                first = _pin_map_first_row(row)
+                if first:
+                    pin_map[pin] = first
+            else:
+                ain = strip_field(row.get("AIN", ""))
+                if ain:
+                    if not pin_map[pin].get("ain"):
+                        pin_map[pin]["ain"] = ain
+                    if not parcel_record_map[pin].get("ain"):
+                        parcel_record_map[pin]["ain"] = ain
+    situs_out: dict[str, list[dict[str, str]]] = {}
+    for k, pin_labels in situs_by_key.items():
+        items = [{"pin": p, "label": pin_labels[p]} for p in sorted(pin_labels.keys())]
+        situs_out[k] = items
+    return pin_map, merge_aggregate_situs_keys(situs_out), parcel_record_map
+
+
+def build_situs_to_pins(path: Path) -> dict[str, list[dict[str, str]]]:
+    """Pin -> one label each; multiple parcels can share the same lookup key."""
+    _, situs_map, _ = read_main_parcel_maps(path)
+    return situs_map
 
 
 def merge_aggregate_situs_keys(
@@ -963,45 +1045,40 @@ def read_mart_groups(path: Path) -> tuple[dict[str, list[dict[str, Any]]], str]:
     return by_tag, tax_year or ""
 
 
+# Mart LegalDescr often prefixes human text with subdivision/block/lot keys (~83% of rows).
+_LEGAL_DESCR_PREFIX_RE = re.compile(
+    r"^SubdivisionCd\s+\S+\s+SubdivisionName\s+.+?\s+Block\s+\S+\s+Lot\s+\S+\s+",
+    re.IGNORECASE,
+)
+
+
+def legal_descr_display_tail(full: str) -> str:
+    """Strip mart subdivision/block/lot prefix when present; else return trimmed full string."""
+    s = strip_field(full)
+    if not s:
+        return ""
+    m = _LEGAL_DESCR_PREFIX_RE.match(s)
+    if m:
+        tail = s[m.end() :].strip()
+        return tail if tail else s
+    return s
+
+
+def _optional_str(row: dict[str, str], key: str) -> str | None:
+    t = strip_field(row.get(key, ""))
+    return t if t else None
+
+
+def read_parcel_record_map(path: Path) -> dict[str, dict[str, Any]]:
+    """First Main Parcel row per PIN — extended county parcel record fields for lazy UI load."""
+    _, _, parcel_record_map = read_main_parcel_maps(path)
+    return parcel_record_map
+
+
 def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
     """First Main Parcel row per PIN for tag and values; AIN may be filled from a later row if missing."""
-    out: dict[str, dict[str, Any]] = {}
-    with path.open(newline="", encoding="utf-8", errors="replace") as f:
-        r = csv.DictReader(f)
-        for row in r:
-            pin = normalize_pin(strip_field(row.get("Pin", "")))
-            if not pin:
-                continue
-            tag_id = strip_field(row.get("TAGId", ""))
-            short_d = strip_field(row.get("TAGShortDescr", ""))
-            if pin not in out:
-                if not tag_id:
-                    continue
-                ta = parse_parcel_value_cell(row.get("TotalActual"))
-                ts = parse_parcel_value_cell(row.get("TotalAssessed"))
-                ty = strip_field(row.get("TaxYear", ""))
-                pclass = strip_field(row.get("PropertyClassDescr", ""))
-                rec: dict[str, Any] = {
-                    "tagId": tag_id,
-                    "tagShortDescr": short_d,
-                    "totalActual": ta,
-                    "totalAssessed": ts,
-                    "parcelTaxYear": ty or None,
-                    "propertyClassDescr": pclass or None,
-                }
-                owner_list = strip_field(row.get("OwnerList", ""))
-                if owner_list:
-                    rec["ownerList"] = owner_list
-                ain = strip_field(row.get("AIN", ""))
-                if ain:
-                    rec["ain"] = ain
-                out[pin] = rec
-            else:
-                rec = out[pin]
-                ain = strip_field(row.get("AIN", ""))
-                if ain and not rec.get("ain"):
-                    rec["ain"] = ain
-    return out
+    pin_map, _, _ = read_main_parcel_maps(path)
+    return pin_map
 
 
 def main() -> None:
@@ -1017,7 +1094,7 @@ def main() -> None:
         dest="dola_export",
         metavar="PATH",
         help="DOLA LGIS Property Tax Entities export (.csv or .xlsx). "
-        "Default: supporting-data/property-tax-entities-export.csv if present, else .xlsx.",
+        "Default: supporting-data/dola/property-tax-entities-export.csv if present, else .xlsx.",
     )
     ap.add_argument(
         "--dola-certifying-county",
@@ -1109,10 +1186,14 @@ def main() -> None:
             encoding="utf-8",
         )
         print(f"Wrote {stacks_path} ({len(stacks)} TAG stacks)", file=sys.stderr)
-        print("Skipping arapahoe-pin-to-tag.json and arapahoe-situs-to-pins.json (--skip-pin-map).", file=sys.stderr)
+        print(
+            "Skipping arapahoe-pin-to-tag.json, arapahoe-situs-to-pins.json, "
+            "and arapahoe-parcel-record-by-pin.json.gz (--skip-pin-map).",
+            file=sys.stderr,
+        )
         return
 
-    pin_map = read_pin_map(args.main_parcel)
+    pin_map, situs_map, parcel_record_map = read_main_parcel_maps(args.main_parcel)
     used_tag_ids = {v["tagId"] for v in pin_map.values()}
     stacks_out = {k: v for k, v in stacks.items() if k in used_tag_ids}
     if len(stacks_out) < len(stacks):
@@ -1136,7 +1217,6 @@ def main() -> None:
     mb = pin_path.stat().st_size / (1024 * 1024)
     print(f"Wrote {pin_path} ({len(pin_map)} pins, {mb:.2f} MiB)", file=sys.stderr)
 
-    situs_map = build_situs_to_pins(args.main_parcel)
     situs_snapshot = {
         "bundledAsOf": bundled_as_of,
         "source": "Arapahoe County datamart: Main Parcel situs fields (Pin, SA*)",
@@ -1162,6 +1242,31 @@ def main() -> None:
     sm = situs_path.stat().st_size / (1024 * 1024)
     print(
         f"Wrote {situs_path} ({len(situs_map)} keys, {sm:.2f} MiB)",
+        file=sys.stderr,
+    )
+
+    parcel_snapshot = {
+        "bundledAsOf": bundled_as_of,
+        "source": (
+            "Arapahoe County datamart: Main Parcel county-record fields "
+            "(lazy load after levy)"
+        ),
+        "taxYear": tax_year or None,
+    }
+    parcel_path_gz = args.out_dir / "arapahoe-parcel-record-by-pin.json.gz"
+    parcel_payload = json.dumps(
+        {
+            "snapshot": parcel_snapshot,
+            "pinDigits": 9,
+            "byPin": parcel_record_map,
+        },
+        separators=sep,
+    )
+    with gzip.open(parcel_path_gz, "wt", encoding="utf-8", compresslevel=9) as gz:
+        gz.write(parcel_payload)
+    pm = parcel_path_gz.stat().st_size / (1024 * 1024)
+    print(
+        f"Wrote {parcel_path_gz} ({len(parcel_record_map)} pins, {pm:.2f} MiB gzip)",
         file=sys.stderr,
     )
 

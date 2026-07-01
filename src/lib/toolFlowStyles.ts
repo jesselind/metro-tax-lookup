@@ -10,8 +10,8 @@ export const RADIUS_INLINE_CLASS = "rounded";
 export const RADIUS_CONTROL_CLASS = "rounded-md";
 export const RADIUS_SURFACE_CLASS = "rounded-lg";
 
-/** Main column cap (header, hero, footer, tools): wide on desktop, harmless on mobile. */
-export const SITE_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
+/** Main column cap (header, hero, footer, tools). Value: `--site-content-max-width` in `src/app/globals.css`. */
+export const SITE_CONTENT_MAX_WIDTH_CLASS = "site-content-max-width";
 
 /** Full-width slate title bar (PageHero): viewport breakout. */
 export const PAGE_HERO_OUTER_CLASS =
@@ -140,6 +140,10 @@ export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FR
 export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
   "text-inherit uppercase underline decoration-slate-400 decoration-1 underline-offset-[0.2em] hover:text-slate-600 hover:decoration-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
 
+/** Glossary popover trigger on property details rows (sentence case, not tile uppercase). */
+export const PARCEL_RECORD_GLOSSARY_LINK_CLASS =
+  "block max-w-full whitespace-normal break-words text-left text-sm font-medium leading-snug text-slate-600 underline decoration-slate-300 underline-offset-2 [overflow-wrap:anywhere] hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1";
+
 export const PARCEL_SUMMARY_TILE_LABEL_CLASS =
   "text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs";
 
@@ -164,6 +168,9 @@ export const METRO_PERCENT_TILES_GRID_CLASS =
  */
 export const DASHBOARD_SECTION_HEADING_CLASS =
   "mt-6 text-xl font-bold leading-tight tracking-tight text-slate-900 sm:mt-8 sm:text-2xl";
+
+/** Subline under a dashboard section heading (e.g. export date, short hint). */
+export const DASHBOARD_SECTION_META_CLASS = "text-sm text-slate-600";
 
 /** Inline <code> in prose (Sources page, term definitions). Single class for consistent styling. */
 export const CODE_INLINE_CLASS =

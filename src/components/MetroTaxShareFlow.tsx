@@ -136,9 +136,11 @@ export type MetroTaxShareFlowProps = {
    */
   totalAssessedForEstimate?: number | null;
   /**
-   * When set (e.g. levy stack on the home page), renders between the headline
-   * percent tiles and the metro breakdown so the stack appears first in reading order.
+   * Section heading (and optional lead copy) rendered above metro headline tiles when
+   * metro districts are present — e.g. "Where is your money going?" on the home page.
    */
+  sectionLead?: ReactNode;
+  /** Levy stack and related content below metro headline tiles. */
   children?: ReactNode;
 };
 
@@ -147,6 +149,7 @@ export function MetroTaxShareFlow({
   prefillTotalMills = null,
   metroFromLevyStack,
   totalAssessedForEstimate = null,
+  sectionLead = null,
   children,
 }: MetroTaxShareFlowProps) {
   const p = idPrefix ? `${idPrefix}-` : "";
@@ -1046,12 +1049,16 @@ export function MetroTaxShareFlow({
           aria-label="Metro district share"
           className="min-w-0 space-y-4 sm:space-y-6"
         >
+          {sectionLead}
           {metroShareBlock}
           {children}
           {metroDetailsBlock}
         </div>
       ) : (
-        children ?? null
+        <>
+          {sectionLead}
+          {children ?? null}
+        </>
       )}
     </>
   );

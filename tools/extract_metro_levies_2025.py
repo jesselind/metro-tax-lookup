@@ -15,8 +15,8 @@ Usage (from project root, after installing dependencies listed in
 `tools/requirements.txt`):
 
   python tools/extract_metro_levies_2025.py \\
-    --pdf supporting-data/Mill\\ Levy\\ Public\\ Information\\ Form.pdf \\
-    --out supporting-data/metro-levies-2025.json
+    --pdf supporting-data/certs/Mill\\ Levy\\ Public\\ Information\\ Form.pdf \\
+    --out supporting-data/metro-levies/metro-levies-2025.json
 
 Use the 2025 Mill Levy Public Information Form PDF when available;
 the layout is the same as the 2026 extractor.
@@ -497,7 +497,7 @@ def normalize_metro_districts_from_lines(raw_rows: List[RawRow]) -> Dict[str, An
     "source": {
       "type": "mill_levy_public_information",
       "title": "Mill Levy Public Information pursuant to C.R.S. 39-1-125 (1)(c) for Tax Year 2024/Budget Year 2025",
-      "file": "supporting-data/Mill Levy Public Information Form.pdf",
+      "file": "supporting-data/certs/Mill Levy Public Information Form.pdf",
     },
     "schema": {
       "districtId": "string; stable key `${countyId}-${lgid}-${subdistrict || '0'}`",
@@ -530,7 +530,7 @@ def write_outputs(
   raw_path = out_path.with_name(out_path.stem + "-raw.json")
   raw_payload = {
     "year": 2025,
-    "sourceFile": "supporting-data/Mill Levy Public Information Form.pdf",
+    "sourceFile": "supporting-data/certs/Mill Levy Public Information Form.pdf",
     "rows": [asdict(r) for r in raw_rows],
   }
   raw_path.write_text(json.dumps(raw_payload, indent=2), encoding="utf-8")
@@ -544,13 +544,13 @@ def main() -> None:
   parser.add_argument(
     "--pdf",
     type=Path,
-    default=Path("supporting-data/Mill Levy Public Information Form.pdf"),
+    default=Path("supporting-data/certs/Mill Levy Public Information Form.pdf"),
     help="Path to the Mill Levy Public Information Form PDF (2025).",
   )
   parser.add_argument(
     "--out",
     type=Path,
-    default=Path("supporting-data/metro-levies-2025.json"),
+    default=Path("supporting-data/metro-levies/metro-levies-2025.json"),
     help="Path to write the normalized JSON file.",
   )
 

@@ -138,9 +138,9 @@ export type LoadLevyStackFromPinOk = {
   arapahoeStacksSnapshot: ArapahoeLevyStacksFile["snapshot"];
   awaitingTemplateMills: boolean;
   templateMillDrafts: Record<string, string>;
-  /** From Main Parcel export (same tax year as pin snapshot). */
   parcelValues: ParcelValuesFromExport;
-  parcelValuesTaxYear: string | null;
+  /** From Main Parcel export (AssessmentYear — same year county shows on appraised/assessed values). */
+  parcelAssessmentYear: string | null;
   /** Main Parcel AIN when present in pin map (county comps grid PDF). */
   ain: string | null;
 };
@@ -219,9 +219,9 @@ export async function loadLevyStackFromPin(
   }));
   const stackSum = nextLines.reduce((a, l) => a + l.mills, 0);
   const pv = parcelValuesFromPinRow(row);
-  const yearFromParcel =
-    typeof row.parcelTaxYear === "string" && row.parcelTaxYear.trim()
-      ? row.parcelTaxYear.trim()
+  const assessmentYearFromParcel =
+    typeof row.assessmentYear === "string" && row.assessmentYear.trim()
+      ? row.assessmentYear.trim()
       : null;
   const ainFromRow =
     typeof row.ain === "string" && row.ain.trim() ? row.ain.trim() : null;
@@ -238,7 +238,7 @@ export async function loadLevyStackFromPin(
       nextLines.map((l) => [l.id, formatMills(l.mills)] as const),
     ),
     parcelValues: pv,
-    parcelValuesTaxYear: yearFromParcel ?? pins.snapshot.taxYear ?? null,
+    parcelAssessmentYear: assessmentYearFromParcel,
     ain: ainFromRow,
   };
 }

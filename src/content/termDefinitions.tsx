@@ -154,6 +154,111 @@ export function TermPinAside() {
   );
 }
 
+export function TermAinAside() {
+  return (
+    <TermAside id="term-ain" title="AIN" titleId="term-ain-title">
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">AIN</dfn>
+        {" "}
+        means{" "}
+        <strong className="font-semibold text-slate-900">assessor identification number</strong>
+        . It is the county&apos;s formatted parcel id on the online parcel record (
+        <span className="whitespace-nowrap">PPINum.aspx</span>
+        ), often shown with dashes. It identifies the same property as your{" "}
+        <a href="#term-pin" className={TERM_LINK_CLASS}>
+          PIN
+        </a>
+        , but the formats differ.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermSitusAddressAside() {
+  return (
+    <TermAside
+      id="term-situs-address"
+      title="Situs address"
+      titleId="term-situs-address-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Situs</dfn>
+        {" "}
+        is assessor language for where the property physically sits. The{" "}
+        <strong className="font-semibold text-slate-900">situs address</strong>
+        {" "}
+        is the street location on the county record. It can differ from the owner&apos;s mailing
+        address (for example when tax notices go to a P.O. box or a different home).
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermPhotoSketchAside() {
+  return (
+    <TermAside
+      id="term-photo-sketch"
+      title="Photo / sketch"
+      titleId="term-photo-sketch-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        On the county parcel record, assessor staff may publish an aerial photo and a simple
+        building sketch. This tool links to the county page for those images; we do not copy or
+        embed them in the app.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermLegalDescriptionAside() {
+  return (
+    <TermAside
+      id="term-legal-description"
+      title="Legal description"
+      titleId="term-legal-description-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        A{" "}
+        <dfn className="font-semibold not-italic text-slate-900">legal description</dfn>
+        {" "}
+        is the formal way your land is described in plats and deeds — lot, block, subdivision, and
+        any exceptions. It helps confirm you matched the right parcel when the street address alone
+        is not enough (for example condos or large buildings with many units).
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        County data exports sometimes prepend a long subdivision code block. In{" "}
+        <strong className="font-semibold text-slate-900">Property details</strong>
+        {" "}
+        we show a shorter display line when we can strip that prefix; you can expand the full
+        export string to compare with the county site.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermParcelRecordAside() {
+  return (
+    <TermAside
+      id="term-parcel-record"
+      title="Property details (parcel record)"
+      titleId="term-parcel-record-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        The county online page calls this your{" "}
+        <dfn className="font-semibold not-italic text-slate-900">parcel record</dfn>
+        . Our{" "}
+        <strong className="font-semibold text-slate-900">Property details</strong>
+        {" "}
+        panel lists the same field labels in the same order as{" "}
+        <span className="whitespace-nowrap">PPINum.aspx</span>
+        {" "}
+        so you can compare side-by-side. Summary tiles at the top stay a quick confirmation;
+        the panel is the full county-record trace from our bundled export.
+      </p>
+    </TermAside>
+  );
+}
+
 export function TermPropertyClassificationAside() {
   return (
     <TermAside
