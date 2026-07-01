@@ -138,8 +138,8 @@ export type LoadLevyStackFromPinOk = {
   arapahoeStacksSnapshot: ArapahoeLevyStacksFile["snapshot"];
   awaitingTemplateMills: boolean;
   templateMillDrafts: Record<string, string>;
-  /** From Main Parcel export (AssessmentYear — same year county shows on appraised/assessed values). */
   parcelValues: ParcelValuesFromExport;
+  /** From Main Parcel export (AssessmentYear — same year county shows on appraised/assessed values). */
   parcelAssessmentYear: string | null;
   /** Main Parcel AIN when present in pin map (county comps grid PDF). */
   ain: string | null;

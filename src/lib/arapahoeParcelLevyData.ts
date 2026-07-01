@@ -191,9 +191,14 @@ let parcelRecordCache: Promise<ArapahoeParcelRecordByPinFile | null> | null =
   null;
 
 /** Browser gzip JSON bundle (e.g. parcel record by PIN). */
-async function fetchGzipJson<T>(url: string): Promise<T | null> {
+async function fetchGzipJson<T>(
+  url: string,
+  timeoutMs = 120_000,
+): Promise<T | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: controller.signal });
     if (!res.ok || !res.body) return null;
     if (typeof DecompressionStream === "undefined") return null;
     const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
@@ -201,6 +206,8 @@ async function fetchGzipJson<T>(url: string): Promise<T | null> {
     return JSON.parse(text) as T;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -232,7 +239,12 @@ export function fetchArapahoeParcelRecordByPinJson(): Promise<ArapahoeParcelReco
   if (!parcelRecordCache) {
     parcelRecordCache = fetchGzipJson<ArapahoeParcelRecordByPinFile>(
       "/data/arapahoe-parcel-record-by-pin.json.gz",
-    );
+    ).then((data) => {
+      if (data === null) {
+        parcelRecordCache = null;
+      }
+      return data;
+    });
   }
   return parcelRecordCache;
 }

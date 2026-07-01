@@ -29,6 +29,15 @@ export const DEMO_PROPERTY_CLASSIFICATION = "Residential";
 /** Sample AIN matching county hyphenation (####-##-#-##-###); not a real parcel. */
 export const DEMO_AIN = "1000-00-0-00-001";
 
+/** Round placeholder dollars for demo property details (not tied to any parcel). */
+export const DEMO_TOTAL_ACTUAL = 450_000;
+
+export const DEMO_IMPROVEMENT_ACTUAL = 380_000;
+
+export const DEMO_LAND_ACTUAL = 70_000;
+
+export const DEMO_TOTAL_ASSESSED = 31_500;
+
 /** Assessment year on summary tile and property details labels in demo mode. */
 export function demoAssessmentYear(): string {
   return String(new Date().getFullYear());
@@ -48,5 +57,9 @@ export function obfuscateParcelRecordRow(
     legalDescrDisplay: DEMO_LEGAL,
     legalDescrFull: DEMO_LEGAL,
     assessmentYear: demoAssessmentYear(),
+    totalActual: DEMO_TOTAL_ACTUAL,
+    improvementActual: DEMO_IMPROVEMENT_ACTUAL,
+    landActual: DEMO_LAND_ACTUAL,
+    totalAssessed: DEMO_TOTAL_ASSESSED,
   };
 }

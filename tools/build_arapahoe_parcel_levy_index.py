@@ -288,29 +288,105 @@ def format_situs_label(row: dict[str, str]) -> str:
     return line1 or strip_field(row.get("Pin", ""))
 
 
-def build_situs_to_pins(path: Path) -> dict[str, list[dict[str, str]]]:
-    """Pin -> one label each; multiple parcels can share the same lookup key."""
-    by_key: dict[str, dict[str, str]] = {}
+def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
+    legal_full = _optional_str(row, "LegalDescr")
+    legal_display = legal_descr_display_tail(legal_full) if legal_full else None
+    return {
+        "ain": _optional_str(row, "AIN"),
+        "situsAddress": _optional_str(row, "SAFreeFormAddr"),
+        "situsCity": _optional_str(row, "SACity"),
+        "ownerList": _optional_str(row, "OwnerList"),
+        "ownerDeliveryAddress": _optional_str(row, "CurDeliveryAddr"),
+        "ownerCityStateZip": _optional_str(row, "CurLastLine"),
+        "legalDescrFull": legal_full,
+        "legalDescrDisplay": legal_display,
+        "subdivisionCd": _optional_str(row, "SubdivisionCd"),
+        "subdivisionName": _optional_str(row, "SubdivisionName"),
+        "taxRollDescr": _optional_str(row, "TaxRollDescr"),
+        "propertyClassDescr": _optional_str(row, "PropertyClassDescr"),
+        "totalActual": parse_parcel_value_cell(row.get("TotalActual")),
+        "improvementActual": parse_parcel_value_cell(row.get("ImprovementActual")),
+        "landActual": parse_parcel_value_cell(row.get("LandActual")),
+        "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
+        "stateUseCd": _optional_str(row, "StateUseCd"),
+        "parcelTaxYear": _optional_str(row, "TaxYear"),
+        "assessmentYear": _optional_str(row, "AssessmentYear"),
+    }
+
+
+def _pin_map_first_row(row: dict[str, str]) -> dict[str, Any] | None:
+    tag_id = strip_field(row.get("TAGId", ""))
+    if not tag_id:
+        return None
+    short_d = strip_field(row.get("TAGShortDescr", ""))
+    rec: dict[str, Any] = {
+        "tagId": tag_id,
+        "tagShortDescr": short_d,
+        "totalActual": parse_parcel_value_cell(row.get("TotalActual")),
+        "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
+        "parcelTaxYear": strip_field(row.get("TaxYear", "")) or None,
+        "assessmentYear": strip_field(row.get("AssessmentYear", "")) or None,
+        "propertyClassDescr": strip_field(row.get("PropertyClassDescr", "")) or None,
+    }
+    owner_list = strip_field(row.get("OwnerList", ""))
+    if owner_list:
+        rec["ownerList"] = owner_list
+    ain = strip_field(row.get("AIN", ""))
+    if ain:
+        rec["ain"] = ain
+    return rec
+
+
+def _accumulate_situs_row(
+    by_key: dict[str, dict[str, str]],
+    row: dict[str, str],
+    pin: str,
+) -> None:
+    lk = row_situs_lookup_key(row)
+    if not lk:
+        return
+    label = format_situs_label(row)
+    if lk not in by_key:
+        by_key[lk] = {}
+    if pin not in by_key[lk]:
+        by_key[lk][pin] = label
+
+
+def read_main_parcel_maps(
+    path: Path,
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, str]]], dict[str, dict[str, Any]]]:
+    """One pass over Main Parcel: pin map, situs index, and parcel record map."""
+    pin_map: dict[str, dict[str, Any]] = {}
+    situs_by_key: dict[str, dict[str, str]] = {}
+    parcel_record_map: dict[str, dict[str, Any]] = {}
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         r = csv.DictReader(f)
         for row in r:
             pin = normalize_pin(strip_field(row.get("Pin", "")))
             if not pin:
                 continue
-            lk = row_situs_lookup_key(row)
-            if not lk:
-                continue
-            label = format_situs_label(row)
-            if lk not in by_key:
-                by_key[lk] = {}
-            # Duplicate PIN rows in the export share the same situs; keep one label.
-            if pin not in by_key[lk]:
-                by_key[lk][pin] = label
-    out: dict[str, list[dict[str, str]]] = {}
-    for k, pin_map in by_key.items():
-        items = [{"pin": p, "label": pin_map[p]} for p in sorted(pin_map.keys())]
-        out[k] = items
-    return merge_aggregate_situs_keys(out)
+            _accumulate_situs_row(situs_by_key, row, pin)
+            if pin not in parcel_record_map:
+                parcel_record_map[pin] = _parcel_record_from_row(row)
+            if pin not in pin_map:
+                first = _pin_map_first_row(row)
+                if first:
+                    pin_map[pin] = first
+            else:
+                ain = strip_field(row.get("AIN", ""))
+                if ain and not pin_map[pin].get("ain"):
+                    pin_map[pin]["ain"] = ain
+    situs_out: dict[str, list[dict[str, str]]] = {}
+    for k, pin_labels in situs_by_key.items():
+        items = [{"pin": p, "label": pin_labels[p]} for p in sorted(pin_labels.keys())]
+        situs_out[k] = items
+    return pin_map, merge_aggregate_situs_keys(situs_out), parcel_record_map
+
+
+def build_situs_to_pins(path: Path) -> dict[str, list[dict[str, str]]]:
+    """Pin -> one label each; multiple parcels can share the same lookup key."""
+    _, situs_map, _ = read_main_parcel_maps(path)
+    return situs_map
 
 
 def merge_aggregate_situs_keys(
@@ -992,85 +1068,14 @@ def _optional_str(row: dict[str, str], key: str) -> str | None:
 
 def read_parcel_record_map(path: Path) -> dict[str, dict[str, Any]]:
     """First Main Parcel row per PIN — extended county parcel record fields for lazy UI load."""
-    out: dict[str, dict[str, Any]] = {}
-    with path.open(newline="", encoding="utf-8", errors="replace") as f:
-        r = csv.DictReader(f)
-        for row in r:
-            pin = normalize_pin(strip_field(row.get("Pin", "")))
-            if not pin or pin in out:
-                continue
-            legal_full = _optional_str(row, "LegalDescr")
-            legal_display = (
-                legal_descr_display_tail(legal_full) if legal_full else None
-            )
-            rec: dict[str, Any] = {
-                "ain": _optional_str(row, "AIN"),
-                "situsAddress": _optional_str(row, "SAFreeFormAddr"),
-                "situsCity": _optional_str(row, "SACity"),
-                "ownerList": _optional_str(row, "OwnerList"),
-                "ownerDeliveryAddress": _optional_str(row, "CurDeliveryAddr"),
-                "ownerCityStateZip": _optional_str(row, "CurLastLine"),
-                "legalDescrFull": legal_full,
-                "legalDescrDisplay": legal_display,
-                "subdivisionCd": _optional_str(row, "SubdivisionCd"),
-                "subdivisionName": _optional_str(row, "SubdivisionName"),
-                "taxRollDescr": _optional_str(row, "TaxRollDescr"),
-                "propertyClassDescr": _optional_str(row, "PropertyClassDescr"),
-                "totalActual": parse_parcel_value_cell(row.get("TotalActual")),
-                "improvementActual": parse_parcel_value_cell(
-                    row.get("ImprovementActual")
-                ),
-                "landActual": parse_parcel_value_cell(row.get("LandActual")),
-                "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
-                "stateUseCd": _optional_str(row, "StateUseCd"),
-                "parcelTaxYear": _optional_str(row, "TaxYear"),
-                "assessmentYear": _optional_str(row, "AssessmentYear"),
-            }
-            out[pin] = rec
-    return out
+    _, _, parcel_record_map = read_main_parcel_maps(path)
+    return parcel_record_map
 
 
 def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
     """First Main Parcel row per PIN for tag and values; AIN may be filled from a later row if missing."""
-    out: dict[str, dict[str, Any]] = {}
-    with path.open(newline="", encoding="utf-8", errors="replace") as f:
-        r = csv.DictReader(f)
-        for row in r:
-            pin = normalize_pin(strip_field(row.get("Pin", "")))
-            if not pin:
-                continue
-            tag_id = strip_field(row.get("TAGId", ""))
-            short_d = strip_field(row.get("TAGShortDescr", ""))
-            if pin not in out:
-                if not tag_id:
-                    continue
-                ta = parse_parcel_value_cell(row.get("TotalActual"))
-                ts = parse_parcel_value_cell(row.get("TotalAssessed"))
-                ty = strip_field(row.get("TaxYear", ""))
-                ay = strip_field(row.get("AssessmentYear", ""))
-                pclass = strip_field(row.get("PropertyClassDescr", ""))
-                rec: dict[str, Any] = {
-                    "tagId": tag_id,
-                    "tagShortDescr": short_d,
-                    "totalActual": ta,
-                    "totalAssessed": ts,
-                    "parcelTaxYear": ty or None,
-                    "assessmentYear": ay or None,
-                    "propertyClassDescr": pclass or None,
-                }
-                owner_list = strip_field(row.get("OwnerList", ""))
-                if owner_list:
-                    rec["ownerList"] = owner_list
-                ain = strip_field(row.get("AIN", ""))
-                if ain:
-                    rec["ain"] = ain
-                out[pin] = rec
-            else:
-                rec = out[pin]
-                ain = strip_field(row.get("AIN", ""))
-                if ain and not rec.get("ain"):
-                    rec["ain"] = ain
-    return out
+    pin_map, _, _ = read_main_parcel_maps(path)
+    return pin_map
 
 
 def main() -> None:
@@ -1185,7 +1190,7 @@ def main() -> None:
         )
         return
 
-    pin_map = read_pin_map(args.main_parcel)
+    pin_map, situs_map, parcel_record_map = read_main_parcel_maps(args.main_parcel)
     used_tag_ids = {v["tagId"] for v in pin_map.values()}
     stacks_out = {k: v for k, v in stacks.items() if k in used_tag_ids}
     if len(stacks_out) < len(stacks):
@@ -1209,7 +1214,6 @@ def main() -> None:
     mb = pin_path.stat().st_size / (1024 * 1024)
     print(f"Wrote {pin_path} ({len(pin_map)} pins, {mb:.2f} MiB)", file=sys.stderr)
 
-    situs_map = build_situs_to_pins(args.main_parcel)
     situs_snapshot = {
         "bundledAsOf": bundled_as_of,
         "source": "Arapahoe County datamart: Main Parcel situs fields (Pin, SA*)",
@@ -1238,7 +1242,6 @@ def main() -> None:
         file=sys.stderr,
     )
 
-    parcel_record_map = read_parcel_record_map(args.main_parcel)
     parcel_snapshot = {
         "bundledAsOf": bundled_as_of,
         "source": (

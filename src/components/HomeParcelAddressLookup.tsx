@@ -708,25 +708,23 @@ export function HomeParcelAddressLookup({
       }
       sectionLead={showPropertyDetailsColumn ? undefined : levySectionLead}
     >
-      <div
+      <section
         className="space-y-3"
-        role="region"
         aria-labelledby="home-levy-stack-subheading"
         aria-describedby="home-levy-stack-intro"
       >
         {levyStackBody}
-      </div>
+      </section>
     </MetroTaxShareFlow>
   ) : (
-    <div
+    <section
       className="space-y-3"
-      role="region"
       aria-labelledby="home-levy-stack-subheading"
       aria-describedby="home-levy-stack-intro"
     >
       {!showPropertyDetailsColumn ? levySectionLead : null}
       {levyStackBody}
-    </div>
+    </section>
   );
 
   const propertyDetailsHeader = (
@@ -782,10 +780,9 @@ export function HomeParcelAddressLookup({
         <div className="col-span-2 space-y-3">{levySectionLead}</div>
       </div>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:items-start lg:gap-6">
-        <div
+        <section
           id={HOME_PROPERTY_DETAILS_ID}
           className="order-2 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:order-1 lg:col-span-1"
-          role="region"
           aria-labelledby="parcel-record-heading"
         >
           <div className="space-y-3 lg:hidden">{propertyDetailsHeader}</div>
@@ -796,7 +793,7 @@ export function HomeParcelAddressLookup({
             demoMode={isDemoMode}
           />
           {propertyDetailsBelowPanel}
-        </div>
+        </section>
         <div className="order-1 lg:order-2 lg:col-span-2">
           <div className="mb-3 space-y-3 lg:hidden">{levySectionLead}</div>
           {levyBreakdownMain}

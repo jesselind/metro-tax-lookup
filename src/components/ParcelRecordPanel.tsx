@@ -129,7 +129,9 @@ export function ParcelRecordPanel({
   const legalDisplay = (displayRecord?.legalDescrDisplay ?? "").trim();
   const legalFull = (displayRecord?.legalDescrFull ?? "").trim();
   const legalShowsExpand =
-    legalFull.length > 0 && legalFull !== legalDisplay;
+    legalDisplay.length > 0 &&
+    legalFull.length > 0 &&
+    legalFull !== legalDisplay;
 
   return (
     <div

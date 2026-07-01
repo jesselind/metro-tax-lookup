@@ -228,7 +228,7 @@ export default function SourcesPage() {
             metro-related parts of your rate (for example{" "}
             <strong className="text-slate-900">debt service</strong> and{" "}
             <strong className="text-slate-900">operations</strong>
-            {"), using the"}
+            {"), using the "}
             county&apos;s labels — wording varies. For a quick manual check, total
             mills and metro debt are usually the easiest figures to compare first.
             In the app, the metro card always uses your <strong>full stack total</strong>{" "}
@@ -282,7 +282,7 @@ export default function SourcesPage() {
           <code className={CODE_INLINE_CLASS}>public/data/metro-levies-2025.json</code>
           {", processed offline from the county PDF below. Metro rows include "}
           <code className={CODE_INLINE_CLASS}>lgid</code>
-          {"; the home-page match uses the same LG ID values on your levy stack when county mart data is joined"}
+          {"; the home-page match uses the same LG ID values on your levy stack when county mart data is joined "}
           with DOLA in the bundled Arapahoe files (see levy breakdown below). The
           metro card does not offer a manual district choice; it only uses LG IDs
           that appear on your loaded stack.
@@ -492,7 +492,7 @@ export default function SourcesPage() {
             — lookup key from Main Parcel situs fields: merged house number (mart{" "}
             <code className={CODE_INLINE_CLASS}>SAAddrNumber</code> + optional{" "}
             <code className={CODE_INLINE_CLASS}>SAStreetNumberSfx</code>
-            {", same join as the home form), normalized street name (direction and street-type"}
+            {", same join as the home form), normalized street name (direction and street-type "}
             tokens stripped, including spelled-out compass words when typed),
             optional unit → matching PINs and labels. One address can
             match many parcels (for example large buildings); the home page lists
@@ -641,7 +641,7 @@ export default function SourcesPage() {
             {" "}
             using bundled situs fields: main house number plus optional number suffix
             (mart <code className={CODE_INLINE_CLASS}>SAStreetNumberSfx</code>
-            {", e.g. a fraction), street name with direction and type stripped for matching,"}
+            {", e.g. a fraction), street name with direction and type stripped for matching, "}
             and optional unit. Submit with{" "}
             <strong className="text-slate-900">Search</strong> or{" "}
             <strong className="text-slate-900">Enter</strong> from any field. The

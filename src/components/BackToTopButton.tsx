@@ -25,10 +25,11 @@ export function BackToTopButton({
         const focusPageTop = () => {
           if (movedFocus) return;
           movedFocus = true;
+          window.removeEventListener("scrollend", focusPageTop);
           document.getElementById("page-top")?.focus({ preventScroll: true });
         };
         window.scrollTo({ top: 0, behavior: "smooth" });
-        window.addEventListener("scrollend", focusPageTop, { once: true });
+        window.addEventListener("scrollend", focusPageTop);
         window.setTimeout(focusPageTop, 600);
       }}
       aria-label="Back to top of page"
