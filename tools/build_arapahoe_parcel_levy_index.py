@@ -374,8 +374,11 @@ def read_main_parcel_maps(
                     pin_map[pin] = first
             else:
                 ain = strip_field(row.get("AIN", ""))
-                if ain and not pin_map[pin].get("ain"):
-                    pin_map[pin]["ain"] = ain
+                if ain:
+                    if not pin_map[pin].get("ain"):
+                        pin_map[pin]["ain"] = ain
+                    if not parcel_record_map[pin].get("ain"):
+                        parcel_record_map[pin]["ain"] = ain
     situs_out: dict[str, list[dict[str, str]]] = {}
     for k, pin_labels in situs_by_key.items():
         items = [{"pin": p, "label": pin_labels[p]} for p in sorted(pin_labels.keys())]

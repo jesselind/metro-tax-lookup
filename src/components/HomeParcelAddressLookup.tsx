@@ -245,6 +245,7 @@ export function HomeParcelAddressLookup({
     string | null
   >(null);
   const prevAddressSearchLockedRef = useRef(false);
+  const parcelRecordRequestRef = useRef(0);
 
   const headerOfferStartOver =
     addressSearchLocked ||
@@ -288,6 +289,7 @@ export function HomeParcelAddressLookup({
   }, [addressSearchLocked, showAdvancedAddressFields]);
 
   const clearAllLevyState = useCallback(() => {
+    parcelRecordRequestRef.current += 1;
     setLevyLines([]);
     setLevyLoadedMeta(null);
     setLevyAwaitingTemplateMills(false);
@@ -304,17 +306,21 @@ export function HomeParcelAddressLookup({
   }, []);
 
   const loadParcelRecord = useCallback(async (lookupPin: string) => {
+    const requestId = ++parcelRecordRequestRef.current;
+    const isCurrentRequest = () => requestId === parcelRecordRequestRef.current;
     setParcelRecordLoading(true);
     setParcelRecordLoadFailed(false);
     setParcelRecord(null);
     setParcelRecordBundledAsOf(null);
     try {
       const file = await fetchArapahoeParcelRecordByPinJson();
+      if (!isCurrentRequest()) return;
       if (!file?.byPin) {
         setParcelRecordLoadFailed(true);
         return;
       }
       const row = lookupParcelRecordRow(lookupPin, file);
+      if (!isCurrentRequest()) return;
       if (!row) {
         setParcelRecordLoadFailed(true);
         return;
@@ -322,11 +328,14 @@ export function HomeParcelAddressLookup({
       setParcelRecord(row);
       setParcelRecordBundledAsOf(file.snapshot?.bundledAsOf ?? null);
     } finally {
-      setParcelRecordLoading(false);
+      if (isCurrentRequest()) {
+        setParcelRecordLoading(false);
+      }
     }
   }, []);
 
   function clearLevyStackOnly() {
+    parcelRecordRequestRef.current += 1;
     setLevyLines([]);
     setLevyAwaitingTemplateMills(false);
     setLevyTemplateMillDrafts({});
@@ -774,31 +783,27 @@ export function HomeParcelAddressLookup({
     ) : null;
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
-    <div className="space-y-5 lg:space-y-6">
-      <div className="hidden lg:grid lg:grid-cols-3 lg:gap-x-6 lg:gap-y-3">
-        <div className="col-span-1 space-y-3">{propertyDetailsHeader}</div>
-        <div className="col-span-2 space-y-3">{levySectionLead}</div>
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
+      <div className="mb-3 space-y-3 lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
+        {levySectionLead}
       </div>
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:items-start lg:gap-6">
-        <section
-          id={HOME_PROPERTY_DETAILS_ID}
-          className="order-2 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:order-1 lg:col-span-1"
-          aria-labelledby="parcel-record-heading"
-        >
-          <div className="space-y-3 lg:hidden">{propertyDetailsHeader}</div>
-          <ParcelRecordPanel
-            loading={parcelRecordLoading}
-            loadFailed={parcelRecordLoadFailed}
-            record={parcelRecord}
-            demoMode={isDemoMode}
-          />
-          {propertyDetailsBelowPanel}
-        </section>
-        <div className="order-1 lg:order-2 lg:col-span-2">
-          <div className="mb-3 space-y-3 lg:hidden">{levySectionLead}</div>
-          {levyBreakdownMain}
-        </div>
+      <div className="lg:col-span-2 lg:col-start-2 lg:row-start-2">
+        {levyBreakdownMain}
       </div>
+      <section
+        id={HOME_PROPERTY_DETAILS_ID}
+        className="space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+        aria-labelledby="parcel-record-heading"
+      >
+        <div className="space-y-3">{propertyDetailsHeader}</div>
+        <ParcelRecordPanel
+          loading={parcelRecordLoading}
+          loadFailed={parcelRecordLoadFailed}
+          record={parcelRecord}
+          demoMode={isDemoMode}
+        />
+        {propertyDetailsBelowPanel}
+      </section>
     </div>
   ) : (
     levyBreakdownMain
@@ -1670,6 +1675,7 @@ export function HomeParcelAddressLookup({
                 kicker="Feedback"
                 primaryLine={CONTACT_EMAIL}
                 secondary="We aim for accuracy. If something looks wrong, let us know. This link opens your mail app with a short form ready to fill in."
+                fullWidth
               />
             </aside>
           ) : null}
