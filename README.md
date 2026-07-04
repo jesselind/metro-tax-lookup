@@ -50,7 +50,7 @@ Open `http://localhost:3000`.
 | Path | Role |
 | --- | --- |
 | `public/data/*.json` | Runtime app data served to the browser |
-| `supporting-data/county-mart/` | Latest full Arapahoe Assessor Data Mart download (portal folder names; replace on weekly refresh) |
+| `supporting-data/county-mart/` | Latest full Arapahoe Assessor Data Mart download (portal folder names; replace on weekly refresh). Set `data-as-of.txt` to the download date (`YYYY-MM-DD`) when you drop in new CSVs. |
 | `supporting-data/dola/` | DOLA exports: committed `property-tax-entities-export.csv` + gitignored `lg-export-all.csv` |
 | `supporting-data/certs/` | Levy certification PDFs (source for metro levy extract scripts) |
 | `supporting-data/metro-levies/` | Extract script outputs (`metro-levies-*.json`; copy to `public/data/` when refreshing) |
@@ -91,18 +91,21 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    npm run build:arapahoe-index
    ```
 
+   Before building after a mart download, set `supporting-data/county-mart/data-as-of.txt` to one line `YYYY-MM-DD` (the date you downloaded the CSVs). That date appears in the app as "County data current as of …".
+
    The script reads county mart CSVs from `supporting-data/county-mart/` (Main Parcel + Tax Authority Groups tables) and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/dola/property-tax-entities-export.csv` (preferred; committed so forks can rebuild). If that file is missing, it falls back to `property-tax-entities-export.xlsx` in the same folder locally. **`*.xlsx` is gitignored**; keep spreadsheets out of version control and use CSV for the canonical export.
 
    Build behavior notes:
    - Within each TAG, repeated authority rows are collapsed to one canonical row per `code + authority`: active (`A`) rows are preferred over inactive (`I`), then newest `effectiveYear`.
    - Name matching normalizes common county abbreviations (for example `VLG` -> `VILLAGE`, `MD` -> `METROPOLITAN DISTRICT`) before fuzzy matching to DOLA legal names.
    - Optional `--dola-certifying-county` (default `Arapahoe`) filters DOLA export rows; JSON snapshot records the value in `dolaCertifyingCounty`.
+   - `bundledAsOf` in each output snapshot comes from `supporting-data/county-mart/data-as-of.txt` (one `YYYY-MM-DD` line you set when you download the mart). Override with `--bundled-as-of` if needed.
 
    Outputs include:
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
    - `public/data/arapahoe-pin-to-tag.json` (per PIN: `tagId`, values, `ain` from Main Parcel for the county comps grid PDF link)
    - `public/data/arapahoe-situs-to-pins.json`
-   - `public/data/arapahoe-parcel-record-by-pin.json.gz` (per PIN: Main Parcel county-record fields for the home **Property details** panel; gzip ~15 MiB; lazy-loaded after levy succeeds)
+   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: Main Parcel county-record fields for the home **Property details** panel; sharded by 5-digit PIN prefix (~500 KiB per lookup; plain JSON like pin-to-tag; lazy-loaded after levy succeeds)
 
 3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):
 

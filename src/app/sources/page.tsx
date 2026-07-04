@@ -500,17 +500,23 @@ export default function SourcesPage() {
           </li>
           <li>
             <code className={CODE_INLINE_CLASS}>
-              public/data/arapahoe-parcel-record-by-pin.json.gz
-            </code>{" "}
+              public/data/arapahoe-parcel-record-by-pin/
+            </code>
+            {" "}
             — extended Main Parcel fields (owner, situs, legal description, appraised
             and assessed values) for the home{" "}
             <strong className="font-semibold text-slate-900">Property details</strong>{" "}
-            panel. Gzip keeps the bundle under GitHub size limits (~15 MiB for the
-            full county PIN map). Value row labels use{" "}
+            panel. Rows are split into JSON shards by{" "}
+            <strong className="font-semibold text-slate-900">5-digit PIN prefix</strong>{" "}
+            (for example{" "}
+            <code className={CODE_INLINE_CLASS}>03249.json</code>) so the browser
+            fetches only the small shard for your parcel. Plain JSON (same pattern as{" "}
+            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>) keeps
+            property details working on older phones without gzip decompression. Value row labels use{" "}
             <code className={CODE_INLINE_CLASS}>AssessmentYear</code> from the export
             (the year on the county parcel record, e.g. 2026 Appraised Value), not{" "}
             <code className={CODE_INLINE_CLASS}>TaxYear</code> (levy roll year). The browser
-            fetches this file only after a PIN levy load succeeds; it is not part of the
+            fetches a shard only after a PIN levy load succeeds; it is not part of the
             address-search prefetch.
           </li>
           <li>
@@ -591,11 +597,22 @@ export default function SourcesPage() {
           using the portal&apos;s folder names (see the{" "}
           <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>
           {"), then commit refreshed "}
-          <code className={CODE_INLINE_CLASS}>public/data/arapahoe-*.json</code>{" "}
+          <code className={CODE_INLINE_CLASS}>public/data/arapahoe-*.json</code>
+          {" "}
+          and{" "}
+          <code className={CODE_INLINE_CLASS}>
+            public/data/arapahoe-parcel-record-by-pin/
+          </code>{" "}
           so forks pick up the new snapshot. Each bundle records a{" "}
           <code className={CODE_INLINE_CLASS}>bundledAsOf</code>
           {" "}
-          date the UI can show when results look stale.
+          date shown in the UI as &quot;County data current as of …&quot;: set{" "}
+          <code className={CODE_INLINE_CLASS}>
+            supporting-data/county-mart/data-as-of.txt
+          </code>{" "}
+          to the date you downloaded the mart (
+          <code className={CODE_INLINE_CLASS}>YYYY-MM-DD</code>) when you refresh
+          CSVs, then rebuild the index.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="text-slate-900">

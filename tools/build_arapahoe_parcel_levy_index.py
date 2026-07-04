@@ -11,7 +11,7 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
-  - arapahoe-parcel-record-by-pin.json.gz — Pin → Main Parcel county-record fields (gzip; lazy load after levy; see --skip-pin-map)
+  - arapahoe-parcel-record-by-pin/<prefix>.json — Main Parcel county-record fields sharded by 5-digit PIN prefix (lazy load after levy; see --skip-pin-map)
 
 Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
@@ -34,7 +34,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import gzip
 import json
 import math
 import re
@@ -53,6 +52,8 @@ except ImportError:
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SUPPORTING_DATA = REPO_ROOT / "supporting-data"
 COUNTY_MART = SUPPORTING_DATA / "county-mart"
+# One line YYYY-MM-DD: date you downloaded / refreshed this mart batch (not auto-detected).
+COUNTY_DATA_AS_OF_FILE = "data-as-of.txt"
 DOLA_DIR = SUPPORTING_DATA / "dola"
 
 DEFAULT_MAIN = (
@@ -1081,6 +1082,92 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
     return pin_map
 
 
+PARCEL_RECORD_SHARD_PREFIX_LEN = 5  # keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in arapahoeParcelLevyData.ts
+
+
+def write_parcel_record_shards(
+    out_dir: Path,
+    parcel_record_map: dict[str, dict[str, Any]],
+    parcel_snapshot: dict[str, Any],
+    *,
+    separators: tuple[str, str],
+) -> None:
+    """Write plain JSON shards by 5-digit PIN prefix (one small fetch per lookup)."""
+    shard_dir = out_dir / "arapahoe-parcel-record-by-pin"
+    if shard_dir.exists():
+        for old in shard_dir.glob("*.json.gz"):
+            old.unlink()
+        for old in shard_dir.glob("*.json"):
+            old.unlink()
+    shard_dir.mkdir(parents=True, exist_ok=True)
+
+    legacy_mono = out_dir / "arapahoe-parcel-record-by-pin.json.gz"
+    if legacy_mono.exists():
+        legacy_mono.unlink()
+    legacy_mono_json = out_dir / "arapahoe-parcel-record-by-pin.json"
+    if legacy_mono_json.exists():
+        legacy_mono_json.unlink()
+
+    shards: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    for pin, row in parcel_record_map.items():
+        prefix = pin[:PARCEL_RECORD_SHARD_PREFIX_LEN]
+        shards[prefix][pin] = row
+
+    for prefix in sorted(shards):
+        by_pin = shards[prefix]
+        path = shard_dir / f"{prefix}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "snapshot": parcel_snapshot,
+                    "pinDigits": 9,
+                    "shardPrefix": prefix,
+                    "byPin": by_pin,
+                },
+                separators=separators,
+            ),
+            encoding="utf-8",
+        )
+
+    total_bytes = sum((shard_dir / f"{prefix}.json").stat().st_size for prefix in shards)
+    total_mb = total_bytes / (1024 * 1024)
+    print(
+        f"Wrote {shard_dir}/ ({len(shards)} shards, {len(parcel_record_map)} pins, "
+        f"{total_mb:.2f} MiB total)",
+        file=sys.stderr,
+    )
+
+
+def normalize_bundled_as_of(raw: str) -> str:
+    o = raw.strip()
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", o):
+        return f"{o}T12:00:00Z"
+    return o
+
+
+def read_county_data_as_of_file(county_mart_dir: Path) -> str:
+    """YYYY-MM-DD from county-mart/data-as-of.txt (maintainer sets on mart download)."""
+    path = county_mart_dir / COUNTY_DATA_AS_OF_FILE
+    if not path.is_file():
+        raise SystemExit(
+            f"Missing {path}. Add one line YYYY-MM-DD (date you downloaded this mart batch). "
+            "Or pass --bundled-as-of YYYY-MM-DD."
+        )
+    line = path.read_text(encoding="utf-8").strip().splitlines()[0].strip()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", line):
+        raise SystemExit(
+            f"{path} must be a single YYYY-MM-DD line; got: {line!r}"
+        )
+    return normalize_bundled_as_of(line)
+
+
+def resolve_bundled_as_of(override: str | None, county_mart_dir: Path) -> str:
+    """Read maintainer date from data-as-of.txt, or --bundled-as-of override."""
+    if override:
+        return normalize_bundled_as_of(override)
+    return read_county_data_as_of_file(county_mart_dir)
+
+
 def main() -> None:
     """CLI entry: read county exports, join DOLA, write public/data JSON artifacts."""
     ap = argparse.ArgumentParser(description="Build Arapahoe parcel levy index JSON.")
@@ -1109,6 +1196,15 @@ def main() -> None:
     ap.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     ap.add_argument("--skip-pin-map", action="store_true", help="Only emit stacks-by-tag-id JSON.")
+    ap.add_argument(
+        "--bundled-as-of",
+        default=None,
+        metavar="DATE",
+        help=(
+            "Override snapshot bundledAsOf (YYYY-MM-DD or ISO). "
+            f"Default: {COUNTY_DATA_AS_OF_FILE} under county-mart/."
+        ),
+    )
     args = ap.parse_args()
 
     if not args.main_parcel.is_file():
@@ -1139,7 +1235,8 @@ def main() -> None:
     overrides = enrich_overrides_from_entities(overrides, entities)
 
     by_tag_raw, tax_year = read_mart_groups(args.mart_ta_tag)
-    bundled_as_of = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    bundled_as_of = resolve_bundled_as_of(args.bundled_as_of, COUNTY_MART)
+    print(f"Snapshot bundledAsOf: {bundled_as_of}", file=sys.stderr)
 
     stacks: dict[str, Any] = {}
     for tag_id, lines in by_tag_raw.items():
@@ -1188,7 +1285,7 @@ def main() -> None:
         print(f"Wrote {stacks_path} ({len(stacks)} TAG stacks)", file=sys.stderr)
         print(
             "Skipping arapahoe-pin-to-tag.json, arapahoe-situs-to-pins.json, "
-            "and arapahoe-parcel-record-by-pin.json.gz (--skip-pin-map).",
+            "and arapahoe-parcel-record-by-pin shards (--skip-pin-map).",
             file=sys.stderr,
         )
         return
@@ -1249,25 +1346,15 @@ def main() -> None:
         "bundledAsOf": bundled_as_of,
         "source": (
             "Arapahoe County datamart: Main Parcel county-record fields "
-            "(lazy load after levy)"
+            "(lazy load after levy; sharded by 5-digit PIN prefix)"
         ),
         "taxYear": tax_year or None,
     }
-    parcel_path_gz = args.out_dir / "arapahoe-parcel-record-by-pin.json.gz"
-    parcel_payload = json.dumps(
-        {
-            "snapshot": parcel_snapshot,
-            "pinDigits": 9,
-            "byPin": parcel_record_map,
-        },
+    write_parcel_record_shards(
+        args.out_dir,
+        parcel_record_map,
+        parcel_snapshot,
         separators=sep,
-    )
-    with gzip.open(parcel_path_gz, "wt", encoding="utf-8", compresslevel=9) as gz:
-        gz.write(parcel_payload)
-    pm = parcel_path_gz.stat().st_size / (1024 * 1024)
-    print(
-        f"Wrote {parcel_path_gz} ({len(parcel_record_map)} pins, {pm:.2f} MiB gzip)",
-        file=sys.stderr,
     )
 
 
