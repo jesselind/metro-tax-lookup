@@ -74,9 +74,8 @@ import {
 } from "@/lib/committedLevyLine";
 import {
   fetchArapahoeLevyStacksJson,
-  fetchArapahoeParcelRecordByPinJson,
+  fetchArapahoeParcelRecordForPin,
   fetchArapahoePinToTagJson,
-  lookupParcelRecordRow,
   type ArapahoeParcelRecordRow,
 } from "@/lib/arapahoeParcelLevyData";
 import {
@@ -245,6 +244,9 @@ export function HomeParcelAddressLookup({
     string | null
   >(null);
   const prevAddressSearchLockedRef = useRef(false);
+  /** Incremented on each levy load/clear so stale PIN lookups cannot apply state. */
+  const levyLoadRequestRef = useRef(0);
+  /** Incremented with levy loads; pairs with per-call id inside loadParcelRecord. */
   const parcelRecordRequestRef = useRef(0);
 
   const headerOfferStartOver =
@@ -289,6 +291,7 @@ export function HomeParcelAddressLookup({
   }, [addressSearchLocked, showAdvancedAddressFields]);
 
   const clearAllLevyState = useCallback(() => {
+    levyLoadRequestRef.current += 1;
     parcelRecordRequestRef.current += 1;
     setLevyLines([]);
     setLevyLoadedMeta(null);
@@ -313,20 +316,14 @@ export function HomeParcelAddressLookup({
     setParcelRecord(null);
     setParcelRecordBundledAsOf(null);
     try {
-      const file = await fetchArapahoeParcelRecordByPinJson();
+      const result = await fetchArapahoeParcelRecordForPin(lookupPin);
       if (!isCurrentRequest()) return;
-      if (!file?.byPin) {
+      if (!result) {
         setParcelRecordLoadFailed(true);
         return;
       }
-      const row = lookupParcelRecordRow(lookupPin, file);
-      if (!isCurrentRequest()) return;
-      if (!row) {
-        setParcelRecordLoadFailed(true);
-        return;
-      }
-      setParcelRecord(row);
-      setParcelRecordBundledAsOf(file.snapshot?.bundledAsOf ?? null);
+      setParcelRecord(result.row);
+      setParcelRecordBundledAsOf(result.bundledAsOf);
     } finally {
       if (isCurrentRequest()) {
         setParcelRecordLoading(false);
@@ -335,6 +332,7 @@ export function HomeParcelAddressLookup({
   }, []);
 
   function clearLevyStackOnly() {
+    levyLoadRequestRef.current += 1;
     parcelRecordRequestRef.current += 1;
     setLevyLines([]);
     setLevyAwaitingTemplateMills(false);
@@ -354,12 +352,20 @@ export function HomeParcelAddressLookup({
         demoMode?: boolean;
       },
     ) => {
+    const requestId = ++levyLoadRequestRef.current;
+    const isCurrentRequest = () => requestId === levyLoadRequestRef.current;
+    parcelRecordRequestRef.current += 1;
     setLevyLoadError(null);
     setLevyTemplateMillsError(null);
     setLevyLoadBusy(true);
     setIsDemoMode(Boolean(opts?.demoMode));
+    setParcelRecord(null);
+    setParcelRecordLoading(false);
+    setParcelRecordLoadFailed(false);
+    setParcelRecordBundledAsOf(null);
     try {
       const result = await loadLevyStackFromPin(pin);
+      if (!isCurrentRequest()) return;
       if (!result.ok) {
         setLevyLoadError(result.error);
         return;
@@ -388,9 +394,12 @@ export function HomeParcelAddressLookup({
           : result.parcelAssessmentYear,
         ain: opts?.demoMode ? DEMO_AIN : result.ain,
       });
+      if (!isCurrentRequest()) return;
       void loadParcelRecord(result.matchedPin);
     } finally {
-      setLevyLoadBusy(false);
+      if (isCurrentRequest()) {
+        setLevyLoadBusy(false);
+      }
     }
     },
     [loadParcelRecord],
@@ -756,7 +765,7 @@ export function HomeParcelAddressLookup({
       </div>
       {propertyDetailsBundledLabel && parcelRecordBundledAsOf ? (
         <p className={DASHBOARD_SECTION_META_CLASS}>
-          County export as of{" "}
+          County data current as of{" "}
           <time dateTime={parcelRecordBundledAsOf.slice(0, 10)}>
             {propertyDetailsBundledLabel}
           </time>
@@ -784,15 +793,10 @@ export function HomeParcelAddressLookup({
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
-      <div className="mb-3 space-y-3 lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
-        {levySectionLead}
-      </div>
-      <div className="lg:col-span-2 lg:col-start-2 lg:row-start-2">
-        {levyBreakdownMain}
-      </div>
+      {/* Property first in DOM for lg+ tab order; order-2 on small screens keeps levy above property visually. */}
       <section
         id={HOME_PROPERTY_DETAILS_ID}
-        className="space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+        className="order-2 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:order-none lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
         aria-labelledby="parcel-record-heading"
       >
         <div className="space-y-3">{propertyDetailsHeader}</div>
@@ -804,6 +808,12 @@ export function HomeParcelAddressLookup({
         />
         {propertyDetailsBelowPanel}
       </section>
+      <div className="order-1 mb-3 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
+        {levySectionLead}
+      </div>
+      <div className="order-1 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-2">
+        {levyBreakdownMain}
+      </div>
     </div>
   ) : (
     levyBreakdownMain

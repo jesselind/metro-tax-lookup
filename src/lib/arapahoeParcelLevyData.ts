@@ -140,8 +140,16 @@ export type ArapahoeParcelRecordByPinFile = {
     taxYear?: string | null;
   };
   pinDigits: number;
+  /** Present on per-prefix shard files from the build script. */
+  shardPrefix?: string;
   byPin: Record<string, ArapahoeParcelRecordRow>;
 };
+
+/** PIN prefix length for parcel-record shard files (keep in sync with PARCEL_RECORD_SHARD_PREFIX_LEN in build_arapahoe_parcel_levy_index.py). */
+export const PARCEL_RECORD_SHARD_PREFIX_LENGTH = 5;
+
+/** Max wait for one parcel-record shard (~500 KiB JSON). */
+const PARCEL_RECORD_SHARD_FETCH_TIMEOUT_MS = 30_000;
 
 /**
  * PINs may be pasted with dashes, spaces, or extra digits. Returns 9-digit keys to
@@ -187,23 +195,43 @@ export function formatTaxAreaShortDescrDisplay(raw: string): string {
 
 let stacksCache: Promise<ArapahoeLevyStacksFile | null> | null = null;
 let pinCache: Promise<ArapahoePinToTagFile | null> | null = null;
-let parcelRecordCache: Promise<ArapahoeParcelRecordByPinFile | null> | null =
-  null;
+const parcelRecordShardCache = new Map<
+  string,
+  Promise<ArapahoeParcelRecordByPinFile | null>
+>();
 
-/** Browser gzip JSON bundle (e.g. parcel record by PIN). */
-async function fetchGzipJson<T>(
+/** Five-digit shard keys to try for a PIN (unique, lookup order). */
+export function parcelRecordShardPrefixes(pinInput: string): string[] {
+  const candidates = pinLookupCandidates(pinInput);
+  const prefixes: string[] = [];
+  const seen = new Set<string>();
+  for (const pin of candidates) {
+    if (pin.length < PARCEL_RECORD_SHARD_PREFIX_LENGTH) continue;
+    const prefix = pin.slice(0, PARCEL_RECORD_SHARD_PREFIX_LENGTH);
+    if (!/^\d{5}$/.test(prefix) || seen.has(prefix)) continue;
+    seen.add(prefix);
+    prefixes.push(prefix);
+  }
+  return prefixes;
+}
+
+/** Safe static path for one parcel-record shard (digits only — no user-controlled path segments). */
+export function parcelRecordShardUrl(prefix: string): string | null {
+  if (!/^\d{5}$/.test(prefix)) return null;
+  return `/data/arapahoe-parcel-record-by-pin/${prefix}.json`;
+}
+
+/** Lazy fetch with timeout; parcel-record shards only (levy bundles use uncached fetch helpers below). */
+async function fetchJsonWithTimeout<T>(
   url: string,
-  timeoutMs = 120_000,
+  timeoutMs: number,
 ): Promise<T | null> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok || !res.body) return null;
-    if (typeof DecompressionStream === "undefined") return null;
-    const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
-    const text = await new Response(stream).text();
-    return JSON.parse(text) as T;
+    if (!res.ok) return null;
+    return (await res.json()) as T;
   } catch {
     return null;
   } finally {
@@ -232,21 +260,56 @@ export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null
 }
 
 /**
- * Lazy fetch — start only after levy path succeeds; never joined with levy prefetch.
- * Property details panel fields from Main Parcel export.
+ * Lazy fetch one parcel-record shard (5-digit PIN prefix). Cached per prefix;
+ * transient failures do not poison the cache.
  */
-export function fetchArapahoeParcelRecordByPinJson(): Promise<ArapahoeParcelRecordByPinFile | null> {
-  if (!parcelRecordCache) {
-    parcelRecordCache = fetchGzipJson<ArapahoeParcelRecordByPinFile>(
-      "/data/arapahoe-parcel-record-by-pin.json.gz",
+function fetchArapahoeParcelRecordShard(
+  prefix: string,
+): Promise<ArapahoeParcelRecordByPinFile | null> {
+  const url = parcelRecordShardUrl(prefix);
+  if (!url) return Promise.resolve(null);
+
+  let pending = parcelRecordShardCache.get(prefix);
+  if (!pending) {
+    pending = fetchJsonWithTimeout<ArapahoeParcelRecordByPinFile>(
+      url,
+      PARCEL_RECORD_SHARD_FETCH_TIMEOUT_MS,
     ).then((data) => {
       if (data === null) {
-        parcelRecordCache = null;
+        parcelRecordShardCache.delete(prefix);
       }
       return data;
     });
+    parcelRecordShardCache.set(prefix, pending);
   }
-  return parcelRecordCache;
+  return pending;
+}
+
+/**
+ * Resolve extended Main Parcel fields for one PIN from sharded bundles.
+ * Tries each shard prefix implied by pinLookupCandidates (rare PIN noise cases).
+ */
+export async function fetchArapahoeParcelRecordForPin(
+  pinInput: string,
+): Promise<{
+  row: ArapahoeParcelRecordRow;
+  bundledAsOf: string | null;
+} | null> {
+  const prefixes = parcelRecordShardPrefixes(pinInput);
+  if (prefixes.length === 0) return null;
+
+  for (const prefix of prefixes) {
+    const file = await fetchArapahoeParcelRecordShard(prefix);
+    if (!file) continue;
+    const row = lookupParcelRecordRow(pinInput, file);
+    if (row) {
+      return {
+        row,
+        bundledAsOf: file.snapshot?.bundledAsOf ?? null,
+      };
+    }
+  }
+  return null;
 }
 
 /** Resolve one parcel record row from a loaded file (9-digit PIN candidates). */
@@ -265,6 +328,6 @@ export function lookupParcelRecordRow(
 export function clearArapahoeParcelDataCache(): void {
   stacksCache = null;
   pinCache = null;
-  parcelRecordCache = null;
+  parcelRecordShardCache.clear();
   clearArapahoeSitusDataCache();
 }

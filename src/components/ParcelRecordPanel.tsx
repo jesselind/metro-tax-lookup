@@ -148,7 +148,11 @@ export function ParcelRecordPanel({
           ))}
         </div>
       ) : loadFailed ? (
-        <p className="text-base leading-relaxed text-slate-700" role="status">
+        <p
+          className="text-base leading-relaxed text-slate-700"
+          role="status"
+          aria-live="polite"
+        >
           Property details could not be loaded. Your levy breakdown above is still
           valid. Try refreshing the page.
         </p>
