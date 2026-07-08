@@ -10,14 +10,13 @@ import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopover
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { obfuscateParcelRecordRow } from "@/lib/demoProperty";
-import { formatUsdWhole } from "@/lib/formatUsd";
+import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
-  DASHBOARD_TILE_RADIUS_CLASS,
+  DASHBOARD_PANEL_SHELL_CLASS,
 } from "@/lib/toolFlowStyles";
 
-const PANEL_SHELL = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 /** Label column ~35%; value column gets the rest (definitions may wrap). */
 const ROW_CLASS =
   "grid grid-cols-1 gap-1 border-b border-slate-200/90 py-3 last:border-b-0 sm:grid-cols-[minmax(0,2.5fr)_minmax(0,7.5fr)] sm:gap-x-3 sm:gap-y-0 sm:py-3";
@@ -31,39 +30,6 @@ const MISSING_VALUE_CLASS =
 const SKELETON_BAR = "h-[1.125rem] animate-pulse rounded bg-slate-200/90 sm:h-4";
 
 const NO_DATA = "No data found";
-
-/** Allow wraps at `/` in county labels like City/State/Zip (no spaces). */
-function parcelRecordLabelContent(label: string) {
-  if (!label.includes("/")) {
-    return label;
-  }
-  const parts = label.split("/");
-  return parts.map((part, index) => (
-    <span key={`${index}-${part}`}>
-      {index > 0 ? (
-        <>
-          /
-          <wbr />
-        </>
-      ) : null}
-      {part}
-    </span>
-  ));
-}
-
-function formatUsdCell(value: number | null | undefined): string | null {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  return formatUsdWhole(value);
-}
-
-/** Prefix county value row labels with AssessmentYear when present (e.g. 2026 Appraised (Total)). */
-function countyParcelValueLabel(
-  assessmentYear: string | null | undefined,
-  baseLabel: string,
-): string {
-  const year = (assessmentYear ?? "").trim();
-  return year ? `${year} ${baseLabel}` : baseLabel;
-}
 
 type ParcelRecordRowProps = {
   termId?: ParcelGlossaryTermId;
@@ -90,7 +56,7 @@ function ParcelRecordRow({
             variant="parcel-record"
           />
         ) : (
-          parcelRecordLabelContent(label)
+          parcelRecordCellText(label)
         )}
       </dt>
       <dd className={display ? VALUE_CLASS : MISSING_VALUE_CLASS}>
@@ -135,7 +101,7 @@ export function ParcelRecordPanel({
 
   return (
     <div
-      className={`${PANEL_SHELL} p-3 sm:p-4`}
+      className={`${DASHBOARD_PANEL_SHELL_CLASS} p-3 sm:p-4`}
       aria-busy={loading}
     >
       {loading ? (
@@ -211,6 +177,11 @@ export function ParcelRecordPanel({
             triggerIdSuffix="owner-list"
           />
           <ParcelRecordRow
+            label="Ownership Type"
+            value={displayRecord.ownershipType}
+            triggerIdSuffix="ownership-type"
+          />
+          <ParcelRecordRow
             label="Owner Address"
             value={displayRecord.ownerDeliveryAddress}
             triggerIdSuffix="owner-address"
@@ -219,6 +190,16 @@ export function ParcelRecordPanel({
             label="City/State/Zip"
             value={displayRecord.ownerCityStateZip}
             triggerIdSuffix="owner-city-state-zip"
+          />
+          <ParcelRecordRow
+            label="Acreage"
+            value={displayRecord.acreage}
+            triggerIdSuffix="acreage"
+          />
+          <ParcelRecordRow
+            label="Land Use"
+            value={displayRecord.landUse}
+            triggerIdSuffix="land-use"
           />
           <div className={ROW_CLASS}>
             <dt className={LABEL_CLASS}>
@@ -258,60 +239,6 @@ export function ParcelRecordPanel({
               )}
             </dd>
           </div>
-          <ParcelRecordRow
-            termId="term-appraised-total"
-            label={countyParcelValueLabel(
-              displayRecord.assessmentYear,
-              "Appraised (Total)",
-            )}
-            value={formatUsdCell(displayRecord.totalActual)}
-            triggerIdSuffix="appraised-total"
-          />
-          <ParcelRecordRow
-            termId="term-appraised-building"
-            label={countyParcelValueLabel(
-              displayRecord.assessmentYear,
-              "Appraised (Building)",
-            )}
-            value={formatUsdCell(displayRecord.improvementActual)}
-            triggerIdSuffix="appraised-building"
-          />
-          <ParcelRecordRow
-            termId="term-appraised-land"
-            label={countyParcelValueLabel(
-              displayRecord.assessmentYear,
-              "Appraised (Land)",
-            )}
-            value={formatUsdCell(displayRecord.landActual)}
-            triggerIdSuffix="appraised-land"
-          />
-          <ParcelRecordRow
-            termId="term-assessed-total"
-            label={countyParcelValueLabel(
-              displayRecord.assessmentYear,
-              "Assessed (Total)",
-            )}
-            value={formatUsdCell(displayRecord.totalAssessed)}
-            triggerIdSuffix="assessed-total"
-          />
-          <ParcelRecordRow
-            termId="term-assessed-building"
-            label={countyParcelValueLabel(
-              displayRecord.assessmentYear,
-              "Assessed (Building)",
-            )}
-            value={null}
-            triggerIdSuffix="assessed-building"
-          />
-          <ParcelRecordRow
-            termId="term-assessed-land"
-            label={countyParcelValueLabel(
-              displayRecord.assessmentYear,
-              "Assessed (Land)",
-            )}
-            value={null}
-            triggerIdSuffix="assessed-land"
-          />
         </dl>
       ) : null}
     </div>

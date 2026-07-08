@@ -11,7 +11,7 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
-  - arapahoe-parcel-record-by-pin/<prefix>.json — Main Parcel county-record fields sharded by 5-digit PIN prefix (lazy load after levy; see --skip-pin-map)
+  - arapahoe-parcel-record-by-pin/<prefix>.json — county-record fields sharded by 5-digit PIN prefix (Main Parcel + sibling mart joins; lazy load after levy; see --skip-pin-map)
 
 Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
@@ -37,6 +37,7 @@ import csv
 import json
 import math
 import re
+import statistics
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -65,6 +66,31 @@ DEFAULT_MART = (
     COUNTY_MART
     / "Tax Authority Groups and Tax Authorities (CSV)"
     / "Tax Authority Groups and Tax Authorities.csv"
+)
+DEFAULT_LEGAL_DESCRIPTIONS = (
+    COUNTY_MART
+    / "Parcel Legal Descriptions (CSV)"
+    / "Parcel Legal Descriptions.csv"
+)
+DEFAULT_LEGAL_PARTIES = (
+    COUNTY_MART
+    / "Parcel Legal Parties (CSV)"
+    / "Parcel Legal Parties.csv"
+)
+DEFAULT_LAND = (
+    COUNTY_MART
+    / "Parcel Land Information (CSV)"
+    / "Parcel Land Information.csv"
+)
+DEFAULT_BUILDING = (
+    COUNTY_MART
+    / "Parcel Building Information (CSV)"
+    / "Parcel Building Information.csv"
+)
+DEFAULT_BUILDING_XFOB = (
+    COUNTY_MART
+    / "Parcel Building Extra Features (CSV)"
+    / "Parcel Building Extra Features.csv"
 )
 DEFAULT_DOLA_CSV = DOLA_DIR / "property-tax-entities-export.csv"
 DEFAULT_DOLA_XLSX = DOLA_DIR / "property-tax-entities-export.xlsx"
@@ -1065,6 +1091,348 @@ def legal_descr_display_tail(full: str) -> str:
     return s
 
 
+_LEGAL_DESCR_TYPE_RANK = (
+    "MetesBounds",
+    "UnPlatted",
+    "PersonalDescr",
+    "Platted",
+)
+
+
+def _legal_descr_type_rank(descr_type: str) -> int:
+    t = strip_field(descr_type)
+    try:
+        return _LEGAL_DESCR_TYPE_RANK.index(t)
+    except ValueError:
+        return len(_LEGAL_DESCR_TYPE_RANK)
+
+
+def pick_legal_description_display(rows: list[tuple[str, str]]) -> str | None:
+    """
+    Prefer MetesBounds / UnPlatted / PersonalDescr DisplayDescr from Mart_DescrHeader.
+    Platted-only rows often repeat mart keys; keep Main Parcel display for those.
+    """
+    preferred = frozenset({"MetesBounds", "UnPlatted", "PersonalDescr"})
+    sorted_rows = sorted(rows, key=lambda item: _legal_descr_type_rank(item[0]))
+    for dtype, display in sorted_rows:
+        if dtype not in preferred:
+            continue
+        tail = legal_descr_display_tail(display)
+        if tail:
+            return tail
+    return None
+
+
+def read_legal_description_display_by_pin(path: Path) -> dict[str, str]:
+    """PIN -> display-friendly legal text from Mart_DescrHeader when a preferred row exists."""
+    if not path.is_file():
+        return {}
+    by_pin: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            pin = normalize_pin(strip_field(row.get("PIN") or row.get("Pin") or ""))
+            display = strip_field(row.get("DisplayDescr", ""))
+            dtype = strip_field(row.get("DescrType", ""))
+            if not pin or not display:
+                continue
+            by_pin[pin].append((dtype, display))
+    out: dict[str, str] = {}
+    for pin, items in by_pin.items():
+        picked = pick_legal_description_display(items)
+        if picked:
+            out[pin] = picked
+    return out
+
+
+def read_ownership_type_by_pin(path: Path) -> dict[str, str]:
+    """PIN -> county Ownership Type label(s) from Mart_LegalParty LPType (unique, stable order)."""
+    if not path.is_file():
+        return {}
+    by_pin: dict[str, list[str]] = defaultdict(list)
+    seen: dict[str, set[str]] = defaultdict(set)
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            pin = normalize_pin(strip_field(row.get("PIN") or row.get("Pin") or ""))
+            lp_type = strip_field(row.get("LPType", ""))
+            if not pin or not lp_type:
+                continue
+            if lp_type in seen[pin]:
+                continue
+            seen[pin].add(lp_type)
+            by_pin[pin].append(lp_type)
+    return {pin: ", ".join(types) for pin, types in by_pin.items()}
+
+
+def parse_acreage_cell(val: Any) -> float | None:
+    """Parse Mart_RDE_LndAll Acreage; returns None if missing or invalid."""
+    return parse_parcel_value_cell(val)
+
+
+def format_acreage_display(total: float) -> str:
+    """County parcel record shows acreage to four decimal places (e.g. 0.0540)."""
+    if not math.isfinite(total):
+        return ""
+    return f"{total:.4f}"
+
+
+def format_land_units_display(row: dict[str, str]) -> str:
+    """County Land Line Units column (e.g. 1.0000 LT from Uts + UnitTp)."""
+    uts = strip_field(row.get("Uts", ""))
+    unit_tp = strip_field(row.get("UnitTp", ""))
+    if not uts:
+        return ""
+    try:
+        units = f"{float(uts):.4f}"
+    except ValueError:
+        units = uts
+    return f"{units} {unit_tp}".strip() if unit_tp else units
+
+
+def land_table_row_from_csv(row: dict[str, str]) -> dict[str, str] | None:
+    """One Land Line table row: Units + land-use description (not top-level Land Use)."""
+    units = format_land_units_display(row)
+    land_use = strip_field(row.get("UseCdDscr", ""))
+    if not units and not land_use:
+        return None
+    out: dict[str, str] = {}
+    if units:
+        out["units"] = units
+    if land_use:
+        out["landUse"] = land_use
+    return out
+
+
+def format_county_count(val: Any) -> str:
+    """Bed/bath-style counts as on county parcel record (e.g. 3.00)."""
+    s = strip_field(str(val)) if val is not None else ""
+    if not s:
+        return ""
+    try:
+        return f"{float(s):.2f}"
+    except ValueError:
+        return s
+
+
+def format_county_sqft(val: Any) -> str:
+    s = strip_field(str(val)) if val is not None else ""
+    if not s:
+        return ""
+    try:
+        n = float(s)
+        if n == int(n):
+            return str(int(n))
+        return s
+    except ValueError:
+        return s
+
+
+# County PPINum.aspx attribute labels and Mart_RDE_BLD columns (stable order).
+BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str], ...] = (
+    ("Quality Grade", "QualityCd"),
+    ("Improvement Type", "ImprTpDscr"),
+    ("Bedrooms", "BedCount"),
+    ("Bathrooms", "BathCount"),
+    ("Architectural", "ImprMdlCdDscr"),
+    ("Heat Method", "HeatCd1"),
+    ("Cool Method", "CoolCd1"),
+    ("Year Built", "ActYear"),
+    ("Roof", "RoofCd1"),
+    ("Exterior Wall", "ExtwallCd1"),
+    ("Construction Type", "Class"),
+)
+
+COUNTY_DECIMAL_ATTRIBUTE_KEYS = frozenset({"BedCount", "BathCount"})
+
+
+def building_record_from_csv(row: dict[str, str]) -> dict[str, Any] | None:
+    """Structured building block matching county attributes + area tables."""
+    building_num = strip_field(row.get("num", ""))
+    attributes: list[dict[str, str]] = []
+    for label, key in BUILDING_ATTRIBUTE_FIELDS:
+        raw = strip_field(row.get(key, ""))
+        if not raw:
+            continue
+        if key in COUNTY_DECIMAL_ATTRIBUTE_KEYS:
+            value = format_county_count(raw)
+        else:
+            value = raw
+        attributes.append({"label": label, "value": value})
+    areas: list[dict[str, str]] = []
+    for i in range(1, 20):
+        descr = strip_field(row.get(f"SarCatDscr{i}", ""))
+        if not descr:
+            continue
+        area_raw = strip_field(row.get(f"SarCatArea{i}", ""))
+        areas.append(
+            {
+                "description": descr,
+                "sqFt": format_county_sqft(area_raw) if area_raw else "",
+            }
+        )
+    total_area = format_county_sqft(row.get("BaseArea"))
+    if not building_num and not attributes and not areas:
+        return None
+    rec: dict[str, Any] = {"buildingNum": building_num or "1"}
+    if attributes:
+        rec["attributes"] = attributes
+    if areas:
+        rec["areas"] = areas
+    if total_area:
+        rec["totalArea"] = total_area
+    return rec
+
+
+def read_land_fields_by_pin(path: Path) -> dict[str, dict[str, Any]]:
+    """PIN -> acreage and landLines table rows from Mart_RDE_LndAll."""
+    if not path.is_file():
+        return {}
+    by_pin: dict[str, list[dict[str, str]]] = defaultdict(list)
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            pin = normalize_pin(strip_field(row.get("Pin") or row.get("PIN") or ""))
+            if not pin:
+                continue
+            by_pin[pin].append(row)
+    out: dict[str, dict[str, Any]] = {}
+    for pin, rows in by_pin.items():
+        rows_sorted = sorted(
+            rows,
+            key=lambda r: int(strip_field(r.get("Num", "")) or "0"),
+        )
+        land_lines = [
+            line
+            for line in (land_table_row_from_csv(r) for r in rows_sorted)
+            if line
+        ]
+        total_acre = 0.0
+        has_acre = False
+        for row in rows_sorted:
+            acre = parse_acreage_cell(row.get("Acreage"))
+            if acre is not None:
+                total_acre += acre
+                has_acre = True
+        entry: dict[str, Any] = {}
+        if has_acre:
+            entry["acreage"] = format_acreage_display(total_acre)
+        if land_lines:
+            entry["landLines"] = land_lines
+        if entry:
+            out[pin] = entry
+    return out
+
+
+def read_building_fields_by_pin(
+    bld_path: Path,
+    xfob_path: Path,
+) -> dict[str, dict[str, Any]]:
+    """PIN -> landUse (ImprTpDscr) and buildings[] from Mart_RDE_BLD."""
+    del xfob_path  # reserved for a future county-parity pass; not on PPINum layout today
+    bld_by_pin: dict[str, list[dict[str, str]]] = defaultdict(list)
+    if bld_path.is_file():
+        with bld_path.open(newline="", encoding="utf-8", errors="replace") as f:
+            for row in csv.DictReader(f):
+                pin = normalize_pin(strip_field(row.get("Pin") or row.get("PIN") or ""))
+                if pin:
+                    bld_by_pin[pin].append(row)
+    out: dict[str, dict[str, Any]] = {}
+    for pin, rows in bld_by_pin.items():
+        bld_rows = sorted(
+            rows,
+            key=lambda r: int(strip_field(r.get("num", "")) or "0"),
+        )
+        buildings = [
+            bld
+            for bld in (building_record_from_csv(r) for r in bld_rows)
+            if bld
+        ]
+        entry: dict[str, Any] = {}
+        for row in bld_rows:
+            typ = strip_field(row.get("ImprTpDscr", ""))
+            if typ:
+                entry["landUse"] = typ
+                break
+        if buildings:
+            entry["buildings"] = buildings
+        if entry:
+            out[pin] = entry
+    return out
+
+
+def enrich_parcel_record_from_sibling_marts(
+    parcel_record_map: dict[str, dict[str, Any]],
+    *,
+    legal_descriptions_path: Path | None,
+    legal_parties_path: Path | None,
+    land_path: Path | None = None,
+    building_path: Path | None = None,
+    building_xfob_path: Path | None = None,
+) -> dict[str, int]:
+    """Merge Phase 2 sibling mart tables into parcel-record rows."""
+    legal_by_pin = (
+        read_legal_description_display_by_pin(legal_descriptions_path)
+        if legal_descriptions_path and legal_descriptions_path.is_file()
+        else {}
+    )
+    ownership_by_pin = (
+        read_ownership_type_by_pin(legal_parties_path)
+        if legal_parties_path and legal_parties_path.is_file()
+        else {}
+    )
+    land_by_pin = read_land_fields_by_pin(land_path) if land_path else {}
+    building_by_pin = (
+        read_building_fields_by_pin(building_path, building_xfob_path)
+        if building_path and building_xfob_path
+        else {}
+    )
+    counts = {
+        "legalDescrDisplay": 0,
+        "ownershipType": 0,
+        "land": 0,
+        "building": 0,
+    }
+    for pin, rec in parcel_record_map.items():
+        mart_legal = legal_by_pin.get(pin)
+        if mart_legal:
+            rec["legalDescrDisplay"] = mart_legal
+            counts["legalDescrDisplay"] += 1
+        ownership = ownership_by_pin.get(pin)
+        if ownership:
+            rec["ownershipType"] = ownership
+            counts["ownershipType"] += 1
+        land = land_by_pin.get(pin)
+        if land:
+            rec.update(land)
+            counts["land"] += 1
+        building = building_by_pin.get(pin)
+        if building:
+            if building.get("landUse"):
+                rec["landUse"] = building["landUse"]
+            if building.get("buildings"):
+                rec["buildings"] = building["buildings"]
+            counts["building"] += 1
+    return counts
+
+
+def print_parcel_record_shard_size_stats(shard_dir: Path) -> None:
+    """Log shard size distribution so Phase 2 joins can be checked for bloat."""
+    sizes = sorted(p.stat().st_size for p in shard_dir.glob("*.json"))
+    if not sizes:
+        return
+    total_mb = sum(sizes) / (1024 * 1024)
+    p90 = sizes[int(len(sizes) * 0.9)]
+    p99 = sizes[int(len(sizes) * 0.99)]
+    over_500 = sum(1 for s in sizes if s > 500 * 1024)
+    over_1m = sum(1 for s in sizes if s > 1024 * 1024)
+    print(
+        f"Shard size stats: {len(sizes)} files, {total_mb:.2f} MiB total; "
+        f"min {sizes[0] / 1024:.1f} KiB, median {statistics.median(sizes) / 1024:.1f} KiB, "
+        f"mean {statistics.mean(sizes) / 1024:.1f} KiB, max {sizes[-1] / 1024:.1f} KiB; "
+        f"p90 {p90 / 1024:.1f} KiB, p99 {p99 / 1024:.1f} KiB; "
+        f">{500} KiB: {over_500}, >1 MiB: {over_1m}",
+        file=sys.stderr,
+    )
+
+
 def _optional_str(row: dict[str, str], key: str) -> str | None:
     t = strip_field(row.get(key, ""))
     return t if t else None
@@ -1136,6 +1504,7 @@ def write_parcel_record_shards(
         f"{total_mb:.2f} MiB total)",
         file=sys.stderr,
     )
+    print_parcel_record_shard_size_stats(shard_dir)
 
 
 def normalize_bundled_as_of(raw: str) -> str:
@@ -1173,6 +1542,36 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Build Arapahoe parcel levy index JSON.")
     ap.add_argument("--main-parcel", type=Path, default=DEFAULT_MAIN)
     ap.add_argument("--mart-ta-tag", type=Path, default=DEFAULT_MART)
+    ap.add_argument(
+        "--legal-descriptions",
+        type=Path,
+        default=DEFAULT_LEGAL_DESCRIPTIONS,
+        help="Mart_DescrHeader CSV (Parcel Legal Descriptions). Optional; skipped if missing.",
+    )
+    ap.add_argument(
+        "--legal-parties",
+        type=Path,
+        default=DEFAULT_LEGAL_PARTIES,
+        help="Mart_LegalParty CSV (Parcel Legal Parties). Optional; skipped if missing.",
+    )
+    ap.add_argument(
+        "--land",
+        type=Path,
+        default=DEFAULT_LAND,
+        help="Mart_RDE_LndAll CSV (Parcel Land Information). Optional; skipped if missing.",
+    )
+    ap.add_argument(
+        "--building",
+        type=Path,
+        default=DEFAULT_BUILDING,
+        help="Mart_RDE_BLD CSV (Parcel Building Information). Optional; skipped if missing.",
+    )
+    ap.add_argument(
+        "--building-xfob",
+        type=Path,
+        default=DEFAULT_BUILDING_XFOB,
+        help="Mart_RDE_Xfob CSV (Parcel Building Extra Features). Optional; skipped if missing.",
+    )
     ap.add_argument(
         "--dola-export",
         "--dola-xlsx",
@@ -1291,6 +1690,20 @@ def main() -> None:
         return
 
     pin_map, situs_map, parcel_record_map = read_main_parcel_maps(args.main_parcel)
+    join_counts = enrich_parcel_record_from_sibling_marts(
+        parcel_record_map,
+        legal_descriptions_path=args.legal_descriptions,
+        legal_parties_path=args.legal_parties,
+        land_path=args.land,
+        building_path=args.building,
+        building_xfob_path=args.building_xfob,
+    )
+    if any(join_counts.values()):
+        print(
+            "Parcel record sibling joins: "
+            + ", ".join(f"{k}={v}" for k, v in join_counts.items() if v),
+            file=sys.stderr,
+        )
     used_tag_ids = {v["tagId"] for v in pin_map.values()}
     stacks_out = {k: v for k, v in stacks.items() if k in used_tag_ids}
     if len(stacks_out) < len(stacks):
@@ -1345,7 +1758,8 @@ def main() -> None:
     parcel_snapshot = {
         "bundledAsOf": bundled_as_of,
         "source": (
-            "Arapahoe County datamart: Main Parcel county-record fields "
+            "Arapahoe County datamart: Main Parcel + Mart_DescrHeader + Mart_LegalParty "
+            "+ Mart_RDE_LndAll + Mart_RDE_BLD + Mart_RDE_Xfob "
             "(lazy load after levy; sharded by 5-digit PIN prefix)"
         ),
         "taxYear": tax_year or None,

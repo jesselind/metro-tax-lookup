@@ -105,7 +105,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
    - `public/data/arapahoe-pin-to-tag.json` (per PIN: `tagId`, values, `ain` from Main Parcel for the county comps grid PDF link)
    - `public/data/arapahoe-situs-to-pins.json`
-   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: Main Parcel county-record fields for the home **Property details** panel; sharded by 5-digit PIN prefix (~500 KiB per lookup; plain JSON like pin-to-tag; lazy-loaded after levy succeeds)
+   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** panel (Main Parcel plus sibling mart joins; see build script). Sharded by 5-digit PIN prefix (~500 KiB per lookup today; plain JSON; lazy-loaded after levy succeeds). The build logs shard size stats (median, p90, p99) after each run — check these when adding Phase 2 joins; re-shard if shards grow too large.
 
 3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):
 
@@ -139,6 +139,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 ## Contributor notes
 
 - Keep user-facing prose plain-language and avoid accountant-style "levy lines" phrasing.
+- **Try demo property:** Mask only resident-identifying fields (owner names, mailing address, situs, AIN, legal description) in `src/lib/demoProperty.ts`. Dollar amounts, ownership type, classification, and other non-PII county fields should pass through from the hidden source PIN so the demo stays realistic. Apply the same rule when adding Property details fields in Phase 2+.
 - Static term definitions live in `src/content/termDefinitions.tsx`.
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json`.
 - Keep README technical; keep narrative methodology and citations on `/sources`.

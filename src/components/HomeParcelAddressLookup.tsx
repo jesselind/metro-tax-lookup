@@ -21,6 +21,7 @@ import {
   type LevyStackVisualizationProps,
 } from "@/components/LevyStackVisualization";
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
+import { ParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
@@ -65,7 +66,6 @@ import {
   DEMO_OWNER_LIST,
   DEMO_PROPERTY_CLASSIFICATION,
   DEMO_SOURCE_PIN,
-  demoAssessmentYear,
 } from "@/lib/demoProperty";
 import {
   loadLevyStackFromPin,
@@ -389,9 +389,7 @@ export function HomeParcelAddressLookup({
                 DEMO_PROPERTY_CLASSIFICATION,
             }
           : result.parcelValues,
-        parcelAssessmentYear: opts?.demoMode
-          ? demoAssessmentYear()
-          : result.parcelAssessmentYear,
+        parcelAssessmentYear: result.parcelAssessmentYear,
         ain: opts?.demoMode ? DEMO_AIN : result.ain,
       });
       if (!isCurrentRequest()) return;
@@ -792,28 +790,36 @@ export function HomeParcelAddressLookup({
     ) : null;
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
-      {/* Property first in DOM for lg+ tab order; order-2 on small screens keeps levy above property visually. */}
-      <section
-        id={HOME_PROPERTY_DETAILS_ID}
-        className="order-2 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:order-none lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
-        aria-labelledby="parcel-record-heading"
-      >
-        <div className="space-y-3">{propertyDetailsHeader}</div>
-        <ParcelRecordPanel
-          loading={parcelRecordLoading}
-          loadFailed={parcelRecordLoadFailed}
-          record={parcelRecord}
-          demoMode={isDemoMode}
-        />
-        {propertyDetailsBelowPanel}
-      </section>
-      <div className="order-1 mb-3 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
-        {levySectionLead}
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
+        {/* Property first in DOM for lg+ tab order; order-2 on small screens keeps levy above property visually. */}
+        <section
+          id={HOME_PROPERTY_DETAILS_ID}
+          className="order-2 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:order-none lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+          aria-labelledby="parcel-record-heading"
+        >
+          <div className="space-y-3">{propertyDetailsHeader}</div>
+          <ParcelRecordPanel
+            loading={parcelRecordLoading}
+            loadFailed={parcelRecordLoadFailed}
+            record={parcelRecord}
+            demoMode={isDemoMode}
+          />
+        </section>
+        <div className="order-1 mb-3 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
+          {levySectionLead}
+        </div>
+        <div className="order-1 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-2">
+          {levyBreakdownMain}
+        </div>
       </div>
-      <div className="order-1 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-2">
-        {levyBreakdownMain}
-      </div>
+      <ParcelRecordExtendedSection
+        loading={parcelRecordLoading}
+        loadFailed={parcelRecordLoadFailed}
+        record={parcelRecord}
+        demoMode={isDemoMode}
+      />
+      {propertyDetailsBelowPanel}
     </div>
   ) : (
     levyBreakdownMain
