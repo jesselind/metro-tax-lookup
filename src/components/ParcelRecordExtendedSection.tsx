@@ -12,9 +12,19 @@ import {
 } from "@/components/ParcelRecordCountyTables";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import { obfuscateParcelRecordRow } from "@/lib/demoProperty";
-import { PARCEL_RECORD_EXTENDED_SHELL_CLASS } from "@/lib/toolFlowStyles";
+import { PARCEL_RECORD_EXTENDED_SHELL_CLASS, DASHBOARD_SECTION_HEADING_CLASS } from "@/lib/toolFlowStyles";
+
+export const PARCEL_RECORD_EXTENDED_SECTION_ID = "home-parcel-record-extended";
 
 const TABLE_SKELETON = "h-24 animate-pulse rounded bg-slate-200/70";
+
+export function shouldShowParcelRecordExtendedSection(
+  loading: boolean,
+  loadFailed: boolean,
+  record: ArapahoeParcelRecordRow | null,
+): boolean {
+  return !loadFailed && (loading || record != null);
+}
 
 export type ParcelRecordExtendedSectionProps = {
   loading: boolean;
@@ -35,23 +45,27 @@ export function ParcelRecordExtendedSection({
     [record, demoMode],
   );
 
-  if (loadFailed || (!loading && !displayRecord)) {
+  if (!shouldShowParcelRecordExtendedSection(loading, loadFailed, record)) {
     return null;
   }
 
   return (
     <section
-      className={PARCEL_RECORD_EXTENDED_SHELL_CLASS}
+      id={PARCEL_RECORD_EXTENDED_SECTION_ID}
+      tabIndex={-1}
+      className="scroll-mt-6 space-y-3 sm:scroll-mt-8"
       aria-labelledby="parcel-record-extended-heading"
       aria-busy={loading}
     >
-      <h3 id="parcel-record-extended-heading" className="sr-only">
-        Property record values, building, and land
+      <h3
+        id="parcel-record-extended-heading"
+        className={`${DASHBOARD_SECTION_HEADING_CLASS} hidden lg:block`}
+      >
+        Property details cont.
       </h3>
       <div
-        className="w-full min-w-0 space-y-6 overflow-x-auto"
+        className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} w-full min-w-0 space-y-6 overflow-x-auto`}
         aria-live={loading ? "polite" : undefined}
-        aria-label={loading ? "Loading property record tables" : undefined}
       >
         {loading ? (
           <>

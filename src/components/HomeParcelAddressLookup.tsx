@@ -21,7 +21,7 @@ import {
   type LevyStackVisualizationProps,
 } from "@/components/LevyStackVisualization";
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
-import { ParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
+import { ParcelRecordExtendedSection, PARCEL_RECORD_EXTENDED_SECTION_ID, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
@@ -181,6 +181,42 @@ const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
 
 /** Property details panel (below levy stack on small screens). */
 const HOME_PROPERTY_DETAILS_ID = "home-property-details";
+
+const PROPERTY_DETAILS_JUMP_CHEVRON = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="size-5 shrink-0"
+    aria-hidden
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+    />
+  </svg>
+);
+
+const PROPERTY_DETAILS_JUMP_ICON = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="size-6"
+    aria-hidden
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125V5.625a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+    />
+  </svg>
+);
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
 
@@ -789,13 +825,19 @@ export function HomeParcelAddressLookup({
       </>
     ) : null;
 
+  const showParcelRecordExtendedJump = shouldShowParcelRecordExtendedSection(
+    parcelRecordLoading,
+    parcelRecordLoadFailed,
+    parcelRecord,
+  );
+
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
         {/* Property first in DOM for lg+ tab order; order-2 on small screens keeps levy above property visually. */}
         <section
           id={HOME_PROPERTY_DETAILS_ID}
-          className="order-2 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:order-none lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+          className="order-2 flex flex-col gap-3 scroll-mt-6 sm:scroll-mt-8 lg:order-none lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
           aria-labelledby="parcel-record-heading"
         >
           <div className="space-y-3">{propertyDetailsHeader}</div>
@@ -805,6 +847,16 @@ export function HomeParcelAddressLookup({
             record={parcelRecord}
             demoMode={isDemoMode}
           />
+          {showParcelRecordExtendedJump ? (
+            <a
+              href={`#${PARCEL_RECORD_EXTENDED_SECTION_ID}`}
+              className={`${btnOutlineSecondaryMd} hidden w-full cursor-pointer items-center justify-center gap-2 px-4 py-2.5 text-sm lg:mt-auto lg:inline-flex`}
+              aria-label="Jump to Property details cont."
+            >
+              More property details
+              {PROPERTY_DETAILS_JUMP_CHEVRON}
+            </a>
+          ) : null}
         </section>
         <div className="order-1 mb-3 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
           {levySectionLead}
@@ -827,40 +879,6 @@ export function HomeParcelAddressLookup({
 
   const showMultiHitLevyIntroLead =
     hits != null && hits.length > 1;
-  const propertyDetailsJumpIcon = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="size-6"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125V5.625a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-      />
-    </svg>
-  );
-  const propertyDetailsJumpChevron = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-      className="size-5 shrink-0"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-      />
-    </svg>
-  );
   const compsIcon = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1484,7 +1502,7 @@ export function HomeParcelAddressLookup({
               >
                 <div className="flex min-h-11 flex-row items-center gap-3 px-3.5 py-3 sm:px-4">
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-indigo-100 text-indigo-700">
-                    {propertyDetailsJumpIcon}
+                    {PROPERTY_DETAILS_JUMP_ICON}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
@@ -1494,7 +1512,7 @@ export function HomeParcelAddressLookup({
                       Jump to property details
                     </span>
                   </span>
-                  <span className="text-indigo-600">{propertyDetailsJumpChevron}</span>
+                  <span className="text-indigo-600">{PROPERTY_DETAILS_JUMP_CHEVRON}</span>
                 </div>
               </a>
             ) : null}

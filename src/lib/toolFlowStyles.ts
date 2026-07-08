@@ -92,8 +92,8 @@ export const DASHBOARD_TILE_RADIUS_CLASS = RADIUS_SURFACE_CLASS;
 export const DASHBOARD_PANEL_SHELL_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 
 /**
- * Full-width parcel record tables: flush when stacked (below lg); card shell from lg when
- * the levy + property grid is side-by-side.
+ * Parcel record tables shell (not the section heading): flush when stacked (below lg); card
+ * shell from lg when the levy + property grid is side-by-side.
  */
 export const PARCEL_RECORD_EXTENDED_SHELL_CLASS =
   "border-0 bg-transparent p-0 lg:rounded-lg lg:border lg:border-slate-200 lg:bg-slate-50/80 lg:p-5";

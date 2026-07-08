@@ -14,10 +14,19 @@ import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 const NO_DATA = "No data found";
 
 const TABLE_CLASS =
-  "w-full max-w-full table-fixed border-collapse text-sm leading-snug text-slate-900 sm:text-base";
-const CELL_WRAP_CLASS = "min-w-0 break-words [overflow-wrap:anywhere]";
-const TH_CLASS = `border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-left font-medium text-slate-700 ${CELL_WRAP_CLASS}`;
-const TD_CLASS = `border border-slate-200 px-2 py-1.5 align-top text-slate-900 ${CELL_WRAP_CLASS}`;
+  "w-full max-w-full table-auto border-collapse text-sm leading-snug text-slate-900 sm:text-base";
+const WRAP_CELL_CLASS = "min-w-0 break-words";
+/** Shrink-to-fit index column: as narrow as content allows, still wraps when needed. */
+const INDEX_COL_CLASS = `w-[1%] ${WRAP_CELL_CLASS}`;
+/** Value row labels: shrink on small screens; one line when there is room (sm+). */
+const VALUE_ROW_LABEL_CLASS =
+  `w-[1%] min-w-0 break-words sm:w-auto sm:whitespace-nowrap`;
+const TH_CLASS = `border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-left font-medium text-slate-700 ${WRAP_CELL_CLASS}`;
+const TD_CLASS = `border border-slate-200 px-2 py-1.5 align-top text-slate-900 ${WRAP_CELL_CLASS}`;
+const MONEY_TH_CLASS =
+  "whitespace-nowrap border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-right font-medium tabular-nums text-slate-700";
+const MONEY_TD_CLASS =
+  "border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
 const MISSING_CELL_CLASS = "italic text-slate-500";
 
 function MissingTableCell() {
@@ -28,22 +37,15 @@ function MissingTableCell() {
 const SECTION_TITLE_ROW_CLASS =
   "border border-slate-200 bg-slate-50/60 px-2 pb-2 text-left text-base font-semibold leading-snug text-slate-800 sm:text-lg";
 
-const DETAIL_TABLE_COLGROUP = (
-  <colgroup>
-    <col className="w-[4.5rem] sm:w-[5rem]" />
-    <col />
-    <col className="w-[30%] sm:w-[28%]" />
-  </colgroup>
-);
-
-const VALUE_TABLE_COLGROUP = (
-  <colgroup>
-    <col className="w-[38%] sm:w-[34%]" />
-    <col className="w-[22%] sm:w-[22%]" />
-    <col className="w-[20%] sm:w-[22%]" />
-    <col className="w-[20%] sm:w-[22%]" />
-  </colgroup>
-);
+function columnHeaderClass(index: number, moneyColumns: boolean): string {
+  if (moneyColumns && index > 0) {
+    return MONEY_TH_CLASS;
+  }
+  if (index === 0) {
+    return `${TH_CLASS} ${INDEX_COL_CLASS}`;
+  }
+  return TH_CLASS;
+}
 
 function SectionTitleRow({
   title,
@@ -71,10 +73,12 @@ function ColumnHeaderRow({
   labels,
   blankHeader = "sr-only",
   blankHeaderSrOnly = "Row",
+  moneyColumns = false,
 }: {
   labels: string[];
   blankHeader?: "sr-only" | "hidden";
   blankHeaderSrOnly?: string;
+  moneyColumns?: boolean;
 }) {
   return (
     <tr>
@@ -82,7 +86,7 @@ function ColumnHeaderRow({
         <th
           key={`${label}-${index}`}
           scope="col"
-          className={TH_CLASS}
+          className={columnHeaderClass(index, moneyColumns)}
           aria-hidden={!label && blankHeader === "hidden" ? true : undefined}
         >
           {label ? (
@@ -154,7 +158,6 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   return (
     <table className={TABLE_CLASS}>
       <caption className="sr-only">Appraised and assessed values by total, building, and land</caption>
-      {VALUE_TABLE_COLGROUP}
       <tbody>
         <SectionTitleRow
           title="Appraised and assessed values"
@@ -164,15 +167,16 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
         <ColumnHeaderRow
           labels={["", "Total", "Building", "Land"]}
           blankHeader="hidden"
+          moneyColumns
         />
         {rowsToShow.map((row) => (
           <tr key={row.label}>
-            <th scope="row" className={`${TH_CLASS} font-medium`}>
+            <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
               {parcelRecordCellText(row.label)}
             </th>
-            <td className={TD_CLASS}>{formatValueCell(row.values.total)}</td>
-            <td className={TD_CLASS}>{formatValueCell(row.values.building)}</td>
-            <td className={TD_CLASS}>{formatValueCell(row.values.land)}</td>
+            <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.total)}</td>
+            <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.building)}</td>
+            <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.land)}</td>
           </tr>
         ))}
       </tbody>
@@ -237,7 +241,7 @@ export function ParcelRecordBuildingAndLandTable({
       for (const [index, attr] of attributes.entries()) {
         rows.push(
           <tr key={`${buildingNum}-attr-${attr.label}`}>
-            <td className={TD_CLASS}>{index === 0 ? buildingNum : ""}</td>
+            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>{index === 0 ? buildingNum : ""}</td>
             <td className={TD_CLASS}>{attr.label}</td>
             <td className={TD_CLASS}>{parcelRecordCellText(attr.value)}</td>
           </tr>,
@@ -256,7 +260,7 @@ export function ParcelRecordBuildingAndLandTable({
       for (const [index, area] of areas.entries()) {
         rows.push(
           <tr key={`${buildingNum}-area-${area.description}-${index}`}>
-            <td className={TD_CLASS}>{index === 0 ? buildingNum : ""}</td>
+            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>{index === 0 ? buildingNum : ""}</td>
             <td className={TD_CLASS}>{parcelRecordCellText(area.description)}</td>
             <td className={TD_CLASS}>
               {area.sqFt ? area.sqFt : <MissingTableCell />}
@@ -267,7 +271,7 @@ export function ParcelRecordBuildingAndLandTable({
       if (building.totalArea) {
         rows.push(
           <tr key={`${buildingNum}-total-area`}>
-            <td className={TD_CLASS} />
+            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`} />
             <td className={`${TD_CLASS} font-semibold text-slate-800`}>
               Bldg Total Area:
             </td>
@@ -292,7 +296,7 @@ export function ParcelRecordBuildingAndLandTable({
     for (const [index, line] of landLineList.entries()) {
       rows.push(
         <tr key={`land-line-${index}`}>
-          <td className={TD_CLASS} />
+          <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`} />
           <td className={TD_CLASS}>
             {line.units?.trim() ? (
               parcelRecordCellText(line.units.trim())
@@ -317,7 +321,6 @@ export function ParcelRecordBuildingAndLandTable({
       <caption className="sr-only">
         Building attributes, area breakdown, and land line
       </caption>
-      {DETAIL_TABLE_COLGROUP}
       <tbody>{rows}</tbody>
     </table>
   );
