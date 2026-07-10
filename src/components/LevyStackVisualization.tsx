@@ -135,7 +135,7 @@ type TileActionsModalProps = {
   actionLine: CommittedLevyLine;
   allowLineEdit: boolean;
   formatMills: (mills: number) => string;
-  goToTermFromTileMenu: (id: "term-mills" | "term-levy") => void;
+  goToTermFromTileMenu: (id: "term-mill-levy") => void;
   beginEdit: (line: CommittedLevyLine) => void;
   removeLine: (id: string) => void;
   onDismiss: () => void;
@@ -188,7 +188,7 @@ function TileActionsModal({
               <button
                 type="button"
                 className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
-                onClick={() => goToTermFromTileMenu("term-mills")}
+                onClick={() => goToTermFromTileMenu("term-mill-levy")}
               >
                 mills
               </button>
@@ -198,7 +198,7 @@ function TileActionsModal({
               <button
                 type="button"
                 className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-sm`}
-                onClick={() => goToTermFromTileMenu("term-levy")}
+                onClick={() => goToTermFromTileMenu("term-mill-levy")}
               >
                 levy
               </button>
@@ -339,11 +339,10 @@ export function LevyStackVisualization({
   const showLevyGrid =
     !awaitingTemplateMills && (lines.length > 0 || allowLineEdit);
 
-  const millsTermHref = "#term-mills";
-  const levyTermHref = "#term-levy";
+  const millLevyTermHref = "#term-mill-levy";
   const pinTermHref = "#term-pin";
 
-  function goToTermFromTileMenu(id: "term-mills" | "term-levy") {
+  function goToTermFromTileMenu(id: "term-mill-levy") {
     setTileActionsId(null);
     window.setTimeout(() => {
       window.history.replaceState(null, "", `/#${id}`);
@@ -969,7 +968,7 @@ export function LevyStackVisualization({
           <p className="text-sm font-semibold text-indigo-950 sm:text-base">
             Enter{" "}
             <a
-              href={millsTermHref}
+              href={millLevyTermHref}
               className={TERM_LINK_CLASS}
             >
               mills
@@ -979,7 +978,7 @@ export function LevyStackVisualization({
           <p className="mt-1 text-sm text-slate-700">
             Each row is one{" "}
             <a
-              href={levyTermHref}
+              href={millLevyTermHref}
               className={TERM_LINK_CLASS}
             >
               levy

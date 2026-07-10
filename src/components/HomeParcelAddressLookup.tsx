@@ -27,28 +27,7 @@ import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
 import {
-  TermAinAside,
-  TermActualValueAside,
-  TermAssessedValueAside,
-  TermCompsAside,
-  TermLegalDescriptionAside,
-  TermNovCompsImprovementStyleAside,
-  TermNovCompsImprovementTypeAside,
-  TermNovCompsLucAside,
-  TermNovCompsValuationGradeAside,
-  TermLevyAside,
-  TermPropertyClassificationAside,
-  TermLgIdAside,
-  TermMillsAside,
-  TermOwnerListAside,
-  TermParcelAside,
-  TermParcelRecordAside,
-  TermPhotoSketchAside,
-  TermPinAside,
-  TermSitusAddressAside,
-  TermSpecialDistrictsAside,
-  TermTagAside,
-  TermTaxEntityAside,
+  HomeDashboardKeyTermAsides,
 } from "@/content/termDefinitions";
 import {
   btnOutlinePrimaryMd,
@@ -1725,33 +1704,7 @@ export function HomeParcelAddressLookup({
               Key terms
             </h3>
             <div className="mt-4 space-y-4">
-              {/* Roughly glossary order; comps grid rows follow TermCompsAside */}
-              <TermActualValueAside />
-              <TermAssessedValueAside />
-              <TermCompsAside />
-              {isDemoMode ? (
-                <>
-                  <TermNovCompsImprovementTypeAside />
-                  <TermNovCompsImprovementStyleAside />
-                  <TermNovCompsLucAside />
-                  <TermNovCompsValuationGradeAside />
-                </>
-              ) : null}
-              <TermLevyAside />
-              <TermLgIdAside />
-              <TermMillsAside />
-              <TermOwnerListAside />
-              <TermParcelAside />
-              <TermParcelRecordAside />
-              <TermPinAside />
-              <TermAinAside />
-              <TermSitusAddressAside />
-              <TermPhotoSketchAside />
-              <TermLegalDescriptionAside />
-              <TermPropertyClassificationAside />
-              <TermSpecialDistrictsAside />
-              <TermTagAside />
-              <TermTaxEntityAside />
+              <HomeDashboardKeyTermAsides showNovCompsGridRowKeyTerms={isDemoMode} />
             </div>
             <div className="mt-6 flex justify-center sm:justify-start">
               <BackToTopButton />

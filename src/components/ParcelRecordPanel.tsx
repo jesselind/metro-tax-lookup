@@ -22,7 +22,7 @@ const ROW_CLASS =
   "grid grid-cols-1 gap-1 border-b border-slate-200/90 py-3 last:border-b-0 sm:grid-cols-[minmax(0,2.5fr)_minmax(0,7.5fr)] sm:gap-x-3 sm:gap-y-0 sm:py-3";
 /** 0.875rem labels on small screens; 1rem values (readable body size, respects user zoom). */
 const LABEL_CLASS =
-  "min-w-0 break-words text-sm font-medium leading-snug text-slate-600 [overflow-wrap:anywhere]";
+  "min-w-0 break-words text-sm font-medium leading-snug text-slate-600";
 const VALUE_CLASS =
   "min-w-0 break-words text-base leading-relaxed text-slate-900";
 const MISSING_VALUE_CLASS =
@@ -137,6 +137,7 @@ export function ParcelRecordPanel({
             triggerIdSuffix="situs-address"
           />
           <ParcelRecordRow
+            termId="term-situs-city"
             label="Situs City"
             value={displayRecord.situsCity}
             triggerIdSuffix="situs-city"
@@ -177,26 +178,31 @@ export function ParcelRecordPanel({
             triggerIdSuffix="owner-list"
           />
           <ParcelRecordRow
+            termId="term-ownership-type"
             label="Ownership Type"
             value={displayRecord.ownershipType}
             triggerIdSuffix="ownership-type"
           />
           <ParcelRecordRow
+            termId="term-owner-address"
             label="Owner Address"
             value={displayRecord.ownerDeliveryAddress}
             triggerIdSuffix="owner-address"
           />
           <ParcelRecordRow
+            termId="term-owner-city-state-zip"
             label="City/State/Zip"
             value={displayRecord.ownerCityStateZip}
             triggerIdSuffix="owner-city-state-zip"
           />
           <ParcelRecordRow
+            termId="term-acreage"
             label="Acreage"
             value={displayRecord.acreage}
             triggerIdSuffix="acreage"
           />
           <ParcelRecordRow
+            termId="term-land-use"
             label="Land Use"
             value={displayRecord.landUse}
             triggerIdSuffix="land-use"

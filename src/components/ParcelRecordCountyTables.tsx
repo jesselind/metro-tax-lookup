@@ -4,12 +4,16 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { ReactNode } from "react";
+import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
+import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
+import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecordBuildingAttributeTerms";
 import type {
   ArapahoeParcelRecordRow,
   ParcelRecordBuilding,
 } from "@/lib/arapahoeParcelLevyData";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
+import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
 
 const NO_DATA = "No data found";
 
@@ -28,6 +32,94 @@ const MONEY_TH_CLASS =
 const MONEY_TD_CLASS =
   "border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
 const MISSING_CELL_CLASS = "italic text-slate-500";
+
+type GlossaryLabelSpec = {
+  text: string;
+  termId: ParcelGlossaryTermId;
+  triggerIdSuffix: string;
+  variant?: "parcel-record" | "section-title" | "column-header";
+  countyParcelRecordUrl?: string | null;
+};
+
+function ParcelRecordTableGlossaryLabel({
+  text,
+  termId,
+  triggerIdSuffix,
+  variant = "parcel-record",
+  countyParcelRecordUrl,
+}: GlossaryLabelSpec) {
+  return (
+    <ParcelGlossaryPopoverTrigger
+      termId={termId}
+      textTrigger={text}
+      textTriggerId={`parcel-record-table-${triggerIdSuffix}`}
+      variant={variant}
+      countyParcelRecordUrl={countyParcelRecordUrl}
+    />
+  );
+}
+
+function glossaryLabelOrText(
+  spec: GlossaryLabelSpec | null,
+  fallback: string,
+): ReactNode {
+  if (spec) {
+    return <ParcelRecordTableGlossaryLabel {...spec} />;
+  }
+  return parcelRecordCellText(fallback);
+}
+
+const VALUE_ROW_GLOSSARY: Record<
+  string,
+  { termId: ParcelGlossaryTermId; label: string; triggerIdSuffix: string }
+> = {
+  appraised: {
+    termId: "term-appraised-total",
+    label: "Appraised Value",
+    triggerIdSuffix: "appraised-value",
+  },
+  assessed: {
+    termId: "term-assessed-total",
+    label: "Assessed Value",
+    triggerIdSuffix: "assessed-value",
+  },
+  "assessed-school": {
+    termId: "term-assessed-school-value",
+    label: "Assessed School Value",
+    triggerIdSuffix: "assessed-school-value",
+  },
+};
+
+const VALUE_COLUMN_GLOSSARY: Record<
+  string,
+  { termId: ParcelGlossaryTermId; triggerIdSuffix: string }
+> = {
+  Total: { termId: "term-parcel-value-total", triggerIdSuffix: "col-total" },
+  Building: {
+    termId: "term-parcel-value-building",
+    triggerIdSuffix: "col-building",
+  },
+  Land: { termId: "term-parcel-value-land", triggerIdSuffix: "col-land" },
+};
+
+const SECTION_TITLE_GLOSSARY: Partial<
+  Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
+> = {
+  "Land Line": {
+    termId: "term-parcel-land-line",
+    triggerIdSuffix: "section-land-line",
+  },
+};
+
+const BUILDING_TABLE_COLUMN_GLOSSARY: Partial<
+  Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
+> = {
+  Units: { termId: "term-parcel-land-units", triggerIdSuffix: "hdr-units" },
+  "Land Use": {
+    termId: "term-parcel-land-line-land-use",
+    triggerIdSuffix: "hdr-land-use",
+  },
+};
 
 function MissingTableCell() {
   return <span className={MISSING_CELL_CLASS}>{NO_DATA}</span>;
@@ -56,6 +148,7 @@ function SectionTitleRow({
   isFirst?: boolean;
   colSpan?: number;
 }) {
+  const glossary = SECTION_TITLE_GLOSSARY[title];
   return (
     <tr>
       <th
@@ -63,11 +156,22 @@ function SectionTitleRow({
         scope="colgroup"
         className={`${SECTION_TITLE_ROW_CLASS} ${isFirst ? "pt-2" : "pt-6"}`}
       >
-        {title}
+        {glossary ? (
+          <ParcelRecordTableGlossaryLabel
+            text={title}
+            termId={glossary.termId}
+            triggerIdSuffix={glossary.triggerIdSuffix}
+            variant="section-title"
+          />
+        ) : (
+          title
+        )}
       </th>
     </tr>
   );
 }
+
+type ColumnHeaderLabel = string | GlossaryLabelSpec;
 
 function ColumnHeaderRow({
   labels,
@@ -75,28 +179,91 @@ function ColumnHeaderRow({
   blankHeaderSrOnly = "Row",
   moneyColumns = false,
 }: {
-  labels: string[];
+  labels: ColumnHeaderLabel[];
   blankHeader?: "sr-only" | "hidden";
   blankHeaderSrOnly?: string;
   moneyColumns?: boolean;
 }) {
   return (
     <tr>
-      {labels.map((label, index) => (
-        <th
-          key={`${label}-${index}`}
-          scope="col"
-          className={columnHeaderClass(index, moneyColumns)}
-          aria-hidden={!label && blankHeader === "hidden" ? true : undefined}
-        >
-          {label ? (
-            label
-          ) : blankHeader === "hidden" ? null : (
-            <span className="sr-only">{blankHeaderSrOnly}</span>
-          )}
-        </th>
-      ))}
+      {labels.map((label, index) => {
+        const labelText = typeof label === "string" ? label : label.text;
+        return (
+          <th
+            key={`${labelText}-${index}`}
+            scope="col"
+            className={columnHeaderClass(index, moneyColumns)}
+            aria-hidden={!labelText && blankHeader === "hidden" ? true : undefined}
+          >
+            {labelText ? (
+              typeof label === "string" ? (
+                label
+              ) : (
+                <ParcelRecordTableGlossaryLabel
+                  {...label}
+                  variant={label.variant ?? "parcel-record"}
+                />
+              )
+            ) : blankHeader === "hidden" ? null : (
+              <span className="sr-only">{blankHeaderSrOnly}</span>
+            )}
+          </th>
+        );
+      })}
     </tr>
+  );
+}
+
+function valueColumnHeaderLabels(): ColumnHeaderLabel[] {
+  return ["", "Total", "Building", "Land"].map((label) => {
+    if (!label) {
+      return label;
+    }
+    const glossary = VALUE_COLUMN_GLOSSARY[label];
+    if (!glossary) {
+      return label;
+    }
+    return {
+      text: label,
+      termId: glossary.termId,
+      triggerIdSuffix: glossary.triggerIdSuffix,
+    };
+  });
+}
+
+function buildingTableHeaderLabel(label: string): ColumnHeaderLabel {
+  const glossary = BUILDING_TABLE_COLUMN_GLOSSARY[label];
+  if (!glossary) {
+    return label;
+  }
+  return {
+    text: label,
+    termId: glossary.termId,
+    triggerIdSuffix: glossary.triggerIdSuffix,
+    variant: "column-header" as const,
+  };
+}
+
+function ValueRowLabel({
+  year,
+  kind,
+  countyParcelRecordUrl,
+}: {
+  year: string;
+  kind: "appraised" | "assessed" | "assessed-school";
+  countyParcelRecordUrl?: string | null;
+}) {
+  const glossary = VALUE_ROW_GLOSSARY[kind];
+  const label = year ? `${year} ${glossary.label}` : glossary.label;
+  return (
+    <ParcelRecordTableGlossaryLabel
+      text={label}
+      termId={glossary.termId}
+      triggerIdSuffix={glossary.triggerIdSuffix}
+      countyParcelRecordUrl={
+        kind === "assessed-school" ? countyParcelRecordUrl : undefined
+      }
+    />
   );
 }
 
@@ -115,9 +282,13 @@ type ValueColumn = {
 
 function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   const year = (record.assessmentYear ?? "").trim();
-  const rows: { label: string; values: ValueColumn }[] = [
+  const countyParcelRecordUrl = safeArapahoeParcelRecordUrl(record.ain);
+  const rows: {
+    kind: "appraised" | "assessed" | "assessed-school";
+    values: ValueColumn;
+  }[] = [
     {
-      label: year ? `${year} Appraised Value` : "Appraised Value",
+      kind: "appraised",
       values: {
         total: record.totalActual,
         building: record.improvementActual,
@@ -125,7 +296,7 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
       },
     },
     {
-      label: year ? `${year} Assessed Value` : "Assessed Value",
+      kind: "assessed",
       values: {
         total: record.totalAssessed,
         building: null,
@@ -133,7 +304,7 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
       },
     },
     {
-      label: year ? `${year} Assessed School Value` : "Assessed School Value",
+      kind: "assessed-school",
       values: {
         total: null,
         building: null,
@@ -150,7 +321,7 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   );
   const rowsToShow = hasAnyValue
     ? rows
-    : rows.filter((row) => row.label.includes("Appraised"));
+    : rows.filter((row) => row.kind === "appraised");
   if (rowsToShow.length === 0) {
     return <p className={MISSING_CELL_CLASS}>{NO_DATA}</p>;
   }
@@ -165,14 +336,18 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
           colSpan={4}
         />
         <ColumnHeaderRow
-          labels={["", "Total", "Building", "Land"]}
+          labels={valueColumnHeaderLabels()}
           blankHeader="hidden"
           moneyColumns
         />
         {rowsToShow.map((row) => (
-          <tr key={row.label}>
+          <tr key={row.kind}>
             <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
-              {parcelRecordCellText(row.label)}
+              <ValueRowLabel
+                year={year}
+                kind={row.kind}
+                countyParcelRecordUrl={countyParcelRecordUrl}
+              />
             </th>
             <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.total)}</td>
             <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.building)}</td>
@@ -239,10 +414,20 @@ export function ParcelRecordBuildingAndLandTable({
         />,
       );
       for (const [index, attr] of attributes.entries()) {
+        const attrTermId = PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS[attr.label];
+        const attrLabelSpec: GlossaryLabelSpec | null = attrTermId
+          ? {
+              text: attr.label,
+              termId: attrTermId,
+              triggerIdSuffix: `attr-${attr.label.replace(/\s+/g, "-").toLowerCase()}`,
+            }
+          : null;
         rows.push(
           <tr key={`${buildingNum}-attr-${attr.label}`}>
             <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>{index === 0 ? buildingNum : ""}</td>
-            <td className={TD_CLASS}>{attr.label}</td>
+            <td className={TD_CLASS}>
+              {glossaryLabelOrText(attrLabelSpec, attr.label)}
+            </td>
             <td className={TD_CLASS}>{parcelRecordCellText(attr.value)}</td>
           </tr>,
         );
@@ -289,7 +474,11 @@ export function ParcelRecordBuildingAndLandTable({
     rows.push(
       <ColumnHeaderRow
         key="hdr-land-line"
-        labels={["", "Units", "Land Use"]}
+        labels={[
+          "",
+          buildingTableHeaderLabel("Units"),
+          buildingTableHeaderLabel("Land Use"),
+        ]}
         blankHeader="hidden"
       />,
     );

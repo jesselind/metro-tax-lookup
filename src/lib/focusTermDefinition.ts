@@ -8,7 +8,12 @@
  * Term asides use tabIndex={-1} so they accept programmatic focus.
  */
 export function focusTermDefinitionById(id: string): void {
-  const el = document.getElementById(id);
+  const TERM_ID_ALIASES: Record<string, string> = {
+    "term-mills": "term-mill-levy",
+    "term-levy": "term-mill-levy",
+  };
+  const resolvedId = TERM_ID_ALIASES[id] ?? id;
+  const el = document.getElementById(resolvedId);
   if (!(el instanceof HTMLElement)) return;
   el.scrollIntoView({ behavior: "smooth" });
   requestAnimationFrame(() => {

@@ -11,9 +11,8 @@
  */
 
 import {
-  TermLevyFullBody,
+  TermMillLevyFullBody,
   TermLgIdFullBody,
-  TermMillsFullBody,
   TermSpecialDistrictsFullBody,
   TermTaxEntityFullBody,
 } from "@/content/termDefinitionBodies";
@@ -722,21 +721,16 @@ export function TermOwnerListAside() {
   );
 }
 
-export function TermMillsAside() {
+export function TermMillLevyAside() {
   return (
-    <TermAside id="term-mills" title="Mills" titleId="term-mills-title">
-      <TermMillsFullBody />
+    <TermAside id="term-mill-levy" title="Mill levy" titleId="term-mill-levy-title">
+      <TermMillLevyFullBody />
     </TermAside>
   );
 }
 
-export function TermLevyAside() {
-  return (
-    <TermAside id="term-levy" title="Levy" titleId="term-levy-title">
-      <TermLevyFullBody />
-    </TermAside>
-  );
-}
+/** @deprecated Use {@link TermMillLevyAside}. */
+export const TermMillsAside = TermMillLevyAside;
 
 export function TermSpecialDistrictsAside() {
   return (
@@ -784,10 +778,47 @@ export function TermTaxEntityAside() {
 }
 
 /**
+ * Key terms on the home dashboard (after levy load), alphabetically by title.
+ * Demo-only NOV comps grid row asides insert after Comps when `showNovCompsGridRowKeyTerms`.
+ */
+export function HomeDashboardKeyTermAsides(props?: {
+  showNovCompsGridRowKeyTerms?: boolean;
+}) {
+  const showGridKeyTerms = Boolean(props?.showNovCompsGridRowKeyTerms);
+  return (
+    <>
+      <TermAinAside />
+      <TermActualValueAside />
+      <TermAssessedValueAside />
+      <TermCompsAside />
+      {showGridKeyTerms ? (
+        <>
+          <TermNovCompsImprovementStyleAside />
+          <TermNovCompsImprovementTypeAside />
+          <TermNovCompsLucAside />
+          <TermNovCompsValuationGradeAside />
+        </>
+      ) : null}
+      <TermLegalDescriptionAside />
+      <TermLgIdAside />
+      <TermMillLevyAside />
+      <TermOwnerListAside />
+      <TermParcelAside />
+      <TermParcelRecordAside />
+      <TermPhotoSketchAside />
+      <TermPinAside />
+      <TermPropertyClassificationAside />
+      <TermSitusAddressAside />
+      <TermSpecialDistrictsAside />
+      <TermTagAside />
+      <TermTaxEntityAside />
+    </>
+  );
+}
+
+/**
  * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
- * (PIN, property classification, actual value, assessed value, comps, NOV comps grid code notes,
- * owner of record, mills, levy, special districts, LG ID, TAG, tax entity).
- * Parcel is defined on the home dashboard Key terms only (after address flow + PIN load).
+ * (alphabetical by title). Parcel record is home-dashboard only.
  *
  * @param showNovCompsGridRowKeyTerms — Include the four NOV comps grid row asides (they end with
  *   "Back to comps grid"). Use **true** only when the comps grid is on-screen (Try demo
@@ -809,15 +840,15 @@ export function AllTermDefinitionAsides(props?: {
       <TermCompsAside />
       {showGridKeyTerms ? (
         <>
-          <TermNovCompsImprovementTypeAside />
           <TermNovCompsImprovementStyleAside />
+          <TermNovCompsImprovementTypeAside />
           <TermNovCompsLucAside />
           <TermNovCompsValuationGradeAside />
         </>
       ) : null}
+      <TermLegalDescriptionAside />
+      <TermMillLevyAside />
       <TermOwnerListAside />
-      <TermMillsAside />
-      <TermLevyAside />
       <TermSpecialDistrictsAside />
       <TermLgIdAside />
       <TermTagAside />
