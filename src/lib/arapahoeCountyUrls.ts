@@ -8,6 +8,10 @@
  * Single place to update when county links change.
  */
 
+/** DPT page: Assessed Value section with 2026 local vs school rate examples. */
+export const COLORADO_DPT_ASSESSED_VALUE_SECTION_URL =
+  "https://dpt.colorado.gov/understanding-property-taxes-in-colorado#:~:text=Assessment%20Rates%20chart.-,Assessed%20Value,-Multiplying%20the%20actual";
+
 /** Real property: residential, commercial, agricultural, and vacant land parcels (Main Parcel / PIN). */
 export const ARAPAHOE_ASSESSOR_PROPERTY_SEARCH =
   "https://www.arapahoeco.gov/your_county/county_departments/assessor/property_search/search_residential_commercial_ag_and_vacant.php";

@@ -503,10 +503,19 @@ export default function SourcesPage() {
               public/data/arapahoe-parcel-record-by-pin/
             </code>
             {" "}
-            — extended Main Parcel fields (owner, situs, legal description, appraised
-            and assessed values) for the home{" "}
+            — extended county-record fields for the home{" "}
             <strong className="font-semibold text-slate-900">Property details</strong>{" "}
-            panel. Rows are split into JSON shards by{" "}
+            experience (Main Parcel plus sibling mart joins — Mart_DescrHeader legal display,
+            Mart_LegalParty ownership type, Mart_RDE_LndAll acreage / land lines,
+            Mart_RDE_BLD + Mart_RDE_Xfob building rows and land use; more tables land incrementally).
+            On the home page, scalar rows (owner, situs, acreage, and similar) appear in the
+            property panel; appraised/assessed values and building/land county tables render
+            full width below the levy + property grid. When property details sit beside the
+            levy stack on large screens,{" "}
+            <strong className="font-semibold text-slate-900">More property details</strong>
+            {" "}in the sidebar jumps to those tables and{" "}
+            <strong className="font-semibold text-slate-900">Property details cont.</strong>
+            {" "}labels the continuation. Rows are split into JSON shards by{" "}
             <strong className="font-semibold text-slate-900">5-digit PIN prefix</strong>{" "}
             (for example{" "}
             <code className={CODE_INLINE_CLASS}>03249.json</code>) so the browser
@@ -517,7 +526,9 @@ export default function SourcesPage() {
             (the year on the county parcel record, e.g. 2026 Appraised Value), not{" "}
             <code className={CODE_INLINE_CLASS}>TaxYear</code> (levy roll year). The browser
             fetches a shard only after a PIN levy load succeeds; it is not part of the
-            address-search prefetch.
+            address-search prefetch. The offline build logs shard size stats (median,
+            p90, p99) after each run; check those when adding mart joins — if shards
+            grow too large, further sharding may be needed.
           </li>
           <li>
             <code className={CODE_INLINE_CLASS}>

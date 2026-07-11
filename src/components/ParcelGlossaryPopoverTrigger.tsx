@@ -14,6 +14,8 @@ import {
 } from "@/content/termDefinitionBodies";
 import {
   PARCEL_RECORD_GLOSSARY_LINK_CLASS,
+  PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS,
+  PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS,
   PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 
@@ -23,11 +25,13 @@ export type ParcelGlossaryPopoverTriggerProps = {
   textTrigger: string;
   textTriggerId: string;
   /** Summary tiles use uppercase glossary styling; property details use sentence case. */
-  variant?: "summary-tile" | "parcel-record";
+  variant?: "summary-tile" | "parcel-record" | "section-title" | "column-header";
   textTriggerClassName?: string;
   ariaLabel?: string;
   panelClassName?: string;
   disabled?: boolean;
+  /** When set, school-value popover links to this county PPINum.aspx URL. */
+  countyParcelRecordUrl?: string | null;
 };
 
 /**
@@ -43,12 +47,17 @@ export function ParcelGlossaryPopoverTrigger({
   ariaLabel,
   panelClassName,
   disabled,
+  countyParcelRecordUrl,
 }: ParcelGlossaryPopoverTriggerProps) {
   const { title } = parcelGlossaryTermBriefRegistry[termId];
   const defaultTriggerClass =
-    variant === "parcel-record"
-      ? PARCEL_RECORD_GLOSSARY_LINK_CLASS
-      : PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS;
+    variant === "column-header"
+      ? PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS
+      : variant === "section-title"
+        ? PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS
+        : variant === "parcel-record"
+          ? PARCEL_RECORD_GLOSSARY_LINK_CLASS
+          : PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS;
 
   return (
     <InfoHintPopover
@@ -59,7 +68,10 @@ export function ParcelGlossaryPopoverTrigger({
       panelClassName={panelClassName ?? PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
       disabled={disabled}
     >
-      <ParcelTermPopoverPanel termId={termId} />
+      <ParcelTermPopoverPanel
+        termId={termId}
+        countyParcelRecordUrl={countyParcelRecordUrl}
+      />
     </InfoHintPopover>
   );
 }

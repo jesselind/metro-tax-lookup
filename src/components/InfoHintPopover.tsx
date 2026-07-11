@@ -13,10 +13,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { InfoCircleGlyph } from "@/components/InfoCircleGlyph";
 
 const ICON_TRIGGER_BTN_BASE =
   "inline-flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 outline-none transition hover:bg-slate-100/90 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-40";
+
+/** Interaction + a11y only — wrapping/typography come from {@link textTriggerClassName} or the default path. */
+const TEXT_TRIGGER_INTERACTIVE_CLASS =
+  "cursor-pointer border-0 bg-transparent p-0 text-left underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40";
+
+const TEXT_TRIGGER_DEFAULT_CLASS = `${TEXT_TRIGGER_INTERACTIVE_CLASS} max-w-full whitespace-normal break-words text-xs font-medium text-slate-700 sm:text-sm`;
 
 type InfoHintPopoverProps = {
   children: ReactNode;
@@ -59,13 +66,16 @@ type InfoHintPopoverProps = {
 );
 
 const PANEL_BASE =
-  "absolute z-40 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
+  "z-40 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
 
 /**
  * Toggles a small floating note; click outside or Escape closes.
  * - **Icon** (default): compact (i) beside labels.
  * - **Text**: underlined label text as trigger (avoids icon/label baseline fights).
  * - **Icon, panel below**: optional `iconPanelBelow` (and optional `iconTriggerChildren`) for tight tiles.
+ *
+ * Below-clamp panels portal to `document.body` with fixed coordinates so they are not clipped by
+ * ancestor `overflow-x-auto` scrollports (e.g. county tables).
  */
 export function InfoHintPopover(props: InfoHintPopoverProps) {
   const {
@@ -82,7 +92,10 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
   } = props;
 
   const [open, setOpen] = useState(false);
-  const [belowPanelLeftPx, setBelowPanelLeftPx] = useState(0);
+  const [belowPanelCoords, setBelowPanelCoords] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
@@ -91,33 +104,47 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
   const useBelowClamp = isText || iconPanelBelow;
 
   useLayoutEffect(() => {
-    if (!open || !useBelowClamp) return;
+    if (!open || !useBelowClamp) {
+      setBelowPanelCoords(null);
+      return;
+    }
     const margin = 16;
-    const clampPanelLeft = () => {
+    const gap = 4;
+
+    const clampPanelPosition = () => {
       const wrap = wrapRef.current;
       const panel = panelRef.current;
       if (!wrap || !panel) return;
-      const wrapLeft = wrap.getBoundingClientRect().left;
+
+      const triggerRect = wrap.getBoundingClientRect();
       const panelWidth = panel.getBoundingClientRect().width;
       const vw = window.innerWidth;
-      let left = 0;
-      if (wrapLeft + panelWidth > vw - margin) {
-        left = vw - margin - wrapLeft - panelWidth;
+      let left = triggerRect.left;
+      if (left + panelWidth > vw - margin) {
+        left = vw - margin - panelWidth;
       }
-      if (wrapLeft + left < margin) {
-        left = margin - wrapLeft;
+      if (left < margin) {
+        left = margin;
       }
-      setBelowPanelLeftPx(left);
+
+      setBelowPanelCoords({
+        top: triggerRect.bottom + gap,
+        left,
+      });
     };
-    clampPanelLeft();
-    const onResize = () => clampPanelLeft();
+
+    clampPanelPosition();
+    const onResize = () => clampPanelPosition();
     window.addEventListener("resize", onResize);
-    const ro = new ResizeObserver(() => clampPanelLeft());
+    window.addEventListener("scroll", onResize, true);
+    const ro = new ResizeObserver(() => clampPanelPosition());
     const panelEl = panelRef.current;
     if (panelEl) ro.observe(panelEl);
     return () => {
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onResize, true);
       ro.disconnect();
+      setBelowPanelCoords(null);
     };
   }, [open, useBelowClamp]);
 
@@ -127,8 +154,11 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       if (e.key === "Escape") setOpen(false);
     };
     const onPointer = (e: PointerEvent) => {
-      const el = wrapRef.current;
-      if (el && !el.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      const wrap = wrapRef.current;
+      const panel = panelRef.current;
+      if (wrap?.contains(target) || panel?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer, true);
@@ -137,6 +167,30 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       document.removeEventListener("pointerdown", onPointer, true);
     };
   }, [open]);
+
+  const belowPanelClassName = `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} fixed`;
+
+  const belowPanel =
+    open && useBelowClamp ? (
+      <div
+        ref={panelRef}
+        id={contentId}
+        role="region"
+        aria-live="polite"
+        className={
+          belowPanelCoords
+            ? belowPanelClassName
+            : `${belowPanelClassName} pointer-events-none invisible`
+        }
+        style={
+          belowPanelCoords
+            ? { top: belowPanelCoords.top, left: belowPanelCoords.left }
+            : { top: 0, left: 0 }
+        }
+      >
+        {children}
+      </div>
+    ) : null;
 
   return (
     <div
@@ -156,8 +210,8 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
           disabled={disabled}
           className={
             textTriggerClassName
-              ? `${textTriggerClassName} max-w-full whitespace-normal break-words cursor-pointer border-0 bg-transparent p-0 text-left underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40`
-              : "max-w-full whitespace-normal break-words cursor-pointer border-0 bg-transparent p-0 text-left text-xs font-medium text-slate-700 underline decoration-slate-400 decoration-1 underline-offset-2 outline-none transition hover:decoration-slate-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 sm:text-sm disabled:cursor-not-allowed disabled:opacity-40"
+              ? `${textTriggerClassName} ${TEXT_TRIGGER_INTERACTIVE_CLASS}`
+              : TEXT_TRIGGER_DEFAULT_CLASS
           }
           aria-expanded={open}
           aria-controls={open ? contentId : undefined}
@@ -189,22 +243,20 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
           )}
         </button>
       )}
-      {open ? (
+      {open && !useBelowClamp ? (
         <div
           ref={panelRef}
           id={contentId}
           role="region"
           aria-live="polite"
-          className={
-            useBelowClamp
-              ? `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} top-full mt-1`
-              : `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} left-full top-1/2 ml-1 -translate-y-1/2`
-          }
-          style={useBelowClamp ? { left: belowPanelLeftPx } : undefined}
+          className={`${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} absolute left-full top-1/2 ml-1 -translate-y-1/2`}
         >
           {children}
         </div>
       ) : null}
+      {belowPanel && typeof document !== "undefined"
+        ? createPortal(belowPanel, document.body)
+        : null}
     </div>
   );
 }

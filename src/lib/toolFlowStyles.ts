@@ -88,6 +88,16 @@ export const TERM_ASIDE_BASE =
 /** Dashboard / tool tiles (parcel summary, metro, levy stack cards): shared corner radius. */
 export const DASHBOARD_TILE_RADIUS_CLASS = RADIUS_SURFACE_CLASS;
 
+/** Inset dashboard card (property sidebar, comps panel, etc.). */
+export const DASHBOARD_PANEL_SHELL_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
+
+/**
+ * Parcel record tables shell (not the section heading): flush when stacked (below lg); card
+ * shell from lg when the levy + property grid is side-by-side.
+ */
+export const PARCEL_RECORD_EXTENDED_SHELL_CLASS =
+  "border-0 bg-transparent p-0 lg:rounded-lg lg:border lg:border-slate-200 lg:bg-slate-50/80 lg:p-5";
+
 /**
  * Levy stack tiles: `auto-fill` + `minmax(min(100%, …), 1fr)` so columns wrap naturally at any viewport.
  */
@@ -140,9 +150,20 @@ export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FR
 export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
   "text-inherit uppercase underline decoration-slate-400 decoration-1 underline-offset-[0.2em] hover:text-slate-600 hover:decoration-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
 
-/** Glossary popover trigger on property details rows (sentence case, not tile uppercase). */
+/**
+ * Glossary popover trigger on property details rows (sentence case, not tile uppercase).
+ * Inline so labels flow like plain dt copy; wrapping is owned by the parent {@code LABEL_CLASS}.
+ */
 export const PARCEL_RECORD_GLOSSARY_LINK_CLASS =
-  "block max-w-full whitespace-normal break-words text-left text-sm font-medium leading-snug text-slate-600 underline decoration-slate-300 underline-offset-2 [overflow-wrap:anywhere] hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1";
+  "inline text-inherit text-sm font-medium leading-snug text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-800";
+
+/** In-table section titles (e.g. Land Line): match {@link ParcelRecordCountyTables} section row typography. */
+export const PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS =
+  "inline text-inherit text-base font-semibold leading-snug text-slate-800 underline decoration-slate-400 underline-offset-2 hover:text-slate-900 sm:text-lg";
+
+/** In-table column headers: inherit table header size/weight from parent {@code th}. */
+export const PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS =
+  "inline text-inherit font-medium text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900";
 
 export const PARCEL_SUMMARY_TILE_LABEL_CLASS =
   "text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs";

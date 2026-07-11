@@ -110,15 +110,48 @@ export type ArapahoePinToTagFile = {
 };
 
 /** Extended Main Parcel fields for the property details panel (lazy load after levy). */
+export type ParcelRecordLandLine = {
+  units?: string | null;
+  landUse?: string | null;
+};
+
+export type ParcelRecordBuildingAttribute = {
+  label: string;
+  value: string;
+};
+
+export type ParcelRecordBuildingArea = {
+  description: string;
+  sqFt: string;
+};
+
+/** County Building section: attributes table + area breakdown per structure. */
+export type ParcelRecordBuilding = {
+  buildingNum: string;
+  attributes?: ParcelRecordBuildingAttribute[];
+  areas?: ParcelRecordBuildingArea[];
+  totalArea?: string | null;
+};
+
 export type ArapahoeParcelRecordRow = {
   ain?: string | null;
   situsAddress?: string | null;
   situsCity?: string | null;
   ownerList?: string | null;
+  /** Mart_LegalParty LPType (e.g. Individual, Trust). */
+  ownershipType?: string | null;
   ownerDeliveryAddress?: string | null;
   ownerCityStateZip?: string | null;
   legalDescrFull?: string | null;
   legalDescrDisplay?: string | null;
+  /** Mart_RDE_LndAll summed Acreage (display string). */
+  acreage?: string | null;
+  /** Top-level Land Use from Mart_RDE_BLD ImprTpDscr when a building exists. */
+  landUse?: string | null;
+  /** Mart_RDE_LndAll land-line table rows (Units + land-use description). */
+  landLines?: ParcelRecordLandLine[] | null;
+  /** Mart_RDE_BLD building blocks for the county Building section. */
+  buildings?: ParcelRecordBuilding[] | null;
   subdivisionCd?: string | null;
   subdivisionName?: string | null;
   taxRollDescr?: string | null;
