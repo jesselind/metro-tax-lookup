@@ -29,7 +29,7 @@ Open `http://localhost:3000`.
 
 - Main route `/`: address-to-PIN lookup from bundled JSON, then levy stack and metro share.
 
-- **Property details (home):** After a PIN levy load, scalar county-record rows render in **`ParcelRecordPanel`** (beside levy tiles on `lg+`, below levy on mobile). Appraised/assessed values and building/land county tables load full width below the grid in **`ParcelRecordExtendedSection`** (`ParcelRecordCountyTables.tsx`). On `lg+`, **More property details** in the sidebar jumps to those tables; **Property details cont.** marks the continuation when property and levy sit side by side.
+- **Property details (home):** After a PIN levy load, scalar county-record rows render in **`ParcelRecordPanel`** (beside levy tiles on `lg+`, below levy on mobile). Appraised/assessed values and building/land county tables load full width below the grid in **`ParcelRecordExtendedSection`** (`ParcelRecordCountyTables.tsx`). Assessed school and local building/land splits are computed at build time when mart columns are absent (see **`/sources`**). On `lg+`, **More property details** in the sidebar jumps to those tables; **Property details cont.** marks the continuation when property and levy sit side by side.
 
 - **Comps PDF:** The summary row offers **Comps PDF** (county comps grid PDF when AIN is available from the parcel index). Availability copy lives in **`src/content/countyCompsPdfGuidance.ts`** (popover, `/sources`, glossary). Toggle **`ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE`** in **`src/lib/safeExternalHref.ts`** to switch the unavailable-state UI.
 
@@ -107,7 +107,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
    - `public/data/arapahoe-pin-to-tag.json` (per PIN: `tagId`, values, `ain` from Main Parcel for the county comps grid PDF link)
    - `public/data/arapahoe-situs-to-pins.json`
-   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** experience (Main Parcel plus sibling mart joins; see build script). The home UI splits this into a scalar **Property details** panel (`ParcelRecordPanel`) and full-width county tables below the levy grid (`ParcelRecordExtendedSection` / `ParcelRecordCountyTables`). Sharded by 5-digit PIN prefix (~500 KiB per lookup today; plain JSON; lazy-loaded after levy succeeds). The build logs shard size stats (median, p90, p99) after each run — check these when adding Phase 2 joins; re-shard if shards grow too large.
+   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** experience (Main Parcel plus sibling mart joins; see build script). The home UI splits this into a scalar **Property details** panel (`ParcelRecordPanel`) and full-width county tables below the levy grid (`ParcelRecordExtendedSection` / `ParcelRecordCountyTables`). Sharded by 5-digit PIN prefix (~900 KiB median per shard today; plain JSON; lazy-loaded after levy succeeds). The build also **computes** assessed school value and local assessed building/land splits (not mart columns) and derives ownership type from legal-party owner rows — see **`/sources`** for methodology. The build logs shard size stats (median, p90, p99) after each run — check these when adding mart joins; re-shard if shards grow too large.
 
 3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):
 

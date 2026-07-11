@@ -131,6 +131,119 @@ def parse_parcel_value_cell(val: Any) -> float | None:
         return None
 
 
+# Colorado DPT assessed rates for residential property (2025+). School columns match
+# round(actual x school rate) per component; local land uses round(land actual x local rate)
+# and local building is totalAssessed minus local land (county PPINum.aspx pattern).
+COLORADO_SCHOOL_ASSESSED_RATE = 0.0705
+COLORADO_LOCAL_ASSESSED_RATE = 0.068
+DUAL_ASSESSED_MIN_ASSESSMENT_YEAR = 2025
+
+
+def parse_assessment_year_cell(val: Any) -> int | None:
+    """Parse Main Parcel AssessmentYear; returns None if missing or invalid."""
+    s = strip_field(str(val)) if val is not None else ""
+    if not s:
+        return None
+    try:
+        year = int(float(s))
+    except ValueError:
+        return None
+    return year if 1900 <= year <= 2100 else None
+
+
+def parcel_row_qualifies_for_dual_assessed_splits(row: dict[str, str]) -> bool:
+    """Local assessed building/land splits apply to real property from 2025."""
+    year = parse_assessment_year_cell(row.get("AssessmentYear"))
+    if year is None or year < DUAL_ASSESSED_MIN_ASSESSMENT_YEAR:
+        return False
+    return strip_field(row.get("TaxRollDescr", "")).upper() == "REAL"
+
+
+def parcel_row_qualifies_for_school_assessed_splits(row: dict[str, str]) -> bool:
+    """School assessed splits apply to improved residential (county Improvement class) from 2025."""
+    if not parcel_row_qualifies_for_dual_assessed_splits(row):
+        return False
+    return strip_field(row.get("PropertyClassDescr", "")) == "Improvement"
+
+
+def _positive_actual(val: float | None) -> float:
+    if val is None or not math.isfinite(val) or val <= 0:
+        return 0.0
+    return float(val)
+
+
+def round_school_assessed_component(actual: float | None) -> int | None:
+    if actual is None or not math.isfinite(actual):
+        return None
+    return round(actual * COLORADO_SCHOOL_ASSESSED_RATE)
+
+
+def school_assessed_fields_from_actuals(
+    improvement_actual: float | None,
+    land_actual: float | None,
+    total_actual: float | None,
+) -> dict[str, int]:
+    """County-style school assessed: round each actual component x school rate, then sum."""
+    building = round_school_assessed_component(improvement_actual)
+    land = round_school_assessed_component(land_actual)
+    if building is not None or land is not None:
+        out: dict[str, int] = {}
+        if building is not None:
+            out["schoolAssessedBuilding"] = building
+        if land is not None:
+            out["schoolAssessedLand"] = land
+        out["schoolAssessedTotal"] = (building or 0) + (land or 0)
+        return out
+    total = round_school_assessed_component(total_actual)
+    if total is not None:
+        return {"schoolAssessedTotal": total}
+    return {}
+
+
+def local_assessed_split_fields(
+    improvement_actual: float | None,
+    land_actual: float | None,
+    total_assessed: float | None,
+) -> dict[str, int]:
+    """County-style local assessed building/land (totalAssessed comes from mart)."""
+    if total_assessed is None or not math.isfinite(total_assessed):
+        return {}
+    total_int = round(total_assessed)
+    imp = _positive_actual(improvement_actual)
+    land = _positive_actual(land_actual)
+    if imp == 0 and land > 0:
+        return {"assessedBuilding": 0, "assessedLand": total_int}
+    if imp > 0 and land == 0:
+        return {"assessedBuilding": total_int, "assessedLand": 0}
+    if imp > 0 and land > 0:
+        land_assessed = round(land * COLORADO_LOCAL_ASSESSED_RATE)
+        return {
+            "assessedLand": land_assessed,
+            "assessedBuilding": max(0, total_int - land_assessed),
+        }
+    return {}
+
+
+def attach_computed_assessed_values(rec: dict[str, Any], row: dict[str, str]) -> None:
+    """Add school and local assessed splits when DPT dual-rate rules apply."""
+    if parcel_row_qualifies_for_dual_assessed_splits(row):
+        rec.update(
+            local_assessed_split_fields(
+                rec.get("improvementActual"),
+                rec.get("landActual"),
+                rec.get("totalAssessed"),
+            )
+        )
+    if parcel_row_qualifies_for_school_assessed_splits(row):
+        rec.update(
+            school_assessed_fields_from_actuals(
+                rec.get("improvementActual"),
+                rec.get("landActual"),
+                rec.get("totalActual"),
+            )
+        )
+
+
 def parse_levy_mills_cell(val: Any) -> float | None:
     """Parse DOLA LGIS total levy cell; returns None if missing or invalid."""
     if val is None:
@@ -318,7 +431,7 @@ def format_situs_label(row: dict[str, str]) -> str:
 def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
     legal_full = _optional_str(row, "LegalDescr")
     legal_display = legal_descr_display_tail(legal_full) if legal_full else None
-    return {
+    rec: dict[str, Any] = {
         "ain": _optional_str(row, "AIN"),
         "situsAddress": _optional_str(row, "SAFreeFormAddr"),
         "situsCity": _optional_str(row, "SACity"),
@@ -339,6 +452,8 @@ def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
         "parcelTaxYear": _optional_str(row, "TaxYear"),
         "assessmentYear": _optional_str(row, "AssessmentYear"),
     }
+    attach_computed_assessed_values(rec, row)
+    return rec
 
 
 def _pin_map_first_row(row: dict[str, str]) -> dict[str, Any] | None:
@@ -1144,23 +1259,44 @@ def read_legal_description_display_by_pin(path: Path) -> dict[str, str]:
     return out
 
 
+def ownership_type_label_from_owner_lp_types(lp_types: list[str]) -> str | None:
+    """County-style Ownership Type from Mart_LegalParty owner rows (LPRType=Owner).
+
+    Vesting labels such as Joint Tenancy are not exported in the mart; when every owner
+    row is Individual we match the common county parcel-page label for co-owners.
+    """
+    types = [strip_field(t) for t in lp_types if strip_field(t)]
+    if not types:
+        return None
+    if len(types) == 1:
+        return types[0]
+    unique = list(dict.fromkeys(types))
+    if len(unique) == 1 and unique[0] == "Individual":
+        return "Joint Tenancy"
+    return ", ".join(unique)
+
+
 def read_ownership_type_by_pin(path: Path) -> dict[str, str]:
-    """PIN -> county Ownership Type label(s) from Mart_LegalParty LPType (unique, stable order)."""
+    """PIN -> Ownership Type label from Mart_LegalParty owner rows."""
     if not path.is_file():
         return {}
     by_pin: dict[str, list[str]] = defaultdict(list)
-    seen: dict[str, set[str]] = defaultdict(set)
     with path.open(newline="", encoding="utf-8", errors="replace") as f:
         for row in csv.DictReader(f):
             pin = normalize_pin(strip_field(row.get("PIN") or row.get("Pin") or ""))
+            lpr_type = strip_field(row.get("LPRType", ""))
+            if lpr_type.upper() != "OWNER":
+                continue
             lp_type = strip_field(row.get("LPType", ""))
             if not pin or not lp_type:
                 continue
-            if lp_type in seen[pin]:
-                continue
-            seen[pin].add(lp_type)
             by_pin[pin].append(lp_type)
-    return {pin: ", ".join(types) for pin, types in by_pin.items()}
+    out: dict[str, str] = {}
+    for pin, lp_types in by_pin.items():
+        label = ownership_type_label_from_owner_lp_types(lp_types)
+        if label:
+            out[pin] = label
+    return out
 
 
 def parse_acreage_cell(val: Any) -> float | None:

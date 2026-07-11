@@ -392,13 +392,15 @@ export function TermSitusCityBriefBody() {
 export function TermOwnershipTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      How the owners hold title on the assessor&apos;s record (for example{" "}
-      <strong className="font-semibold text-slate-900">joint tenancy</strong>
-      {" "}
-      when co-owners share one deed, or{" "}
+      How owners are classified —{" "}
       <strong className="font-semibold text-slate-900">individual</strong>
       {" "}
-      for a sole owner). This is what the county file shows, not legal advice about your deed.
+      for one owner, or{" "}
+      <strong className="font-semibold text-slate-900">joint tenancy</strong>
+      {" "}
+      when two people are each listed as individual owners (the label the county
+      parcel page often shows). We infer this from how the county supplies owner
+      data. Always treat the official county parcel record as the source of truth.
     </p>
   );
 }
