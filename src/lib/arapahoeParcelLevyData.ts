@@ -138,7 +138,7 @@ export type ArapahoeParcelRecordRow = {
   situsAddress?: string | null;
   situsCity?: string | null;
   ownerList?: string | null;
-  /** Mart_LegalParty LPType (e.g. Individual, Trust). */
+  /** Ownership type from Mart_LegalParty owner rows (Joint Tenancy when all owners are Individual). */
   ownershipType?: string | null;
   ownerDeliveryAddress?: string | null;
   ownerCityStateZip?: string | null;
@@ -160,6 +160,13 @@ export type ArapahoeParcelRecordRow = {
   improvementActual?: number | null;
   landActual?: number | null;
   totalAssessed?: number | null;
+  /** Local assessed building split (computed from totalAssessed + actuals; 2025+ residential real). */
+  assessedBuilding?: number | null;
+  assessedLand?: number | null;
+  /** School assessed total (DPT school rate x actual; rounded per building/land component). */
+  schoolAssessedTotal?: number | null;
+  schoolAssessedBuilding?: number | null;
+  schoolAssessedLand?: number | null;
   stateUseCd?: string | null;
   parcelTaxYear?: string | null;
   /** County parcel record notice year (CSV AssessmentYear). */

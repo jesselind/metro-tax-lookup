@@ -299,16 +299,16 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
       kind: "assessed",
       values: {
         total: record.totalAssessed,
-        building: null,
-        land: null,
+        building: record.assessedBuilding,
+        land: record.assessedLand,
       },
     },
     {
       kind: "assessed-school",
       values: {
-        total: null,
-        building: null,
-        land: null,
+        total: record.schoolAssessedTotal,
+        building: record.schoolAssessedBuilding,
+        land: record.schoolAssessedLand,
       },
     },
   ];

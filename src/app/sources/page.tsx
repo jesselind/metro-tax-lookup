@@ -524,7 +524,36 @@ export default function SourcesPage() {
             property details working on older phones without gzip decompression. Value row labels use{" "}
             <code className={CODE_INLINE_CLASS}>AssessmentYear</code> from the export
             (the year on the county parcel record, e.g. 2026 Appraised Value), not{" "}
-            <code className={CODE_INLINE_CLASS}>TaxYear</code> (levy roll year). The browser
+            <code className={CODE_INLINE_CLASS}>TaxYear</code> (levy roll year).{" "}
+            <strong className="font-semibold text-slate-900">Assessed school value</strong>
+            {" "}
+            is not a column in the county mart export; for improved residential real property
+            (mart{" "}
+            <code className={CODE_INLINE_CLASS}>PropertyClassDescr = Improvement</code>
+            ) from 2025 onward the build applies the Colorado DPT school assessment rate
+            (7.05% for 2026) to appraised building and land totals, rounding each component
+            the way the county parcel page does.{" "}
+            <strong className="font-semibold text-slate-900">Assessed value</strong>
+            {" "}
+            totals come from{" "}
+            <code className={CODE_INLINE_CLASS}>TotalAssessed</code>
+            {" "}
+            in Main Parcel; building and land columns use the county pattern (local land =
+            appraised land × the DPT local rate, local building = total minus that land split).
+            {" "}
+            <strong className="font-semibold text-slate-900">Ownership type</strong>
+            {" "}
+            uses Mart_LegalParty owner rows: one owner keeps that row&apos;s{" "}
+            <code className={CODE_INLINE_CLASS}>LPType</code>; when every owner row is{" "}
+            <code className={CODE_INLINE_CLASS}>Individual</code>
+            {" "}
+            we show{" "}
+            <strong className="font-semibold text-slate-900">Joint Tenancy</strong>
+            {" "}
+            to match the usual county parcel-page label for co-owners (vesting is not exported
+            in the mart). DPT assessment rates in the build are fixed for 2025+ today (6.8% local
+            / 7.05% school for 2026); update the build script when a new assessment year ships.
+            The browser
             fetches a shard only after a PIN levy load succeeds; it is not part of the
             address-search prefetch. The offline build logs shard size stats (median,
             p90, p99) after each run; check those when adding mart joins — if shards
