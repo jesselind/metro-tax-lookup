@@ -141,7 +141,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 ## Contributor notes
 
 - Keep user-facing prose plain-language and avoid accountant-style "levy lines" phrasing.
-- **Try demo property:** Mask only resident-identifying fields (owner names, mailing address, situs, AIN, legal description) in `src/lib/demoProperty.ts`. Dollar amounts, ownership type, classification, and other non-PII county fields should pass through from the hidden source PIN so the demo stays realistic. Apply the same rule when adding Property details fields in Phase 2+.
+- **Try demo property:** Mask resident-identifying fields (owner names, mailing address, situs, AIN, legal description), sale **Book Page** values, and **permit numbers** in `src/lib/demoProperty.ts` (fictional `D000 9xxx` / `PREFIX-0000-9xxxx` tokens; clerk links stay off in demo UI). Dollar amounts, ownership type, classification, sale/permit dates and amounts, and other non-PII county fields should pass through from the hidden source PIN so the demo stays realistic. Apply the same rule when adding Property details fields in Phase 2+.
 - Static term definitions live in `src/content/termDefinitions.tsx`.
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json`.
 - Keep README technical; keep narrative methodology and citations on `/sources`.
