@@ -40,8 +40,6 @@ const MONEY_TH_CLASS =
   "whitespace-nowrap border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-right font-medium tabular-nums text-slate-700";
 const MONEY_TD_CLASS =
   "border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
-const MISSING_BLOCK_CLASS = "italic text-slate-500";
-
 type GlossaryLabelSpec = {
   text: string;
   termId: ParcelGlossaryTermId;
@@ -402,7 +400,7 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
     : rows.filter((row) => row.kind === "appraised");
   if (rowsToShow.length === 0) {
     return (
-      <p className={MISSING_BLOCK_CLASS}>
+      <p>
         <ParcelRecordMissingValue
           fieldLabel="Appraised and assessed values"
           triggerIdSuffix="values-empty"
@@ -488,7 +486,7 @@ export function ParcelRecordBuildingAndLandTable({
 
   if (!hasContent) {
     return (
-      <p className={MISSING_BLOCK_CLASS}>
+      <p>
         <ParcelRecordMissingValue
           fieldLabel="Building and Land Line"
           triggerIdSuffix="building-land-empty"
@@ -547,7 +545,7 @@ export function ParcelRecordBuildingAndLandTable({
               ) : (
                 <ParcelRecordMissingValue
                   fieldLabel={attr.label}
-                  triggerIdSuffix={`attr-${attr.label.replace(/\s+/g, "-").toLowerCase()}-value`}
+                  triggerIdSuffix={`attr-${buildingNum}-${attr.label.replace(/\s+/g, "-").toLowerCase()}-value`}
                 />
               )}
             </td>
@@ -575,7 +573,7 @@ export function ParcelRecordBuildingAndLandTable({
               ) : (
                 <ParcelRecordMissingValue
                   fieldLabel={`${area.description || "Area"} SqFt`}
-                  triggerIdSuffix={`area-sqft-${index}`}
+                  triggerIdSuffix={`area-sqft-${buildingNum}-${index}`}
                 />
               )}
             </td>
