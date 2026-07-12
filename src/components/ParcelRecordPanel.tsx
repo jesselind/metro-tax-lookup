@@ -5,11 +5,12 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
-import { obfuscateParcelRecordRow } from "@/lib/demoProperty";
+import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
+import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
@@ -81,16 +82,9 @@ export function ParcelRecordPanel({
 }: ParcelRecordPanelProps) {
   const [legalExpanded, setLegalExpanded] = useState(false);
 
-  const displayRecord = useMemo(
-    () =>
-      record ? (demoMode ? obfuscateParcelRecordRow(record) : record) : null,
-    [record, demoMode],
-  );
+  const displayRecord = useDisplayParcelRecord(record, demoMode);
 
-  const parcelRecordHref = useMemo(
-    () => safeArapahoeParcelRecordUrl(displayRecord?.ain),
-    [displayRecord?.ain],
-  );
+  const parcelRecordHref = safeArapahoeParcelRecordUrl(displayRecord?.ain);
 
   const legalDisplay = (displayRecord?.legalDescrDisplay ?? "").trim();
   const legalFull = (displayRecord?.legalDescrFull ?? "").trim();
@@ -119,8 +113,7 @@ export function ParcelRecordPanel({
           role="status"
           aria-live="polite"
         >
-          Property details could not be loaded. Your levy breakdown above is still
-          valid. Try refreshing the page.
+          {PARCEL_RECORD_LOAD_FAILED_MESSAGE}
         </p>
       ) : displayRecord ? (
         <dl>
@@ -194,6 +187,18 @@ export function ParcelRecordPanel({
             label="City/State/Zip"
             value={displayRecord.ownerCityStateZip}
             triggerIdSuffix="owner-city-state-zip"
+          />
+          <ParcelRecordRow
+            termId="term-neighborhood"
+            label="Neighborhood"
+            value={displayRecord.neighborhood}
+            triggerIdSuffix="neighborhood"
+          />
+          <ParcelRecordRow
+            termId="term-neighborhood-code"
+            label="Neighborhood Code"
+            value={displayRecord.neighborhoodCode}
+            triggerIdSuffix="neighborhood-code"
           />
           <ParcelRecordRow
             termId="term-acreage"

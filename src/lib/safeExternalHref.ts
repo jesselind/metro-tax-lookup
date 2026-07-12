@@ -23,6 +23,7 @@ export function safeHttpOrHttpsUrl(
 }
 
 const ARAPAHOE_PARCEL_LEVY_HOST = "parcelsearch.arapahoegov.com";
+const ARAPAHOE_CLERK_RECORDER_SEARCH_HOST = "arapahoe.co.publicsearch.us";
 
 /**
  * County online levy table for a taxing authority (TAGId in query).
@@ -64,6 +65,41 @@ export function safeArapahoeParcelRecordUrl(
   try {
     const url = new URL("https://parcelsearch.arapahoegov.com/PPINum.aspx");
     url.searchParams.set("PPINum", ain);
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Compact Book+Page token for Clerk & Recorder quick search (spaces removed).
+ * Matches PPINum.aspx sale links (e.g. "D411 5095" → "D4115095").
+ */
+export function arapahoeClerkRecorderSearchValueFromBookPage(
+  bookPageRaw: string | null | undefined,
+): string | null {
+  const compact = String(bookPageRaw ?? "").replace(/\s+/g, "").trim();
+  if (!compact || !/^[A-Za-z0-9]+$/.test(compact)) return null;
+  return compact;
+}
+
+/**
+ * Arapahoe Clerk & Recorder public search for one Book+Page (real property).
+ * https://arapahoe.co.publicsearch.us/results?department=RP&searchType=quickSearch&searchValue=…
+ */
+export function safeArapahoeClerkRecorderSearchUrl(
+  bookPageRaw: string | null | undefined,
+): string | null {
+  const searchValue = arapahoeClerkRecorderSearchValueFromBookPage(bookPageRaw);
+  if (!searchValue) return null;
+  try {
+    const url = new URL("https://arapahoe.co.publicsearch.us/results");
+    if (url.hostname.toLowerCase() !== ARAPAHOE_CLERK_RECORDER_SEARCH_HOST) {
+      return null;
+    }
+    url.searchParams.set("department", "RP");
+    url.searchParams.set("searchType", "quickSearch");
+    url.searchParams.set("searchValue", searchValue);
     return url.href;
   } catch {
     return null;

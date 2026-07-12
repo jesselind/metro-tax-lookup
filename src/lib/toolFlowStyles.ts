@@ -92,11 +92,10 @@ export const DASHBOARD_TILE_RADIUS_CLASS = RADIUS_SURFACE_CLASS;
 export const DASHBOARD_PANEL_SHELL_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 
 /**
- * Parcel record tables shell (not the section heading): flush when stacked (below lg); card
- * shell from lg when the levy + property grid is side-by-side.
+ * Parcel record tables region: no outer card — tables sit in the page flow.
+ * Keep overflow on the caller when horizontal scroll is needed.
  */
-export const PARCEL_RECORD_EXTENDED_SHELL_CLASS =
-  "border-0 bg-transparent p-0 lg:rounded-lg lg:border lg:border-slate-200 lg:bg-slate-50/80 lg:p-5";
+export const PARCEL_RECORD_EXTENDED_SHELL_CLASS = "w-full min-w-0";
 
 /**
  * Levy stack tiles: `auto-fill` + `minmax(min(100%, …), 1fr)` so columns wrap naturally at any viewport.

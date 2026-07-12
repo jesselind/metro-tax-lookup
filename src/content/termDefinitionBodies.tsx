@@ -427,6 +427,79 @@ export function TermOwnerCityStateZipBriefBody() {
   );
 }
 
+export function TermNeighborhoodBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The county&apos;s{" "}
+      <strong className="font-semibold text-slate-900">neighborhood name</strong>
+      {" "}
+      for grouping similar homes when valuing property. It is an assessor label, not a city
+      neighborhood or HOA name. When this app shows No data found, the weekly mart export does not
+      include a neighborhood code for the parcel; check the official county parcel record.
+    </p>
+  );
+}
+
+export function TermNeighborhoodCodeBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      A numeric{" "}
+      <strong className="font-semibold text-slate-900">neighborhood code</strong>
+      {" "}
+      the assessor uses with sales and valuation (for example 2044.00 on the county page). This
+      app only fills it when the mart export supplies that code. A separate NBHD spreadsheet can
+      translate codes to names, but the code itself is not on the Main Parcel CSV today.
+    </p>
+  );
+}
+
+export function TermParcelSaleBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Recorded{" "}
+      <strong className="font-semibold text-slate-900">sale history</strong>
+      {" "}
+      from the county transfer export: book and page, date, and consideration (price). Type is
+      often blank on the county parcel page too.
+    </p>
+  );
+}
+
+export function TermParcelBookPageBriefBody() {
+  return (
+    <>
+      <p className={BRIEF_P}>
+        <strong className="font-semibold text-slate-900">Book</strong>
+        {" "}
+        and{" "}
+        <strong className="font-semibold text-slate-900">page</strong>
+        {" "}
+        are where the Clerk and Recorder filed the deed or other transfer document. In this app,
+        that label opens the county Clerk and Recorder public search for that filing. It is the
+        same kind of link the county parcel page uses.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        Some older filings return no document in that search. That can happen on the county parcel
+        page too. If a link comes up empty, compare the sale list on your official county parcel
+        record.
+      </p>
+    </>
+  );
+}
+
+export function TermParcelPermitBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Building{" "}
+      <strong className="font-semibold text-slate-900">permits</strong>
+      {" "}
+      tied to this parcel in the county permit export (number, status, description, dates, and
+      estimated value when present). The public parcel page does not always list them; treat the
+      county as source of truth if anything looks off.
+    </p>
+  );
+}
+
 export function TermAcreageBriefBody() {
   return (
     <p className={BRIEF_P}>
@@ -617,6 +690,8 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-ownership-type",
   "term-owner-address",
   "term-owner-city-state-zip",
+  "term-neighborhood",
+  "term-neighborhood-code",
   "term-acreage",
   "term-land-use",
   "term-appraised-total",
@@ -629,6 +704,9 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-parcel-value-total",
   "term-parcel-value-building",
   "term-parcel-value-land",
+  "term-parcel-sale",
+  "term-parcel-book-page",
+  "term-parcel-permit",
   "term-parcel-land-line",
   "term-parcel-land-units",
   "term-parcel-land-line-land-use",
@@ -700,6 +778,14 @@ export const parcelGlossaryTermBriefRegistry: Record<
     title: "City/State/Zip",
     Brief: TermOwnerCityStateZipBriefBody,
   },
+  "term-neighborhood": {
+    title: "Neighborhood",
+    Brief: TermNeighborhoodBriefBody,
+  },
+  "term-neighborhood-code": {
+    title: "Neighborhood Code",
+    Brief: TermNeighborhoodCodeBriefBody,
+  },
   "term-acreage": {
     title: "Acreage",
     Brief: TermAcreageBriefBody,
@@ -747,6 +833,18 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-parcel-value-land": {
     title: "Land",
     Brief: TermParcelValueLandBriefBody,
+  },
+  "term-parcel-sale": {
+    title: "Sale",
+    Brief: TermParcelSaleBriefBody,
+  },
+  "term-parcel-book-page": {
+    title: "Book Page",
+    Brief: TermParcelBookPageBriefBody,
+  },
+  "term-parcel-permit": {
+    title: "Permits",
+    Brief: TermParcelPermitBriefBody,
   },
   "term-parcel-land-line": {
     title: "Land Line",
