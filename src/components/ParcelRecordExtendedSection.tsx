@@ -11,6 +11,7 @@ import {
   ParcelRecordSaleTable,
   ParcelRecordValueSection,
 } from "@/components/ParcelRecordCountyTables";
+import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingValue";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
@@ -35,6 +36,8 @@ export type ParcelRecordExtendedSectionProps = {
   loading: boolean;
   loadFailed: boolean;
   record: ArapahoeParcelRecordRow | null;
+  /** Display PIN for missing-data mailto (demo uses the public demo PIN). */
+  pin?: string | null;
   demoMode?: boolean;
 };
 
@@ -47,6 +50,7 @@ export function ParcelRecordExtendedSection({
   loading,
   loadFailed,
   record,
+  pin = null,
   demoMode = false,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
@@ -86,7 +90,7 @@ export function ParcelRecordExtendedSection({
             {PARCEL_RECORD_LOAD_FAILED_MESSAGE}
           </p>
         ) : displayRecord ? (
-          <>
+          <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
             <ParcelRecordValueSection record={displayRecord} />
             <ParcelRecordSaleTable
               transfers={displayRecord.transfers}
@@ -98,7 +102,7 @@ export function ParcelRecordExtendedSection({
               landLines={displayRecord.landLines}
             />
             <ParcelRecordPermitTable permits={displayRecord.permits} />
-          </>
+          </ParcelRecordReportIdsProvider>
         ) : null}
       </div>
     </section>

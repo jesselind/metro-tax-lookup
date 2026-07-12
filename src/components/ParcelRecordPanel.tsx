@@ -7,6 +7,11 @@
 
 import { useState } from "react";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
+import {
+  ParcelRecordMissingValue,
+  ParcelRecordReportIdsProvider,
+  PARCEL_RECORD_MISSING_VALUE_TRIGGER_CLASS,
+} from "@/components/ParcelRecordMissingValue";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
@@ -28,9 +33,8 @@ const VALUE_CLASS =
   "min-w-0 break-words text-base leading-relaxed text-slate-900";
 const MISSING_VALUE_CLASS =
   "min-w-0 text-base italic leading-relaxed text-slate-500";
+const MISSING_TRIGGER_CLASS = `${PARCEL_RECORD_MISSING_VALUE_TRIGGER_CLASS} text-base leading-relaxed`;
 const SKELETON_BAR = "h-[1.125rem] animate-pulse rounded bg-slate-200/90 sm:h-4";
-
-const NO_DATA = "No data found";
 
 type ParcelRecordRowProps = {
   termId?: ParcelGlossaryTermId;
@@ -61,7 +65,15 @@ function ParcelRecordRow({
         )}
       </dt>
       <dd className={display ? VALUE_CLASS : MISSING_VALUE_CLASS}>
-        {display || NO_DATA}
+        {display ? (
+          display
+        ) : (
+          <ParcelRecordMissingValue
+            fieldLabel={label}
+            triggerIdSuffix={triggerIdSuffix}
+            className={MISSING_TRIGGER_CLASS}
+          />
+        )}
       </dd>
     </div>
   );
@@ -71,6 +83,8 @@ export type ParcelRecordPanelProps = {
   loading: boolean;
   loadFailed: boolean;
   record: ArapahoeParcelRecordRow | null;
+  /** Display PIN for missing-data mailto (demo uses the public demo PIN). */
+  pin?: string | null;
   demoMode?: boolean;
 };
 
@@ -78,6 +92,7 @@ export function ParcelRecordPanel({
   loading,
   loadFailed,
   record,
+  pin = null,
   demoMode = false,
 }: ParcelRecordPanelProps) {
   const [legalExpanded, setLegalExpanded] = useState(false);
@@ -116,141 +131,159 @@ export function ParcelRecordPanel({
           {PARCEL_RECORD_LOAD_FAILED_MESSAGE}
         </p>
       ) : displayRecord ? (
-        <dl>
-          <ParcelRecordRow
-            termId="term-ain"
-            label="AIN"
-            value={displayRecord.ain}
-            triggerIdSuffix="ain"
-          />
-          <ParcelRecordRow
-            termId="term-situs-address"
-            label="Situs Address"
-            value={displayRecord.situsAddress}
-            triggerIdSuffix="situs-address"
-          />
-          <ParcelRecordRow
-            termId="term-situs-city"
-            label="Situs City"
-            value={displayRecord.situsCity}
-            triggerIdSuffix="situs-city"
-          />
-          <div className={ROW_CLASS}>
-            <dt className={LABEL_CLASS}>
-              <ParcelGlossaryPopoverTrigger
-                termId="term-photo-sketch"
-                textTrigger="Photo / Sketch"
-                textTriggerId="parcel-record-photo-sketch"
-                variant="parcel-record"
-              />
-            </dt>
-            <dd className={VALUE_CLASS}>
-              {demoMode ? (
-                <span className={MISSING_VALUE_CLASS}>
-                  Not available in demo mode.
-                </span>
-              ) : parcelRecordHref ? (
-                <a
-                  href={parcelRecordHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={COUNTY_EXTERNAL_LINK_CLASS}
-                >
-                  View on county site
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              ) : (
-                <span className={MISSING_VALUE_CLASS}>{NO_DATA}</span>
-              )}
-            </dd>
-          </div>
-          <ParcelRecordRow
-            termId="term-owner-list"
-            label="Full Owner List"
-            value={displayRecord.ownerList}
-            triggerIdSuffix="owner-list"
-          />
-          <ParcelRecordRow
-            termId="term-ownership-type"
-            label="Ownership Type"
-            value={displayRecord.ownershipType}
-            triggerIdSuffix="ownership-type"
-          />
-          <ParcelRecordRow
-            termId="term-owner-address"
-            label="Owner Address"
-            value={displayRecord.ownerDeliveryAddress}
-            triggerIdSuffix="owner-address"
-          />
-          <ParcelRecordRow
-            termId="term-owner-city-state-zip"
-            label="City/State/Zip"
-            value={displayRecord.ownerCityStateZip}
-            triggerIdSuffix="owner-city-state-zip"
-          />
-          <ParcelRecordRow
-            termId="term-neighborhood"
-            label="Neighborhood"
-            value={displayRecord.neighborhood}
-            triggerIdSuffix="neighborhood"
-          />
-          <ParcelRecordRow
-            termId="term-neighborhood-code"
-            label="Neighborhood Code"
-            value={displayRecord.neighborhoodCode}
-            triggerIdSuffix="neighborhood-code"
-          />
-          <ParcelRecordRow
-            termId="term-acreage"
-            label="Acreage"
-            value={displayRecord.acreage}
-            triggerIdSuffix="acreage"
-          />
-          <ParcelRecordRow
-            termId="term-land-use"
-            label="Land Use"
-            value={displayRecord.landUse}
-            triggerIdSuffix="land-use"
-          />
-          <div className={ROW_CLASS}>
-            <dt className={LABEL_CLASS}>
-              <ParcelGlossaryPopoverTrigger
-                termId="term-legal-description"
-                textTrigger="Legal Desc"
-                textTriggerId="parcel-record-legal-desc"
-                variant="parcel-record"
-              />
-            </dt>
-            <dd className={VALUE_CLASS}>
-              {legalDisplay || legalFull ? (
-                <div className="space-y-2">
-                  <p>{legalDisplay || legalFull}</p>
-                  {legalShowsExpand ? (
-                    <div>
-                      <button
-                        type="button"
-                        className="cursor-pointer text-sm font-medium text-indigo-700 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-900 sm:text-base"
-                        aria-expanded={legalExpanded}
-                        onClick={() => setLegalExpanded((v) => !v)}
-                      >
-                        {legalExpanded
-                          ? "Hide full export text"
-                          : "Show full export text"}
-                      </button>
-                      {legalExpanded ? (
-                        <p className="mt-2 text-sm leading-relaxed text-slate-700 sm:text-base">
-                          {legalFull}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <span className={MISSING_VALUE_CLASS}>{NO_DATA}</span>
-              )}
-            </dd>
-          </div>
-        </dl>
+        <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
+          <dl>
+            <ParcelRecordRow
+              termId="term-ain"
+              label="AIN"
+              value={displayRecord.ain}
+              triggerIdSuffix="ain"
+            />
+            <ParcelRecordRow
+              termId="term-situs-address"
+              label="Situs Address"
+              value={displayRecord.situsAddress}
+              triggerIdSuffix="situs-address"
+            />
+            <ParcelRecordRow
+              termId="term-situs-city"
+              label="Situs City"
+              value={displayRecord.situsCity}
+              triggerIdSuffix="situs-city"
+            />
+            <div className={ROW_CLASS}>
+              <dt className={LABEL_CLASS}>
+                <ParcelGlossaryPopoverTrigger
+                  termId="term-photo-sketch"
+                  textTrigger="Photo / Sketch"
+                  textTriggerId="parcel-record-photo-sketch"
+                  variant="parcel-record"
+                />
+              </dt>
+              <dd
+                className={
+                  demoMode || !parcelRecordHref ? MISSING_VALUE_CLASS : VALUE_CLASS
+                }
+              >
+                {demoMode ? (
+                  <span className={MISSING_VALUE_CLASS}>
+                    Not available in demo mode.
+                  </span>
+                ) : parcelRecordHref ? (
+                  <a
+                    href={parcelRecordHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
+                  >
+                    View on county site
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <ParcelRecordMissingValue
+                    fieldLabel="Photo / Sketch"
+                    triggerIdSuffix="photo-sketch"
+                    className={MISSING_TRIGGER_CLASS}
+                  />
+                )}
+              </dd>
+            </div>
+            <ParcelRecordRow
+              termId="term-owner-list"
+              label="Full Owner List"
+              value={displayRecord.ownerList}
+              triggerIdSuffix="owner-list"
+            />
+            <ParcelRecordRow
+              termId="term-ownership-type"
+              label="Ownership Type"
+              value={displayRecord.ownershipType}
+              triggerIdSuffix="ownership-type"
+            />
+            <ParcelRecordRow
+              termId="term-owner-address"
+              label="Owner Address"
+              value={displayRecord.ownerDeliveryAddress}
+              triggerIdSuffix="owner-address"
+            />
+            <ParcelRecordRow
+              termId="term-owner-city-state-zip"
+              label="City/State/Zip"
+              value={displayRecord.ownerCityStateZip}
+              triggerIdSuffix="owner-city-state-zip"
+            />
+            <ParcelRecordRow
+              termId="term-neighborhood"
+              label="Neighborhood"
+              value={displayRecord.neighborhood}
+              triggerIdSuffix="neighborhood"
+            />
+            <ParcelRecordRow
+              termId="term-neighborhood-code"
+              label="Neighborhood Code"
+              value={displayRecord.neighborhoodCode}
+              triggerIdSuffix="neighborhood-code"
+            />
+            <ParcelRecordRow
+              termId="term-acreage"
+              label="Acreage"
+              value={displayRecord.acreage}
+              triggerIdSuffix="acreage"
+            />
+            <ParcelRecordRow
+              termId="term-land-use"
+              label="Land Use"
+              value={displayRecord.landUse}
+              triggerIdSuffix="land-use"
+            />
+            <div className={ROW_CLASS}>
+              <dt className={LABEL_CLASS}>
+                <ParcelGlossaryPopoverTrigger
+                  termId="term-legal-description"
+                  textTrigger="Legal Desc"
+                  textTriggerId="parcel-record-legal-desc"
+                  variant="parcel-record"
+                />
+              </dt>
+              <dd
+                className={
+                  legalDisplay || legalFull ? VALUE_CLASS : MISSING_VALUE_CLASS
+                }
+              >
+                {legalDisplay || legalFull ? (
+                  <div className="space-y-2">
+                    <p>{legalDisplay || legalFull}</p>
+                    {legalShowsExpand ? (
+                      <div>
+                        <button
+                          type="button"
+                          className="cursor-pointer text-sm font-medium text-indigo-700 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-900 sm:text-base"
+                          aria-expanded={legalExpanded}
+                          onClick={() => setLegalExpanded((v) => !v)}
+                        >
+                          {legalExpanded
+                            ? "Hide full export text"
+                            : "Show full export text"}
+                        </button>
+                        {legalExpanded ? (
+                          <p className="mt-2 text-sm leading-relaxed text-slate-700 sm:text-base">
+                            {legalFull}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <ParcelRecordMissingValue
+                    fieldLabel="Legal Desc"
+                    triggerIdSuffix="legal-desc"
+                    className={MISSING_TRIGGER_CLASS}
+                  />
+                )}
+              </dd>
+            </div>
+          </dl>
+        </ParcelRecordReportIdsProvider>
       ) : null}
     </div>
   );

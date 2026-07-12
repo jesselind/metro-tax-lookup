@@ -824,6 +824,7 @@ export function HomeParcelAddressLookup({
             loading={parcelRecordLoading}
             loadFailed={parcelRecordLoadFailed}
             record={parcelRecord}
+            pin={trimmedParcelPin}
             demoMode={isDemoMode}
           />
           {showParcelRecordExtendedJump ? (
@@ -848,6 +849,7 @@ export function HomeParcelAddressLookup({
         loading={parcelRecordLoading}
         loadFailed={parcelRecordLoadFailed}
         record={parcelRecord}
+        pin={trimmedParcelPin}
         demoMode={isDemoMode}
       />
       {propertyDetailsBelowPanel}

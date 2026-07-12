@@ -15,6 +15,7 @@ import type { LevyModalTermId } from "@/lib/levyModalTermIds";
 import {
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
+  COLORADO_DPT_RESIDENTIAL_LOCAL_ASSESSMENT_RATE_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
@@ -248,16 +249,38 @@ export function TermAssessedValueBriefBody() {
       <p className={BRIEF_P}>
         The taxable base for your bill: your appraised value (what the county file calls{" "}
         <strong className="font-semibold text-slate-900">actual value</strong>
-        ) multiplied by the state&apos;s assessment percentage (set by the legislature for your
-        property type). Each local taxing district&apos;s{" "}
+        ) multiplied by a state{" "}
+        <strong className="font-semibold text-slate-900">assessment rate</strong>
+        {" "}
+        for your property type. Each local taxing district&apos;s{" "}
         <KeyTermsLink termId="term-mill-levy">mill levy</KeyTermsLink>
         {" "}
-        is applied to this number.
+        is applied to this number, not to the full appraised value.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        Since 2025, most Colorado homes have{" "}
+        <strong className="font-semibold text-slate-900">two</strong>
+        {" "}
+        assessed values: one for school districts and one for other local governments
+        (county, city, special districts). For 2026, DPT lists a school rate of 7.05% and
+        a local-government rate of 6.8%. Local-government assessed value can also reflect
+        a temporary reduction on the first $700,000 of actual value before that 6.8% rate.
+        See{" "}
+        <a
+          href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          DPT: Assessed Value
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        .
       </p>
       <p className={`${BRIEF_P} mt-3`}>
         On the county{" "}
         <strong className="font-semibold text-slate-900">parcel record</strong>
-        , the total row is labeled{" "}
+        , the local total row is labeled{" "}
         <strong className="font-semibold text-slate-900">Assessed (Total)</strong>
         .
       </p>
@@ -543,14 +566,22 @@ export function TermAssessedSchoolValueBriefBody(props?: {
     <>
       <p className={BRIEF_P}>
         Since 2025, Colorado uses two assessed values for most homes: one for school districts and
-        one for other local governments (county, city, special districts). Both multiply the same
-        appraised value by different state assessment rates.
+        one for other local governments (county, city, special districts). Both start from the same
+        appraised (actual) value, then apply different state assessment rates.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
-        For 2026 residential property, DPT lists a local government assessed rate of 6.8% (× 0.068)
-        and a school district assessed rate of 7.05% (× 0.0705). School tax rows use the school
-        figure; other districts use the local government figure. That is a slightly larger taxable
-        base for schools, not a higher mill rate by itself.
+        For 2026 residential property, DPT lists a school district rate of 7.05% (× 0.0705) and a
+        local government rate of 6.8% (× 0.068). School tax rows use the school figure. Other
+        districts use the local government figure. That is a slightly larger taxable base for
+        schools, not a higher mill rate by itself.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        For local governments, Colorado also applies a temporary reduction on the first $700,000 of
+        actual value before the 6.8% rate (with a $1,000 assessed-value floor). The county{" "}
+        <strong className="font-semibold text-slate-900">Assessed Value</strong>
+        {" "}
+        total already reflects that. School assessed value uses the school rate on the full
+        appraised amounts.
       </p>
       <p className={`${BRIEF_P} mt-3`}>
         See{" "}
@@ -561,6 +592,17 @@ export function TermAssessedSchoolValueBriefBody(props?: {
           rel="noopener noreferrer"
         >
           DPT: Assessed Value (with worked example)
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        and{" "}
+        <a
+          href={COLORADO_DPT_RESIDENTIAL_LOCAL_ASSESSMENT_RATE_URL}
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          DPT: residential local government rate
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
         .

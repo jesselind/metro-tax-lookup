@@ -29,7 +29,7 @@ Open `http://localhost:3000`.
 
 - Main route `/`: address-to-PIN lookup from bundled JSON, then levy stack and metro share.
 
-- **Property details (home):** After a PIN levy load, scalar county-record rows render in **`ParcelRecordPanel`** (beside levy tiles on `lg+`, below levy on mobile). Appraised/assessed values and building/land county tables load full width below the grid in **`ParcelRecordExtendedSection`** (`ParcelRecordCountyTables.tsx`). Assessed school and local building/land splits are computed at build time when mart columns are absent (see **`/sources`**). On `lg+`, **More property details** in the sidebar jumps to those tables; **Property details cont.** marks the continuation when property and levy sit side by side.
+- **Property details (home):** After a PIN levy load, scalar county-record rows render in **`ParcelRecordPanel`** (beside levy tiles on `lg+`, below levy on mobile). Appraised/assessed values and building/land county tables load full width below the grid in **`ParcelRecordExtendedSection`** (`ParcelRecordCountyTables.tsx`). Assessed school and local building/land splits are computed at build time when mart columns are absent (see **`/sources`**). Empty fields show **No data found** with a popover and prefilled mailto (`buildMissingParcelDataMailtoHref` in `src/lib/contact.ts`: field label, PIN, AIN). On `lg+`, **More property details** in the sidebar jumps to those tables; **Property details cont.** marks the continuation when property and levy sit side by side.
 
 - **Comps PDF:** The summary row offers **Comps PDF** (county comps grid PDF when AIN is available from the parcel index). Availability copy lives in **`src/content/countyCompsPdfGuidance.ts`** (popover, `/sources`, glossary). Toggle **`ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE`** in **`src/lib/safeExternalHref.ts`** to switch the unavailable-state UI.
 
@@ -141,7 +141,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 ## Contributor notes
 
 - Keep user-facing prose plain-language and avoid accountant-style "levy lines" phrasing.
-- **Try demo property:** Mask only resident-identifying fields (owner names, mailing address, situs, AIN, legal description) in `src/lib/demoProperty.ts`. Dollar amounts, ownership type, classification, and other non-PII county fields should pass through from the hidden source PIN so the demo stays realistic. Apply the same rule when adding Property details fields in Phase 2+.
+- **Try demo property:** Mask resident-identifying fields (owner names, mailing address, situs, AIN, legal description), sale **Book Page** values, and **permit numbers** in `src/lib/demoProperty.ts` (fictional `D000 9xxx` / `PREFIX-0000-9xxxx` tokens; clerk links stay off in demo UI). Dollar amounts, ownership type, classification, sale/permit dates and amounts, and other non-PII county fields should pass through from the hidden source PIN so the demo stays realistic. Apply the same rule when adding Property details fields in Phase 2+.
 - Static term definitions live in `src/content/termDefinitions.tsx`.
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json`.
 - Keep README technical; keep narrative methodology and citations on `/sources`.
