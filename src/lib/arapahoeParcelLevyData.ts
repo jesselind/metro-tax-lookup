@@ -185,11 +185,22 @@ export type ArapahoeParcelRecordByPinFile = {
   byPin: Record<string, ArapahoeParcelRecordRow>;
 };
 
-/** PIN prefix length for parcel-record shard files (keep in sync with PARCEL_RECORD_SHARD_PREFIX_LEN in build_arapahoe_parcel_levy_index.py). */
-export const PARCEL_RECORD_SHARD_PREFIX_LENGTH = 5;
+/**
+ * PIN prefix length for parcel-record shard files.
+ * Keep in sync with `PARCEL_RECORD_SHARD_PREFIX_LEN` in
+ * `tools/build_arapahoe_parcel_levy_index.py`.
+ */
+export const PARCEL_RECORD_SHARD_PREFIX_LENGTH = 6;
 
-/** Max wait for one parcel-record shard (~500 KiB JSON). */
+/** Max wait for one parcel-record shard fetch. */
 const PARCEL_RECORD_SHARD_FETCH_TIMEOUT_MS = 30_000;
+
+/** True when `prefix` is exactly PARCEL_RECORD_SHARD_PREFIX_LENGTH digits (path-safe). */
+function isParcelRecordShardPrefix(prefix: string): boolean {
+  return (
+    prefix.length === PARCEL_RECORD_SHARD_PREFIX_LENGTH && /^\d+$/.test(prefix)
+  );
+}
 
 /**
  * PINs may be pasted with dashes, spaces, or extra digits. Returns 9-digit keys to
@@ -240,7 +251,7 @@ const parcelRecordShardCache = new Map<
   Promise<ArapahoeParcelRecordByPinFile | null>
 >();
 
-/** Five-digit shard keys to try for a PIN (unique, lookup order). */
+/** Shard keys to try for a PIN (unique, lookup order). */
 export function parcelRecordShardPrefixes(pinInput: string): string[] {
   const candidates = pinLookupCandidates(pinInput);
   const prefixes: string[] = [];
@@ -248,7 +259,7 @@ export function parcelRecordShardPrefixes(pinInput: string): string[] {
   for (const pin of candidates) {
     if (pin.length < PARCEL_RECORD_SHARD_PREFIX_LENGTH) continue;
     const prefix = pin.slice(0, PARCEL_RECORD_SHARD_PREFIX_LENGTH);
-    if (!/^\d{5}$/.test(prefix) || seen.has(prefix)) continue;
+    if (!isParcelRecordShardPrefix(prefix) || seen.has(prefix)) continue;
     seen.add(prefix);
     prefixes.push(prefix);
   }
@@ -257,7 +268,7 @@ export function parcelRecordShardPrefixes(pinInput: string): string[] {
 
 /** Safe static path for one parcel-record shard (digits only — no user-controlled path segments). */
 export function parcelRecordShardUrl(prefix: string): string | null {
-  if (!/^\d{5}$/.test(prefix)) return null;
+  if (!isParcelRecordShardPrefix(prefix)) return null;
   return `/data/arapahoe-parcel-record-by-pin/${prefix}.json`;
 }
 
@@ -300,7 +311,7 @@ export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null
 }
 
 /**
- * Lazy fetch one parcel-record shard (5-digit PIN prefix). Cached per prefix;
+ * Lazy fetch one parcel-record shard (PIN prefix file). Cached per prefix;
  * transient failures do not poison the cache.
  */
 function fetchArapahoeParcelRecordShard(

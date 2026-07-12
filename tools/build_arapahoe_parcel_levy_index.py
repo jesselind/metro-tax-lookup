@@ -11,7 +11,7 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
-  - arapahoe-parcel-record-by-pin/<prefix>.json — county-record fields sharded by 5-digit PIN prefix (Main Parcel + sibling mart joins; lazy load after levy; see --skip-pin-map)
+  - arapahoe-parcel-record-by-pin/<prefix>.json — county-record fields sharded by PIN prefix (see PARCEL_RECORD_SHARD_PREFIX_LEN; Main Parcel + sibling mart joins; lazy load after levy; see --skip-pin-map)
 
 Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
@@ -1550,7 +1550,7 @@ def enrich_parcel_record_from_sibling_marts(
 
 
 def print_parcel_record_shard_size_stats(shard_dir: Path) -> None:
-    """Log shard size distribution so Phase 2 joins can be checked for bloat."""
+    """Log shard size distribution so joins can be checked for bloat before shipping."""
     sizes = sorted(p.stat().st_size for p in shard_dir.glob("*.json"))
     if not sizes:
         return
@@ -1586,7 +1586,8 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
     return pin_map
 
 
-PARCEL_RECORD_SHARD_PREFIX_LEN = 5  # keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in arapahoeParcelLevyData.ts
+# Keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in arapahoeParcelLevyData.ts
+PARCEL_RECORD_SHARD_PREFIX_LEN = 6
 
 
 def write_parcel_record_shards(
@@ -1596,7 +1597,7 @@ def write_parcel_record_shards(
     *,
     separators: tuple[str, str],
 ) -> None:
-    """Write plain JSON shards by 5-digit PIN prefix (one small fetch per lookup)."""
+    """Write plain JSON shards by PIN prefix (one small fetch per lookup)."""
     shard_dir = out_dir / "arapahoe-parcel-record-by-pin"
     if shard_dir.exists():
         for old in shard_dir.glob("*.json.gz"):
@@ -1896,7 +1897,7 @@ def main() -> None:
         "source": (
             "Arapahoe County datamart: Main Parcel + Mart_DescrHeader + Mart_LegalParty "
             "+ Mart_RDE_LndAll + Mart_RDE_BLD + Mart_RDE_Xfob "
-            "(lazy load after levy; sharded by 5-digit PIN prefix)"
+            f"(lazy load after levy; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
         ),
         "taxYear": tax_year or None,
     }

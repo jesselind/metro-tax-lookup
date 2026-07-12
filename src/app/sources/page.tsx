@@ -516,9 +516,10 @@ export default function SourcesPage() {
             {" "}in the sidebar jumps to those tables and{" "}
             <strong className="font-semibold text-slate-900">Property details cont.</strong>
             {" "}labels the continuation. Rows are split into JSON shards by{" "}
-            <strong className="font-semibold text-slate-900">5-digit PIN prefix</strong>{" "}
+            <strong className="font-semibold text-slate-900">6-digit PIN prefix</strong>
+            {" "}
             (for example{" "}
-            <code className={CODE_INLINE_CLASS}>03249.json</code>) so the browser
+            <code className={CODE_INLINE_CLASS}>032490.json</code>) so the browser
             fetches only the small shard for your parcel. Plain JSON (same pattern as{" "}
             <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>) keeps
             property details working on older phones without gzip decompression. Value row labels use{" "}
