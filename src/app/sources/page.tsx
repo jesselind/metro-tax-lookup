@@ -505,12 +505,34 @@ export default function SourcesPage() {
             {" "}
             — extended county-record fields for the home{" "}
             <strong className="font-semibold text-slate-900">Property details</strong>{" "}
-            experience (Main Parcel plus sibling mart joins — Mart_DescrHeader legal display,
+            experience (Main Parcel plus sibling mart joins: Mart_DescrHeader legal display,
             Mart_LegalParty ownership type, Mart_RDE_LndAll acreage / land lines,
-            Mart_RDE_BLD + Mart_RDE_Xfob building rows and land use; more tables land incrementally).
-            On the home page, scalar rows (owner, situs, acreage, and similar) appear in the
-            property panel; appraised/assessed values and building/land county tables render
-            full width below the levy + property grid. When property details sit beside the
+            Mart_RDE_BLD + Mart_RDE_Xfob building rows and land use, Mart_Transfers sale history,
+            Mart_RDE_Permit when present, and State Class Codes xlsx labels for{" "}
+            <code className={CODE_INLINE_CLASS}>StateUseCd</code>
+            {" "}
+            stored as{" "}
+            <code className={CODE_INLINE_CLASS}>stateUseLabel</code>
+            ). Neighborhood name/code rows are reserved for when the mart export includes a
+            neighborhood code (the NBHD spreadsheet alone is not enough; Main Parcel has no such
+            column today, and guessing from subdivision disagrees with the live county page).
+            Fireplaces appears in county building attribute order but is not in the building or
+            extra-features CSVs, so that cell stays{" "}
+            <strong className="font-semibold text-slate-900">No data found</strong>
+            {" "}
+            until a source ships. On the home page, scalar rows (owner, situs, acreage, neighborhood
+            placeholders, and similar) appear in the property panel; appraised/assessed values,
+            sale history, building/area/land line, and permits (when the mart has them) render
+            full width below the levy + property grid in county order. Sale{" "}
+            <strong className="font-semibold text-slate-900">Book Page</strong>
+            {" "}
+            opens the Arapahoe Clerk and Recorder public search (same pattern as the county
+            parcel page). Some older filings return no document there; that can happen on the
+            county site too. A short note under Sale links the official county parcel record so
+            you can compare. Building, Area, and Land Line share one table so column widths
+            match; Values, Sale, and Permits stay separate. If the extended JSON fails to load,
+            both the property panel and the continued tables region show a calm status (your levy
+            breakdown remains). When property details sit beside the
             levy stack on large screens,{" "}
             <strong className="font-semibold text-slate-900">More property details</strong>
             {" "}in the sidebar jumps to those tables and{" "}
@@ -557,7 +579,7 @@ export default function SourcesPage() {
             The browser
             fetches a shard only after a PIN levy load succeeds; it is not part of the
             address-search prefetch. The offline build logs shard size stats (median,
-            p90, p99) after each run; check those when adding mart joins — if shards
+            p90, p99) after each run; check those when adding mart joins. If shards
             grow too large, further sharding may be needed.
           </li>
           <li>

@@ -5,14 +5,19 @@
 
 "use client";
 
-import { useMemo } from "react";
 import {
   ParcelRecordBuildingAndLandTable,
+  ParcelRecordPermitTable,
+  ParcelRecordSaleTable,
   ParcelRecordValueSection,
 } from "@/components/ParcelRecordCountyTables";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
-import { obfuscateParcelRecordRow } from "@/lib/demoProperty";
-import { PARCEL_RECORD_EXTENDED_SHELL_CLASS, DASHBOARD_SECTION_HEADING_CLASS } from "@/lib/toolFlowStyles";
+import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
+import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
+import {
+  PARCEL_RECORD_EXTENDED_SHELL_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+} from "@/lib/toolFlowStyles";
 
 export const PARCEL_RECORD_EXTENDED_SECTION_ID = "home-parcel-record-extended";
 
@@ -23,7 +28,7 @@ export function shouldShowParcelRecordExtendedSection(
   loadFailed: boolean,
   record: ArapahoeParcelRecordRow | null,
 ): boolean {
-  return !loadFailed && (loading || record != null);
+  return loading || loadFailed || record != null;
 }
 
 export type ParcelRecordExtendedSectionProps = {
@@ -33,17 +38,18 @@ export type ParcelRecordExtendedSectionProps = {
   demoMode?: boolean;
 };
 
+/**
+ * Extended county tables below the levy + property grid (county field order):
+ * Values → Sale → Building/Area/Land Line (one table, shared column widths) → Permits.
+ * No outer card chrome; loadFailed shows a status here as well as in the sidebar.
+ */
 export function ParcelRecordExtendedSection({
   loading,
   loadFailed,
   record,
   demoMode = false,
 }: ParcelRecordExtendedSectionProps) {
-  const displayRecord = useMemo(
-    () =>
-      record ? (demoMode ? obfuscateParcelRecordRow(record) : record) : null,
-    [record, demoMode],
-  );
+  const displayRecord = useDisplayParcelRecord(record, demoMode);
 
   if (!shouldShowParcelRecordExtendedSection(loading, loadFailed, record)) {
     return null;
@@ -64,7 +70,7 @@ export function ParcelRecordExtendedSection({
         Property details cont.
       </h3>
       <div
-        className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} w-full min-w-0 space-y-6 overflow-x-auto`}
+        className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
         aria-live={loading ? "polite" : undefined}
       >
         {loading ? (
@@ -72,13 +78,26 @@ export function ParcelRecordExtendedSection({
             <div className={TABLE_SKELETON} />
             <div className={`${TABLE_SKELETON} h-48`} />
           </>
+        ) : loadFailed ? (
+          <p
+            className="text-base leading-relaxed text-slate-700"
+            aria-hidden="true"
+          >
+            {PARCEL_RECORD_LOAD_FAILED_MESSAGE}
+          </p>
         ) : displayRecord ? (
           <>
             <ParcelRecordValueSection record={displayRecord} />
+            <ParcelRecordSaleTable
+              transfers={displayRecord.transfers}
+              ain={displayRecord.ain}
+              linkClerkRecorder={!demoMode}
+            />
             <ParcelRecordBuildingAndLandTable
               buildings={displayRecord.buildings}
               landLines={displayRecord.landLines}
             />
+            <ParcelRecordPermitTable permits={displayRecord.permits} />
           </>
         ) : null}
       </div>

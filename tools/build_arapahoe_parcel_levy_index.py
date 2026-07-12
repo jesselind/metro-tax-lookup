@@ -11,7 +11,15 @@ Outputs (default: metro-tax-lookup/public/data/):
   - arapahoe-levy-stacks-by-tag-id.json — TAGId → levy lines (+ DOLA match, mills from LGIS export when safe)
   - arapahoe-pin-to-tag.json — Pin → { tagId, tagShortDescr, ain, … } (large; see --skip-pin-map)
   - arapahoe-situs-to-pins.json — situs lookup key → [{ pin, label }, ...] for home address flow (see --skip-pin-map)
-  - arapahoe-parcel-record-by-pin/<prefix>.json — county-record fields sharded by PIN prefix (see PARCEL_RECORD_SHARD_PREFIX_LEN; Main Parcel + sibling mart joins; lazy load after levy; see --skip-pin-map)
+  - arapahoe-parcel-record-by-pin/<prefix>.json — county-record fields sharded by PIN prefix
+    (see PARCEL_RECORD_SHARD_PREFIX_LEN; Main Parcel + sibling mart joins; lazy load after levy;
+    see --skip-pin-map)
+
+Parcel-record sibling inputs (optional; skipped if missing):
+  Mart_DescrHeader, Mart_LegalParty, Mart_RDE_LndAll, Mart_RDE_BLD, Mart_RDE_Xfob,
+  Mart_Transfers (Sale rows with Book+Page), Mart_RDE_Permit,
+  State Class Codes xlsx → stateUseLabel, NBHD codes xlsx (loaded only; not joined until Main Parcel
+  exposes a neighborhood code).
 
 Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
@@ -28,6 +36,8 @@ Maintainer notes:
   - Field5 code ASSRFEES is the county assessor fee in the mart export; it is not shown on the
     county online Tax District Levies page. The app PIN-load path omits
     that row so the list matches the table users copy from.
+  - UI Book Page links use Clerk & Recorder public search (Book+Page concatenated); build stores
+    display bookPage only (no URL in JSON).
 """
 
 from __future__ import annotations
@@ -91,6 +101,22 @@ DEFAULT_BUILDING_XFOB = (
     COUNTY_MART
     / "Parcel Building Extra Features (CSV)"
     / "Parcel Building Extra Features.csv"
+)
+DEFAULT_TRANSFERS = (
+    COUNTY_MART
+    / "Parcel Transfer Information (CSV)"
+    / "Parcel Transfer Information.csv"
+)
+DEFAULT_PERMITS = (
+    COUNTY_MART
+    / "Parcel Permit Information (CSV)"
+    / "Parcel Permit Information.csv"
+)
+DEFAULT_NBHD_XLSX = (
+    COUNTY_MART / "Main Parcel Table (CSV)" / "NBHD codes 4 2017.xlsx"
+)
+DEFAULT_STATE_CLASS_XLSX = (
+    COUNTY_MART / "Main Parcel Table (CSV)" / "State Class Codes 3 30 2015.xlsx"
 )
 DEFAULT_DOLA_CSV = DOLA_DIR / "property-tax-entities-export.csv"
 DEFAULT_DOLA_XLSX = DOLA_DIR / "property-tax-entities-export.xlsx"
@@ -1363,7 +1389,9 @@ def format_county_sqft(val: Any) -> str:
 
 
 # County PPINum.aspx attribute labels and Mart_RDE_BLD columns (stable order).
-BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str], ...] = (
+# Fireplaces appears on the county page between Roof and Exterior Wall but is not
+# exported in Mart_RDE_BLD / Mart_RDE_Xfob — keep the slot for county order (empty).
+BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str | None], ...] = (
     ("Quality Grade", "QualityCd"),
     ("Improvement Type", "ImprTpDscr"),
     ("Bedrooms", "BedCount"),
@@ -1373,11 +1401,24 @@ BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str], ...] = (
     ("Cool Method", "CoolCd1"),
     ("Year Built", "ActYear"),
     ("Roof", "RoofCd1"),
+    ("Fireplaces", None),
     ("Exterior Wall", "ExtwallCd1"),
     ("Construction Type", "Class"),
 )
 
 COUNTY_DECIMAL_ATTRIBUTE_KEYS = frozenset({"BedCount", "BathCount"})
+
+# Always emit these labels (even empty) so county attribute order stays stable.
+ALWAYS_EMIT_BUILDING_ATTRIBUTE_LABELS = frozenset({"Fireplaces"})
+
+PERMIT_STATUS_LABELS: dict[str, str] = {
+    "P": "Pending",
+    "C": "Complete",
+    "A": "Assigned",
+    "S": "Submitted",
+    "V": "Void",
+    "M": "Incomplete",
+}
 
 
 def building_record_from_csv(row: dict[str, str]) -> dict[str, Any] | None:
@@ -1385,6 +1426,10 @@ def building_record_from_csv(row: dict[str, str]) -> dict[str, Any] | None:
     building_num = strip_field(row.get("num", ""))
     attributes: list[dict[str, str]] = []
     for label, key in BUILDING_ATTRIBUTE_FIELDS:
+        if key is None:
+            if label in ALWAYS_EMIT_BUILDING_ATTRIBUTE_LABELS:
+                attributes.append({"label": label, "value": ""})
+            continue
         raw = strip_field(row.get(key, ""))
         if not raw:
             continue
@@ -1494,6 +1539,221 @@ def read_building_fields_by_pin(
     return out
 
 
+def format_county_mm_dd_yyyy(raw: str) -> str:
+    """Mart YYYYMMDD → county parcel-page date (MM-DD-YYYY)."""
+    s = strip_field(raw)
+    if len(s) == 8 and s.isdigit():
+        return f"{s[4:6]}-{s[6:8]}-{s[0:4]}"
+    return s
+
+
+def normalize_state_use_cd(raw: str) -> str:
+    """Normalize StateUseCd for xlsx lookup (strip float suffix; pad 3-digit codes)."""
+    s = strip_field(raw)
+    if not s:
+        return ""
+    try:
+        n = float(s)
+        if n == int(n):
+            s = str(int(n))
+    except ValueError:
+        pass
+    if s.isdigit() and len(s) == 3:
+        return s.zfill(4)
+    return s
+
+
+def format_book_page_display(book: str, page: str) -> str:
+    """County Sale 'Book Page' cell (book + page with a space)."""
+    b = strip_field(book)
+    p = strip_field(page)
+    if not b and not p:
+        return ""
+    return f"{b} {p}".strip()
+
+
+def transfer_sale_row_from_csv(row: dict[str, str]) -> dict[str, Any] | None:
+    """One Sale history row when Book+Page are present (matches PPINum sale table)."""
+    book = strip_field(row.get("Book", ""))
+    page = strip_field(row.get("Page", ""))
+    if not book or not page:
+        return None
+    date = format_county_mm_dd_yyyy(row.get("DocDate", ""))
+    price = parse_parcel_value_cell(row.get("Consid"))
+    out: dict[str, Any] = {
+        "bookPage": format_book_page_display(book, page),
+        "date": date or "",
+        "sortDate": strip_field(row.get("DocDate", "")),
+    }
+    if price is not None:
+        out["price"] = price
+    # County PPINum "Type" column is typically blank; omit rather than invent labels.
+    return out
+
+
+def read_transfers_by_pin(path: Path) -> dict[str, list[dict[str, Any]]]:
+    """PIN -> Sale history rows from Mart_Transfers (Book+Page only; newest first)."""
+    if not path.is_file():
+        return {}
+    by_pin: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            pin = normalize_pin(strip_field(row.get("PIN") or row.get("Pin") or ""))
+            if not pin:
+                continue
+            sale = transfer_sale_row_from_csv(row)
+            if sale:
+                by_pin[pin].append(sale)
+    out: dict[str, list[dict[str, Any]]] = {}
+    for pin, rows in by_pin.items():
+        rows_sorted = sorted(
+            rows,
+            key=lambda r: strip_field(str(r.get("sortDate", ""))),
+            reverse=True,
+        )
+        cleaned: list[dict[str, Any]] = []
+        for r in rows_sorted:
+            item = {k: v for k, v in r.items() if k != "sortDate"}
+            cleaned.append(item)
+        out[pin] = cleaned
+    return out
+
+
+def permit_row_from_csv(row: dict[str, str]) -> dict[str, Any] | None:
+    """One permit row for the extended parcel-record table."""
+    permit_num = strip_field(row.get("Permit_Num", ""))
+    dscr = strip_field(row.get("Dscr", ""))
+    status_raw = strip_field(row.get("Status", ""))
+    issue_raw = strip_field(row.get("Issue_Dt", ""))
+    final_raw = strip_field(row.get("Final_Dt", ""))
+    est_val = parse_parcel_value_cell(row.get("Est_Val"))
+    if not permit_num and not dscr and est_val is None:
+        return None
+    status = PERMIT_STATUS_LABELS.get(status_raw.upper(), status_raw)
+    issue = format_county_mm_dd_yyyy(issue_raw) if issue_raw and issue_raw != "18991230" else ""
+    final = format_county_mm_dd_yyyy(final_raw) if final_raw and final_raw != "18991230" else ""
+    out: dict[str, Any] = {
+        "sortDate": issue_raw if issue_raw and issue_raw != "18991230" else "",
+    }
+    if permit_num:
+        out["permitNum"] = permit_num
+    if status:
+        out["status"] = status
+    if dscr:
+        out["description"] = dscr
+    if issue:
+        out["issueDate"] = issue
+    if final:
+        out["finalDate"] = final
+    if est_val is not None:
+        out["estimatedValue"] = est_val
+    return out
+
+
+def read_permits_by_pin(path: Path) -> dict[str, list[dict[str, Any]]]:
+    """PIN -> permit rows from Mart_RDE_Permit (newest issue date first)."""
+    if not path.is_file():
+        return {}
+    by_pin: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    with path.open(newline="", encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            pin = normalize_pin(strip_field(row.get("PIN") or row.get("Pin") or ""))
+            if not pin:
+                continue
+            permit = permit_row_from_csv(row)
+            if permit:
+                by_pin[pin].append(permit)
+    out: dict[str, list[dict[str, Any]]] = {}
+    for pin, rows in by_pin.items():
+        rows_sorted = sorted(
+            rows,
+            key=lambda r: (
+                strip_field(str(r.get("sortDate", ""))),
+                strip_field(str(r.get("permitNum", ""))),
+            ),
+            reverse=True,
+        )
+        cleaned: list[dict[str, Any]] = []
+        for r in rows_sorted:
+            item = {k: v for k, v in r.items() if k != "sortDate"}
+            cleaned.append(item)
+        out[pin] = cleaned
+    return out
+
+
+def read_xlsx_code_description_map(
+    path: Path,
+    *,
+    code_col: int = 0,
+    desc_col: int = 1,
+) -> dict[str, str]:
+    """Read a two-column code→description sheet (NBHD / State Class Codes xlsx)."""
+    if not path.is_file():
+        return {}
+    try:
+        from openpyxl import load_workbook
+    except ImportError:
+        print(
+            f"openpyxl not installed; skipping lookup workbook {path.name}",
+            file=sys.stderr,
+        )
+        return {}
+    wb = load_workbook(path, read_only=True, data_only=True)
+    try:
+        ws = wb[wb.sheetnames[0]]
+        out: dict[str, str] = {}
+        for i, row in enumerate(ws.iter_rows(values_only=True)):
+            if not row or len(row) <= max(code_col, desc_col):
+                continue
+            if i == 0:
+                # Skip header row (Neighborhood Code / State Use Code).
+                continue
+            code_raw = row[code_col]
+            desc_raw = row[desc_col]
+            if code_raw is None:
+                continue
+            if isinstance(code_raw, (int, float)):
+                code = str(int(code_raw)) if float(code_raw) == int(code_raw) else str(code_raw)
+            else:
+                code = normalize_state_use_cd(str(code_raw))
+            if not code:
+                continue
+            desc = strip_field(str(desc_raw) if desc_raw is not None else "")
+            if desc:
+                out[code] = desc
+        return out
+    finally:
+        wb.close()
+
+
+def read_nbhd_description_by_code(path: Path) -> dict[str, str]:
+    """NBHD codes xlsx → code → neighborhood name."""
+    return read_xlsx_code_description_map(path)
+
+
+def read_state_class_description_by_code(path: Path) -> dict[str, str]:
+    """State Class Codes xlsx → StateUseCd → description (col 0 code, col 2 description)."""
+    return read_xlsx_code_description_map(path, code_col=0, desc_col=2)
+
+
+def attach_state_use_label(
+    rec: dict[str, Any],
+    state_class_by_code: dict[str, str],
+) -> bool:
+    """Set stateUseLabel from Main Parcel StateUseCd + State Class Codes xlsx."""
+    code = normalize_state_use_cd(str(rec.get("stateUseCd") or ""))
+    if not code:
+        return False
+    # Prefer normalized code on the record for display/debug.
+    if code != strip_field(str(rec.get("stateUseCd") or "")):
+        rec["stateUseCd"] = code
+    label = state_class_by_code.get(code)
+    if not label:
+        return False
+    rec["stateUseLabel"] = label
+    return True
+
+
 def enrich_parcel_record_from_sibling_marts(
     parcel_record_map: dict[str, dict[str, Any]],
     *,
@@ -1502,8 +1762,12 @@ def enrich_parcel_record_from_sibling_marts(
     land_path: Path | None = None,
     building_path: Path | None = None,
     building_xfob_path: Path | None = None,
+    transfers_path: Path | None = None,
+    permits_path: Path | None = None,
+    state_class_xlsx_path: Path | None = None,
+    nbhd_xlsx_path: Path | None = None,
 ) -> dict[str, int]:
-    """Merge Phase 2 sibling mart tables into parcel-record rows."""
+    """Merge Phase 2–4 sibling mart tables / lookup workbooks into parcel-record rows."""
     legal_by_pin = (
         read_legal_description_display_by_pin(legal_descriptions_path)
         if legal_descriptions_path and legal_descriptions_path.is_file()
@@ -1520,11 +1784,35 @@ def enrich_parcel_record_from_sibling_marts(
         if building_path and building_xfob_path
         else {}
     )
+    transfers_by_pin = (
+        read_transfers_by_pin(transfers_path) if transfers_path else {}
+    )
+    permits_by_pin = read_permits_by_pin(permits_path) if permits_path else {}
+    state_class_by_code = (
+        read_state_class_description_by_code(state_class_xlsx_path)
+        if state_class_xlsx_path
+        else {}
+    )
+    # NBHD xlsx is loaded for readiness / future join only: Main Parcel has no
+    # neighborhood-code column, and SubdivisionName→NBHD guesses disagree with
+    # live PPINum (ref PIN county code 2044 vs subdiv match 2897).
+    if nbhd_xlsx_path and nbhd_xlsx_path.is_file():
+        nbhd_count = len(read_nbhd_description_by_code(nbhd_xlsx_path))
+        if nbhd_count:
+            print(
+                f"NBHD lookup loaded ({nbhd_count} codes); not joined - "
+                "no neighborhood code on Main Parcel CSV",
+                file=sys.stderr,
+            )
+
     counts = {
         "legalDescrDisplay": 0,
         "ownershipType": 0,
         "land": 0,
         "building": 0,
+        "transfers": 0,
+        "permits": 0,
+        "stateUseLabel": 0,
     }
     for pin, rec in parcel_record_map.items():
         mart_legal = legal_by_pin.get(pin)
@@ -1546,6 +1834,16 @@ def enrich_parcel_record_from_sibling_marts(
             if building.get("buildings"):
                 rec["buildings"] = building["buildings"]
             counts["building"] += 1
+        transfers = transfers_by_pin.get(pin)
+        if transfers:
+            rec["transfers"] = transfers
+            counts["transfers"] += 1
+        permits = permits_by_pin.get(pin)
+        if permits:
+            rec["permits"] = permits
+            counts["permits"] += 1
+        if state_class_by_code and attach_state_use_label(rec, state_class_by_code):
+            counts["stateUseLabel"] += 1
     return counts
 
 
@@ -1710,6 +2008,30 @@ def main() -> None:
         help="Mart_RDE_Xfob CSV (Parcel Building Extra Features). Optional; skipped if missing.",
     )
     ap.add_argument(
+        "--transfers",
+        type=Path,
+        default=DEFAULT_TRANSFERS,
+        help="Mart_Transfers CSV (Parcel Transfer Information). Optional; skipped if missing.",
+    )
+    ap.add_argument(
+        "--permits",
+        type=Path,
+        default=DEFAULT_PERMITS,
+        help="Mart_RDE_Permit CSV (Parcel Permit Information). Optional; skipped if missing.",
+    )
+    ap.add_argument(
+        "--state-class-xlsx",
+        type=Path,
+        default=DEFAULT_STATE_CLASS_XLSX,
+        help="State Class Codes xlsx (labels for Main Parcel StateUseCd). Optional.",
+    )
+    ap.add_argument(
+        "--nbhd-xlsx",
+        type=Path,
+        default=DEFAULT_NBHD_XLSX,
+        help="NBHD codes xlsx (lookup only today — Main Parcel has no neighborhood code column).",
+    )
+    ap.add_argument(
         "--dola-export",
         "--dola-xlsx",
         type=Path,
@@ -1834,6 +2156,10 @@ def main() -> None:
         land_path=args.land,
         building_path=args.building,
         building_xfob_path=args.building_xfob,
+        transfers_path=args.transfers,
+        permits_path=args.permits,
+        state_class_xlsx_path=args.state_class_xlsx,
+        nbhd_xlsx_path=args.nbhd_xlsx,
     )
     if any(join_counts.values()):
         print(
@@ -1896,7 +2222,8 @@ def main() -> None:
         "bundledAsOf": bundled_as_of,
         "source": (
             "Arapahoe County datamart: Main Parcel + Mart_DescrHeader + Mart_LegalParty "
-            "+ Mart_RDE_LndAll + Mart_RDE_BLD + Mart_RDE_Xfob "
+            "+ Mart_RDE_LndAll + Mart_RDE_BLD + Mart_RDE_Xfob + Mart_Transfers + Mart_RDE_Permit "
+            "+ State Class Codes xlsx "
             f"(lazy load after levy; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
         ),
         "taxYear": tax_year or None,

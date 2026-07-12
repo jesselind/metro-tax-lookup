@@ -5,10 +5,12 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  safeArapahoeClerkRecorderSearchUrl,
   safeArapahoeCompsGridPdfUrl,
   safeArapahoeLevyAspxUrl,
   safeArapahoeParcelRecordUrl,
   safeHttpOrHttpsUrl,
+  arapahoeClerkRecorderSearchValueFromBookPage,
 } from "./safeExternalHref";
 
 describe("safeHttpOrHttpsUrl", () => {
@@ -102,5 +104,55 @@ describe("safeArapahoeCompsGridPdfUrl", () => {
     expect(safeArapahoeCompsGridPdfUrl("a&b=c")).toBe(
       "https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=a%26b%3Dc",
     );
+  });
+});
+
+describe("arapahoeClerkRecorderSearchValueFromBookPage", () => {
+  it("strips spaces between book and page", () => {
+    expect(arapahoeClerkRecorderSearchValueFromBookPage("D411 5095")).toBe(
+      "D4115095",
+    );
+    expect(arapahoeClerkRecorderSearchValueFromBookPage("7095  0248")).toBe(
+      "70950248",
+    );
+  });
+
+  it("rejects empty or unsafe tokens", () => {
+    expect(arapahoeClerkRecorderSearchValueFromBookPage("")).toBeNull();
+    expect(arapahoeClerkRecorderSearchValueFromBookPage("D411/5095")).toBeNull();
+    expect(
+      arapahoeClerkRecorderSearchValueFromBookPage("javascript:alert(1)"),
+    ).toBeNull();
+    expect(
+      arapahoeClerkRecorderSearchValueFromBookPage('D411"><img onerror=alert(1)>'),
+    ).toBeNull();
+    expect(
+      arapahoeClerkRecorderSearchValueFromBookPage("D4115095&department=evil"),
+    ).toBeNull();
+  });
+});
+
+describe("safeArapahoeClerkRecorderSearchUrl", () => {
+  it("builds Clerk & Recorder quick-search URL from Book Page", () => {
+    expect(safeArapahoeClerkRecorderSearchUrl("D411 5095")).toBe(
+      "https://arapahoe.co.publicsearch.us/results?department=RP&searchType=quickSearch&searchValue=D4115095",
+    );
+  });
+
+  it("returns null for empty Book Page", () => {
+    expect(safeArapahoeClerkRecorderSearchUrl("")).toBeNull();
+    expect(safeArapahoeClerkRecorderSearchUrl(null)).toBeNull();
+  });
+
+  it("rejects unsafe Book Page values", () => {
+    expect(safeArapahoeClerkRecorderSearchUrl("javascript:alert(1)")).toBeNull();
+    expect(
+      safeArapahoeClerkRecorderSearchUrl("https://evil.example/?x=1"),
+    ).toBeNull();
+  });
+
+  it("always targets the fixed Clerk host", () => {
+    const url = safeArapahoeClerkRecorderSearchUrl("D411 5095");
+    expect(url).toMatch(/^https:\/\/arapahoe\.co\.publicsearch\.us\//);
   });
 });

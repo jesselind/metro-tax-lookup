@@ -10,10 +10,16 @@ import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecor
 import type {
   ArapahoeParcelRecordRow,
   ParcelRecordBuilding,
+  ParcelRecordPermit,
+  ParcelRecordTransfer,
 } from "@/lib/arapahoeParcelLevyData";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
-import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
+import {
+  safeArapahoeClerkRecorderSearchUrl,
+  safeArapahoeParcelRecordUrl,
+} from "@/lib/safeExternalHref";
+import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 const NO_DATA = "No data found";
 
@@ -109,6 +115,14 @@ const SECTION_TITLE_GLOSSARY: Partial<
     termId: "term-parcel-land-line",
     triggerIdSuffix: "section-land-line",
   },
+  Sale: {
+    termId: "term-parcel-sale",
+    triggerIdSuffix: "section-sale",
+  },
+  Permits: {
+    termId: "term-parcel-permit",
+    triggerIdSuffix: "section-permits",
+  },
 };
 
 const BUILDING_TABLE_COLUMN_GLOSSARY: Partial<
@@ -121,19 +135,39 @@ const BUILDING_TABLE_COLUMN_GLOSSARY: Partial<
   },
 };
 
+const SALE_TABLE_COLUMN_GLOSSARY: Partial<
+  Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
+> = {
+  "Book Page": {
+    termId: "term-parcel-book-page",
+    triggerIdSuffix: "hdr-book-page",
+  },
+};
+
 function MissingTableCell() {
   return <span className={MISSING_CELL_CLASS}>{NO_DATA}</span>;
 }
 
-/** In-table section title row (Building, Area, Land Line). */
+/** In-table section title (Values, Sale, Building, Area, Land Line, Permits): label only, no cell chrome. */
 const SECTION_TITLE_ROW_CLASS =
-  "border border-slate-200 bg-slate-50/60 px-2 pb-2 text-left text-base font-semibold leading-snug text-slate-800 sm:text-lg";
+  "border-0 bg-transparent px-0 pb-2 text-left text-base font-semibold leading-snug text-slate-800 sm:text-lg";
+/**
+ * First title in a table block: light top pad.
+ * Following titles (Area, Land Line): match the visual gap between separate tables
+ * (extended section `space-y-6`) plus that first-title pad → pt-8.
+ */
+const SECTION_TITLE_FIRST_PT_CLASS = "pt-2";
+const SECTION_TITLE_FOLLOWING_PT_CLASS = "pt-8";
 
-function columnHeaderClass(index: number, moneyColumns: boolean): string {
+function columnHeaderClass(
+  index: number,
+  moneyColumns: boolean,
+  shrinkFirstColumn: boolean,
+): string {
   if (moneyColumns && index > 0) {
     return MONEY_TH_CLASS;
   }
-  if (index === 0) {
+  if (index === 0 && shrinkFirstColumn) {
     return `${TH_CLASS} ${INDEX_COL_CLASS}`;
   }
   return TH_CLASS;
@@ -154,7 +188,9 @@ function SectionTitleRow({
       <th
         colSpan={colSpan}
         scope="colgroup"
-        className={`${SECTION_TITLE_ROW_CLASS} ${isFirst ? "pt-2" : "pt-6"}`}
+        className={`${SECTION_TITLE_ROW_CLASS} ${
+          isFirst ? SECTION_TITLE_FIRST_PT_CLASS : SECTION_TITLE_FOLLOWING_PT_CLASS
+        }`}
       >
         {glossary ? (
           <ParcelRecordTableGlossaryLabel
@@ -178,11 +214,14 @@ function ColumnHeaderRow({
   blankHeader = "sr-only",
   blankHeaderSrOnly = "Row",
   moneyColumns = false,
+  shrinkFirstColumn = true,
 }: {
   labels: ColumnHeaderLabel[];
   blankHeader?: "sr-only" | "hidden";
   blankHeaderSrOnly?: string;
   moneyColumns?: boolean;
+  /** Building/land index columns shrink; sale/permit tables keep equal headers. */
+  shrinkFirstColumn?: boolean;
 }) {
   return (
     <tr>
@@ -192,7 +231,7 @@ function ColumnHeaderRow({
           <th
             key={`${labelText}-${index}`}
             scope="col"
-            className={columnHeaderClass(index, moneyColumns)}
+            className={columnHeaderClass(index, moneyColumns, shrinkFirstColumn)}
             aria-hidden={!labelText && blankHeader === "hidden" ? true : undefined}
           >
             {labelText ? (
@@ -231,8 +270,13 @@ function valueColumnHeaderLabels(): ColumnHeaderLabel[] {
   });
 }
 
-function buildingTableHeaderLabel(label: string): ColumnHeaderLabel {
-  const glossary = BUILDING_TABLE_COLUMN_GLOSSARY[label];
+function tableColumnHeaderLabel(
+  glossaryMap: Partial<
+    Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
+  >,
+  label: string,
+): ColumnHeaderLabel {
+  const glossary = glossaryMap[label];
   if (!glossary) {
     return label;
   }
@@ -242,6 +286,14 @@ function buildingTableHeaderLabel(label: string): ColumnHeaderLabel {
     triggerIdSuffix: glossary.triggerIdSuffix,
     variant: "column-header" as const,
   };
+}
+
+function buildingTableHeaderLabel(label: string): ColumnHeaderLabel {
+  return tableColumnHeaderLabel(BUILDING_TABLE_COLUMN_GLOSSARY, label);
+}
+
+function saleTableHeaderLabel(label: string): ColumnHeaderLabel {
+  return tableColumnHeaderLabel(SALE_TABLE_COLUMN_GLOSSARY, label);
 }
 
 function ValueRowLabel({
@@ -428,7 +480,13 @@ export function ParcelRecordBuildingAndLandTable({
             <td className={TD_CLASS}>
               {glossaryLabelOrText(attrLabelSpec, attr.label)}
             </td>
-            <td className={TD_CLASS}>{parcelRecordCellText(attr.value)}</td>
+            <td className={TD_CLASS}>
+              {attr.value.trim() ? (
+                parcelRecordCellText(attr.value)
+              ) : (
+                <MissingTableCell />
+              )}
+            </td>
           </tr>,
         );
       }
@@ -511,6 +569,161 @@ export function ParcelRecordBuildingAndLandTable({
         Building attributes, area breakdown, and land line
       </caption>
       <tbody>{rows}</tbody>
+    </table>
+  );
+}
+
+function textOrMissing(value: string | null | undefined): ReactNode {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return <MissingTableCell />;
+  }
+  return parcelRecordCellText(trimmed);
+}
+
+/** County-style Sale history (Book Page / Date / Price / Type). */
+export function ParcelRecordSaleTable({
+  transfers,
+  ain,
+  linkClerkRecorder = true,
+}: {
+  transfers: ParcelRecordTransfer[] | null | undefined;
+  /** AIN for the short note linking to this parcel's county record. */
+  ain?: string | null;
+  /**
+   * When false (demo mode), show Book Page as plain text so clerk links do not
+   * reveal the hidden real demo source parcel via recorded documents.
+   */
+  linkClerkRecorder?: boolean;
+}) {
+  const rows = transfers ?? [];
+  const countyParcelRecordUrl = safeArapahoeParcelRecordUrl(ain);
+
+  return (
+    <div className="space-y-2">
+      <table className={TABLE_CLASS}>
+        <caption className="sr-only">
+          Sale history from county transfer records
+        </caption>
+        <tbody>
+          <SectionTitleRow title="Sale" isFirst colSpan={4} />
+          <ColumnHeaderRow
+            labels={["Book Page", "Date", "Price", "Type"].map(saleTableHeaderLabel)}
+            shrinkFirstColumn={false}
+          />
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={4} className={TD_CLASS}>
+                <MissingTableCell />
+              </td>
+            </tr>
+          ) : (
+            rows.map((sale, index) => {
+              const typeText = (sale.type ?? "").trim();
+              const bookPage = (sale.bookPage ?? "").trim();
+              const clerkHref =
+                linkClerkRecorder && bookPage
+                  ? safeArapahoeClerkRecorderSearchUrl(bookPage)
+                  : null;
+              return (
+                <tr key={`sale-${sale.bookPage}-${sale.date ?? ""}-${index}`}>
+                  <td className={TD_CLASS}>
+                    {bookPage ? (
+                      clerkHref ? (
+                        <a
+                          href={clerkHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={COUNTY_EXTERNAL_LINK_CLASS}
+                        >
+                          {parcelRecordCellText(bookPage)}
+                          <span className="sr-only">
+                            {" "}
+                            (Clerk and Recorder search, opens in a new tab)
+                          </span>
+                        </a>
+                      ) : (
+                        parcelRecordCellText(bookPage)
+                      )
+                    ) : (
+                      <MissingTableCell />
+                    )}
+                  </td>
+                  <td className={`${TD_CLASS} whitespace-nowrap`}>
+                    {textOrMissing(sale.date)}
+                  </td>
+                  <td className={MONEY_TD_CLASS}>{formatValueCell(sale.price)}</td>
+                  <td className={TD_CLASS}>
+                    {typeText ? parcelRecordCellText(typeText) : null}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+      {countyParcelRecordUrl && linkClerkRecorder ? (
+        <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
+          If a Book Page search finds no document, check the same sale list on your{" "}
+          <a
+            href={countyParcelRecordUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={COUNTY_EXTERNAL_LINK_CLASS}
+          >
+            official county parcel record
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          .
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Mart permit rows (optional; not always on PPINum.aspx). */
+export function ParcelRecordPermitTable({
+  permits,
+}: {
+  permits: ParcelRecordPermit[] | null | undefined;
+}) {
+  const rows = permits ?? [];
+  if (rows.length === 0) {
+    return null;
+  }
+  return (
+    <table className={TABLE_CLASS}>
+      <caption className="sr-only">Building permits from county permit records</caption>
+      <tbody>
+        <SectionTitleRow title="Permits" isFirst colSpan={6} />
+        <ColumnHeaderRow
+          labels={[
+            "Permit #",
+            "Status",
+            "Description",
+            "Issue date",
+            "Final date",
+            "Est. value",
+          ]}
+          shrinkFirstColumn={false}
+        />
+        {rows.map((permit, index) => (
+          <tr key={`permit-${permit.permitNum ?? "row"}-${index}`}>
+            <td className={TD_CLASS}>{textOrMissing(permit.permitNum)}</td>
+            <td className={TD_CLASS}>{textOrMissing(permit.status)}</td>
+            <td className={TD_CLASS}>{textOrMissing(permit.description)}</td>
+            <td className={`${TD_CLASS} whitespace-nowrap`}>
+              {textOrMissing(permit.issueDate)}
+            </td>
+            <td className={`${TD_CLASS} whitespace-nowrap`}>
+              {textOrMissing(permit.finalDate)}
+            </td>
+            <td className={MONEY_TD_CLASS}>
+              {formatValueCell(permit.estimatedValue)}
+            </td>
+          </tr>
+        ))}
+      </tbody>
     </table>
   );
 }

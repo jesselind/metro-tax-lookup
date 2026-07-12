@@ -133,6 +133,24 @@ export type ParcelRecordBuilding = {
   totalArea?: string | null;
 };
 
+/** Sale history row from Mart_Transfers (Book+Page rows only). */
+export type ParcelRecordTransfer = {
+  bookPage: string;
+  date?: string | null;
+  price?: number | null;
+  type?: string | null;
+};
+
+/** Permit row from Mart_RDE_Permit. */
+export type ParcelRecordPermit = {
+  permitNum?: string | null;
+  status?: string | null;
+  description?: string | null;
+  issueDate?: string | null;
+  finalDate?: string | null;
+  estimatedValue?: number | null;
+};
+
 export type ArapahoeParcelRecordRow = {
   ain?: string | null;
   situsAddress?: string | null;
@@ -142,6 +160,13 @@ export type ArapahoeParcelRecordRow = {
   ownershipType?: string | null;
   ownerDeliveryAddress?: string | null;
   ownerCityStateZip?: string | null;
+  /**
+   * County neighborhood name. Not in Main Parcel CSV today; reserved when a
+   * reliable neighborhood-code source lands (NBHD xlsx is lookup-only).
+   */
+  neighborhood?: string | null;
+  /** County neighborhood code (e.g. 2044). Same availability note as neighborhood. */
+  neighborhoodCode?: string | null;
   legalDescrFull?: string | null;
   legalDescrDisplay?: string | null;
   /** Mart_RDE_LndAll summed Acreage (display string). */
@@ -152,6 +177,10 @@ export type ArapahoeParcelRecordRow = {
   landLines?: ParcelRecordLandLine[] | null;
   /** Mart_RDE_BLD building blocks for the county Building section. */
   buildings?: ParcelRecordBuilding[] | null;
+  /** Mart_Transfers sale history (Book+Page rows). */
+  transfers?: ParcelRecordTransfer[] | null;
+  /** Mart_RDE_Permit rows (not always shown on PPINum.aspx). */
+  permits?: ParcelRecordPermit[] | null;
   subdivisionCd?: string | null;
   subdivisionName?: string | null;
   taxRollDescr?: string | null;
@@ -168,6 +197,8 @@ export type ArapahoeParcelRecordRow = {
   schoolAssessedBuilding?: number | null;
   schoolAssessedLand?: number | null;
   stateUseCd?: string | null;
+  /** Label from State Class Codes xlsx for stateUseCd. */
+  stateUseLabel?: string | null;
   parcelTaxYear?: string | null;
   /** County parcel record notice year (CSV AssessmentYear). */
   assessmentYear?: string | null;

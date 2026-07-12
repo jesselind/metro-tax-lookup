@@ -31,8 +31,10 @@ export const DEMO_AIN = "1000-00-0-00-001";
 
 /**
  * Replace resident-identifying parcel-record fields for Try demo property.
- * Dollar amounts, classification, ownership type, and other non-PII county
- * fields pass through from the hidden source PIN so the demo stays realistic.
+ * Dollar amounts, classification, ownership type, sale/permit rows, and other
+ * non-PII county fields pass through from the hidden source PIN so the demo
+ * stays realistic. Sale Book Page clerk links are disabled in the UI for demo
+ * mode so recorded-document searches cannot unmask that source PIN.
  */
 export function obfuscateParcelRecordRow(
   record: ArapahoeParcelRecordRow,
