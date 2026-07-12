@@ -574,9 +574,18 @@ export default function SourcesPage() {
             <strong className="font-semibold text-slate-900">Joint Tenancy</strong>
             {" "}
             to match the usual county parcel-page label for co-owners (vesting is not exported
-            in the mart). DPT assessment rates in the build are fixed for 2025+ today (6.8% local
-            / 7.05% school for 2026); update the build script when a new assessment year ships.
-            The browser
+            in the mart). The county{" "}
+            <code className={CODE_INLINE_CLASS}>TotalAssessed</code>
+            {" "}
+            figure already reflects DPT local-government rules for the year (for 2026
+            residential: 6.8% after the temporary reduction on the first $700,000 of actual
+            value). School assessed rows use full appraised amounts × 7.05%. DPT assessment
+            rates in the build are fixed for 2025+ today; update the build script when a new
+            assessment year ships. Empty property-details fields show{" "}
+            <strong className="font-semibold text-slate-900">No data found</strong>
+            {" "}
+            with a short popover and a prefilled mailto (field label, PIN, AIN) so you can
+            report a gap. The browser
             fetches a shard only after a PIN levy load succeeds; it is not part of the
             address-search prefetch. The offline build logs shard size stats (median,
             p90, p99) after each run; check those when adding mart joins. If shards

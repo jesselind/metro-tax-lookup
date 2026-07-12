@@ -17,7 +17,7 @@ The goal is **readability for the general public**, not a checklist of forbidden
 
 Do **not** lean on **levy lines**, **district lines**, **mills lines**, or similar **"\[thing\] lines"** as the main way to explain the UI (visible text, button labels, hints, empty states, errors, `aria-label` / live region text meant for residents, hub cards, main flows).
 
-The project owner has repeatedly flagged this pattern as unintuitive for typical residents.
+This pattern is unintuitive for typical residents and should not be the main way the UI explains itself.
 
 ## Scope
 

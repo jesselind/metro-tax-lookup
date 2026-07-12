@@ -8,9 +8,20 @@
  * Single place to update when county links change.
  */
 
+/** Colorado DPT plain-language guide to property tax (actual value, assessed value, mills). */
+export const COLORADO_DPT_PROPERTY_TAX_GUIDE_URL =
+  "https://dpt.colorado.gov/understanding-property-taxes-in-colorado";
+
 /** DPT page: Assessed Value section with 2026 local vs school rate examples. */
 export const COLORADO_DPT_ASSESSED_VALUE_SECTION_URL =
   "https://dpt.colorado.gov/understanding-property-taxes-in-colorado#:~:text=Assessment%20Rates%20chart.-,Assessed%20Value,-Multiplying%20the%20actual";
+
+/**
+ * DPT note on the 2026 residential local-government rate (6.8% after the
+ * temporary reduction on the first $700,000 of actual value).
+ */
+export const COLORADO_DPT_RESIDENTIAL_LOCAL_ASSESSMENT_RATE_URL =
+  "https://dpt.colorado.gov/residential-local-government-assessment-rate";
 
 /** Real property: residential, commercial, agricultural, and vacant land parcels (Main Parcel / PIN). */
 export const ARAPAHOE_ASSESSOR_PROPERTY_SEARCH =

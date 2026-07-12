@@ -37,6 +37,7 @@ type InfoHintPopoverProps = {
       textTrigger?: never;
       textTriggerId?: never;
       textTriggerClassName?: never;
+      textTriggerAriaLabel?: never;
       /**
        * Icon mode: replace the default (i) glyph (e.g. comps PDF icon). Pair with
        * {@link iconTriggerButtonClassName} for hit target and shape.
@@ -52,13 +53,19 @@ type InfoHintPopoverProps = {
     }
   | {
       /**
-       * Supplemental description for assistive tech (e.g. popover content summary).
-       * The control's accessible name comes from visible `textTrigger` text.
+       * Supplemental description for assistive tech (tooltip `title`).
+       * The control's accessible name defaults to visible `textTrigger` text unless
+       * {@link textTriggerAriaLabel} is set.
        */
       ariaLabel?: string;
       textTrigger: string;
       textTriggerId: string;
       textTriggerClassName?: string;
+      /**
+       * When several triggers share the same visible text (e.g. "No data found"),
+       * set this so each control has a distinct accessible name.
+       */
+      textTriggerAriaLabel?: string;
       iconTriggerChildren?: never;
       iconTriggerButtonClassName?: never;
       iconPanelBelow?: never;
@@ -86,6 +93,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
     textTrigger,
     textTriggerId,
     textTriggerClassName,
+    textTriggerAriaLabel,
     iconTriggerChildren,
     iconTriggerButtonClassName,
     iconPanelBelow = false,
@@ -213,6 +221,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
               ? `${textTriggerClassName} ${TEXT_TRIGGER_INTERACTIVE_CLASS}`
               : TEXT_TRIGGER_DEFAULT_CLASS
           }
+          aria-label={textTriggerAriaLabel}
           aria-expanded={open}
           aria-controls={open ? contentId : undefined}
           aria-haspopup="true"

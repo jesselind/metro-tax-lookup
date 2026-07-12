@@ -26,6 +26,8 @@ import {
 import {
   ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE,
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
+  COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
+  COLORADO_DPT_PROPERTY_TAX_GUIDE_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridRowFragmentId } from "@/lib/novCompsGridTypes";
 import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
@@ -367,8 +369,43 @@ export function TermAssessedValueAside() {
     <TermAside id="term-assessed-value" title="Assessed value" titleId="term-assessed-value-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         This is the amount your property tax is built from: the county takes your actual value and
-        applies a percentage set by state law for your kind of property (home, land, business, and
-        so on). That smaller number is what rates are multiplied against.
+        applies a state{" "}
+        <strong className="font-semibold text-slate-900">assessment rate</strong>
+        {" "}
+        for your kind of property. That smaller number is what{" "}
+        <a href="#term-mill-levy" className={TERM_LINK_CLASS}>
+          mill levies
+        </a>
+        {" "}
+        multiply against.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        Since 2025, most Colorado homes have two assessed values: one for school districts (7.05%
+        for 2026) and one for other local governments (6.8% for 2026). Local-government assessed
+        value can also reflect a temporary reduction on the first $700,000 of actual value before
+        that 6.8% rate. Colorado&apos;s Division of Property Taxation explains the steps in its{" "}
+        <a
+          href={COLORADO_DPT_PROPERTY_TAX_GUIDE_URL}
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Understanding Property Taxes in Colorado
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        guide and the{" "}
+        <a
+          href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Assessed Value
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        worked example.
       </p>
     </TermAside>
   );

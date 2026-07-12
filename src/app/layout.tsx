@@ -13,6 +13,7 @@ import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   SITE_CONTENT_MAX_WIDTH_CLASS,
+  TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 
 const geistSans = Geist({
@@ -28,7 +29,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Arapahoe County property tax tools",
   description:
-    "Citizen-friendly tools to help Arapahoe County residents understand property tax rates and levy data.",
+    "Citizen-friendly tools to help Arapahoe County residents understand property taxes using publicly available state and county data.",
 };
 
 export default function RootLayout({
@@ -48,15 +49,20 @@ export default function RootLayout({
               className={`mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-6 text-sm text-slate-700 sm:text-base`}
             >
               <p className="text-center text-sm leading-relaxed text-slate-600 sm:text-base">
-                Not affiliated with Arapahoe County. This is an informational tool
-                to help voters and residents understand publicly available mill
-                levy data. Verify with official county sources. Not legal or tax
-                advice.
+                Not affiliated with Arapahoe County. This is an independent
+                educational tool for residents. It uses publicly available data from
+                state and county sources. Always verify important numbers with
+                official sources. Not legal or tax advice.
               </p>
               <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
-                We aim to produce accurate results from the sources we cite, but we
-                cannot guarantee them. We are constantly updating this site and its
-                data to make it more reliable.
+                We aim for accurate results from the sources we cite, but we cannot
+                guarantee them. Official county and state records remain the source
+                of truth. See{" "}
+                <Link href="/sources" className={TERM_LINK_CLASS}>
+                  Sources
+                </Link>{" "}
+                for how we build what you see here. We update this site and its
+                data files as those public sources change.
               </p>
               <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
                 Address lookup runs in your browser from static files on this
@@ -80,34 +86,19 @@ export default function RootLayout({
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2">
-                  <Link
-                    href="/"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                  >
+                  <Link href="/" className={TERM_LINK_CLASS}>
                     Home
                   </Link>
-                  <Link
-                    href="/sources"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                  >
+                  <Link href="/sources" className={TERM_LINK_CLASS}>
                     Sources
                   </Link>
-                  <Link
-                    href="/privacy"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                  >
+                  <Link href="/privacy" className={TERM_LINK_CLASS}>
                     Privacy
                   </Link>
-                  <Link
-                    href="/accessibility"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                  >
+                  <Link href="/accessibility" className={TERM_LINK_CLASS}>
                     Accessibility
                   </Link>
-                  <Link
-                    href="/contact"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
-                  >
+                  <Link href="/contact" className={TERM_LINK_CLASS}>
                     Contact
                   </Link>
                 </nav>
@@ -116,7 +107,7 @@ export default function RootLayout({
                     href={SITE_CONFIG.githubRepoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
                   >
                     GitHub
                     <span className="sr-only"> (opens in a new tab)</span>

@@ -5,6 +5,7 @@
 
 import type { ReactNode } from "react";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
+import { ParcelRecordMissingValue } from "@/components/ParcelRecordMissingValue";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecordBuildingAttributeTerms";
 import type {
@@ -14,14 +15,16 @@ import type {
   ParcelRecordTransfer,
 } from "@/lib/arapahoeParcelLevyData";
 import { formatUsdWhole } from "@/lib/formatUsd";
+import {
+  COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
+  COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
+} from "@/lib/coloradoDptAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import {
   safeArapahoeClerkRecorderSearchUrl,
   safeArapahoeParcelRecordUrl,
 } from "@/lib/safeExternalHref";
 import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
-
-const NO_DATA = "No data found";
 
 const TABLE_CLASS =
   "w-full max-w-full table-auto border-collapse text-sm leading-snug text-slate-900 sm:text-base";
@@ -37,7 +40,7 @@ const MONEY_TH_CLASS =
   "whitespace-nowrap border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-right font-medium tabular-nums text-slate-700";
 const MONEY_TD_CLASS =
   "border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
-const MISSING_CELL_CLASS = "italic text-slate-500";
+const MISSING_BLOCK_CLASS = "italic text-slate-500";
 
 type GlossaryLabelSpec = {
   text: string;
@@ -77,7 +80,13 @@ function glossaryLabelOrText(
 
 const VALUE_ROW_GLOSSARY: Record<
   string,
-  { termId: ParcelGlossaryTermId; label: string; triggerIdSuffix: string }
+  {
+    termId: ParcelGlossaryTermId;
+    label: string;
+    triggerIdSuffix: string;
+    /** DPT residential assessment rate shown in the row header (assessed rows only). */
+    rateLabel?: string;
+  }
 > = {
   appraised: {
     termId: "term-appraised-total",
@@ -88,11 +97,15 @@ const VALUE_ROW_GLOSSARY: Record<
     termId: "term-assessed-total",
     label: "Assessed Value",
     triggerIdSuffix: "assessed-value",
+    /** 2026 DPT residential local-government rate (see popover for $700k reduction). */
+    rateLabel: COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
   },
   "assessed-school": {
     termId: "term-assessed-school-value",
     label: "Assessed School Value",
     triggerIdSuffix: "assessed-school-value",
+    /** 2026 DPT residential school rate. */
+    rateLabel: COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
   },
 };
 
@@ -143,10 +156,6 @@ const SALE_TABLE_COLUMN_GLOSSARY: Partial<
     triggerIdSuffix: "hdr-book-page",
   },
 };
-
-function MissingTableCell() {
-  return <span className={MISSING_CELL_CLASS}>{NO_DATA}</span>;
-}
 
 /** In-table section title (Values, Sale, Building, Area, Land Line, Permits): label only, no cell chrome. */
 const SECTION_TITLE_ROW_CLASS =
@@ -296,6 +305,15 @@ function saleTableHeaderLabel(label: string): ColumnHeaderLabel {
   return tableColumnHeaderLabel(SALE_TABLE_COLUMN_GLOSSARY, label);
 }
 
+function valueRowDisplayLabel(
+  year: string,
+  kind: "appraised" | "assessed" | "assessed-school",
+): string {
+  const glossary = VALUE_ROW_GLOSSARY[kind];
+  const base = year ? `${year} ${glossary.label}` : glossary.label;
+  return glossary.rateLabel ? `${base} (${glossary.rateLabel})` : base;
+}
+
 function ValueRowLabel({
   year,
   kind,
@@ -306,10 +324,9 @@ function ValueRowLabel({
   countyParcelRecordUrl?: string | null;
 }) {
   const glossary = VALUE_ROW_GLOSSARY[kind];
-  const label = year ? `${year} ${glossary.label}` : glossary.label;
   return (
     <ParcelRecordTableGlossaryLabel
-      text={label}
+      text={valueRowDisplayLabel(year, kind)}
       termId={glossary.termId}
       triggerIdSuffix={glossary.triggerIdSuffix}
       countyParcelRecordUrl={
@@ -319,9 +336,18 @@ function ValueRowLabel({
   );
 }
 
-function formatValueCell(value: number | null | undefined): ReactNode {
+function formatValueCell(
+  value: number | null | undefined,
+  fieldLabel: string,
+  triggerIdSuffix: string,
+): ReactNode {
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    return <MissingTableCell />;
+    return (
+      <ParcelRecordMissingValue
+        fieldLabel={fieldLabel}
+        triggerIdSuffix={triggerIdSuffix}
+      />
+    );
   }
   return formatUsdWhole(value);
 }
@@ -375,7 +401,14 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
     ? rows
     : rows.filter((row) => row.kind === "appraised");
   if (rowsToShow.length === 0) {
-    return <p className={MISSING_CELL_CLASS}>{NO_DATA}</p>;
+    return (
+      <p className={MISSING_BLOCK_CLASS}>
+        <ParcelRecordMissingValue
+          fieldLabel="Appraised and assessed values"
+          triggerIdSuffix="values-empty"
+        />
+      </p>
+    );
   }
 
   return (
@@ -392,20 +425,41 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
           blankHeader="hidden"
           moneyColumns
         />
-        {rowsToShow.map((row) => (
-          <tr key={row.kind}>
-            <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
-              <ValueRowLabel
-                year={year}
-                kind={row.kind}
-                countyParcelRecordUrl={countyParcelRecordUrl}
-              />
-            </th>
-            <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.total)}</td>
-            <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.building)}</td>
-            <td className={MONEY_TD_CLASS}>{formatValueCell(row.values.land)}</td>
-          </tr>
-        ))}
+        {rowsToShow.map((row) => {
+          const rowLabel = valueRowDisplayLabel(year, row.kind);
+          return (
+            <tr key={row.kind}>
+              <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
+                <ValueRowLabel
+                  year={year}
+                  kind={row.kind}
+                  countyParcelRecordUrl={countyParcelRecordUrl}
+                />
+              </th>
+              <td className={MONEY_TD_CLASS}>
+                {formatValueCell(
+                  row.values.total,
+                  `${rowLabel} (Total)`,
+                  `${row.kind}-total`,
+                )}
+              </td>
+              <td className={MONEY_TD_CLASS}>
+                {formatValueCell(
+                  row.values.building,
+                  `${rowLabel} (Building)`,
+                  `${row.kind}-building`,
+                )}
+              </td>
+              <td className={MONEY_TD_CLASS}>
+                {formatValueCell(
+                  row.values.land,
+                  `${rowLabel} (Land)`,
+                  `${row.kind}-land`,
+                )}
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
@@ -433,7 +487,14 @@ export function ParcelRecordBuildingAndLandTable({
   const hasContent = buildingsWithDetail.length > 0 || landLineList.length > 0;
 
   if (!hasContent) {
-    return <p className={MISSING_CELL_CLASS}>{NO_DATA}</p>;
+    return (
+      <p className={MISSING_BLOCK_CLASS}>
+        <ParcelRecordMissingValue
+          fieldLabel="Building and Land Line"
+          triggerIdSuffix="building-land-empty"
+        />
+      </p>
+    );
   }
 
   const rows: ReactNode[] = [];
@@ -484,7 +545,10 @@ export function ParcelRecordBuildingAndLandTable({
               {attr.value.trim() ? (
                 parcelRecordCellText(attr.value)
               ) : (
-                <MissingTableCell />
+                <ParcelRecordMissingValue
+                  fieldLabel={attr.label}
+                  triggerIdSuffix={`attr-${attr.label.replace(/\s+/g, "-").toLowerCase()}-value`}
+                />
               )}
             </td>
           </tr>,
@@ -506,7 +570,14 @@ export function ParcelRecordBuildingAndLandTable({
             <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>{index === 0 ? buildingNum : ""}</td>
             <td className={TD_CLASS}>{parcelRecordCellText(area.description)}</td>
             <td className={TD_CLASS}>
-              {area.sqFt ? area.sqFt : <MissingTableCell />}
+              {area.sqFt ? (
+                area.sqFt
+              ) : (
+                <ParcelRecordMissingValue
+                  fieldLabel={`${area.description || "Area"} SqFt`}
+                  triggerIdSuffix={`area-sqft-${index}`}
+                />
+              )}
             </td>
           </tr>,
         );
@@ -548,14 +619,20 @@ export function ParcelRecordBuildingAndLandTable({
             {line.units?.trim() ? (
               parcelRecordCellText(line.units.trim())
             ) : (
-              <MissingTableCell />
+              <ParcelRecordMissingValue
+                fieldLabel="Land Line Units"
+                triggerIdSuffix={`land-units-${index}`}
+              />
             )}
           </td>
           <td className={TD_CLASS}>
             {line.landUse?.trim() ? (
               parcelRecordCellText(line.landUse.trim())
             ) : (
-              <MissingTableCell />
+              <ParcelRecordMissingValue
+                fieldLabel="Land Line Land Use"
+                triggerIdSuffix={`land-use-${index}`}
+              />
             )}
           </td>
         </tr>,
@@ -573,10 +650,19 @@ export function ParcelRecordBuildingAndLandTable({
   );
 }
 
-function textOrMissing(value: string | null | undefined): ReactNode {
+function textOrMissing(
+  value: string | null | undefined,
+  fieldLabel: string,
+  triggerIdSuffix: string,
+): ReactNode {
   const trimmed = (value ?? "").trim();
   if (!trimmed) {
-    return <MissingTableCell />;
+    return (
+      <ParcelRecordMissingValue
+        fieldLabel={fieldLabel}
+        triggerIdSuffix={triggerIdSuffix}
+      />
+    );
   }
   return parcelRecordCellText(trimmed);
 }
@@ -614,7 +700,10 @@ export function ParcelRecordSaleTable({
           {rows.length === 0 ? (
             <tr>
               <td colSpan={4} className={TD_CLASS}>
-                <MissingTableCell />
+                <ParcelRecordMissingValue
+                  fieldLabel="Sale"
+                  triggerIdSuffix="sale-empty"
+                />
               </td>
             </tr>
           ) : (
@@ -646,13 +735,22 @@ export function ParcelRecordSaleTable({
                         parcelRecordCellText(bookPage)
                       )
                     ) : (
-                      <MissingTableCell />
+                      <ParcelRecordMissingValue
+                        fieldLabel="Book Page"
+                        triggerIdSuffix={`sale-book-page-${index}`}
+                      />
                     )}
                   </td>
                   <td className={`${TD_CLASS} whitespace-nowrap`}>
-                    {textOrMissing(sale.date)}
+                    {textOrMissing(sale.date, "Sale Date", `sale-date-${index}`)}
                   </td>
-                  <td className={MONEY_TD_CLASS}>{formatValueCell(sale.price)}</td>
+                  <td className={MONEY_TD_CLASS}>
+                    {formatValueCell(
+                      sale.price,
+                      "Sale Price",
+                      `sale-price-${index}`,
+                    )}
+                  </td>
                   <td className={TD_CLASS}>
                     {typeText ? parcelRecordCellText(typeText) : null}
                   </td>
@@ -709,17 +807,47 @@ export function ParcelRecordPermitTable({
         />
         {rows.map((permit, index) => (
           <tr key={`permit-${permit.permitNum ?? "row"}-${index}`}>
-            <td className={TD_CLASS}>{textOrMissing(permit.permitNum)}</td>
-            <td className={TD_CLASS}>{textOrMissing(permit.status)}</td>
-            <td className={TD_CLASS}>{textOrMissing(permit.description)}</td>
-            <td className={`${TD_CLASS} whitespace-nowrap`}>
-              {textOrMissing(permit.issueDate)}
+            <td className={TD_CLASS}>
+              {textOrMissing(
+                permit.permitNum,
+                "Permit #",
+                `permit-num-${index}`,
+              )}
+            </td>
+            <td className={TD_CLASS}>
+              {textOrMissing(
+                permit.status,
+                "Permit Status",
+                `permit-status-${index}`,
+              )}
+            </td>
+            <td className={TD_CLASS}>
+              {textOrMissing(
+                permit.description,
+                "Permit Description",
+                `permit-desc-${index}`,
+              )}
             </td>
             <td className={`${TD_CLASS} whitespace-nowrap`}>
-              {textOrMissing(permit.finalDate)}
+              {textOrMissing(
+                permit.issueDate,
+                "Permit Issue date",
+                `permit-issue-${index}`,
+              )}
+            </td>
+            <td className={`${TD_CLASS} whitespace-nowrap`}>
+              {textOrMissing(
+                permit.finalDate,
+                "Permit Final date",
+                `permit-final-${index}`,
+              )}
             </td>
             <td className={MONEY_TD_CLASS}>
-              {formatValueCell(permit.estimatedValue)}
+              {formatValueCell(
+                permit.estimatedValue,
+                "Permit Est. value",
+                `permit-value-${index}`,
+              )}
             </td>
           </tr>
         ))}

@@ -16,7 +16,7 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 
 ### Review and audit responses (mandatory - read before any review-style answer)
 
-This rule **overrides** the instinct to be balanced or reassuring. Ignoring it wastes the user's time.
+This rule **overrides** the instinct to be balanced or reassuring. Soft praise in a review response hides what still needs attention.
 
 **Triggers:** The user asks for a **review**, **audit**, **final check**, **pre-commit check**, **pass**, or to **ensure / verify** something against **DRY, KISS, YAGNI, OWASP, anti-patterns, a11y**, security, or similar - including phrases like "anything needing to change" or "etc." in that spirit.
 
