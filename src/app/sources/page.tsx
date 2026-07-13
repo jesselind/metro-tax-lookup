@@ -541,10 +541,17 @@ export default function SourcesPage() {
             <strong className="font-semibold text-slate-900">6-digit PIN prefix</strong>
             {" "}
             (for example{" "}
-            <code className={CODE_INLINE_CLASS}>032490.json</code>) so the browser
+            <code className={CODE_INLINE_CLASS}>010000.json</code>) so the browser
             fetches only the small shard for your parcel. Plain JSON (same pattern as{" "}
             <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>) keeps
-            property details working on older phones without gzip decompression. Value row labels use{" "}
+            property details working on older phones without gzip decompression.{" "}
+            <strong className="font-semibold text-slate-900">Try demo property</strong>
+            {" "}
+            does not load a real PIN shard; it uses the committed PIN-less fixture{" "}
+            <code className={CODE_INLINE_CLASS}>src/data/demo-property.json</code>
+            {" "}
+            (fictional identity fields; realistic non-PII dollars, building rows, and levy stack).
+            Value row labels use{" "}
             <code className={CODE_INLINE_CLASS}>AssessmentYear</code> from the export
             (the year on the county parcel record, e.g. 2026 Appraised Value), not{" "}
             <code className={CODE_INLINE_CLASS}>TaxYear</code> (levy roll year).{" "}

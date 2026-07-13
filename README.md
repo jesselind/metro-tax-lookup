@@ -37,7 +37,30 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run ci:test:nov-comps-parser`** is the same command for CI pipelines (Python required). **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+
+### Tests, fixtures, and PII
+
+This is a **public** repo. Automated tests must not spotlight a real resident (PIN, AIN, address, owner name, neighborhood code, or other fingerprints).
+
+**What CI uses (required, committed):** Invented identifiers and tiny synthetic objects only.
+
+| Layer | Where | Role |
+| --- | --- | --- |
+| TypeScript unit tests | `src/lib/syntheticTestIds.ts` | Shared fake PIN/AIN constants |
+| Python unit tests | `tools/synthetic_test_ids.py` + `tools/test_*.py` | Same IDs for parser tests; parcel-index builder tests use invented Main Parcel rows (no real PIN) |
+| NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
+| Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
+
+Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
+
+**What CI does not need:** Environment variables for test parcel IDs. Requiring `REF_PIN` (or similar) for the default suite would break open-source CI and contributor onboarding. Env vars are optional for *extra* private checks only.
+
+**Optional local spot-check (gitignored, never CI):** After a mart rebuild, compare any PIN you care about to the county `PPINum.aspx` page yourself. If you want a sticky reminder on disk, put a single PIN in **`supporting-data/_private/spotcheck-pin.txt`** (gitignored via `_private/`). That file is for humans/scripts you run locally — it is not read by the default `npm run test:*` commands.
+
+**Runtime county JSON:** Bundled files under `public/data/` are public assessor extracts (the product). That is separate from **tests and docs**, which must not call out a specific person's parcel as the reference fixture.
+
+**Try demo property:** Loads committed **`src/data/demo-property.json`** (PIN-less). Identity fields are fictional; non-PII dollars, building rows, sale/permit amounts/dates, and a realistic levy stack are frozen in that fixture. UI helpers live in `src/lib/demoProperty.ts`. No real resident PIN is used at runtime for demo.
 
 - **Row help and Key terms:** Row help merges from **`tools/nov_comps_grid_definitions.json`** when the grid JSON has no definitions block. Some row popovers link to **Key terms** on the home page for longer code context (LUC, improvement type/style, valuation grade).
 
@@ -141,7 +164,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 ## Contributor notes
 
 - Keep user-facing prose plain-language and avoid accountant-style "levy lines" phrasing.
-- **Try demo property:** Mask resident-identifying fields (owner names, mailing address, situs, AIN, legal description), sale **Book Page** values, and **permit numbers** in `src/lib/demoProperty.ts` (fictional `D000 9xxx` / `PREFIX-0000-9xxxx` tokens; clerk links stay off in demo UI). Dollar amounts, ownership type, classification, sale/permit dates and amounts, and other non-PII county fields should pass through from the hidden source PIN so the demo stays realistic. Apply the same rule when adding Property details fields in Phase 2+.
+- **Try demo property:** Committed PIN-less fixture **`src/data/demo-property.json`** (loaded via `loadDemoProperty()` in `src/lib/demoProperty.ts`). Identity fields, Book Page, and permit numbers are fictional; clerk links stay off in demo UI. Refresh the fixture when you intentionally update demo dollars / levy / building shape — do not point demo at a real PIN.
 - Static term definitions live in `src/content/termDefinitions.tsx`.
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json`.
 - Keep README technical; keep narrative methodology and citations on `/sources`.

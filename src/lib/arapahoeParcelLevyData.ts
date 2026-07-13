@@ -165,7 +165,7 @@ export type ArapahoeParcelRecordRow = {
    * reliable neighborhood-code source lands (NBHD xlsx is lookup-only).
    */
   neighborhood?: string | null;
-  /** County neighborhood code (e.g. 2044). Same availability note as neighborhood. */
+  /** County neighborhood code. Same availability note as neighborhood. */
   neighborhoodCode?: string | null;
   legalDescrFull?: string | null;
   legalDescrDisplay?: string | null;

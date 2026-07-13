@@ -100,6 +100,39 @@ function initialMillsFromStackLine(ln: ArapahoeLevyStackLine): number {
   return 0;
 }
 
+/**
+ * Map bundled TAG stack lines into UI levy rows (filters assessor fees).
+ * Shared by PIN load and the synthetic Try-demo fixture.
+ */
+export function committedLevyLinesFromStackLines(
+  stackLines: ArapahoeLevyStackLine[],
+  sourceTagId: string,
+): {
+  lines: CommittedLevyLine[];
+  awaitingTemplateMills: boolean;
+  templateMillDrafts: Record<string, string>;
+} {
+  const filtered = stackLines.filter(
+    (ln) => normalizeLevyLineCode(ln.code) !== "ASSRFEES",
+  );
+  const lines: CommittedLevyLine[] = filtered.map((ln) => ({
+    id: newLevyLineId(),
+    authority: displayMartAuthorityName(ln.authorityName),
+    mills: initialMillsFromStackLine(ln),
+    levyLineCode: ln.code,
+    dolaMatch: ln.dolaMatch,
+    sourceTagId,
+  }));
+  const stackSum = lines.reduce((a, l) => a + l.mills, 0);
+  return {
+    lines,
+    awaitingTemplateMills: stackSum <= 0,
+    templateMillDrafts: Object.fromEntries(
+      lines.map((l) => [l.id, formatMills(l.mills)] as const),
+    ),
+  };
+}
+
 export type ParcelValuesFromExport = {
   totalActual: number | null;
   totalAssessed: number | null;
@@ -199,25 +232,14 @@ export async function loadLevyStackFromPin(
       error: `TAGId ${row.tagId} is missing from the bundled stacks file. Re-run the index script so it matches the mart export.`,
     };
   }
-  const stackLines = stack.lines.filter(
-    (ln) => normalizeLevyLineCode(ln.code) !== "ASSRFEES",
-  );
-  if (stackLines.length === 0) {
+  const built = committedLevyLinesFromStackLines(stack.lines, stack.tagId);
+  if (built.lines.length === 0) {
     return {
       ok: false,
       error:
         "This parcel has no levy lines to load after filtering. Try again or contact support.",
     };
   }
-  const nextLines: CommittedLevyLine[] = stackLines.map((ln) => ({
-    id: newLevyLineId(),
-    authority: displayMartAuthorityName(ln.authorityName),
-    mills: initialMillsFromStackLine(ln),
-    levyLineCode: ln.code,
-    dolaMatch: ln.dolaMatch,
-    sourceTagId: stack.tagId,
-  }));
-  const stackSum = nextLines.reduce((a, l) => a + l.mills, 0);
   const pv = parcelValuesFromPinRow(row);
   const assessmentYearFromParcel =
     typeof row.assessmentYear === "string" && row.assessmentYear.trim()
@@ -227,16 +249,14 @@ export async function loadLevyStackFromPin(
     typeof row.ain === "string" && row.ain.trim() ? row.ain.trim() : null;
   return {
     ok: true,
-    lines: nextLines,
+    lines: built.lines,
     matchedPin: matchedPinKey,
     tagId: row.tagId,
     tagShortDescr: row.tagShortDescr,
     levyAspxUrl: stack.levyAspxUrl,
     arapahoeStacksSnapshot: stacks.snapshot,
-    awaitingTemplateMills: stackSum <= 0,
-    templateMillDrafts: Object.fromEntries(
-      nextLines.map((l) => [l.id, formatMills(l.mills)] as const),
-    ),
+    awaitingTemplateMills: built.awaitingTemplateMills,
+    templateMillDrafts: built.templateMillDrafts,
     parcelValues: pv,
     parcelAssessmentYear: assessmentYearFromParcel,
     ain: ainFromRow,

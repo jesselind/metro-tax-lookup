@@ -8,13 +8,14 @@ import {
   CONTACT_EMAIL,
   buildMissingParcelDataMailtoHref,
 } from "@/lib/contact";
+import { SYNTHETIC_AIN, SYNTHETIC_PIN } from "@/lib/syntheticTestIds";
 
 describe("buildMissingParcelDataMailtoHref", () => {
   it("includes field label, PIN, and AIN in a mailto to the site contact", () => {
     const href = buildMissingParcelDataMailtoHref({
       fieldLabel: "Neighborhood",
-      pin: "032490811",
-      ain: "2077-34-2-09-011",
+      pin: SYNTHETIC_PIN,
+      ain: SYNTHETIC_AIN,
     });
     expect(href.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true);
     const query = href.slice(`mailto:${CONTACT_EMAIL}?`.length);
@@ -22,9 +23,9 @@ describe("buildMissingParcelDataMailtoHref", () => {
     expect(params.get("subject")).toBe("Missing parcel data: Neighborhood");
     const body = params.get("body") ?? "";
     expect(body).toContain("Field: Neighborhood");
-    expect(body).toContain("PIN: 032490811");
-    expect(body).toContain("AIN: 2077-34-2-09-011");
-    expect(body).toContain('No data found');
+    expect(body).toContain(`PIN: ${SYNTHETIC_PIN}`);
+    expect(body).toContain(`AIN: ${SYNTHETIC_AIN}`);
+    expect(body).toContain("No data found");
   });
 
   it("sanitizes newlines in the field label and falls back when ids are blank", () => {

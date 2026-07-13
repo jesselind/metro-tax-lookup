@@ -469,9 +469,9 @@ export function TermNeighborhoodCodeBriefBody() {
       A numeric{" "}
       <strong className="font-semibold text-slate-900">neighborhood code</strong>
       {" "}
-      the assessor uses with sales and valuation (for example 2044.00 on the county page). This
-      app only fills it when the mart export supplies that code. A separate NBHD spreadsheet can
-      translate codes to names, but the code itself is not on the Main Parcel CSV today.
+      the assessor uses with sales and valuation. This app only fills it when the mart export
+      supplies that code. A separate NBHD spreadsheet can translate codes to names, but the code
+      itself is not on the Main Parcel CSV today.
     </p>
   );
 }

@@ -49,8 +49,9 @@ public/data/arapahoe-parcel-record-by-pin.json
 public/data/arapahoe-parcel-record-by-pin.json.gz
 
 # Local-only samples (PII, one-off PDFs) - keep out of version control
-supporting-data/_private/
+supporting-data/_private/*
 !supporting-data/_private/.gitkeep
+!supporting-data/_private/spotcheck-pin.txt.example
 
 # Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
 docs/_working/
@@ -68,3 +69,10 @@ supporting-data/**/*.docx
 supporting-data/refs/
 
 # Census / GIS file geodatabases (~150MB each; live under refs/gis/ when present)
+
+# Playwright (Phase 6b); keep report/cache dirs out of git
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

@@ -1795,7 +1795,7 @@ def enrich_parcel_record_from_sibling_marts(
     )
     # NBHD xlsx is loaded for readiness / future join only: Main Parcel has no
     # neighborhood-code column, and SubdivisionName→NBHD guesses disagree with
-    # live PPINum (ref PIN county code 2044 vs subdiv match 2897).
+    # live PPINum (do not infer neighborhood from subdivision).
     if nbhd_xlsx_path and nbhd_xlsx_path.is_file():
         nbhd_count = len(read_nbhd_description_by_code(nbhd_xlsx_path))
         if nbhd_count:
