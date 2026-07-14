@@ -1169,6 +1169,10 @@ export function HomeParcelAddressLookup({
               </button>
             </div>
           </div>
+          <p className="mt-3 text-center text-base font-semibold tracking-tight text-slate-900 sm:text-lg">
+            We do not save your address. This uses publicly available data. We
+            do not track you.
+          </p>
           {hits != null && hits.length > 1 ? (
             <div
               className={`${ADDRESS_LOOKUP_PANEL_CLASS} mt-4`}

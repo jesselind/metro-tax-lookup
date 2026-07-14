@@ -32,6 +32,8 @@ import {
   DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   METRO_PERCENT_TILES_GRID_CLASS,
+  TILE_DETAILS_CUE_ON_DARK_CLASS,
+  TILE_DETAILS_CUE_ON_LIGHT_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 import type { MetroFromLevyStack } from "@/lib/metroDistrictFromLevyLines";
@@ -444,47 +446,73 @@ export function MetroTaxShareFlow({
   const shareTileSurfaceClass = `flex h-full min-h-0 w-full max-w-full flex-col items-start overflow-hidden sm:w-max ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-100 px-3 py-4 text-left shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-slate-300 hover:bg-slate-200/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
   const debtTileSurfaceClass = `flex h-full min-h-0 w-full max-w-full flex-col items-start overflow-hidden sm:w-max ${DASHBOARD_TILE_RADIUS_CLASS} border border-red-800 bg-red-700 px-3 py-4 text-left text-white shadow-md transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-red-900 hover:bg-red-600 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:bg-red-700 active:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-5 sm:py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-red-700`;
   /** In-page hash links; explicit pointer matches project interactive-surface rule (div tiles stay default). */
-  const shareTileLinkClass = `${shareTileSurfaceClass} cursor-pointer`;
-  const debtTileLinkClass = `${debtTileSurfaceClass} cursor-pointer`;
+  const shareTileLinkClass = `group ${shareTileSurfaceClass} cursor-pointer`;
+  const debtTileLinkClass = `group ${debtTileSurfaceClass} cursor-pointer`;
+
+  const shareTileBody = (
+    <span className="min-w-0 w-full flex-1 overflow-hidden">
+      <p className="break-words text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+        {totalDistrictShare.toFixed(1)}%
+      </p>
+      {metroShareDollars != null ? (
+        <p className="mt-1 break-words font-bold tabular-nums leading-none text-slate-800 text-2xl sm:text-3xl">
+          {formatUsdWhole(metroShareDollars)}
+        </p>
+      ) : null}
+      <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-slate-600 sm:text-base">
+        {totalDistrictShare > 0
+          ? multiMetroParcel
+            ? "of your property taxes go to your metro districts (combined) each year"
+            : "of your property taxes go to your metro district each year"
+          : "No metro district mills shown on your property tax bill"}
+      </p>
+    </span>
+  );
+
+  const debtTileBody = (
+    <span className="min-w-0 w-full flex-1 overflow-hidden">
+      <p className="break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
+        {debtShareOfTotal.toFixed(1)}%
+      </p>
+      {debtShareDollars != null ? (
+        <p className="mt-1 break-words font-bold tabular-nums leading-none text-slate-50 text-2xl sm:text-3xl">
+          {formatUsdWhole(debtShareDollars)}
+        </p>
+      ) : null}
+      <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-white sm:text-base">
+        {multiMetroParcel
+          ? "of your property taxes are paying off metro district debt (combined) each year"
+          : "of your property taxes are paying off your metro district's debt each year"}
+      </p>
+    </span>
+  );
 
   const shareTileInner = (
-    <span aria-hidden="true" className="flex min-w-0 w-full items-start">
-      <span className="min-w-0 flex-1 overflow-hidden">
-        <p className="break-words text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-          {totalDistrictShare.toFixed(1)}%
-        </p>
-        {metroShareDollars != null ? (
-          <p className="mt-1 break-words font-bold tabular-nums leading-none text-slate-800 text-2xl sm:text-3xl">
-            {formatUsdWhole(metroShareDollars)}
-          </p>
-        ) : null}
-        <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-slate-600 sm:text-base">
-          {totalDistrictShare > 0
-            ? multiMetroParcel
-              ? "of your property taxes go to your metro districts (combined) each year"
-              : "of your property taxes go to your metro district each year"
-              : "No metro district mills shown on your property tax bill"}
-        </p>
-      </span>
+    <span aria-hidden="true" className="flex min-h-0 w-full flex-1 flex-col items-start">
+      {shareTileBody}
     </span>
   );
 
   const debtTileInner = (
-    <span aria-hidden="true" className="flex min-w-0 w-full items-start">
-      <span className="min-w-0 flex-1 overflow-hidden">
-        <p className="break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
-          {debtShareOfTotal.toFixed(1)}%
-        </p>
-        {debtShareDollars != null ? (
-          <p className="mt-1 break-words font-bold tabular-nums leading-none text-slate-50 text-2xl sm:text-3xl">
-            {formatUsdWhole(debtShareDollars)}
-          </p>
-        ) : null}
-        <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-white sm:text-base">
-          {multiMetroParcel
-            ? "of your property taxes are paying off metro district debt (combined) each year"
-            : "of your property taxes are paying off your metro district's debt each year"}
-        </p>
+    <span aria-hidden="true" className="flex min-h-0 w-full flex-1 flex-col items-start">
+      {debtTileBody}
+    </span>
+  );
+
+  const shareTileLinkInner = (
+    <span aria-hidden="true" className="flex min-h-0 w-full flex-1 flex-col items-start">
+      {shareTileBody}
+      <span className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} mt-auto pt-3`}>
+        Details ›
+      </span>
+    </span>
+  );
+
+  const debtTileLinkInner = (
+    <span aria-hidden="true" className="flex min-h-0 w-full flex-1 flex-col items-start">
+      {debtTileBody}
+      <span className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} mt-auto pt-3`}>
+        Details ›
       </span>
     </span>
   );
@@ -499,7 +527,7 @@ export function MetroTaxShareFlow({
           className={shareTileLinkClass}
           aria-label={metroShareCardJumpLabel}
         >
-          {shareTileInner}
+          {shareTileLinkInner}
         </a>
       ) : (
         <div className={shareTileSurfaceClass}>{shareTileInner}</div>
@@ -511,7 +539,7 @@ export function MetroTaxShareFlow({
             className={debtTileLinkClass}
             aria-label={metroDebtCardJumpLabel}
           >
-            {debtTileInner}
+            {debtTileLinkInner}
           </a>
         ) : (
           <div className={debtTileSurfaceClass}>{debtTileInner}</div>
