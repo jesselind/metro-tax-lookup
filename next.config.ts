@@ -29,9 +29,13 @@ function contentSecurityPolicy(): string {
     "form-action 'self'",
     "frame-ancestors 'none'",
   ];
-  if (isProd) {
-    directives.push("upgrade-insecure-requests");
-  }
+  /**
+   * Do not add `upgrade-insecure-requests` here. Next bakes these headers into
+   * `.next` at build time; that directive then upgrades script fetches to HTTPS
+   * even for local `next start` over http://, which breaks WebKit/Safari e2e
+   * (and Safari against a plain HTTP preview). Terminate TLS at the edge;
+   * HSTS below applies when the response is already HTTPS.
+   */
   return directives.join("; ");
 }
 

@@ -1,0 +1,47 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
+import type { Page } from "@playwright/test";
+import {
+  SYNTHETIC_LEVY_STACKS,
+  SYNTHETIC_PARCEL_RECORD_SHARD,
+  SYNTHETIC_PIN_SHARD_PREFIX,
+  SYNTHETIC_PIN_TO_TAG,
+  SYNTHETIC_SITUS_TO_PINS,
+} from "../fixtures/syntheticCountyData";
+
+/**
+ * Replace the large committed county JSON files with tiny synthetic payloads
+ * so address → levy → shard can run without a real resident parcel.
+ * Call before `page.goto`.
+ */
+export async function installSyntheticCountyData(page: Page): Promise<void> {
+  await fulfillJson(page, "**/data/arapahoe-situs-to-pins.json", SYNTHETIC_SITUS_TO_PINS);
+  await fulfillJson(page, "**/data/arapahoe-pin-to-tag.json", SYNTHETIC_PIN_TO_TAG);
+  await fulfillJson(
+    page,
+    "**/data/arapahoe-levy-stacks-by-tag-id.json",
+    SYNTHETIC_LEVY_STACKS,
+  );
+  await fulfillJson(
+    page,
+    `**/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json`,
+    SYNTHETIC_PARCEL_RECORD_SHARD,
+  );
+}
+
+async function fulfillJson(
+  page: Page,
+  urlPattern: string,
+  body: unknown,
+): Promise<void> {
+  await page.route(urlPattern, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(body),
+    });
+  });
+}

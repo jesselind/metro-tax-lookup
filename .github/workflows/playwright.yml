@@ -1,6 +1,5 @@
-# Phase 6b: enable automatic runs when the e2e smoke suite exists
-# (baseURL + webServer + tests under e2e/). Until then keep the workflow
-# checked in but gated so PRs into main do not fail on an empty scaffold.
+# Browser e2e (Phase 6b): Chromium, Firefox, and WebKit smoke + critical flows.
+# Runs on push/PR to main and via workflow_dispatch.
 name: Playwright Tests
 on:
   push:
@@ -10,10 +9,6 @@ on:
   workflow_dispatch:
 jobs:
   test:
-    # Automatic push/PR gated until Phase 6b ships browser smoke + critical flows.
-    # workflow_dispatch still runs (Actions → Playwright Tests → Run workflow).
-    # Change to `if: true` (or delete this line) when the suite is ready.
-    if: ${{ github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
     permissions:
@@ -25,8 +20,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Build Next.js app
+        run: npm run build
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests

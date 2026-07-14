@@ -51,6 +51,7 @@ This is a **public** repo. Automated tests must not spotlight a real resident (P
 | Python unit tests | `tools/synthetic_test_ids.py` + `tools/test_*.py` | Same IDs for parser tests; parcel-index builder tests use invented Main Parcel rows (no real PIN) |
 | NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
+| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Try demo uses the PIN-less fixture; address → levy → shard uses Playwright route fulfills of synthetic JSON (`e2e/fixtures/`). Assert UI contracts / presence — not live scrapes or brittle dollar/mill snapshots |
 
 Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
 
@@ -68,7 +69,7 @@ Do **not** put real homeowner PINs in tests "because they match the county site.
 - Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
 
-**Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
+**Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. CSP lives in `next.config.ts` and intentionally omits `upgrade-insecure-requests` (that header is baked at build time and breaks WebKit against plain-HTTP `next start` / e2e); terminate TLS at the edge and keep HSTS for HTTPS responses. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
 
 ## Data layout
 
@@ -168,7 +169,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 - Static term definitions live in `src/content/termDefinitions.tsx`. Parcel-record label glossaries live in `parcelGlossaryTermBriefRegistry` (`termDefinitionBodies.tsx`); skip a glossary when there is no citable, useful brief (Neighborhood / Neighborhood Code today).
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json`.
 - Keep README technical; keep narrative methodology and citations on `/sources`.
-- **Playwright (Phase 6b scaffold):** `.github/workflows/playwright.yml` is gated to `workflow_dispatch` until browser smoke lands. Job uses `permissions: contents: read` and `actions/checkout` with `persist-credentials: false`.
+- **Browser e2e (Playwright):** Install browsers once with `npx playwright install` (CI uses `npx playwright install --with-deps`). **IDE:** start this app (`npm run dev` on :3000), then run tests from the Playwright extension (the extension does not start the app for you). **CLI:** `npm run test:e2e` / `test:e2e:ui` reuses :3000 when this app is already up; otherwise starts `next dev` there. If another project owns :3000, stop it or set `E2E_PORT`. **CI:** build then `next start` on :3100 (`.github/workflows/playwright.yml`; push/PR to `main` + `workflow_dispatch`). Job: `permissions: contents: read`, checkout `persist-credentials: false`.
 
 ## License
 
