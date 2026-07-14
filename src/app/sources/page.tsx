@@ -432,12 +432,19 @@ export default function SourcesPage() {
           Check the numbers yourself (no code)
         </h3>
         <p className="text-slate-700">
-          Use the county parcel record and online levy table; compare to what the
-          app shows after you load by PIN or add lines with Add tile.
+          Use the home card{" "}
+          <strong className="font-semibold text-slate-900">See how the county displays your data</strong>
+          {" "}
+          or the county parcel record and online levy table; compare to what the app shows after
+          you load by PIN or add lines with Add tile.
         </p>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
           <li>
-            Use the county{" "}
+            Use the home card{" "}
+            <strong className="font-semibold text-slate-900">See how the county displays your data</strong>
+            {" "}
+            for peer links to the county parcel record, online levy table, and property search, or
+            start from the county{" "}
             <a
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
@@ -513,17 +520,28 @@ export default function SourcesPage() {
             {" "}
             stored as{" "}
             <code className={CODE_INLINE_CLASS}>stateUseLabel</code>
-            ). Neighborhood name/code rows are reserved for when the mart export includes a
-            neighborhood code (the NBHD spreadsheet alone is not enough; Main Parcel has no such
-            column today, and guessing from subdivision disagrees with the live county page).
-            Fireplaces appears in county building attribute order but is not in the building or
+            ). Neighborhood name and code rows sit in the property panel as plain labels. They stay
+            empty until the mart export includes a{" "}
+            <strong className="font-semibold text-slate-900">per-parcel neighborhood code</strong>
+            {" "}
+            we can join — a county code-to-name lookup file alone is not enough (Main Parcel has no
+            such column today, and guessing from subdivision disagrees with the live county page).
+            Missing cells use the shared{" "}
+            <strong className="font-semibold text-slate-900">No data found</strong>
+            {" "}
+            popover (not a separate Neighborhood definition). Fireplaces appears in county building
+            attribute order but is not in the building or
             extra-features CSVs, so that cell stays{" "}
             <strong className="font-semibold text-slate-900">No data found</strong>
             {" "}
             until a source ships. On the home page, scalar rows (owner, situs, acreage, neighborhood
             placeholders, and similar) appear in the property panel; appraised/assessed values,
             sale history, building/area/land line, and permits (when the mart has them) render
-            full width below the levy + property grid in county order. Sale{" "}
+            full width below the levy + property grid in county order. Below the levy stack,{" "}
+            <strong className="font-semibold text-slate-900">See how the county displays your data</strong>
+            {" "}
+            offers peer outline actions to open the county parcel record, levy table, and property
+            search (full width on small screens). Sale{" "}
             <strong className="font-semibold text-slate-900">Book Page</strong>
             {" "}
             opens the Arapahoe Clerk and Recorder public search (same pattern as the county
@@ -541,16 +559,20 @@ export default function SourcesPage() {
             <strong className="font-semibold text-slate-900">6-digit PIN prefix</strong>
             {" "}
             (for example{" "}
-            <code className={CODE_INLINE_CLASS}>010000.json</code>) so the browser
-            fetches only the small shard for your parcel. Plain JSON (same pattern as{" "}
-            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>) keeps
-            property details working on older phones without gzip decompression.{" "}
+            <code className={CODE_INLINE_CLASS}>010000.json</code>
+            {") "}
+            so the browser fetches only the small shard for your parcel. Plain JSON
+            (same pattern as{" "}
+            <code className={CODE_INLINE_CLASS}>arapahoe-pin-to-tag.json</code>
+            {") "}
+            keeps property details working on older phones without gzip decompression.{" "}
             <strong className="font-semibold text-slate-900">Try demo property</strong>
             {" "}
             does not load a real PIN shard; it uses the committed PIN-less fixture{" "}
             <code className={CODE_INLINE_CLASS}>src/data/demo-property.json</code>
             {" "}
-            (fictional identity fields; realistic non-PII dollars, building rows, and levy stack).
+            (fictional identity fields; realistic non-PII dollars, building rows, and levy stack;
+            required fixture fields are checked when the demo module loads).
             Value row labels use{" "}
             <code className={CODE_INLINE_CLASS}>AssessmentYear</code> from the export
             (the year on the county parcel record, e.g. 2026 Appraised Value), not{" "}

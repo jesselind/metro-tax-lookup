@@ -44,36 +44,80 @@ type DemoPropertyFixture = {
   parcelRecord: ArapahoeParcelRecordRow;
 };
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function requireNonEmptyString(value: unknown, field: string): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new Error(`demo-property.json: ${field} required`);
+  }
+  return value;
+}
+
 function assertDemoPropertyFixture(data: unknown): DemoPropertyFixture {
-  if (!data || typeof data !== "object") {
+  if (!isPlainObject(data)) {
     throw new Error("demo-property.json: expected an object");
   }
-  const root = data as Record<string, unknown>;
-  const display = root.display as Record<string, unknown> | undefined;
-  const levy = root.levy as Record<string, unknown> | undefined;
-  const parcelRecord = root.parcelRecord as Record<string, unknown> | undefined;
-  const parcelValues = root.parcelValues as Record<string, unknown> | undefined;
-  const snapshot = root.snapshot as Record<string, unknown> | undefined;
+  const display = data.display;
+  const levy = data.levy;
+  const parcelRecord = data.parcelRecord;
+  const parcelValues = data.parcelValues;
+  const snapshot = data.snapshot;
 
-  if (!display?.pin || !display.addressLabel || !display.ain || !display.ownerList) {
-    throw new Error("demo-property.json: display.pin/addressLabel/ain/ownerList required");
+  if (!isPlainObject(display)) {
+    throw new Error("demo-property.json: display required");
   }
-  if (!levy?.tagId || !Array.isArray(levy.lines) || levy.lines.length === 0) {
-    throw new Error("demo-property.json: levy.tagId and non-empty levy.lines required");
+  requireNonEmptyString(display.pin, "display.pin");
+  requireNonEmptyString(display.addressLabel, "display.addressLabel");
+  requireNonEmptyString(display.ain, "display.ain");
+  requireNonEmptyString(display.ownerList, "display.ownerList");
+
+  if (!isPlainObject(levy)) {
+    throw new Error("demo-property.json: levy required");
+  }
+  requireNonEmptyString(levy.tagId, "levy.tagId");
+  requireNonEmptyString(levy.tagShortDescr, "levy.tagShortDescr");
+  if (!Array.isArray(levy.lines) || levy.lines.length === 0) {
+    throw new Error("demo-property.json: non-empty levy.lines required");
   }
   if (typeof levy.levyAspxUrl !== "string" || !safeArapahoeLevyAspxUrl(levy.levyAspxUrl)) {
     throw new Error("demo-property.json: levy.levyAspxUrl must be a safe Arapahoe Levy.aspx URL");
   }
-  if (!parcelRecord || typeof parcelRecord !== "object") {
+  for (let i = 0; i < levy.lines.length; i++) {
+    const entry = levy.lines[i];
+    if (!isPlainObject(entry)) {
+      throw new Error(`demo-property.json: levy.lines[${i}] must be an object`);
+    }
+    requireNonEmptyString(entry.code, `levy.lines[${i}].code`);
+    requireNonEmptyString(entry.authorityName, `levy.lines[${i}].authorityName`);
+    if (!isPlainObject(entry.dolaMatch)) {
+      throw new Error(`demo-property.json: levy.lines[${i}].dolaMatch required`);
+    }
+  }
+  if (!isPlainObject(parcelRecord)) {
     throw new Error("demo-property.json: parcelRecord required");
   }
   if (
-    typeof parcelValues?.totalActual !== "number" ||
-    typeof parcelValues?.totalAssessed !== "number"
+    !isPlainObject(parcelValues) ||
+    typeof parcelValues.totalActual !== "number" ||
+    typeof parcelValues.totalAssessed !== "number"
   ) {
     throw new Error("demo-property.json: parcelValues.totalActual/totalAssessed required");
   }
-  if (typeof snapshot?.bundledAsOf !== "string") {
+  if (!("parcelAssessmentYear" in data)) {
+    throw new Error("demo-property.json: parcelAssessmentYear required (string or null)");
+  }
+  const parcelAssessmentYear = data.parcelAssessmentYear;
+  if (
+    parcelAssessmentYear !== null &&
+    typeof parcelAssessmentYear !== "string"
+  ) {
+    throw new Error(
+      "demo-property.json: parcelAssessmentYear must be a string or null",
+    );
+  }
+  if (!isPlainObject(snapshot) || typeof snapshot.bundledAsOf !== "string") {
     throw new Error("demo-property.json: snapshot.bundledAsOf required");
   }
 

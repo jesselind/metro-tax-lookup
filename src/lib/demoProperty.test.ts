@@ -7,6 +7,8 @@ import { describe, expect, it } from "vitest";
 import {
   DEMO_AIN,
   DEMO_DISPLAY_PIN,
+  DEMO_OWNER_LIST,
+  DEMO_SITUS_ADDRESS,
   loadDemoProperty,
 } from "@/lib/demoProperty";
 
@@ -16,8 +18,9 @@ describe("loadDemoProperty", () => {
     expect(demo.levy.matchedPin).toBe(DEMO_DISPLAY_PIN);
     expect(demo.levy.ain).toBe(DEMO_AIN);
     expect(demo.levy.lines.length).toBeGreaterThan(0);
-    expect(demo.parcelRecord.ownerList).toBe("John Doe, Jane Doe");
-    expect(demo.parcelRecord.situsAddress).toBe("1234 EXAMPLE LANE");
+    expect(demo.parcelRecord.ownerList).toBe(DEMO_OWNER_LIST);
+    expect(demo.parcelRecord.situsAddress).toBe(DEMO_SITUS_ADDRESS);
+    // Guard: do not reintroduce the real source PIN into the fixture.
     expect(JSON.stringify(demo)).not.toMatch(/035457397/);
   });
 });

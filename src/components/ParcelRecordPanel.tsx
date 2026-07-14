@@ -23,12 +23,12 @@ import {
   DASHBOARD_PANEL_SHELL_CLASS,
 } from "@/lib/toolFlowStyles";
 
-/** Label column ~35%; value column gets the rest (definitions may wrap). */
+/** Label column ~35%; value column gets the rest. Labels wrap at spaces only. */
 const ROW_CLASS =
   "grid grid-cols-1 gap-1 border-b border-slate-200/90 py-3 last:border-b-0 sm:grid-cols-[minmax(0,2.5fr)_minmax(0,7.5fr)] sm:gap-x-3 sm:gap-y-0 sm:py-3";
 /** 0.875rem labels on small screens; 1rem values (readable body size, respects user zoom). */
 const LABEL_CLASS =
-  "min-w-0 break-words text-sm font-medium leading-snug text-slate-600";
+  "min-w-0 text-sm font-medium leading-snug text-slate-600";
 const VALUE_CLASS =
   "min-w-0 break-words text-base leading-relaxed text-slate-900";
 const MISSING_VALUE_CLASS =
@@ -213,13 +213,11 @@ export function ParcelRecordPanel({
               triggerIdSuffix="owner-city-state-zip"
             />
             <ParcelRecordRow
-              termId="term-neighborhood"
               label="Neighborhood"
               value={displayRecord.neighborhood}
               triggerIdSuffix="neighborhood"
             />
             <ParcelRecordRow
-              termId="term-neighborhood-code"
               label="Neighborhood Code"
               value={displayRecord.neighborhoodCode}
               triggerIdSuffix="neighborhood-code"

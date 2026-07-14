@@ -162,7 +162,8 @@ export type ArapahoeParcelRecordRow = {
   ownerCityStateZip?: string | null;
   /**
    * County neighborhood name. Not in Main Parcel CSV today; reserved when a
-   * reliable neighborhood-code source lands (NBHD xlsx is lookup-only).
+   * reliable per-parcel neighborhood-code source lands (local NBHD xlsx is
+   * code→name lookup only — not joined). UI shows a plain label; empty → No data found.
    */
   neighborhood?: string | null;
   /** County neighborhood code. Same availability note as neighborhood. */

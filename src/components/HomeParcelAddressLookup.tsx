@@ -92,6 +92,7 @@ import {
   PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 
 /**
@@ -810,7 +811,7 @@ export function HomeParcelAddressLookup({
           ain={levyLoadedMeta.ain}
           demoMode={isDemoMode}
         />
-        <div className="flex justify-center sm:justify-start">
+        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
           <BackToTopButton />
         </div>
       </>
@@ -1720,7 +1721,7 @@ export function HomeParcelAddressLookup({
             <div className="mt-4 space-y-4">
               <HomeDashboardKeyTermAsides showNovCompsGridRowKeyTerms={isDemoMode} />
             </div>
-            <div className="mt-6 flex justify-center sm:justify-start">
+            <div className={`mt-6 ${TOOL_DISCLOSURE_ROW_ALIGN_CLASS}`}>
               <BackToTopButton />
             </div>
           </div>
