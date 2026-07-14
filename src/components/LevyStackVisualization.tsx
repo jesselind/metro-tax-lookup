@@ -18,6 +18,7 @@ import {
   INPUT_CLASS,
   LEVY_STACK_TILE_GRID_CLASS,
   TERM_LINK_CLASS,
+  TILE_DETAILS_CUE_ON_DARK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 import {
@@ -89,10 +90,6 @@ const TILE_OVERFLOW_BTN_CLASS =
 /** Hero share % — fixed size (not viewport-gated): single-column tiles are full-width on phone. */
 const LEVY_TILE_PCT_CLASS =
   "pointer-events-none shrink-0 m-0 text-right text-4xl font-bold tabular-nums leading-none text-white [letter-spacing:-0.025rem] [text-shadow:0_1px_3px_rgba(0,0,0,0.3)]";
-
-/** Decorative; full-tile button carries the accessible name. */
-const LEVY_TILE_DETAILS_CUE_CLASS =
-  "pointer-events-none shrink-0 self-end text-sm font-semibold text-white/90 underline decoration-white/50 underline-offset-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.25)] group-hover:text-white group-hover:decoration-white/80 group-active:text-white group-focus-within:text-white group-focus-within:decoration-white group-focus-within:decoration-2 motion-reduce:transition-none";
 
 const TILE_DESC_MILLS_CLASS = "text-lg font-semibold leading-snug sm:text-xl";
 
@@ -685,7 +682,7 @@ export function LevyStackVisualization({
                             </div>
                             <div className="flex w-full min-w-0 items-end justify-between gap-3 self-end">
                               <span
-                                className={LEVY_TILE_DETAILS_CUE_CLASS}
+                                className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} self-end`}
                                 aria-hidden
                               >
                                 Details ›

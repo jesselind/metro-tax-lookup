@@ -183,6 +183,17 @@ export const METRO_PERCENT_TILES_GRID_CLASS =
   "grid min-w-0 justify-items-stretch gap-4 sm:justify-items-start sm:gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,10.5rem),max-content))]";
 
 /**
+ * Decorative "Details ›" on tappable dashboard tiles. Parent needs `group`; the
+ * interactive control (full-tile button/link) carries the accessible name.
+ */
+export const TILE_DETAILS_CUE_ON_DARK_CLASS =
+  "pointer-events-none shrink-0 text-sm font-bold text-white underline decoration-white/80 underline-offset-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.45)] group-hover:decoration-white group-hover:decoration-2 group-active:decoration-white group-focus-within:decoration-white group-focus-within:decoration-2 motion-reduce:transition-none";
+
+/** Same cue on light surfaces (e.g. metro share tile). */
+export const TILE_DETAILS_CUE_ON_LIGHT_CLASS =
+  "pointer-events-none shrink-0 text-sm font-bold text-slate-900 underline decoration-slate-600 underline-offset-2 group-hover:decoration-slate-800 group-hover:decoration-2 group-active:decoration-slate-800 group-focus-within:decoration-slate-800 group-focus-within:decoration-2 motion-reduce:transition-none";
+
+/**
  * Major section headings on the home metro + levy flow (e.g. levy stack, metro breakdown).
  * Extra top margin so the title reads as a new beat vs. content above; pair the section body with
  * `space-y-*` so spacing below the title stays tighter than the lead-in above.

@@ -8,8 +8,8 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
-import { SITE_CONFIG } from "@/lib/siteConfig";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import { GitHubRepoButton } from "@/components/GitHubRepoButton";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   SITE_CONTENT_MAX_WIDTH_CLASS,
@@ -84,6 +84,7 @@ export default function RootLayout({
               <p className="mt-3 text-center text-xs text-slate-500 sm:text-sm">
                 Version {APP_VERSION} · Last updated {SITE_LAST_UPDATED_LABEL}
               </p>
+              <GitHubRepoButton />
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2">
                   <Link href="/" className={TERM_LINK_CLASS}>
@@ -102,17 +103,6 @@ export default function RootLayout({
                     Contact
                   </Link>
                 </nav>
-                {SITE_CONFIG.githubRepoUrl ? (
-                  <a
-                    href={SITE_CONFIG.githubRepoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={COUNTY_EXTERNAL_LINK_CLASS}
-                  >
-                    GitHub
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : null}
               </div>
             </div>
           </footer>
