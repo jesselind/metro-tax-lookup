@@ -157,9 +157,12 @@ def parse_parcel_value_cell(val: Any) -> float | None:
         return None
 
 
-# Colorado DPT assessed rates for residential property (2025+). School columns match
-# round(actual x school rate) per component; local land uses round(land actual x local rate)
-# and local building is totalAssessed minus local land (county PPINum.aspx pattern).
+# Colorado DPT residential assessed rates applied for all AssessmentYear >= 2025.
+# School columns: round(actual x school rate) per component. Local land:
+# round(land actual x local rate); local building = totalAssessed - local land
+# (county PPINum.aspx pattern). Not year-keyed yet — when DPT publishes a new
+# assessment-year pair, add a year→rate map (or bump these) and keep
+# src/lib/coloradoDptAssessmentRates.ts display labels in sync.
 COLORADO_SCHOOL_ASSESSED_RATE = 0.0705
 COLORADO_LOCAL_ASSESSED_RATE = 0.068
 DUAL_ASSESSED_MIN_ASSESSMENT_YEAR = 2025
@@ -1288,8 +1291,9 @@ def read_legal_description_display_by_pin(path: Path) -> dict[str, str]:
 def ownership_type_label_from_owner_lp_types(lp_types: list[str]) -> str | None:
     """County-style Ownership Type from Mart_LegalParty owner rows (LPRType=Owner).
 
-    Vesting labels such as Joint Tenancy are not exported in the mart; when every owner
-    row is Individual we match the common county parcel-page label for co-owners.
+    Vesting is not in the mart export. When every owner row is Individual we label
+    Joint Tenancy (usual county parcel-page co-owner label); tenants in common and
+    other vesting cannot be distinguished from that case.
     """
     types = [strip_field(t) for t in lp_types if strip_field(t)]
     if not types:

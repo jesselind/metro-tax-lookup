@@ -603,7 +603,8 @@ export default function SourcesPage() {
             <strong className="font-semibold text-slate-900">Joint Tenancy</strong>
             {" "}
             to match the usual county parcel-page label for co-owners (vesting is not exported
-            in the mart). The county{" "}
+            in the mart, so other co-owner arrangements cannot be told apart from that case).{" "}
+            The county{" "}
             <code className={CODE_INLINE_CLASS}>TotalAssessed</code>
             {" "}
             figure already reflects DPT local-government rules for the year (for 2026
