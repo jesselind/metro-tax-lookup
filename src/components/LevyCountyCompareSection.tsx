@@ -6,14 +6,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
+import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
   safeArapahoeLevyAspxUrl,
   safeArapahoeParcelRecordUrl,
 } from "@/lib/safeExternalHref";
-import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+
+const COUNTY_ACTION_CLASS = `${btnOutlineSecondaryMd} w-full justify-center sm:w-auto`;
 
 export type LevyCountyCompareSectionProps = {
   pin: string;
@@ -48,10 +50,6 @@ export function LevyCountyCompareSection({
 
   const showParcelRecordLink = !demoMode && safeParcelRecordHref != null;
   const showParcelRecordDemoControl = demoMode;
-  const showCountyActionRow =
-    showParcelRecordLink ||
-    showParcelRecordDemoControl ||
-    safeLevyTableHref != null;
 
   return (
     <section
@@ -61,11 +59,11 @@ export function LevyCountyCompareSection({
       <div>
         <h4
           id="levy-county-compare-heading"
-          className="text-sm font-semibold text-slate-900 sm:text-base"
+          className="text-base font-semibold leading-snug text-slate-900 sm:text-lg"
         >
           See how the county displays your data
         </h4>
-        <p className="mt-1.5 text-xs leading-snug text-slate-600 sm:text-sm">
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
           <span className="sr-only">Property match. </span>
           Matched{" "}
           <a id="pin-term-first" href={pinTermHref} className={TERM_LINK_CLASS}>
@@ -88,75 +86,56 @@ export function LevyCountyCompareSection({
           </span>
         </p>
       </div>
-      {showCountyActionRow ? (
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start">
-          {showParcelRecordDemoControl ? (
-            <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto">
-              <button
-                type="button"
-                disabled
-                className={`${btnOutlinePrimaryMd} w-full justify-center sm:w-auto`}
-                aria-describedby="levy-county-parcel-record-demo-hint"
-              >
-                Open county parcel record
-              </button>
-              <p
-                id="levy-county-parcel-record-demo-hint"
-                className="text-center text-xs leading-snug text-slate-600 sm:text-left sm:text-sm"
-              >
-                Not available in demo mode.
-              </p>
-            </div>
-          ) : showParcelRecordLink ? (
-            <a
-              href={safeParcelRecordHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${btnOutlinePrimaryMd} w-full cursor-pointer justify-center sm:w-auto`}
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start">
+        {showParcelRecordDemoControl ? (
+          <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto">
+            <button
+              type="button"
+              disabled
+              className={COUNTY_ACTION_CLASS}
+              aria-describedby="levy-county-parcel-record-demo-hint"
             >
               Open county parcel record
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-          ) : null}
-          {safeLevyTableHref ? (
-            <a
-              href={safeLevyTableHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${
-                showParcelRecordLink || showParcelRecordDemoControl
-                  ? btnOutlineSecondaryMd
-                  : btnOutlinePrimaryMd
-              } w-full cursor-pointer justify-center sm:w-auto`}
+            </button>
+            <p
+              id="levy-county-parcel-record-demo-hint"
+              className="text-center text-sm leading-relaxed text-slate-600 sm:text-left"
             >
-              Open county levy table
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-          ) : null}
-        </div>
-      ) : null}
-      <p className="text-xs leading-snug text-slate-600 sm:text-sm">
+              Not available in demo mode.
+            </p>
+          </div>
+        ) : showParcelRecordLink ? (
+          <a
+            href={safeParcelRecordHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={COUNTY_ACTION_CLASS}
+          >
+            Open county parcel record
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        ) : null}
+        {safeLevyTableHref ? (
+          <a
+            href={safeLevyTableHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={COUNTY_ACTION_CLASS}
+          >
+            Open county levy table
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        ) : null}
         <a
           href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
           target="_blank"
           rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
+          className={COUNTY_ACTION_CLASS}
         >
           County property search
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
-        {showParcelRecordLink ? (
-          <>
-            {" "}
-            — look up a different parcel by address or PIN.
-          </>
-        ) : (
-          <>
-            {" "}
-            — find the full parcel record (legal description, sales, notices).
-          </>
-        )}
-      </p>
+      </div>
     </section>
   );
 }

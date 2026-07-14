@@ -12,6 +12,7 @@ import {
   safeHttpOrHttpsUrl,
   arapahoeClerkRecorderSearchValueFromBookPage,
 } from "./safeExternalHref";
+import { SYNTHETIC_AIN } from "./syntheticTestIds";
 
 describe("safeHttpOrHttpsUrl", () => {
   it("accepts https URLs", () => {
@@ -66,14 +67,14 @@ describe("safeArapahoeLevyAspxUrl", () => {
 
 describe("safeArapahoeParcelRecordUrl", () => {
   it("builds PPINum.aspx URL from AIN", () => {
-    expect(safeArapahoeParcelRecordUrl("2077-34-2-09-011")).toBe(
-      "https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=2077-34-2-09-011",
+    expect(safeArapahoeParcelRecordUrl(SYNTHETIC_AIN)).toBe(
+      `https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=${SYNTHETIC_AIN}`,
     );
   });
 
   it("trims AIN and URL-encodes when needed", () => {
-    expect(safeArapahoeParcelRecordUrl("  2077-34-2-09-011  ")).toBe(
-      "https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=2077-34-2-09-011",
+    expect(safeArapahoeParcelRecordUrl(`  ${SYNTHETIC_AIN}  `)).toBe(
+      `https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=${SYNTHETIC_AIN}`,
     );
   });
 
@@ -91,8 +92,8 @@ describe("safeArapahoeParcelRecordUrl", () => {
 
 describe("safeArapahoeCompsGridPdfUrl", () => {
   it("builds FileDownload.ashx URL from AIN", () => {
-    expect(safeArapahoeCompsGridPdfUrl("2077-34-2-09-011")).toBe(
-      "https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=2077-34-2-09-011",
+    expect(safeArapahoeCompsGridPdfUrl(SYNTHETIC_AIN)).toBe(
+      `https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=${SYNTHETIC_AIN}`,
     );
   });
 

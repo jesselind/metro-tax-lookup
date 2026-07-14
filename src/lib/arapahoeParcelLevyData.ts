@@ -156,16 +156,21 @@ export type ArapahoeParcelRecordRow = {
   situsAddress?: string | null;
   situsCity?: string | null;
   ownerList?: string | null;
-  /** Ownership type from Mart_LegalParty owner rows (Joint Tenancy when all owners are Individual). */
+  /**
+   * Ownership type from Mart_LegalParty owner rows (LPRType=Owner).
+   * All-Individual co-owners → Joint Tenancy (county-page convention); vesting is
+   * not in the mart, so tenants in common cannot be told apart from that case.
+   */
   ownershipType?: string | null;
   ownerDeliveryAddress?: string | null;
   ownerCityStateZip?: string | null;
   /**
    * County neighborhood name. Not in Main Parcel CSV today; reserved when a
-   * reliable neighborhood-code source lands (NBHD xlsx is lookup-only).
+   * reliable per-parcel neighborhood-code source lands (local NBHD xlsx is
+   * code→name lookup only — not joined). UI shows a plain label; empty → No data found.
    */
   neighborhood?: string | null;
-  /** County neighborhood code (e.g. 2044). Same availability note as neighborhood. */
+  /** County neighborhood code. Same availability note as neighborhood. */
   neighborhoodCode?: string | null;
   legalDescrFull?: string | null;
   legalDescrDisplay?: string | null;
@@ -189,10 +194,16 @@ export type ArapahoeParcelRecordRow = {
   improvementActual?: number | null;
   landActual?: number | null;
   totalAssessed?: number | null;
-  /** Local assessed building split (computed from totalAssessed + actuals; 2025+ residential real). */
+  /**
+   * Local assessed building split (computed from totalAssessed + actuals; 2025+ real).
+   * Rates: COLORADO_LOCAL_ASSESSED_RATE in build_arapahoe_parcel_levy_index.py.
+   */
   assessedBuilding?: number | null;
   assessedLand?: number | null;
-  /** School assessed total (DPT school rate x actual; rounded per building/land component). */
+  /**
+   * School assessed total (DPT school rate × actual; rounded per building/land).
+   * Rate: COLORADO_SCHOOL_ASSESSED_RATE in the build script (fixed for 2025+ today).
+   */
   schoolAssessedTotal?: number | null;
   schoolAssessedBuilding?: number | null;
   schoolAssessedLand?: number | null;

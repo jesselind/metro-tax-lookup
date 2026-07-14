@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "4.2.4",
+  "version": "4.2.5",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -9,12 +9,16 @@
     "validate:levy-explainer": "node tools/validate_levy_explainer_entries.mjs",
     "prebuild": "node tools/ensure_nov_grid_for_build.mjs && npm run validate:levy-explainer",
     "ci:test:nov-comps-parser": "npm run test:nov-comps-parser",
+    "ci:test:parcel-index": "npm run test:parcel-index",
     "ci:test:unit": "npm run test:unit",
     "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "build": "next build",
     "build:arapahoe-index": "python3 tools/build_arapahoe_parcel_levy_index.py",
     "build:district-directory": "python3 tools/build_district_directory_from_lg_export.py",
     "test:nov-comps-parser": "python3 -m unittest discover -s tools -p test_parse_arapahoe_nov_comps_grid.py -q",
+    "test:parcel-index": "python3 -m unittest discover -s tools -p test_build_arapahoe_parcel_levy_index.py -q",
     "start": "next start",
     "lint": "eslint"
   },
@@ -26,6 +30,7 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

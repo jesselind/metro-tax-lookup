@@ -151,7 +151,8 @@ export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
 
 /**
  * Glossary popover trigger on property details rows (sentence case, not tile uppercase).
- * Inline so labels flow like plain dt copy; wrapping is owned by the parent {@code LABEL_CLASS}.
+ * Inline so labels flow like plain dt copy; wrapping is owned by the parent label column
+ * (spaces only — field labels do not mid-break words).
  */
 export const PARCEL_RECORD_GLOSSARY_LINK_CLASS =
   "inline text-inherit text-sm font-medium leading-snug text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-800";

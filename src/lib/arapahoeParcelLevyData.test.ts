@@ -11,18 +11,28 @@ import {
   parcelRecordShardUrl,
   pinLookupCandidates,
 } from "./arapahoeParcelLevyData";
+import {
+  SYNTHETIC_AIN,
+  SYNTHETIC_PIN,
+  SYNTHETIC_PIN_NOISY,
+  SYNTHETIC_PIN_NO_LEADING_ZERO,
+  SYNTHETIC_PIN_SHARD_PREFIX,
+} from "./syntheticTestIds";
 
 describe("parcelRecordShardPrefixes", () => {
   it("uses the configured PIN prefix length of a normalized 9-digit PIN", () => {
     expect(PARCEL_RECORD_SHARD_PREFIX_LENGTH).toBe(6);
-    expect(parcelRecordShardPrefixes("032490811")).toEqual(["032490"]);
-    expect(parcelRecordShardPrefixes("32490811")).toEqual(["032490"]);
+    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN)).toEqual([
+      SYNTHETIC_PIN_SHARD_PREFIX,
+    ]);
+    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN_NO_LEADING_ZERO)).toEqual([
+      SYNTHETIC_PIN_SHARD_PREFIX,
+    ]);
   });
 
   it("returns unique prefixes when first and last nine digits differ", () => {
-    const noisy = "123032490811999";
-    const candidates = pinLookupCandidates(noisy);
-    const prefixes = parcelRecordShardPrefixes(noisy);
+    const candidates = pinLookupCandidates(SYNTHETIC_PIN_NOISY);
+    const prefixes = parcelRecordShardPrefixes(SYNTHETIC_PIN_NOISY);
     expect(candidates.length).toBeGreaterThan(1);
     expect(prefixes).toEqual([
       candidates[0].slice(0, PARCEL_RECORD_SHARD_PREFIX_LENGTH),
@@ -39,16 +49,16 @@ describe("parcelRecordShardPrefixes", () => {
 
 describe("parcelRecordShardUrl", () => {
   it("builds a static shard path for valid prefixes", () => {
-    expect(parcelRecordShardUrl("032490")).toBe(
-      "/data/arapahoe-parcel-record-by-pin/032490.json",
+    expect(parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)).toBe(
+      `/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json`,
     );
   });
 
   it("rejects invalid prefix shapes", () => {
-    expect(parcelRecordShardUrl("03249")).toBeNull();
-    expect(parcelRecordShardUrl("0324908")).toBeNull();
-    expect(parcelRecordShardUrl("../032490")).toBeNull();
-    expect(parcelRecordShardUrl("03x490")).toBeNull();
+    expect(parcelRecordShardUrl("01000")).toBeNull();
+    expect(parcelRecordShardUrl("0100000")).toBeNull();
+    expect(parcelRecordShardUrl("../010000")).toBeNull();
+    expect(parcelRecordShardUrl("01x000")).toBeNull();
   });
 });
 
@@ -57,9 +67,11 @@ describe("lookupParcelRecordRow", () => {
     const file = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test", taxYear: null },
       pinDigits: 9,
-      shardPrefix: "032490",
-      byPin: { "032490811": { ain: "2077-34-2-09-011" } },
+      shardPrefix: SYNTHETIC_PIN_SHARD_PREFIX,
+      byPin: { [SYNTHETIC_PIN]: { ain: SYNTHETIC_AIN } },
     };
-    expect(lookupParcelRecordRow("32490811", file)?.ain).toBe("2077-34-2-09-011");
+    expect(
+      lookupParcelRecordRow(SYNTHETIC_PIN_NO_LEADING_ZERO, file)?.ain,
+    ).toBe(SYNTHETIC_AIN);
   });
 });

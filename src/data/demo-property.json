@@ -1,0 +1,324 @@
+{
+  "snapshot": {
+    "bundledAsOf": "2026-06-28T12:00:00Z",
+    "source": "Synthetic Try-demo fixture: fictional resident identity only. Levy authorities (including metro districts), mills, and non-PII parcel structure are from a real public county TAG/sample — not invented district names.",
+    "taxYear": "2025"
+  },
+  "display": {
+    "pin": "000000000",
+    "addressLabel": "1234 Example Lane, Watkins",
+    "ain": "1000-00-0-00-001",
+    "ownerList": "John Doe, Jane Doe",
+    "propertyClassification": "Improvement"
+  },
+  "levy": {
+    "tagId": "1259429",
+    "tagShortDescr": "1486",
+    "levyAspxUrl": "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1259429",
+    "lines": [
+      {
+        "code": "0901",
+        "authorityName": "BENNETT SCHOOL DIST # 29",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "fuzzy",
+          "confidence": "high",
+          "taxEntityId": "64902/1",
+          "lgId": "64902",
+          "matchedLegalName": "Bennett 29J School District",
+          "score": 0.9811,
+          "mills": 25.38
+        }
+      },
+      {
+        "code": "2998",
+        "authorityName": "ARAPAHOE COUNTY",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "override",
+          "confidence": "high",
+          "taxEntityId": "03001/1",
+          "lgId": "03001",
+          "matchedLegalName": "Arapahoe County",
+          "score": 1.0,
+          "mills": 15.959,
+          "dolaMills": 16.959,
+          "millsReason": "county_levy_table_override"
+        }
+      },
+      {
+        "code": "2999",
+        "authorityName": "DEVELOPMENTAL DISABILITY",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "fuzzy",
+          "confidence": "high",
+          "taxEntityId": "03001/11",
+          "lgId": "03001",
+          "matchedLegalName": "Developmental Disabilities",
+          "score": 0.92,
+          "mills": 1.0
+        }
+      },
+      {
+        "code": "4012",
+        "authorityName": "ARAPAHOE COUNTY L.E.A.",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "override",
+          "confidence": "high",
+          "taxEntityId": "03002/1",
+          "lgId": "03002",
+          "matchedLegalName": "Arapahoe County Law Enforcement Authority",
+          "score": 1.0,
+          "mills": 4.982,
+          "dolaMills": 4.982,
+          "millsReason": "county_levy_table_override"
+        }
+      },
+      {
+        "code": "4026",
+        "authorityName": "ARAPAHOE LIBRARY DISTRICT",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "fuzzy",
+          "confidence": "high",
+          "taxEntityId": "64005/1",
+          "lgId": "64005",
+          "matchedLegalName": "Arapahoe Library District",
+          "score": 1.0,
+          "mills": 5.719
+        }
+      },
+      {
+        "code": "4060",
+        "authorityName": "BENNETT FIRE PROTECTION",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "fuzzy",
+          "confidence": "medium",
+          "taxEntityId": "64018/1",
+          "lgId": "64018",
+          "matchedLegalName": "Bennett Fire Protection District",
+          "score": 0.8364,
+          "mills": 10.898
+        }
+      },
+      {
+        "code": "4528",
+        "authorityName": "REGIONAL TRANSPORTATION",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "override",
+          "confidence": "high",
+          "taxEntityId": "64116/1",
+          "lgId": "64116",
+          "matchedLegalName": "Regional Transportation District",
+          "score": 1.0,
+          "mills": 0.0
+        }
+      },
+      {
+        "code": "4571",
+        "authorityName": "SKY RANCH METRO DIST. #3",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "fuzzy",
+          "confidence": "high",
+          "taxEntityId": "65417/1",
+          "lgId": "65417",
+          "matchedLegalName": "Sky Ranch Metropolitan District No. 3",
+          "score": 0.9565,
+          "mills": 118.956
+        }
+      },
+      {
+        "code": "4712",
+        "authorityName": "URBAN DRAINAGE & FLOOD",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "override",
+          "confidence": "high",
+          "taxEntityId": "64147/1",
+          "lgId": "64147",
+          "matchedLegalName": "Urban Drainage & Flood Control District",
+          "score": 1.0,
+          "mills": 0.9
+        }
+      },
+      {
+        "code": "4713",
+        "authorityName": "URBN DRNGE&FLD (S PLATTE)",
+        "effectiveYear": "2006",
+        "status": "A",
+        "dolaMatch": {
+          "method": "override",
+          "confidence": "high",
+          "taxEntityId": "64174/1",
+          "lgId": "64174",
+          "matchedLegalName": "Urban Drainage & Flood, South Platte Levy",
+          "score": 1.0,
+          "mills": 0.1
+        }
+      }
+    ]
+  },
+  "parcelValues": {
+    "totalActual": 584100.0,
+    "totalAssessed": 35747.0,
+    "propertyClassification": "Improvement",
+    "ownerList": "John Doe, Jane Doe"
+  },
+  "parcelAssessmentYear": "2026",
+  "parcelRecord": {
+    "ain": "1000-00-0-00-001",
+    "situsAddress": "1234 EXAMPLE LANE",
+    "situsCity": "WATKINS",
+    "ownerList": "John Doe, Jane Doe",
+    "ownerDeliveryAddress": "1234 Example Lane",
+    "ownerCityStateZip": "Watkins CO 80137",
+    "legalDescrFull": "LOT 1 EXAMPLE SUBDIVISION",
+    "legalDescrDisplay": "LOT 1 EXAMPLE SUBDIVISION",
+    "subdivisionCd": null,
+    "subdivisionName": "EXAMPLE SUBDIVISION",
+    "taxRollDescr": "Real",
+    "propertyClassDescr": "Improvement",
+    "totalActual": 584100.0,
+    "improvementActual": 454100.0,
+    "landActual": 130000.0,
+    "totalAssessed": 35747.0,
+    "stateUseCd": "1112",
+    "parcelTaxYear": "2025",
+    "assessmentYear": "2026",
+    "assessedLand": 8840,
+    "assessedBuilding": 26907,
+    "schoolAssessedBuilding": 32014,
+    "schoolAssessedLand": 9165,
+    "schoolAssessedTotal": 41179,
+    "ownershipType": "Joint Tenancy",
+    "acreage": "0.0000",
+    "landLines": [
+      {
+        "units": "1.0000 LT",
+        "landUse": "Single Family Residential"
+      }
+    ],
+    "landUse": "Traditional",
+    "buildings": [
+      {
+        "buildingNum": "1",
+        "attributes": [
+          {
+            "label": "Quality Grade",
+            "value": "Average"
+          },
+          {
+            "label": "Improvement Type",
+            "value": "Traditional"
+          },
+          {
+            "label": "Bedrooms",
+            "value": "5.00"
+          },
+          {
+            "label": "Bathrooms",
+            "value": "3.00"
+          },
+          {
+            "label": "Architectural",
+            "value": "2 Story"
+          },
+          {
+            "label": "Heat Method",
+            "value": "Forced Air Unit"
+          },
+          {
+            "label": "Cool Method",
+            "value": "Central Air"
+          },
+          {
+            "label": "Year Built",
+            "value": "2023"
+          },
+          {
+            "label": "Roof",
+            "value": "Asphalt/Composition Shingle Roof"
+          },
+          {
+            "label": "Fireplaces",
+            "value": ""
+          },
+          {
+            "label": "Exterior Wall",
+            "value": "Wood Siding"
+          },
+          {
+            "label": "Construction Type",
+            "value": "D - Wood or Steel Studs Frame"
+          }
+        ],
+        "areas": [
+          {
+            "description": "Second Floor",
+            "sqFt": "1563"
+          },
+          {
+            "description": "Covered Porch",
+            "sqFt": "108"
+          },
+          {
+            "description": "Attached Garage",
+            "sqFt": "477"
+          },
+          {
+            "description": "First Floor",
+            "sqFt": "1149"
+          }
+        ],
+        "totalArea": "2712"
+      }
+    ],
+    "transfers": [
+      {
+        "bookPage": "D000 9001",
+        "date": "01-10-2024",
+        "price": 569000.0
+      },
+      {
+        "bookPage": "D000 9002",
+        "date": "07-21-2022",
+        "price": 6963000.0
+      }
+    ],
+    "permits": [
+      {
+        "permitNum": "ZFN-0000-90001",
+        "status": "Complete",
+        "description": "NEW FENCE APP - WINGS & SIDE YARD",
+        "issueDate": "10-19-2023",
+        "finalDate": "10-17-2024",
+        "estimatedValue": 1175.0
+      },
+      {
+        "permitNum": "BLD-0000-90002",
+        "status": "Complete",
+        "description": "NEW SFR",
+        "issueDate": "05-11-2023",
+        "finalDate": "01-17-2024",
+        "estimatedValue": 375476.0
+      }
+    ],
+    "stateUseLabel": "Single Family Residential",
+    "neighborhood": null,
+    "neighborhoodCode": null
+  }
+}

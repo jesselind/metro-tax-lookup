@@ -450,32 +450,6 @@ export function TermOwnerCityStateZipBriefBody() {
   );
 }
 
-export function TermNeighborhoodBriefBody() {
-  return (
-    <p className={BRIEF_P}>
-      The county&apos;s{" "}
-      <strong className="font-semibold text-slate-900">neighborhood name</strong>
-      {" "}
-      for grouping similar homes when valuing property. It is an assessor label, not a city
-      neighborhood or HOA name. When this app shows No data found, the weekly mart export does not
-      include a neighborhood code for the parcel; check the official county parcel record.
-    </p>
-  );
-}
-
-export function TermNeighborhoodCodeBriefBody() {
-  return (
-    <p className={BRIEF_P}>
-      A numeric{" "}
-      <strong className="font-semibold text-slate-900">neighborhood code</strong>
-      {" "}
-      the assessor uses with sales and valuation (for example 2044.00 on the county page). This
-      app only fills it when the mart export supplies that code. A separate NBHD spreadsheet can
-      translate codes to names, but the code itself is not on the Main Parcel CSV today.
-    </p>
-  );
-}
-
 export function TermParcelSaleBriefBody() {
   return (
     <p className={BRIEF_P}>
@@ -732,8 +706,6 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-ownership-type",
   "term-owner-address",
   "term-owner-city-state-zip",
-  "term-neighborhood",
-  "term-neighborhood-code",
   "term-acreage",
   "term-land-use",
   "term-appraised-total",
@@ -819,14 +791,6 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-owner-city-state-zip": {
     title: "City/State/Zip",
     Brief: TermOwnerCityStateZipBriefBody,
-  },
-  "term-neighborhood": {
-    title: "Neighborhood",
-    Brief: TermNeighborhoodBriefBody,
-  },
-  "term-neighborhood-code": {
-    title: "Neighborhood Code",
-    Brief: TermNeighborhoodCodeBriefBody,
   },
   "term-acreage": {
     title: "Acreage",

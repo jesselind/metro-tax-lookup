@@ -22,6 +22,7 @@ from parse_arapahoe_nov_comps_grid import (
     parse_date,
     parse_money,
 )
+from synthetic_test_ids import SYNTHETIC_PIN
 
 
 class ParseHelpersTests(unittest.TestCase):
@@ -60,9 +61,11 @@ class ParseHelpersTests(unittest.TestCase):
 
     def test_parcel_id_accepts_non_nine_digit_tokens(self) -> None:
         row = CanonicalRow("PARCEL ID", "parcel_id", LOGICAL_STRING)
-        parsed = parse_cell("032490357001", row)
+        # Invented 12-digit token (not a real Arapahoe PIN); shape-only check.
+        token = f"{SYNTHETIC_PIN}999"
+        parsed = parse_cell(token, row)
         self.assertTrue(parsed["parse_ok"])
-        self.assertEqual(parsed["parsed"], "032490357001")
+        self.assertEqual(parsed["parsed"], token)
 
     def test_parse_cell_year_zero_is_missing(self) -> None:
         row = CanonicalRow("Remodel Year", "remodel_year", LOGICAL_YEAR)

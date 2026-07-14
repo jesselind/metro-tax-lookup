@@ -19,7 +19,7 @@ export function BackToTopButton({
   return (
     <button
       type="button"
-      className={`${btnOutlineSecondaryMd} cursor-pointer px-4 py-2 text-sm ${className}`.trim()}
+      className={`${btnOutlineSecondaryMd} w-full justify-center sm:w-auto ${className}`.trim()}
       onClick={() => {
         let movedFocus = false;
         const focusPageTop = () => {

@@ -40,11 +40,8 @@ import {
 } from "@/lib/contact";
 import {
   DEMO_ADDRESS_LABEL,
-  DEMO_AIN,
   DEMO_DISPLAY_PIN,
-  DEMO_OWNER_LIST,
-  DEMO_PROPERTY_CLASSIFICATION,
-  DEMO_SOURCE_PIN,
+  loadDemoProperty,
 } from "@/lib/demoProperty";
 import {
   loadLevyStackFromPin,
@@ -95,6 +92,7 @@ import {
   PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 
 /**
@@ -361,19 +359,14 @@ export function HomeParcelAddressLookup({
   }
 
   const loadLevyStack = useCallback(
-    async (
-      pin: string,
-      opts?: {
-        demoMode?: boolean;
-      },
-    ) => {
+    async (pin: string) => {
     const requestId = ++levyLoadRequestRef.current;
     const isCurrentRequest = () => requestId === levyLoadRequestRef.current;
     parcelRecordRequestRef.current += 1;
     setLevyLoadError(null);
     setLevyTemplateMillsError(null);
     setLevyLoadBusy(true);
-    setIsDemoMode(Boolean(opts?.demoMode));
+    setIsDemoMode(false);
     setParcelRecord(null);
     setParcelRecordLoading(false);
     setParcelRecordLoadFailed(false);
@@ -385,27 +378,18 @@ export function HomeParcelAddressLookup({
         setLevyLoadError(result.error);
         return;
       }
-      const displayPin = opts?.demoMode ? DEMO_DISPLAY_PIN : result.matchedPin;
       setLevyLines(result.lines);
       setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
       setLevyTemplateMillDrafts(result.templateMillDrafts);
-      setParcelPin(displayPin);
+      setParcelPin(result.matchedPin);
       setLevyLoadedMeta({
-        pin: displayPin,
+        pin: result.matchedPin,
         tagId: result.tagId,
         tagShortDescr: result.tagShortDescr,
         levyAspxUrl: result.levyAspxUrl,
-        parcelValues: opts?.demoMode
-          ? {
-              ...result.parcelValues,
-              ownerList: DEMO_OWNER_LIST,
-              propertyClassification:
-                result.parcelValues.propertyClassification ??
-                DEMO_PROPERTY_CLASSIFICATION,
-            }
-          : result.parcelValues,
+        parcelValues: result.parcelValues,
         parcelAssessmentYear: result.parcelAssessmentYear,
-        ain: opts?.demoMode ? DEMO_AIN : result.ain,
+        ain: result.ain,
       });
       if (!isCurrentRequest()) return;
       void loadParcelRecord(result.matchedPin);
@@ -605,10 +589,15 @@ export function HomeParcelAddressLookup({
     clearAllLevyState();
   }, [clearAllLevyState]);
 
-  async function onLoadDemoProperty() {
+  function onLoadDemoProperty() {
     if (busy || levyLoadBusy) return;
-    setIsDemoMode(true);
     clearAllLevyState();
+    const requestId = ++levyLoadRequestRef.current;
+    const parcelRequestId = ++parcelRecordRequestRef.current;
+    const isCurrentRequest = () =>
+      requestId === levyLoadRequestRef.current &&
+      parcelRequestId === parcelRecordRequestRef.current;
+    setIsDemoMode(true);
     setError(null);
     setShowAdvancedAddressFields(false);
     setShowCountyPinFallback(false);
@@ -620,7 +609,31 @@ export function HomeParcelAddressLookup({
     setUnit("");
     setHits([{ pin: DEMO_DISPLAY_PIN, label: DEMO_ADDRESS_LABEL }]);
     setParcelPin(DEMO_DISPLAY_PIN);
-    await loadLevyStack(DEMO_SOURCE_PIN, { demoMode: true });
+    setLevyLoadBusy(true);
+    try {
+      const demo = loadDemoProperty();
+      if (!isCurrentRequest()) return;
+      setLevyLines(demo.levy.lines);
+      setLevyAwaitingTemplateMills(demo.levy.awaitingTemplateMills);
+      setLevyTemplateMillDrafts(demo.levy.templateMillDrafts);
+      setLevyLoadedMeta({
+        pin: DEMO_DISPLAY_PIN,
+        tagId: demo.levy.tagId,
+        tagShortDescr: demo.levy.tagShortDescr,
+        levyAspxUrl: demo.levy.levyAspxUrl,
+        parcelValues: demo.levy.parcelValues,
+        parcelAssessmentYear: demo.levy.parcelAssessmentYear,
+        ain: demo.levy.ain,
+      });
+      setParcelRecord(demo.parcelRecord);
+      setParcelRecordBundledAsOf(demo.parcelRecordBundledAsOf);
+      setParcelRecordLoading(false);
+      setParcelRecordLoadFailed(false);
+    } finally {
+      if (isCurrentRequest()) {
+        setLevyLoadBusy(false);
+      }
+    }
   }
 
   useEffect(() => {
@@ -798,7 +811,7 @@ export function HomeParcelAddressLookup({
           ain={levyLoadedMeta.ain}
           demoMode={isDemoMode}
         />
-        <div className="flex justify-center sm:justify-start">
+        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
           <BackToTopButton />
         </div>
       </>
@@ -1708,7 +1721,7 @@ export function HomeParcelAddressLookup({
             <div className="mt-4 space-y-4">
               <HomeDashboardKeyTermAsides showNovCompsGridRowKeyTerms={isDemoMode} />
             </div>
-            <div className="mt-6 flex justify-center sm:justify-start">
+            <div className={`mt-6 ${TOOL_DISCLOSURE_ROW_ALIGN_CLASS}`}>
               <BackToTopButton />
             </div>
           </div>
