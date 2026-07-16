@@ -78,7 +78,7 @@ function paragraphWithTermLinks(
 
 type Props = {
   entry: LevyExplainerEntry;
-  /** When set, `{{term:id|label}}` in paragraphs becomes a button that calls this (e.g. scroll to Key terms). */
+  /** When set, `{{term:id|label}}` in paragraphs becomes a button that calls this (opens in-modal brief). */
   onNavigateToTerm?: (termId: string) => void;
   /** Stable id for the in-modal definition panel (`useId` from parent). */
   termDefinitionPanelId?: string;

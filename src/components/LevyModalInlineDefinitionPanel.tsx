@@ -12,6 +12,7 @@ import {
   governmentTypeBriefMentionsSpecialDistrict,
 } from "@/content/governmentTypeBriefBody";
 import { levyModalTermRegistry } from "@/content/termDefinitionBodies";
+import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 
 export type LevyModalInlineDefinitionVariant =
@@ -21,29 +22,23 @@ export type LevyModalInlineDefinitionVariant =
 const PANEL_CLASS =
   "mt-4 rounded-lg border border-sky-200/90 bg-sky-50/90 p-3 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-sky-600/50 focus-visible:ring-offset-2 sm:p-4";
 
-/** Text-style control that closes the levy modal and jumps to Key terms (same pattern as term briefs). */
-const KEY_TERMS_JUMP_LINK_CLASS =
-  "mr-auto min-w-0 text-left text-xs font-medium text-sky-800 underline decoration-sky-800/40 underline-offset-2 hover:text-sky-950";
+const GLOSSARY_LINK_CLASS =
+  "mr-auto min-w-0 cursor-pointer text-left text-xs font-medium text-sky-800 underline decoration-sky-800/40 underline-offset-2 hover:text-sky-950";
 
 type LevyModalInlineDefinitionPanelProps = {
   /** Stable id for `aria-controls` on triggers (from parent `useId`). */
   panelId: string;
   variant: LevyModalInlineDefinitionVariant;
   onClose: () => void;
-  /** When true, offer a control that closes the levy modal and scrolls to the full Key terms entry. */
-  termDefinitionsOnHomePage: boolean;
-  onViewFullTermDefinition: (id: LevyModalTermId) => void;
 };
 
 /**
- * In-modal definition (brief copy). Stays on the dashboard surface; does not navigate to /sources.
+ * In-modal definition (brief copy). Link out to `/glossary` only when a full entry exists.
  */
 export function LevyModalInlineDefinitionPanel({
   panelId,
   variant,
   onClose,
-  termDefinitionsOnHomePage,
-  onViewFullTermDefinition,
 }: LevyModalInlineDefinitionPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
@@ -66,6 +61,13 @@ export function LevyModalInlineDefinitionPanel({
   const TermBrief =
     variant.kind === "term" ? levyModalTermRegistry[variant.id].Brief : null;
 
+  const glossaryTermId =
+    variant.kind === "term"
+      ? variant.id
+      : governmentTypeBriefMentionsSpecialDistrict(variant.displayLabel)
+        ? "term-special-districts"
+        : null;
+
   return (
     <div
       id={panelId}
@@ -86,26 +88,17 @@ export function LevyModalInlineDefinitionPanel({
         ) : null}
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
-        {variant.kind === "term" && termDefinitionsOnHomePage ? (
-          <button
-            type="button"
-            className={KEY_TERMS_JUMP_LINK_CLASS}
-            onClick={() => onViewFullTermDefinition(variant.id)}
-          >
-            View full definition in Key terms
-          </button>
-        ) : null}
-        {variant.kind === "gov" &&
-        termDefinitionsOnHomePage &&
-        governmentTypeBriefMentionsSpecialDistrict(variant.displayLabel) ? (
-          <button
-            type="button"
-            className={KEY_TERMS_JUMP_LINK_CLASS}
-            aria-label="Special districts: full definition in Key terms"
-            onClick={() => onViewFullTermDefinition("term-special-districts")}
-          >
-            See full definition here
-          </button>
+        {glossaryTermId ? (
+          <GlossaryFullDefinitionLink
+            termId={glossaryTermId}
+            className={GLOSSARY_LINK_CLASS}
+            aria-label={
+              variant.kind === "gov"
+                ? "Special districts: more in Glossary"
+                : undefined
+            }
+            onClick={onClose}
+          />
         ) : null}
         <button
           type="button"

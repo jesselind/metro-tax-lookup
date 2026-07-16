@@ -6,6 +6,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
@@ -13,7 +14,6 @@ import {
   safeArapahoeLevyAspxUrl,
   safeArapahoeParcelRecordUrl,
 } from "@/lib/safeExternalHref";
-import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 const COUNTY_ACTION_CLASS = `${btnOutlineSecondaryMd} w-full justify-center sm:w-auto`;
 
@@ -45,9 +45,6 @@ export function LevyCountyCompareSection({
     [ain],
   );
 
-  const pinTermHref = "#term-pin";
-  const tagTermHref = "#term-tag";
-
   const showParcelRecordLink = !demoMode && safeParcelRecordHref != null;
   const showParcelRecordDemoControl = demoMode;
 
@@ -63,19 +60,25 @@ export function LevyCountyCompareSection({
         >
           See how the county displays your data
         </h4>
-        <p className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+        <div className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
           <span className="sr-only">Property match. </span>
           Matched{" "}
-          <a id="pin-term-first" href={pinTermHref} className={TERM_LINK_CLASS}>
-            PIN
-          </a>{" "}
+          <GlossaryTermPopover
+            termId="term-pin"
+            textTrigger="PIN"
+            textTriggerId="pin-term-first"
+          />
+          {" "}
           <span className="font-mono font-semibold tabular-nums text-slate-800">
             {pin}
           </span>
           {" · "}
-          <a id="tag-term-first" href={tagTermHref} className={TERM_LINK_CLASS}>
-            TAG ID
-          </a>{" "}
+          <GlossaryTermPopover
+            termId="term-tag"
+            textTrigger="TAG ID"
+            textTriggerId="tag-term-first"
+          />
+          {" "}
           <span className="font-mono font-semibold tabular-nums text-slate-800">
             {tagId}
           </span>
@@ -84,7 +87,7 @@ export function LevyCountyCompareSection({
           <span className="font-medium text-slate-700">
             {formatTaxAreaShortDescrDisplay(tagShortDescr)}
           </span>
-        </p>
+        </div>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start">
         {showParcelRecordDemoControl ? (

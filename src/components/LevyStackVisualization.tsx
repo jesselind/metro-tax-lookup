@@ -9,6 +9,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
+import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetailDialog";
 import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
@@ -17,7 +18,6 @@ import {
   DASHBOARD_TILE_RADIUS_CLASS,
   INPUT_CLASS,
   LEVY_STACK_TILE_GRID_CLASS,
-  TERM_LINK_CLASS,
   TILE_DETAILS_CUE_ON_DARK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -38,7 +38,6 @@ import {
   type ParcelValuesFromExport,
   parseMills,
 } from "@/lib/committedLevyLine";
-import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 import {
   annualTaxDollarsFromAssessedMills,
@@ -132,7 +131,6 @@ type TileActionsModalProps = {
   actionLine: CommittedLevyLine;
   allowLineEdit: boolean;
   formatMills: (mills: number) => string;
-  goToTermFromTileMenu: (id: "term-mill-levy") => void;
   beginEdit: (line: CommittedLevyLine) => void;
   removeLine: (id: string) => void;
   onDismiss: () => void;
@@ -142,7 +140,6 @@ function TileActionsModal({
   actionLine,
   allowLineEdit,
   formatMills,
-  goToTermFromTileMenu,
   beginEdit,
   removeLine,
   onDismiss,
@@ -180,28 +177,17 @@ function TileActionsModal({
             {displayAuthorityForLevyLine(actionLine.authority)}
           </h3>
           <div className="mt-1 space-y-1.5">
-            <p className="font-mono text-sm tabular-nums text-slate-600">
+            <div className="font-mono text-sm tabular-nums text-slate-600">
               <span>{formatMills(actionLine.mills)}</span>{" "}
-              <button
-                type="button"
-                className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
-                onClick={() => goToTermFromTileMenu("term-mill-levy")}
-              >
-                mills
-              </button>
-            </p>
-            <p className="text-sm text-slate-600">
-              One{" "}
-              <button
-                type="button"
-                className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-sm`}
-                onClick={() => goToTermFromTileMenu("term-mill-levy")}
-              >
-                levy
-              </button>
-              {" "}
-              line among several on your parcel.
-            </p>
+              <GlossaryTermPopover
+                termId="term-mill-levy"
+                textTrigger="mills"
+                textTriggerId="tile-actions-mills-term"
+              />
+            </div>
+            <div className="text-sm text-slate-600">
+              One piece of your parcel&apos;s total property tax rate.
+            </div>
           </div>
           <div className="mt-4 flex flex-col gap-2">
             <button
@@ -258,10 +244,6 @@ export type LevyStackVisualizationProps = {
   setTemplateMillsError: (e: string | null) => void;
   onClearLoadedStack: () => void;
   allowLineEdit: boolean;
-  /**
-   * When true, levy modal can offer "View full definition in Key terms" (definitions are on `/`).
-   */
-  termDefinitionsOnHomePage?: boolean;
 };
 
 export function LevyStackVisualization({
@@ -276,7 +258,6 @@ export function LevyStackVisualization({
   setTemplateMillsError,
   onClearLoadedStack,
   allowLineEdit,
-  termDefinitionsOnHomePage = false,
 }: LevyStackVisualizationProps) {
   const templateErrorId = useId();
   const [showLevyDetails, setShowLevyDetails] = useState(false);
@@ -335,17 +316,6 @@ export function LevyStackVisualization({
   /** Grid + totals: show when not filling template mills and either there are lines or user may add lines. */
   const showLevyGrid =
     !awaitingTemplateMills && (lines.length > 0 || allowLineEdit);
-
-  const millLevyTermHref = "#term-mill-levy";
-  const pinTermHref = "#term-pin";
-
-  function goToTermFromTileMenu(id: "term-mill-levy") {
-    setTileActionsId(null);
-    window.setTimeout(() => {
-      window.history.replaceState(null, "", `/#${id}`);
-      focusTermDefinitionById(id);
-    }, 0);
-  }
 
   useEffect(() => {
     if (!showResults || specialDistrictFetchStartedRef.current) return;
@@ -962,40 +932,42 @@ export function LevyStackVisualization({
 
       {awaitingTemplateMills && lines.length > 0 && (
         <div className="rounded-md border-2 border-indigo-300/80 bg-indigo-50/50 p-3 sm:p-4">
-          <p className="text-sm font-semibold text-indigo-950 sm:text-base">
+          <div className="text-sm font-semibold text-indigo-950 sm:text-base">
             Enter{" "}
-            <a
-              href={millLevyTermHref}
-              className={TERM_LINK_CLASS}
-            >
-              mills
-            </a>{" "}
+            <GlossaryTermPopover
+              termId="term-mill-levy"
+              textTrigger="mills"
+              textTriggerId="template-mills-term"
+            />
+            {" "}
             for each line
-          </p>
-          <p className="mt-1 text-sm text-slate-700">
+          </div>
+          <div className="mt-1 text-sm text-slate-700">
             Each row is one{" "}
-            <a
-              href={millLevyTermHref}
-              className={TERM_LINK_CLASS}
-            >
-              levy
-            </a>
+            <GlossaryTermPopover
+              termId="term-mill-levy"
+              textTrigger="levy"
+              textTriggerId="template-levy-term"
+            />
             {" "}
             (one district line on your bill).
-          </p>
+          </div>
           {loadedParcelMeta && (
             <div className="mt-1 space-y-2 text-sm leading-relaxed text-slate-700">
-              <p>
-                <a href={pinTermHref} className={TERM_LINK_CLASS}>
-                  PIN
-                </a>{" "}
+              <div>
+                <GlossaryTermPopover
+                  termId="term-pin"
+                  textTrigger="PIN"
+                  textTriggerId="template-pin-term"
+                />
+                {" "}
                 <span className="font-mono font-semibold tabular-nums text-slate-900">
                   {loadedParcelMeta.pin}
                 </span>
                 {" · "}
                 Taxing authority{" "}
                 {formatTaxAreaShortDescrDisplay(loadedParcelMeta.tagShortDescr)}.
-              </p>
+              </div>
               <p>
                 Where we could match a line, we filled in mills from state data.
                 Change any number that looks wrong. If a row is still empty, copy
@@ -1103,7 +1075,6 @@ export function LevyStackVisualization({
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
           snapshot={specialDistrictFile?.snapshot ?? null}
-          termDefinitionsOnHomePage={termDefinitionsOnHomePage}
           onClose={() => setDetailLineId(null)}
         />
       )}
@@ -1113,7 +1084,6 @@ export function LevyStackVisualization({
           actionLine={actionLine}
           allowLineEdit={allowLineEdit}
           formatMills={formatMills}
-          goToTermFromTileMenu={goToTermFromTileMenu}
           beginEdit={beginEdit}
           removeLine={removeLine}
           onDismiss={() => setTileActionsId(null)}

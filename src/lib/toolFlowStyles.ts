@@ -29,7 +29,7 @@ export const PAGE_HERO_TITLE_CLASS =
 
 /** Slate hero secondary control (e.g. Start over). Smaller on mobile; larger from md up (same chrome). */
 export const PAGE_HERO_ACTION_BUTTON_CLASS =
-  `inline-flex shrink-0 items-center justify-center ${RADIUS_CONTROL_CLASS} border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm`;
+  `inline-flex shrink-0 cursor-pointer items-center justify-center ${RADIUS_CONTROL_CLASS} border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm`;
 
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
@@ -77,11 +77,11 @@ export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
 export const COUNTY_EXTERNAL_LINK_CLASS =
   "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";
 
-/** In-app links to glossary entries (e.g. `/sources#term-*`). */
+/** In-app links to glossary entries (e.g. `/glossary#term-*`). */
 export const TERM_LINK_CLASS =
   "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
-/** Glossary asides on `/sources` and the home-page definitions strip. */
+/** Glossary asides on `/glossary`. */
 export const TERM_ASIDE_BASE =
   `mt-5 w-full scroll-mt-24 ${RADIUS_SURFACE_CLASS} border border-slate-200 bg-slate-50 p-4 sm:p-5`;
 

@@ -27,7 +27,6 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
 import {
   novCompsGridColumnHeaderId,
   novCompsGridRowFragmentId,
@@ -35,7 +34,9 @@ import {
   type NovCompsGridDefinitionEntry,
   type NovCompsGridPayload,
 } from "@/lib/novCompsGridTypes";
+import { glossaryTermHref } from "@/lib/glossary";
 import { DASHBOARD_TILE_RADIUS_CLASS } from "@/lib/toolFlowStyles";
+import Link from "next/link";
 
 const PANEL_SHELL = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 /** Bounded height + both axes scroll = scrollport for sticky thead (see layout checklist). */
@@ -124,23 +125,23 @@ const ROW_LABEL_MIN_WIDTH_MOBILE = 96;
 const DATA_COL_MIN_WIDTH = 64;
 const ROW_LABEL_MAX_WIDTH = 180;
 const TABLE_LAYOUT_GUTTER_PX = 16;
-/** Popover overflow: link to matching Key terms card on the same page. */
+/** Popover overflow: link to matching Glossary entry. */
 const NOV_COMPS_KEY_TERM_BY_ROW: Record<string, { href: string; label: string }> = {
   luc: {
-    href: "#term-nov-comps-luc",
-    label: "Land use codes — examples and sources in Key terms",
+    href: glossaryTermHref("term-nov-comps-luc"),
+    label: "More in Glossary",
   },
   improvement_type: {
-    href: "#term-nov-comps-improvement-type",
-    label: "Improvement types — fuller note in Key terms",
+    href: glossaryTermHref("term-nov-comps-improvement-type"),
+    label: "More in Glossary",
   },
   improvement_style: {
-    href: "#term-nov-comps-improvement-style",
-    label: "Improvement styles — fuller note in Key terms",
+    href: glossaryTermHref("term-nov-comps-improvement-style"),
+    label: "More in Glossary",
   },
   valuation_grade: {
-    href: "#term-nov-comps-valuation-grade",
-    label: "Valuation grade — fuller note in Key terms",
+    href: glossaryTermHref("term-nov-comps-valuation-grade"),
+    label: "More in Glossary",
   },
 };
 
@@ -326,21 +327,13 @@ function CompsRowLabelCell({ compsRow }: { compsRow: CompsRow }) {
               </p>
             ) : null}
             {compsKeyTerm ? (
-              <Popover.Close asChild>
-                <button
-                  type="button"
-                  className={`${POPOVER_LINK_CLASS} text-left`}
-                  onClick={() => {
-                    const id = compsKeyTerm.href.replace(/^#/, "");
-                    window.setTimeout(() => {
-                      window.history.replaceState(null, "", `/#${id}`);
-                      focusTermDefinitionById(id);
-                    }, 0);
-                  }}
-                >
-                  {compsKeyTerm.label}
-                </button>
-              </Popover.Close>
+              <p className="mt-2 border-t border-slate-200 pt-2 text-sm leading-snug">
+                <Popover.Close asChild>
+                  <Link href={compsKeyTerm.href} className={POPOVER_LINK_CLASS}>
+                    {compsKeyTerm.label}
+                  </Link>
+                </Popover.Close>
+              </p>
             ) : null}
           </Popover.Content>
         </Popover.Portal>

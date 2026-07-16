@@ -10,9 +10,9 @@ The tool is for **residents and concerned citizens**, not only for reproducing c
 
 ## Purpose of this README
 
-This file is for repository visitors and contributors: setup, architecture-at-a-glance, and data pipeline commands.
+This file is for **repository visitors and contributors**: setup, app/architecture pointers, data layout, pipeline commands, tests, and security notes.
 
-For user-facing methodology, definitions, and citations, use the in-app `/sources` page.
+The in-app **`/sources`** page is for **residents and auditors**: verify-without-code steps, official citations, and plain-language methodology (matching, assessed splits, district contact vs tax IDs). Do **not** duplicate long pipeline or path dump on `/sources` — link here instead. Do **not** paste long resident methodology into this README — link `/sources`.
 
 **Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`.
 
@@ -63,10 +63,10 @@ Do **not** put real homeowner PINs in tests "because they match the county site.
 
 **Try demo property:** Loads committed **`src/data/demo-property.json`** (PIN-less). Identity fields are fictional; non-PII dollars, building rows, sale/permit amounts/dates, and a realistic levy stack are frozen in that fixture. `src/lib/demoProperty.ts` validates required fixture shape at module load (`assertDemoPropertyFixture`) and exports `loadDemoProperty()` / `DEMO_*` constants. No real resident PIN is used at runtime for demo.
 
-- **Row help and Key terms:** Row help merges from **`tools/nov_comps_grid_definitions.json`** when the grid JSON has no definitions block. Some row popovers link to **Key terms** on the home page for longer code context (LUC, improvement type/style, valuation grade).
+- **Row help and Glossary:** Row help merges from **`tools/nov_comps_grid_definitions.json`** when the grid JSON has no definitions block. Some row popovers link to **`/glossary`** for longer code context (LUC, improvement type/style, valuation grade).
 
 - Fallback path: users can add levy rows manually without PIN.
-- Policy/reference pages: `/sources`, `/privacy`, `/accessibility`.
+- Policy/reference pages: `/sources`, `/glossary`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
 
 **Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. CSP lives in `next.config.ts` and intentionally omits `upgrade-insecure-requests` (that header is baked at build time and breaks WebKit against plain-HTTP `next start` / e2e); terminate TLS at the edge and keep HSTS for HTTPS responses. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
@@ -76,13 +76,14 @@ Do **not** put real homeowner PINs in tests "because they match the county site.
 | Path | Role |
 | --- | --- |
 | `public/data/*.json` | Runtime app data served to the browser |
-| `supporting-data/county-mart/` | Latest full Arapahoe Assessor Data Mart download (portal folder names; replace on weekly refresh). Set `data-as-of.txt` to the download date (`YYYY-MM-DD`) when you drop in new CSVs. |
+| `supporting-data/county-mart/` | Latest accepted Arapahoe Assessor Data Mart download (portal folder names). Set `data-as-of.txt` to the download date (`YYYY-MM-DD`) when you replace CSVs. |
+| `supporting-data/county-mart-diff/` | Optional local staging path for a new mart download so you can diff against `county-mart/` before replacing it. Not tracked in git; create the folder when you need it, and clear or remove it after you accept the drop. |
 | `supporting-data/dola/` | DOLA exports: committed `property-tax-entities-export.csv` + gitignored `lg-export-all.csv` |
 | `supporting-data/certs/` | Levy certification PDFs (source for metro levy extract scripts) |
 | `supporting-data/metro-levies/` | Extract script outputs (`metro-levies-*.json`; copy to `public/data/` when refreshing) |
 | `supporting-data/refs/` | Optional statewide GIS / district layer inputs (gitignored bulk) |
 | `supporting-data/_private/` | PII samples, NOV parser output (gitignored) |
-| `supporting-data/` | Parent for all offline regeneration inputs (see `/sources` — **Keeping bundled data current**) |
+| `supporting-data/` | Parent for all offline regeneration inputs |
 | `tools/*.py` | Offline extractors/index builders |
 
 ### Levy detail modal (`levy-explainer-entries.json`)
@@ -97,7 +98,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 **Validation:** `npm run validate:levy-explainer` checks JSON shape, link URLs, duplicate match keys, and no em dash (U+2014) in resident-facing strings (also runs automatically before `npm run build`).
 
-**In-app term links in explainer copy:** use `{{term:term-id|link label}}` (for example `{{term:term-special-districts|special district}}`). The levy detail modal turns that into a control that jumps to the matching Key terms / Sources definition.
+**In-app term links in explainer copy:** use `{{term:term-id|link label}}` (for example `{{term:term-special-districts|special district}}`). The levy detail modal turns that into a control that opens a brief in the modal, with **More in Glossary** linking to `/glossary#term-…`.
 
 ## Regenerating data (full pipeline)
 
@@ -117,7 +118,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    npm run build:arapahoe-index
    ```
 
-   Before building after a mart download, set `supporting-data/county-mart/data-as-of.txt` to one line `YYYY-MM-DD` (the date you downloaded the CSVs). That date appears in the app as "County data current as of …".
+   **Mart refresh (recommended):** Download the portal export into a local `supporting-data/county-mart-diff/` folder first (create it if needed; same folder names as the portal). Diff against `supporting-data/county-mart/` — schemas and column order are usually unchanged; table CSVs often gain/change rows on the county's weekly cadence (guides/xlsx lookups and sometimes Tax Authority Groups may be identical). When you accept the drop, replace `county-mart/` with the staging contents, set `supporting-data/county-mart/data-as-of.txt` to one line `YYYY-MM-DD` (the date you downloaded the CSVs; that date appears in the app as "County data current as of …"), then clear or remove `county-mart-diff/`. That staging path is a local convention only (not tracked in git).
 
    The script reads county mart CSVs from `supporting-data/county-mart/` (Main Parcel + Tax Authority Groups tables) and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/dola/property-tax-entities-export.csv` (preferred; committed so forks can rebuild). If that file is missing, it falls back to `property-tax-entities-export.xlsx` in the same folder locally. **`*.xlsx` is gitignored**; keep spreadsheets out of version control and use CSV for the canonical export.
 
@@ -131,7 +132,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
    - `public/data/arapahoe-pin-to-tag.json` (per PIN: `tagId`, values, `ain` from Main Parcel for the county comps grid PDF link)
    - `public/data/arapahoe-situs-to-pins.json`
-   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** experience (Main Parcel plus sibling mart joins; see build script). The home UI splits this into a scalar **Property details** panel (`ParcelRecordPanel`) and full-width county tables below the levy grid (`ParcelRecordExtendedSection` / `ParcelRecordCountyTables`). Joins include legal display, ownership type, land, buildings, **sale history** (`Mart_Transfers`), **permits** (`Mart_RDE_Permit`), and **State Class Codes** labels for `StateUseCd` (`stateUseLabel` in JSON; not a separate UI row). Neighborhood name/code fields stay empty until Main Parcel (or another mart join) supplies a **per-parcel** neighborhood code — the local NBHD codes xlsx under `supporting-data/county-mart/` is a code→name lookup only and is **not** joined (do not infer from subdivision). In the UI those rows are plain labels; empty cells use **No data found**. Fireplaces is reserved in building attribute order but not in the mart CSVs. Sale **Book Page** cells link to Arapahoe Clerk & Recorder public search (`arapahoe.co.publicsearch.us`, Book+Page concatenated); empty search results are normal for some older filings (same on the county parcel page). Building, Area, and Land Line share one HTML table so columns stay aligned; Values, Sale, and Permits are separate tables (different column sets). If the parcel-record shard fails to load, both the sidebar and the extended section show a status (levy stack remains). Sharded by **6-digit PIN prefix** (~156 KiB median / ~330 KiB max after Transfers/Permits; 0 shards > 500 KiB; plain JSON; lazy-loaded after levy succeeds). The build also **computes** assessed school value and local assessed building/land splits (not mart columns; DPT dual rates are fixed for `AssessmentYear >= 2025` in `COLORADO_*_ASSESSED_RATE` — bump those and `src/lib/coloradoDptAssessmentRates.ts` when the next assessment year ships) and derives ownership type from legal-party owner rows (vesting not in mart; all-Individual co-owners → Joint Tenancy) — see **`/sources`** for methodology. The build logs shard size stats (median, p90, p99) after each run; re-shard if shards grow too large.
+   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** experience (Main Parcel plus sibling mart joins; see build script). UI: scalar rows in `ParcelRecordPanel`; values / sale / building+land / permits in `ParcelRecordExtendedSection` / `ParcelRecordCountyTables`. Joins include legal display, ownership type, land, buildings, sale history (`Mart_Transfers`), permits (`Mart_RDE_Permit`), and State Class Codes labels for `StateUseCd` (`stateUseLabel` in JSON; not a separate UI row today). Neighborhood fields stay empty until a **per-parcel** neighborhood code exists (NBHD xlsx is code→name only — not joined; do not infer from subdivision). Fireplaces is reserved in building attribute order but not in mart CSVs. Sale **Book Page** cells link to Arapahoe Clerk & Recorder public search. Sharded by **6-digit PIN prefix** (~156 KiB median / ~330 KiB max after Transfers/Permits; plain JSON; lazy-loaded after levy succeeds). Build **computes** assessed school value and local assessed building/land splits and derives ownership type from legal-party rows — methodology and DPT rates are explained on **`/sources`**; rate constants live in the build script and `src/lib/coloradoDptAssessmentRates.ts` (bump when the next assessment year ships). Build logs shard size stats (median, p90, p99); re-shard if shards grow too large.
 
 3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):
 
@@ -166,9 +167,9 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 - Keep user-facing prose plain-language and avoid accountant-style "levy lines" phrasing.
 - **Try demo property:** Committed PIN-less fixture **`src/data/demo-property.json`** (loaded via `loadDemoProperty()` in `src/lib/demoProperty.ts`). Identity fields, Book Page, and permit numbers are fictional; clerk links stay off in demo UI. Fixture shape is asserted at module load. Refresh the fixture when you intentionally update demo dollars / levy / building shape — do not point demo at a real PIN.
-- Static term definitions live in `src/content/termDefinitions.tsx`. Parcel-record label glossaries live in `parcelGlossaryTermBriefRegistry` (`termDefinitionBodies.tsx`); skip a glossary when there is no citable, useful brief (Neighborhood / Neighborhood Code today).
-- Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json`.
-- Keep README technical; keep narrative methodology and citations on `/sources`.
+- Static term definitions live in `src/content/termDefinitions.tsx` and render on **`/glossary`**. Prefer popovers (`GlossaryTermPopover` / `ParcelGlossaryPopoverTrigger`) for brief help in flows; full asides are glossary-only. Parcel-record label glossaries live in `parcelGlossaryTermBriefRegistry` (`termDefinitionBodies.tsx`); skip a glossary when there is no citable, useful brief (Neighborhood / Neighborhood Code today).
+- Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json` (authoring: `docs/levy-explainer-authoring.md`).
+- **Docs split:** README = technical (this file). `/sources` = verify steps, citations, methodology. `/glossary` = term definitions. Avoid copying the same long block into both README and Sources.
 - **Browser e2e (Playwright):** Install browsers once with `npx playwright install` (CI uses `npx playwright install --with-deps`). **IDE:** start this app (`npm run dev` on :3000), then run tests from the Playwright extension (the extension does not start the app for you). **CLI:** `npm run test:e2e` / `test:e2e:ui` reuses :3000 when this app is already up; otherwise starts `next dev` there. If another project owns :3000, stop it or set `E2E_PORT`. **CI:** build then `next start` on :3100 (`.github/workflows/playwright.yml`; push/PR to `main` + `workflow_dispatch`). Job: `permissions: contents: read`, checkout `persist-credentials: false`.
 
 ## License

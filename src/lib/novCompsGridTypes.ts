@@ -231,8 +231,8 @@ export function isNovCompsGridPayload(
 }
 
 /**
- * Stable `id` / hash fragment for comps grid row headers (`NovCompsGridPanel`) and Key terms
- * "Back to comps grid" links (`/#…`). Bundled parser row keys are ASCII snake_case; we still
+ * Stable `id` / hash fragment for comps grid row headers (`NovCompsGridPanel`).
+ * Bundled parser row keys are ASCII snake_case; we still
  * normalize untrusted input: trim, collapse whitespace to hyphens, drop characters outside
  * `[A-Za-z0-9\-_.:]`, and use `_` when nothing usable remains (never inject raw `rowKey`).
  * The fixed `nov-comps-row-` prefix keeps the full fragment from starting with a digit even if the slug does.

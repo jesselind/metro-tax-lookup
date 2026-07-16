@@ -60,9 +60,15 @@ export default function RootLayout({
                 of truth. See{" "}
                 <Link href="/sources" className={TERM_LINK_CLASS}>
                   Sources
-                </Link>{" "}
-                for how we build what you see here. We update this site and its
-                data files as those public sources change.
+                </Link>
+                {" "}
+                for how we build what you see here, and the{" "}
+                <Link href="/glossary" className={TERM_LINK_CLASS}>
+                  Glossary
+                </Link>
+                {" "}
+                for term definitions. We update this site and its data files as
+                those public sources change.
               </p>
               <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
                 Address lookup runs in your browser from static files on this
@@ -92,6 +98,9 @@ export default function RootLayout({
                   </Link>
                   <Link href="/sources" className={TERM_LINK_CLASS}>
                     Sources
+                  </Link>
+                  <Link href="/glossary" className={TERM_LINK_CLASS}>
+                    Glossary
                   </Link>
                   <Link href="/privacy" className={TERM_LINK_CLASS}>
                     Privacy

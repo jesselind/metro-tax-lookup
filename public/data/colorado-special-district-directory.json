@@ -1,18 +1,18 @@
 {
   "snapshot": {
-    "bundledAsOf": "2026-06-29",
+    "bundledAsOf": "2026-07-16",
     "source": "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory.",
     "sourceCsv": "lg-export-all.csv"
   },
   "_meta": {
     "lgExportSourceCsv": "lg-export-all.csv",
-    "lgExportBundledAt": "2026-06-29T15:28:05Z",
+    "lgExportBundledAt": "2026-07-16T14:46:05Z",
     "levyStacksReference": "arapahoe-levy-stacks-by-tag-id.json",
     "propertyTaxEntitiesFallbackCsv": "property-tax-entities-export.csv",
     "propertyTaxEntitiesCountyFilterApplied": true,
     "certifyingCountyForPropertyTaxFallback": "Arapahoe",
-    "referencedLgIdCount": 365,
-    "directoryRowCount": 365,
+    "referencedLgIdCount": 367,
+    "directoryRowCount": 367,
     "lgIdsFilledFromPropertyTaxEntities": [
       "03091",
       "03112",
@@ -20,11 +20,13 @@
       "64035",
       "64200",
       "65137",
-      "65690"
+      "65690",
+      "66906",
+      "66907"
     ],
     "missingLgIdsInExport": []
   },
-  "districtCount": 365,
+  "districtCount": 367,
   "districts": [
     {
       "lgId": "01094",
@@ -4488,6 +4490,38 @@
       "localGovernmentType": "Metropolitan Districts",
       "prevName": null,
       "source": "DOLA LG tabular export (Local Government directory)",
+      "lastUpdate": null
+    },
+    {
+      "lgId": "66906",
+      "name": "East Creek Metropolitan District No. 1",
+      "abbrevName": null,
+      "websiteUrl": null,
+      "mailAddress": null,
+      "altAddress": null,
+      "mailCity": null,
+      "mailState": null,
+      "mailZip": null,
+      "lgTypeId": null,
+      "localGovernmentType": null,
+      "prevName": null,
+      "source": "DOLA LGIS Property Tax Entities export (fallback; row absent from LG directory CSV)",
+      "lastUpdate": null
+    },
+    {
+      "lgId": "66907",
+      "name": "East Creek Metropolitan District No. 2",
+      "abbrevName": null,
+      "websiteUrl": null,
+      "mailAddress": null,
+      "altAddress": null,
+      "mailCity": null,
+      "mailState": null,
+      "mailZip": null,
+      "lgTypeId": null,
+      "localGovernmentType": null,
+      "prevName": null,
+      "source": "DOLA LGIS Property Tax Entities export (fallback; row absent from LG directory CSV)",
       "lastUpdate": null
     },
     {

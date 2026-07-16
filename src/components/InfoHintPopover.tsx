@@ -72,8 +72,11 @@ type InfoHintPopoverProps = {
     }
 );
 
+/** In-flow panels sit above nearby chrome; portaled panels must clear modal shells (`z-[100]`). */
 const PANEL_BASE =
-  "z-40 w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
+  "w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg";
+const PANEL_Z_INLINE = "z-40";
+const PANEL_Z_PORTAL = "z-[110]";
 
 /**
  * Toggles a small floating note; click outside or Escape closes.
@@ -113,7 +116,6 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
 
   useLayoutEffect(() => {
     if (!open || !useBelowClamp) {
-      setBelowPanelCoords(null);
       return;
     }
     const margin = 16;
@@ -159,7 +161,10 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(false);
     };
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
@@ -168,15 +173,15 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
       if (wrap?.contains(target) || panel?.contains(target)) return;
       setOpen(false);
     };
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey, true);
     document.addEventListener("pointerdown", onPointer, true);
     return () => {
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("keydown", onKey, true);
       document.removeEventListener("pointerdown", onPointer, true);
     };
   }, [open]);
 
-  const belowPanelClassName = `${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} fixed`;
+  const belowPanelClassName = `${PANEL_BASE} ${PANEL_Z_PORTAL}${panelClassName ? ` ${panelClassName}` : ""} fixed`;
 
   const belowPanel =
     open && useBelowClamp ? (
@@ -258,7 +263,7 @@ export function InfoHintPopover(props: InfoHintPopoverProps) {
           id={contentId}
           role="region"
           aria-live="polite"
-          className={`${PANEL_BASE}${panelClassName ? ` ${panelClassName}` : ""} absolute left-full top-1/2 ml-1 -translate-y-1/2`}
+          className={`${PANEL_BASE} ${PANEL_Z_INLINE}${panelClassName ? ` ${panelClassName}` : ""} absolute left-full top-1/2 ml-1 -translate-y-1/2`}
         >
           {children}
         </div>

@@ -57,7 +57,8 @@ supporting-data/_private/*
 docs/_working/
 
 # County Assessor Data Mart CSVs + portal layout guides (weekly refresh; not committed)
-# Drop full mart export under supporting-data/county-mart/ (portal folder names unchanged).
+# Live build inputs: supporting-data/county-mart/ (portal folder names unchanged).
+# Optional local staging path before replace: supporting-data/county-mart-diff/ (not tracked; create when needed).
 supporting-data/**/*.csv
 !supporting-data/dola/property-tax-entities-export.csv
 supporting-data/**/*.docx

@@ -993,7 +993,7 @@ export function MetroTaxShareFlow({
                           >
                             {multiMetroParcel ? (
                               <p className="text-sm font-semibold text-slate-900 sm:text-base">
-                                {b.name}: levy lines from the county form
+                                {b.name}: county mill levies for this district
                               </p>
                             ) : null}
                             <LevyLinesCard

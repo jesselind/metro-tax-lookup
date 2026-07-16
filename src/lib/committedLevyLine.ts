@@ -237,7 +237,7 @@ export async function loadLevyStackFromPin(
     return {
       ok: false,
       error:
-        "This parcel has no levy lines to load after filtering. Try again or contact support.",
+        "This parcel has no mill levies to load after filtering. Try again or contact support.",
     };
   }
   const pv = parcelValuesFromPinRow(row);
