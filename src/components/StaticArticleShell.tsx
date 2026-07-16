@@ -23,8 +23,8 @@ export const staticArticleSecondaryLinkClass = btnOutlineSecondaryMd;
 
 type StaticArticleShellProps = {
   title: string;
-  /** Plain text or rich content (e.g. inline links to definitions). */
-  intro: string | ReactNode;
+  /** Plain text or rich content. Omit when the title is enough. */
+  intro?: string | ReactNode;
   children: ReactNode;
   /** If omitted, renders a single &quot;Back to tools&quot; link. */
   footer?: ReactNode;
@@ -51,7 +51,7 @@ export function StaticArticleShell({
               </Link>
             }
           />
-          {typeof intro === "string" ? (
+          {intro == null ? null : typeof intro === "string" ? (
             <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>{intro}</p>
           ) : (
             intro

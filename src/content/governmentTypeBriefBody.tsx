@@ -6,8 +6,8 @@
 import { getLocalGovernmentTypeBrief } from "@/content/localGovernmentTypeBrief";
 
 /**
- * Whether the DOLA brief for this label mentions special districts (Key terms has the full article).
- * Used to show "See full definition here" in the levy modal — inline `#` links would not close the modal.
+ * Whether the DOLA brief for this label mentions special districts (Glossary has the full article).
+ * Used to show "More in Glossary" in the levy modal for special-district government types.
  */
 export function governmentTypeBriefMentionsSpecialDistrict(displayLabel: string): boolean {
   return /special districts?/i.test(getLocalGovernmentTypeBrief(displayLabel));

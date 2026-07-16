@@ -17,7 +17,7 @@ type InfoDetailsProps = {
   children: ReactNode;
   /** Outer wrapper; default is full width of parent. Pass `max-w-prose` if you need a narrower reading measure. */
   className?: string;
-  /** Optional anchor id for in-page links (e.g. #term-mills). */
+  /** Optional anchor id for in-page links (e.g. glossary term cards). */
   id?: string;
 };
 

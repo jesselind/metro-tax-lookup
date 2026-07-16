@@ -22,6 +22,50 @@ function getFocusableElements(root: HTMLElement): HTMLElement[] {
 }
 
 /**
+ * Focusables inside the dialog, plus any open portaled panel linked via
+ * `aria-controls` (e.g. {@link InfoHintPopover} below-clamp panels on `document.body`).
+ * Panel controls are inserted immediately after their trigger so Tab order stays sensible.
+ */
+function getDialogTrapFocusables(container: HTMLElement): HTMLElement[] {
+  const result: HTMLElement[] = [];
+  const seen = new Set<HTMLElement>();
+
+  function addFrom(root: HTMLElement) {
+    for (const el of getFocusableElements(root)) {
+      if (seen.has(el)) continue;
+      seen.add(el);
+      result.push(el);
+      if (el.getAttribute("aria-expanded") !== "true") continue;
+      const panelId = el.getAttribute("aria-controls");
+      if (!panelId) continue;
+      const panel = document.getElementById(panelId);
+      if (!(panel instanceof HTMLElement) || container.contains(panel)) continue;
+      addFrom(panel);
+    }
+  }
+
+  addFrom(container);
+  return result;
+}
+
+function isInsideDialogTrap(
+  active: Element | null,
+  container: HTMLElement,
+): boolean {
+  if (!(active instanceof Node)) return false;
+  if (container.contains(active)) return true;
+  for (const trigger of container.querySelectorAll(
+    '[aria-expanded="true"][aria-controls]',
+  )) {
+    const panelId = trigger.getAttribute("aria-controls");
+    if (!panelId) continue;
+    const panel = document.getElementById(panelId);
+    if (panel?.contains(active)) return true;
+  }
+  return false;
+}
+
+/**
  * Keeps Tab / Shift+Tab within `containerRef` while mounted and restores focus to the
  * element that had focus when the dialog mounted (typically the control that opened it).
  */
@@ -39,7 +83,7 @@ export function useDialogFocusTrap(containerRef: RefObject<HTMLElement | null>) 
       const container = containerRef.current;
       if (!container) return;
 
-      const focusables = getFocusableElements(container);
+      const focusables = getDialogTrapFocusables(container);
       if (focusables.length === 0) {
         e.preventDefault();
         if (!container.hasAttribute("tabindex")) {
@@ -53,7 +97,7 @@ export function useDialogFocusTrap(containerRef: RefObject<HTMLElement | null>) 
       const last = focusables[focusables.length - 1];
       const active = document.activeElement;
 
-      if (!container.contains(active)) {
+      if (!isInsideDialogTrap(active, container)) {
         e.preventDefault();
         first.focus();
         return;

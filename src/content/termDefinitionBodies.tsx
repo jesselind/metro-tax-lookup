@@ -4,14 +4,15 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Single source for glossary copy: brief (levy modal + parcel popovers) + full (Key terms / sources asides where used).
- * Brief paragraphs share the same typography as in-modal levy definitions (`BRIEF_P`). Levy-line explainers use
- * `levyModalTermRegistry`; parcel summary tiles and property details use `parcelGlossaryTermBriefRegistry`
- * via `ParcelGlossaryPopoverTrigger` (self-contained; no Key terms footer).
+ * Single source for glossary copy: brief (popovers + levy modal) + full (`/glossary` asides).
+ * Levy-line explainers use `levyModalTermRegistry`; parcel summary / property details use
+ * `parcelGlossaryTermBriefRegistry` via `ParcelGlossaryPopoverTrigger` / `GlossaryTermPopover`.
  */
 
 import type { FC, ReactNode } from "react";
+import Link from "next/link";
 import type { LevyModalTermId } from "@/lib/levyModalTermIds";
+import { glossaryTermHref } from "@/lib/glossary";
 import {
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
@@ -24,12 +25,12 @@ const BRIEF_P =
 const FULL_P =
   "mt-3 text-base leading-relaxed text-slate-700 sm:text-lg";
 
-/** In-page jump to a Key terms card on the home dashboard (`#page-definitions`). */
-function KeyTermsLink(props: { termId: string; children: ReactNode }) {
+/** Link from full glossary copy (or briefs) to another glossary entry. */
+function GlossaryTermLink(props: { termId: string; children: ReactNode }) {
   return (
-    <a href={`#${props.termId}`} className={TERM_LINK_CLASS}>
+    <Link href={glossaryTermHref(props.termId)} className={TERM_LINK_CLASS}>
       {props.children}
-    </a>
+    </Link>
   );
 }
 
@@ -40,6 +41,29 @@ export function TermLevyBriefBody() {
       {" "}
       is a taxing district&apos;s certified property tax rate for the year, expressed in mills.
       Your bill adds a row from each district that taxes your property.
+    </p>
+  );
+}
+
+export function TermPinBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">PIN</strong>
+      {" "}
+      (property identification number) is the county&apos;s numeric code for one
+      Arapahoe property — usually nine digits. This tool uses it to match your
+      address to levy data.
+    </p>
+  );
+}
+
+export function TermTagBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">TAG</strong>
+      {" "}
+      (tax authority group) is the county&apos;s shared list of district levies
+      for many parcels. The TAG ID is that list&apos;s number — not your PIN.
     </p>
   );
 }
@@ -224,7 +248,7 @@ export function TermActualValueBriefBody() {
         The assessor&apos;s full value in the county&apos;s public records before Colorado&apos;s
         assessment rate for your property type is applied. That rate is set by the state
         legislature. Local{" "}
-        <KeyTermsLink termId="term-mill-levy">mill levies</KeyTermsLink>
+        <GlossaryTermLink termId="term-mill-levy">mill levies</GlossaryTermLink>
         {" "}
         from schools, counties, and other districts apply to assessed value, not to this number.
       </p>
@@ -253,7 +277,7 @@ export function TermAssessedValueBriefBody() {
         <strong className="font-semibold text-slate-900">assessment rate</strong>
         {" "}
         for your property type. Each local taxing district&apos;s{" "}
-        <KeyTermsLink termId="term-mill-levy">mill levy</KeyTermsLink>
+        <GlossaryTermLink termId="term-mill-levy">mill levy</GlossaryTermLink>
         {" "}
         is applied to this number, not to the full appraised value.
       </p>
@@ -733,17 +757,6 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
 
 export type ParcelGlossaryTermId = (typeof PARCEL_GLOSSARY_TERM_IDS)[number];
 
-/** @deprecated Use {@link PARCEL_GLOSSARY_TERM_IDS} */
-export const PARCEL_SUMMARY_TERM_IDS = [
-  "term-property-classification",
-  "term-owner-list",
-  "term-actual-value",
-  "term-assessed-value",
-  "term-comps",
-] as const satisfies readonly ParcelGlossaryTermId[];
-
-export type ParcelSummaryTermId = ParcelGlossaryTermId;
-
 /**
  * Brief + title for parcel summary tiles and property details panel. Levy modal uses
  * `levyModalTermRegistry` (levy-line explainer terms only); these use the same brief body pattern.
@@ -885,9 +898,6 @@ export const parcelGlossaryTermBriefRegistry: Record<
     Brief: TermParcelRecordBriefBody,
   },
 };
-
-/** @deprecated Use {@link parcelGlossaryTermBriefRegistry} */
-export const parcelSummaryTermBriefRegistry = parcelGlossaryTermBriefRegistry;
 
 export function ParcelTermPopoverPanel(props: {
   termId: ParcelGlossaryTermId;

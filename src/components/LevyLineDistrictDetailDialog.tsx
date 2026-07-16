@@ -5,8 +5,6 @@
 
 "use client";
 
-import { flushSync } from "react-dom";
-
 /**
  * Levy line detail modal: title and mills, then government type (when known), then entity-specific
  * JSON explainer ("What is it?") if present, then contact and sources. Follow docs/levy-explainer-authoring.md.
@@ -28,8 +26,7 @@ import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
 import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
 import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
-import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
-import { isLevyModalTermId, type LevyModalTermId } from "@/lib/levyModalTermIds";
+import { isLevyModalTermId } from "@/lib/levyModalTermIds";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 
 type Props = {
@@ -47,10 +44,6 @@ type Props = {
   directoryLoading: boolean;
   directoryError: string | null;
   snapshot: { bundledAsOf: string; source: string; sourceCsv?: string } | null;
-  /**
-   * When true, in-modal term panels can offer "View full definition in Key terms" (same-page hash).
-   */
-  termDefinitionsOnHomePage?: boolean;
   onClose: () => void;
 };
 
@@ -74,7 +67,6 @@ export function LevyLineDistrictDetailDialog({
   directoryLoading,
   directoryError,
   snapshot,
-  termDefinitionsOnHomePage = false,
   onClose,
 }: Props) {
   const districtWebsiteHref = safeHttpOrHttpsUrl(
@@ -163,18 +155,6 @@ export function LevyLineDistrictDetailDialog({
     }
     setInlineDefinition(next);
   }, []);
-
-  function handleViewFullTermDefinition(id: LevyModalTermId) {
-    // Close the levy modal synchronously before scrolling; otherwise React 18 may batch
-    // updates and the portal can still be visible when focus moves to Key terms.
-    flushSync(() => {
-      onClose();
-    });
-    window.setTimeout(() => {
-      window.history.replaceState(null, "", `/#${id}`);
-      focusTermDefinitionById(id);
-    }, 0);
-  }
 
   useEffect(() => {
     if (!inlineDefinition) return;
@@ -567,7 +547,7 @@ export function LevyLineDistrictDetailDialog({
                       className="mt-3 border-t border-slate-200/90 pt-3 text-sm leading-snug text-slate-700"
                       role="status"
                     >
-                      We believe the contact block below matches this levy line, but we cannot fully
+                      We believe the contact block below matches this levy, but we cannot fully
                       verify it from the name alone. Confirm on your bill before you rely on it.
                     </p>
                   )}
@@ -706,8 +686,6 @@ export function LevyLineDistrictDetailDialog({
                   panelId={inlineDefPanelId}
                   variant={inlineDefinition}
                   onClose={() => closeInlineDefinition()}
-                  termDefinitionsOnHomePage={termDefinitionsOnHomePage}
-                  onViewFullTermDefinition={handleViewFullTermDefinition}
                 />
               ) : null}
             </div>

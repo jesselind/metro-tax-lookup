@@ -5,18 +5,14 @@
 
 "use client";
 
-import { InfoHintPopover } from "@/components/InfoHintPopover";
 import {
-  PARCEL_GLOSSARY_POPOVER_PANEL_CLASS,
-  ParcelTermPopoverPanel,
-  parcelGlossaryTermBriefRegistry,
-  type ParcelGlossaryTermId,
-} from "@/content/termDefinitionBodies";
+  GlossaryTermPopover,
+  type FlowGlossaryTermId,
+} from "@/components/GlossaryTermPopover";
+import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import {
-  PARCEL_RECORD_GLOSSARY_LINK_CLASS,
   PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS,
   PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS,
-  PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 
 export type ParcelGlossaryPopoverTriggerProps = {
@@ -35,8 +31,7 @@ export type ParcelGlossaryPopoverTriggerProps = {
 };
 
 /**
- * Shared parcel glossary popover: InfoHintPopover + brief from `parcelGlossaryTermBriefRegistry`.
- * Used on home summary tiles and the property details panel.
+ * Parcel / property-details glossary popover (brief; More in Glossary only when a full aside exists).
  */
 export function ParcelGlossaryPopoverTrigger({
   termId,
@@ -49,29 +44,28 @@ export function ParcelGlossaryPopoverTrigger({
   disabled,
   countyParcelRecordUrl,
 }: ParcelGlossaryPopoverTriggerProps) {
-  const { title } = parcelGlossaryTermBriefRegistry[termId];
-  const defaultTriggerClass =
+  const flowVariant =
+    variant === "summary-tile" || variant === "parcel-record"
+      ? variant
+      : "inline";
+  const headingClass =
     variant === "column-header"
       ? PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS
       : variant === "section-title"
         ? PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS
-        : variant === "parcel-record"
-          ? PARCEL_RECORD_GLOSSARY_LINK_CLASS
-          : PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS;
+        : undefined;
 
   return (
-    <InfoHintPopover
+    <GlossaryTermPopover
+      termId={termId as FlowGlossaryTermId}
       textTrigger={textTrigger}
       textTriggerId={textTriggerId}
-      textTriggerClassName={textTriggerClassName ?? defaultTriggerClass}
-      ariaLabel={ariaLabel ?? `Brief definition of ${title}.`}
-      panelClassName={panelClassName ?? PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
+      ariaLabel={ariaLabel}
+      textTriggerClassName={textTriggerClassName ?? headingClass}
+      panelClassName={panelClassName}
       disabled={disabled}
-    >
-      <ParcelTermPopoverPanel
-        termId={termId}
-        countyParcelRecordUrl={countyParcelRecordUrl}
-      />
-    </InfoHintPopover>
+      countyParcelRecordUrl={countyParcelRecordUrl}
+      variant={flowVariant}
+    />
   );
 }

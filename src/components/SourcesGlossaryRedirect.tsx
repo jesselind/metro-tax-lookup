@@ -6,17 +6,22 @@
 "use client";
 
 import { useEffect } from "react";
-import { focusTermDefinitionById } from "@/lib/focusTermDefinition";
+import { GLOSSARY_PATH, glossaryTermHref, hasGlossaryFullEntry } from "@/lib/glossary";
 
 /**
- * On /sources with a #term-* hash, scroll and focus the matching definition.
+ * Old bookmarks used `/sources#term-*`. Definitions now live on `/glossary`.
+ * Only known full entries redirect; unknown hashes go to `/glossary` without a junk hash.
  */
-export function SourcesHashFocus() {
+export function SourcesGlossaryRedirect() {
   useEffect(() => {
     function apply() {
       const id = window.location.hash.slice(1);
       if (!id.startsWith("term-")) return;
-      focusTermDefinitionById(id);
+      if (hasGlossaryFullEntry(id)) {
+        window.location.replace(glossaryTermHref(id));
+        return;
+      }
+      window.location.replace(GLOSSARY_PATH);
     }
     apply();
     window.addEventListener("hashchange", apply);

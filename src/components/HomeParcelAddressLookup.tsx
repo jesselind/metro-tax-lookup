@@ -27,9 +27,6 @@ import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
 import {
-  HomeDashboardKeyTermAsides,
-} from "@/content/termDefinitions";
-import {
   btnOutlinePrimaryMd,
   btnOutlineSecondaryMd,
   btnPrimaryMd,
@@ -146,9 +143,6 @@ const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnPrimaryMd} inline-flex w-full min-w-
 const ADDRESS_TILE_SURFACE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 
 const ADDRESS_LOOKUP_PANEL_CLASS = `${ADDRESS_TILE_SURFACE_CLASS} p-3 sm:p-4`;
-
-const HOME_DEFINITIONS_HEADING_CLASS =
-  "text-base font-semibold text-slate-800 sm:text-lg";
 
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
@@ -707,7 +701,6 @@ export function HomeParcelAddressLookup({
     setTemplateMillsError: setLevyTemplateMillsError,
     onClearLoadedStack: clearParcelTemplateExtended,
     allowLineEdit: true,
-    termDefinitionsOnHomePage: levyReadyForSummary,
   };
 
   const showPropertyDetailsColumn =
@@ -1711,23 +1704,8 @@ export function HomeParcelAddressLookup({
               />
             </aside>
           ) : null}
-          <div
-            id="page-definitions"
-            className="scroll-mt-6 border-t border-slate-200 pt-6 sm:pt-8"
-            aria-labelledby="home-page-definitions-heading"
-          >
-            <h3
-              id="home-page-definitions-heading"
-              className={HOME_DEFINITIONS_HEADING_CLASS}
-            >
-              Key terms
-            </h3>
-            <div className="mt-4 space-y-4">
-              <HomeDashboardKeyTermAsides showNovCompsGridRowKeyTerms={isDemoMode} />
-            </div>
-            <div className={`mt-6 ${TOOL_DISCLOSURE_ROW_ALIGN_CLASS}`}>
-              <BackToTopButton />
-            </div>
+          <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+            <BackToTopButton />
           </div>
         </>
       ) : null}

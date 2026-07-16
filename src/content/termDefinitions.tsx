@@ -4,9 +4,9 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Glossary aside blocks for Key terms and `/sources` definitions.
+ * Glossary aside blocks for `/glossary` only.
  * Body copy is authored in `termDefinitionBodies.tsx` (brief + full single source).
- * Levy line explainers live only in the levy detail modal (`LevyExplainerModalSection`), not in this list.
+ * Levy explainers live only in the levy detail modal (`LevyExplainerModalSection`), not in this list.
  * Use explicit `{" "}` after inline elements (e.g. </strong>, </dfn>) so JSX does not collapse spaces.
  */
 
@@ -29,7 +29,7 @@ import {
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
   COLORADO_DPT_PROPERTY_TAX_GUIDE_URL,
 } from "@/lib/arapahoeCountyUrls";
-import { novCompsGridRowFragmentId } from "@/lib/novCompsGridTypes";
+import { glossaryTermHref } from "@/lib/glossary";
 import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
 import {
   CODE_INLINE_CLASS,
@@ -37,6 +37,7 @@ import {
   TERM_ASIDE_BASE,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 type TermAsideProps = {
@@ -48,7 +49,7 @@ type TermAsideProps = {
 
 /**
  * Shared wrapper for glossary cards so structure, semantics, and styling stay consistent
- * across `/sources` and home-page key terms.
+ * on `/glossary`.
  */
 function TermAside({ id, title, titleId, children }: TermAsideProps) {
   return (
@@ -166,9 +167,9 @@ export function TermAinAside() {
         . It is the county&apos;s formatted parcel id on the online parcel record (
         <span className="whitespace-nowrap">PPINum.aspx</span>
         ), often shown with dashes. It identifies the same property as your{" "}
-        <a href="#term-pin" className={TERM_LINK_CLASS}>
+        <Link href={glossaryTermHref("term-pin")} className={TERM_LINK_CLASS}>
           PIN
-        </a>
+        </Link>
         , but the formats differ.
       </p>
     </TermAside>
@@ -354,9 +355,12 @@ export function TermActualValueAside() {
         , a value tied to the property, but it is the county&apos;s official figure for taxes, not
         a sale price, not a bank appraisal for a loan, and not a single private appraiser&apos;s
         report. Those can all be different numbers for the same home. See{" "}
-        <a href="#term-property-classification" className={TERM_LINK_CLASS}>
+        <Link
+          href={glossaryTermHref("term-property-classification")}
+          className={TERM_LINK_CLASS}
+        >
           Property classification
-        </a>
+        </Link>
         {" "}
         for what labels like Improvement or Real mean in the county file.
       </p>
@@ -373,9 +377,9 @@ export function TermAssessedValueAside() {
         <strong className="font-semibold text-slate-900">assessment rate</strong>
         {" "}
         for your kind of property. That smaller number is what{" "}
-        <a href="#term-mill-levy" className={TERM_LINK_CLASS}>
+        <Link href={glossaryTermHref("term-mill-levy")} className={TERM_LINK_CLASS}>
           mill levies
-        </a>
+        </Link>
         {" "}
         multiply against.
       </p>
@@ -448,21 +452,6 @@ export function TermCompsAside() {
   );
 }
 
-function NovCompsKeyTermBackToGridLink(props: { rowKey: string; rowShortLabel: string }) {
-  const frag = novCompsGridRowFragmentId(props.rowKey);
-  return (
-    <p className="mt-4 border-t border-slate-200 pt-3 text-sm leading-snug text-slate-600">
-      <a href={`/#${frag}`} className={TERM_LINK_CLASS}>
-        Back to comps grid: {props.rowShortLabel}
-      </a>
-      <span className="sr-only">
-        Goes to the dashboard home page and jumps to this row header when the comps grid table is
-        visible. That table and the matching Key term cards render only while using Try demo property.
-      </span>
-    </p>
-  );
-}
-
 /**
  * Comps grid row helps: longer notes and small code examples that would crowd the table popovers.
  */
@@ -511,7 +500,6 @@ export function TermNovCompsImprovementTypeAside() {
         </a>
         ).
       </p>
-      <NovCompsKeyTermBackToGridLink rowKey="improvement_type" rowShortLabel="Improvement type row" />
     </TermAside>
   );
 }
@@ -542,13 +530,15 @@ export function TermNovCompsImprovementStyleAside() {
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         See{" "}
-        <a href="#term-nov-comps-improvement-type" className={TERM_LINK_CLASS}>
+        <Link
+          href={glossaryTermHref("term-nov-comps-improvement-type")}
+          className={TERM_LINK_CLASS}
+        >
           Improvement type (comps grid)
-        </a>
+        </Link>
         {" "}
         for where to verify codes.
       </p>
-      <NovCompsKeyTermBackToGridLink rowKey="improvement_style" rowShortLabel="Improvement style row" />
     </TermAside>
   );
 }
@@ -643,7 +633,6 @@ export function TermNovCompsLucAside() {
         </a>
         .
       </p>
-      <NovCompsKeyTermBackToGridLink rowKey="luc" rowShortLabel="LUC row" />
     </TermAside>
   );
 }
@@ -705,10 +694,6 @@ export function TermNovCompsValuationGradeAside() {
         discusses computer-assisted mass appraisal and model-based work without replacing your
         county&apos;s own grading scale.
       </p>
-      <NovCompsKeyTermBackToGridLink
-        rowKey="valuation_grade"
-        rowShortLabel="Valuation grade row"
-      />
     </TermAside>
   );
 }
@@ -766,9 +751,6 @@ export function TermMillLevyAside() {
   );
 }
 
-/** @deprecated Use {@link TermMillLevyAside}. */
-export const TermMillsAside = TermMillLevyAside;
-
 export function TermSpecialDistrictsAside() {
   return (
     <TermAside
@@ -815,27 +797,24 @@ export function TermTaxEntityAside() {
 }
 
 /**
- * Key terms on the home dashboard (after levy load), alphabetically by title.
- * Demo-only NOV comps grid row asides insert after Comps when `showNovCompsGridRowKeyTerms`.
+ * Full glossary list for `/glossary`: JSON, data mart, TIGER, then tool terms A-Z by title
+ * (including NOV comps grid row notes). Keep `GLOSSARY_FULL_ENTRY_TERM_IDS` in sync
+ * (`src/lib/glossary.fullEntries.test.ts`).
  */
-export function HomeDashboardKeyTermAsides(props?: {
-  showNovCompsGridRowKeyTerms?: boolean;
-}) {
-  const showGridKeyTerms = Boolean(props?.showNovCompsGridRowKeyTerms);
+export function AllTermDefinitionAsides() {
   return (
     <>
-      <TermAinAside />
+      <TermJsonAside />
+      <TermDataMartAside />
+      <TermTigerAside />
       <TermActualValueAside />
+      <TermAinAside />
       <TermAssessedValueAside />
       <TermCompsAside />
-      {showGridKeyTerms ? (
-        <>
-          <TermNovCompsImprovementStyleAside />
-          <TermNovCompsImprovementTypeAside />
-          <TermNovCompsLucAside />
-          <TermNovCompsValuationGradeAside />
-        </>
-      ) : null}
+      <TermNovCompsImprovementStyleAside />
+      <TermNovCompsImprovementTypeAside />
+      <TermNovCompsLucAside />
+      <TermNovCompsValuationGradeAside />
       <TermLegalDescriptionAside />
       <TermLgIdAside />
       <TermMillLevyAside />
@@ -847,47 +826,6 @@ export function HomeDashboardKeyTermAsides(props?: {
       <TermPropertyClassificationAside />
       <TermSitusAddressAside />
       <TermSpecialDistrictsAside />
-      <TermTagAside />
-      <TermTaxEntityAside />
-    </>
-  );
-}
-
-/**
- * Order matches Sources Definitions section: JSON, data mart, TIGER, then tool-specific terms
- * (alphabetical by title). Parcel record is home-dashboard only.
- *
- * @param showNovCompsGridRowKeyTerms — Include the four NOV comps grid row asides (they end with
- *   "Back to comps grid"). Use **true** only when the comps grid is on-screen (Try demo
- *   property). Sources omits these by default because the grid is not embedded there.
- */
-export function AllTermDefinitionAsides(props?: {
-  showNovCompsGridRowKeyTerms?: boolean;
-}) {
-  const showGridKeyTerms = Boolean(props?.showNovCompsGridRowKeyTerms);
-  return (
-    <>
-      <TermJsonAside />
-      <TermDataMartAside />
-      <TermTigerAside />
-      <TermPinAside />
-      <TermPropertyClassificationAside />
-      <TermActualValueAside />
-      <TermAssessedValueAside />
-      <TermCompsAside />
-      {showGridKeyTerms ? (
-        <>
-          <TermNovCompsImprovementStyleAside />
-          <TermNovCompsImprovementTypeAside />
-          <TermNovCompsLucAside />
-          <TermNovCompsValuationGradeAside />
-        </>
-      ) : null}
-      <TermLegalDescriptionAside />
-      <TermMillLevyAside />
-      <TermOwnerListAside />
-      <TermSpecialDistrictsAside />
-      <TermLgIdAside />
       <TermTagAside />
       <TermTaxEntityAside />
     </>
