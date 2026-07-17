@@ -292,7 +292,7 @@ export function LevyLineDistrictDetailDialog({
                     </div>
                     <button
                       type="button"
-                      className="shrink-0 text-xs font-medium text-sky-800 underline decoration-sky-800/40 underline-offset-2 outline-none transition hover:text-sky-950 focus-visible:ring-2 focus-visible:ring-sky-600/50 focus-visible:ring-offset-2"
+                      className={`shrink-0 border-0 bg-transparent p-0 text-xs ${TERM_LINK_CLASS}`}
                       aria-expanded={
                         inlineDefinition?.kind === "gov" &&
                         inlineDefinition.displayLabel === governmentTypeDisplayLabel

@@ -34,9 +34,12 @@ import {
   type NovCompsGridDefinitionEntry,
   type NovCompsGridPayload,
 } from "@/lib/novCompsGridTypes";
-import { glossaryTermHref } from "@/lib/glossary";
-import { DASHBOARD_TILE_RADIUS_CLASS } from "@/lib/toolFlowStyles";
-import Link from "next/link";
+import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
+import {
+  DASHBOARD_TILE_RADIUS_CLASS,
+  TERM_LINK_CLASS,
+  TOOL_LINK_UNDERLINE_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const PANEL_SHELL = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
 /** Bounded height + both axes scroll = scrollport for sticky thead (see layout checklist). */
@@ -70,14 +73,13 @@ const TD_MONEY =
 const TD_SECTION =
   "border border-slate-200 bg-slate-100 px-2 py-2 align-top text-slate-700 sm:px-3 sm:py-2.5";
 const POPOVER_TRIGGER_CLASS =
-  "cursor-pointer border-0 bg-transparent p-0 text-left text-inherit font-medium text-indigo-700 underline decoration-indigo-300 underline-offset-2 outline-none whitespace-normal break-words hover:text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1";
+  `cursor-pointer border-0 bg-transparent p-0 text-left text-inherit ${TOOL_LINK_UNDERLINE_CLASS} outline-none whitespace-normal break-words focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1`;
 /** Section title: same trigger treatment as row-definition labels, with dashboard heading scale. */
 const COMPS_GRID_HEADING_TRIGGER_CLASS =
   `${POPOVER_TRIGGER_CLASS} text-xl font-bold leading-tight tracking-tight sm:text-2xl`;
 const POPOVER_CONTENT_CLASS =
   "z-50 max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 text-left shadow-lg";
-const POPOVER_LINK_CLASS =
-  "mt-3 inline-flex cursor-pointer items-center text-xs font-medium text-indigo-700 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
+const POPOVER_LINK_CLASS = `mt-3 inline-flex items-center text-xs ${TERM_LINK_CLASS}`;
 /** Sticky header row: CSS on thead — TanStack only supplies column pin offsets, not vertical stick. */
 const STICKY_THEAD_CLASS = "sticky top-0 z-30 bg-slate-100";
 const USD_WHOLE_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -125,24 +127,12 @@ const ROW_LABEL_MIN_WIDTH_MOBILE = 96;
 const DATA_COL_MIN_WIDTH = 64;
 const ROW_LABEL_MAX_WIDTH = 180;
 const TABLE_LAYOUT_GUTTER_PX = 16;
-/** Popover overflow: link to matching Glossary entry. */
-const NOV_COMPS_KEY_TERM_BY_ROW: Record<string, { href: string; label: string }> = {
-  luc: {
-    href: glossaryTermHref("term-nov-comps-luc"),
-    label: "More in Glossary",
-  },
-  improvement_type: {
-    href: glossaryTermHref("term-nov-comps-improvement-type"),
-    label: "More in Glossary",
-  },
-  improvement_style: {
-    href: glossaryTermHref("term-nov-comps-improvement-style"),
-    label: "More in Glossary",
-  },
-  valuation_grade: {
-    href: glossaryTermHref("term-nov-comps-valuation-grade"),
-    label: "More in Glossary",
-  },
+/** Popover overflow: full glossary term id for matching row keys. */
+const NOV_COMPS_GLOSSARY_TERM_BY_ROW: Record<string, string> = {
+  luc: "term-nov-comps-luc",
+  improvement_type: "term-nov-comps-improvement-type",
+  improvement_style: "term-nov-comps-improvement-style",
+  valuation_grade: "term-nov-comps-valuation-grade",
 };
 
 type CompsRow = {
@@ -305,7 +295,7 @@ function CompsRowLabelCell({ compsRow }: { compsRow: CompsRow }) {
   const definition = compsRow.definition;
   const hasLay = Boolean(definition?.layBody?.trim());
   const hasCounty = Boolean(definition?.countyWording?.trim());
-  const compsKeyTerm = NOV_COMPS_KEY_TERM_BY_ROW[compsRow.rowKey];
+  const glossaryTermId = NOV_COMPS_GLOSSARY_TERM_BY_ROW[compsRow.rowKey];
   if (definition?.layTitle && (hasLay || hasCounty) && !compsRow.isSectionRow) {
     return (
       <Popover.Root>
@@ -326,12 +316,13 @@ function CompsRowLabelCell({ compsRow }: { compsRow: CompsRow }) {
                 &quot;{definition.countyWording}&quot;
               </p>
             ) : null}
-            {compsKeyTerm ? (
+            {glossaryTermId ? (
               <p className="mt-2 border-t border-slate-200 pt-2 text-sm leading-snug">
                 <Popover.Close asChild>
-                  <Link href={compsKeyTerm.href} className={POPOVER_LINK_CLASS}>
-                    {compsKeyTerm.label}
-                  </Link>
+                  <GlossaryFullDefinitionLink
+                    termId={glossaryTermId}
+                    className={POPOVER_LINK_CLASS}
+                  />
                 </Popover.Close>
               </p>
             ) : null}

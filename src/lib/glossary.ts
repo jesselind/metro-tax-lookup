@@ -8,7 +8,7 @@ export const GLOSSARY_PATH = "/glossary";
 
 /**
  * Term ids that have a full aside on `/glossary` (`AllTermDefinitionAsides`).
- * Popover-only briefs (e.g. architectural style, acreage) must not offer "More in Glossary".
+ * Popover-only briefs (e.g. architectural style) must not offer "More in Glossary".
  * Keep in sync when adding or removing glossary asides.
  */
 export const GLOSSARY_FULL_ENTRY_TERM_IDS = [

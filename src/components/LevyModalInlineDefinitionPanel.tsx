@@ -14,6 +14,7 @@ import {
 import { levyModalTermRegistry } from "@/content/termDefinitionBodies";
 import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
+import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 export type LevyModalInlineDefinitionVariant =
   | { kind: "term"; id: LevyModalTermId }
@@ -21,9 +22,6 @@ export type LevyModalInlineDefinitionVariant =
 
 const PANEL_CLASS =
   "mt-4 rounded-lg border border-sky-200/90 bg-sky-50/90 p-3 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-sky-600/50 focus-visible:ring-offset-2 sm:p-4";
-
-const GLOSSARY_LINK_CLASS =
-  "mr-auto min-w-0 cursor-pointer text-left text-xs font-medium text-sky-800 underline decoration-sky-800/40 underline-offset-2 hover:text-sky-950";
 
 type LevyModalInlineDefinitionPanelProps = {
   /** Stable id for `aria-controls` on triggers (from parent `useId`). */
@@ -91,7 +89,7 @@ export function LevyModalInlineDefinitionPanel({
         {glossaryTermId ? (
           <GlossaryFullDefinitionLink
             termId={glossaryTermId}
-            className={GLOSSARY_LINK_CLASS}
+            className={`mr-auto min-w-0 text-xs ${TERM_LINK_CLASS}`}
             aria-label={
               variant.kind === "gov"
                 ? "Special districts: more in Glossary"
