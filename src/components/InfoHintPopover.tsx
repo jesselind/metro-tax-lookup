@@ -47,6 +47,8 @@ const PANEL_BASE =
 
 /**
  * Text-trigger floating note for in-flow definitions and hints.
+ * Root is a phrasing-content `<span>` (not `<div>`) so triggers stay valid inside
+ * `<p>` and similar parents without hydration nesting warnings.
  * Click outside or Escape closes. Panels portal to `document.body` so they are
  * not clipped by ancestor `overflow-x-auto` scrollports (e.g. county tables).
  */
@@ -65,7 +67,8 @@ export function InfoHintPopover({
     top: number;
     left: number;
   } | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
 
@@ -82,8 +85,11 @@ export function InfoHintPopover({
       if (!wrap || !panel) return;
 
       const triggerRect = wrap.getBoundingClientRect();
-      const panelWidth = panel.getBoundingClientRect().width;
+      const panelRect = panel.getBoundingClientRect();
+      const panelWidth = panelRect.width;
+      const panelHeight = panelRect.height;
       const vw = window.innerWidth;
+      const vh = window.innerHeight;
       let left = triggerRect.left;
       if (left + panelWidth > vw - margin) {
         left = vw - margin - panelWidth;
@@ -92,8 +98,14 @@ export function InfoHintPopover({
         left = margin;
       }
 
+      let top = triggerRect.bottom + gap;
+      if (top + panelHeight > vh - margin) {
+        const above = triggerRect.top - gap - panelHeight;
+        top = above >= margin ? above : Math.max(margin, vh - margin - panelHeight);
+      }
+
       setPanelCoords({
-        top: triggerRect.bottom + gap,
+        top,
         left,
       });
     };
@@ -119,7 +131,16 @@ export function InfoHintPopover({
       if (e.key !== "Escape") return;
       e.preventDefault();
       e.stopPropagation();
+      const panel = panelRef.current;
+      const trigger = triggerRef.current;
+      const focusWasInPanel =
+        panel != null &&
+        document.activeElement instanceof Node &&
+        panel.contains(document.activeElement);
       setOpen(false);
+      if (focusWasInPanel) {
+        trigger?.focus();
+      }
     };
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
@@ -160,11 +181,12 @@ export function InfoHintPopover({
   ) : null;
 
   return (
-    <div
+    <span
       className={`relative inline-block min-w-0 max-w-full shrink leading-none ${open ? "z-40" : ""}`}
       ref={wrapRef}
     >
       <button
+        ref={triggerRef}
         type="button"
         id={textTriggerId}
         disabled={disabled}
@@ -180,6 +202,6 @@ export function InfoHintPopover({
       {panel && typeof document !== "undefined"
         ? createPortal(panel, document.body)
         : null}
-    </div>
+    </span>
   );
 }
