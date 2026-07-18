@@ -26,6 +26,7 @@ import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
 import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
 import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
+import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { isLevyModalTermId } from "@/lib/levyModalTermIds";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 
@@ -333,8 +334,8 @@ export function LevyLineDistrictDetailDialog({
               {dolaMatch && dolaMatch.uraHint && (
                 <p className="rounded-md border border-violet-200 bg-violet-50/90 px-3 py-2 text-slate-800">
                   <strong className="font-semibold text-violet-950">Urban renewal / TIF</strong>
-                  {" "}
-                  — use mills from your county property tax page or tax bill.
+                  {": "}
+                  use mills from your county property tax page or tax bill.
                 </p>
               )}
               {dolaMatch && dolaMatch.method === "skipped" && (
@@ -342,8 +343,8 @@ export function LevyLineDistrictDetailDialog({
                   {dolaMatch.skipReason === "assessor_fee" ? (
                     <>
                       <strong className="font-semibold text-slate-900">County fee</strong>
-                      {" "}
-                      — not a district in the state directory. Enter the amount from your county{" "}
+                      {": "}
+                      not a district in the state directory. Enter the amount from your county{" "}
                       <strong>Tax District Levies</strong>
                       {" "}
                       page or notice.
@@ -397,7 +398,7 @@ export function LevyLineDistrictDetailDialog({
                     <p className="mt-1 text-sm text-slate-600">
                       District directory lists: {match.record.name}
                       {lgIdContactTrusted
-                        ? " (same LG ID as on your bill — listing title may differ)."
+                        ? " (same LG ID as on your bill; listing title may differ)."
                         : ""}
                     </p>
                   ) : null}
@@ -647,12 +648,10 @@ export function LevyLineDistrictDetailDialog({
                         <span className="font-semibold text-slate-800">How to inquire:</span> Use the
                         taxing authority name, tax entity, and LG ID on your bill or county property
                         tax page to find the right office or official contacts. See{" "}
-                        <a
-                          href="/sources#levy-breakdown-tool"
-                          className={`${TERM_LINK_CLASS} cursor-pointer`}
-                        >
+                        <PreserveSessionDocLink href="/sources#levy-breakdown-tool">
                           Sources
-                        </a>{" "}
+                        </PreserveSessionDocLink>
+                        {" "}
                         for how we match levy data.
                       </p>
                     </div>
@@ -672,12 +671,9 @@ export function LevyLineDistrictDetailDialog({
 
               <p className="text-sm text-slate-600">
                 Want details on data sources and matching?{" "}
-                <a
-                  href="/sources#levy-breakdown-tool"
-                  className={`${TERM_LINK_CLASS} cursor-pointer`}
-                >
+                <PreserveSessionDocLink href="/sources#levy-breakdown-tool">
                   See Sources
-                </a>
+                </PreserveSessionDocLink>
                 .
               </p>
 

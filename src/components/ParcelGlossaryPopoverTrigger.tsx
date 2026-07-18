@@ -26,8 +26,6 @@ export type ParcelGlossaryPopoverTriggerProps = {
   ariaLabel?: string;
   panelClassName?: string;
   disabled?: boolean;
-  /** When set, school-value popover links to this county PPINum.aspx URL. */
-  countyParcelRecordUrl?: string | null;
 };
 
 /**
@@ -42,7 +40,6 @@ export function ParcelGlossaryPopoverTrigger({
   ariaLabel,
   panelClassName,
   disabled,
-  countyParcelRecordUrl,
 }: ParcelGlossaryPopoverTriggerProps) {
   const flowVariant =
     variant === "summary-tile" || variant === "parcel-record"
@@ -64,7 +61,6 @@ export function ParcelGlossaryPopoverTrigger({
       textTriggerClassName={textTriggerClassName ?? headingClass}
       panelClassName={panelClassName}
       disabled={disabled}
-      countyParcelRecordUrl={countyParcelRecordUrl}
       variant={flowVariant}
     />
   );

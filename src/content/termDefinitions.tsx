@@ -24,13 +24,13 @@ import {
   COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST,
 } from "@/content/countyCompsPdfGuidance";
 import {
-  ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE,
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
   COLORADO_DPT_PROPERTY_TAX_GUIDE_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { glossaryTermHref } from "@/lib/glossary";
 import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
+import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
   CODE_INLINE_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -108,7 +108,7 @@ export function TermDataMartAside() {
         <code className={CODE_INLINE_CLASS}>
           Tax Authority Groups and Tax Authorities
         </code>
-        ) that you download as CSV from the portal and join offline — not a live API when you use
+        ) that you download as CSV from the portal and join offline, not a live API when you use
         the app.
       </p>
     </aside>
@@ -148,9 +148,8 @@ export function TermPinAside() {
         PIN is short for{" "}
         <dfn className="font-semibold not-italic text-slate-900">property identification number</dfn>
         {": "}
-        the county&apos;s numeric code for one property in Arapahoe&apos;s records. It is usually
-        nine digits. You find it on the record from the county property search; this tool uses it to
-        match your address to levy data.
+        the county&apos;s number for one Arapahoe property. It is usually nine digits. You find it
+        on the county property record.
       </p>
     </TermAside>
   );
@@ -204,9 +203,8 @@ export function TermPhotoSketchAside() {
       titleId="term-photo-sketch-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        On the county parcel record, assessor staff may publish an aerial photo and a simple
-        building sketch. This tool links to the county page for those images; we do not copy or
-        embed them in the app.
+        On the county parcel record, staff may publish an aerial photo and a simple building
+        sketch of the property.
       </p>
     </TermAside>
   );
@@ -223,16 +221,9 @@ export function TermLegalDescriptionAside() {
         A{" "}
         <dfn className="font-semibold not-italic text-slate-900">legal description</dfn>
         {" "}
-        is the formal way your land is described in plats and deeds — lot, block, subdivision, and
-        any exceptions. It helps confirm you matched the right parcel when the street address alone
+        is the formal way your land is described in plats and deeds: lot, block, subdivision, and
+        any exceptions. It helps confirm you have the right parcel when the street address alone
         is not enough (for example condos or large buildings with many units).
-      </p>
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        County data exports sometimes prepend a long subdivision code block. In{" "}
-        <strong className="font-semibold text-slate-900">Property details</strong>
-        {" "}
-        we show a shorter display line when we can strip that prefix; you can expand the full
-        export string to compare with the county site.
       </p>
     </TermAside>
   );
@@ -246,16 +237,13 @@ export function TermParcelRecordAside() {
       titleId="term-parcel-record-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The county online page calls this your{" "}
+        The county calls this your{" "}
         <dfn className="font-semibold not-italic text-slate-900">parcel record</dfn>
-        . Our{" "}
-        <strong className="font-semibold text-slate-900">Property details</strong>
-        {" "}
-        panel lists the same field labels in the same order as{" "}
+        {": "}
+        the public page for one property: owners, values, and related details on the assessor
+        site (
         <span className="whitespace-nowrap">PPINum.aspx</span>
-        {" "}
-        so you can compare side-by-side. Summary tiles at the top stay a quick confirmation;
-        the panel is the full county-record trace from our bundled export.
+        ).
       </p>
     </TermAside>
   );
@@ -269,41 +257,36 @@ export function TermPropertyClassificationAside() {
       titleId="term-property-classification-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        This is how the county labels your parcel type for assessment in the parcel data behind this
-        tool — which rules and rates apply. It is not zoning. This tool shows the label in the
-        Property classification tile when the export includes one.
+        How the county labels your property type for tax rules (which assessment rates apply). It
+        is not zoning.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        You will usually see one of these values in that tile:
+        Common county labels:
       </p>
       <ul className="mt-2 list-disc space-y-2 pl-5 text-base leading-relaxed text-slate-700 sm:text-lg">
         <li>
           <strong className="font-semibold text-slate-900">Improvement</strong>
           {" "}
-          means the parcel has buildings or other structures on the land. Most homes with a house on
-          the lot show Improvement.
+          means buildings or other structures on the land. Most homes with a house show this.
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Real</strong>
           {" "}
-          is often used for land or simpler real-property rows (many vacant lots look like this).
+          is often used for land or simpler real-property rows (many vacant lots).
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Personal</strong>
           {" "}
-          refers to personal property (for example business equipment), not the typical house-and-land
-          parcel.
-        </li>
-        <li>
+          /{" "}
           <strong className="font-semibold text-slate-900">PersProp</strong>
           {" "}
-          is another personal-property label in the file (same general idea as Personal).
+          means personal property (for example business equipment), not a typical house-and-land
+          parcel.
         </li>
         <li>
           <strong className="font-semibold text-slate-900">StateAssessed</strong>
           {" "}
-          means the value is handled under state assessment rules instead of the usual county path for
-          that row.
+          means valued under state assessment rules instead of the usual county path.
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Possessory</strong>
@@ -312,23 +295,57 @@ export function TermPropertyClassificationAside() {
         </li>
       </ul>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Your assessment notice PDF often says{" "}
+        Your notice may say{" "}
         <strong className="font-semibold text-slate-900">Residential</strong>
         {" "}
         or{" "}
         <strong className="font-semibold text-slate-900">Commercial</strong>
         {" "}
-        in the property classification area. That wording is not wrong. For many single-family
-        homes, this tool shows{" "}
+        while the county record says{" "}
         <strong className="font-semibold text-slate-900">Improvement</strong>
-        {" "}
-        in the classification tile even when the notice says Residential. Same parcel, two
-        different naming systems. That mismatch does not mean something is wrong with your
-        property.
+        . Same parcel, two naming systems, not a sign something is wrong.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Your official county notice or parcel detail page is the place to confirm the fine print for
-        your situation.
+        <strong className="font-semibold text-slate-900">Tax roll</strong>
+        {" "}
+        (often{" "}
+        <strong className="font-semibold text-slate-900">Real</strong>
+        ) is a different field: which tax roll the parcel sits on.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermStateUseAside() {
+  return (
+    <TermAside id="term-state-use" title="State use" titleId="term-state-use-title">
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">State use</dfn>
+        {" "}
+        is Colorado&apos;s class for the parcel: a short code plus a plain name (for example
+        Single Family Residential). Not city zoning. Not the same as the county{" "}
+        <strong className="font-semibold text-slate-900">Land use</strong>
+        {" "}
+        label.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermAssessmentYearAside() {
+  return (
+    <TermAside
+      id="term-assessment-year"
+      title="Assessment year"
+      titleId="term-assessment-year-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Assessment year</dfn>
+        {" "}
+        is the year on the county value headers (for example 2026 Appraised).{" "}
+        <strong className="font-semibold text-slate-900">Tax year</strong>
+        {" "}
+        can be one year earlier. Neither date by itself tells you when a payment is due.
       </p>
     </TermAside>
   );
@@ -338,23 +355,16 @@ export function TermActualValueAside() {
   return (
     <TermAside id="term-actual-value" title="Actual value" titleId="term-actual-value-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        This is the assessor&apos;s{" "}
+        The assessor&apos;s{" "}
         <strong className="font-semibold text-slate-900">full</strong>
         {" "}
-        value for your parcel in the county&apos;s public records. The county uses that number before Colorado
-        applies the assessment rate for your property type. It is the starting point for your tax
-        bill, not the final taxed amount (that is assessed value).
+        value for your parcel before Colorado applies the assessment rate. It is the starting
+        point for your tax bill, not the final taxed amount (that is assessed value).
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Most people are used to thinking in terms of{" "}
-        <strong className="font-semibold text-slate-900">market value</strong>
-        {" "}
-        in everyday life: what similar homes sell for, a rough estimate from a website, or what you
-        might list the house for. Actual value is in that same{" "}
-        <em>ballpark idea</em>
-        , a value tied to the property, but it is the county&apos;s official figure for taxes, not
-        a sale price, not a bank appraisal for a loan, and not a single private appraiser&apos;s
-        report. Those can all be different numbers for the same home. See{" "}
+        Roughly in the same ballpark as market value, but it is the county&apos;s official tax
+        figure, not a sale price, bank appraisal, or private appraiser&apos;s report. Those can
+        all differ for the same home. See{" "}
         <Link
           href={glossaryTermHref("term-property-classification")}
           className={TERM_LINK_CLASS}
@@ -362,7 +372,7 @@ export function TermActualValueAside() {
           Property classification
         </Link>
         {" "}
-        for what labels like Improvement or Real mean in the county file.
+        for labels like Improvement or Real.
       </p>
     </TermAside>
   );
@@ -384,10 +394,8 @@ export function TermAssessedValueAside() {
         multiply against.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Since 2025, most Colorado homes have two assessed values: one for school districts (7.05%
-        for 2026) and one for other local governments (6.8% for 2026). Local-government assessed
-        value can also reflect a temporary reduction on the first $700,000 of actual value before
-        that 6.8% rate. Colorado&apos;s Division of Property Taxation explains the steps in its{" "}
+        Since 2025, most Colorado homes have two assessed values: one for school districts and one
+        for other local governments. Rates and worked examples are in Colorado&apos;s{" "}
         <a
           href={COLORADO_DPT_PROPERTY_TAX_GUIDE_URL}
           className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -409,7 +417,9 @@ export function TermAssessedValueAside() {
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
-        worked example.
+        section. Current figures used in this area are also summarized on{" "}
+        <PreserveSessionDocLink href="/sources">Sources</PreserveSessionDocLink>
+        .
       </p>
     </TermAside>
   );
@@ -472,12 +482,8 @@ export function TermNovCompsImprovementTypeAside() {
         the first bucket the assessor sorts homes into before finer labels.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The worksheet shows{" "}
-        <strong className="font-semibold text-slate-900">short codes or abbreviations</strong>
-        {" "}
-        from the county CAMA system, not a full sentence. This app does not ship a private master
-        list of every code the county can print. To match what you see to the county&apos;s field,
-        use your{" "}
+        The worksheet shows short codes from the county system, not full sentences. To match a
+        code to your property, check your{" "}
         <a
           href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
           target="_blank"
@@ -487,18 +493,7 @@ export function TermNovCompsImprovementTypeAside() {
           parcel record
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
-        {" "}
-        or an assessor export (for example the{" "}
-        <a
-          href={ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          GIS parcel download
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        ).
+        .
       </p>
     </TermAside>
   );
@@ -521,12 +516,10 @@ export function TermNovCompsImprovementStyleAside() {
         your home with sales that look like yours.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Like improvement type, the grid usually shows brief codes tied to CAMA. For the authoritative
-        value for{" "}
+        Like improvement type, the grid usually shows brief codes. For{" "}
         <strong className="font-semibold text-slate-900">your</strong>
         {" "}
-        parcel, check the county record or exported assessor tables rather than guessing from similar
-        homes on the worksheet.
+        parcel, trust the county record rather than guessing from similar homes on the worksheet.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         See{" "}
@@ -547,7 +540,7 @@ export function TermNovCompsLucAside() {
   return (
     <TermAside
       id="term-nov-comps-luc"
-      title="Land use code — LUC (comps grid)"
+      title="Land use code (LUC, comps grid)"
       titleId="term-nov-comps-luc-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
@@ -575,7 +568,7 @@ export function TermNovCompsLucAside() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Assessors&apos; Library, Chapter 6 — Property Classification
+          Assessors&apos; Library, Chapter 6: Property Classification
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
         .
@@ -669,15 +662,11 @@ export function TermNovCompsValuationGradeAside() {
         so comparisons stay consistent across many parcels.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        Arapahoe&apos;s comp sheet PDF we cite elsewhere does{" "}
-        <strong className="font-semibold text-slate-900">not</strong>
-        {" "}
-        publish the full ladder (each letter or number mapped to plain English line by line). For what
-        a specific grade means on{" "}
+        Arapahoe&apos;s comps sheet does not publish a full plain-English ladder for every grade.
+        For what a grade means on{" "}
         <strong className="font-semibold text-slate-900">your</strong>
         {" "}
-        parcel, rely on county staff or appraisal support materials tied to their CAMA vendor, not
-        an assumed match to private appraisal forms alone.
+        parcel, ask the county or use materials tied to their appraisal system.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         For CAMA vocabulary in Colorado practice, Assessors&apos; Library{" "}
@@ -687,7 +676,7 @@ export function TermNovCompsValuationGradeAside() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Chapter 8 — Assessment Planning
+          Chapter 8: Assessment Planning
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
@@ -726,18 +715,15 @@ export function TermOwnerListAside() {
       titleId="term-owner-list-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        This is the{" "}
+        The{" "}
         <dfn className="font-semibold not-italic text-slate-900">owner list</dfn>
         {" "}
-        from the county&apos;s public property record for this parcel: who appears on the assessment
-        record, often formatted as it is in the assessor file (for example multiple owners separated
-        by commas). It helps you confirm you are looking at the right property when the address
-        alone is not enough.
+        on the county&apos;s public property record: who appears as owner for that parcel. Use it
+        to confirm you have the right place when the address alone is not enough.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         It is not proof of who lives there today, who pays the mortgage, or legal title by itself.
-        For official ownership documents, use recorded deeds and the county&apos;s own parcel
-        record.
+        For ownership papers, use recorded deeds and the county parcel record.
       </p>
     </TermAside>
   );
@@ -810,6 +796,7 @@ export function AllTermDefinitionAsides() {
       <TermActualValueAside />
       <TermAinAside />
       <TermAssessedValueAside />
+      <TermAssessmentYearAside />
       <TermCompsAside />
       <TermNovCompsImprovementStyleAside />
       <TermNovCompsImprovementTypeAside />
@@ -826,6 +813,7 @@ export function AllTermDefinitionAsides() {
       <TermPropertyClassificationAside />
       <TermSitusAddressAside />
       <TermSpecialDistrictsAside />
+      <TermStateUseAside />
       <TermTagAside />
       <TermTaxEntityAside />
     </>

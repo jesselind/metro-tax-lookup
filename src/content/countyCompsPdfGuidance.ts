@@ -37,7 +37,7 @@ export const COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST =
 
 /** Glossary aside when county FileDownload.ashx is temporarily unavailable (after host span). */
 export const COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST =
-  ". This site does not host that file; we only pass your matched property id. The link may return no file found — ";
+  ". The county hosts that file. The link may return no file found. ";
 
 export const COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST =
-  ". This site does not host that file. We only pass which property you matched so the right file loads.";
+  ". The county hosts that file; the link opens their download for your property.";

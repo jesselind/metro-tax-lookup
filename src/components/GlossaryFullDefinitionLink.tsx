@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import Link from "next/link";
 import type { Ref } from "react";
+import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { glossaryTermHref, hasGlossaryFullEntry } from "@/lib/glossary";
 import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
@@ -33,23 +33,15 @@ export function GlossaryFullDefinitionLink({
   ref,
 }: GlossaryFullDefinitionLinkProps) {
   if (!hasGlossaryFullEntry(termId)) return null;
-  const accessibleName = ariaLabel
-    ? `${ariaLabel} (opens in a new tab)`
-    : undefined;
   return (
-    <Link
+    <PreserveSessionDocLink
       ref={ref}
       href={glossaryTermHref(termId)}
       className={className}
-      aria-label={accessibleName}
+      aria-label={ariaLabel}
       onClick={onClick}
-      target="_blank"
-      rel="noopener noreferrer"
     >
       {children}
-      {accessibleName ? null : (
-        <span className="sr-only"> (opens in a new tab)</span>
-      )}
-    </Link>
+    </PreserveSessionDocLink>
   );
 }

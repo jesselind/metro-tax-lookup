@@ -25,6 +25,7 @@ import { ParcelRecordExtendedSection, PARCEL_RECORD_EXTENDED_SECTION_ID, shouldS
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
+import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
   btnOutlinePrimaryMd,
   btnOutlineSecondaryMd,
@@ -72,6 +73,7 @@ import {
 } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
+import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
@@ -222,6 +224,7 @@ export function HomeParcelAddressLookup({
     levyAspxUrl: string;
     parcelValues: ParcelValuesFromExport;
     parcelAssessmentYear: string | null;
+    parcelTaxYear: string | null;
     ain: string | null;
   } | null>(null);
   const [levyAwaitingTemplateMills, setLevyAwaitingTemplateMills] =
@@ -383,6 +386,7 @@ export function HomeParcelAddressLookup({
         levyAspxUrl: result.levyAspxUrl,
         parcelValues: result.parcelValues,
         parcelAssessmentYear: result.parcelAssessmentYear,
+        parcelTaxYear: result.parcelTaxYear,
         ain: result.ain,
       });
       if (!isCurrentRequest()) return;
@@ -617,6 +621,7 @@ export function HomeParcelAddressLookup({
         levyAspxUrl: demo.levy.levyAspxUrl,
         parcelValues: demo.levy.parcelValues,
         parcelAssessmentYear: demo.levy.parcelAssessmentYear,
+        parcelTaxYear: demo.levy.parcelTaxYear,
         ain: demo.levy.ain,
       });
       setParcelRecord(demo.parcelRecord);
@@ -815,6 +820,13 @@ export function HomeParcelAddressLookup({
     parcelRecordLoadFailed,
     parcelRecord,
   );
+
+  const assessmentYearNote = levyLoadedMeta
+    ? parcelTaxAssessmentYearNote(
+        levyLoadedMeta.parcelTaxYear,
+        levyLoadedMeta.parcelAssessmentYear,
+      )
+    : null;
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
     <div className="space-y-5">
@@ -1289,16 +1301,25 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             levyLoadedMeta.parcelAssessmentYear != null ? (
               <div
-                className={PARCEL_SUMMARY_TILE_CLASS}
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-assessment-year"
               >
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    Assessment year
-                  </p>
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <ParcelGlossaryPopoverTrigger
+                      termId="term-assessment-year"
+                      textTrigger="Assessment year"
+                      textTriggerId="assessment-year-term-first"
+                    />
+                  </div>
                   <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                     {levyLoadedMeta.parcelAssessmentYear}
                   </p>
+                  {assessmentYearNote && levyLoadedMeta.parcelTaxYear ? (
+                    <p className="mt-1.5 text-sm font-normal leading-snug text-slate-600">
+                      Tax year {levyLoadedMeta.parcelTaxYear.trim()}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -1464,9 +1485,9 @@ export function HomeParcelAddressLookup({
                               {" "}
                               to reach your parcel and comps from the county. For
                               how the bundle is built, see{" "}
-                              <a href="/sources" className={TERM_LINK_CLASS}>
+                              <PreserveSessionDocLink href="/sources">
                                 Sources
-                              </a>
+                              </PreserveSessionDocLink>
                               .
                             </p>
                           </>

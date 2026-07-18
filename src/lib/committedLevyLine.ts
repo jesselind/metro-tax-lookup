@@ -174,6 +174,8 @@ export type LoadLevyStackFromPinOk = {
   parcelValues: ParcelValuesFromExport;
   /** From Main Parcel export (AssessmentYear — same year county shows on appraised/assessed values). */
   parcelAssessmentYear: string | null;
+  /** From Main Parcel export (TaxYear — levy roll year; may differ from assessment year). */
+  parcelTaxYear: string | null;
   /** Main Parcel AIN when present in pin map (county comps grid PDF). */
   ain: string | null;
 };
@@ -245,6 +247,10 @@ export async function loadLevyStackFromPin(
     typeof row.assessmentYear === "string" && row.assessmentYear.trim()
       ? row.assessmentYear.trim()
       : null;
+  const taxYearFromParcel =
+    typeof row.parcelTaxYear === "string" && row.parcelTaxYear.trim()
+      ? row.parcelTaxYear.trim()
+      : null;
   const ainFromRow =
     typeof row.ain === "string" && row.ain.trim() ? row.ain.trim() : null;
   return {
@@ -259,6 +265,7 @@ export async function loadLevyStackFromPin(
     templateMillDrafts: built.templateMillDrafts,
     parcelValues: pv,
     parcelAssessmentYear: assessmentYearFromParcel,
+    parcelTaxYear: taxYearFromParcel,
     ain: ainFromRow,
   };
 }

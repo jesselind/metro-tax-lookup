@@ -485,7 +485,8 @@ export default function SourcesPage() {
         <p className="text-slate-700">
           After a PIN load, Property details show county-record fields joined
           from the Assessor Data Mart (legal, ownership, land, buildings, sales,
-          permits when present). Empty cells use{" "}
+          permits when present), including state use, subdivision, and tax roll
+          when the export has them. Empty cells use{" "}
           <strong className="font-semibold text-slate-900">No data found</strong>
           {" "}
           with a short report link. Neighborhood name and code stay empty until
@@ -496,7 +497,9 @@ export default function SourcesPage() {
         <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
           <li>
             Value labels use the mart <strong>assessment year</strong>{" "}(as on
-            the county parcel page), not the levy roll tax year.
+            the county parcel page), not the levy roll tax year. When those two
+            years differ, the values section notes both, and the assessment-year
+            summary tile shows the tax year as a secondary line.
           </li>
           <li>
             <strong>Assessed school value</strong>{" "}is not a mart column. For
