@@ -43,7 +43,7 @@ type InfoHintPopoverProps = {
 
 /** Portaled panels must clear modal shells (`z-[100]`). */
 const PANEL_BASE =
-  "w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg z-[110]";
+  "w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg outline-none z-[110]";
 
 /**
  * Text-trigger floating note for in-flow definitions and hints.
@@ -51,6 +51,11 @@ const PANEL_BASE =
  * `<p>` and similar parents without hydration nesting warnings.
  * Click outside or Escape closes. Panels portal to `document.body` so they are
  * not clipped by ancestor `overflow-x-auto` scrollports (e.g. county tables).
+ * On open, focus moves to the panel (`tabIndex={-1}`) so keyboard users can reach
+ * links inside; the region is named via `aria-labelledby` on the trigger (no
+ * `aria-live`, so focus and live region do not double-announce). Escape or
+ * outside dismiss restores focus to the trigger when focus was in the panel
+ * (avoids focus dumping to `document.body` on unmount).
  */
 export function InfoHintPopover({
   children,
@@ -127,10 +132,8 @@ export function InfoHintPopover({
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      e.preventDefault();
-      e.stopPropagation();
+
+    const dismiss = () => {
       const panel = panelRef.current;
       const trigger = triggerRef.current;
       const focusWasInPanel =
@@ -142,18 +145,31 @@ export function InfoHintPopover({
         trigger?.focus();
       }
     };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      dismiss();
+    };
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
       const wrap = wrapRef.current;
       const panel = panelRef.current;
       if (wrap?.contains(target) || panel?.contains(target)) return;
-      setOpen(false);
+      dismiss();
     };
     document.addEventListener("keydown", onKey, true);
     document.addEventListener("pointerdown", onPointer, true);
+
+    const focusTimer = window.setTimeout(() => {
+      panelRef.current?.focus({ preventScroll: true });
+    }, 0);
+
     return () => {
       document.removeEventListener("keydown", onKey, true);
       document.removeEventListener("pointerdown", onPointer, true);
+      window.clearTimeout(focusTimer);
     };
   }, [open]);
 
@@ -164,7 +180,8 @@ export function InfoHintPopover({
       ref={panelRef}
       id={contentId}
       role="region"
-      aria-live="polite"
+      aria-labelledby={textTriggerId}
+      tabIndex={-1}
       className={
         panelCoords
           ? panelClassNameMerged

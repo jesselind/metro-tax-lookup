@@ -5,7 +5,7 @@
 
 "use client";
 
-import { Fragment, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import { calculateSharePercentage } from "@/lib/levyCalculator";
 import type {
@@ -161,6 +161,18 @@ export function MetroTaxShareFlow({
   const metroCheckMathPanelId = `${p}metro-check-math-panel`;
   const metroCheckMathToggleId = `${p}metro-check-math-toggle`;
   const [showCheckMath, setShowCheckMath] = useState(false);
+  const checkMathSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showCheckMath) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    checkMathSectionRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [showCheckMath]);
 
   const levyJson = levyData as LevyDataFile;
   const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
@@ -791,22 +803,23 @@ export function MetroTaxShareFlow({
                       <div className="mt-4 sm:mt-5">
                         <MetroDistrictInfoDetails />
                       </div>
-                      <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
-                        <ToolOutlinedToggleButton
-                          id={metroCheckMathToggleId}
-                          aria-expanded={showCheckMath}
-                          aria-controls={metroCheckMathPanelId}
-                          onClick={() => setShowCheckMath((v) => !v)}
+                      <div ref={checkMathSectionRef}>
+                        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+                          <ToolOutlinedToggleButton
+                            id={metroCheckMathToggleId}
+                            aria-expanded={showCheckMath}
+                            aria-controls={metroCheckMathPanelId}
+                            onClick={() => setShowCheckMath((v) => !v)}
+                          >
+                            {showCheckMath ? "Hide the math" : "Check the math"}
+                          </ToolOutlinedToggleButton>
+                        </div>
+                        <div
+                          id={metroCheckMathPanelId}
+                          hidden={!showCheckMath}
+                          aria-labelledby={metroCheckMathToggleId}
+                          className="mt-3 space-y-3 border-t border-slate-200 pt-4"
                         >
-                          {showCheckMath ? "Hide the math" : "Check the math"}
-                        </ToolOutlinedToggleButton>
-                      </div>
-                      <div
-                        id={metroCheckMathPanelId}
-                        hidden={!showCheckMath}
-                        aria-labelledby={metroCheckMathToggleId}
-                        className="mt-3 space-y-3 border-t border-slate-200 pt-4"
-                      >
                           <p className="text-xs text-slate-600 sm:text-sm">
                             {multiMetroParcel ? (
                               <>
@@ -1020,6 +1033,7 @@ export function MetroTaxShareFlow({
                             />
                           </div>
                         ))}
+                        </div>
                       </div>
                       <p className="text-[0.7rem] text-slate-500 sm:text-xs">
                         Based on Arapahoe County&apos;s{" "}
