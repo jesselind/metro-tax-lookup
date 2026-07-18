@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyCompsPdfUnavailablePopoverBody } from "@/components/CountyCompsPdfGuidance";
-import { COUNTY_COMPS_PDF_POPOVER_ARIA_LABEL } from "@/content/countyCompsPdfGuidance";
+import { CountyCompsPdfHelpPopover, COMPS_PDF_ICON_CONTROL_CLASS } from "@/components/CountyCompsPdfHelpPopover";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
@@ -25,7 +25,6 @@ import { ParcelRecordExtendedSection, PARCEL_RECORD_EXTENDED_SECTION_ID, shouldS
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
-import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
 import {
   btnOutlinePrimaryMd,
   btnOutlineSecondaryMd,
@@ -90,6 +89,7 @@ import {
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
+  TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
 
 /**
@@ -778,7 +778,7 @@ export function HomeParcelAddressLookup({
           textTrigger="What is this?"
           textTriggerId="parcel-record-heading-help"
           variant="parcel-record"
-          textTriggerClassName="text-xs font-medium text-indigo-700 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-900 sm:text-sm"
+          textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
           ariaLabel="What the property details panel shows."
         />
       </div>
@@ -1028,7 +1028,7 @@ export function HomeParcelAddressLookup({
                     <InfoHintPopover
                       textTrigger="Suffix"
                       textTriggerId="home-situs-suffix-label-trigger"
-                      textTriggerClassName={FIELD_LABEL_CLASS}
+                      textTriggerClassName={`${FIELD_LABEL_CLASS} ${TOOL_LINK_UNDERLINE_CLASS}`}
                       ariaLabel="Optional letters or fraction after the street number (example: 1/2)."
                       disabled={busy}
                     >
@@ -1382,24 +1382,21 @@ export function HomeParcelAddressLookup({
                     // TODO(comps-pdf-hosted-unavailable): Remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
                     ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
                       <div className="flex justify-center">
-                        <InfoHintPopover
-                          ariaLabel={COUNTY_COMPS_PDF_POPOVER_ARIA_LABEL}
-                          iconPanelBelow
-                          iconTriggerChildren={compsIcon}
-                          panelClassName={PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
-                          iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        <CountyCompsPdfHelpPopover
+                          ariaLabel="County comps PDF availability"
+                          icon={compsIcon}
                         >
                           <CountyCompsPdfUnavailablePopoverBody
                             countyHref={homeCompsGridPdfHref}
                           />
-                        </InfoHintPopover>
+                        </CountyCompsPdfHelpPopover>
                       </div>
                     ) : (
                       <a
                         href={homeCompsGridPdfHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-md text-slate-600 outline-offset-2 transition-colors hover:bg-slate-100/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        className={COMPS_PDF_ICON_CONTROL_CLASS}
                         aria-label="Open county comps grid PDF for this property (opens in a new tab)"
                       >
                         {compsIcon}
@@ -1407,11 +1404,9 @@ export function HomeParcelAddressLookup({
                     )
                   ) : isDemoMode ? (
                     <div className="flex justify-center">
-                      <InfoHintPopover
+                      <CountyCompsPdfHelpPopover
                         ariaLabel="Comps PDF is unavailable for this property"
-                        iconPanelBelow
-                        iconTriggerChildren={compsIcon}
-                        iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors focus-visible:ring-offset-2"
+                        icon={compsIcon}
                       >
                         <>
                           Demo mode does not include a comps PDF. Select{" "}
@@ -1421,7 +1416,7 @@ export function HomeParcelAddressLookup({
                           {", "}
                           then enter your address to open your county comps PDF.
                         </>
-                      </InfoHintPopover>
+                      </CountyCompsPdfHelpPopover>
                     </div>
                   ) : (
                     <div
@@ -1434,11 +1429,9 @@ export function HomeParcelAddressLookup({
                         assessor parcel id (AIN) in the bundled parcel index.
                       </p>
                       <div className="flex justify-center sm:justify-start">
-                        <InfoHintPopover
+                        <CountyCompsPdfHelpPopover
                           ariaLabel="Why there is no comps PDF link for this property"
-                          iconPanelBelow
-                          iconTriggerChildren={compsIcon}
-                          iconTriggerButtonClassName="min-h-[2.5rem] min-w-[2.5rem] cursor-pointer rounded-md text-slate-600 outline-offset-2 transition-colors focus-visible:ring-offset-2"
+                          icon={compsIcon}
                         >
                           <>
                             <p className="text-sm leading-relaxed text-slate-800">
@@ -1477,7 +1470,7 @@ export function HomeParcelAddressLookup({
                               .
                             </p>
                           </>
-                        </InfoHintPopover>
+                        </CountyCompsPdfHelpPopover>
                       </div>
                     </div>
                   )}

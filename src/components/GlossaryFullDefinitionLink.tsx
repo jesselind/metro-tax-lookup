@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import Link from "next/link";
+import type { Ref } from "react";
 import { glossaryTermHref, hasGlossaryFullEntry } from "@/lib/glossary";
 import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
@@ -14,11 +15,14 @@ type GlossaryFullDefinitionLinkProps = {
   className?: string;
   "aria-label"?: string;
   onClick?: () => void;
+  /** Anchor ref for Radix `Popover.Close asChild` and similar wrappers. */
+  ref?: Ref<HTMLAnchorElement>;
 };
 
 /**
- * Deep link to a full `/glossary` entry. Renders nothing when that term has no aside
- * (popover-only briefs such as architectural style).
+ * Deep link to a full `/glossary` entry. Opens in a new tab so tool-flow state
+ * (e.g. parcel details) stays in the origin tab. Renders nothing when that term
+ * has no aside (popover-only briefs such as architectural style).
  */
 export function GlossaryFullDefinitionLink({
   termId,
@@ -26,16 +30,26 @@ export function GlossaryFullDefinitionLink({
   className = TERM_LINK_CLASS,
   "aria-label": ariaLabel,
   onClick,
+  ref,
 }: GlossaryFullDefinitionLinkProps) {
   if (!hasGlossaryFullEntry(termId)) return null;
+  const accessibleName = ariaLabel
+    ? `${ariaLabel} (opens in a new tab)`
+    : undefined;
   return (
     <Link
+      ref={ref}
       href={glossaryTermHref(termId)}
       className={className}
-      aria-label={ariaLabel}
+      aria-label={accessibleName}
       onClick={onClick}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       {children}
+      {accessibleName ? null : (
+        <span className="sr-only"> (opens in a new tab)</span>
+      )}
     </Link>
   );
 }

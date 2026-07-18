@@ -21,6 +21,7 @@ import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_PANEL_SHELL_CLASS,
+  TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 
 /** Label column ~35%; value column gets the rest. Labels wrap at spaces only. */
@@ -201,13 +202,11 @@ export function ParcelRecordPanel({
               triggerIdSuffix="ownership-type"
             />
             <ParcelRecordRow
-              termId="term-owner-address"
               label="Owner Address"
               value={displayRecord.ownerDeliveryAddress}
               triggerIdSuffix="owner-address"
             />
             <ParcelRecordRow
-              termId="term-owner-city-state-zip"
               label="City/State/Zip"
               value={displayRecord.ownerCityStateZip}
               triggerIdSuffix="owner-city-state-zip"
@@ -223,7 +222,6 @@ export function ParcelRecordPanel({
               triggerIdSuffix="neighborhood-code"
             />
             <ParcelRecordRow
-              termId="term-acreage"
               label="Acreage"
               value={displayRecord.acreage}
               triggerIdSuffix="acreage"
@@ -255,7 +253,7 @@ export function ParcelRecordPanel({
                       <div>
                         <button
                           type="button"
-                          className="cursor-pointer text-sm font-medium text-indigo-700 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-900 sm:text-base"
+                          className={`text-sm ${TERM_LINK_CLASS} sm:text-base`}
                           aria-expanded={legalExpanded}
                           onClick={() => setLegalExpanded((v) => !v)}
                         >

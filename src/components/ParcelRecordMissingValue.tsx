@@ -10,7 +10,7 @@ import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
 import { buildMissingParcelDataMailtoHref } from "@/lib/contact";
 import { PARCEL_RECORD_NO_DATA } from "@/lib/parcelRecordNoData";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import { COUNTY_EXTERNAL_LINK_CLASS, TOOL_LINK_UNDERLINE_CLASS } from "@/lib/toolFlowStyles";
 
 type ParcelRecordReportIds = {
   pin?: string | null;
@@ -23,7 +23,7 @@ const BRIEF_P = "text-sm leading-relaxed text-slate-800 sm:text-base";
 
 /** Default trigger look for missing values in the property panel and tables. */
 export const PARCEL_RECORD_MISSING_VALUE_TRIGGER_CLASS =
-  "inline italic text-slate-500 underline decoration-slate-300 underline-offset-2 hover:text-slate-700 hover:decoration-slate-500";
+  `inline italic text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
 
 export function ParcelRecordReportIdsProvider({
   pin,

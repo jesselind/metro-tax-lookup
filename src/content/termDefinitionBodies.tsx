@@ -452,28 +452,6 @@ export function TermOwnershipTypeBriefBody() {
   );
 }
 
-export function TermOwnerAddressBriefBody() {
-  return (
-    <p className={BRIEF_P}>
-      The{" "}
-      <strong className="font-semibold text-slate-900">owner delivery address</strong>
-      {" "}
-      on the assessor file: where the county may mail notices. It can differ from the situs address
-      when owners live elsewhere or use a P.O. box.
-    </p>
-  );
-}
-
-export function TermOwnerCityStateZipBriefBody() {
-  return (
-    <p className={BRIEF_P}>
-      City, state, and ZIP on the owner&apos;s mailing line from the assessor export. Together with
-      Owner Address, this is where the county may send notices, which can differ from the situs
-      address when owners live elsewhere.
-    </p>
-  );
-}
-
 export function TermParcelSaleBriefBody() {
   return (
     <p className={BRIEF_P}>
@@ -517,18 +495,6 @@ export function TermParcelPermitBriefBody() {
       tied to this parcel in the county permit export (number, status, description, dates, and
       estimated value when present). The public parcel page does not always list them; treat the
       county as source of truth if anything looks off.
-    </p>
-  );
-}
-
-export function TermAcreageBriefBody() {
-  return (
-    <p className={BRIEF_P}>
-      Lot size in{" "}
-      <strong className="font-semibold text-slate-900">acres</strong>
-      {" "}
-      from the county land table (summed across land segments). The county usually shows four
-      decimal places (for example 0.0540).
     </p>
   );
 }
@@ -728,9 +694,6 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-photo-sketch",
   "term-legal-description",
   "term-ownership-type",
-  "term-owner-address",
-  "term-owner-city-state-zip",
-  "term-acreage",
   "term-land-use",
   "term-appraised-total",
   "term-appraised-building",
@@ -796,18 +759,6 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-ownership-type": {
     title: "Ownership type",
     Brief: TermOwnershipTypeBriefBody,
-  },
-  "term-owner-address": {
-    title: "Owner address",
-    Brief: TermOwnerAddressBriefBody,
-  },
-  "term-owner-city-state-zip": {
-    title: "City/State/Zip",
-    Brief: TermOwnerCityStateZipBriefBody,
-  },
-  "term-acreage": {
-    title: "Acreage",
-    Brief: TermAcreageBriefBody,
   },
   "term-land-use": {
     title: "Land use",

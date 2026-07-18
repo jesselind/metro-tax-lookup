@@ -73,13 +73,31 @@ export const HOME_LANDING_INTRO_LINE2_CLASS =
 export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
   "text-base leading-relaxed text-slate-700 sm:text-lg";
 
-/** External links to county / assessor pages (matches site indigo treatment). */
-export const COUNTY_EXTERNAL_LINK_CLASS =
-  "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1";
+/**
+ * Thick indigo underline affordance only (no font-weight, size, or color).
+ * Compose onto local typography for in-flow definition / hint triggers.
+ */
+export const TOOL_LINK_UNDERLINE_CLASS =
+  "underline decoration-indigo-700 decoration-2 underline-offset-2";
 
-/** In-app links to glossary entries (e.g. `/glossary#term-*`). */
+/**
+ * Indigo text + {@link TOOL_LINK_UNDERLINE_CLASS} (no font-weight or size).
+ * For real navigation links ({@link TERM_LINK_CLASS}, {@link COUNTY_EXTERNAL_LINK_CLASS}).
+ * Do not use on in-flow popover triggers — those should inherit sibling label color.
+ */
+export const TOOL_LINK_TRIGGER_AFFORDANCE_CLASS =
+  `text-indigo-950 ${TOOL_LINK_UNDERLINE_CLASS} hover:text-indigo-800`;
+
+/**
+ * Emphasized in-app links (nav, glossary cross-links, "More in Glossary"):
+ * {@link TOOL_LINK_TRIGGER_AFFORDANCE_CLASS} + medium weight + focus ring.
+ */
 export const TERM_LINK_CLASS =
-  "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
+  `cursor-pointer font-medium ${TOOL_LINK_TRIGGER_AFFORDANCE_CLASS} focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2`;
+
+/** External links to county / assessor pages (same emphasis as {@link TERM_LINK_CLASS}). */
+export const COUNTY_EXTERNAL_LINK_CLASS =
+  `cursor-pointer font-medium ${TOOL_LINK_TRIGGER_AFFORDANCE_CLASS} focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1`;
 
 /** Glossary asides on `/glossary`. */
 export const TERM_ASIDE_BASE =
@@ -143,27 +161,28 @@ export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIP
 export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
 
 /**
- * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale; slate underline.
- * `uppercase` is explicit so `<button>` triggers (popover) stay all-caps like plain label text.
+ * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale;
+ * inherit the parent label's color/weight/size; the indigo underline is the affordance.
+ * `uppercase` is explicit so `<button>` triggers stay all-caps like plain label text.
  */
 export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
-  "text-inherit uppercase underline decoration-slate-400 decoration-1 underline-offset-[0.2em] hover:text-slate-600 hover:decoration-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
+  `uppercase text-inherit ${TOOL_LINK_UNDERLINE_CLASS} focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
 
 /**
  * Glossary popover trigger on property details rows (sentence case, not tile uppercase).
  * Inline so labels flow like plain dt copy; wrapping is owned by the parent label column
- * (spaces only — field labels do not mid-break words).
+ * (spaces only — field labels do not mid-break words). Color/weight match sibling labels.
  */
 export const PARCEL_RECORD_GLOSSARY_LINK_CLASS =
-  "inline text-inherit text-sm font-medium leading-snug text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-800";
+  `inline text-sm font-medium leading-snug text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
 
 /** In-table section titles (e.g. Land Line): match {@link ParcelRecordCountyTables} section row typography. */
 export const PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS =
-  "inline text-inherit text-base font-semibold leading-snug text-slate-800 underline decoration-slate-400 underline-offset-2 hover:text-slate-900 sm:text-lg";
+  `inline text-base font-semibold leading-snug text-inherit ${TOOL_LINK_UNDERLINE_CLASS} sm:text-lg`;
 
-/** In-table column headers: inherit table header size/weight from parent {@code th}. */
+/** In-table column headers: inherit table header size/weight/color from parent {@code th}. */
 export const PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS =
-  "inline text-inherit font-medium text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900";
+  `inline font-medium text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
 
 export const PARCEL_SUMMARY_TILE_LABEL_CLASS =
   "text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs";

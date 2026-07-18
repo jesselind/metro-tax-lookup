@@ -1,0 +1,11 @@
+---
+description: Prevent local Playwright browser crashes and repeated macOS crash dialogs
+alwaysApply: true
+---
+
+# Run Playwright outside the sandbox
+
+- On this macOS workspace, run Playwright browser tests outside the sandbox from the first attempt (for example, use the shell tool with `required_permissions: ["all"]`).
+- Do not first try `npm run test:e2e`, `CI=1 npm run test:e2e`, or other Playwright browser commands in the sandbox.
+- Sandboxed Playwright launches can report a missing Chromium executable and repeatedly abort Firefox or WebKit during retries, producing many "quit unexpectedly" macOS dialogs.
+- If a browser launch fails, inspect the first failure before retrying. Do not allow repeated cross-browser retries when the failure is environmental.

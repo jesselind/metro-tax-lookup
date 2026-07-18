@@ -22,7 +22,7 @@ import { hasGlossaryFullEntry } from "@/lib/glossary";
 import {
   PARCEL_RECORD_GLOSSARY_LINK_CLASS,
   PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS,
-  TERM_LINK_CLASS,
+  TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
 import type { FC, ReactNode } from "react";
 
@@ -56,12 +56,15 @@ function resolveBrief(termId: FlowGlossaryTermId): { title: string; Brief: FC } 
   throw new Error(`No brief for glossary term: ${termId}`);
 }
 
+/** Inline prose: inherit surrounding type; indigo underline is the affordance. */
+const INLINE_GLOSSARY_TRIGGER_CLASS = `text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
+
 type GlossaryTermPopoverProps = {
   termId: FlowGlossaryTermId;
   textTrigger: string;
   textTriggerId: string;
   ariaLabel?: string;
-  /** Default: term-link underline (inline prose). */
+  /** Default: indigo underline only (inline prose). */
   textTriggerClassName?: string;
   panelClassName?: string;
   disabled?: boolean;
@@ -90,7 +93,7 @@ export function GlossaryTermPopover({
       ? PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS
       : variant === "parcel-record"
         ? PARCEL_RECORD_GLOSSARY_LINK_CLASS
-        : TERM_LINK_CLASS;
+        : INLINE_GLOSSARY_TRIGGER_CLASS;
 
   let body: ReactNode;
   if (termId in parcelGlossaryTermBriefRegistry) {

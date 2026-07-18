@@ -34,6 +34,7 @@ import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "../../../public/data/metro-levies-2025.json";
 import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { glossaryTermHref } from "@/lib/glossary";
+import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 export const metadata = {
   title: "Sources | Property tax tools",
@@ -44,8 +45,6 @@ export const metadata = {
 const SECTION_H2 = "text-lg font-semibold text-slate-900 sm:text-xl";
 const SECTION_H3 = "mt-8 text-base font-semibold text-slate-900";
 const SECTION_WRAP = "mt-10 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg";
-const TOOL_ANCHOR =
-  "cursor-pointer font-medium text-indigo-950 underline decoration-indigo-700 decoration-2 underline-offset-2 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
 /** On this page: grid row height matches tallest cell; links fill cell and center label. */
 const SOURCES_ON_PAGE_NAV_LINK_CLASS =
@@ -57,7 +56,7 @@ function JsonFirstMention() {
     <Link
       id="json-term-first"
       href={glossaryTermHref("term-json")}
-      className={`${TOOL_ANCHOR} scroll-mt-24`}
+      className={`${TERM_LINK_CLASS} scroll-mt-24`}
       title="Open glossary definition."
     >
       JSON
@@ -70,7 +69,7 @@ function DataMartFirstMention() {
     <Link
       id="data-mart-term-first"
       href={glossaryTermHref("term-data-mart")}
-      className={`${TOOL_ANCHOR} scroll-mt-24`}
+      className={`${TERM_LINK_CLASS} scroll-mt-24`}
       title="Open glossary definition."
     >
       data mart
@@ -91,7 +90,7 @@ function ReadmeDataPipelineLink({ children }: { children: ReactNode }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={TOOL_ANCHOR}
+      className={TERM_LINK_CLASS}
     >
       {children}
       <span className="sr-only"> (opens in a new tab)</span>
@@ -163,14 +162,14 @@ export default function SourcesPage() {
       >
         <h2 className={SECTION_H2}>Metro district tax share</h2>
         <p className="text-slate-700">
-          <Link href="/" className={TOOL_ANCHOR}>
+          <Link href="/" className={TERM_LINK_CLASS}>
             Metro district tax share
           </Link>{" "}
           on the home page compares your <strong>total</strong>{" "}mill rate to metro
           district rates from the county mill schedule. After a PIN load, the metro
           card uses the same total mills as your levy stack and detects metro
           districts when a stack row&apos;s{" "}
-          <Link href={glossaryTermHref("term-lg-id")} className={TOOL_ANCHOR}>
+          <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
             LG ID
           </Link>
           {" "}
@@ -211,7 +210,7 @@ export default function SourcesPage() {
               href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Mill Levies and Tax Districts (Assessor hub)
               <span className="sr-only"> (opens in a new tab)</span>
@@ -221,7 +220,7 @@ export default function SourcesPage() {
               href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Mill Levy Public Information
               <span className="sr-only"> (opens in a new tab)</span>
@@ -265,7 +264,7 @@ export default function SourcesPage() {
               href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))
               <span className="sr-only"> (opens in a new tab)</span>
@@ -279,7 +278,7 @@ export default function SourcesPage() {
               href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Mill Levies and Tax Districts (Assessor hub)
               <span className="sr-only"> (opens in a new tab)</span>
@@ -303,7 +302,7 @@ export default function SourcesPage() {
             href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
             target="_blank"
             rel="noopener noreferrer"
-            className={TOOL_ANCHOR}
+            className={TERM_LINK_CLASS}
           >
             Mill Levies and Tax Districts (Assessor hub)
             <span className="sr-only"> (opens in a new tab)</span>
@@ -323,7 +322,7 @@ export default function SourcesPage() {
                 href={ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={TOOL_ANCHOR}
+                className={TERM_LINK_CLASS}
               >
                 Open PDF (2025)
                 <span className="sr-only"> (opens in a new tab)</span>
@@ -342,7 +341,7 @@ export default function SourcesPage() {
                 href={ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={TOOL_ANCHOR}
+                className={TERM_LINK_CLASS}
               >
                 Open PDF (2025)
                 <span className="sr-only"> (opens in a new tab)</span>
@@ -361,7 +360,7 @@ export default function SourcesPage() {
         </h2>
         <p className="text-slate-700">
           On the{" "}
-          <Link href="/" className={TOOL_ANCHOR}>
+          <Link href="/" className={TERM_LINK_CLASS}>
             home page
           </Link>
           {", the levy breakdown can load taxing authorities from your parcel PIN using offline county "}
@@ -391,7 +390,7 @@ export default function SourcesPage() {
               href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Search Residential, Commercial, Ag and Vacant
               <span className="sr-only"> (opens in a new tab)</span>
@@ -444,7 +443,7 @@ export default function SourcesPage() {
             see{" "}
             <Link
               href={glossaryTermHref("term-property-classification")}
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Property classification
             </Link>
@@ -463,7 +462,7 @@ export default function SourcesPage() {
             single tidy join. When IDs align, that is the strongest link; when
             only the name is fuzzy or IDs differ, contact still appears with
             that explanation. See{" "}
-            <Link href={glossaryTermHref("term-lg-id")} className={TOOL_ANCHOR}>
+            <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
               LG ID
             </Link>
             .
@@ -539,7 +538,7 @@ export default function SourcesPage() {
               href={ARAPAHOE_COMP_SHEET_PDF_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               Comp Sheet Layout and Time Adjusted Sales Prices
               <span className="sr-only"> (opens in a new tab)</span>
@@ -562,7 +561,7 @@ export default function SourcesPage() {
             href={ARAPAHOE_ASSESSOR_DATA_MART_EXPORT}
             target="_blank"
             rel="noopener noreferrer"
-            className={TOOL_ANCHOR}
+            className={TERM_LINK_CLASS}
           >
             Data Mart
             <span className="sr-only"> (opens in a new tab)</span>
@@ -572,7 +571,7 @@ export default function SourcesPage() {
             href={DOLA_LGIS_PROPERTY_TAX_ENTITIES}
             target="_blank"
             rel="noopener noreferrer"
-            className={TOOL_ANCHOR}
+            className={TERM_LINK_CLASS}
           >
             Property Tax Entities
             <span className="sr-only"> (opens in a new tab)</span>
@@ -582,7 +581,7 @@ export default function SourcesPage() {
             href={COLORADO_SPECIAL_DISTRICTS_MAP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={TOOL_ANCHOR}
+            className={TERM_LINK_CLASS}
           >
             Special District Mapping Project
             <span className="sr-only"> (opens in a new tab)</span>
@@ -606,7 +605,7 @@ export default function SourcesPage() {
               href={SITE_CONFIG.githubRepoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={TOOL_ANCHOR}
+              className={TERM_LINK_CLASS}
             >
               GitHub
               <span className="sr-only"> (opens in a new tab)</span>
@@ -619,7 +618,7 @@ export default function SourcesPage() {
           <p className="text-slate-700">
             Source code link is temporarily unavailable due to site
             configuration. If this persists, please contact{" "}
-            <a href={SOURCES_BROKEN_GITHUB_MAILTO_HREF} className={TOOL_ANCHOR}>
+            <a href={SOURCES_BROKEN_GITHUB_MAILTO_HREF} className={TERM_LINK_CLASS}>
               {CONTACT_EMAIL}
             </a>
             .
