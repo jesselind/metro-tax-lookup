@@ -5,42 +5,28 @@
 
 /**
  * Single source for glossary copy: brief (popovers + levy modal) + full (`/glossary` asides).
- * Levy-line explainers use `levyModalTermRegistry`; parcel summary / property details use
- * `parcelGlossaryTermBriefRegistry` via `ParcelGlossaryPopoverTrigger` / `GlossaryTermPopover`.
+ * Popovers define county/state jargon for residents, not how this app or its data files work.
+ * Methodology and pipeline detail belong on `/sources` and in the README.
  */
 
-import type { FC, ReactNode } from "react";
-import Link from "next/link";
+import type { FC } from "react";
 import type { LevyModalTermId } from "@/lib/levyModalTermIds";
-import { glossaryTermHref } from "@/lib/glossary";
-import {
-  ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
-  COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
-  COLORADO_DPT_RESIDENTIAL_LOCAL_ASSESSMENT_RATE_URL,
-} from "@/lib/arapahoeCountyUrls";
-import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+import { COLORADO_DPT_ASSESSED_VALUE_SECTION_URL } from "@/lib/arapahoeCountyUrls";
+import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 const BRIEF_P =
   "text-sm leading-relaxed text-slate-800 sm:text-base";
 const FULL_P =
   "mt-3 text-base leading-relaxed text-slate-700 sm:text-lg";
 
-/** Link from full glossary copy (or briefs) to another glossary entry. */
-function GlossaryTermLink(props: { termId: string; children: ReactNode }) {
-  return (
-    <Link href={glossaryTermHref(props.termId)} className={TERM_LINK_CLASS}>
-      {props.children}
-    </Link>
-  );
-}
-
 export function TermLevyBriefBody() {
   return (
     <p className={BRIEF_P}>
       A <strong className="font-semibold text-slate-900">mill levy</strong>
       {" "}
-      is a taxing district&apos;s certified property tax rate for the year, expressed in mills.
-      Your bill adds a row from each district that taxes your property.
+      is the tax rate for one district on your bill (school, county, fire, and so on). One mill means
+      exactly $1 of tax for every $1,000 of the taxable value the state allows. Your bill usually has
+      one row per district.
     </p>
   );
 }
@@ -50,9 +36,8 @@ export function TermPinBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">PIN</strong>
       {" "}
-      (property identification number) is the county&apos;s numeric code for one
-      Arapahoe property — usually nine digits. This tool uses it to match your
-      address to levy data.
+      (property identification number) is the county&apos;s ID for your property, usually nine
+      digits. Think of it as the county&apos;s account number for that place.
     </p>
   );
 }
@@ -62,8 +47,8 @@ export function TermTagBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">TAG</strong>
       {" "}
-      (tax authority group) is the county&apos;s shared list of district levies
-      for many parcels. The TAG ID is that list&apos;s number — not your PIN.
+      (tax authority group) is the county&apos;s nickname for a shared tax package: many homes pay
+      the same set of districts. The TAG ID is that package&apos;s number. It is not your PIN.
     </p>
   );
 }
@@ -76,21 +61,19 @@ export function TermMillLevyFullBody() {
   return (
     <>
       <p className={FULL_P}>
-        Your property tax bill stacks rows from many taxing districts (schools, county, city,
+        Your property tax bill is a stack of rows from many districts (schools, county, city, fire,
         metro districts, and others). Each row is a{" "}
         <dfn className="font-semibold not-italic text-slate-900">levy</dfn>
         {": "}
-        that district&apos;s certified property tax rate for the year, usually shown in{" "}
+        that district&apos;s tax rate for the year, usually written in{" "}
         <strong className="font-semibold text-slate-900">mills</strong>
         .
       </p>
       <p className={FULL_P}>
-        One mill is one dollar of tax per $1,000 of assessed value for that row. Your{" "}
+        One mill is exactly $1 of tax per $1,000 of taxable (assessed) value for that row. The{" "}
         <strong className="font-semibold text-slate-900">mill levy</strong>
         {" "}
-        on the county page is the combined total from every district that taxes your parcel. You
-        mostly use mills to compare one row to another and to match the county table; this tool
-        does the dollar math for you.
+        total is every district that taxes your place, added together.
       </p>
     </>
   );
@@ -110,9 +93,9 @@ export function TermSpecialDistrictsBriefBody() {
       A{" "}
       <strong className="font-semibold text-slate-900">special district</strong>
       {" "}
-      is a Colorado local government (often organized under Title 32) that delivers focused
-      services and may levy property tax within its boundaries. It is separate from county or city
-      government, though boundaries can overlap.
+      is a small local government with one main job: fire, library, water, parks, and the like.
+      It can put a tax on homes inside its area. It is not the county and not the city, even when
+      the maps overlap.
     </p>
   );
 }
@@ -124,14 +107,10 @@ export function TermSpecialDistrictsFullBody() {
         In Colorado, a{" "}
         <dfn className="font-semibold not-italic text-slate-900">special district</dfn>
         {" "}
-        is a local government that delivers a focused service (libraries, fire protection,
-        recreation, and others) and usually has its own{" "}
-        <strong className="font-semibold text-slate-900">property tax mill levy</strong>
-        {" "}
-        on parcels in its boundaries. It is not the same as the county or city government, though
-        boundaries can overlap. This tool shows special districts on your levy stack with their own
-        LG ID when the county data ties a row to state records. Colorado organizes this kind of
-        district under{" "}
+        is a local government built for a focused service (libraries, fire protection, recreation,
+        and others). It often has its own tax line on your bill for homes inside its boundaries. It
+        is not the county or the city, though the maps can overlap. State law for these districts is
+        mostly in{" "}
         <a
           href="https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf"
           className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -143,18 +122,8 @@ export function TermSpecialDistrictsFullBody() {
         .
       </p>
       <p className={FULL_P}>
-        DOLA often labels these governments without the words &quot;special district&quot; in the
-        title. A{" "}
-        <strong className="font-semibold text-slate-900">fire protection district</strong>
-        ,{" "}
-        <strong className="font-semibold text-slate-900">library district</strong>
-        ,{" "}
-        <strong className="font-semibold text-slate-900">metropolitan district</strong>
-        , or{" "}
-        <strong className="font-semibold text-slate-900">water and sanitation district</strong>
-        {" "}
-        row on your bill is still typically a special district under Title 32, even when the name
-        sounds like a standalone agency.
+        The name on your bill may not say &quot;special district.&quot; A fire, library, metro, or
+        water-and-sanitation district is still usually this kind of government.
       </p>
     </>
   );
@@ -165,9 +134,8 @@ export function TermLgIdBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">LG ID</strong>
       {" "}
-      is Colorado&apos;s numeric identifier for a local government in state records. The same ID
-      shows up across county levy data, DOLA property-tax records, and the district directory when
-      the county supplies it.
+      (local government ID) is Colorado&apos;s filing number for a district or local government, so
+      the state can tell one agency from another on tax lists.
     </p>
   );
 }
@@ -175,9 +143,9 @@ export function TermLgIdBriefBody() {
 export function TermLgIdFullBody() {
   return (
     <p className={FULL_P}>
-      Colorado&apos;s numeric identifier for a local government or taxing district in state
-      records. The same ID appears across your county levy table, DOLA property-tax data, and
-      (when present) the special-district directory.
+      Colorado&apos;s filing number for a local government or taxing district. You may see the same
+      number on the county levy table and in state property-tax listings (Colorado Department of
+      Local Affairs, often shortened to DOLA).
     </p>
   );
 }
@@ -187,8 +155,9 @@ export function TermTaxEntityBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">Tax entity</strong>
       {" "}
-      is the state-record ID for the taxing authority on this levy row. This tool uses it to match
-      the row to property-tax data from the Colorado Department of Local Affairs (DOLA).
+      is the state&apos;s ID for the district on that tax row: Colorado&apos;s label for who is
+      charging this part of the bill (used in DOLA, the Colorado Department of Local Affairs,
+      property-tax listings).
     </p>
   );
 }
@@ -196,119 +165,57 @@ export function TermTaxEntityBriefBody() {
 export function TermTaxEntityFullBody() {
   return (
     <p className={FULL_P}>
-      This is the state-record identifier for the taxing authority tied to a levy row. In this tool,
-      it helps connect county levy rows to Colorado Department of Local Affairs (DOLA) records at
-      build time.
+      The state&apos;s ID for the district on a tax row. DOLA (Colorado Department of Local Affairs)
+      uses it so each taxing body can be told apart in its listings.
     </p>
   );
 }
 
-/** Home parcel summary tiles: same brief pattern as levy modal (`BRIEF_P`). */
+/** Home parcel summary / property details popovers. */
 export function TermPropertyClassificationBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        How the county classifies your property for tax purposes: which Colorado assessment rules
-        and rates apply. This is not city zoning.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        The assessor file may show shorthand like{" "}
-        <strong className="font-semibold text-slate-900">Real</strong>
-        {" "}
-        (real property: land and buildings, not cars or business equipment) or{" "}
-        <strong className="font-semibold text-slate-900">Improvement</strong>
-        {" "}
-        (the building portion) while your tax notice uses plainer words like{" "}
-        <strong className="font-semibold text-slate-900">Residential</strong>
-        .
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      The county&apos;s short label for what kind of property this is for tax purposes, not city
+      zoning. Records often say{" "}
+      <strong className="font-semibold text-slate-900">Improvement</strong>
+      {" "}
+      (there is a building) even when your notice says{" "}
+      <strong className="font-semibold text-slate-900">Residential</strong>
+      . Same home, different words.
+    </p>
   );
 }
 
 export function TermOwnerListBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        Who appears on the county&apos;s public property record for what you looked up. Use it to confirm you
-        matched the right property when the address is not enough.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        Not a current residency list or proof of legal title by itself. For ownership, check
-        recorded deeds and the county property record.
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      Whose name the county shows as owner on the public record. Handy for checking you found the
+      right place. It does not, by itself, prove who lives there or who owns the deed.
+    </p>
   );
 }
 
 export function TermActualValueBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        The assessor&apos;s full value in the county&apos;s public records before Colorado&apos;s
-        assessment rate for your property type is applied. That rate is set by the state
-        legislature. Local{" "}
-        <GlossaryTermLink termId="term-mill-levy">mill levies</GlossaryTermLink>
-        {" "}
-        from schools, counties, and other districts apply to assessed value, not to this number.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        In the same ballpark as market value, but it is the county&apos;s official figure for
-        taxes, not a sale price, loan appraisal, or one private appraiser&apos;s opinion.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        On the county{" "}
-        <strong className="font-semibold text-slate-900">parcel record</strong>
-        , this row is labeled{" "}
-        <strong className="font-semibold text-slate-900">Appraised (Total)</strong>
-        .
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      What the county says your property is worth for taxes: the full amount before the state
+      applies an assessment rate (a percentage that shrinks the number used for billing). Close to
+      &quot;what it might sell for,&quot; but not a sale price or bank appraisal. The county often
+      calls this{" "}
+      <strong className="font-semibold text-slate-900">Appraised</strong>
+      .
+    </p>
   );
 }
 
 export function TermAssessedValueBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        The taxable base for your bill: your appraised value (what the county file calls{" "}
-        <strong className="font-semibold text-slate-900">actual value</strong>
-        ) multiplied by a state{" "}
-        <strong className="font-semibold text-slate-900">assessment rate</strong>
-        {" "}
-        for your property type. Each local taxing district&apos;s{" "}
-        <GlossaryTermLink termId="term-mill-levy">mill levy</GlossaryTermLink>
-        {" "}
-        is applied to this number, not to the full appraised value.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        Since 2025, most Colorado homes have{" "}
-        <strong className="font-semibold text-slate-900">two</strong>
-        {" "}
-        assessed values: one for school districts and one for other local governments
-        (county, city, special districts). For 2026, DPT lists a school rate of 7.05% and
-        a local-government rate of 6.8%. Local-government assessed value can also reflect
-        a temporary reduction on the first $700,000 of actual value before that 6.8% rate.
-        See{" "}
-        <a
-          href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          DPT: Assessed Value
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        On the county{" "}
-        <strong className="font-semibold text-slate-900">parcel record</strong>
-        , the local total row is labeled{" "}
-        <strong className="font-semibold text-slate-900">Assessed (Total)</strong>
-        .
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      The smaller number your tax bill is actually based on. Colorado takes the county&apos;s full
+      (actual / appraised) value and applies an assessment rate (a state percentage). Districts
+      charge their mill levies against this smaller number. Most homes now have two assessed
+      figures: one for schools and one for other local governments.
+    </p>
   );
 }
 
@@ -318,11 +225,8 @@ export function TermCompsBriefBody() {
       Short for{" "}
       <strong className="font-semibold text-slate-900">comparables</strong>
       {": "}
-      properties the county lists as similar to yours when it estimates value for property tax.
-      The <strong className="font-semibold text-slate-900">Comps PDF</strong>
-      {" "}
-      link opens the county&apos;s comparison worksheet. Same basic idea as comparables in a
-      private appraisal, but this is the county&apos;s own list for mass appraisal.
+      nearby properties the county thinks are like yours, used when it estimates value. Same idea as
+      &quot;comps&quot; when people buy or sell a house, but this list is the county&apos;s.
     </p>
   );
 }
@@ -330,13 +234,12 @@ export function TermCompsBriefBody() {
 export function TermAinBriefBody() {
   return (
     <p className={BRIEF_P}>
-      <strong className="font-semibold text-slate-900">PIN</strong>
-      {" "}
-      (parcel identification number) is the county&apos;s nine-digit id for your property.{" "}
       <strong className="font-semibold text-slate-900">AIN</strong>
       {" "}
-      (Assessor Identification Number) is how Arapahoe formats that same property on the county
-      parcel record, often with dashes (for example 1234-56-7-89-012).
+      (Assessor Identification Number) is Arapahoe&apos;s written form of your property ID, often
+      with dashes. Same place as the{" "}
+      <strong className="font-semibold text-slate-900">PIN</strong>
+      , just written differently.
     </p>
   );
 }
@@ -346,8 +249,8 @@ export function TermSitusAddressBriefBody() {
     <p className={BRIEF_P}>
       <strong className="font-semibold text-slate-900">Situs</strong>
       {" "}
-      means where the property sits on the ground. This is the assessor&apos;s street address for
-      the parcel, which can differ from an owner&apos;s mailing address.
+      means the address of the land itself (where the property sits). That can differ from where
+      the owner gets mail.
     </p>
   );
 }
@@ -355,25 +258,18 @@ export function TermSitusAddressBriefBody() {
 export function TermPhotoSketchBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The county parcel record can show an aerial photo and a building sketch. This tool links out
-      to the county page; we do not embed those images here.
+      On the county&apos;s property page you may see an aerial photo and a simple drawing of the
+      building.
     </p>
   );
 }
 
 export function TermLegalDescriptionBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        The formal description of your land from plats and deeds: lot, block, subdivision, and
-        exceptions. Use it to confirm you matched the right parcel when the street address is not
-        enough.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        The county export often starts with a long subdivision prefix. We show a shorter display
-        line when we can strip that prefix; you can expand the full export text to compare.
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      The old-fashioned written description of the land (lot, block, subdivision name, and similar)
+      used in deeds. Useful when a street address is not enough to be sure you have the right place.
+    </p>
   );
 }
 
@@ -381,10 +277,10 @@ export function TermLegalDescriptionBriefBody() {
 export function TermParcelValueBuildingBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The <strong className="font-semibold text-slate-900">improvement</strong>
-      {" "}
-      portion of appraised value: structures on the land (house, garage, and similar), not the
-      dirt itself.
+      The part of the value that is the house and other buildings, not the bare land. The county
+      often calls buildings{" "}
+      <strong className="font-semibold text-slate-900">improvements</strong>
+      .
     </p>
   );
 }
@@ -393,10 +289,7 @@ export function TermParcelValueBuildingBriefBody() {
 export function TermParcelValueLandBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The <strong className="font-semibold text-slate-900">land</strong>
-      {" "}
-      portion for that row. On appraised rows it is land value before the state assessment rate.
-      On assessed rows it is the land share of your taxable value.
+      The part of the value that is the ground itself, separate from the house and other buildings.
     </p>
   );
 }
@@ -405,11 +298,8 @@ export function TermParcelValueLandBriefBody() {
 export function TermAssessedValueSplitBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Building or land share of{" "}
-      <strong className="font-semibold text-slate-900">assessed value</strong>
-      {" "}
-      after Colorado&apos;s assessment rate is applied. The county parcel page may show this split
-      when building and land are listed separately.
+      How much of the taxable (assessed) value is buildings versus land, after the state percentage
+      is applied.
     </p>
   );
 }
@@ -417,10 +307,8 @@ export function TermAssessedValueSplitBriefBody() {
 export function TermParcelRecordBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The county calls this your{" "}
-      <strong className="font-semibold text-slate-900">parcel record</strong>
-      . We list the same field labels in the same order so you can compare side-by-side with the
-      county online page.
+      The county&apos;s public page for one property: names, values, and other details they keep on
+      file.
     </p>
   );
 }
@@ -428,10 +316,8 @@ export function TermParcelRecordBriefBody() {
 export function TermSitusCityBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The city on the property&apos;s{" "}
-      <strong className="font-semibold text-slate-900">situs</strong>
-      {" "}
-      (physical) address: where the land sits, not necessarily the owner&apos;s mailing city.
+      The city listed for where the property sits on the ground, not always the same as the city
+      on the owner&apos;s mailing address.
     </p>
   );
 }
@@ -439,15 +325,11 @@ export function TermSitusCityBriefBody() {
 export function TermOwnershipTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      How owners are classified —{" "}
+      How the county describes the ownership, for example one person (
       <strong className="font-semibold text-slate-900">individual</strong>
-      {" "}
-      for one owner, or{" "}
+      ) or two people sharing ownership (
       <strong className="font-semibold text-slate-900">joint tenancy</strong>
-      {" "}
-      when two people are each listed as individual owners (the label the county
-      parcel page often shows). We infer this from how the county supplies owner
-      data. Always treat the official county parcel record as the source of truth.
+      ). For legal certainty, trust the county record and recorded deeds.
     </p>
   );
 }
@@ -455,145 +337,114 @@ export function TermOwnershipTypeBriefBody() {
 export function TermParcelSaleBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Recorded{" "}
-      <strong className="font-semibold text-slate-900">sale history</strong>
-      {" "}
-      from the county transfer export: book and page, date, and consideration (price). Type is
-      often blank on the county parcel page too.
+      Past sales the county has on file for this property: date, price, and where the deed was
+      recorded, when they have that information.
     </p>
   );
 }
 
 export function TermParcelBookPageBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        <strong className="font-semibold text-slate-900">Book</strong>
-        {" "}
-        and{" "}
-        <strong className="font-semibold text-slate-900">page</strong>
-        {" "}
-        are where the Clerk and Recorder filed the deed or other transfer document. In this app,
-        that label opens the county Clerk and Recorder public search for that filing. It is the
-        same kind of link the county parcel page uses.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        Some older filings return no document in that search. That can happen on the county parcel
-        page too. If a link comes up empty, compare the sale list on your official county parcel
-        record.
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Book</strong>
+      {" "}
+      and{" "}
+      <strong className="font-semibold text-slate-900">page</strong>
+      {" "}
+      are the filing location at the Clerk and Recorder, like a volume and page in an old bound
+      book of deeds. Some older filings no longer open in the online search.
+    </p>
   );
 }
 
 export function TermParcelPermitBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Building{" "}
-      <strong className="font-semibold text-slate-900">permits</strong>
-      {" "}
-      tied to this parcel in the county permit export (number, status, description, dates, and
-      estimated value when present). The public parcel page does not always list them; treat the
-      county as source of truth if anything looks off.
+      Building permits the county has on file for this property: work that needed a permit, with
+      dates and amounts when listed.
     </p>
   );
 }
 
 export function TermLandUseBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        The county assessor&apos;s label for how this parcel is used on the tax record (for example
-        Traditional for a typical home). It comes from building and land data, not your city&apos;s
-        zoning map.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        It can differ from land-use labels on the{" "}
-        <strong className="font-semibold text-slate-900">Land Line</strong>
-        {" "}
-        table lower on the page. Each answers a slightly different assessor question.
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      The county&apos;s everyday label for how the property is used (for example Traditional for a
+      typical house). Not the same as city zoning.
+    </p>
   );
 }
 
-export function TermAssessedSchoolValueBriefBody(props?: {
-  countyParcelRecordUrl?: string | null;
-}) {
-  const parcelRecordHref =
-    props?.countyParcelRecordUrl ?? ARAPAHOE_ASSESSOR_PROPERTY_SEARCH;
-  const parcelRecordLabel = props?.countyParcelRecordUrl
-    ? "official county parcel record"
-    : "county property search";
-
+export function TermStateUseBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        Since 2025, Colorado uses two assessed values for most homes: one for school districts and
-        one for other local governments (county, city, special districts). Both start from the same
-        appraised (actual) value, then apply different state assessment rates.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        For 2026 residential property, DPT lists a school district rate of 7.05% (× 0.0705) and a
-        local government rate of 6.8% (× 0.068). School tax rows use the school figure. Other
-        districts use the local government figure. That is a slightly larger taxable base for
-        schools, not a higher mill rate by itself.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        For local governments, Colorado also applies a temporary reduction on the first $700,000 of
-        actual value before the 6.8% rate (with a $1,000 assessed-value floor). The county{" "}
-        <strong className="font-semibold text-slate-900">Assessed Value</strong>
-        {" "}
-        total already reflects that. School assessed value uses the school rate on the full
-        appraised amounts.
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        See{" "}
-        <a
-          href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          DPT: Assessed Value (with worked example)
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        {" "}
-        and{" "}
-        <a
-          href={COLORADO_DPT_RESIDENTIAL_LOCAL_ASSESSMENT_RATE_URL}
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          DPT: residential local government rate
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        If this row shows No data found, check your{" "}
-        <a
-          href={parcelRecordHref}
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {parcelRecordLabel}
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      How Colorado groups the property for tax rules: a short code and a plain name (for example
+      Single Family Residential). Not city zoning. Not the same as the county&apos;s Land use
+      wording.
+    </p>
+  );
+}
+
+export function TermSubdivisionBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The neighborhood development name on the county record (for example a named subdivision),
+      when they list one. The code is just the county&apos;s shorthand for that name.
+    </p>
+  );
+}
+
+export function TermTaxRollBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Most homes are taxed as{" "}
+      <strong className="font-semibold text-slate-900">Real</strong>
+      {" "}
+      property (the land and buildings). That is different from a more specific label like{" "}
+      <strong className="font-semibold text-slate-900">Improvement</strong>
+      {" "}
+      (meaning there is a building).
+    </p>
+  );
+}
+
+export function TermAssessmentYearBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The year stamped on the value amounts (for example{" "}
+      <strong className="font-semibold text-slate-900">2026 Appraised</strong>
+      ).{" "}
+      <strong className="font-semibold text-slate-900">Tax year</strong>
+      {" "}
+      can be one year earlier. Neither one is the date your payment is due.
+    </p>
+  );
+}
+
+export function TermAssessedSchoolValueBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Schools use a slightly different taxable (assessed) number than the county, city, and other
+      local districts. Same starting full value; Colorado applies a different assessment rate (state
+      percentage) for school tax rows. Rates and examples:{" "}
+      <a
+        href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
+        className={COUNTY_EXTERNAL_LINK_CLASS}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+      .
+    </p>
   );
 }
 
 export function TermParcelValueTotalBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The <strong className="font-semibold text-slate-900">whole parcel</strong>
-      {" "}
-      column: building plus land combined for that value row (appraised or assessed).
+      The whole amount for that row: buildings and land added together.
     </p>
   );
 }
@@ -601,40 +452,31 @@ export function TermParcelValueTotalBriefBody() {
 export function TermParcelLandLineBriefBody() {
   return (
     <p className={BRIEF_P}>
-      A county table for how your lot is split on the assessor&apos;s land record. Most homes have
-      one row. Larger or mixed-use parcels can have more than one row when the assessor tracks
-      different pieces of the same PIN separately.
+      Sometimes the county lists the land in more than one piece. Most homes have just one. Larger
+      or mixed-use places can have several.
     </p>
   );
 }
 
 export function TermParcelLandUnitsBriefBody() {
   return (
-    <>
-      <p className={BRIEF_P}>
-        Quantity and unit type from the assessor land export. Arapahoe often shows a count plus a
-        short code, for example{" "}
-        <strong className="font-semibold text-slate-900">1.0000 LT</strong>
-        .
-      </p>
-      <p className={`${BRIEF_P} mt-3`}>
-        <strong className="font-semibold text-slate-900">LT</strong>
-        {" "}
-        means <strong className="font-semibold text-slate-900">lot</strong>
-        {": "}
-        one full lot line at that unit count. Other unit codes are rare on typical residential
-        parcels.
-      </p>
-    </>
+    <p className={BRIEF_P}>
+      How much land is in that piece, and in what unit. You may see something like{" "}
+      <strong className="font-semibold text-slate-900">1 LT</strong>
+      {" "}
+      (
+      <strong className="font-semibold text-slate-900">LT</strong>
+      {" "}
+      means one lot).
+    </p>
   );
 }
 
 export function TermParcelLandLineLandUseBriefBody() {
   return (
     <p className={BRIEF_P}>
-      How the assessor classifies that land row (for example Single Family Residential). It
-      describes tax-record use for that piece of the lot. It is not city zoning and may differ
-      from the top-level Land Use row in the property panel.
+      How the county describes that piece of land for tax purposes (for example Single Family
+      Residential). Not city zoning.
     </p>
   );
 }
@@ -642,10 +484,8 @@ export function TermParcelLandLineLandUseBriefBody() {
 export function TermParcelQualityGradeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      A county code for materials, finishes, and overall condition. On Arapahoe&apos;s parcel record
-      you may see word labels (for example Average). Loan appraisals sometimes split quality and
-      condition into separate scores; the assessor often folds those ideas into one field for mass
-      appraisal. The county export does not spell out every label in plain English here.
+      The county&apos;s rough grade for how the home is built and kept up (for example Average). It
+      is not a school report card.
     </p>
   );
 }
@@ -653,9 +493,8 @@ export function TermParcelQualityGradeBriefBody() {
 export function TermParcelImprovementTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Broad building category on the parcel record (for example Traditional for a typical
-      detached home). It is the county assessor&apos;s label for what sits on the land. It is not
-      city zoning and not the same as property classification on your tax notice.
+      The county&apos;s broad label for the building (for example Traditional for a typical house).
+      Not city zoning.
     </p>
   );
 }
@@ -663,8 +502,8 @@ export function TermParcelImprovementTypeBriefBody() {
 export function TermParcelArchitecturalStyleBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Layout or style label (for example Multi-Level or ranch). Helps the assessor match your home
-      to similar sales and cost models.
+      The shape or layout of the home (for example ranch or multi-level). Helps the county compare
+      it to similar sales.
     </p>
   );
 }
@@ -672,8 +511,7 @@ export function TermParcelArchitecturalStyleBriefBody() {
 export function TermParcelConstructionTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      How the main structure is built (for example wood frame or masonry). The county data file
-      may use short codes; the online parcel page usually spells out the full label.
+      What the main building is made of (for example wood frame or brick).
     </p>
   );
 }
@@ -695,6 +533,10 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-legal-description",
   "term-ownership-type",
   "term-land-use",
+  "term-state-use",
+  "term-subdivision",
+  "term-tax-roll",
+  "term-assessment-year",
   "term-appraised-total",
   "term-appraised-building",
   "term-appraised-land",
@@ -763,6 +605,22 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-land-use": {
     title: "Land use",
     Brief: TermLandUseBriefBody,
+  },
+  "term-state-use": {
+    title: "State use",
+    Brief: TermStateUseBriefBody,
+  },
+  "term-subdivision": {
+    title: "Subdivision",
+    Brief: TermSubdivisionBriefBody,
+  },
+  "term-tax-roll": {
+    title: "Tax roll",
+    Brief: TermTaxRollBriefBody,
+  },
+  "term-assessment-year": {
+    title: "Assessment year",
+    Brief: TermAssessmentYearBriefBody,
   },
   "term-appraised-total": {
     title: "Appraised (Total)",
@@ -852,15 +710,7 @@ export const parcelGlossaryTermBriefRegistry: Record<
 
 export function ParcelTermPopoverPanel(props: {
   termId: ParcelGlossaryTermId;
-  countyParcelRecordUrl?: string | null;
 }) {
-  if (props.termId === "term-assessed-school-value") {
-    return (
-      <TermAssessedSchoolValueBriefBody
-        countyParcelRecordUrl={props.countyParcelRecordUrl}
-      />
-    );
-  }
   const { Brief } = parcelGlossaryTermBriefRegistry[props.termId];
   return <Brief />;
 }

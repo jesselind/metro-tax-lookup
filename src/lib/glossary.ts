@@ -18,6 +18,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-actual-value",
   "term-ain",
   "term-assessed-value",
+  "term-assessment-year",
   "term-comps",
   "term-nov-comps-improvement-style",
   "term-nov-comps-improvement-type",
@@ -34,6 +35,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-property-classification",
   "term-situs-address",
   "term-special-districts",
+  "term-state-use",
   "term-tag",
   "term-tax-entity",
 ] as const;

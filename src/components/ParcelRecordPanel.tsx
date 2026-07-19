@@ -17,6 +17,7 @@ import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
+import { formatMartIntegerCodeDisplay } from "@/lib/parcelRecordDisplay";
 import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -116,7 +117,7 @@ export function ParcelRecordPanel({
     >
       {loading ? (
         <div className="space-y-3" aria-live="polite" aria-label="Loading property details">
-          {Array.from({ length: 8 }, (_, i) => (
+          {Array.from({ length: 12 }, (_, i) => (
             <div key={i} className="space-y-1.5">
               <div className={`${SKELETON_BAR} w-24`} />
               <div className={`${SKELETON_BAR} w-full max-w-md`} />
@@ -231,6 +232,36 @@ export function ParcelRecordPanel({
               label="Land Use"
               value={displayRecord.landUse}
               triggerIdSuffix="land-use"
+            />
+            <ParcelRecordRow
+              termId="term-state-use"
+              label="State Use"
+              value={displayRecord.stateUseLabel}
+              triggerIdSuffix="state-use"
+            />
+            <ParcelRecordRow
+              termId="term-state-use"
+              label="State Use Code"
+              value={formatMartIntegerCodeDisplay(displayRecord.stateUseCd)}
+              triggerIdSuffix="state-use-code"
+            />
+            <ParcelRecordRow
+              termId="term-tax-roll"
+              label="Tax Roll"
+              value={displayRecord.taxRollDescr}
+              triggerIdSuffix="tax-roll"
+            />
+            <ParcelRecordRow
+              termId="term-subdivision"
+              label="Subdivision"
+              value={displayRecord.subdivisionName}
+              triggerIdSuffix="subdivision"
+            />
+            <ParcelRecordRow
+              termId="term-subdivision"
+              label="Subdivision Code"
+              value={formatMartIntegerCodeDisplay(displayRecord.subdivisionCd)}
+              triggerIdSuffix="subdivision-code"
             />
             <div className={ROW_CLASS}>
               <dt className={LABEL_CLASS}>

@@ -218,6 +218,7 @@ export type DemoPropertyLoad = {
     templateMillDrafts: Record<string, string>;
     parcelValues: ParcelValuesFromExport;
     parcelAssessmentYear: string | null;
+    parcelTaxYear: string | null;
     ain: string;
   };
   parcelRecord: ArapahoeParcelRecordRow;
@@ -249,6 +250,11 @@ export function loadDemoProperty(): DemoPropertyLoad {
         ownerList: DEMO_OWNER_LIST,
       },
       parcelAssessmentYear: fixture.parcelAssessmentYear,
+      parcelTaxYear:
+        typeof fixture.parcelRecord.parcelTaxYear === "string" &&
+        fixture.parcelRecord.parcelTaxYear.trim()
+          ? fixture.parcelRecord.parcelTaxYear.trim()
+          : null,
       ain: DEMO_AIN,
     },
     // Fixture is already fictional; demoMode still runs obfuscateParcelRecordRow in the hook.

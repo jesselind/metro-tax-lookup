@@ -20,6 +20,7 @@ import {
   COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
 } from "@/lib/coloradoDptAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
+import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
   safeArapahoeClerkRecorderSearchUrl,
   safeArapahoeParcelRecordUrl,
@@ -45,7 +46,6 @@ type GlossaryLabelSpec = {
   termId: ParcelGlossaryTermId;
   triggerIdSuffix: string;
   variant?: "parcel-record" | "section-title" | "column-header";
-  countyParcelRecordUrl?: string | null;
 };
 
 function ParcelRecordTableGlossaryLabel({
@@ -53,7 +53,6 @@ function ParcelRecordTableGlossaryLabel({
   termId,
   triggerIdSuffix,
   variant = "parcel-record",
-  countyParcelRecordUrl,
 }: GlossaryLabelSpec) {
   return (
     <ParcelGlossaryPopoverTrigger
@@ -61,7 +60,6 @@ function ParcelRecordTableGlossaryLabel({
       textTrigger={text}
       textTriggerId={`parcel-record-table-${triggerIdSuffix}`}
       variant={variant}
-      countyParcelRecordUrl={countyParcelRecordUrl}
     />
   );
 }
@@ -315,11 +313,9 @@ function valueRowDisplayLabel(
 function ValueRowLabel({
   year,
   kind,
-  countyParcelRecordUrl,
 }: {
   year: string;
   kind: "appraised" | "assessed" | "assessed-school";
-  countyParcelRecordUrl?: string | null;
 }) {
   const glossary = VALUE_ROW_GLOSSARY[kind];
   return (
@@ -327,9 +323,6 @@ function ValueRowLabel({
       text={valueRowDisplayLabel(year, kind)}
       termId={glossary.termId}
       triggerIdSuffix={glossary.triggerIdSuffix}
-      countyParcelRecordUrl={
-        kind === "assessed-school" ? countyParcelRecordUrl : undefined
-      }
     />
   );
 }
@@ -358,7 +351,10 @@ type ValueColumn = {
 
 function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   const year = (record.assessmentYear ?? "").trim();
-  const countyParcelRecordUrl = safeArapahoeParcelRecordUrl(record.ain);
+  const yearNote = parcelTaxAssessmentYearNote(
+    record.parcelTaxYear,
+    record.assessmentYear,
+  );
   const rows: {
     kind: "appraised" | "assessed" | "assessed-school";
     values: ValueColumn;
@@ -410,7 +406,13 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   }
 
   return (
-    <table className={TABLE_CLASS}>
+    <div className="space-y-2">
+      {yearNote ? (
+        <p className="text-sm leading-relaxed text-slate-600 sm:text-base" role="note">
+          {yearNote}
+        </p>
+      ) : null}
+      <table className={TABLE_CLASS}>
       <caption className="sr-only">Appraised and assessed values by total, building, and land</caption>
       <tbody>
         <SectionTitleRow
@@ -431,7 +433,6 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
                 <ValueRowLabel
                   year={year}
                   kind={row.kind}
-                  countyParcelRecordUrl={countyParcelRecordUrl}
                 />
               </th>
               <td className={MONEY_TD_CLASS}>
@@ -460,6 +461,7 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
         })}
       </tbody>
     </table>
+    </div>
   );
 }
 

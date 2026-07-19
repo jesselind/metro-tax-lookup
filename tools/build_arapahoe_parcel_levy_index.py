@@ -469,7 +469,7 @@ def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
         "ownerCityStateZip": _optional_str(row, "CurLastLine"),
         "legalDescrFull": legal_full,
         "legalDescrDisplay": legal_display,
-        "subdivisionCd": _optional_str(row, "SubdivisionCd"),
+        "subdivisionCd": normalize_integerish_code(row.get("SubdivisionCd")) or None,
         "subdivisionName": _optional_str(row, "SubdivisionName"),
         "taxRollDescr": _optional_str(row, "TaxRollDescr"),
         "propertyClassDescr": _optional_str(row, "PropertyClassDescr"),
@@ -477,7 +477,7 @@ def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
         "improvementActual": parse_parcel_value_cell(row.get("ImprovementActual")),
         "landActual": parse_parcel_value_cell(row.get("LandActual")),
         "totalAssessed": parse_parcel_value_cell(row.get("TotalAssessed")),
-        "stateUseCd": _optional_str(row, "StateUseCd"),
+        "stateUseCd": normalize_integerish_code(row.get("StateUseCd")) or None,
         "parcelTaxYear": _optional_str(row, "TaxYear"),
         "assessmentYear": _optional_str(row, "AssessmentYear"),
     }
@@ -1551,17 +1551,24 @@ def format_county_mm_dd_yyyy(raw: str) -> str:
     return s
 
 
-def normalize_state_use_cd(raw: str) -> str:
-    """Normalize StateUseCd for xlsx lookup (strip float suffix; pad 3-digit codes)."""
+def normalize_integerish_code(raw: str | None) -> str:
+    """Strip Excel float suffixes from numeric codes (e.g. 54850.0 → 54850).
+
+    Matches only a trailing whole-number ``.0`` / ``.000`` suffix so leading
+    zeros and other non-matching inputs stay intact (unlike float()/int()).
+    """
     s = strip_field(raw)
     if not s:
         return ""
-    try:
-        n = float(s)
-        if n == int(n):
-            s = str(int(n))
-    except ValueError:
-        pass
+    m = re.fullmatch(r"(-?\d+)\.0+", s)
+    if m:
+        return m.group(1)
+    return s
+
+
+def normalize_state_use_cd(raw: str) -> str:
+    """Normalize StateUseCd for xlsx lookup (strip float suffix; pad 3-digit codes)."""
+    s = normalize_integerish_code(raw)
     if s.isdigit() and len(s) == 3:
         return s.zfill(4)
     return s

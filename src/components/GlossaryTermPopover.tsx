@@ -68,7 +68,6 @@ type GlossaryTermPopoverProps = {
   textTriggerClassName?: string;
   panelClassName?: string;
   disabled?: boolean;
-  countyParcelRecordUrl?: string | null;
   /** When true, use summary-tile / parcel-record underline classes. */
   variant?: "inline" | "summary-tile" | "parcel-record";
 };
@@ -84,7 +83,6 @@ export function GlossaryTermPopover({
   textTriggerClassName,
   panelClassName,
   disabled,
-  countyParcelRecordUrl,
   variant = "inline",
 }: GlossaryTermPopoverProps) {
   const { title, Brief } = resolveBrief(termId);
@@ -97,12 +95,7 @@ export function GlossaryTermPopover({
 
   let body: ReactNode;
   if (termId in parcelGlossaryTermBriefRegistry) {
-    body = (
-      <ParcelTermPopoverPanel
-        termId={termId as ParcelGlossaryTermId}
-        countyParcelRecordUrl={countyParcelRecordUrl}
-      />
-    );
+    body = <ParcelTermPopoverPanel termId={termId as ParcelGlossaryTermId} />;
   } else {
     body = <Brief />;
   }
