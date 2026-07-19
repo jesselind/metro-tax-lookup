@@ -10,6 +10,8 @@ import { StaticArticleShell } from "@/components/StaticArticleShell";
 import {
   SOURCES_PAGE_INNER_CLASS,
   TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
+  TERM_LINK_CLASS,
+  CODE_INLINE_CLASS,
 } from "@/lib/toolFlowStyles";
 import {
   ARAPAHOE_ASSESSOR_DATA_MART_EXPORT,
@@ -34,7 +36,6 @@ import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "../../../public/data/metro-levies-2025.json";
 import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { glossaryTermHref } from "@/lib/glossary";
-import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 export const metadata = {
   title: "Sources | Property tax tools",
@@ -496,10 +497,20 @@ export default function SourcesPage() {
         </p>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
           <li>
-            Value labels use the mart <strong>assessment year</strong>{" "}(as on
-            the county parcel page), not the levy roll tax year. When those two
-            years differ, the values section notes both, and the assessment-year
-            summary tile shows the tax year as a secondary line.
+            Value labels use the{" "}
+            <Link
+              href={glossaryTermHref("term-data-mart")}
+              className={TERM_LINK_CLASS}
+            >
+              data mart
+            </Link>
+            {" "}
+            <strong>assessment year</strong>
+            {" "}
+            (as on the county parcel page), not the tax year used for the levy
+            roll (the county&apos;s certified mill rates for that billing year).
+            When those two years differ, the values section notes both, and the
+            assessment-year summary tile shows the tax year as a secondary line.
           </li>
           <li>
             <strong>Assessed school value</strong>{" "}is not a mart column. For
@@ -569,7 +580,19 @@ export default function SourcesPage() {
             Data Mart
             <span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
-          extract (often updated about weekly). DOLA{" "}
+          extract (often updated about weekly). Maintainers download tables such
+          as{" "}
+          <code className={CODE_INLINE_CLASS}>
+            Main Parcel Table
+          </code>
+          {" "}
+          and{" "}
+          <code className={CODE_INLINE_CLASS}>
+            Tax Authority Groups and Tax Authorities
+          </code>
+          {" "}
+          as CSV from that portal and join them offline when refreshing bundled
+          data; looking up a PIN does not call a live Data Mart API. DOLA{" "}
           <a
             href={DOLA_LGIS_PROPERTY_TAX_ENTITIES}
             target="_blank"

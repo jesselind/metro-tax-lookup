@@ -17,6 +17,7 @@ import unittest
 from build_arapahoe_parcel_levy_index import (
     attach_computed_assessed_values,
     local_assessed_split_fields,
+    normalize_integerish_code,
     ownership_type_label_from_owner_lp_types,
     parcel_row_qualifies_for_dual_assessed_splits,
     parcel_row_qualifies_for_school_assessed_splits,
@@ -176,6 +177,22 @@ class AssessedSplitMathTests(unittest.TestCase):
         attach_computed_assessed_values(rec, _real_improvement_row("2024"))
         self.assertNotIn("assessedLand", rec)
         self.assertNotIn("schoolAssessedTotal", rec)
+
+
+class NormalizeIntegerishCodeTests(unittest.TestCase):
+    def test_strips_excel_whole_number_suffix(self) -> None:
+        self.assertEqual(normalize_integerish_code("54850.0"), "54850")
+        self.assertEqual(normalize_integerish_code("54850.000"), "54850")
+
+    def test_preserves_leading_zeros(self) -> None:
+        self.assertEqual(normalize_integerish_code("0400.0"), "0400")
+        self.assertEqual(normalize_integerish_code("0400"), "0400")
+
+    def test_leaves_non_matching_inputs_intact(self) -> None:
+        self.assertEqual(normalize_integerish_code("ABC.0"), "ABC.0")
+        self.assertEqual(normalize_integerish_code("1.5"), "1.5")
+        self.assertEqual(normalize_integerish_code(""), "")
+        self.assertEqual(normalize_integerish_code(None), "")
 
 
 if __name__ == "__main__":

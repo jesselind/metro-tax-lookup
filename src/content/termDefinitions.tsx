@@ -101,15 +101,9 @@ export function TermDataMartAside() {
         <dfn className="font-semibold not-italic text-slate-900">data mart</dfn>
         {" "}
         is a focused slice of a larger data warehouse: tables or extracts scoped to one topic or
-        business area. Agencies sometimes spell it <span className="italic">datamart</span>. For
-        this tool, it refers to the county&apos;s Assessor Data Mart: tabular exports (for example{" "}
-        <code className={CODE_INLINE_CLASS}>Main Parcel Table</code>
-        {" "}and{" "}
-        <code className={CODE_INLINE_CLASS}>
-          Tax Authority Groups and Tax Authorities
-        </code>
-        ) that you download as CSV from the portal and join offline, not a live API when you use
-        the app.
+        business area. Agencies sometimes spell it <span className="italic">datamart</span>. Here
+        it means the county&apos;s Assessor Data Mart, the published parcel and tax-authority
+        tables this tool draws from.
       </p>
     </aside>
   );
@@ -273,6 +267,11 @@ export function TermPropertyClassificationAside() {
           <strong className="font-semibold text-slate-900">Real</strong>
           {" "}
           is often used for land or simpler real-property rows (many vacant lots).
+          The same word can also appear in the separate{" "}
+          <strong className="font-semibold text-slate-900">Tax roll</strong>
+          {" "}
+          field below, so the two labels can look interchangeable even though
+          they answer different questions.
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Personal</strong>
@@ -308,9 +307,14 @@ export function TermPropertyClassificationAside() {
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         <strong className="font-semibold text-slate-900">Tax roll</strong>
         {" "}
-        (often{" "}
+        is a different field from property classification. It names which tax
+        roll the parcel sits on (often{" "}
         <strong className="font-semibold text-slate-900">Real</strong>
-        ) is a different field: which tax roll the parcel sits on.
+        ). Classification describes what is being assessed; Tax roll identifies
+        the parcel&apos;s tax-roll category. Seeing{" "}
+        <strong className="font-semibold text-slate-900">Real</strong>
+        {" "}
+        in both places is common and does not mean they are the same field.
       </p>
     </TermAside>
   );

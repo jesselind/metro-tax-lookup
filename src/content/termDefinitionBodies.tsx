@@ -25,7 +25,7 @@ export function TermLevyBriefBody() {
       A <strong className="font-semibold text-slate-900">mill levy</strong>
       {" "}
       is the tax rate for one district on your bill (school, county, fire, and so on). One mill means
-      about $1 of tax for every $1,000 of the taxable value the state allows. Your bill usually has
+      exactly $1 of tax for every $1,000 of the taxable value the state allows. Your bill usually has
       one row per district.
     </p>
   );
@@ -70,7 +70,7 @@ export function TermMillLevyFullBody() {
         .
       </p>
       <p className={FULL_P}>
-        One mill is about $1 of tax per $1,000 of taxable (assessed) value for that row. The{" "}
+        One mill is exactly $1 of tax per $1,000 of taxable (assessed) value for that row. The{" "}
         <strong className="font-semibold text-slate-900">mill levy</strong>
         {" "}
         total is every district that taxes your place, added together.

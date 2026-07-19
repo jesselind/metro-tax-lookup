@@ -1552,16 +1552,17 @@ def format_county_mm_dd_yyyy(raw: str) -> str:
 
 
 def normalize_integerish_code(raw: str | None) -> str:
-    """Strip Excel float suffixes from numeric codes (e.g. 54850.0 → 54850)."""
+    """Strip Excel float suffixes from numeric codes (e.g. 54850.0 → 54850).
+
+    Matches only a trailing whole-number ``.0`` / ``.000`` suffix so leading
+    zeros and other non-matching inputs stay intact (unlike float()/int()).
+    """
     s = strip_field(raw)
     if not s:
         return ""
-    try:
-        n = float(s)
-        if n == int(n):
-            return str(int(n))
-    except ValueError:
-        pass
+    m = re.fullmatch(r"(-?\d+)\.0+", s)
+    if m:
+        return m.group(1)
     return s
 
 
