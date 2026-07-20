@@ -249,18 +249,16 @@ export default function SourcesPage() {
           district&apos;s rate changed from last year, the app shows a{" "}
           <strong className="font-semibold text-slate-900">Changed</strong>
           {" "}
-          cue on that district&apos;s tile and a year-by-year mills and dollar
-          comparison in that tile&apos;s details. A money-impact line under{" "}
-          <strong className="font-semibold text-slate-900">
-            Where is your money going?
-          </strong>
-          {" "}
-          appears only when last year&apos;s rates are complete enough to net
-          honestly across every matched metro district on your stack.
-          Individual purpose changes can still show in the breakdown and tile
-          details even when that net line is held back. Comparisons use the
-          previous-year mill column on the county form (and never add a summary
-          Total purpose together with the part purposes that make it up).
+          cue on that district&apos;s tile and a short money-impact line in that
+          tile&apos;s details. Year-by-year mills and dollars stay behind a
+          Show year-by-year breakdown control. Near the top of your results, a
+          neutral note that a metro district rate on your bill changed appears
+          when any matched metro district published a rate change (we do not
+          guess whether the whole bill went up or down until more prior rates
+          are available). Clicking that note scrolls to the first Changed tile.
+          Comparisons use the previous-year mill column on the county form (and
+          never add a summary Total purpose together with the part purposes that
+          make it up).
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
@@ -287,9 +285,9 @@ export default function SourcesPage() {
             </a>
             . District names, levy purposes, previous-year mill rates, and
             aggregated debt service and total mills are extracted offline into
-            the app. The home metro breakdown lists every published
-            current-versus-previous mill change for matched metro districts
-            (budget year {levyJson.year}
+            the app. Tile details show each matched metro district&apos;s
+            published current-versus-previous mill change (budget year{" "}
+            {levyJson.year}
             {bundledLabel && bundledIso ? (
               <>
                 ; snapshot{" "}

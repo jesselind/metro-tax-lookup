@@ -32,10 +32,12 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText(nonMetroAuthorityLabel)).toBeVisible();
     await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await expect(
-      page.getByRole("status").filter({ hasText: /paying \$.*more than last year/i }),
+      page.getByRole("status").filter({
+        hasText: /metro district rate on your bill changed/i,
+      }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("status").filter({ hasText: /paying \$.*less than last year/i }),
+      page.getByRole("button", { name: /Scroll to the first rate that changed/i }),
     ).toHaveCount(0);
   });
 
@@ -50,16 +52,33 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText("Changed", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("status").filter({
-        hasText: /paying \$4 more than last year for your metro district/i,
+        hasText: /metro district rate on your bill changed/i,
       }),
     ).toBeVisible();
+
+    const scrollBtn = page.getByRole("button", {
+      name: /Scroll to the first rate that changed/i,
+    });
+    await expect(scrollBtn).toBeVisible();
+    await scrollBtn.click();
+    const firstChangedTile = page.locator("#levy-tile-first-rate-change");
+    await expect(firstChangedTile).toBeVisible();
+    await expect(
+      firstChangedTile.getByRole("button", {
+        name: new RegExp(
+          `View district details for ${metroAuthorityLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+        ),
+      }),
+    ).toBeFocused();
 
     await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
     await expect(page.locator("#home-parcel-property-tax")).toBeVisible();
     await expect(page.locator("#home-parcel-property-tax")).toContainText("$413");
   });
 
-  test("metro tile details show year cards and Difference line", async ({ page }) => {
+  test("metro tile details show headline only until breakdown is expanded", async ({
+    page,
+  }) => {
     await installSyntheticCountyData(page, { includeMetro: true });
     await page.goto("/");
     await searchSyntheticAddress(page);
@@ -77,9 +96,35 @@ test.describe("Metro year-over-year UI", () => {
     await expect(
       dialog.getByRole("region", { name: /paying \$4 more than last year/i }),
     ).toBeVisible();
+    await expect(dialog.getByText("General Operating")).toHaveCount(0);
+    await expect(dialog.getByText(/^Difference:/)).toHaveCount(0);
+
+    await dialog
+      .getByRole("button", {
+        name: /paying \$4 more than last year.*Show year-by-year breakdown/i,
+      })
+      .click();
+    await expect(dialog.getByText("Total", { exact: true })).toBeVisible();
+    await expect(dialog.getByText("Each part that changed")).toBeVisible();
     await expect(dialog.getByText("General Operating")).toBeVisible();
+    await expect(dialog.getByText(/^Difference:/)).toHaveCount(4);
+    await dialog.getByRole("button", { name: "General Operating" }).click();
+    await expect(
+      dialog.getByRole("heading", { name: "General operating" }),
+    ).toBeVisible();
+    await expect(dialog.getByText(/day-to-day money for the district/i)).toBeVisible();
     await expect(dialog.getByText("2025").first()).toBeVisible();
     await expect(dialog.getByText("2026").first()).toBeVisible();
-    await expect(dialog.getByText(/^Difference:/)).toHaveCount(3);
+    await expect(dialog.getByText(/^Difference:/).first()).toBeVisible();
+
+    await dialog
+      .getByRole("button", {
+        name: /paying \$4 more than last year.*Hide year-by-year breakdown/i,
+      })
+      .click();
+    await expect(dialog.getByText("General Operating")).toHaveCount(0);
+    await expect(
+      dialog.getByRole("heading", { name: "General operating" }),
+    ).toHaveCount(0);
   });
 });
