@@ -65,6 +65,9 @@ import {
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
+import levyData from "@/data/metroLevies";
+import type { LevyDataFile } from "@/lib/levyTypes";
+import { metroBillImpactCalloutForDistrictIds } from "@/lib/metroLevyYearOverYear";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import {
@@ -72,8 +75,14 @@ import {
   safeArapahoeCompsGridPdfUrl,
 } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
+import {
+  annualTaxDollarsFromAssessedMills,
+  parcelAssessedForDollarEstimate,
+} from "@/lib/annualTaxFromAssessedMills";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
-import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
+import {
+  parcelTaxAndAssessmentYearsDiffer,
+} from "@/lib/parcelRecordDisplay";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
@@ -405,6 +414,20 @@ export function HomeParcelAddressLookup({
     return Math.round(s * 1000) / 1000;
   }, [levyLines]);
 
+  /** Same estimated annual $ as the levy stack Total row (mills × assessed ÷ 1000). */
+  const estimatedAnnualPropertyTaxDollars = useMemo(() => {
+    if (levyAwaitingTemplateMills) return null;
+    const assessed = parcelAssessedForDollarEstimate(
+      levyLoadedMeta?.parcelValues?.totalAssessed,
+    );
+    if (assessed == null || sumMills <= 0) return null;
+    return annualTaxDollarsFromAssessedMills(assessed, sumMills);
+  }, [
+    levyAwaitingTemplateMills,
+    levyLoadedMeta?.parcelValues?.totalAssessed,
+    sumMills,
+  ]);
+
   const homeCompsGridPdfHref = useMemo(
     () => safeArapahoeCompsGridPdfUrl(levyLoadedMeta?.ain),
     [levyLoadedMeta?.ain],
@@ -421,6 +444,17 @@ export function HomeParcelAddressLookup({
     [levyLines],
   );
   const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
+
+  /** Net metro mill/dollar YoY for the bill-impact callout. */
+  const metroBillImpactCallout = useMemo(() => {
+    if (homeMetroFromLevyStack?.kind !== "match") return null;
+    const file = levyData as LevyDataFile;
+    return metroBillImpactCalloutForDistrictIds(
+      homeMetroFromLevyStack.districtIds,
+      file.districts,
+      levyLoadedMeta?.parcelValues?.totalAssessed,
+    );
+  }, [homeMetroFromLevyStack, levyLoadedMeta?.parcelValues?.totalAssessed]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -733,6 +767,21 @@ export function HomeParcelAddressLookup({
         Where is your money going?
       </h3>
       {levyStackIntro}
+      {metroBillImpactCallout ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`rounded-lg border-2 px-3 py-3 sm:px-4 sm:py-3.5 ${
+            metroBillImpactCallout.direction === "more"
+              ? "border-red-700 bg-red-50 text-red-950"
+              : "border-emerald-700 bg-emerald-50 text-emerald-950"
+          }`}
+        >
+          <p className="text-base font-bold leading-snug tracking-tight sm:text-lg">
+            {metroBillImpactCallout.message}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 
@@ -821,12 +870,12 @@ export function HomeParcelAddressLookup({
     parcelRecord,
   );
 
-  const assessmentYearNote = levyLoadedMeta
-    ? parcelTaxAssessmentYearNote(
-        levyLoadedMeta.parcelTaxYear,
-        levyLoadedMeta.parcelAssessmentYear,
-      )
-    : null;
+  const showTaxYearSummaryTile =
+    !!levyLoadedMeta &&
+    parcelTaxAndAssessmentYearsDiffer(
+      levyLoadedMeta.parcelTaxYear,
+      levyLoadedMeta.parcelAssessmentYear,
+    );
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
     <div className="space-y-5">
@@ -1315,11 +1364,29 @@ export function HomeParcelAddressLookup({
                   <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                     {levyLoadedMeta.parcelAssessmentYear}
                   </p>
-                  {assessmentYearNote && levyLoadedMeta.parcelTaxYear ? (
-                    <p className="mt-1.5 text-sm font-normal leading-snug text-slate-600">
-                      Tax year {levyLoadedMeta.parcelTaxYear.trim()}
-                    </p>
-                  ) : null}
+                </div>
+              </div>
+            ) : null}
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            showTaxYearSummaryTile &&
+            levyLoadedMeta.parcelTaxYear ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
+                id="home-parcel-tax-year"
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <ParcelGlossaryPopoverTrigger
+                      termId="term-tax-year"
+                      textTrigger="Tax year"
+                      textTriggerId="tax-year-term-first"
+                    />
+                  </div>
+                  <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                    {levyLoadedMeta.parcelTaxYear.trim()}
+                  </p>
                 </div>
               </div>
             ) : null}
@@ -1327,7 +1394,8 @@ export function HomeParcelAddressLookup({
             levyReadyForSummary &&
             levyLoadedMeta &&
             (levyLoadedMeta.parcelValues.totalActual != null ||
-              levyLoadedMeta.parcelValues.totalAssessed != null) ? (
+              levyLoadedMeta.parcelValues.totalAssessed != null ||
+              estimatedAnnualPropertyTaxDollars != null) ? (
                 <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
                   {levyLoadedMeta.parcelValues.totalActual != null ? (
                     <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}>
@@ -1357,6 +1425,25 @@ export function HomeParcelAddressLookup({
                         </div>
                         <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                           {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                  {estimatedAnnualPropertyTaxDollars != null ? (
+                    <div
+                      className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}
+                      id="home-parcel-property-tax"
+                    >
+                      <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                        <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                          <ParcelGlossaryPopoverTrigger
+                            termId="term-property-tax"
+                            textTrigger="Property tax"
+                            textTriggerId="property-tax-term-first"
+                          />
+                        </div>
+                        <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
+                          {formatUsdWhole(estimatedAnnualPropertyTaxDollars)}
                         </p>
                       </div>
                     </div>

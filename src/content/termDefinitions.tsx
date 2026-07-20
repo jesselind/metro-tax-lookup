@@ -346,10 +346,41 @@ export function TermAssessmentYearAside() {
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         <dfn className="font-semibold not-italic text-slate-900">Assessment year</dfn>
         {" "}
-        is the year on the county value headers (for example 2026 Appraised).{" "}
-        <strong className="font-semibold text-slate-900">Tax year</strong>
+        is the year stamped on the county&apos;s value amounts (for example{" "}
+        <strong className="font-semibold text-slate-900">2026 Appraised</strong>
+        {"). "}
+        That stamp can differ from{" "}
+        <Link href={glossaryTermHref("term-tax-year")} className={TERM_LINK_CLASS}>
+          tax year
+        </Link>
+        {". "}
+        Neither date tells you when a payment is due.
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermTaxYearAside() {
+  return (
+    <TermAside
+      id="term-tax-year"
+      title="Tax year"
+      titleId="term-tax-year-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        <dfn className="font-semibold not-italic text-slate-900">Tax year</dfn>
         {" "}
-        can be one year earlier. Neither date by itself tells you when a payment is due.
+        names which year&apos;s property tax these county figures belong to.
+        Arapahoe often lists it one year earlier than{" "}
+        <Link
+          href={glossaryTermHref("term-assessment-year")}
+          className={TERM_LINK_CLASS}
+        >
+          assessment year
+        </Link>
+        {" "}
+        (for example tax year 2025 with assessment year 2026). It is not when
+        you have to pay. Your county treasurer notice shows payment due dates.
       </p>
     </TermAside>
   );
@@ -820,6 +851,7 @@ export function AllTermDefinitionAsides() {
       <TermStateUseAside />
       <TermTagAside />
       <TermTaxEntityAside />
+      <TermTaxYearAside />
     </>
   );
 }

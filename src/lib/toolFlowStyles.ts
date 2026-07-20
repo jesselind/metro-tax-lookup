@@ -128,9 +128,9 @@ export const LEVY_STACK_TILE_GRID_CLASS =
 export const PARCEL_SUMMARY_ROW_CLASS =
   "flex w-full min-w-0 flex-row flex-wrap items-stretch justify-start gap-3 sm:gap-4";
 
-/** Actual + assessed: always a row; `sm:contents` so tiles join the parent row at sm+ breakpoints. */
+/** Actual / assessed / property-tax value tiles: row on small screens; `sm:contents` joins the parent row at sm+. */
 export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS =
-  "flex w-full min-w-0 flex-row flex-nowrap items-stretch gap-3 sm:contents";
+  "flex w-full min-w-0 flex-row flex-wrap items-stretch gap-3 sm:contents";
 
 /**
  * Parcel tiles: border + radius on the outer frame, padding + scroll on an inner body.

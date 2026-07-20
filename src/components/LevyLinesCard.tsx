@@ -5,6 +5,11 @@
 
 import { DEBT_PANEL_CLASS } from "@/lib/debtUiClasses";
 import type { LevyLineFromJson } from "@/lib/levyTypes";
+import {
+  formatMetroMillsDeltaFromRate,
+  formatMetroMillsFromRate,
+  levyPurposeRateChanged,
+} from "@/lib/metroLevyYearOverYear";
 
 type LevyLinesCardProps = {
   title: string;
@@ -13,7 +18,7 @@ type LevyLinesCardProps = {
   rateToMills: number;
   /** Default 3. Ignored when showAllLines is true. */
   maxLines?: number;
-  /** If true, list every levy line (for audit / detail views). */
+  /** If true, list every levy purpose (for audit / detail views). */
   showAllLines?: boolean;
   /** Debt-themed surface; use slate-600+ for small text (AA on light wash). */
   tone?: "neutral" | "debt";
@@ -62,32 +67,65 @@ export function LevyLinesCard({
         <p className={descClass}>{description}</p>
       </div>
       <ul className={listClass}>
-        {shown.map((levy) => (
-          <li
-            key={levy.rawRowIndex}
-            className="flex items-baseline justify-between gap-3 px-3 py-2 sm:px-4"
-          >
-            <span
-              className={
-                tone === "debt"
-                  ? "text-xs text-slate-800 sm:text-sm"
-                  : "text-xs sm:text-sm"
-              }
+        {shown.map((levy) => {
+          const changed = levyPurposeRateChanged(levy);
+          const previous = levy.rateMillsPrevious;
+          return (
+            <li
+              key={levy.rawRowIndex}
+              className="flex items-baseline justify-between gap-3 px-3 py-2 sm:px-4"
             >
-              {levy.purposeRaw}
-            </span>
-            <span className="flex flex-col items-end text-right">
-              <span className="text-xs font-mono text-slate-700 sm:text-sm">
-                {(levy.rateMillsCurrent * rateToMills).toFixed(3)} mills
+              <span
+                className={
+                  tone === "debt"
+                    ? "text-xs text-slate-800 sm:text-sm"
+                    : "text-xs sm:text-sm"
+                }
+              >
+                {levy.purposeRaw}
               </span>
-              {levy.taborExempt && (
-                <span className="mt-1 inline-flex items-center justify-center rounded-md border border-amber-900 bg-amber-50 px-1.5 pb-0.5 pt-1 text-[0.55rem] font-semibold uppercase leading-none tracking-wide text-amber-900">
-                  TABOR-exempt
+              <span className="flex flex-col items-end text-right">
+                <span className="text-xs font-mono text-slate-700 sm:text-sm">
+                  {formatMetroMillsFromRate(levy.rateMillsCurrent, rateToMills)}{" "}
+                  mills
                 </span>
-              )}
-            </span>
-          </li>
-        ))}
+                {previous != null ? (
+                  <span
+                    className={
+                      changed
+                        ? "mt-0.5 text-[0.65rem] font-mono text-slate-800 sm:text-xs"
+                        : "mt-0.5 text-[0.65rem] font-mono text-slate-500 sm:text-xs"
+                    }
+                  >
+                    {changed ? (
+                      <>
+                        Was {formatMetroMillsFromRate(previous, rateToMills)}
+                        {" "}
+                        (
+                        {formatMetroMillsDeltaFromRate(
+                          levy.rateMillsCurrent - previous,
+                          rateToMills,
+                        )}
+                        {" "}
+                        mills)
+                      </>
+                    ) : (
+                      <>
+                        Prior year{" "}
+                        {formatMetroMillsFromRate(previous, rateToMills)} mills
+                      </>
+                    )}
+                  </span>
+                ) : null}
+                {levy.taborExempt && (
+                  <span className="mt-1 inline-flex items-center justify-center rounded-md border border-amber-900 bg-amber-50 px-1.5 pb-0.5 pt-1 text-[0.55rem] font-semibold uppercase leading-none tracking-wide text-amber-900">
+                    TABOR-exempt
+                  </span>
+                )}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

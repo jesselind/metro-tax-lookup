@@ -38,6 +38,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-state-use",
   "term-tag",
   "term-tax-entity",
+  "term-tax-year",
 ] as const;
 
 export type GlossaryFullEntryTermId = (typeof GLOSSARY_FULL_ENTRY_TERM_IDS)[number];

@@ -37,7 +37,7 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
 
 ### Tests, fixtures, and PII
 
@@ -51,7 +51,8 @@ This is a **public** repo. Automated tests must not spotlight a real resident (P
 | Python unit tests | `tools/synthetic_test_ids.py` + `tools/test_*.py` | Same IDs for parser tests; parcel-index builder tests use invented Main Parcel rows (no real PIN) |
 | NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
-| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Try demo uses the PIN-less fixture; address → levy → shard uses Playwright route fulfills of synthetic JSON (`e2e/fixtures/`). Assert UI contracts / presence — not live scrapes or brittle dollar/mill snapshots |
+| Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
+| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Try demo uses the PIN-less fixture; address → levy → shard uses Playwright route fulfills of synthetic JSON (`e2e/fixtures/`). `e2e/metro-yoy.spec.ts` covers metro YoY chrome (Changed badge, bill-impact callout, tax/property tiles) vs non-metro absence. Assert UI contracts / presence — not live scrapes or brittle dollar/mill snapshots |
 
 Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
 
@@ -146,8 +147,11 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 4. Rebuild metro levy JSON (year-specific script):
    - `tools/extract_metro_levies_2025.py` or `tools/extract_metro_levies_2026.py`
-   - Source PDF goes in `supporting-data/certs/` (Mill Levy Public Information Form; 2026 script may use the Certification of Levies PDF)
+   - Source PDF: `supporting-data/certs/Mill Levy Public Information Form.pdf` (text-line extract; not the Certification of Levies PDF layout)
    - Outputs land in `supporting-data/metro-levies/`; copy to `public/data/metro-levies-YYYY.json`
+   - App import site: `src/data/metroLevies.ts` (flip the year file there when shipping a newer extract)
+   - YoY mill changes in the UI use each purpose's `rateMillsPrevious` vs `rateMillsCurrent` from that PDF column (never sum a summary Total with the part purposes that make it up)
+   - Core helper: `src/lib/metroLevyYearOverYear.ts`. Surfaces: bill-impact callout under the levy section intro (`HomeParcelAddressLookup`), metro breakdown + soft blurb (`MetroTaxShareFlow`), **Changed** badge on metro authority tiles (`LevyStackVisualization`), year/mills/$ block in `LevyLineDistrictDetailDialog` when that metro moved
 
 5. Optional legacy district tooling (not used for the app runtime bundle above):
    - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`

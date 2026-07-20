@@ -5,7 +5,7 @@
 
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
 import type { LevyDataFile, LevyDistrictFromJson } from "@/lib/levyTypes";
-import levyData from "../../public/data/metro-levies-2025.json";
+import levyData from "@/data/metroLevies";
 
 /** Hint from a PIN-loaded levy stack: metro prefill, or no matching metro LG ID on any line. */
 export type MetroFromLevyStack =
@@ -25,11 +25,11 @@ export function normalizeMetroLgIdKey(raw: string | null | undefined): string {
 }
 
 /**
- * LG ID key for metro prefill: use explicit `dolaMatch.lgId` when present.
+ * LG ID key for metro matching: use explicit `dolaMatch.lgId` when present.
  * The property-tax export often leaves `lgId` empty on fuzzy matches while
  * `taxEntityId` is "{lgId}/1" (same convention as metro-levies `lgid`).
  */
-function metroPrefillLgIdKeyFromDolaMatch(
+export function metroLgIdKeyFromDolaMatch(
   dolaMatch: CommittedLevyLine["dolaMatch"],
 ): string {
   const fromLg = normalizeMetroLgIdKey(dolaMatch?.lgId ?? null);
@@ -59,7 +59,7 @@ export function findMetroDistrictIdsFromLevyLines(
   const seen = new Set<string>();
   const out: string[] = [];
   for (const ln of lines) {
-    const key = metroPrefillLgIdKeyFromDolaMatch(ln.dolaMatch);
+    const key = metroLgIdKeyFromDolaMatch(ln.dolaMatch);
     if (!key) continue;
     const id = byLg.get(key);
     if (!id || seen.has(id)) continue;

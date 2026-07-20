@@ -411,12 +411,29 @@ export function TermTaxRollBriefBody() {
 export function TermAssessmentYearBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The year stamped on the value amounts (for example{" "}
+      The year stamped on the county&apos;s value amounts (for example{" "}
       <strong className="font-semibold text-slate-900">2026 Appraised</strong>
-      ).{" "}
-      <strong className="font-semibold text-slate-900">Tax year</strong>
-      {" "}
-      can be one year earlier. Neither one is the date your payment is due.
+      {"). "}
+      It can differ from tax year. Neither one is when your payment is due.
+    </p>
+  );
+}
+
+export function TermTaxYearBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Which year&apos;s property tax these county numbers belong to. Often one
+      year before the assessment year. Not when your payment is due.
+    </p>
+  );
+}
+
+export function TermPropertyTaxBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Yearly dollars from your county mills and assessed value (mills × assessed
+      ÷ 1000, rounded). Same total as under the mill stack. Your treasurer bill
+      can differ a little after rounding.
     </p>
   );
 }
@@ -525,6 +542,7 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-owner-list",
   "term-actual-value",
   "term-assessed-value",
+  "term-property-tax",
   "term-comps",
   "term-ain",
   "term-situs-address",
@@ -537,6 +555,7 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-subdivision",
   "term-tax-roll",
   "term-assessment-year",
+  "term-tax-year",
   "term-appraised-total",
   "term-appraised-building",
   "term-appraised-land",
@@ -580,6 +599,10 @@ export const parcelGlossaryTermBriefRegistry: Record<
     title: "Assessed value",
     Brief: TermAssessedValueBriefBody,
   },
+  "term-property-tax": {
+    title: "Property tax",
+    Brief: TermPropertyTaxBriefBody,
+  },
   "term-comps": { title: "Comps PDF", Brief: TermCompsBriefBody },
   "term-ain": { title: "AIN", Brief: TermAinBriefBody },
   "term-situs-address": {
@@ -621,6 +644,10 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-assessment-year": {
     title: "Assessment year",
     Brief: TermAssessmentYearBriefBody,
+  },
+  "term-tax-year": {
+    title: "Tax year",
+    Brief: TermTaxYearBriefBody,
   },
   "term-appraised-total": {
     title: "Appraised (Total)",

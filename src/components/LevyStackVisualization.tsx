@@ -44,6 +44,11 @@ import {
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
+import { metroLgIdKeyFromDolaMatch } from "@/lib/metroDistrictFromLevyLines";
+import {
+  listMetroLevyPurposeChangesForLgId,
+  metroLgIdsWithPurposeMillChanges,
+} from "@/lib/metroLevyYearOverYear";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
 
@@ -122,6 +127,26 @@ function EllipsisVerticalIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
+      />
+    </svg>
+  );
+}
+
+function ExclamationTriangleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
       />
     </svg>
   );
@@ -302,6 +327,11 @@ export function LevyStackVisualization({
     return annualTaxDollarsFromAssessedMills(assessedForLevyDollars, sumMills);
   }, [assessedForLevyDollars, sumMills]);
 
+  const metroLgIdsWithMillChanges = useMemo(
+    () => metroLgIdsWithPurposeMillChanges(lines),
+    [lines],
+  );
+
   const lineItems = useMemo(
     () =>
       lines.map((l) => ({
@@ -384,6 +414,9 @@ export function LevyStackVisualization({
       pct,
       match,
       dolaMatch: line.dolaMatch ?? null,
+      metroPurposeChanges: listMetroLevyPurposeChangesForLgId(
+        metroLgIdKeyFromDolaMatch(line.dolaMatch),
+      ),
     };
   }, [detailLineId, lines, sumMills, specialDistrictFile]);
 
@@ -506,6 +539,11 @@ export function LevyStackVisualization({
                 const pctLabel = formatPct(item.pct);
                 const isEditing = editingId === item.id;
                 const sourceLine = lines.find((l) => l.id === item.id);
+                const metroMillRateChanged =
+                  sourceLine != null &&
+                  metroLgIdsWithMillChanges.has(
+                    metroLgIdKeyFromDolaMatch(sourceLine.dolaMatch),
+                  );
                 const lineDollarsRounded =
                   assessedForLevyDollars != null
                     ? annualTaxDollarsFromAssessedMills(
@@ -609,8 +647,16 @@ export function LevyStackVisualization({
                           className={LEVY_TILE_OPEN_BTN_CLASS}
                           aria-label={
                             lineDollarsRounded != null
-                              ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value`
-                              : `View district details for ${item.authority}, ${formatMills(item.mills)} mills`
+                              ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value${
+                                  metroMillRateChanged
+                                    ? ", metro district mill rate changed from last year"
+                                    : ""
+                                }`
+                              : `View district details for ${item.authority}, ${formatMills(item.mills)} mills${
+                                  metroMillRateChanged
+                                    ? ", metro district mill rate changed from last year"
+                                    : ""
+                                }`
                           }
                           onClick={() => {
                             setTileActionsId(null);
@@ -651,12 +697,20 @@ export function LevyStackVisualization({
                               </p>
                             </div>
                             <div className="flex w-full min-w-0 items-end justify-between gap-3 self-end">
-                              <span
-                                className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} self-end`}
-                                aria-hidden
-                              >
-                                Details ›
-                              </span>
+                              <div className="flex min-w-0 flex-col items-start gap-1 self-end">
+                                {metroMillRateChanged ? (
+                                  <span className="inline-flex max-w-full shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-amber-200/90 bg-amber-100 px-2 py-1 text-xs font-bold uppercase leading-tight tracking-wide text-amber-950 shadow-sm sm:gap-1 sm:px-1.5 sm:py-0.5 sm:text-[0.65rem]">
+                                    <ExclamationTriangleIcon className="size-4 shrink-0 sm:size-3.5" />
+                                    Changed
+                                  </span>
+                                ) : null}
+                                <span
+                                  className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} self-start`}
+                                  aria-hidden
+                                >
+                                  Details ›
+                                </span>
+                              </div>
                               <div className="flex min-w-0 flex-col items-end gap-y-1 sm:gap-y-1.5">
                                 {lineDollarsRounded != null ? (
                                   <p className={LEVY_TILE_USD_CLASS}>
@@ -1072,6 +1126,8 @@ export function LevyStackVisualization({
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}
+          metroPurposeChanges={detailContext.metroPurposeChanges}
+          totalAssessedForEstimate={assessedForLevyDollars}
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
           snapshot={specialDistrictFile?.snapshot ?? null}

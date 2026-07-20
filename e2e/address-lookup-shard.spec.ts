@@ -38,4 +38,6 @@ test("synthetic address loads levy stack and property details", async ({
     details.getByText(SYNTHETIC_E2E_SITUS_LINE, { exact: true }),
   ).toBeVisible();
   await expect(page.getByText(SYNTHETIC_PIN).first()).toBeVisible();
+  await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
+  await expect(page.locator("#home-parcel-property-tax")).toContainText("$68");
 });
