@@ -27,7 +27,7 @@ import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDi
 import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
 import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
-import { isLevyModalTermId } from "@/lib/levyModalTermIds";
+import { isLevyModalTermId, levyModalTermIdForMetroPurpose } from "@/lib/levyModalTermIds";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 import {
   formatMetroMillsDeltaFromRate,
@@ -35,7 +35,9 @@ import {
   metroDistrictDeltaDollarsFromRates,
   metroDistrictTileYoYSummary,
   metroLevyDistrictTotalChangeForLgId,
+  metroPurposeChangesWorthListingSeparately,
   metroYoYDirectionFromRateDelta,
+  METRO_LEVY_RATE_YOY_EPS,
   METRO_RATE_TO_MILLS,
   type MetroLevyPurposeChange,
   type MetroYoYDirection,
@@ -53,34 +55,113 @@ function metroYoYSurfaceClasses(direction: MetroYoYDirection): {
   box: string;
   headline: string;
   diff: string;
-  yearCard: string;
-  yearCardCurrent: string;
 } {
   if (direction === "neutral") {
     return {
       box: "border-slate-400 bg-slate-50",
       headline: "text-slate-950",
-      diff: "bg-slate-200/80 text-slate-950",
-      yearCard: "border-slate-300/80",
-      yearCardCurrent: "border-slate-500",
+      diff: "bg-slate-200/90 text-slate-950",
     };
   }
   if (direction === "more") {
     return {
       box: "border-red-700 bg-red-50",
       headline: "text-red-950",
-      diff: "bg-red-200/80 text-red-950",
-      yearCard: "border-red-300/80",
-      yearCardCurrent: "border-red-500",
+      diff: "bg-red-200/90 text-red-950",
     };
   }
   return {
     box: "border-emerald-700 bg-emerald-50",
     headline: "text-emerald-950",
-    diff: "bg-emerald-200/80 text-emerald-950",
-    yearCard: "border-emerald-300/80",
-    yearCardCurrent: "border-emerald-500",
+    diff: "bg-emerald-200/90 text-emerald-950",
   };
+}
+
+/** Flat prior/current year pair + Difference line (no nested cards). */
+function MetroYoYYearCompare({
+  previousYear,
+  currentYear,
+  previousMillsLabel,
+  currentMillsLabel,
+  previousDollars,
+  currentDollars,
+  differenceMillsLabel,
+  differenceDollars,
+  showDifferenceDollars,
+  diffClassName,
+  density,
+}: {
+  previousYear: number;
+  currentYear: number;
+  previousMillsLabel: string;
+  currentMillsLabel: string;
+  previousDollars: number | null;
+  currentDollars: number | null;
+  differenceMillsLabel: string;
+  differenceDollars: number | null;
+  /** When false, omit $ even if differenceDollars is non-null (e.g. zero net). */
+  showDifferenceDollars: boolean;
+  diffClassName: string;
+  density: "total" | "purpose";
+}) {
+  const yearLabelClass =
+    "text-sm font-semibold tracking-wide text-slate-600 sm:text-base";
+  const millsClass =
+    density === "total"
+      ? "mt-1 font-mono text-lg font-bold tabular-nums leading-snug text-slate-900 sm:text-xl"
+      : "mt-0.5 font-mono text-sm font-semibold tabular-nums leading-snug text-slate-800 sm:text-base";
+  const dollarsClass =
+    density === "total"
+      ? "mt-0.5 text-lg font-bold tabular-nums text-slate-800 sm:text-xl"
+      : "mt-0.5 text-sm font-semibold tabular-nums text-slate-700 sm:text-base";
+  const diffClass =
+    density === "total"
+      ? `mt-2.5 rounded-md px-2.5 py-2 text-base font-bold tabular-nums leading-snug sm:px-3 sm:py-2.5 sm:text-lg ${diffClassName}`
+      : `mt-2 rounded-md px-2 py-1.5 text-sm font-semibold tabular-nums leading-snug sm:text-base ${diffClassName}`;
+
+  return (
+    <>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 sm:gap-x-4">
+        <div className="min-w-0 border-r border-slate-300/80 pr-3 sm:pr-4">
+          <p className={yearLabelClass}>{previousYear}</p>
+          <p className={millsClass}>
+            {previousMillsLabel}
+            {" "}
+            mills
+          </p>
+          {previousDollars != null ? (
+            <p className={dollarsClass}>{formatUsdWhole(previousDollars)}</p>
+          ) : null}
+        </div>
+        <div className="min-w-0">
+          <p className={yearLabelClass}>{currentYear}</p>
+          <p className={millsClass}>
+            {currentMillsLabel}
+            {" "}
+            mills
+          </p>
+          {currentDollars != null ? (
+            <p className={dollarsClass}>{formatUsdWhole(currentDollars)}</p>
+          ) : null}
+        </div>
+      </div>
+      <p className={diffClass}>
+        Difference: {differenceMillsLabel}
+        {" "}
+        mills
+        {showDifferenceDollars && differenceDollars != null ? (
+          <>
+            {" "}
+            (
+            {differenceDollars > 0
+              ? `+${formatUsdWhole(differenceDollars)}`
+              : formatUsdWhole(differenceDollars)}
+            )
+          </>
+        ) : null}
+      </p>
+    </>
+  );
 }
 
 type Props = {
@@ -158,6 +239,34 @@ export function LevyLineDistrictDetailDialog({
         )
       : null;
 
+  const showDistrictTotalCompare =
+    metroDistrictMillChange?.ratePreviousTotal != null &&
+    metroDistrictMillChange.rateDelta != null &&
+    Math.abs(metroDistrictMillChange.rateDelta) >= METRO_LEVY_RATE_YOY_EPS;
+  const showMetroPurposeChangeDetails =
+    metroPurposeChangesWorthListingSeparately(
+      metroPurposeChanges,
+      metroDistrictMillChange?.rateDelta,
+    );
+  const canExpandMetroYoYBreakdown =
+    showDistrictTotalCompare || showMetroPurposeChangeDetails;
+
+  const metroDistrictPreviousDollars =
+    assessedForChangeDollars != null &&
+    metroDistrictMillChange?.ratePreviousTotal != null
+      ? annualTaxDollarsFromAssessedMills(
+          assessedForChangeDollars,
+          metroDistrictMillChange.ratePreviousTotal * METRO_RATE_TO_MILLS,
+        )
+      : null;
+  const metroDistrictCurrentDollars =
+    assessedForChangeDollars != null && metroDistrictMillChange != null
+      ? annualTaxDollarsFromAssessedMills(
+          assessedForChangeDollars,
+          metroDistrictMillChange.rateCurrentTotal * METRO_RATE_TO_MILLS,
+        )
+      : null;
+
   const metroYoYSummary = metroDistrictTileYoYSummary(
     metroDistrictDeltaDollars,
     metroDistrictDeltaMills,
@@ -226,9 +335,15 @@ export function LevyLineDistrictDetailDialog({
 
   const [inlineDefinition, setInlineDefinition] =
     useState<LevyModalInlineDefinitionVariant | null>(null);
+  const [metroYoYBreakdownOpen, setMetroYoYBreakdownOpen] = useState(false);
   const inlineDefPanelId = useId();
+  const metroYoYBreakdownPanelId = useId();
   /** Last control that opened the inline definition panel (for focus return on close). */
   const lastInlineDefTriggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setMetroYoYBreakdownOpen(false);
+  }, [authorityLabel]);
 
   const closeInlineDefinition = useCallback(
     (options?: { refocusTrigger?: boolean }) => {
@@ -253,6 +368,16 @@ export function LevyLineDistrictDetailDialog({
     }
     setInlineDefinition(next);
   }, []);
+
+  const toggleMetroYoYBreakdown = useCallback(() => {
+    if (metroYoYBreakdownOpen) {
+      // Collapse removes purpose term triggers; drop any open brief without
+      // trying to refocus a node that is about to unmount.
+      closeInlineDefinition({ refocusTrigger: false });
+      lastInlineDefTriggerRef.current = null;
+    }
+    setMetroYoYBreakdownOpen(!metroYoYBreakdownOpen);
+  }, [closeInlineDefinition, metroYoYBreakdownOpen]);
 
   useEffect(() => {
     if (!inlineDefinition) return;
@@ -371,115 +496,205 @@ export function LevyLineDistrictDetailDialog({
 
             {metroYoYSummary ? (
               <div
-                className={`mt-4 rounded-lg border-2 px-3 py-3 sm:px-4 sm:py-3.5 ${metroYoySurface.box}`}
+                className={`mt-4 rounded-lg border-2 ${metroYoySurface.box} ${
+                  canExpandMetroYoYBreakdown
+                    ? "overflow-hidden"
+                    : "px-3 py-3 sm:px-4 sm:py-3.5"
+                }`}
                 role="region"
                 aria-labelledby="levy-detail-metro-yoy-heading"
               >
-                <p
-                  id="levy-detail-metro-yoy-heading"
-                  className={`text-lg font-bold leading-snug tracking-tight sm:text-xl ${metroYoySurface.headline}`}
-                >
-                  {metroYoYSummary.headline}
-                </p>
-                <ul className="mt-4 space-y-4">
-                  {metroPurposeChanges.map((change) => {
-                    const purposeDirection = metroYoYDirectionFromRateDelta(
-                      change.rateDelta,
-                    );
-                    const purposeSurface = metroYoYSurfaceClasses(purposeDirection);
-                    const prevMills =
-                      change.ratePrevious * METRO_RATE_TO_MILLS;
-                    const currMills = change.rateCurrent * METRO_RATE_TO_MILLS;
-                    const prevDollars =
-                      assessedForChangeDollars != null
-                        ? annualTaxDollarsFromAssessedMills(
-                            assessedForChangeDollars,
-                            prevMills,
-                          )
-                        : null;
-                    const currDollars =
-                      assessedForChangeDollars != null
-                        ? annualTaxDollarsFromAssessedMills(
-                            assessedForChangeDollars,
-                            currMills,
-                          )
-                        : null;
-                    const deltaDollars =
-                      prevDollars != null && currDollars != null
-                        ? currDollars - prevDollars
-                        : null;
-                    return (
-                      <li
-                        key={`${change.districtId}-${change.rawRowIndex}`}
-                        className="text-sm text-slate-900 sm:text-base"
+                {canExpandMetroYoYBreakdown ? (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full cursor-pointer border-0 bg-transparent px-3 py-3 text-left sm:px-4 sm:py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50"
+                      aria-expanded={metroYoYBreakdownOpen}
+                      aria-controls={metroYoYBreakdownPanelId}
+                      onClick={toggleMetroYoYBreakdown}
+                    >
+                      <span
+                        id="levy-detail-metro-yoy-heading"
+                        className={`block text-lg font-bold leading-snug tracking-tight sm:text-xl ${metroYoySurface.headline}`}
                       >
-                        <p className="font-semibold leading-snug">
-                          {change.purposeRaw}
-                        </p>
-                        <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
-                          <div
-                            className={`rounded-md border bg-white/80 px-2.5 py-2 sm:px-3 ${purposeSurface.yearCard}`}
-                          >
-                            <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
-                              {millChangePreviousYear}
+                        {metroYoYSummary.headline}
+                      </span>
+                      <span className="mt-3 block text-sm font-semibold text-slate-900 underline decoration-slate-400 underline-offset-2 hover:decoration-slate-700 sm:text-base">
+                        {metroYoYBreakdownOpen
+                          ? "Hide year-by-year breakdown"
+                          : "Show year-by-year breakdown"}
+                      </span>
+                    </button>
+                    <div
+                      id={metroYoYBreakdownPanelId}
+                      hidden={!metroYoYBreakdownOpen}
+                      className={
+                        metroYoYBreakdownOpen
+                          ? "space-y-5 border-t border-slate-300/60 px-3 pb-3 pt-4 sm:px-4 sm:pb-3.5"
+                          : undefined
+                      }
+                    >
+                      {metroYoYBreakdownOpen ? (
+                        <>
+                        {showDistrictTotalCompare && metroDistrictMillChange ? (
+                          <div>
+                            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-600 sm:text-xs">
+                              Total
                             </p>
-                            <p className="mt-1 font-mono text-base font-semibold tabular-nums leading-snug text-slate-900 sm:text-lg">
-                              {formatMetroMillsFromRate(
-                                change.ratePrevious,
+                            <MetroYoYYearCompare
+                              previousYear={millChangePreviousYear}
+                              currentYear={millChangeCurrentYear}
+                              previousMillsLabel={formatMetroMillsFromRate(
+                                metroDistrictMillChange.ratePreviousTotal as number,
                                 METRO_RATE_TO_MILLS,
-                              )}{" "}
-                              mills
-                            </p>
-                            {prevDollars != null ? (
-                              <p className="mt-0.5 text-base font-semibold tabular-nums text-slate-800 sm:text-lg">
-                                {formatUsdWhole(prevDollars)}
+                              )}
+                              currentMillsLabel={formatMetroMillsFromRate(
+                                metroDistrictMillChange.rateCurrentTotal,
+                                METRO_RATE_TO_MILLS,
+                              )}
+                              previousDollars={metroDistrictPreviousDollars}
+                              currentDollars={metroDistrictCurrentDollars}
+                              differenceMillsLabel={formatMetroMillsDeltaFromRate(
+                                metroDistrictMillChange.rateDelta as number,
+                                METRO_RATE_TO_MILLS,
+                              )}
+                              differenceDollars={metroDistrictDeltaDollars}
+                              showDifferenceDollars={
+                                metroDistrictDeltaDollars != null &&
+                                metroDistrictDeltaDollars !== 0
+                              }
+                              diffClassName={metroYoySurface.diff}
+                              density="total"
+                            />
+                          </div>
+                        ) : null}
+                        {showMetroPurposeChangeDetails ? (
+                          <div
+                            className={
+                              showDistrictTotalCompare
+                                ? "border-t border-slate-300/90 pt-4"
+                                : undefined
+                            }
+                          >
+                            {showDistrictTotalCompare ? (
+                              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-xs">
+                                Each part that changed
                               </p>
                             ) : null}
+                            <ul
+                              className={
+                                showDistrictTotalCompare
+                                  ? "mt-3 space-y-4"
+                                  : "space-y-4"
+                              }
+                            >
+                              {metroPurposeChanges.map((change) => {
+                                const purposeDirection =
+                                  metroYoYDirectionFromRateDelta(
+                                    change.rateDelta,
+                                  );
+                                const purposeSurface =
+                                  metroYoYSurfaceClasses(purposeDirection);
+                                const purposeTermId = levyModalTermIdForMetroPurpose(
+                                  change.purposeRaw,
+                                );
+                                const prevMills =
+                                  change.ratePrevious * METRO_RATE_TO_MILLS;
+                                const currMills =
+                                  change.rateCurrent * METRO_RATE_TO_MILLS;
+                                const prevDollars =
+                                  assessedForChangeDollars != null
+                                    ? annualTaxDollarsFromAssessedMills(
+                                        assessedForChangeDollars,
+                                        prevMills,
+                                      )
+                                    : null;
+                                const currDollars =
+                                  assessedForChangeDollars != null
+                                    ? annualTaxDollarsFromAssessedMills(
+                                        assessedForChangeDollars,
+                                        currMills,
+                                      )
+                                    : null;
+                                const deltaDollars =
+                                  prevDollars != null && currDollars != null
+                                    ? currDollars - prevDollars
+                                    : null;
+                                return (
+                                  <li
+                                    key={`${change.districtId}-${change.rawRowIndex}`}
+                                    className="border-t border-slate-300/70 pt-4 first:border-t-0 first:pt-0"
+                                  >
+                                    {purposeTermId ? (
+                                      <button
+                                        type="button"
+                                        className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-medium leading-snug sm:text-base`}
+                                        aria-expanded={
+                                          inlineDefinition?.kind === "term" &&
+                                          inlineDefinition.id === purposeTermId
+                                        }
+                                        aria-controls={
+                                          inlineDefinition?.kind === "term" &&
+                                          inlineDefinition.id === purposeTermId
+                                            ? inlineDefPanelId
+                                            : undefined
+                                        }
+                                        onClick={() =>
+                                          openInlineDefinition({
+                                            kind: "term",
+                                            id: purposeTermId,
+                                          })
+                                        }
+                                      >
+                                        {change.purposeRaw}
+                                      </button>
+                                    ) : (
+                                      <p className="text-sm font-medium leading-snug text-slate-800 sm:text-base">
+                                        {change.purposeRaw}
+                                      </p>
+                                    )}
+                                    <MetroYoYYearCompare
+                                      previousYear={millChangePreviousYear}
+                                      currentYear={millChangeCurrentYear}
+                                      previousMillsLabel={formatMetroMillsFromRate(
+                                        change.ratePrevious,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      currentMillsLabel={formatMetroMillsFromRate(
+                                        change.rateCurrent,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      previousDollars={prevDollars}
+                                      currentDollars={currDollars}
+                                      differenceMillsLabel={formatMetroMillsDeltaFromRate(
+                                        change.rateDelta,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      differenceDollars={deltaDollars}
+                                      showDifferenceDollars={
+                                        deltaDollars != null && deltaDollars !== 0
+                                      }
+                                      diffClassName={purposeSurface.diff}
+                                      density="purpose"
+                                    />
+                                  </li>
+                                );
+                              })}
+                            </ul>
                           </div>
-                          <div
-                            className={`rounded-md border bg-white px-2.5 py-2 shadow-sm sm:px-3 ${purposeSurface.yearCardCurrent}`}
-                          >
-                            <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
-                              {millChangeCurrentYear}
-                            </p>
-                            <p className="mt-1 font-mono text-base font-semibold tabular-nums leading-snug text-slate-900 sm:text-lg">
-                              {formatMetroMillsFromRate(
-                                change.rateCurrent,
-                                METRO_RATE_TO_MILLS,
-                              )}{" "}
-                              mills
-                            </p>
-                            {currDollars != null ? (
-                              <p className="mt-0.5 text-base font-semibold tabular-nums text-slate-800 sm:text-lg">
-                                {formatUsdWhole(currDollars)}
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-                        <p
-                          className={`mt-3 rounded-md px-2.5 py-2 text-base font-bold tabular-nums leading-snug sm:px-3 sm:py-2.5 sm:text-lg ${purposeSurface.diff}`}
-                        >
-                          Difference:{" "}
-                          {formatMetroMillsDeltaFromRate(
-                            change.rateDelta,
-                            METRO_RATE_TO_MILLS,
-                          )}{" "}
-                          mills
-                          {deltaDollars != null ? (
-                            <>
-                              {" "}
-                              (
-                              {deltaDollars > 0
-                                ? `+${formatUsdWhole(deltaDollars)}`
-                                : formatUsdWhole(deltaDollars)}
-                              )
-                            </>
-                          ) : null}
-                        </p>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        ) : null}
+                        </>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <p
+                    id="levy-detail-metro-yoy-heading"
+                    className={`text-lg font-bold leading-snug tracking-tight sm:text-xl ${metroYoySurface.headline}`}
+                  >
+                    {metroYoYSummary.headline}
+                  </p>
+                )}
               </div>
             ) : null}
 

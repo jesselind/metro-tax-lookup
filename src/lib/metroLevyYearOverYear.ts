@@ -34,14 +34,27 @@ export type MetroLevyPurposeChange = {
   rateDelta: number;
 };
 
-export type MetroBillImpactDirection = "more" | "less";
-
 export type MetroYoYDirection = "more" | "less" | "neutral";
 
 export type MetroBillImpactCallout = {
-  direction: MetroBillImpactDirection;
   message: string;
 };
+
+/** Scroll target for the bill-impact callout (first Changed levy tile). */
+export const FIRST_CHANGED_LEVY_TILE_DOM_ID = "levy-tile-first-rate-change";
+
+/**
+ * Marker on each levy tile open button in `LevyStackVisualization`.
+ * Bill-impact focus-after-scroll queries this (via
+ * {@link LEVY_TILE_OPEN_BTN_SELECTOR}), not aria-label copy.
+ */
+export const LEVY_TILE_OPEN_BTN_ATTR = "data-levy-tile-open";
+
+/** `querySelector` for {@link LEVY_TILE_OPEN_BTN_ATTR} on a tile root. */
+export const LEVY_TILE_OPEN_BTN_SELECTOR = `button[${LEVY_TILE_OPEN_BTN_ATTR}]`;
+
+const BILL_CHANGED_NEUTRAL_MESSAGE =
+  "Your tax bill has changed since last year.";
 
 export type MetroLevyDistrictTotalChange = {
   districtId: string;
@@ -111,6 +124,30 @@ export function listMetroLevyPurposeChanges(
     }
   }
   return out;
+}
+
+/**
+ * Whether purpose-level YoY rows add detail beyond a district total card.
+ * Prefer total alone when the parts list would restate the same move (lone
+ * Total purpose, or a single part whose delta matches the district delta).
+ * Keep parts when several purposes moved, or when there is no meaningful
+ * district total delta to compare (including net-zero total with part moves).
+ */
+export function metroPurposeChangesWorthListingSeparately(
+  purposeChanges: ReadonlyArray<
+    Pick<MetroLevyPurposeChange, "purposeRaw" | "rateDelta">
+  >,
+  districtTotalDelta: number | null | undefined,
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): boolean {
+  if (purposeChanges.length === 0) return false;
+  if (districtTotalDelta == null || Math.abs(districtTotalDelta) < eps) {
+    return true;
+  }
+  if (purposeChanges.length > 1) return true;
+  const only = purposeChanges[0]!;
+  if (isSummaryTotalPurpose(only)) return false;
+  return Math.abs(only.rateDelta - districtTotalDelta) > eps;
 }
 
 /**
@@ -240,69 +277,27 @@ export function metroDistrictDeltaDollarsFromRates(
 }
 
 /**
- * Net metro bill-impact callout across matched districts.
- * Requires every district to have a complete prior total so we never net a
- * partial subset against "your metro district(s)".
+ * Top-of-results callout when any matched metro has a published purpose change.
+ * Message stays high-level (whole bill), not tile- or metro-specific. Direction-
+ * neutral: we only have prior rates for some stack lines today, so we never claim
+ * the whole bill went up or down. Dollar detail lives in tile modals.
  */
 export function metroBillImpactCalloutForDistrictIds(
   districtIds: string[],
   districts: LevyDistrictFromJson[],
-  assessedRaw: number | null | undefined,
   eps: number = METRO_LEVY_RATE_YOY_EPS,
 ): MetroBillImpactCallout | null {
   if (districtIds.length === 0) return null;
 
   const byId = new Map(districts.map((d) => [d.districtId, d] as const));
-  let currentRateTotal = 0;
-  let previousRateTotal = 0;
-
   for (const id of districtIds) {
     const district = byId.get(id);
     if (!district) return null;
-    const total = metroLevyDistrictTotalChange(district, eps);
-    if (total.ratePreviousTotal == null || total.rateDelta == null) return null;
-    currentRateTotal += total.rateCurrentTotal;
-    previousRateTotal += total.ratePreviousTotal;
+    if (metroLevyDistrictTotalChange(district, eps).hasPurposeChanges) {
+      return { message: BILL_CHANGED_NEUTRAL_MESSAGE };
+    }
   }
-
-  const rateDelta = currentRateTotal - previousRateTotal;
-  if (Math.abs(rateDelta) < eps) return null;
-
-  const multi = districtIds.length > 1;
-  const metroScope = multi ? "your metro districts" : "your metro district";
-  const direction: MetroBillImpactDirection =
-    rateDelta > 0 ? "more" : "less";
-  const assessed = parcelAssessedForDollarEstimate(assessedRaw);
-
-  if (assessed != null) {
-    const deltaDollars = metroDistrictDeltaDollarsFromRates(
-      assessed,
-      currentRateTotal,
-      previousRateTotal,
-    );
-    if (deltaDollars === 0) return null;
-    const amount = formatUsdWhole(Math.abs(deltaDollars));
-    return {
-      direction: deltaDollars > 0 ? "more" : "less",
-      message:
-        deltaDollars > 0
-          ? `You're paying ${amount} more than last year for ${metroScope}.`
-          : `You're paying ${amount} less than last year for ${metroScope}.`,
-    };
-  }
-
-  const millsAbs = Math.abs(rateDelta * METRO_RATE_TO_MILLS).toFixed(3);
-  return {
-    direction,
-    message:
-      direction === "more"
-        ? multi
-          ? `Your metro districts are ${millsAbs} mills higher than last year.`
-          : `Your metro district is ${millsAbs} mills higher than last year.`
-        : multi
-          ? `Your metro districts are ${millsAbs} mills lower than last year.`
-          : `Your metro district is ${millsAbs} mills lower than last year.`,
-  };
+  return null;
 }
 
 /** Signed direction for a mill-rate delta; neutral when the change is below epsilon. */
@@ -352,29 +347,15 @@ export function metroDistrictTileYoYSummary(
         direction: deltaMills > 0 ? "more" : "less",
         headline:
           deltaMills > 0
-            ? `This metro district rate is ${millsLabel} mills higher than last year.`
-            : `This metro district rate is ${millsLabel} mills lower than last year.`,
+            ? `This rate is ${millsLabel} mills higher than last year.`
+            : `This rate is ${millsLabel} mills lower than last year.`,
       };
     }
   }
   return {
     direction: "neutral",
-    headline: "Parts of this metro district rate changed from last year.",
+    headline: "This levy changed from last year.",
   };
-}
-
-/** Resident-facing one-liner for purpose-level YoY counts (metro breakdown blurb). */
-export function metroPurposeChangeSummaryPhrase(
-  changeCount: number,
-  multiMetro: boolean,
-): string {
-  const scope = multiMetro ? "your metro districts" : "your metro district";
-  if (changeCount > 0) {
-    return `${changeCount} mill rate ${
-      changeCount === 1 ? "change" : "changes"
-    } for ${scope} from last year.`;
-  }
-  return `No mill rate changes from last year for ${scope}.`;
 }
 
 /** District-level YoY total for one metro LG ID, or null when unknown. */

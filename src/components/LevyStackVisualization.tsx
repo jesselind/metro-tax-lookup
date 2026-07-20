@@ -46,6 +46,8 @@ import {
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { metroLgIdKeyFromDolaMatch } from "@/lib/metroDistrictFromLevyLines";
 import {
+  FIRST_CHANGED_LEVY_TILE_DOM_ID,
+  LEVY_TILE_OPEN_BTN_ATTR,
   listMetroLevyPurposeChangesForLgId,
   metroLgIdsWithPurposeMillChanges,
 } from "@/lib/metroLevyYearOverYear";
@@ -104,6 +106,13 @@ const TILE_MILLS_SUBTLE_CLASS =
 /** Estimated annual levy; fixed size (not viewport-gated) — see LEVY_TILE_PCT_CLASS. */
 const LEVY_TILE_USD_CLASS =
   "font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] text-[1.625rem]";
+
+/**
+ * Metro YoY cue on dark levy tiles: full-width strip under mills.
+ * Title keeps menu clearance (pr-11); badge / Details › do not share that pad.
+ */
+const METRO_CHANGED_BADGE_CLASS =
+  "mt-2 inline-flex w-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 border-amber-950 bg-amber-300 px-2 py-1 text-xs font-extrabold uppercase leading-tight tracking-wide text-amber-950 shadow-[0_1px_0_rgba(0,0,0,0.25)] ring-1 ring-white/50 sm:mt-2 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[0.7rem]";
 
 function formatPct(p: number): string {
   if (!Number.isFinite(p)) return "0.0";
@@ -386,6 +395,21 @@ export function LevyStackVisualization({
       .sort((a, b) => b.pct - a.pct);
   }, [lineItems, sumMills]);
 
+  const firstChangedLevyTileId = useMemo(() => {
+    for (const item of tilesSorted) {
+      const sourceLine = lines.find((l) => l.id === item.id);
+      if (
+        sourceLine != null &&
+        metroLgIdsWithMillChanges.has(
+          metroLgIdKeyFromDolaMatch(sourceLine.dolaMatch),
+        )
+      ) {
+        return item.id;
+      }
+    }
+    return null;
+  }, [tilesSorted, lines, metroLgIdsWithMillChanges]);
+
   const actionLine = useMemo(
     () => (tileActionsId ? lines.find((l) => l.id === tileActionsId) : undefined),
     [lines, tileActionsId],
@@ -552,10 +576,23 @@ export function LevyStackVisualization({
                       )
                     : null;
 
+                const isFirstChangedLevyTile =
+                  firstChangedLevyTileId != null &&
+                  item.id === firstChangedLevyTileId;
+
                 return (
                   <div
                     key={item.id}
-                    className={`min-w-0 ${levyTileClass(isEditing)} ${
+                    id={
+                      isFirstChangedLevyTile
+                        ? FIRST_CHANGED_LEVY_TILE_DOM_ID
+                        : undefined
+                    }
+                    className={`min-w-0 ${
+                      isFirstChangedLevyTile
+                        ? "scroll-mt-6 sm:scroll-mt-8 "
+                        : ""
+                    }${levyTileClass(isEditing)} ${
                       !isEditing
                         ? `group ${grad} ${LEVY_TILE_HOVER_CLASS} ${LEVY_TILE_FOCUS_CLASS}`
                         : ""
@@ -645,6 +682,7 @@ export function LevyStackVisualization({
                         <button
                           type="button"
                           className={LEVY_TILE_OPEN_BTN_CLASS}
+                          {...{ [LEVY_TILE_OPEN_BTN_ATTR]: "" }}
                           aria-label={
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value${
@@ -684,26 +722,27 @@ export function LevyStackVisualization({
                         ) : null}
                         <div className="pointer-events-none relative z-[1] flex h-full min-h-0 flex-1 flex-col">
                           <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-y-2 sm:gap-y-3">
-                            <div
-                              className={`flex min-h-0 w-full min-w-0 flex-col justify-start${allowLineEdit ? " pr-11" : ""}`}
-                            >
+                            <div className="flex min-h-0 w-full min-w-0 flex-col justify-start">
                               <p
-                                className={`w-full min-w-0 font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${TILE_DESC_MILLS_CLASS} line-clamp-6`}
+                                className={`w-full min-w-0 font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${TILE_DESC_MILLS_CLASS} line-clamp-6${allowLineEdit ? " pr-11" : ""}`}
                               >
                                 {item.authority}
                               </p>
                               <p className={TILE_MILLS_SUBTLE_CLASS}>
                                 {formatMills(item.mills)} mills
                               </p>
+                              {metroMillRateChanged ? (
+                                <span className={METRO_CHANGED_BADGE_CLASS}>
+                                  <ExclamationTriangleIcon
+                                    className="size-4 shrink-0 sm:size-3.5"
+                                    aria-hidden
+                                  />
+                                  Changed
+                                </span>
+                              ) : null}
                             </div>
                             <div className="flex w-full min-w-0 items-end justify-between gap-3 self-end">
                               <div className="flex min-w-0 flex-col items-start gap-1 self-end">
-                                {metroMillRateChanged ? (
-                                  <span className="inline-flex max-w-full shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-amber-200/90 bg-amber-100 px-2 py-1 text-xs font-bold uppercase leading-tight tracking-wide text-amber-950 shadow-sm sm:gap-1 sm:px-1.5 sm:py-0.5 sm:text-[0.65rem]">
-                                    <ExclamationTriangleIcon className="size-4 shrink-0 sm:size-3.5" />
-                                    Changed
-                                  </span>
-                                ) : null}
                                 <span
                                   className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} self-start`}
                                   aria-hidden

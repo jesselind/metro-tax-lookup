@@ -171,6 +171,41 @@ export function TermTaxEntityFullBody() {
   );
 }
 
+export function TermGeneralOperatingBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">General operating</strong>
+      {" "}
+      is the day-to-day money for the district: things like upkeep, staff, and
+      regular services. It is not the part that pays back borrowed money.
+    </p>
+  );
+}
+
+export function TermBondsBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Bonds</strong>
+      {" "}
+      are loans the district took out for big projects (roads, parks, buildings).
+      This part of your tax helps pay those loans back over time.
+    </p>
+  );
+}
+
+export function TermContractualObligationBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      A{" "}
+      <strong className="font-semibold text-slate-900">contractual obligation</strong>
+      {" "}
+      is money the district owes under a contract, often for shared costs or
+      financing. It sits next to bonds as a debt-style payment, not day-to-day
+      operating costs.
+    </p>
+  );
+}
+
 /** Home parcel summary / property details popovers. */
 export function TermPropertyClassificationBriefBody() {
   return (
@@ -754,4 +789,13 @@ export const levyModalTermRegistry: Record<
   },
   "term-lg-id": { title: "LG ID", Brief: TermLgIdBriefBody },
   "term-tax-entity": { title: "Tax entity", Brief: TermTaxEntityBriefBody },
+  "term-general-operating": {
+    title: "General operating",
+    Brief: TermGeneralOperatingBriefBody,
+  },
+  "term-bonds": { title: "Bonds", Brief: TermBondsBriefBody },
+  "term-contractual-obligation": {
+    title: "Contractual obligation",
+    Brief: TermContractualObligationBriefBody,
+  },
 };

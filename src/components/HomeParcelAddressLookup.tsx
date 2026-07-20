@@ -67,7 +67,11 @@ import {
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import levyData from "@/data/metroLevies";
 import type { LevyDataFile } from "@/lib/levyTypes";
-import { metroBillImpactCalloutForDistrictIds } from "@/lib/metroLevyYearOverYear";
+import {
+  FIRST_CHANGED_LEVY_TILE_DOM_ID,
+  LEVY_TILE_OPEN_BTN_SELECTOR,
+  metroBillImpactCalloutForDistrictIds,
+} from "@/lib/metroLevyYearOverYear";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import {
@@ -99,6 +103,7 @@ import {
   PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
+  TILE_DETAILS_CUE_ON_LIGHT_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
   TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -452,9 +457,8 @@ export function HomeParcelAddressLookup({
     return metroBillImpactCalloutForDistrictIds(
       homeMetroFromLevyStack.districtIds,
       file.districts,
-      levyLoadedMeta?.parcelValues?.totalAssessed,
     );
-  }, [homeMetroFromLevyStack, levyLoadedMeta?.parcelValues?.totalAssessed]);
+  }, [homeMetroFromLevyStack]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -758,6 +762,46 @@ export function HomeParcelAddressLookup({
 
   const levyStackBody = <LevyStackVisualization {...homeLevyStackProps} />;
 
+  function scrollToFirstChangedLevyTile() {
+    const tile = document.getElementById(FIRST_CHANGED_LEVY_TILE_DOM_ID);
+    if (!tile) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    tile.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+    const openBtn = tile.querySelector<HTMLButtonElement>(
+      LEVY_TILE_OPEN_BTN_SELECTOR,
+    );
+    openBtn?.focus({ preventScroll: true });
+  }
+
+  const billImpactCalloutBlock = metroBillImpactCallout ? (
+      <div>
+        <p className="sr-only" role="status" aria-live="polite">
+          {metroBillImpactCallout.message}
+        </p>
+        <button
+          type="button"
+          onClick={scrollToFirstChangedLevyTile}
+          className="group w-full cursor-pointer rounded-lg border-2 border-amber-700 bg-amber-50 px-3 py-3 text-left text-amber-950 sm:px-4 sm:py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+          aria-label="Scroll to the first rate that changed"
+        >
+          <span
+            aria-hidden
+            className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-base font-bold leading-snug tracking-tight sm:text-lg"
+          >
+            <span className="min-w-0">{metroBillImpactCallout.message}</span>
+            <span className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} whitespace-nowrap`}>
+              Details ›
+            </span>
+          </span>
+        </button>
+      </div>
+    ) : null;
+
   const levySectionLead = (
     <div className="space-y-3">
       <h3
@@ -766,21 +810,6 @@ export function HomeParcelAddressLookup({
       >
         Where is your money going?
       </h3>
-      {metroBillImpactCallout ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className={`rounded-lg border-2 px-3 py-3 sm:px-4 sm:py-3.5 ${
-            metroBillImpactCallout.direction === "more"
-              ? "border-red-700 bg-red-50 text-red-950"
-              : "border-emerald-700 bg-emerald-50 text-emerald-950"
-          }`}
-        >
-          <p className="text-base font-bold leading-snug tracking-tight sm:text-lg">
-            {metroBillImpactCallout.message}
-          </p>
-        </div>
-      ) : null}
       {levyStackIntro}
     </div>
   );
@@ -1287,6 +1316,7 @@ export function HomeParcelAddressLookup({
         </div>
       ) : (
         <div className="min-w-0 space-y-3">
+          {billImpactCalloutBlock}
           <div
             className={PARCEL_SUMMARY_ROW_CLASS}
             role="region"

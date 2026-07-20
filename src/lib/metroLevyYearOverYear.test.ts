@@ -13,7 +13,7 @@ import {
   metroDistrictTileYoYSummary,
   metroLevyDistrictTotalChange,
   metroLgIdsWithPurposeMillChanges,
-  metroPurposeChangeSummaryPhrase,
+  metroPurposeChangesWorthListingSeparately,
   metroYoYDirectionFromRateDelta,
 } from "@/lib/metroLevyYearOverYear";
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
@@ -168,6 +168,69 @@ describe("listMetroLevyPurposeChanges", () => {
   });
 });
 
+describe("metroPurposeChangesWorthListingSeparately", () => {
+  it("is false when there are no purpose changes", () => {
+    expect(metroPurposeChangesWorthListingSeparately([], 0.01)).toBe(false);
+  });
+
+  it("hides a lone Total purpose that restates the district total", () => {
+    expect(
+      metroPurposeChangesWorthListingSeparately(
+        [{ purposeRaw: "Total", rateDelta: 0.01 }],
+        0.01,
+      ),
+    ).toBe(false);
+  });
+
+  it("hides a single part whose delta matches the district total", () => {
+    expect(
+      metroPurposeChangesWorthListingSeparately(
+        [{ purposeRaw: "General Operating", rateDelta: 0.01 }],
+        0.01,
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps multiple part changes even when they net to the district total", () => {
+    expect(
+      metroPurposeChangesWorthListingSeparately(
+        [
+          { purposeRaw: "Bonds", rateDelta: 0.02 },
+          { purposeRaw: "Contractual Obligation", rateDelta: -0.01 },
+        ],
+        0.01,
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps parts when the district total delta is missing or near zero", () => {
+    expect(
+      metroPurposeChangesWorthListingSeparately(
+        [{ purposeRaw: "Bonds", rateDelta: 0.02 }],
+        null,
+      ),
+    ).toBe(true);
+    expect(
+      metroPurposeChangesWorthListingSeparately(
+        [
+          { purposeRaw: "Bonds", rateDelta: 0.02 },
+          { purposeRaw: "Contractual Obligation", rateDelta: -0.02 },
+        ],
+        0,
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps a single part when its delta differs from the district total", () => {
+    expect(
+      metroPurposeChangesWorthListingSeparately(
+        [{ purposeRaw: "Bonds", rateDelta: 0.02 }],
+        0.01,
+      ),
+    ).toBe(true);
+  });
+});
+
 describe("metroLevyDistrictTotalChange", () => {
   it("sums part purposes when there is no summary Total row", () => {
     const d = district({
@@ -282,7 +345,7 @@ describe("metroDistrictDeltaDollarsFromRates", () => {
 });
 
 describe("metroBillImpactCalloutForDistrictIds", () => {
-  it("returns null when any district lacks a prior total", () => {
+  it("returns a neutral changed callout when any matched purpose moved", () => {
     const districts = [
       district({
         districtId: "a",
@@ -315,11 +378,13 @@ describe("metroBillImpactCalloutForDistrictIds", () => {
     ];
 
     expect(
-      metroBillImpactCalloutForDistrictIds(["a", "b"], districts, 100_000),
-    ).toBeNull();
+      metroBillImpactCalloutForDistrictIds(["a", "b"], districts),
+    ).toMatchObject({
+      message: "Your tax bill has changed since last year.",
+    });
   });
 
-  it("returns a dollar callout when all districts have complete prior totals", () => {
+  it("returns the same neutral callout when priors are complete and dollars moved", () => {
     const districts = [
       district({
         districtId: "a",
@@ -337,27 +402,32 @@ describe("metroBillImpactCalloutForDistrictIds", () => {
       }),
     ];
 
-    const callout = metroBillImpactCalloutForDistrictIds(
-      ["a"],
-      districts,
-      100_000,
+    expect(metroBillImpactCalloutForDistrictIds(["a"], districts)).toMatchObject(
+      {
+        message: "Your tax bill has changed since last year.",
+      },
     );
-    expect(callout).toMatchObject({
-      direction: "more",
-      message:
-        "You're paying $1,000 more than last year for your metro district.",
-    });
   });
-});
 
-describe("metroPurposeChangeSummaryPhrase", () => {
-  it("pluralizes change count and metro scope", () => {
-    expect(metroPurposeChangeSummaryPhrase(2, true)).toBe(
-      "2 mill rate changes for your metro districts from last year.",
-    );
-    expect(metroPurposeChangeSummaryPhrase(0, false)).toBe(
-      "No mill rate changes from last year for your metro district.",
-    );
+  it("returns null when no purpose rates changed", () => {
+    const districts = [
+      district({
+        districtId: "a",
+        name: "Alpha",
+        levies: [
+          {
+            purposeRaw: "General Operating",
+            purposeCategory: "operations",
+            rateMillsCurrent: 0.02,
+            rateMillsPrevious: 0.02,
+            taborExempt: null,
+            rawRowIndex: 1,
+          },
+        ],
+      }),
+    ];
+
+    expect(metroBillImpactCalloutForDistrictIds(["a"], districts)).toBeNull();
   });
 });
 
@@ -383,14 +453,21 @@ describe("metroDistrictTileYoYSummary", () => {
   it("uses neutral copy when only purpose rows changed", () => {
     expect(metroDistrictTileYoYSummary(null, null, true)).toMatchObject({
       direction: "neutral",
-      headline: "Parts of this metro district rate changed from last year.",
+      headline: "This levy changed from last year.",
     });
   });
 
   it("uses neutral copy for a tiny mills delta that would display as 0.000", () => {
     expect(metroDistrictTileYoYSummary(null, 0.0004, true)).toMatchObject({
       direction: "neutral",
-      headline: "Parts of this metro district rate changed from last year.",
+      headline: "This levy changed from last year.",
+    });
+  });
+
+  it("uses neutral copy when dollar delta is flat but purposes changed", () => {
+    expect(metroDistrictTileYoYSummary(0, 0, true)).toMatchObject({
+      direction: "neutral",
+      headline: "This levy changed from last year.",
     });
   });
 });
