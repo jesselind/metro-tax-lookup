@@ -235,7 +235,17 @@ export function MetroTaxShareFlow({
     () =>
       activeLevyDistricts
         .map((d) => metroLevyDistrictTotalChange(d))
-        .filter((t) => t.hasPurposeChanges),
+        .filter(
+          (
+            t,
+          ): t is typeof t & {
+            ratePreviousTotal: number;
+            rateDelta: number;
+          } =>
+            t.hasPurposeChanges &&
+            t.ratePreviousTotal != null &&
+            t.rateDelta != null,
+        ),
     [activeLevyDistricts],
   );
 
@@ -598,7 +608,7 @@ export function MetroTaxShareFlow({
               )}{" "}
               <a
                 href={`#${p}metro-yoy-heading`}
-                className="cursor-pointer font-semibold text-indigo-900 underline decoration-indigo-700/40 underline-offset-2 hover:decoration-indigo-900"
+                className="cursor-pointer font-semibold text-indigo-900 leading-snug underline decoration-indigo-700/40 underline-offset-2 hover:decoration-indigo-900"
               >
                 See every metro district change
               </a>
@@ -715,12 +725,6 @@ export function MetroTaxShareFlow({
                               </p>
                               <ul className="space-y-1.5">
                                 {metroDistrictTotalChanges.map((total) => {
-                                  if (
-                                    total.ratePreviousTotal == null ||
-                                    total.rateDelta == null
-                                  ) {
-                                    return null;
-                                  }
                                   const deltaLabel =
                                     formatMetroMillsDeltaFromRate(
                                       total.rateDelta,

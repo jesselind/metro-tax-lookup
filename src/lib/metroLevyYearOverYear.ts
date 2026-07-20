@@ -81,6 +81,9 @@ export function levyPurposeRateChanged(
 /**
  * Every purpose on the district where current mills differ from the county's
  * previous-year column. Unchanged and missing-previous rows are omitted.
+ * When a district has itemized purpose parts, the summary "Total" row is omitted
+ * here (same selection idea as {@link metroLevyDistrictTotalChange}): list parts
+ * only; include Total only when it is the sole levy for that district.
  */
 export function listMetroLevyPurposeChanges(
   districts: LevyDistrictFromJson[],
@@ -88,7 +91,10 @@ export function listMetroLevyPurposeChanges(
 ): MetroLevyPurposeChange[] {
   const out: MetroLevyPurposeChange[] = [];
   for (const district of districts) {
-    for (const levy of district.levies ?? []) {
+    const levies = district.levies ?? [];
+    const hasParts = levies.some((l) => !isSummaryTotalPurpose(l));
+    for (const levy of levies) {
+      if (hasParts && isSummaryTotalPurpose(levy)) continue;
       if (!levyPurposeRateChanged(levy, eps)) continue;
       const rateCurrent = rateOrZero(levy.rateMillsCurrent);
       const ratePrevious = levy.rateMillsPrevious as number;
@@ -313,12 +319,16 @@ export type MetroDistrictTileYoYSummary = {
   direction: MetroYoYDirection;
 };
 
-/** Headline + direction for the metro YoY block in a levy tile detail modal. */
+/** Headline + direction for the metro YoY block in a levy tile detail modal.
+ * {@link deltaMills} is already in county mills (not JSON decimal rate).
+ * Omit {@link epsMills} to use the default rate eps scaled to mills; pass an
+ * explicit value to override (mills scale).
+ */
 export function metroDistrictTileYoYSummary(
   deltaDollars: number | null,
   deltaMills: number | null,
   hasPurposeChanges: boolean,
-  eps: number = METRO_LEVY_RATE_YOY_EPS,
+  epsMills?: number,
 ): MetroDistrictTileYoYSummary | null {
   if (!hasPurposeChanges) return null;
 
@@ -332,15 +342,20 @@ export function metroDistrictTileYoYSummary(
           : `You're paying ${amount} less than last year.`,
     };
   }
-  if (deltaMills != null && Math.abs(deltaMills) >= eps) {
+  const millsEps =
+    epsMills ?? METRO_LEVY_RATE_YOY_EPS * METRO_RATE_TO_MILLS;
+  if (deltaMills != null && Math.abs(deltaMills) >= millsEps) {
     const millsLabel = Math.abs(deltaMills).toFixed(3);
-    return {
-      direction: deltaMills > 0 ? "more" : "less",
-      headline:
-        deltaMills > 0
-          ? `This metro district rate is ${millsLabel} mills higher than last year.`
-          : `This metro district rate is ${millsLabel} mills lower than last year.`,
-    };
+    // Sub-0.0005 mills still formats as 0.000; treat as no mills headline.
+    if (millsLabel !== "0.000") {
+      return {
+        direction: deltaMills > 0 ? "more" : "less",
+        headline:
+          deltaMills > 0
+            ? `This metro district rate is ${millsLabel} mills higher than last year.`
+            : `This metro district rate is ${millsLabel} mills lower than last year.`,
+      };
+    }
   }
   return {
     direction: "neutral",

@@ -102,6 +102,70 @@ describe("listMetroLevyPurposeChanges", () => {
       rateDelta: 0.01,
     });
   });
+
+  it("omits summary Total when itemized parts exist; keeps part changes", () => {
+    const districts = [
+      district({
+        districtId: "murphy",
+        name: "Murphy Creek Metropolitan District No. 2",
+        levies: [
+          {
+            purposeRaw: "Total",
+            purposeCategory: "other",
+            rateMillsCurrent: 0.071105,
+            rateMillsPrevious: 0.067209,
+            taborExempt: null,
+            rawRowIndex: 1,
+          },
+          {
+            purposeRaw: "Bonds",
+            purposeCategory: "debt_service",
+            rateMillsCurrent: 0.058289,
+            rateMillsPrevious: 0.055525,
+            taborExempt: null,
+            rawRowIndex: 2,
+          },
+          {
+            purposeRaw: "Contractual Obligation",
+            purposeCategory: "debt_service",
+            rateMillsCurrent: 0.001165,
+            rateMillsPrevious: 0.011684,
+            taborExempt: null,
+            rawRowIndex: 3,
+          },
+        ],
+      }),
+    ];
+
+    const changes = listMetroLevyPurposeChanges(districts);
+    expect(changes.map((c) => c.purposeRaw)).toEqual([
+      "Bonds",
+      "Contractual Obligation",
+    ]);
+  });
+
+  it("includes Total when it is the only levy on the district", () => {
+    const districts = [
+      district({
+        districtId: "solo",
+        name: "Solo Metro",
+        levies: [
+          {
+            purposeRaw: "Total",
+            purposeCategory: "other",
+            rateMillsCurrent: 0.05,
+            rateMillsPrevious: 0.04,
+            taborExempt: null,
+            rawRowIndex: 1,
+          },
+        ],
+      }),
+    ];
+
+    const changes = listMetroLevyPurposeChanges(districts);
+    expect(changes).toHaveLength(1);
+    expect(changes[0]?.purposeRaw).toBe("Total");
+  });
 });
 
 describe("metroLevyDistrictTotalChange", () => {
@@ -318,6 +382,13 @@ describe("metroDistrictTileYoYSummary", () => {
 
   it("uses neutral copy when only purpose rows changed", () => {
     expect(metroDistrictTileYoYSummary(null, null, true)).toMatchObject({
+      direction: "neutral",
+      headline: "Parts of this metro district rate changed from last year.",
+    });
+  });
+
+  it("uses neutral copy for a tiny mills delta that would display as 0.000", () => {
+    expect(metroDistrictTileYoYSummary(null, 0.0004, true)).toMatchObject({
       direction: "neutral",
       headline: "Parts of this metro district rate changed from last year.",
     });

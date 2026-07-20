@@ -246,17 +246,19 @@ export default function SourcesPage() {
           Metro rates are bundled offline from the county Mill Levy Public
           Information Form. The home page matches districts by LG ID from your
           loaded levy stack — not by hand-picking a district. When a metro
-          district&apos;s rate changed from last year, the app shows a clear
-          money impact near{" "}
+          district&apos;s rate changed from last year, the app shows a{" "}
+          <strong className="font-semibold text-slate-900">Changed</strong>
+          {" "}
+          cue on that district&apos;s tile and a year-by-year mills and dollar
+          comparison in that tile&apos;s details. A money-impact line under{" "}
           <strong className="font-semibold text-slate-900">
             Where is your money going?
           </strong>
-          {", "}
-          a{" "}
-          <strong className="font-semibold text-slate-900">Changed</strong>
           {" "}
-          cue on that district&apos;s tile, and a year-by-year mills and dollar
-          comparison in that tile&apos;s details. Comparisons use the
+          appears only when last year&apos;s rates are complete enough to net
+          honestly across every matched metro district on your stack.
+          Individual purpose changes can still show in the breakdown and tile
+          details even when that net line is held back. Comparisons use the
           previous-year mill column on the county form (and never add a summary
           Total purpose together with the part purposes that make it up).
         </p>
@@ -591,9 +593,9 @@ export default function SourcesPage() {
           How current is the data?
         </h3>
         <p className="text-slate-700">
-          The app serves static data — not live county or state APIs. The UI
+          The app serves static data, not live county or state APIs. The UI
           shows &quot;County data current as of …&quot; from the date
-          maintainers recorded when they last refreshed the Assessor{" "}
+          maintainers recorded when they last downloaded a fresh Assessor{" "}
           <a
             href={ARAPAHOE_ASSESSOR_DATA_MART_EXPORT}
             target="_blank"
@@ -603,8 +605,8 @@ export default function SourcesPage() {
             Data Mart
             <span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
-          extract (often updated about weekly). Maintainers download tables such
-          as{" "}
+          extract (often updated about weekly), not from the last time the
+          offline rebuild scripts ran. Maintainers download tables such as{" "}
           <code className={CODE_INLINE_CLASS}>
             Main Parcel Table
           </code>

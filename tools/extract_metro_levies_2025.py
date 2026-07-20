@@ -6,7 +6,7 @@
 """
 One-off utility to extract metropolitan district levy data for 2025
 from the Mill Levy Public Information PDF (Tax Year 2024/Budget Year 2025)
-into our normalized JSON format used by the app.
+into the normalized JSON format used by the app.
 
 This script is NOT part of the web runtime. It is a developer tool
 you run manually when new levy PDFs are published.
@@ -16,10 +16,9 @@ Usage (from project root, after installing dependencies listed in
 
   python tools/extract_metro_levies_2025.py \\
     --pdf supporting-data/certs/Mill\\ Levy\\ Public\\ Information\\ Form.pdf \\
-    --out supporting-data/metro-levies/metro-levies-2025.json
+    --out public/data/metro-levies-2025.json
 
-Use the 2025 Mill Levy Public Information Form PDF when available;
-the layout is the same as the 2026 extractor.
+Raw audit rows write to supporting-data/metro-levies/ (local only).
 """
 
 from __future__ import annotations
@@ -523,11 +522,15 @@ def write_outputs(
   raw_rows: List[RawRow],
 ) -> None:
   """
-  Write the normalized JSON plus a raw-rows audit file next to it.
+  Write shipping JSON to out_path and a raw-rows audit file under
+  supporting-data/metro-levies/ (local scratch; not the public/data twin).
   """
+  out_path.parent.mkdir(parents=True, exist_ok=True)
   out_path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
 
-  raw_path = out_path.with_name(out_path.stem + "-raw.json")
+  raw_dir = Path("supporting-data/metro-levies")
+  raw_dir.mkdir(parents=True, exist_ok=True)
+  raw_path = raw_dir / f"{out_path.stem}-raw.json"
   raw_payload = {
     "year": 2025,
     "sourceFile": "supporting-data/certs/Mill Levy Public Information Form.pdf",
@@ -550,8 +553,8 @@ def main() -> None:
   parser.add_argument(
     "--out",
     type=Path,
-    default=Path("supporting-data/metro-levies/metro-levies-2025.json"),
-    help="Path to write the normalized JSON file.",
+    default=Path("public/data/metro-levies-2025.json"),
+    help="Path to write the shipping JSON (under public/data/).",
   )
 
   args = parser.parse_args()

@@ -15,9 +15,9 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-/** Button reset only — callers supply typography + underline affordance via textTriggerClassName. */
+/** Button reset only — callers supply typography + underline via textTriggerClassName. */
 const TEXT_TRIGGER_BUTTON_RESET =
-  "cursor-pointer border-0 bg-transparent p-0 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40";
+  "cursor-pointer border-0 bg-transparent p-0 text-left leading-snug outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40";
 
 type InfoHintPopoverProps = {
   children: ReactNode;
@@ -199,7 +199,8 @@ export function InfoHintPopover({
 
   return (
     <span
-      className={`relative inline-block min-w-0 max-w-full shrink leading-none ${open ? "z-40" : ""}`}
+      // Do not set leading-none: text triggers wrap; default leading is on the button reset.
+      className={`relative inline-block min-w-0 max-w-full shrink ${open ? "z-40" : ""}`}
       ref={wrapRef}
     >
       <button

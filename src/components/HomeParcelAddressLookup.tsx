@@ -766,7 +766,6 @@ export function HomeParcelAddressLookup({
       >
         Where is your money going?
       </h3>
-      {levyStackIntro}
       {metroBillImpactCallout ? (
         <div
           role="status"
@@ -782,6 +781,7 @@ export function HomeParcelAddressLookup({
           </p>
         </div>
       ) : null}
+      {levyStackIntro}
     </div>
   );
 
