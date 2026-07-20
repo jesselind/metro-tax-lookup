@@ -43,8 +43,18 @@ export type MetroBillImpactCallout = {
 /** Scroll target for the bill-impact callout (first Changed levy tile). */
 export const FIRST_CHANGED_LEVY_TILE_DOM_ID = "levy-tile-first-rate-change";
 
+/**
+ * Marker on each levy tile open button in `LevyStackVisualization`.
+ * Bill-impact focus-after-scroll queries this (via
+ * {@link LEVY_TILE_OPEN_BTN_SELECTOR}), not aria-label copy.
+ */
+export const LEVY_TILE_OPEN_BTN_ATTR = "data-levy-tile-open";
+
+/** `querySelector` for {@link LEVY_TILE_OPEN_BTN_ATTR} on a tile root. */
+export const LEVY_TILE_OPEN_BTN_SELECTOR = `button[${LEVY_TILE_OPEN_BTN_ATTR}]`;
+
 const BILL_CHANGED_NEUTRAL_MESSAGE =
-  "A metro district rate on your bill changed since last year.";
+  "Your tax bill has changed since last year.";
 
 export type MetroLevyDistrictTotalChange = {
   districtId: string;
@@ -268,8 +278,9 @@ export function metroDistrictDeltaDollarsFromRates(
 
 /**
  * Top-of-results callout when any matched metro has a published purpose change.
- * Stays direction-neutral: we only have prior rates for some stack lines today,
- * so we never claim the whole bill went up or down. Dollar detail lives in tile modals.
+ * Message stays high-level (whole bill), not tile- or metro-specific. Direction-
+ * neutral: we only have prior rates for some stack lines today, so we never claim
+ * the whole bill went up or down. Dollar detail lives in tile modals.
  */
 export function metroBillImpactCalloutForDistrictIds(
   districtIds: string[],

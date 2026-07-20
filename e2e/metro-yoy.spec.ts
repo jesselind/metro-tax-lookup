@@ -33,7 +33,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await expect(
       page.getByRole("status").filter({
-        hasText: /metro district rate on your bill changed/i,
+        hasText: /Your tax bill has changed since last year/i,
       }),
     ).toHaveCount(0);
     await expect(
@@ -52,7 +52,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText("Changed", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("status").filter({
-        hasText: /metro district rate on your bill changed/i,
+        hasText: /Your tax bill has changed since last year/i,
       }),
     ).toBeVisible();
 

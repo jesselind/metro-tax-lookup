@@ -69,6 +69,7 @@ import levyData from "@/data/metroLevies";
 import type { LevyDataFile } from "@/lib/levyTypes";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
+  LEVY_TILE_OPEN_BTN_SELECTOR,
   metroBillImpactCalloutForDistrictIds,
 } from "@/lib/metroLevyYearOverYear";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
@@ -772,7 +773,7 @@ export function HomeParcelAddressLookup({
       block: "start",
     });
     const openBtn = tile.querySelector<HTMLButtonElement>(
-      'button[aria-label^="View district details"]',
+      LEVY_TILE_OPEN_BTN_SELECTOR,
     );
     openBtn?.focus({ preventScroll: true });
   }

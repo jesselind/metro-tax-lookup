@@ -370,16 +370,14 @@ export function LevyLineDistrictDetailDialog({
   }, []);
 
   const toggleMetroYoYBreakdown = useCallback(() => {
-    setMetroYoYBreakdownOpen((open) => {
-      if (open) {
-        // Collapse removes purpose term triggers; drop any open brief without
-        // trying to refocus a node that is about to unmount.
-        closeInlineDefinition({ refocusTrigger: false });
-        lastInlineDefTriggerRef.current = null;
-      }
-      return !open;
-    });
-  }, [closeInlineDefinition]);
+    if (metroYoYBreakdownOpen) {
+      // Collapse removes purpose term triggers; drop any open brief without
+      // trying to refocus a node that is about to unmount.
+      closeInlineDefinition({ refocusTrigger: false });
+      lastInlineDefTriggerRef.current = null;
+    }
+    setMetroYoYBreakdownOpen(!metroYoYBreakdownOpen);
+  }, [closeInlineDefinition, metroYoYBreakdownOpen]);
 
   useEffect(() => {
     if (!inlineDefinition) return;

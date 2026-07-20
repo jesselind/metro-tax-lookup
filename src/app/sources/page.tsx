@@ -252,10 +252,10 @@ export default function SourcesPage() {
           cue on that district&apos;s tile and a short money-impact line in that
           tile&apos;s details. Year-by-year mills and dollars stay behind a
           Show year-by-year breakdown control. Near the top of your results, a
-          neutral note that a metro district rate on your bill changed appears
-          when any matched metro district published a rate change (we do not
-          guess whether the whole bill went up or down until more prior rates
-          are available). Clicking that note scrolls to the first Changed tile.
+          neutral note that your tax bill has changed appears when any matched
+          metro district published a rate change (we do not guess whether the
+          whole bill went up or down until more prior rates are available).
+          Clicking that note scrolls to the first Changed tile.
           Comparisons use the previous-year mill column on the county form (and
           never add a summary Total purpose together with the part purposes that
           make it up).

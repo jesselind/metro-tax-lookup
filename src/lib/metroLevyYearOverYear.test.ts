@@ -380,7 +380,7 @@ describe("metroBillImpactCalloutForDistrictIds", () => {
     expect(
       metroBillImpactCalloutForDistrictIds(["a", "b"], districts),
     ).toMatchObject({
-      message: "A metro district rate on your bill changed since last year.",
+      message: "Your tax bill has changed since last year.",
     });
   });
 
@@ -404,7 +404,7 @@ describe("metroBillImpactCalloutForDistrictIds", () => {
 
     expect(metroBillImpactCalloutForDistrictIds(["a"], districts)).toMatchObject(
       {
-        message: "A metro district rate on your bill changed since last year.",
+        message: "Your tax bill has changed since last year.",
       },
     );
   });

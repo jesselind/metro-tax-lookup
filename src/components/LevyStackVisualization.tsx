@@ -47,6 +47,7 @@ import { formatUsdWhole } from "@/lib/formatUsd";
 import { metroLgIdKeyFromDolaMatch } from "@/lib/metroDistrictFromLevyLines";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
+  LEVY_TILE_OPEN_BTN_ATTR,
   listMetroLevyPurposeChangesForLgId,
   metroLgIdsWithPurposeMillChanges,
 } from "@/lib/metroLevyYearOverYear";
@@ -681,6 +682,7 @@ export function LevyStackVisualization({
                         <button
                           type="button"
                           className={LEVY_TILE_OPEN_BTN_CLASS}
+                          {...{ [LEVY_TILE_OPEN_BTN_ATTR]: "" }}
                           aria-label={
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value${
