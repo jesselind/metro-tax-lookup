@@ -30,6 +30,9 @@ Run from repo root:
   cd metro-tax-lookup && source .venv/bin/activate && pip install -r tools/requirements.txt
   python tools/build_arapahoe_parcel_levy_index.py
 
+County mart download stamp (YYYY-MM-DD, not rebuild time): tools/county-mart-data-as-of.txt
+  → snapshot.bundledAsOf in public/data JSON (override with --bundled-as-of).
+
 Maintainer notes:
   - Levy.aspx?id= uses TAGId (tax area), same as Mart_TA_TAG Field2 and Main Parcel TAGId.
     It is not a per-parcel serial; many parcels share one TAGId.
@@ -63,8 +66,8 @@ except ImportError:
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SUPPORTING_DATA = REPO_ROOT / "supporting-data"
 COUNTY_MART = SUPPORTING_DATA / "county-mart"
-# One line YYYY-MM-DD: date you downloaded / refreshed this mart batch (not auto-detected).
-COUNTY_DATA_AS_OF_FILE = "data-as-of.txt"
+# One line YYYY-MM-DD: date you downloaded / refreshed the mart batch (not rebuild time).
+COUNTY_DATA_AS_OF_PATH = REPO_ROOT / "tools" / "county-mart-data-as-of.txt"
 DOLA_DIR = SUPPORTING_DATA / "dola"
 
 DEFAULT_MAIN = (
@@ -1960,9 +1963,8 @@ def normalize_bundled_as_of(raw: str) -> str:
     return o
 
 
-def read_county_data_as_of_file(county_mart_dir: Path) -> str:
-    """YYYY-MM-DD from county-mart/data-as-of.txt (maintainer sets on mart download)."""
-    path = county_mart_dir / COUNTY_DATA_AS_OF_FILE
+def read_county_data_as_of_file(path: Path = COUNTY_DATA_AS_OF_PATH) -> str:
+    """YYYY-MM-DD from tools/county-mart-data-as-of.txt (set on mart download)."""
     if not path.is_file():
         raise SystemExit(
             f"Missing {path}. Add one line YYYY-MM-DD (date you downloaded this mart batch). "
@@ -1976,11 +1978,11 @@ def read_county_data_as_of_file(county_mart_dir: Path) -> str:
     return normalize_bundled_as_of(line)
 
 
-def resolve_bundled_as_of(override: str | None, county_mart_dir: Path) -> str:
-    """Read maintainer date from data-as-of.txt, or --bundled-as-of override."""
+def resolve_bundled_as_of(override: str | None) -> str:
+    """Read maintainer download date from tools/county-mart-data-as-of.txt, or override."""
     if override:
         return normalize_bundled_as_of(override)
-    return read_county_data_as_of_file(county_mart_dir)
+    return read_county_data_as_of_file()
 
 
 def main() -> None:
@@ -2071,7 +2073,8 @@ def main() -> None:
         metavar="DATE",
         help=(
             "Override snapshot bundledAsOf (YYYY-MM-DD or ISO). "
-            f"Default: {COUNTY_DATA_AS_OF_FILE} under county-mart/."
+            f"Default: {COUNTY_DATA_AS_OF_PATH.relative_to(REPO_ROOT)} "
+            "(county mart download date, not rebuild time)."
         ),
     )
     args = ap.parse_args()
@@ -2104,7 +2107,7 @@ def main() -> None:
     overrides = enrich_overrides_from_entities(overrides, entities)
 
     by_tag_raw, tax_year = read_mart_groups(args.mart_ta_tag)
-    bundled_as_of = resolve_bundled_as_of(args.bundled_as_of, COUNTY_MART)
+    bundled_as_of = resolve_bundled_as_of(args.bundled_as_of)
     print(f"Snapshot bundledAsOf: {bundled_as_of}", file=sys.stderr)
 
     stacks: dict[str, Any] = {}

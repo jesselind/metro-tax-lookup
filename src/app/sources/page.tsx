@@ -33,7 +33,7 @@ import {
   SOURCES_BROKEN_GITHUB_MAILTO_HREF,
 } from "@/lib/contact";
 import { SITE_CONFIG } from "@/lib/siteConfig";
-import levyData from "../../../public/data/metro-levies-2025.json";
+import levyData from "@/data/metroLevies";
 import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { glossaryTermHref } from "@/lib/glossary";
 
@@ -245,7 +245,22 @@ export default function SourcesPage() {
         <p className="text-slate-700">
           Metro rates are bundled offline from the county Mill Levy Public
           Information Form. The home page matches districts by LG ID from your
-          loaded levy stack — not by hand-picking a district.
+          loaded levy stack — not by hand-picking a district. When a metro
+          district&apos;s rate changed from last year, the app shows a{" "}
+          <strong className="font-semibold text-slate-900">Changed</strong>
+          {" "}
+          cue on that district&apos;s tile and a year-by-year mills and dollar
+          comparison in that tile&apos;s details. A money-impact line under{" "}
+          <strong className="font-semibold text-slate-900">
+            Where is your money going?
+          </strong>
+          {" "}
+          appears only when last year&apos;s rates are complete enough to net
+          honestly across every matched metro district on your stack.
+          Individual purpose changes can still show in the breakdown and tile
+          details even when that net line is held back. Comparisons use the
+          previous-year mill column on the county form (and never add a summary
+          Total purpose together with the part purposes that make it up).
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
@@ -270,8 +285,18 @@ export default function SourcesPage() {
               Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
-            . District names, levy parts, and aggregated debt service and total
-            mills are extracted offline into the app.
+            . District names, levy purposes, previous-year mill rates, and
+            aggregated debt service and total mills are extracted offline into
+            the app. The home metro breakdown lists every published
+            current-versus-previous mill change for matched metro districts
+            (budget year {levyJson.year}
+            {bundledLabel && bundledIso ? (
+              <>
+                ; snapshot{" "}
+                <time dateTime={bundledIso}>{bundledLabel}</time>
+              </>
+            ) : null}
+            ).
           </li>
           <li>
             <strong>Assessor hub:</strong>{" "}
@@ -568,9 +593,9 @@ export default function SourcesPage() {
           How current is the data?
         </h3>
         <p className="text-slate-700">
-          The app serves static data — not live county or state APIs. The UI
+          The app serves static data, not live county or state APIs. The UI
           shows &quot;County data current as of …&quot; from the date
-          maintainers recorded when they last refreshed the Assessor{" "}
+          maintainers recorded when they last downloaded a fresh Assessor{" "}
           <a
             href={ARAPAHOE_ASSESSOR_DATA_MART_EXPORT}
             target="_blank"
@@ -580,8 +605,8 @@ export default function SourcesPage() {
             Data Mart
             <span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
-          extract (often updated about weekly). Maintainers download tables such
-          as{" "}
+          extract (often updated about weekly), not from the last time the
+          offline rebuild scripts ran. Maintainers download tables such as{" "}
           <code className={CODE_INLINE_CLASS}>
             Main Parcel Table
           </code>

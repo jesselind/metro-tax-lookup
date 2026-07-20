@@ -43,33 +43,20 @@ next-env.d.ts
 
 # --- Data policy (metro-tax-lookup) ---
 # Runtime JSON under public/data/ is committed so forks work with npm install + npm run dev.
-# Large county/state exports stay local (gitignored). Download URLs: /sources and README.
+# Offline inputs (mart, DOLA, cert PDFs, extract scratch) stay local. Download URLs: /sources and README.
 # Legacy monolithic parcel-record bundles (build output only); commit plain JSON shards under arapahoe-parcel-record-by-pin/.
 public/data/arapahoe-parcel-record-by-pin.json
 public/data/arapahoe-parcel-record-by-pin.json.gz
 
-# Local-only samples (PII, one-off PDFs) - keep out of version control
-supporting-data/_private/*
-!supporting-data/_private/.gitkeep
-!supporting-data/_private/spotcheck-pin.txt.example
-
 # Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
 docs/_working/
 
-# County Assessor Data Mart CSVs + portal layout guides (weekly refresh; not committed)
-# Live build inputs: supporting-data/county-mart/ (portal folder names unchanged).
-# Optional local staging path before replace: supporting-data/county-mart-diff/ (not tracked; create when needed).
-supporting-data/**/*.csv
-!supporting-data/dola/property-tax-entities-export.csv
-supporting-data/**/*.docx
+# Offline regeneration workspace (government dumps, extract scratch). Not committed.
+# County mart download stamp lives at tools/county-mart-data-as-of.txt (tracked).
+supporting-data/
 
-# DOLA LGIS spreadsheets (prefer committed property-tax-entities-export.csv)
+# Spreadsheets (e.g. DOLA xlsx); prefer CSV exports under supporting-data/ locally
 *.xlsx
-
-# Optional legacy / enrichment inputs (gitignored bulk under supporting-data/refs/)
-supporting-data/refs/
-
-# Census / GIS file geodatabases (~150MB each; live under refs/gis/ when present)
 
 # Playwright (Phase 6b); keep report/cache dirs out of git
 /test-results/

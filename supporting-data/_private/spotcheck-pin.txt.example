@@ -1,7 +1,0 @@
-# Optional local spot-check PIN (gitignored)
-
-Put a single nine-digit PIN on the first line if you want a local reminder for
-manual PPINum.aspx comparison after a mart rebuild.
-
-This file is not read by default unit tests or CI. See README —
-"Tests, fixtures, and PII".

@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatMartIntegerCodeDisplay,
+  parcelTaxAndAssessmentYearsDiffer,
   parcelTaxAssessmentYearNote,
 } from "./parcelRecordDisplay";
 
@@ -27,7 +28,7 @@ describe("formatMartIntegerCodeDisplay", () => {
 describe("parcelTaxAssessmentYearNote", () => {
   it("explains when tax year and assessment year differ", () => {
     expect(parcelTaxAssessmentYearNote("2025", "2026")).toBe(
-      "Tax year on this parcel record is 2025. Value labels use assessment year 2026 (the year on the county notice headers).",
+      "Tax year is 2025. Value labels use assessment year 2026.",
     );
   });
 
@@ -35,5 +36,13 @@ describe("parcelTaxAssessmentYearNote", () => {
     expect(parcelTaxAssessmentYearNote("2026", "2026")).toBeNull();
     expect(parcelTaxAssessmentYearNote("2025", null)).toBeNull();
     expect(parcelTaxAssessmentYearNote("", "2026")).toBeNull();
+  });
+});
+
+describe("parcelTaxAndAssessmentYearsDiffer", () => {
+  it("is true only when both years are present and differ", () => {
+    expect(parcelTaxAndAssessmentYearsDiffer("2025", "2026")).toBe(true);
+    expect(parcelTaxAndAssessmentYearsDiffer("2026", "2026")).toBe(false);
+    expect(parcelTaxAndAssessmentYearsDiffer("2025", null)).toBe(false);
   });
 });

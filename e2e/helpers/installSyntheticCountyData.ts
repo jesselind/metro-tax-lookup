@@ -6,24 +6,37 @@
 import type { Page } from "@playwright/test";
 import {
   SYNTHETIC_LEVY_STACKS,
+  SYNTHETIC_LEVY_STACKS_WITH_METRO,
   SYNTHETIC_PARCEL_RECORD_SHARD,
   SYNTHETIC_PIN_SHARD_PREFIX,
   SYNTHETIC_PIN_TO_TAG,
   SYNTHETIC_SITUS_TO_PINS,
 } from "../fixtures/syntheticCountyData";
 
+export type InstallSyntheticCountyDataOptions = {
+  /** When true, include a levy line whose LG ID matches bundled metro YoY test data. */
+  includeMetro?: boolean;
+};
+
 /**
  * Replace the large committed county JSON files with tiny synthetic payloads
  * so address → levy → shard can run without a real resident parcel.
  * Call before `page.goto`.
  */
-export async function installSyntheticCountyData(page: Page): Promise<void> {
+export async function installSyntheticCountyData(
+  page: Page,
+  options: InstallSyntheticCountyDataOptions = {},
+): Promise<void> {
+  const levyStacks = options.includeMetro
+    ? SYNTHETIC_LEVY_STACKS_WITH_METRO
+    : SYNTHETIC_LEVY_STACKS;
+
   await fulfillJson(page, "**/data/arapahoe-situs-to-pins.json", SYNTHETIC_SITUS_TO_PINS);
   await fulfillJson(page, "**/data/arapahoe-pin-to-tag.json", SYNTHETIC_PIN_TO_TAG);
   await fulfillJson(
     page,
     "**/data/arapahoe-levy-stacks-by-tag-id.json",
-    SYNTHETIC_LEVY_STACKS,
+    levyStacks,
   );
   await fulfillJson(
     page,

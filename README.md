@@ -37,7 +37,7 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
 
 ### Tests, fixtures, and PII
 
@@ -51,13 +51,14 @@ This is a **public** repo. Automated tests must not spotlight a real resident (P
 | Python unit tests | `tools/synthetic_test_ids.py` + `tools/test_*.py` | Same IDs for parser tests; parcel-index builder tests use invented Main Parcel rows (no real PIN) |
 | NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
-| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Try demo uses the PIN-less fixture; address → levy → shard uses Playwright route fulfills of synthetic JSON (`e2e/fixtures/`). Assert UI contracts / presence — not live scrapes or brittle dollar/mill snapshots |
+| Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
+| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Try demo uses the PIN-less fixture; address → levy → shard uses Playwright route fulfills of synthetic JSON (`e2e/fixtures/`). `e2e/metro-yoy.spec.ts` covers metro YoY chrome (Changed badge, bill-impact callout, tax/property tiles) vs non-metro absence. Assert UI contracts / presence — not live scrapes or brittle dollar/mill snapshots |
 
 Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
 
 **What CI does not need:** Environment variables for test parcel IDs. Requiring `REF_PIN` (or similar) for the default suite would break open-source CI and contributor onboarding. Env vars are optional for *extra* private checks only.
 
-**Optional local spot-check (gitignored, never CI):** After a mart rebuild, compare any PIN you care about to the county `PPINum.aspx` page yourself. If you want a sticky reminder on disk, put a single PIN in **`supporting-data/_private/spotcheck-pin.txt`** (gitignored via `_private/`). That file is for humans/scripts you run locally — it is not read by the default `npm run test:*` commands.
+**Optional local spot-check (gitignored, never CI):** After a mart rebuild, compare any PIN you care about to the county `PPINum.aspx` page yourself. If you want a sticky reminder on disk, create **`supporting-data/_private/spotcheck-pin.txt`** with a single PIN (`supporting-data/` is gitignored; there is no committed example). That file is for humans/scripts you run locally — it is not read by the default `npm run test:*` commands.
 
 **Runtime county JSON:** Bundled files under `public/data/` are public assessor extracts (the product). That is separate from **tests and docs**, which must not call out a specific person's parcel as the reference fixture.
 
@@ -75,16 +76,19 @@ Do **not** put real homeowner PINs in tests "because they match the county site.
 
 | Path | Role |
 | --- | --- |
-| `public/data/*.json` | Runtime app data served to the browser |
-| `supporting-data/county-mart/` | Latest accepted Arapahoe Assessor Data Mart download (portal folder names). Set `data-as-of.txt` to the download date (`YYYY-MM-DD`) when you replace CSVs. |
-| `supporting-data/county-mart-diff/` | Optional local staging path for a new mart download so you can diff against `county-mart/` before replacing it. Not tracked in git; create the folder when you need it, and clear or remove it after you accept the drop. |
-| `supporting-data/dola/` | DOLA exports: committed `property-tax-entities-export.csv` + gitignored `lg-export-all.csv` |
-| `supporting-data/certs/` | Levy certification PDFs (source for metro levy extract scripts) |
-| `supporting-data/metro-levies/` | Extract script outputs (`metro-levies-*.json`; copy to `public/data/` when refreshing) |
-| `supporting-data/refs/` | Optional statewide GIS / district layer inputs (gitignored bulk) |
-| `supporting-data/_private/` | PII samples, NOV parser output (gitignored) |
-| `supporting-data/` | Parent for all offline regeneration inputs |
+| `public/data/*.json` | **Committed** runtime app data (what the site ships) |
+| `tools/county-mart-data-as-of.txt` | **Tracked.** Date you last downloaded the Assessor Data Mart (`YYYY-MM-DD`): county data freshness, not "last rebuild." Build copies this into `public/data` `snapshot.bundledAsOf` (UI: "County data current as of …"). Update only when the mart drop is new. |
+| `supporting-data/` | **Local only** (gitignored): county/state downloads and extract scratch. |
+| `supporting-data/county-mart/` | Arapahoe Assessor Data Mart CSVs (local). |
+| `supporting-data/county-mart-diff/` | Optional staging folder to diff a new mart drop before replacing `county-mart/`. |
+| `supporting-data/dola/` | DOLA exports (`property-tax-entities-export.csv`, `lg-export-all.csv`, optional xlsx). |
+| `supporting-data/certs/` | Mill-levy PDFs for extract scripts. Download from the Assessor Mill Levies hub; see `/sources`. |
+| `supporting-data/metro-levies/` | Extract **raw** audit JSON only (`*-raw.json`). Shipping file is written straight to `public/data/`. |
+| `supporting-data/refs/` | Optional statewide GIS / district layer inputs. |
+| `supporting-data/_private/` | PII samples, NOV parser output. |
 | `tools/*.py` | Offline extractors/index builders |
+
+**Policy:** Point people at live county/state sources (`/sources`). Commit transforms under `public/data/` and the mart download stamp under `tools/`. Do not commit government PDF/CSV dumps under `supporting-data/`.
 
 ### Levy detail modal (`levy-explainer-entries.json`)
 
@@ -118,15 +122,15 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    npm run build:arapahoe-index
    ```
 
-   **Mart refresh (recommended):** Download the portal export into a local `supporting-data/county-mart-diff/` folder first (create it if needed; same folder names as the portal). Diff against `supporting-data/county-mart/` — schemas and column order are usually unchanged; table CSVs often gain/change rows on the county's weekly cadence (guides/xlsx lookups and sometimes Tax Authority Groups may be identical). When you accept the drop, replace `county-mart/` with the staging contents, set `supporting-data/county-mart/data-as-of.txt` to one line `YYYY-MM-DD` (the date you downloaded the CSVs; that date appears in the app as "County data current as of …"), then clear or remove `county-mart-diff/`. That staging path is a local convention only (not tracked in git).
+   **Mart refresh (recommended):** Download the portal export into a local `supporting-data/county-mart-diff/` folder first (create it if needed; same folder names as the portal). Diff against `supporting-data/county-mart/` — schemas and column order are usually unchanged; table CSVs often gain/change rows on the county's weekly cadence (guides/xlsx lookups and sometimes Tax Authority Groups may be identical). When you accept the drop, replace `county-mart/` with the staging contents, set **`tools/county-mart-data-as-of.txt`** to one line `YYYY-MM-DD` (the date you downloaded the CSVs: county freshness, not rebuild time; that date appears in the app as "County data current as of …"), then clear or remove `county-mart-diff/`. That staging path is a local convention only (not tracked in git).
 
-   The script reads county mart CSVs from `supporting-data/county-mart/` (Main Parcel + Tax Authority Groups tables) and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/dola/property-tax-entities-export.csv` (preferred; committed so forks can rebuild). If that file is missing, it falls back to `property-tax-entities-export.xlsx` in the same folder locally. **`*.xlsx` is gitignored**; keep spreadsheets out of version control and use CSV for the canonical export.
+   The script reads county mart CSVs from `supporting-data/county-mart/` (Main Parcel + Tax Authority Groups tables) and, when present, **DOLA LGIS Property Tax Entities** as `supporting-data/dola/property-tax-entities-export.csv` (download locally from DOLA; see `/sources`). If that file is missing, it falls back to `property-tax-entities-export.xlsx` in the same folder. **`*.xlsx` is gitignored.**
 
    Build behavior notes:
    - Within each TAG, repeated authority rows are collapsed to one canonical row per `code + authority`: active (`A`) rows are preferred over inactive (`I`), then newest `effectiveYear`.
    - Name matching normalizes common county abbreviations (for example `VLG` -> `VILLAGE`, `MD` -> `METROPOLITAN DISTRICT`) before fuzzy matching to DOLA legal names.
    - Optional `--dola-certifying-county` (default `Arapahoe`) filters DOLA export rows; JSON snapshot records the value in `dolaCertifyingCounty`.
-   - `bundledAsOf` in each output snapshot comes from `supporting-data/county-mart/data-as-of.txt` (one `YYYY-MM-DD` line you set when you download the mart). Override with `--bundled-as-of` if needed.
+   - `snapshot.bundledAsOf` in mart-built JSON comes from `tools/county-mart-data-as-of.txt` (county download date: update only when the mart is new, not on every rebuild). Override with `--bundled-as-of` if needed.
 
    Outputs include:
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
@@ -142,12 +146,17 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
    Reads `supporting-data/dola/lg-export-all.csv` (or pass `--lg-csv`) and `public/data/arapahoe-levy-stacks-by-tag-id.json`. Writes `public/data/colorado-special-district-directory.json`. Run after `build:arapahoe-index` when levy stacks change, or when you refresh the LG CSV.
 
-   When an LGID appears on a levy stack but is missing from the LG directory CSV, the script adds a minimal name-only row from `supporting-data/dola/property-tax-entities-export.csv` (same committed DOLA export used for levy matching) and records those LGIDs under `_meta.lgIdsFilledFromPropertyTaxEntities`. Optional `--certifying-county` (default `Arapahoe`) must match the export's certifying county column for fallback rows; `_meta.propertyTaxEntitiesCountyFilterApplied` records whether that column was present and `_meta.certifyingCountyForPropertyTaxFallback` is set only when the filter ran. Anything still absent from both sources remains in `_meta.missingLgIdsInExport`.
+   When an LGID appears on a levy stack but is missing from the LG directory CSV, the script adds a minimal name-only row from `supporting-data/dola/property-tax-entities-export.csv` (same local DOLA export used for levy matching) and records those LGIDs under `_meta.lgIdsFilledFromPropertyTaxEntities`. Optional `--certifying-county` (default `Arapahoe`) must match the export's certifying county column for fallback rows; `_meta.propertyTaxEntitiesCountyFilterApplied` records whether that column was present and `_meta.certifyingCountyForPropertyTaxFallback` is set only when the filter ran. Anything still absent from both sources remains in `_meta.missingLgIdsInExport`.
 
 4. Rebuild metro levy JSON (year-specific script):
    - `tools/extract_metro_levies_2025.py` or `tools/extract_metro_levies_2026.py`
-   - Source PDF goes in `supporting-data/certs/` (Mill Levy Public Information Form; 2026 script may use the Certification of Levies PDF)
-   - Outputs land in `supporting-data/metro-levies/`; copy to `public/data/metro-levies-YYYY.json`
+   - Source PDF (local): `supporting-data/certs/Mill Levy Public Information Form.pdf` (download from the Assessor Mill Levies hub; see `/sources`). Text-line extract; not the Certification of Levies PDF layout.
+   - Writes shipping JSON to `public/data/metro-levies-YYYY.json` and a local raw audit to `supporting-data/metro-levies/*-raw.json` (no twin shipping copy under supporting-data)
+   - App import site: `src/data/metroLevies.ts` (flip the year file there when shipping a newer extract)
+   - YoY mill changes in the UI use each purpose's `rateMillsPrevious` vs `rateMillsCurrent` from that PDF column (never sum a summary Total with the part purposes that make it up)
+   - Bill-impact "$X more/less for your metro district(s)" callout only when **every** matched metro has a complete prior district total (partial prior → no net money box; purpose-level changes can still list)
+   - Core helper: `src/lib/metroLevyYearOverYear.ts`. Surfaces: bill-impact callout under "Where is your money going?" (above "Select a tile for more details" in `HomeParcelAddressLookup`), metro breakdown + soft blurb (`MetroTaxShareFlow`), **Changed** badge on metro authority tiles (`LevyStackVisualization`), year/mills/$ block in `LevyLineDistrictDetailDialog` when that metro moved (district headline red/green or neutral; per-purpose Difference colors follow each purpose's own delta)
+   - Tests: `npm run test:unit` (includes YoY helpers), `npm run test:metro-extract` (extractor), `e2e/metro-yoy.spec.ts` (Playwright)
 
 5. Optional legacy district tooling (not used for the app runtime bundle above):
    - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`

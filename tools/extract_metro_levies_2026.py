@@ -5,8 +5,8 @@
 
 """
 One-off utility to extract metropolitan district levy data for 2026
-from the "2026 Certification of Levies and Revenues.pdf" document
-into our normalized JSON format used by the app.
+from the Mill Levy Public Information Form PDF into the normalized JSON
+format used by the app.
 
 This script is NOT part of the web runtime. It is a developer tool
 you run manually when new levy PDFs are published.
@@ -15,12 +15,11 @@ Usage (from project root, after installing dependencies listed in
 `tools/requirements.txt`):
 
   python tools/extract_metro_levies_2026.py \\
-    --pdf supporting-data/certs/2026\\ Certification\\ of\\ Levies\\ and\\ Revenues.pdf \\
-    --out supporting-data/metro-levies/metro-levies-2026.json
+    --pdf supporting-data/certs/Mill\\ Levy\\ Public\\ Information\\ Form.pdf \\
+    --out public/data/metro-levies-2026.json
 
-You will likely need to tweak the column names / filters below once
-you see how the PDF renders on your machine, but this gives us a
-solid starting point.
+Raw audit rows write to supporting-data/metro-levies/ (local only).
+Flip src/data/metroLevies.ts when shipping a newer year.
 """
 
 from __future__ import annotations
@@ -524,11 +523,15 @@ def write_outputs(
   raw_rows: List[RawRow],
 ) -> None:
   """
-  Write the normalized JSON plus a raw-rows audit file next to it.
+  Write shipping JSON to out_path and a raw-rows audit file under
+  supporting-data/metro-levies/ (local scratch; not the public/data twin).
   """
+  out_path.parent.mkdir(parents=True, exist_ok=True)
   out_path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
 
-  raw_path = out_path.with_name(out_path.stem + "-raw.json")
+  raw_dir = Path("supporting-data/metro-levies")
+  raw_dir.mkdir(parents=True, exist_ok=True)
+  raw_path = raw_dir / f"{out_path.stem}-raw.json"
   raw_payload = {
     "year": 2026,
     "sourceFile": "supporting-data/certs/Mill Levy Public Information Form.pdf",
@@ -551,8 +554,8 @@ def main() -> None:
   parser.add_argument(
     "--out",
     type=Path,
-    default=Path("supporting-data/metro-levies/metro-levies-2026.json"),
-    help="Path to write the normalized JSON file.",
+    default=Path("public/data/metro-levies-2026.json"),
+    help="Path to write the shipping JSON (under public/data/).",
   )
 
   args = parser.parse_args()

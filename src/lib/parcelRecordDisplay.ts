@@ -32,5 +32,13 @@ export function parcelTaxAssessmentYearNote(
   const tax = (taxYear ?? "").trim();
   const assess = (assessmentYear ?? "").trim();
   if (!tax || !assess || tax === assess) return null;
-  return `Tax year on this parcel record is ${tax}. Value labels use assessment year ${assess} (the year on the county notice headers).`;
+  return `Tax year is ${tax}. Value labels use assessment year ${assess}.`;
+}
+
+/** True when both years are present and differ. */
+export function parcelTaxAndAssessmentYearsDiffer(
+  taxYear: string | null | undefined,
+  assessmentYear: string | null | undefined,
+): boolean {
+  return parcelTaxAssessmentYearNote(taxYear, assessmentYear) != null;
 }

@@ -74,11 +74,13 @@ export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =
   "text-base leading-relaxed text-slate-700 sm:text-lg";
 
 /**
- * Thick indigo underline affordance only (no font-weight, size, or color).
- * Compose onto local typography for in-flow definition / hint triggers.
+ * Thick indigo underline affordance (no font-weight, size, or color).
+ * Includes {@code leading-snug} so wrapped triggers keep clearance under the
+ * decoration (same recipe as parcel-record glossary labels). Compose onto
+ * local typography for in-flow definition / hint triggers and term links.
  */
 export const TOOL_LINK_UNDERLINE_CLASS =
-  "underline decoration-indigo-700 decoration-2 underline-offset-2";
+  "leading-snug underline decoration-indigo-700 decoration-2 underline-offset-2";
 
 /**
  * Indigo text + {@link TOOL_LINK_UNDERLINE_CLASS} (no font-weight or size).
@@ -128,9 +130,9 @@ export const LEVY_STACK_TILE_GRID_CLASS =
 export const PARCEL_SUMMARY_ROW_CLASS =
   "flex w-full min-w-0 flex-row flex-wrap items-stretch justify-start gap-3 sm:gap-4";
 
-/** Actual + assessed: always a row; `sm:contents` so tiles join the parent row at sm+ breakpoints. */
+/** Actual / assessed / property-tax value tiles: row on small screens; `sm:contents` joins the parent row at sm+. */
 export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS =
-  "flex w-full min-w-0 flex-row flex-nowrap items-stretch gap-3 sm:contents";
+  "flex w-full min-w-0 flex-row flex-wrap items-stretch gap-3 sm:contents";
 
 /**
  * Parcel tiles: border + radius on the outer frame, padding + scroll on an inner body.
@@ -174,11 +176,11 @@ export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
  * (spaces only — field labels do not mid-break words). Color/weight match sibling labels.
  */
 export const PARCEL_RECORD_GLOSSARY_LINK_CLASS =
-  `inline text-sm font-medium leading-snug text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
+  `inline text-sm font-medium text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
 
 /** In-table section titles (e.g. Land Line): match {@link ParcelRecordCountyTables} section row typography. */
 export const PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS =
-  `inline text-base font-semibold leading-snug text-inherit ${TOOL_LINK_UNDERLINE_CLASS} sm:text-lg`;
+  `inline text-base font-semibold text-inherit ${TOOL_LINK_UNDERLINE_CLASS} sm:text-lg`;
 
 /** In-table column headers: inherit table header size/weight/color from parent {@code th}. */
 export const PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS =

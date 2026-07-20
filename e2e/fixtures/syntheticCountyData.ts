@@ -33,6 +33,15 @@ export const SYNTHETIC_E2E_TAG_ID = "9090909";
 /** Levy authority name asserted in the stack UI after mocked PIN load. */
 export const SYNTHETIC_E2E_AUTHORITY = "SYNTHETIC E2E TEST DISTRICT";
 
+/**
+ * Bundled metro-levies LG ID with published YoY purpose changes (Adonea MD No. 2).
+ * Used only to exercise metro YoY UI in e2e; levy stack lines stay synthetic.
+ */
+export const SYNTHETIC_E2E_METRO_LG_ID = "65214";
+
+/** Authority label on the synthetic metro levy line in e2e mocks. */
+export const SYNTHETIC_E2E_METRO_AUTHORITY = "E2E SYNTHETIC METRO DISTRICT";
+
 /** Owner listing asserted after parcel-record shard fetch. */
 export const SYNTHETIC_E2E_OWNER = "E2E Synthetic Owner";
 
@@ -91,6 +100,41 @@ export const SYNTHETIC_LEVY_STACKS = {
       taxYear: "2025",
       levyAspxUrl: `https://parcelsearch.arapahoegov.com/Levy.aspx?id=${SYNTHETIC_E2E_TAG_ID}`,
       lines: [
+        {
+          code: "9999",
+          authorityName: SYNTHETIC_E2E_AUTHORITY,
+          effectiveYear: "2025",
+          status: "A",
+          dolaMatch: {
+            method: "none" as const,
+            confidence: "low" as const,
+            mills: 10,
+          },
+        },
+      ],
+    },
+  },
+};
+
+/** Same as {@link SYNTHETIC_LEVY_STACKS} but with a metro LG ID that exists in bundled mill JSON. */
+export const SYNTHETIC_LEVY_STACKS_WITH_METRO = {
+  ...SYNTHETIC_LEVY_STACKS,
+  stacksByTagId: {
+    [SYNTHETIC_E2E_TAG_ID]: {
+      ...SYNTHETIC_LEVY_STACKS.stacksByTagId[SYNTHETIC_E2E_TAG_ID],
+      lines: [
+        {
+          code: "8888",
+          authorityName: SYNTHETIC_E2E_METRO_AUTHORITY,
+          effectiveYear: "2025",
+          status: "A",
+          dolaMatch: {
+            method: "fuzzy" as const,
+            confidence: "high" as const,
+            lgId: SYNTHETIC_E2E_METRO_LG_ID,
+            mills: 50.804,
+          },
+        },
         {
           code: "9999",
           authorityName: SYNTHETIC_E2E_AUTHORITY,

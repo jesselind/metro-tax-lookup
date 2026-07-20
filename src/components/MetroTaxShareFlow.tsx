@@ -19,7 +19,7 @@ import {
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
-import levyData from "../../public/data/metro-levies-2025.json";
+import levyData from "@/data/metroLevies";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
@@ -46,9 +46,14 @@ import {
   metroPurposeCategoryHintForSegment,
   type MetroLevyBarSegment,
 } from "@/lib/metroLevyBarSegments";
-
-/** JSON stores mill rate (decimal, e.g. 0.0634); county and inputs use mills (e.g. 63.4). */
-const RATE_TO_MILLS = 1000;
+import {
+  formatMetroMillsDeltaFromRate,
+  formatMetroMillsFromRate,
+  listMetroLevyPurposeChanges,
+  metroLevyDistrictTotalChange,
+  metroPurposeChangeSummaryPhrase,
+  METRO_RATE_TO_MILLS,
+} from "@/lib/metroLevyYearOverYear";
 
 /** Ignore float drift when comparing levy line sums to certified totals. */
 const MILLS_ROUND_EPS = 0.0005;
@@ -213,14 +218,45 @@ export function MetroTaxShareFlow({
   const totalMills =
     prefillTotalMills != null && prefillTotalMills > 0 ? prefillTotalMills : 0;
 
+  const activeLevyDistricts = useMemo(
+    () =>
+      activeDistrictIds
+        .map((id) => levyJson.districts.find((d) => d.districtId === id))
+        .filter((d): d is LevyDistrictFromJson => d != null),
+    [activeDistrictIds, levyJson.districts],
+  );
+
+  const metroPurposeChanges = useMemo(
+    () => listMetroLevyPurposeChanges(activeLevyDistricts),
+    [activeLevyDistricts],
+  );
+
+  const metroDistrictTotalChanges = useMemo(
+    () =>
+      activeLevyDistricts
+        .map((d) => metroLevyDistrictTotalChange(d))
+        .filter(
+          (
+            t,
+          ): t is typeof t & {
+            ratePreviousTotal: number;
+            rateDelta: number;
+          } =>
+            t.hasPurposeChanges &&
+            t.ratePreviousTotal != null &&
+            t.rateDelta != null,
+        ),
+    [activeLevyDistricts],
+  );
+
   const perDistrictBundles = useMemo((): MetroDistrictBundle[] => {
     return activeDistrictIds.map((districtId) => {
       const selectedDistrict = metroOptions.find((m) => m.id === districtId);
       const metroDebtMills = selectedDistrict
-        ? selectedDistrict.debtMills * RATE_TO_MILLS
+        ? selectedDistrict.debtMills * METRO_RATE_TO_MILLS
         : 0;
       const totalDistrictMills = selectedDistrict
-        ? selectedDistrict.totalMills * RATE_TO_MILLS
+        ? selectedDistrict.totalMills * METRO_RATE_TO_MILLS
         : 0;
       const fullDistrict = levyJson.districts.find(
         (d) => d.districtId === districtId,
@@ -239,12 +275,12 @@ export function MetroTaxShareFlow({
         .sort((a, b) => (b.rateMillsCurrent ?? 0) - (a.rateMillsCurrent ?? 0));
       const metroDebtMillsFromAggregates =
         fullDistrict?.aggregates?.debtMills != null
-          ? fullDistrict.aggregates.debtMills * RATE_TO_MILLS
+          ? fullDistrict.aggregates.debtMills * METRO_RATE_TO_MILLS
           : 0;
 
       let metroBarSegments = buildMetroLevyBarSegments(
         metroLevies,
-        RATE_TO_MILLS,
+        METRO_RATE_TO_MILLS,
       );
       if (metroBarSegments.length === 0) {
         if (totalDistrictMills > 0 && districtId.length > 0) {
@@ -423,7 +459,10 @@ export function MetroTaxShareFlow({
             showDebtHeadline
               ? ` ${debtShareOfTotal.toFixed(1)} percent of your property taxes are paying off ${debtMetroLabel} debt.`
               : ""
-          } ${taxRateSplitAnnouncement}`
+          } ${taxRateSplitAnnouncement} ${metroPurposeChangeSummaryPhrase(
+            metroPurposeChanges.length,
+            multiMetroParcel,
+          )}`
         : `No metro district mills shown on your property tax bill.${totalLine} ${taxRateSplitAnnouncement}`;
   } else if (totalMills > 0 && activeDistrictIds.length === 0) {
     resultAnnouncement =
@@ -530,32 +569,56 @@ export function MetroTaxShareFlow({
   );
 
   const metroShareBlock = showResultCard ? (
-    <div
-      className={`min-w-0 w-full max-w-full sm:w-fit ${METRO_PERCENT_TILES_GRID_CLASS}`}
-    >
-      {perDistrictBundles.length > 0 ? (
-        <a
-          href={`#${metroBreakdownPanelId}`}
-          className={shareTileLinkClass}
-          aria-label={metroShareCardJumpLabel}
-        >
-          {shareTileLinkInner}
-        </a>
-      ) : (
-        <div className={shareTileSurfaceClass}>{shareTileInner}</div>
-      )}
-      {showDebtHeadline ? (
-        perDistrictBundles.length > 0 ? (
+    <div className="min-w-0 w-full max-w-full space-y-3">
+      <div
+        className={`min-w-0 w-full max-w-full sm:w-fit ${METRO_PERCENT_TILES_GRID_CLASS}`}
+      >
+        {perDistrictBundles.length > 0 ? (
           <a
             href={`#${metroBreakdownPanelId}`}
-            className={debtTileLinkClass}
-            aria-label={metroDebtCardJumpLabel}
+            className={shareTileLinkClass}
+            aria-label={metroShareCardJumpLabel}
           >
-            {debtTileLinkInner}
+            {shareTileLinkInner}
           </a>
         ) : (
-          <div className={debtTileSurfaceClass}>{debtTileInner}</div>
-        )
+          <div className={shareTileSurfaceClass}>{shareTileInner}</div>
+        )}
+        {showDebtHeadline ? (
+          perDistrictBundles.length > 0 ? (
+            <a
+              href={`#${metroBreakdownPanelId}`}
+              className={debtTileLinkClass}
+              aria-label={metroDebtCardJumpLabel}
+            >
+              {debtTileLinkInner}
+            </a>
+          ) : (
+            <div className={debtTileSurfaceClass}>{debtTileInner}</div>
+          )
+        ) : null}
+      </div>
+      {perDistrictBundles.length > 0 ? (
+        <p className="max-w-prose text-sm text-slate-700 sm:text-base">
+          {metroPurposeChanges.length > 0 ? (
+            <>
+              {metroPurposeChangeSummaryPhrase(
+                metroPurposeChanges.length,
+                multiMetroParcel,
+              )}{" "}
+              <a
+                href={`#${p}metro-yoy-heading`}
+                className="cursor-pointer font-semibold text-indigo-900 leading-snug underline decoration-indigo-700/40 underline-offset-2 hover:decoration-indigo-900"
+              >
+                See every metro district change
+              </a>
+            </>
+          ) : (
+            <>
+              {metroPurposeChangeSummaryPhrase(0, multiMetroParcel)}
+            </>
+          )}
+        </p>
       ) : null}
     </div>
   ) : null;
@@ -581,6 +644,122 @@ export function MetroTaxShareFlow({
                           (by mills). Levy names match the Mill levy name or
                           purpose column on the county form.
                         </p>
+                        <div
+                          role="region"
+                          className="space-y-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-3 sm:px-4"
+                          aria-labelledby={`${p}metro-yoy-heading`}
+                        >
+                          <div className="space-y-1.5">
+                            <h4
+                              id={`${p}metro-yoy-heading`}
+                              className="text-sm font-semibold text-slate-900 sm:text-base"
+                            >
+                              {multiMetroParcel
+                                ? "What changed for your metro districts"
+                                : "What changed for your metro district"}
+                            </h4>
+                            <p className="text-xs text-slate-600 sm:text-sm">
+                              Compared with last year&apos;s rates from the
+                              county mill form. Numbers are shown as the county
+                              printed them.
+                            </p>
+                          </div>
+                          {metroPurposeChanges.length > 0 ? (
+                            <ul className="space-y-2.5">
+                              {metroPurposeChanges.map((change) => {
+                                const deltaLabel = formatMetroMillsDeltaFromRate(
+                                  change.rateDelta,
+                                  METRO_RATE_TO_MILLS,
+                                );
+                                return (
+                                  <li
+                                    key={`${change.districtId}-${change.rawRowIndex}`}
+                                    className="text-xs text-slate-800 sm:text-sm"
+                                  >
+                                    {multiMetroParcel ? (
+                                      <p className="font-semibold text-slate-900">
+                                        {change.districtName}
+                                      </p>
+                                    ) : null}
+                                    <p
+                                      className={
+                                        multiMetroParcel ? "mt-0.5" : undefined
+                                      }
+                                    >
+                                      <span className="font-medium text-slate-900">
+                                        {change.purposeRaw}
+                                      </span>
+                                      {": was "}
+                                      {formatMetroMillsFromRate(
+                                        change.ratePrevious,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      {" mills, now "}
+                                      {formatMetroMillsFromRate(
+                                        change.rateCurrent,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      {" ("}
+                                      <span className="font-mono tabular-nums">
+                                        {deltaLabel}
+                                      </span>
+                                      {")"}
+                                    </p>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          ) : (
+                            <p className="text-xs text-slate-600 sm:text-sm">
+                              No mill rate changes from last year for{" "}
+                              {multiMetroParcel
+                                ? "these metro districts"
+                                : "this metro district"}
+                              .
+                            </p>
+                          )}
+                          {metroDistrictTotalChanges.length > 0 ? (
+                            <div className="space-y-1.5 border-t border-slate-200 pt-3">
+                              <p className="text-xs font-semibold text-slate-900 sm:text-sm">
+                                Metro district totals
+                              </p>
+                              <ul className="space-y-1.5">
+                                {metroDistrictTotalChanges.map((total) => {
+                                  const deltaLabel =
+                                    formatMetroMillsDeltaFromRate(
+                                      total.rateDelta,
+                                      METRO_RATE_TO_MILLS,
+                                    );
+                                  return (
+                                    <li
+                                      key={`total-${total.districtId}`}
+                                      className="text-xs text-slate-800 sm:text-sm"
+                                    >
+                                      <span className="font-medium text-slate-900">
+                                        {total.districtName}
+                                      </span>
+                                      {": was "}
+                                      {formatMetroMillsFromRate(
+                                        total.ratePreviousTotal,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      {" mills, now "}
+                                      {formatMetroMillsFromRate(
+                                        total.rateCurrentTotal,
+                                        METRO_RATE_TO_MILLS,
+                                      )}
+                                      {" ("}
+                                      <span className="font-mono tabular-nums">
+                                        {deltaLabel}
+                                      </span>
+                                      {")"}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          ) : null}
+                        </div>
                         <div
                           className={multiMetroParcel ? "space-y-2" : "space-y-5"}
                         >
@@ -1010,25 +1189,25 @@ export function MetroTaxShareFlow({
                               </p>
                             ) : null}
                             <LevyLinesCard
-                              title="Debt service lines"
-                              description="Bonds and other debt line items from the county form."
+                              title="Debt service"
+                              description="Bonds and other debt purposes from the county form. Previous-year mills shown when published."
                               levies={b.metroDebtLevies}
-                              rateToMills={RATE_TO_MILLS}
+                              rateToMills={METRO_RATE_TO_MILLS}
                               tone="debt"
                               showAllLines
                             />
                             <LevyLinesCard
-                              title="Operations lines"
-                              description="Ongoing services and administration lines from the county form."
+                              title="Operations"
+                              description="Ongoing services and administration from the county form. Previous-year mills shown when published."
                               levies={b.metroOpsLevies}
-                              rateToMills={RATE_TO_MILLS}
+                              rateToMills={METRO_RATE_TO_MILLS}
                               showAllLines
                             />
                             <LevyLinesCard
                               title="Other purposes"
-                              description="Parts of the rate not classified as operations or debt (for example summary totals)."
+                              description="Parts of the rate not classified as operations or debt (for example summary totals). Previous-year mills shown when published."
                               levies={b.metroOtherLevies}
-                              rateToMills={RATE_TO_MILLS}
+                              rateToMills={METRO_RATE_TO_MILLS}
                               showAllLines
                             />
                           </div>
@@ -1049,7 +1228,7 @@ export function MetroTaxShareFlow({
                             (opens in a new tab)
                           </span>
                         </a>{" "}
-                        (PDF) for tax year {levyJson.year}
+                        (PDF) for budget year {levyJson.year}
                         {bundledAsOfLabel && bundledAsOfIso ? (
                           <>
                             ; snapshot bundled{" "}
