@@ -299,6 +299,15 @@ export default function SourcesPage() {
           sum to the same totals as the Levy Percentage PDFs; otherwise the app
           uses authority totals only. Metro purpose comparisons never add a
           summary Total together with the part purposes that make it up.
+          {" "}
+          Below that box, tile details include a simple{" "}
+          <strong className="font-semibold text-slate-900">
+            Mill rate over time
+          </strong>
+          {" "}
+          chart when we have at least three tax years of Levy Percentage data
+          for that authority (currently Tax Years 2018 through 2025). It shows
+          total mills only, not dollars on your bill.
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
@@ -400,15 +409,18 @@ export default function SourcesPage() {
           </li>
           <li className="rounded-lg border border-slate-200 p-4">
             <p className="font-semibold text-slate-900">
-              Taxing District Levy Percentage (Tax Year 2024 and 2025)
+              Taxing District Levy Percentage (Tax Years 2018 through 2025)
             </p>
             <p className="mt-2 text-slate-700">
               Authority total mills by tax area. The app stores AUTH totals by
               tax year (separate from the parcel levy stack file) and joins them
-              to each stack row by authority code. Optional dollar lines in tile
-              details multiply mills by your current assessed value only. We do
-              not bundle prior-year assessed value, so those dollars use this
-              year&apos;s assessed value for both tax years in the comparison.
+              to each stack row by authority code. Year-over-year cues compare
+              Tax Years 2024 and 2025; the modal history chart uses every
+              bundled year when at least three are published for that authority.
+              Optional dollar lines in tile details multiply mills by your
+              current assessed value only. We do not bundle prior-year assessed
+              value, so those dollars use this year&apos;s assessed value for
+              both tax years in the comparison.
             </p>
             <p className="mt-2 break-words">
               <a

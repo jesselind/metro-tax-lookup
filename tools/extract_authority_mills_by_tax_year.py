@@ -13,9 +13,11 @@ Levy % PDFs are published (developer tool).
 Usage (from project root, after `tools/requirements.txt`):
 
   python tools/extract_authority_mills_by_tax_year.py \\
-    --pdf-2024 supporting-data/certs/2024\\ Taxing\\ District\\ Levy\\ Percentages.pdf \\
-    --pdf-2025 supporting-data/certs/2025\\ Taxing\\ District\\ Levy\\ Percentage.pdf \\
     --out public/data/arapahoe-authority-mills-by-tax-year.json
+
+  # Override one year:
+  python tools/extract_authority_mills_by_tax_year.py \\
+    --pdf 2025 supporting-data/certs/2025\\ Taxing\\ District\\ Levy\\ Percentage.pdf
 
 Optional raw audit rows write under supporting-data/authority-mills/.
 
@@ -40,6 +42,12 @@ import pdfplumber
 # PDF TAG column is a short tax-area code (e.g. "0002"). Stack JSON uses
 # Levy.aspx TAGId (e.g. "1243330"). Do not treat them as interchangeable.
 DEFAULT_PDF_BY_YEAR: Dict[int, Path] = {
+  2018: Path("supporting-data/certs/2018 Taxing District Levy Percentages.pdf"),
+  2019: Path("supporting-data/certs/2019 Taxing District Levy Percentages.pdf"),
+  2020: Path("supporting-data/certs/2020 Taxing District Levy Percentages.pdf"),
+  2021: Path("supporting-data/certs/2021 Taxing District Levy Percentages.pdf"),
+  2022: Path("supporting-data/certs/2022 Taxing District Levy Percentages.pdf"),
+  2023: Path("supporting-data/certs/2023 Taxing District Levy Percentage.pdf"),
   2024: Path("supporting-data/certs/2024 Taxing District Levy Percentages.pdf"),
   2025: Path("supporting-data/certs/2025 Taxing District Levy Percentage.pdf"),
 }
@@ -377,8 +385,24 @@ def write_outputs(
     raw_path.write_text(json.dumps(raw_payload, indent=2) + "\n", encoding="utf-8")
 
 
+def resolve_pdf_by_year(
+  overrides: Optional[Sequence[Tuple[str, Path]]],
+) -> Dict[int, Path]:
+  """Merge default Levy % PDF paths with optional --pdf YEAR PATH overrides."""
+  pdf_by_year: Dict[int, Path] = dict(DEFAULT_PDF_BY_YEAR)
+  if not overrides:
+    return pdf_by_year
+  for tax_year_text, pdf_path in overrides:
+    try:
+      tax_year = int(tax_year_text)
+    except ValueError as exc:
+      raise SystemExit(f"Invalid tax year for --pdf: {tax_year_text!r}") from exc
+    pdf_by_year[tax_year] = pdf_path
+  return pdf_by_year
+
+
 def main() -> None:
-  """CLI: read Levy % PDFs for tax years 2024 and 2025; write shipping JSON."""
+  """CLI: read Levy % PDFs for bundled tax years; write shipping JSON."""
   parser = argparse.ArgumentParser(
     description=(
       "Extract AUTH total mills by tax year from Taxing District Levy "
@@ -386,16 +410,15 @@ def main() -> None:
     )
   )
   parser.add_argument(
-    "--pdf-2024",
-    type=Path,
-    default=DEFAULT_PDF_BY_YEAR[2024],
-    help="Path to Tax Year 2024 Levy Percentage PDF.",
-  )
-  parser.add_argument(
-    "--pdf-2025",
-    type=Path,
-    default=DEFAULT_PDF_BY_YEAR[2025],
-    help="Path to Tax Year 2025 Levy Percentage PDF.",
+    "--pdf",
+    nargs=2,
+    metavar=("YEAR", "PATH"),
+    action="append",
+    default=None,
+    help=(
+      "Tax year and Levy % PDF path (repeatable). "
+      "Default: all years in DEFAULT_PDF_BY_YEAR (2018-2025)."
+    ),
   )
   parser.add_argument(
     "--out",
@@ -416,7 +439,7 @@ def main() -> None:
   )
 
   args = parser.parse_args()
-  pdf_by_year = {2024: args.pdf_2024, 2025: args.pdf_2025}
+  pdf_by_year = resolve_pdf_by_year(args.pdf)
 
   year_results: Dict[int, Dict[str, Any]] = {}
   raw_by_year: Dict[int, List[AuthorityLevyRow]] = {}

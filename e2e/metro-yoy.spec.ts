@@ -73,8 +73,16 @@ test.describe("Metro year-over-year UI", () => {
     await dialog
       .getByRole("button", { name: /Show year-by-year breakdown/i })
       .click();
-    await expect(dialog.getByText("Tax Year 2024")).toBeVisible();
-    await expect(dialog.getByText("Tax Year 2025")).toBeVisible();
+    await expect(dialog.getByText("Tax Year 2024").first()).toBeVisible();
+    await expect(dialog.getByText("Tax Year 2025").first()).toBeVisible();
+    await expect(
+      dialog.getByRole("region", { name: /Mill rate over time/i }),
+    ).toBeVisible();
+    await expect(
+      dialog
+        .getByRole("region", { name: /Mill rate over time/i })
+        .getByText("Tax Year 2018"),
+    ).toBeVisible();
     await expect(dialog.getByText("Total", { exact: true })).toHaveCount(0);
     await expect(dialog.getByText("Each part that changed")).toHaveCount(0);
   });

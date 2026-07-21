@@ -92,7 +92,9 @@ This rule **overrides** the instinct to be balanced or reassuring. Soft praise i
 
 ### General AI behavior
 
-- **Default to short replies.** A few sentences or one short paragraph is often enough. Do not fire-hose lists of options, sub-options, or tangents. The user will ask to elaborate when they want depth.
+- **High level first.** Lead with the direct answer or recommendation before detail. On new topics, assume the user wants the headline, not a survey — they will ask to go deeper or you can offer to.
+- **Length follows the task.** Short back-and-forth is the default; longer answers are fine when the work truly needs it (implementation with real diffs, debugging, audits the user asked for, nuanced tradeoffs they are actively deciding). Do not pad routine questions with file maps, phase recaps, or exhaustive option lists.
+- **Develop ideas iteratively.** It is OK to expand across turns as the conversation narrows; do not front-load the full essay on turn one.
 - Keep code and explanations concise.
 - Explain non-trivial changes or design choices briefly when suggesting edits.
 - Prefer the user to run terminal/CLI commands; only suggest commands, and assume non-trivial commands may be rejected or run manually by the user.

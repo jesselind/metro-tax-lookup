@@ -44,6 +44,35 @@ export const AUTHORITY_MILLS_PREVIOUS_TAX_YEAR =
     ? sortedTaxYears[sortedTaxYears.length - 2]!
     : AUTHORITY_MILLS_CURRENT_TAX_YEAR - 1;
 
+/** Minimum published years before showing the modal mill-rate history chart. */
+export const AUTHORITY_MILLS_HISTORY_MIN_POINTS = 3;
+
+export type AuthorityMillsSeriesPoint = {
+  taxYear: number;
+  mills: number;
+};
+
+/**
+ * Published AUTH mills for one stack line code, ascending by tax year.
+ * Omits years with no data (never invents).
+ */
+export function authorityMillsSeries(
+  code: string | null | undefined,
+): AuthorityMillsSeriesPoint[] {
+  const key = normalizeAuthorityCode(code);
+  if (!key) return [];
+  const byYear = file.authorities[key]?.millsByTaxYear;
+  if (!byYear) return [];
+  const points: AuthorityMillsSeriesPoint[] = [];
+  for (const taxYear of sortedTaxYears) {
+    const mills = byYear[String(taxYear)];
+    if (typeof mills === "number" && Number.isFinite(mills)) {
+      points.push({ taxYear, mills });
+    }
+  }
+  return points;
+}
+
 /** Normalize stack line `code` for AUTH lookup. */
 export function normalizeAuthorityCode(
   code: string | null | undefined,
