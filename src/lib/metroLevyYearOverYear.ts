@@ -286,6 +286,31 @@ export function formatMetroMillsDeltaFromRate(
   return formatCountyMillsDelta(deltaRate * rateToMills);
 }
 
+/** Minimum prior mill rate before a percent headline is meaningful. */
+export const MIN_PRIOR_MILLS_FOR_RATE_PERCENT = 0.01;
+
+/** Minimum absolute percent change to prefer a percent headline (else mills fallback). */
+export const MIN_RATE_PERCENT_FOR_HEADLINE = 0.05;
+
+/** Percent change in mill rate: (delta / prior) x 100. Null when prior is too small. */
+export function millRatePercentChange(
+  deltaMills: number,
+  millsPrevious: number,
+): number | null {
+  if (!Number.isFinite(deltaMills) || !Number.isFinite(millsPrevious)) {
+    return null;
+  }
+  if (millsPrevious < MIN_PRIOR_MILLS_FOR_RATE_PERCENT) return null;
+  return (deltaMills / millsPrevious) * 100;
+}
+
+/** Display magnitude for resident-facing percent copy (e.g. 2.0, 21.4, 0.45). */
+export function formatMillRatePercentMagnitude(percent: number): string {
+  const abs = Math.abs(percent);
+  if (abs >= 1) return abs.toFixed(1);
+  return abs.toFixed(2);
+}
+
 /**
  * LG IDs for metro districts on this stack that have at least one purpose with
  * a published previous mill rate different from the current rate.
@@ -535,8 +560,13 @@ export function buildLevyLineYoYViewModel(
             metroTotal.ratePreviousTotal,
           )
         : null;
+    const millsPrevious =
+      metroTotal?.ratePreviousTotal != null
+        ? metroTotal.ratePreviousTotal * METRO_RATE_TO_MILLS
+        : null;
     const summary = metroDistrictTileYoYSummary(
       deltaMills,
+      millsPrevious,
       deltaDollars,
       true,
     );
@@ -607,10 +637,12 @@ export type MetroDistrictTileYoYSummary = {
 
 /** Headline + direction for the levy YoY block in a tile detail modal.
  * {@link deltaMills} is already in county mills (not JSON decimal rate).
- * Headline is mills-first; {@link theoreticalDeltaDollars} is optional secondary detail.
+ * Headline prefers percent change in the mill rate when prior mills are known;
+ * {@link theoreticalDeltaDollars} is optional secondary detail when no breakdown.
  */
 export function metroDistrictTileYoYSummary(
   deltaMills: number | null,
+  millsPrevious: number | null,
   theoreticalDeltaDollars: number | null,
   hasPurposeChanges: boolean,
   epsMills?: number,
@@ -620,16 +652,26 @@ export function metroDistrictTileYoYSummary(
   const millsEps =
     epsMills ?? METRO_LEVY_RATE_YOY_EPS * METRO_RATE_TO_MILLS;
   let direction: MetroYoYDirection = "neutral";
-  let headline = "This part of your bill changed from last year.";
+  let headline = "Changed from last year";
 
   if (deltaMills != null && Math.abs(deltaMills) >= millsEps) {
     const millsLabel = Math.abs(deltaMills).toFixed(3);
     if (millsLabel !== "0.000") {
       direction = deltaMills > 0 ? "more" : "less";
-      headline =
-        deltaMills > 0
-          ? `This part is ${millsLabel} mills higher than last year.`
-          : `This part is ${millsLabel} mills lower than last year.`;
+      const directionWord = deltaMills > 0 ? "higher" : "lower";
+      const percent =
+        millsPrevious != null
+          ? millRatePercentChange(deltaMills, millsPrevious)
+          : null;
+      if (
+        percent != null &&
+        Math.abs(percent) >= MIN_RATE_PERCENT_FOR_HEADLINE
+      ) {
+        const pctLabel = formatMillRatePercentMagnitude(percent);
+        headline = `${pctLabel}% ${directionWord} than last year`;
+      } else {
+        headline = `${millsLabel} mills ${directionWord} than last year`;
+      }
     }
   }
 
@@ -741,6 +783,7 @@ function buildAuthLevyLineYoYViewModel(
   );
   const summary = metroDistrictTileYoYSummary(
     authYoY.millsDelta,
+    authYoY.millsPrevious,
     dollars.differenceDollars,
     true,
   );

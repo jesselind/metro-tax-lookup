@@ -266,22 +266,39 @@ export default function SourcesPage() {
           That means at least one county-published rate on your bill is different
           from Tax Year 2024. It does not say whether you owe more or less overall
           (we do not have your prior-year assessed value in this tool). Clicking
-          that note scrolls to the first Changed tile. In tile details, mills are
-          shown first for Tax Year 2025 vs Tax Year 2024. Optional dollar amounts
-          use your{" "}
+          that note scrolls to the first Changed tile. In tile details, a short
+          percent summary appears when we know last year&apos;s mill rate (for
+          example{" "}
           <strong className="font-semibold text-slate-900">
-            current
+            2.0% higher than last year
+          </strong>
+          ). Tap anywhere on that colored summary box to open the year-by-year
+          breakdown; the underlined{" "}
+          <strong className="font-semibold text-slate-900">
+            Show year-by-year breakdown
           </strong>
           {" "}
-          assessed value; a short popover on &quot;today&apos;s assessed
-          value&quot; explains we do not have your assessed value from last year
-          and that these dollar amounts use this year&apos;s assessed value.
-          Year-by-year breakdown stays behind its own Show
-          year-by-year breakdown control. For metros, purpose-level detail
-          appears only when purpose rows sum to the same totals as the Levy
-          Percentage PDFs; otherwise the app uses authority totals only. Metro
-          purpose comparisons never add a summary Total together with the part
-          purposes that make it up.
+          line is a hint that more detail is available. Each tax year shows
+          county mills first, then{" "}
+          <strong className="font-semibold text-slate-900">About $X</strong>
+          {" "}
+          with an asterisk for hypothetical annual tax at your{" "}
+          <strong className="font-semibold text-slate-900">current</strong>
+          {" "}
+          assessed value. A single footnote at the bottom of the breakdown
+          explains that we do not have your assessed value from last year and
+          that these dollar amounts use this year&apos;s assessed value (link on
+          &quot;today&apos;s assessed value&quot; in the footnote). The
+          difference row shows mills and dollars together. For metros only, a
+          {" "}
+          <strong className="font-semibold text-slate-900">Total</strong>
+          {" "}
+          label appears when several purpose rows (operations, debt, and
+          similar) are listed below; school districts and other authorities
+          omit that label. Purpose-level detail appears only when purpose rows
+          sum to the same totals as the Levy Percentage PDFs; otherwise the app
+          uses authority totals only. Metro purpose comparisons never add a
+          summary Total together with the part purposes that make it up.
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">

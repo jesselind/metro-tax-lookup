@@ -16,6 +16,8 @@ import {
   metroDistrictDeltaDollarsFromRates,
   metroDistrictForLgId,
   metroDistrictTileYoYSummary,
+  millRatePercentChange,
+  formatMillRatePercentMagnitude,
   metroLevyDistrictTotalChange,
   metroLgIdsWithPurposeMillChanges,
   metroPurposeChangesWorthListingSeparately,
@@ -452,32 +454,47 @@ describe("metroYoYDirectionFromRateDelta", () => {
   });
 });
 
+describe("millRatePercentChange", () => {
+  it("computes percent from delta and prior mills", () => {
+    expect(millRatePercentChange(1.0, 50.071)).toBeCloseTo(1.997, 2);
+    expect(formatMillRatePercentMagnitude(1.997)).toBe("2.0");
+  });
+});
+
 describe("metroDistrictTileYoYSummary", () => {
-  it("prefers mills headline with optional theoretical dollars", () => {
-    expect(metroDistrictTileYoYSummary(0.617, 4, true)).toMatchObject({
+  it("prefers percent headline when prior mills are known", () => {
+    expect(metroDistrictTileYoYSummary(1.0, 50.071, 4, true)).toMatchObject({
       direction: "more",
-      headline: "This part is 0.617 mills higher than last year.",
+      headline: "2.0% higher than last year",
+      theoreticalDeltaDollars: 4,
+    });
+  });
+
+  it("falls back to mills headline when prior mills are unknown", () => {
+    expect(metroDistrictTileYoYSummary(0.617, null, 4, true)).toMatchObject({
+      direction: "more",
+      headline: "0.617 mills higher than last year",
       theoreticalDeltaDollars: 4,
     });
   });
 
   it("uses neutral copy when only purpose rows changed", () => {
-    expect(metroDistrictTileYoYSummary(null, null, true)).toMatchObject({
+    expect(metroDistrictTileYoYSummary(null, null, null, true)).toMatchObject({
       direction: "neutral",
-      headline: "This part of your bill changed from last year.",
+      headline: "Changed from last year",
       theoreticalDeltaDollars: null,
     });
   });
 
   it("uses neutral copy for a tiny mills delta that would display as 0.000", () => {
-    expect(metroDistrictTileYoYSummary(0.0004, null, true)).toMatchObject({
+    expect(metroDistrictTileYoYSummary(0.0004, 50, null, true)).toMatchObject({
       direction: "neutral",
-      headline: "This part of your bill changed from last year.",
+      headline: "Changed from last year",
     });
   });
 
   it("omits theoretical dollars when the delta is flat", () => {
-    expect(metroDistrictTileYoYSummary(0, 0, true)).toMatchObject({
+    expect(metroDistrictTileYoYSummary(0, 50, 0, true)).toMatchObject({
       direction: "neutral",
       theoreticalDeltaDollars: null,
     });
@@ -586,7 +603,7 @@ describe("buildLevyLineYoYViewModel", () => {
     expect(vm?.showPurposeDetails).toBe(false);
     expect(vm?.totalCompare?.previousMillsLabel).toBe("50.071");
     expect(vm?.totalCompare?.currentMillsLabel).toBe("51.071");
-    expect(vm?.summary.headline).toMatch(/1\.000 mills higher/i);
+    expect(vm?.summary.headline).toMatch(/2\.0% higher/i);
     expect(vm?.summary.theoreticalDeltaDollars).toBe(100);
   });
 
