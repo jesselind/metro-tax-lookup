@@ -10,9 +10,16 @@ import {
   annualTaxDollarsFromAssessedMills,
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
-import { formatUsdWhole } from "@/lib/formatUsd";
+import {
+  AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+  AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+  authorityMillsForTaxYear,
+  authorityTotalMillsYoY,
+} from "@/lib/authorityMillsHistory";
+import { STACK_RATE_CHANGE_CALLOUT_MESSAGE } from "@/content/levyYoYCopy";
 import {
   findMetroDistrictIdsFromLevyLines,
+  metroLgIdKeyFromDolaMatch,
   normalizeMetroLgIdKey,
 } from "@/lib/metroDistrictFromLevyLines";
 
@@ -21,6 +28,21 @@ export const METRO_LEVY_RATE_YOY_EPS = 1e-9;
 
 /** JSON stores mill rate as a decimal; county display uses mills (e.g. 0.0634 → 63.4). */
 export const METRO_RATE_TO_MILLS = 1000;
+
+/** County-mills epsilon (AUTH history + scaled metro rates). */
+export const COUNTY_MILLS_YOY_EPS =
+  METRO_LEVY_RATE_YOY_EPS * METRO_RATE_TO_MILLS;
+
+/**
+ * When Public Info purpose rows sum to a different stack total than Levy % AUTH
+ * history, prefer AUTH for headline YoY (badge, callout, modal total).
+ */
+export const METRO_AUTH_RECONCILE_EPS_MILLS = 0.05;
+
+/** Resident-facing tax year label (matches county Levy % / Public Info tax years). */
+export function formatTaxYearLabel(taxYear: number): string {
+  return `Tax Year ${taxYear}`;
+}
 
 export type MetroLevyPurposeChange = {
   districtId: string;
@@ -38,6 +60,7 @@ export type MetroYoYDirection = "more" | "less" | "neutral";
 
 export type MetroBillImpactCallout = {
   message: string;
+  direction: MetroYoYDirection;
 };
 
 /** Scroll target for the bill-impact callout (first Changed levy tile). */
@@ -53,8 +76,48 @@ export const LEVY_TILE_OPEN_BTN_ATTR = "data-levy-tile-open";
 /** `querySelector` for {@link LEVY_TILE_OPEN_BTN_ATTR} on a tile root. */
 export const LEVY_TILE_OPEN_BTN_SELECTOR = `button[${LEVY_TILE_OPEN_BTN_ATTR}]`;
 
-const BILL_CHANGED_NEUTRAL_MESSAGE =
-  "Your tax bill has changed since last year.";
+export { STACK_RATE_CHANGE_CALLOUT_MESSAGE } from "@/content/levyYoYCopy";
+
+/** Amber stack callout when mill rates changed (neutral on bill direction). */
+export function levyStackRateChangeCalloutSurfaceClasses(): {
+  box: string;
+  headline: string;
+} {
+  return {
+    box: "border-amber-600 bg-amber-50",
+    headline: "text-amber-950",
+  };
+}
+
+/**
+ * Shared red / green / slate surfaces for YoY callout and tile-detail chrome.
+ * More (up) = red; less (down) = green; neutral = slate.
+ */
+export function levyYoYSurfaceClasses(direction: MetroYoYDirection): {
+  box: string;
+  headline: string;
+  diff: string;
+} {
+  if (direction === "neutral") {
+    return {
+      box: "border-slate-400 bg-slate-50",
+      headline: "text-slate-950",
+      diff: "bg-slate-200/90 text-slate-950",
+    };
+  }
+  if (direction === "more") {
+    return {
+      box: "border-red-700 bg-red-50",
+      headline: "text-red-950",
+      diff: "bg-red-200/90 text-red-950",
+    };
+  }
+  return {
+    box: "border-emerald-700 bg-emerald-50",
+    headline: "text-emerald-950",
+    diff: "bg-emerald-200/90 text-emerald-950",
+  };
+}
 
 export type MetroLevyDistrictTotalChange = {
   districtId: string;
@@ -198,7 +261,20 @@ export function formatMetroMillsFromRate(
   rate: number,
   rateToMills: number,
 ): string {
-  return (rate * rateToMills).toFixed(3);
+  return formatCountyMillsLabel(rate * rateToMills);
+}
+
+/** Format county mills (already ×1000 scale) for YoY compare labels. */
+export function formatCountyMillsLabel(mills: number): string {
+  return mills.toFixed(3);
+}
+
+/** Signed mills delta from county mills (e.g. +1.250 / -0.500). */
+export function formatCountyMillsDelta(deltaMills: number): string {
+  const abs = Math.abs(deltaMills).toFixed(3);
+  if (deltaMills > 0) return `+${abs}`;
+  if (deltaMills < 0) return `-${abs}`;
+  return abs;
 }
 
 /** Signed mills delta from a decimal rate delta (e.g. +1.250 / -0.500). */
@@ -206,11 +282,7 @@ export function formatMetroMillsDeltaFromRate(
   deltaRate: number,
   rateToMills: number,
 ): string {
-  const mills = deltaRate * rateToMills;
-  const abs = Math.abs(mills).toFixed(3);
-  if (mills > 0) return `+${abs}`;
-  if (mills < 0) return `-${abs}`;
-  return abs;
+  return formatCountyMillsDelta(deltaRate * rateToMills);
 }
 
 /**
@@ -258,29 +330,34 @@ export function listMetroLevyPurposeChangesForLgId(
   return listMetroLevyPurposeChanges(districts, eps);
 }
 
+/** Whole-dollar YoY delta from county mills and assessed value. */
+export function deltaDollarsFromAssessedMills(
+  assessed: number,
+  millsCurrent: number,
+  millsPrevious: number,
+): number {
+  return (
+    annualTaxDollarsFromAssessedMills(assessed, millsCurrent) -
+    annualTaxDollarsFromAssessedMills(assessed, millsPrevious)
+  );
+}
+
 /** Whole-dollar YoY delta from decimal rate totals and assessed value. */
 export function metroDistrictDeltaDollarsFromRates(
   assessed: number,
   rateCurrentTotal: number,
   ratePreviousTotal: number,
 ): number {
-  return (
-    annualTaxDollarsFromAssessedMills(
-      assessed,
-      rateCurrentTotal * METRO_RATE_TO_MILLS,
-    ) -
-    annualTaxDollarsFromAssessedMills(
-      assessed,
-      ratePreviousTotal * METRO_RATE_TO_MILLS,
-    )
+  return deltaDollarsFromAssessedMills(
+    assessed,
+    rateCurrentTotal * METRO_RATE_TO_MILLS,
+    ratePreviousTotal * METRO_RATE_TO_MILLS,
   );
 }
 
 /**
  * Top-of-results callout when any matched metro has a published purpose change.
- * Message stays high-level (whole bill), not tile- or metro-specific. Direction-
- * neutral: we only have prior rates for some stack lines today, so we never claim
- * the whole bill went up or down. Dollar detail lives in tile modals.
+ * Prefer {@link billImpactCalloutForLevyLines} for the home stack (AUTH + metro).
  */
 export function metroBillImpactCalloutForDistrictIds(
   districtIds: string[],
@@ -294,10 +371,218 @@ export function metroBillImpactCalloutForDistrictIds(
     const district = byId.get(id);
     if (!district) return null;
     if (metroLevyDistrictTotalChange(district, eps).hasPurposeChanges) {
-      return { message: BILL_CHANGED_NEUTRAL_MESSAGE };
+      return {
+        message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+        direction: "neutral",
+      };
     }
   }
   return null;
+}
+
+/**
+ * Prefer metro Public Info purpose change when matched; else AUTH total mills
+ * from Levy % history. One Changed path for every stack line.
+ */
+export function levyLineHasMillRateChange(
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): boolean {
+  return levyLineMillDelta(line, eps) != null;
+}
+
+/**
+ * County-mills delta for one stack line when a published prior exists.
+ * Metro Public Info purpose path when matched and reconciled to AUTH; else AUTH.
+ * Null when there is no published change (never invent).
+ */
+export function levyLineMillDelta(
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): number | null {
+  if (metroPurposeYoYTrustedForLine(line, eps)) {
+    const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
+    const metroTotal = metroLevyDistrictTotalChangeForLgId(lgKey, eps);
+    if (metroTotal?.rateDelta != null) {
+      return metroTotal.rateDelta * METRO_RATE_TO_MILLS;
+    }
+    const purposeChanges = listMetroLevyPurposeChangesForLgId(lgKey, eps);
+    return (
+      purposeChanges.reduce((sum, change) => sum + change.rateDelta, 0) *
+      METRO_RATE_TO_MILLS
+    );
+  }
+  const authYoY = authorityTotalMillsYoY(line.levyLineCode);
+  if (!authYoY || Math.abs(authYoY.millsDelta) <= COUNTY_MILLS_YOY_EPS) {
+    return null;
+  }
+  return authYoY.millsDelta;
+}
+
+/** Line ids on this stack with a published mill-rate change (metro or AUTH). */
+export function lineIdsWithMillRateChanges(
+  lines: CommittedLevyLine[],
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): Set<string> {
+  const out = new Set<string>();
+  for (const line of lines) {
+    if (levyLineHasMillRateChange(line, eps)) out.add(line.id);
+  }
+  return out;
+}
+
+/**
+ * Stack-level callout when any authority mill rate changed.
+ * Rate-first and neutral: we do not claim a bill went up or down without prior
+ * assessed value (see tile details for mills + hypothetical dollars).
+ */
+export function billImpactCalloutForLevyLines(
+  lines: CommittedLevyLine[],
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): MetroBillImpactCallout | null {
+  for (const line of lines) {
+    if (levyLineMillDelta(line, eps) != null) {
+      return {
+        message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+        direction: "neutral",
+      };
+    }
+  }
+  return null;
+}
+
+export type LevyLineYoYCompareTotals = {
+  previousMillsLabel: string;
+  currentMillsLabel: string;
+  differenceMillsLabel: string;
+  previousDollars: number | null;
+  currentDollars: number | null;
+  differenceDollars: number | null;
+};
+
+/**
+ * Shared modal YoY payload: metro purpose path when Public Info matched a
+ * change; otherwise AUTH-total Tax Year pair from Levy % history.
+ */
+export type LevyLineYoYViewModel = {
+  summary: MetroDistrictTileYoYSummary;
+  canExpand: boolean;
+  showTotalCompare: boolean;
+  showPurposeDetails: boolean;
+  previousYearLabel: string;
+  currentYearLabel: string;
+  totalCompare: LevyLineYoYCompareTotals | null;
+  purposeChanges: MetroLevyPurposeChange[];
+};
+
+function dollarsPairFromMills(
+  assessed: number | null,
+  millsPrevious: number,
+  millsCurrent: number,
+): {
+  previousDollars: number | null;
+  currentDollars: number | null;
+  differenceDollars: number | null;
+} {
+  if (assessed == null) {
+    return {
+      previousDollars: null,
+      currentDollars: null,
+      differenceDollars: null,
+    };
+  }
+  const previousDollars = annualTaxDollarsFromAssessedMills(
+    assessed,
+    millsPrevious,
+  );
+  const currentDollars = annualTaxDollarsFromAssessedMills(
+    assessed,
+    millsCurrent,
+  );
+  return {
+    previousDollars,
+    currentDollars,
+    differenceDollars: currentDollars - previousDollars,
+  };
+}
+
+/**
+ * Build the shared tile-detail YoY view model for one stack line.
+ * Returns null when there is no published change to show.
+ */
+export function buildLevyLineYoYViewModel(
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  totalAssessedForEstimate: number | null | undefined,
+): LevyLineYoYViewModel | null {
+  const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
+  const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
+
+  if (metroPurposeYoYTrustedForLine(line)) {
+    const purposeChanges = listMetroLevyPurposeChangesForLgId(lgKey);
+    const metroTotal = metroLevyDistrictTotalChangeForLgId(lgKey);
+    const deltaMills =
+      metroTotal?.rateDelta != null
+        ? metroTotal.rateDelta * METRO_RATE_TO_MILLS
+        : null;
+    const deltaDollars =
+      assessed != null &&
+      metroTotal?.ratePreviousTotal != null &&
+      metroTotal.rateDelta != null
+        ? metroDistrictDeltaDollarsFromRates(
+            assessed,
+            metroTotal.rateCurrentTotal,
+            metroTotal.ratePreviousTotal,
+          )
+        : null;
+    const summary = metroDistrictTileYoYSummary(
+      deltaMills,
+      deltaDollars,
+      true,
+    );
+    if (!summary) return null;
+
+    const showTotalCompare =
+      metroTotal?.ratePreviousTotal != null &&
+      metroTotal.rateDelta != null &&
+      Math.abs(metroTotal.rateDelta) >= METRO_LEVY_RATE_YOY_EPS;
+    const showPurposeDetails = metroPurposeChangesWorthListingSeparately(
+      purposeChanges,
+      metroTotal?.rateDelta,
+    );
+
+    let totalCompare: LevyLineYoYCompareTotals | null = null;
+    if (showTotalCompare && metroTotal?.ratePreviousTotal != null) {
+      const millsPrevious =
+        metroTotal.ratePreviousTotal * METRO_RATE_TO_MILLS;
+      const millsCurrent = metroTotal.rateCurrentTotal * METRO_RATE_TO_MILLS;
+      const dollars = dollarsPairFromMills(
+        assessed,
+        millsPrevious,
+        millsCurrent,
+      );
+      totalCompare = {
+        previousMillsLabel: formatCountyMillsLabel(millsPrevious),
+        currentMillsLabel: formatCountyMillsLabel(millsCurrent),
+        differenceMillsLabel: formatCountyMillsDelta(
+          metroTotal.rateDelta! * METRO_RATE_TO_MILLS,
+        ),
+        ...dollars,
+      };
+    }
+
+    return {
+      summary,
+      canExpand: showTotalCompare || showPurposeDetails,
+      showTotalCompare,
+      showPurposeDetails,
+      previousYearLabel: formatTaxYearLabel(AUTHORITY_MILLS_PREVIOUS_TAX_YEAR),
+      currentYearLabel: formatTaxYearLabel(AUTHORITY_MILLS_CURRENT_TAX_YEAR),
+      totalCompare,
+      purposeChanges,
+    };
+  }
+
+  return buildAuthLevyLineYoYViewModel(line, assessed);
 }
 
 /** Signed direction for a mill-rate delta; neutral when the change is below epsilon. */
@@ -312,49 +597,48 @@ export function metroYoYDirectionFromRateDelta(
 export type MetroDistrictTileYoYSummary = {
   headline: string;
   direction: MetroYoYDirection;
+  /**
+   * Whole-dollar change at current assessed (mill delta x today's value).
+   * Shown as secondary detail with a popover; not a treasurer bill.
+   */
+  theoreticalDeltaDollars: number | null;
 };
 
-/** Headline + direction for the metro YoY block in a levy tile detail modal.
+/** Headline + direction for the levy YoY block in a tile detail modal.
  * {@link deltaMills} is already in county mills (not JSON decimal rate).
- * Omit {@link epsMills} to use the default rate eps scaled to mills; pass an
- * explicit value to override (mills scale).
+ * Headline is mills-first; {@link theoreticalDeltaDollars} is optional secondary detail.
  */
 export function metroDistrictTileYoYSummary(
-  deltaDollars: number | null,
   deltaMills: number | null,
+  theoreticalDeltaDollars: number | null,
   hasPurposeChanges: boolean,
   epsMills?: number,
 ): MetroDistrictTileYoYSummary | null {
   if (!hasPurposeChanges) return null;
 
-  if (deltaDollars != null && deltaDollars !== 0) {
-    const amount = formatUsdWhole(Math.abs(deltaDollars));
-    return {
-      direction: deltaDollars > 0 ? "more" : "less",
-      headline:
-        deltaDollars > 0
-          ? `You're paying ${amount} more than last year.`
-          : `You're paying ${amount} less than last year.`,
-    };
-  }
   const millsEps =
     epsMills ?? METRO_LEVY_RATE_YOY_EPS * METRO_RATE_TO_MILLS;
+  let direction: MetroYoYDirection = "neutral";
+  let headline = "This part of your bill changed from last year.";
+
   if (deltaMills != null && Math.abs(deltaMills) >= millsEps) {
     const millsLabel = Math.abs(deltaMills).toFixed(3);
-    // Sub-0.0005 mills still formats as 0.000; treat as no mills headline.
     if (millsLabel !== "0.000") {
-      return {
-        direction: deltaMills > 0 ? "more" : "less",
-        headline:
-          deltaMills > 0
-            ? `This rate is ${millsLabel} mills higher than last year.`
-            : `This rate is ${millsLabel} mills lower than last year.`,
-      };
+      direction = deltaMills > 0 ? "more" : "less";
+      headline =
+        deltaMills > 0
+          ? `This part is ${millsLabel} mills higher than last year.`
+          : `This part is ${millsLabel} mills lower than last year.`;
     }
   }
+
   return {
-    direction: "neutral",
-    headline: "This levy changed from last year.",
+    headline,
+    direction,
+    theoreticalDeltaDollars:
+      theoreticalDeltaDollars != null && theoreticalDeltaDollars !== 0
+        ? theoreticalDeltaDollars
+        : null,
   };
 }
 
@@ -363,13 +647,106 @@ export function metroLevyDistrictTotalChangeForLgId(
   lgIdKey: string | null | undefined,
   eps: number = METRO_LEVY_RATE_YOY_EPS,
 ): MetroLevyDistrictTotalChange | null {
+  const district = metroDistrictForLgId(lgIdKey);
+  if (!district) return null;
+  return metroLevyDistrictTotalChange(district, eps);
+}
+
+/** Metro district for one LG ID, or null when unknown / not metro. */
+export function metroDistrictForLgId(
+  lgIdKey: string | null | undefined,
+): LevyDistrictFromJson | null {
   const key = normalizeMetroLgIdKey(lgIdKey);
   if (!key) return null;
   const file = levyData as LevyDataFile;
-  const district = file.districts.find(
-    (d) =>
-      d.type === "metro" && normalizeMetroLgIdKey(d.lgid ?? null) === key,
+  return (
+    file.districts.find(
+      (d) =>
+        d.type === "metro" && normalizeMetroLgIdKey(d.lgid ?? null) === key,
+    ) ?? null
   );
-  if (!district) return null;
-  return metroLevyDistrictTotalChange(district, eps);
+}
+
+/**
+ * True when Public Info purpose totals match bundled AUTH Levy % mills for
+ * both tax years (within {@link METRO_AUTH_RECONCILE_EPS_MILLS}).
+ */
+export function metroPurposeTotalsReconcileWithAuth(
+  district: LevyDistrictFromJson,
+  epsMills: number = METRO_AUTH_RECONCILE_EPS_MILLS,
+): boolean {
+  const authCurrent = authorityMillsForTaxYear(
+    district.countyId,
+    AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+  );
+  if (authCurrent == null) return false;
+
+  const metroTotal = metroLevyDistrictTotalChange(district);
+  const metroCurrentMills = metroTotal.rateCurrentTotal * METRO_RATE_TO_MILLS;
+  if (Math.abs(metroCurrentMills - authCurrent) > epsMills) return false;
+
+  const authPrevious = authorityMillsForTaxYear(
+    district.countyId,
+    AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+  );
+  if (metroTotal.ratePreviousTotal == null || authPrevious == null) {
+    return false;
+  }
+  const metroPreviousMills =
+    metroTotal.ratePreviousTotal * METRO_RATE_TO_MILLS;
+  return Math.abs(metroPreviousMills - authPrevious) <= epsMills;
+}
+
+/**
+ * Metro Public Info purpose YoY is safe for headline totals when purposes
+ * changed and part sums reconcile to AUTH Levy % history.
+ */
+export function metroPurposeYoYTrustedForLine(
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): boolean {
+  const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
+  const purposeChanges = listMetroLevyPurposeChangesForLgId(lgKey, eps);
+  if (purposeChanges.length === 0) return false;
+  const district = metroDistrictForLgId(lgKey);
+  if (!district) return false;
+  return metroPurposeTotalsReconcileWithAuth(district);
+}
+
+function buildAuthLevyLineYoYViewModel(
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  assessed: number | null,
+): LevyLineYoYViewModel | null {
+  const authYoY = authorityTotalMillsYoY(line.levyLineCode);
+  if (!authYoY || Math.abs(authYoY.millsDelta) <= COUNTY_MILLS_YOY_EPS) {
+    return null;
+  }
+
+  const dollars = dollarsPairFromMills(
+    assessed,
+    authYoY.millsPrevious,
+    authYoY.millsCurrent,
+  );
+  const summary = metroDistrictTileYoYSummary(
+    authYoY.millsDelta,
+    dollars.differenceDollars,
+    true,
+  );
+  if (!summary) return null;
+
+  return {
+    summary,
+    canExpand: true,
+    showTotalCompare: true,
+    showPurposeDetails: false,
+    previousYearLabel: formatTaxYearLabel(authYoY.taxYearPrevious),
+    currentYearLabel: formatTaxYearLabel(authYoY.taxYearCurrent),
+    totalCompare: {
+      previousMillsLabel: formatCountyMillsLabel(authYoY.millsPrevious),
+      currentMillsLabel: formatCountyMillsLabel(authYoY.millsCurrent),
+      differenceMillsLabel: formatCountyMillsDelta(authYoY.millsDelta),
+      ...dollars,
+    },
+    purposeChanges: [],
+  };
 }

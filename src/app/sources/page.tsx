@@ -243,22 +243,44 @@ export default function SourcesPage() {
 
         <h3 className={`${SECTION_H3} !mt-8`}>In the app</h3>
         <p className="text-slate-700">
-          Metro rates are bundled offline from the county Mill Levy Public
-          Information Form. The home page matches districts by LG ID from your
-          loaded levy stack — not by hand-picking a district. When a metro
-          district&apos;s rate changed from last year, the app shows a{" "}
+          Mill rates come from two county extracts. Metro districts can show
+          purpose-level change from the Mill Levy Public Information Form when
+          that form matches your stack. Every other taxing authority on your
+          stack (and metros without a purpose match) can show total-mill change
+          from the Taxing District Levy Percentage PDFs for{" "}
+          <strong className="font-semibold text-slate-900">Tax Year 2025</strong>
+          {" "}
+          vs{" "}
+          <strong className="font-semibold text-slate-900">Tax Year 2024</strong>
+          {", joined by the authority code on each stack row. "}
+          When any authority&apos;s rate changed, the app shows a{" "}
           <strong className="font-semibold text-slate-900">Changed</strong>
           {" "}
-          cue on that district&apos;s tile and a short money-impact line in that
-          tile&apos;s details. Year-by-year mills and dollars stay behind a
-          Show year-by-year breakdown control. Near the top of your results, a
-          neutral note that your tax bill has changed appears when any matched
-          metro district published a rate change (we do not guess whether the
-          whole bill went up or down until more prior rates are available).
-          Clicking that note scrolls to the first Changed tile.
-          Comparisons use the previous-year mill column on the county form (and
-          never add a summary Total purpose together with the part purposes that
-          make it up).
+          cue on that tile. Near the top of your results, an amber attention note
+          appears when any taxing authority on your breakdown published a rate
+          change, for example{" "}
+          <strong className="font-semibold text-slate-900">
+            Your property tax bill changed from last year.
+          </strong>
+          {" "}
+          That means at least one county-published rate on your bill is different
+          from Tax Year 2024. It does not say whether you owe more or less overall
+          (we do not have your prior-year assessed value in this tool). Clicking
+          that note scrolls to the first Changed tile. In tile details, mills are
+          shown first for Tax Year 2025 vs Tax Year 2024. Optional dollar amounts
+          use your{" "}
+          <strong className="font-semibold text-slate-900">
+            current
+          </strong>
+          {" "}
+          assessed value; a short popover on &quot;today&apos;s assessed
+          value&quot; explains they are not a prior treasurer bill and do not
+          include reassessment. Year-by-year breakdown stays behind its own Show
+          year-by-year breakdown control. For metros, purpose-level detail
+          appears only when purpose rows sum to the same totals as the Levy
+          Percentage PDFs; otherwise the app uses authority totals only. Metro
+          purpose comparisons never add a summary Total together with the part
+          purposes that make it up.
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
@@ -285,16 +307,19 @@ export default function SourcesPage() {
             </a>
             . District names, levy purposes, previous-year mill rates, and
             aggregated debt service and total mills are extracted offline into
-            the app. Tile details show each matched metro district&apos;s
-            published current-versus-previous mill change (budget year{" "}
-            {levyJson.year}
+            the app. Tile details for matched metros prefer this purpose-level
+            compare when it reconciles to Levy Percentage authority totals;
+            otherwise the app uses authority totals from the Levy Percentage
+            PDFs. Years are labeled as tax years (Tax Year 2025 vs Tax Year
+            2024), not budget-year shorthand
             {bundledLabel && bundledIso ? (
               <>
-                ; snapshot{" "}
-                <time dateTime={bundledIso}>{bundledLabel}</time>
+                {" "}
+                (metro form snapshot{" "}
+                <time dateTime={bundledIso}>{bundledLabel}</time>)
               </>
             ) : null}
-            ).
+            .
           </li>
           <li>
             <strong>Assessor hub:</strong>{" "}
@@ -307,9 +332,8 @@ export default function SourcesPage() {
               Mill Levies and Tax Districts (Assessor hub)
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
-            . Related county PDFs that are{" "}
-            <strong className="text-slate-900">not</strong>{" "}imported into the
-            metro schedule are listed next.
+            . Related county PDFs are listed next (Levy Percentage feeds
+            all-authority year-over-year; Certification is context only).
           </li>
         </ul>
 
@@ -317,11 +341,13 @@ export default function SourcesPage() {
           id="reference-pdfs"
           className={`${SECTION_H3} !mt-8 scroll-mt-8`}
         >
-          Reference PDFs (not used for metro schedule JSON)
+          Related county PDFs
         </h3>
         <p className="text-slate-700">
-          Official Arapahoe publications useful for context. They are not inputs
-          to the metro levy extract. The county lists them on the{" "}
+          Official Arapahoe publications. Certification is useful for context and
+          is not imported into the metro schedule. Taxing District Levy
+          Percentage PDFs feed the all-authority mill history used for
+          year-over-year change on every levy tile. Browse years from the{" "}
           <a
             href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
             target="_blank"
@@ -340,6 +366,7 @@ export default function SourcesPage() {
             </p>
             <p className="mt-2 text-slate-700">
               County certification document; useful for cross-checking totals.
+              Not imported into the app&apos;s metro schedule.
             </p>
             <p className="mt-2 break-words">
               <a
@@ -355,10 +382,16 @@ export default function SourcesPage() {
           </li>
           <li className="rounded-lg border border-slate-200 p-4">
             <p className="font-semibold text-slate-900">
-              Taxing District Levy Percentage (example: 2025)
+              Taxing District Levy Percentage (Tax Year 2024 and 2025)
             </p>
             <p className="mt-2 text-slate-700">
-              County summary by tax area.
+              Authority total mills by tax area. The app stores AUTH totals by
+              tax year (separate from the parcel levy stack file) and joins them
+              to each stack row by authority code. Optional dollar lines in tile
+              details multiply mills by your current assessed value only; they
+              are not a prior treasurer bill and do not reflect reassessment or
+              a prior-year assessed value (which this tool does not bundle
+              today).
             </p>
             <p className="mt-2 break-words">
               <a
@@ -367,7 +400,7 @@ export default function SourcesPage() {
                 rel="noopener noreferrer"
                 className={TERM_LINK_CLASS}
               >
-                Open PDF (2025)
+                Open PDF (Tax Year 2025)
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </p>

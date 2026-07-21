@@ -54,7 +54,8 @@ Applies to **all** levy tiles — not entity-specific. Keep wording **plain** an
 ## Government level (`origin`)
 
 - **heading** — Keep as `Government level` unless we decide to change the pattern app-wide.
-- **level** — Short label for the kind of government (e.g. `State`, `Library district`). Must match the row.
+- **level** — Short label for the kind of government (e.g. `Library district`, `Local levy (state program)`). Must match the row.
+  - **Do not use bare `State`.** Colorado does not levy a state property tax; mills are levied and collected locally (county / municipal / district). If a program has a state statute or state agency framework, say that in **What is it?** and use a level like `Local levy (state program)` so Government type never implies the mill is a statewide state tax.
 - **detail** — Optional. Only for **type** or framework hints (e.g. statute article), not for rename / branding / legal vs DBA name (that belongs in **What is it?** briefly, or in **citations**). Avoid unless it truly adds clarity beyond `level`.
 
 ## What is it? (`whatIsIt.paragraphs`)
@@ -62,7 +63,8 @@ Applies to **all** levy tiles — not entity-specific. Keep wording **plain** an
 - Follow **Tone and voice (levy explainer copy)** above for phrasing (human-first, citations for formal sources).
 - Answers: **What is this entity / program?** (kind of government, role, who it serves.) Prefer **brief** copy; defer detail to the citations accordion and external links.
 - Does **not** lead with “part of your property tax…” or “your share…” — that frames the question as “how much is this?” rather than “what is this?”
-- **Do not repeat** the authority name from the tile heading (e.g. avoid “Arapahoe Library District is…”). Use a generic lead: “A special district…”, “A state-level program…”, “This row funds…”, or refer to “the district shown above” when needed.
+- **Do not repeat** the authority name from the tile heading (e.g. avoid “Arapahoe Library District is…”). Use a generic lead: “A special district…”, “A local levy that funds a Colorado program…”, “This row funds…”, or refer to “the district shown above” when needed.
+- When the program is state-framed, say clearly that the **levy is local** (county-levied and collected). Do not imply Colorado has a state property tax.
 - Keep plain language; avoid accountant-style “levy lines” phrasing (see project tone rules).
 - **Term links** — Use `{{term:term-id|link label}}` only when the term exists in `termDefinitions.tsx` (and home key terms when applicable). Example: `{{term:term-special-districts|special district}}`. The modal parses these and jumps to the definition.
 

@@ -65,12 +65,11 @@ import {
   trySitusAutofillBlurSplit,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
-import levyData from "@/data/metroLevies";
-import type { LevyDataFile } from "@/lib/levyTypes";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
   LEVY_TILE_OPEN_BTN_SELECTOR,
-  metroBillImpactCalloutForDistrictIds,
+  billImpactCalloutForLevyLines,
+  levyStackRateChangeCalloutSurfaceClasses,
 } from "@/lib/metroLevyYearOverYear";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
@@ -450,15 +449,11 @@ export function HomeParcelAddressLookup({
   );
   const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
 
-  /** Net metro mill/dollar YoY for the bill-impact callout. */
-  const metroBillImpactCallout = useMemo(() => {
-    if (homeMetroFromLevyStack?.kind !== "match") return null;
-    const file = levyData as LevyDataFile;
-    return metroBillImpactCalloutForDistrictIds(
-      homeMetroFromLevyStack.districtIds,
-      file.districts,
-    );
-  }, [homeMetroFromLevyStack]);
+  /** Rate-change callout when any stack authority changed (metro or AUTH). */
+  const billImpactCallout = useMemo(
+    () => billImpactCalloutForLevyLines(levyLines),
+    [levyLines],
+  );
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -778,22 +773,27 @@ export function HomeParcelAddressLookup({
     openBtn?.focus({ preventScroll: true });
   }
 
-  const billImpactCalloutBlock = metroBillImpactCallout ? (
+  const billImpactSurface = billImpactCallout
+    ? levyStackRateChangeCalloutSurfaceClasses()
+    : null;
+
+  const billImpactCalloutBlock =
+    billImpactCallout && billImpactSurface ? (
       <div>
         <p className="sr-only" role="status" aria-live="polite">
-          {metroBillImpactCallout.message}
+          {billImpactCallout.message}
         </p>
         <button
           type="button"
           onClick={scrollToFirstChangedLevyTile}
-          className="group w-full cursor-pointer rounded-lg border-2 border-amber-700 bg-amber-50 px-3 py-3 text-left text-amber-950 sm:px-4 sm:py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-          aria-label="Scroll to the first rate that changed"
+          className={`group w-full cursor-pointer rounded-lg border-2 ${billImpactSurface.box} px-3 py-3 text-left ${billImpactSurface.headline} sm:px-4 sm:py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2`}
+          aria-label={`${billImpactCallout.message} Details. Scroll to what changed on your bill.`}
         >
           <span
             aria-hidden
             className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-base font-bold leading-snug tracking-tight sm:text-lg"
           >
-            <span className="min-w-0">{metroBillImpactCallout.message}</span>
+            <span className="min-w-0">{billImpactCallout.message}</span>
             <span className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} whitespace-nowrap`}>
               Details ›
             </span>

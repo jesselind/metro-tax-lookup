@@ -14,10 +14,10 @@ const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
   "Boards of Cooperative (Educational) Services (BOCES)": "A BOCES is a Colorado education cooperative that helps school districts share services. On your bill, this row is the tax tied to that cooperative.",
   "Business Improvement district": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Cemetery district": "A cemetery district is a special district that maintains cemeteries or burial services for its service area.",
-  "Charter school": "A charter school here is a public school under state authorization; how it appears on your tax bill depends on how the county ties the levy to that entity.",
+  "Charter school": "A charter school here is a public school under Colorado authorization; how it appears on your tax bill depends on how the county ties the levy to that entity. Any property tax on this row is still a local levy, levied and collected with your county bill.",
   "Cherry Creek Basin Water Quality Authority": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
-  "City & County Of Broomfield": "City and county government combines municipal and county functions in one government; Broomfield is structured this way in state records.",
-  "City & County Of Denver": "City and county government combines municipal and county functions in one government; Denver is structured this way in state records.",
+  "City & County Of Broomfield": "City and county government combines municipal and county functions in one government; Broomfield is structured this way in Colorado local-government records.",
+  "City & County Of Denver": "City and county government combines municipal and county functions in one government; Denver is structured this way in Colorado local-government records.",
   "Colorado New Energy Improvement District": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Conservancy Districts (Flood Control)": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Conservation Districts (River Water)": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
@@ -50,6 +50,7 @@ const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
   "Irrigation Districts (Irrigation Drainage)": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Law Enforcement Authorities": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
   "Library district": "A library district is a special district that operates public library services in its legal service area and levies property tax within its boundaries.",
+  "Local levy (state program)": "This row is a local property-tax levy that helps fund a Colorado program authorized under state law. Like other rows on your bill, the county levies and collects it with your other local property taxes. Colorado does not levy a state property tax.",
   "Local District College": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Local Improvement Districts (County)": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Local Marketing district": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
@@ -90,8 +91,8 @@ const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
 export function getLocalGovernmentTypeBrief(displayLabel: string | null | undefined): string {
   const t = (displayLabel ?? "").trim();
   if (!t) {
-    return "This is how Colorado classifies a local government in state records. Your bill lists who levies this tax.";
+    return "This is how Colorado classifies a local government in its public listings. Your bill lists who levies this tax. In Colorado, property tax is levied by local governments (county, city, town, or district) and collected with your county bill.";
   }
   return GOVERNMENT_TYPE_BRIEF_BY_DISPLAY[t] ??
-    `In Colorado property-tax records, "${t}" is the state's classification label for this local government. Compare with your bill and official notices.`;
+    `In Colorado property-tax records, "${t}" is the classification label for this local government. Compare with your bill and official notices. Property tax on this row is levied locally and collected with your county bill.`;
 }

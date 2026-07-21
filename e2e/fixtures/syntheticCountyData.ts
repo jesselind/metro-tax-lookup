@@ -151,6 +151,34 @@ export const SYNTHETIC_LEVY_STACKS_WITH_METRO = {
   },
 };
 
+/**
+ * Non-metro AUTH code present in bundled Levy % history with a Tax Year
+ * 2024→2025 mill change (Englewood School Dist #1). Exercises all-tile YoY.
+ */
+export const SYNTHETIC_E2E_AUTH_YOY_CODE = "0101";
+
+export const SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY = {
+  ...SYNTHETIC_LEVY_STACKS,
+  stacksByTagId: {
+    [SYNTHETIC_E2E_TAG_ID]: {
+      ...SYNTHETIC_LEVY_STACKS.stacksByTagId[SYNTHETIC_E2E_TAG_ID],
+      lines: [
+        {
+          code: SYNTHETIC_E2E_AUTH_YOY_CODE,
+          authorityName: SYNTHETIC_E2E_AUTHORITY,
+          effectiveYear: "2025",
+          status: "A",
+          dolaMatch: {
+            method: "none" as const,
+            confidence: "low" as const,
+            mills: 51.071,
+          },
+        },
+      ],
+    },
+  },
+};
+
 export const SYNTHETIC_PARCEL_RECORD_SHARD = {
   snapshot: {
     bundledAsOf: "2026-01-01T00:00:00Z",
