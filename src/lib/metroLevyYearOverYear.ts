@@ -307,7 +307,6 @@ export function millRatePercentChange(
 /** Display magnitude for resident-facing percent copy (e.g. 2.0, 21.4, 0.45). */
 export function formatMillRatePercentMagnitude(percent: number): string {
   const abs = Math.abs(percent);
-  if (abs >= 10) return abs.toFixed(1);
   if (abs >= 1) return abs.toFixed(1);
   return abs.toFixed(2);
 }

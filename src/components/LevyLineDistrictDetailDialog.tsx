@@ -93,8 +93,7 @@ function YoYTheoreticalDollarFootnote({
       <YoYTheoreticalDollarHint
         idSuffix={idSuffix}
         ariaContext="these"
-      />
-      .
+      />.
     </p>
   );
 }
@@ -236,8 +235,7 @@ function MetroYoYYearCompare({
             {differenceDollars > 0
               ? `+${formatUsdWhole(differenceDollars)}`
               : formatUsdWhole(differenceDollars)}
-            {YOY_DOLLAR_FOOTNOTE_MARKER}
-            )
+            {YOY_DOLLAR_FOOTNOTE_MARKER})
           </>
         ) : null}
       </p>

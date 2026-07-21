@@ -53,7 +53,7 @@ This is a **public** repo. Automated tests must not spotlight a real resident (P
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
 | Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
 | Authority mills extract | `npm run test:authority-mills-extract` (`test_extract_authority_mills_by_tax_year.py`) | Levy % table parsing and AUTH collapse on synthetic rows (forkers: run after changing the authority-mills extractor) |
-| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. `e2e/metro-yoy.spec.ts` covers amber stack callout, Changed badge, mills-first modal YoY (no stack-level bill $). Assert UI contracts — not live scrapes or brittle dollar snapshots |
+| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. `e2e/metro-yoy.spec.ts` covers amber stack callout, Changed badge, percent YoY summary, expandable breakdown, `*` dollar footnote (no stack-level bill $). Assert UI contracts — not live scrapes or brittle dollar snapshots |
 
 Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
 
@@ -156,9 +156,9 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - App import site: `src/data/metroLevies.ts` (flip the year file there when shipping a newer extract)
    - YoY mill changes in the UI use each purpose's `rateMillsPrevious` vs `rateMillsCurrent` from that PDF column (never sum a summary Total with the part purposes that make it up)
    - Stack callout when any authority has a published mill change: **amber**, plain-language line (`Your property tax bill changed from last year.` via `src/content/levyYoYCopy.ts`). Means a rate on the bill changed; no claim you owe more or less overall. No stack-level bill $. Click scrolls to first Changed tile.
-   - Tile details: mills-first YoY; optional hypothetical dollars with popover on "today's assessed value" (no prior-year assessed; dollars use current assessed only).
-   - Metro purpose YoY only when Public Info purpose sums reconcile to AUTH Levy % totals (`metroPurposeTotalsReconcileWithAuth`); else AUTH path (see `metroPurposeYoYTrustedForLine`).
-   - Core helper: `src/lib/metroLevyYearOverYear.ts` (`buildLevyLineYoYViewModel`, `billImpactCalloutForLevyLines`, `levyStackRateChangeCalloutSurfaceClasses`). Surfaces: `HomeParcelAddressLookup`, `LevyStackVisualization`, `LevyLineDistrictDetailDialog` (breakdown behind separate **Show year-by-year breakdown** button).
+   - Tile details: percent change in mill rate when prior mills are known (e.g. `2.0% higher than last year`); mills fallback otherwise. Whole YoY summary box toggles year-by-year breakdown (`aria-expanded`). Breakdown: mills per tax year, **About $X*** at readable size, difference shows mills + dollars, one `*` footnote with popover on "today's assessed value" (`YOY_THEORETICAL_DOLLAR_POPOVER_BODY` — no prior-year assessed).
+   - Metro purpose YoY only when Public Info purpose sums reconcile to AUTH Levy % totals (`metroPurposeTotalsReconcileWithAuth`); else AUTH path (see `metroPurposeYoYTrustedForLine`). **Total** section label only when purpose sub-rows are shown.
+   - Core helper: `src/lib/metroLevyYearOverYear.ts` (`buildLevyLineYoYViewModel`, `millRatePercentChange`, `metroDistrictTileYoYSummary`, `billImpactCalloutForLevyLines`, `levyStackRateChangeCalloutSurfaceClasses`). Surfaces: `HomeParcelAddressLookup`, `LevyStackVisualization`, `LevyLineDistrictDetailDialog`.
    - Tests: `npm run test:unit` (includes YoY helpers), `npm run test:metro-extract` (extractor), `e2e/metro-yoy.spec.ts` (Playwright)
 
 5. Rebuild authority mills-by-tax-year JSON (all-tile YoY priors from Levy %):
