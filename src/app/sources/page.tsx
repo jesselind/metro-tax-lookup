@@ -274,8 +274,9 @@ export default function SourcesPage() {
           </strong>
           {" "}
           assessed value; a short popover on &quot;today&apos;s assessed
-          value&quot; explains they are not a prior treasurer bill and do not
-          include reassessment. Year-by-year breakdown stays behind its own Show
+          value&quot; explains we do not have your assessed value from last year
+          and that these dollar amounts use this year&apos;s assessed value.
+          Year-by-year breakdown stays behind its own Show
           year-by-year breakdown control. For metros, purpose-level detail
           appears only when purpose rows sum to the same totals as the Levy
           Percentage PDFs; otherwise the app uses authority totals only. Metro
@@ -388,10 +389,9 @@ export default function SourcesPage() {
               Authority total mills by tax area. The app stores AUTH totals by
               tax year (separate from the parcel levy stack file) and joins them
               to each stack row by authority code. Optional dollar lines in tile
-              details multiply mills by your current assessed value only; they
-              are not a prior treasurer bill and do not reflect reassessment or
-              a prior-year assessed value (which this tool does not bundle
-              today).
+              details multiply mills by your current assessed value only. We do
+              not bundle prior-year assessed value, so those dollars use this
+              year&apos;s assessed value for both tax years in the comparison.
             </p>
             <p className="mt-2 break-words">
               <a

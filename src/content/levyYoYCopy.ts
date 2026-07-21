@@ -9,4 +9,4 @@ export const STACK_RATE_CHANGE_CALLOUT_MESSAGE =
 
 /** Popover body for hypothetical dollar amounts in levy YoY details. */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
-  "We use the county tax rate times your current assessed value. Your assessed value may have changed since last year. This is not your treasurer bill.";
+  "We don't currently have your assessed value from last year. These dollar amounts are based on your assessed value this year.";

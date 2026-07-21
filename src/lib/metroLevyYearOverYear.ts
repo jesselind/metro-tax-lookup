@@ -15,6 +15,7 @@ import {
   AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
   authorityMillsForTaxYear,
   authorityTotalMillsYoY,
+  normalizeAuthorityCode,
 } from "@/lib/authorityMillsHistory";
 import { STACK_RATE_CHANGE_CALLOUT_MESSAGE } from "@/content/levyYoYCopy";
 import {
@@ -599,7 +600,7 @@ export type MetroDistrictTileYoYSummary = {
   direction: MetroYoYDirection;
   /**
    * Whole-dollar change at current assessed (mill delta x today's value).
-   * Shown as secondary detail with a popover; not a treasurer bill.
+   * Shown as secondary detail with a popover; uses current assessed only (no prior-year assessed).
    */
   theoreticalDeltaDollars: number | null;
 };
@@ -667,6 +668,14 @@ export function metroDistrictForLgId(
   );
 }
 
+/** AUTH stack-line code (Levy % / levy stack `code`) for a Public Info district row. */
+function authorityCodeFromMetroDistrict(
+  district: LevyDistrictFromJson,
+): string | null {
+  // `countyId` in metro-levies JSON is the PDF COUNTY ID column (= AUTH / stack code).
+  return normalizeAuthorityCode(district.countyId);
+}
+
 /**
  * True when Public Info purpose totals match bundled AUTH Levy % mills for
  * both tax years (within {@link METRO_AUTH_RECONCILE_EPS_MILLS}).
@@ -675,8 +684,11 @@ export function metroPurposeTotalsReconcileWithAuth(
   district: LevyDistrictFromJson,
   epsMills: number = METRO_AUTH_RECONCILE_EPS_MILLS,
 ): boolean {
+  const authorityCode = authorityCodeFromMetroDistrict(district);
+  if (!authorityCode) return false;
+
   const authCurrent = authorityMillsForTaxYear(
-    district.countyId,
+    authorityCode,
     AUTHORITY_MILLS_CURRENT_TAX_YEAR,
   );
   if (authCurrent == null) return false;
@@ -686,7 +698,7 @@ export function metroPurposeTotalsReconcileWithAuth(
   if (Math.abs(metroCurrentMills - authCurrent) > epsMills) return false;
 
   const authPrevious = authorityMillsForTaxYear(
-    district.countyId,
+    authorityCode,
     AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
   );
   if (metroTotal.ratePreviousTotal == null || authPrevious == null) {

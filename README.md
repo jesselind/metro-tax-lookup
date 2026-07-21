@@ -156,7 +156,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - App import site: `src/data/metroLevies.ts` (flip the year file there when shipping a newer extract)
    - YoY mill changes in the UI use each purpose's `rateMillsPrevious` vs `rateMillsCurrent` from that PDF column (never sum a summary Total with the part purposes that make it up)
    - Stack callout when any authority has a published mill change: **amber**, plain-language line (`Your property tax bill changed from last year.` via `src/content/levyYoYCopy.ts`). Means a rate on the bill changed; no claim you owe more or less overall. No stack-level bill $. Click scrolls to first Changed tile.
-   - Tile details: mills-first YoY; optional hypothetical dollars with popover on "today's assessed value" (current assessed only; not treasurer bill; no reassessment).
+   - Tile details: mills-first YoY; optional hypothetical dollars with popover on "today's assessed value" (no prior-year assessed; dollars use current assessed only).
    - Metro purpose YoY only when Public Info purpose sums reconcile to AUTH Levy % totals (`metroPurposeTotalsReconcileWithAuth`); else AUTH path (see `metroPurposeYoYTrustedForLine`).
    - Core helper: `src/lib/metroLevyYearOverYear.ts` (`buildLevyLineYoYViewModel`, `billImpactCalloutForLevyLines`, `levyStackRateChangeCalloutSurfaceClasses`). Surfaces: `HomeParcelAddressLookup`, `LevyStackVisualization`, `LevyLineDistrictDetailDialog` (breakdown behind separate **Show year-by-year breakdown** button).
    - Tests: `npm run test:unit` (includes YoY helpers), `npm run test:metro-extract` (extractor), `e2e/metro-yoy.spec.ts` (Playwright)

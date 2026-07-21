@@ -64,7 +64,7 @@ Applies to **all** levy tiles — not entity-specific. Keep wording **plain** an
 - Answers: **What is this entity / program?** (kind of government, role, who it serves.) Prefer **brief** copy; defer detail to the citations accordion and external links.
 - Does **not** lead with “part of your property tax…” or “your share…” — that frames the question as “how much is this?” rather than “what is this?”
 - **Do not repeat** the authority name from the tile heading (e.g. avoid “Arapahoe Library District is…”). Use a generic lead: “A special district…”, “A local levy that funds a Colorado program…”, “This row funds…”, or refer to “the district shown above” when needed.
-- When the program is state-framed, say clearly that the **levy is local** (county-levied and collected). Do not imply Colorado has a state property tax.
+- When the program is state-framed, say clearly that the **levy is local**: local governments set the mill rate, and the **county collects it** on the property tax bill. Do not imply Colorado has a state property tax or that the county sets the levy.
 - Keep plain language; avoid accountant-style “levy lines” phrasing (see project tone rules).
 - **Term links** — Use `{{term:term-id|link label}}` only when the term exists in `termDefinitions.tsx` (and home key terms when applicable). Example: `{{term:term-special-districts|special district}}`. The modal parses these and jumps to the definition.
 
