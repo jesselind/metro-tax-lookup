@@ -68,13 +68,14 @@ test.describe("Metro year-over-year UI", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByRole("region", { name: /1\.000 mills higher than last year/i }),
+      dialog.getByRole("region", { name: /2\.0% higher than last year/i }),
     ).toBeVisible();
     await dialog
       .getByRole("button", { name: /Show year-by-year breakdown/i })
       .click();
     await expect(dialog.getByText("Tax Year 2024")).toBeVisible();
     await expect(dialog.getByText("Tax Year 2025")).toBeVisible();
+    await expect(dialog.getByText("Total", { exact: true })).toHaveCount(0);
     await expect(dialog.getByText("Each part that changed")).toHaveCount(0);
   });
 
@@ -131,18 +132,19 @@ test.describe("Metro year-over-year UI", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByRole("region", { name: /mills higher than last year/i }),
+      dialog.getByRole("region", { name: /% higher than last year/i }),
     ).toBeVisible();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(dialog.getByText(/^Difference:/)).toHaveCount(0);
 
     await dialog
-      .getByRole("button", { name: /Show year-by-year breakdown/i })
+      .getByRole("button", { name: /% higher than last year/i })
       .click();
     await expect(dialog.getByText("Total", { exact: true })).toBeVisible();
     await expect(dialog.getByText("Each part that changed")).toBeVisible();
     await expect(dialog.getByText("General Operating")).toBeVisible();
     await expect(dialog.getByText(/^Difference:/)).toHaveCount(4);
+    await expect(dialog.getByText(/\* Dollar amounts use/i)).toBeVisible();
     await dialog.getByRole("button", { name: "General Operating" }).click();
     await expect(
       dialog.getByRole("heading", { name: "General operating" }),

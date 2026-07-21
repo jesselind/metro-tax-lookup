@@ -68,23 +68,32 @@ function YoYTheoreticalDollarHint({
   );
 }
 
-function YoYTheoreticalDollarSubline({
-  theoreticalDeltaDollars,
+/** Marker tying hypothetical dollar amounts to {@link YoYTheoreticalDollarFootnote}. */
+const YOY_DOLLAR_FOOTNOTE_MARKER = "*";
+
+function yoyDollarFootnoteId(suffix: string): string {
+  return `levy-yoy-dollar-footnote-${suffix}`;
+}
+
+/** One footnote for the whole YoY breakdown (avoid repeating the assessed-value popover). */
+function YoYTheoreticalDollarFootnote({
   idSuffix,
 }: {
-  theoreticalDeltaDollars: number;
   idSuffix: string;
 }) {
-  const amount = formatUsdWhole(Math.abs(theoreticalDeltaDollars));
-  const directionWord = theoreticalDeltaDollars > 0 ? "more" : "less";
+  const footnoteId = yoyDollarFootnoteId(idSuffix);
   return (
-    <p className="mt-1 text-sm font-medium leading-snug text-slate-800 sm:text-base">
-      About {amount}
+    <p
+      id={footnoteId}
+      className="text-sm font-medium leading-snug text-slate-700 sm:text-base"
+    >
+      {YOY_DOLLAR_FOOTNOTE_MARKER}
       {" "}
-      {directionWord}
-      {" "}
-      at{" "}
-      <YoYTheoreticalDollarHint idSuffix={idSuffix} ariaContext="this change" />
+      Dollar amounts use{" "}
+      <YoYTheoreticalDollarHint
+        idSuffix={idSuffix}
+        ariaContext="these"
+      />
       .
     </p>
   );
@@ -94,11 +103,25 @@ function LevyYoYSummaryBlock({
   summary,
   headlineId,
   headlineClassName,
+  showCollapsedDollarLine,
+  collapsedDollarFootnoteId,
 }: {
   summary: MetroDistrictTileYoYSummary;
   headlineId: string;
   headlineClassName: string;
+  /** When there is no year-by-year breakdown, show dollars once below the mills headline. */
+  showCollapsedDollarLine: boolean;
+  collapsedDollarFootnoteId?: string;
 }) {
+  const collapsedDollars =
+    showCollapsedDollarLine && summary.theoreticalDeltaDollars != null
+      ? summary.theoreticalDeltaDollars
+      : null;
+  const collapsedAmount =
+    collapsedDollars != null ? formatUsdWhole(Math.abs(collapsedDollars)) : null;
+  const collapsedDirectionWord =
+    collapsedDollars != null && collapsedDollars > 0 ? "more" : "less";
+
   return (
     <>
       <span
@@ -107,11 +130,14 @@ function LevyYoYSummaryBlock({
       >
         {summary.headline}
       </span>
-      {summary.theoreticalDeltaDollars != null ? (
-        <YoYTheoreticalDollarSubline
-          theoreticalDeltaDollars={summary.theoreticalDeltaDollars}
-          idSuffix={headlineId}
-        />
+      {collapsedAmount != null ? (
+        <p
+          className="mt-1 text-sm font-medium leading-snug text-slate-800 sm:text-base"
+          aria-describedby={collapsedDollarFootnoteId}
+        >
+          About {collapsedAmount} {collapsedDirectionWord}
+          {YOY_DOLLAR_FOOTNOTE_MARKER}
+        </p>
       ) : null}
     </>
   );
@@ -129,7 +155,7 @@ function MetroYoYYearCompare({
   differenceDollars,
   diffClassName,
   density,
-  dollarHintIdSuffix,
+  dollarFootnoteId,
 }: {
   previousYearLabel: string;
   currentYearLabel: string;
@@ -141,18 +167,18 @@ function MetroYoYYearCompare({
   differenceDollars: number | null;
   diffClassName: string;
   density: "total" | "purpose";
-  dollarHintIdSuffix: string;
+  dollarFootnoteId?: string;
 }) {
   const yearLabelClass =
     "text-sm font-semibold tracking-wide text-slate-600 sm:text-base";
   const millsClass =
     density === "total"
       ? "mt-1 font-mono text-xl font-bold tabular-nums leading-snug text-slate-900 sm:text-2xl"
-      : "mt-0.5 font-mono text-base font-bold tabular-nums leading-snug text-slate-900 sm:text-lg";
+      : "mt-0.5 font-mono text-lg font-bold tabular-nums leading-snug text-slate-900 sm:text-xl";
   const dollarsClass =
     density === "total"
-      ? "mt-1 text-sm font-medium tabular-nums leading-snug text-slate-700 sm:text-base"
-      : "mt-0.5 text-xs font-medium tabular-nums leading-snug text-slate-700 sm:text-sm";
+      ? "mt-1.5 text-lg font-semibold tabular-nums leading-snug text-slate-900 sm:mt-2 sm:text-xl"
+      : "mt-1 text-base font-semibold tabular-nums leading-snug text-slate-900 sm:text-lg";
   const diffClass =
     density === "total"
       ? `mt-2.5 rounded-md px-2.5 py-2 text-base font-bold tabular-nums leading-snug sm:px-3 sm:py-2.5 sm:text-lg ${diffClassName}`
@@ -169,12 +195,12 @@ function MetroYoYYearCompare({
             mills
           </p>
           {previousDollars != null ? (
-            <p className={dollarsClass}>
-              About {formatUsdWhole(previousDollars)} at{" "}
-              <YoYTheoreticalDollarHint
-                idSuffix={`${dollarHintIdSuffix}-prev`}
-                ariaContext="prior-year"
-              />
+            <p
+              className={dollarsClass}
+              aria-describedby={dollarFootnoteId}
+            >
+              About {formatUsdWhole(previousDollars)}
+              {YOY_DOLLAR_FOOTNOTE_MARKER}
             </p>
           ) : null}
         </div>
@@ -186,20 +212,23 @@ function MetroYoYYearCompare({
             mills
           </p>
           {currentDollars != null ? (
-            <p className={dollarsClass}>
-              About {formatUsdWhole(currentDollars)} at{" "}
-              <YoYTheoreticalDollarHint
-                idSuffix={`${dollarHintIdSuffix}-curr`}
-                ariaContext="current-year"
-              />
+            <p
+              className={dollarsClass}
+              aria-describedby={dollarFootnoteId}
+            >
+              About {formatUsdWhole(currentDollars)}
+              {YOY_DOLLAR_FOOTNOTE_MARKER}
             </p>
           ) : null}
         </div>
       </div>
-      <p className={diffClass}>
-        Difference: {differenceMillsLabel}
-        {" "}
-        mills
+      <p
+        className={diffClass}
+        aria-describedby={
+          differenceDollars != null ? dollarFootnoteId : undefined
+        }
+      >
+        Difference: {differenceMillsLabel} mills
         {differenceDollars != null ? (
           <>
             {" "}
@@ -207,12 +236,7 @@ function MetroYoYYearCompare({
             {differenceDollars > 0
               ? `+${formatUsdWhole(differenceDollars)}`
               : formatUsdWhole(differenceDollars)}
-            {" "}
-            at{" "}
-            <YoYTheoreticalDollarHint
-              idSuffix={`${dollarHintIdSuffix}-diff`}
-              ariaContext="difference"
-            />
+            {YOY_DOLLAR_FOOTNOTE_MARKER}
             )
           </>
         ) : null}
@@ -350,6 +374,16 @@ export function LevyLineDistrictDetailDialog({
   }
   const inlineDefPanelId = useId();
   const metroYoYBreakdownPanelId = useId();
+  const yoyBreakdownDollarFootnoteId = yoyDollarFootnoteId("breakdown");
+  const yoySummaryDollarFootnoteId = yoyDollarFootnoteId("summary");
+  const yoyShowsDollarFootnote = Boolean(
+    yoy &&
+      assessedForChangeDollars != null &&
+      ((!yoy.canExpand && yoy.summary.theoreticalDeltaDollars != null) ||
+        (yoy.canExpand &&
+          metroYoYBreakdownOpen &&
+          (yoy.showTotalCompare || yoy.showPurposeDetails))),
+  );
   /** Last control that opened the inline definition panel (for focus return on close). */
   const lastInlineDefTriggerRef = useRef<HTMLElement | null>(null);
 
@@ -514,24 +548,27 @@ export function LevyLineDistrictDetailDialog({
               >
                 {yoy.canExpand ? (
                   <>
-                    <div className="px-3 py-3 sm:px-4 sm:py-3.5">
-                      <LevyYoYSummaryBlock
-                        summary={yoy.summary}
-                        headlineId="levy-detail-metro-yoy-heading"
-                        headlineClassName={metroYoySurface.headline}
-                      />
-                      <button
-                        type="button"
-                        className="mt-3 cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-semibold text-slate-900 underline decoration-slate-400 underline-offset-2 hover:decoration-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/50 sm:text-base"
-                        aria-expanded={metroYoYBreakdownOpen}
-                        aria-controls={metroYoYBreakdownPanelId}
-                        onClick={toggleMetroYoYBreakdown}
-                      >
-                        {metroYoYBreakdownOpen
-                          ? "Hide year-by-year breakdown"
-                          : "Show year-by-year breakdown"}
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      className="w-full cursor-pointer border-0 bg-transparent px-3 py-3 text-left transition-colors hover:bg-black/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50 sm:px-4 sm:py-3.5"
+                      aria-expanded={metroYoYBreakdownOpen}
+                      aria-controls={metroYoYBreakdownPanelId}
+                      onClick={toggleMetroYoYBreakdown}
+                    >
+                      <span className="pointer-events-none block">
+                        <LevyYoYSummaryBlock
+                          summary={yoy.summary}
+                          headlineId="levy-detail-metro-yoy-heading"
+                          headlineClassName={metroYoySurface.headline}
+                          showCollapsedDollarLine={false}
+                        />
+                        <span className="mt-3 block text-sm font-semibold text-slate-900 underline decoration-slate-400 underline-offset-2 sm:text-base">
+                          {metroYoYBreakdownOpen
+                            ? "Hide year-by-year breakdown"
+                            : "Show year-by-year breakdown"}
+                        </span>
+                      </span>
+                    </button>
                     <div
                       id={metroYoYBreakdownPanelId}
                       hidden={!metroYoYBreakdownOpen}
@@ -545,9 +582,11 @@ export function LevyLineDistrictDetailDialog({
                         <>
                         {yoy.showTotalCompare && yoy.totalCompare ? (
                           <div>
-                            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-600 sm:text-xs">
-                              Total
-                            </p>
+                            {yoy.showPurposeDetails ? (
+                              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-600 sm:text-xs">
+                                Total
+                              </p>
+                            ) : null}
                             <MetroYoYYearCompare
                               previousYearLabel={yoy.previousYearLabel}
                               currentYearLabel={yoy.currentYearLabel}
@@ -567,7 +606,11 @@ export function LevyLineDistrictDetailDialog({
                               }
                               diffClassName={metroYoySurface.diff}
                               density="total"
-                              dollarHintIdSuffix="total"
+                              dollarFootnoteId={
+                                yoyShowsDollarFootnote
+                                  ? yoyBreakdownDollarFootnoteId
+                                  : undefined
+                              }
                             />
                           </div>
                         ) : null}
@@ -676,13 +719,20 @@ export function LevyLineDistrictDetailDialog({
                                       differenceDollars={deltaDollars}
                                       diffClassName={purposeSurface.diff}
                                       density="purpose"
-                                      dollarHintIdSuffix={`purpose-${change.rawRowIndex}`}
+                                      dollarFootnoteId={
+                                        yoyShowsDollarFootnote
+                                          ? yoyBreakdownDollarFootnoteId
+                                          : undefined
+                                      }
                                     />
                                   </li>
                                 );
                               })}
                             </ul>
                           </div>
+                        ) : null}
+                        {yoyShowsDollarFootnote ? (
+                          <YoYTheoreticalDollarFootnote idSuffix="breakdown" />
                         ) : null}
                         </>
                       ) : null}
@@ -694,7 +744,16 @@ export function LevyLineDistrictDetailDialog({
                       summary={yoy.summary}
                       headlineId="levy-detail-metro-yoy-heading"
                       headlineClassName={metroYoySurface.headline}
+                      showCollapsedDollarLine
+                      collapsedDollarFootnoteId={
+                        yoyShowsDollarFootnote
+                          ? yoySummaryDollarFootnoteId
+                          : undefined
+                      }
                     />
+                    {yoyShowsDollarFootnote ? (
+                      <YoYTheoreticalDollarFootnote idSuffix="summary" />
+                    ) : null}
                   </div>
                 )}
               </div>
