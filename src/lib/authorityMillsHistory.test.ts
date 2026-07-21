@@ -6,8 +6,10 @@
 import { describe, expect, it } from "vitest";
 import {
   AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+  AUTHORITY_MILLS_HISTORY_MIN_POINTS,
   AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
   authorityMillsForTaxYear,
+  authorityMillsSeries,
   authorityTotalMillsChanged,
   authorityTotalMillsYoY,
 } from "@/lib/authorityMillsHistory";
@@ -34,5 +36,12 @@ describe("authorityMillsHistory", () => {
     });
     expect(authorityTotalMillsChanged("0101", COUNTY_MILLS_YOY_EPS)).toBe(true);
     expect(authorityTotalMillsChanged("9999", COUNTY_MILLS_YOY_EPS)).toBe(false);
+  });
+
+  it("returns a multi-year AUTH series for modal history chart", () => {
+    const series = authorityMillsSeries("0101");
+    expect(series.length).toBeGreaterThanOrEqual(AUTHORITY_MILLS_HISTORY_MIN_POINTS);
+    expect(series[0]?.taxYear).toBe(2018);
+    expect(series[series.length - 1]?.taxYear).toBe(2025);
   });
 });

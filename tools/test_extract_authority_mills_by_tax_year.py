@@ -18,6 +18,7 @@ from extract_authority_mills_by_tax_year import (
     build_authority_mills_for_year,
     build_shipping_payload,
     parse_levy_percentage_table_rows,
+    resolve_pdf_by_year,
 )
 
 
@@ -134,6 +135,29 @@ class BuildShippingPayloadTests(unittest.TestCase):
         )
         self.assertEqual(payload["_meta"]["taxYears"], [2024, 2025])
         self.assertEqual(payload["_meta"]["bundledAsOf"], "2026-07-20")
+
+
+class ResolvePdfByYearTests(unittest.TestCase):
+    def test_returns_defaults_when_no_overrides(self) -> None:
+        pdf_by_year = resolve_pdf_by_year(None)
+        self.assertEqual(pdf_by_year[2018].name, "2018 Taxing District Levy Percentages.pdf")
+        self.assertEqual(pdf_by_year[2025].name, "2025 Taxing District Levy Percentage.pdf")
+
+    def test_merges_repeatable_overrides(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+            override_path = tmp.name
+            pdf_by_year = resolve_pdf_by_year([("2024", override_path)])
+            resolved = pdf_by_year[2024]
+            self.assertIsInstance(resolved, Path)
+            self.assertTrue(resolved.is_file())
+            self.assertEqual(str(resolved), override_path)
+        self.assertEqual(
+            pdf_by_year[2025].name,
+            "2025 Taxing District Levy Percentage.pdf",
+        )
 
 
 if __name__ == "__main__":

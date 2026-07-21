@@ -16,6 +16,7 @@ import type {
   SpecialDistrictRecord,
 } from "@/lib/specialDistrictMatch";
 import { ModalPortal } from "@/components/ModalPortal";
+import { AuthorityMillsHistoryChart } from "@/components/AuthorityMillsHistoryChart";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSection";
@@ -44,6 +45,10 @@ import {
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { YOY_THEORETICAL_DOLLAR_POPOVER_BODY } from "@/content/levyYoYCopy";
+import {
+  AUTHORITY_MILLS_HISTORY_MIN_POINTS,
+  authorityMillsSeries,
+} from "@/lib/authorityMillsHistory";
 
 import type { MetroDistrictTileYoYSummary } from "@/lib/metroLevyYearOverYear";
 
@@ -300,6 +305,13 @@ export function LevyLineDistrictDetailDialog({
       ),
     [levyLineCode, dolaMatch, totalAssessedForEstimate],
   );
+  const millsHistory = useMemo(
+    () => authorityMillsSeries(levyLineCode),
+    [levyLineCode],
+  );
+  /** Levy % AUTH timeline (2018–2025 when bundled); separate from YoY headline box. */
+  const showMillsHistoryChart =
+    millsHistory.length >= AUTHORITY_MILLS_HISTORY_MIN_POINTS;
   const metroYoySurface = levyYoYSurfaceClasses(
     yoy?.summary.direction ?? "neutral",
   );
@@ -754,6 +766,12 @@ export function LevyLineDistrictDetailDialog({
                     ) : null}
                   </div>
                 )}
+              </div>
+            ) : null}
+
+            {showMillsHistoryChart ? (
+              <div className="mt-4">
+                <AuthorityMillsHistoryChart series={millsHistory} />
               </div>
             ) : null}
 

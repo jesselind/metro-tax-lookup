@@ -47,6 +47,7 @@ import { formatUsdWhole } from "@/lib/formatUsd";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
   LEVY_TILE_OPEN_BTN_ATTR,
+  levyLineMillDelta,
   lineIdsWithMillRateChanges,
 } from "@/lib/metroLevyYearOverYear";
 
@@ -112,7 +113,7 @@ const LEVY_TILE_USD_CLASS =
  * badge / Details › do not share that pad.
  */
 const METRO_CHANGED_BADGE_CLASS =
-  "inline-flex w-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 border-amber-950 bg-amber-300 px-2 py-1 text-xs font-extrabold uppercase leading-tight tracking-wide text-amber-950 shadow-[0_1px_0_rgba(0,0,0,0.25)] ring-1 ring-white/50 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[0.7rem]";
+  "inline-flex w-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 border-amber-950 bg-amber-300 px-2 py-1 text-xs font-extrabold uppercase leading-none tracking-wide text-amber-950 shadow-[0_1px_0_rgba(0,0,0,0.25)] ring-1 ring-white/50 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[0.7rem]";
 
 function formatPct(p: number): string {
   if (!Number.isFinite(p)) return "0.0";
@@ -141,6 +142,15 @@ function EllipsisVerticalIcon({ className }: { className?: string }) {
   );
 }
 
+/** Fixed box so long arrows cannot grow the badge or shift content below. */
+const LEVY_CHANGED_BADGE_LEAD_SLOT_CLASS =
+  "inline-flex size-4 shrink-0 items-center justify-center sm:size-3.5";
+const LEVY_CHANGED_BADGE_ARROW_SLOT_CLASS =
+  "inline-flex size-3 shrink-0 items-center justify-center overflow-visible sm:size-2.5";
+/** Scale inside the fixed slot so layout box stays the same. */
+const LEVY_CHANGED_BADGE_ARROW_SVG_CLASS =
+  "block size-full origin-center scale-110";
+
 function ExclamationTriangleIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -159,6 +169,55 @@ function ExclamationTriangleIcon({ className }: { className?: string }) {
       />
     </svg>
   );
+}
+
+function ArrowUpIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={3}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
+      />
+    </svg>
+  );
+}
+
+function ArrowDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={3}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+      />
+    </svg>
+  );
+}
+
+function levyTileMillChangeDirectionPhrase(
+  millDelta: number | null,
+): string | null {
+  if (millDelta == null) return null;
+  if (millDelta > 0) return ", mill rate higher than last year";
+  if (millDelta < 0) return ", mill rate lower than last year";
+  return ", changed from last year";
 }
 
 type TileActionsModalProps = {
@@ -556,6 +615,10 @@ export function LevyStackVisualization({
                 const sourceLine = lines.find((l) => l.id === item.id);
                 const millRateChanged =
                   sourceLine != null && lineIdsWithMillChanges.has(sourceLine.id);
+                const millDelta =
+                  sourceLine != null ? levyLineMillDelta(sourceLine) : null;
+                const millChangeDirectionPhrase =
+                  levyTileMillChangeDirectionPhrase(millDelta);
                 const lineDollarsRounded =
                   assessedForLevyDollars != null
                     ? annualTaxDollarsFromAssessedMills(
@@ -674,14 +737,10 @@ export function LevyStackVisualization({
                           aria-label={
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value${
-                                  millRateChanged
-                                    ? ", changed from last year"
-                                    : ""
+                                  millChangeDirectionPhrase ?? ""
                                 }`
                               : `View district details for ${item.authority}, ${formatMills(item.mills)} mills${
-                                  millRateChanged
-                                    ? ", changed from last year"
-                                    : ""
+                                  millChangeDirectionPhrase ?? ""
                                 }`
                           }
                           onClick={() => {
@@ -723,11 +782,32 @@ export function LevyStackVisualization({
                             <div className="flex w-full min-w-0 flex-col gap-2 self-end sm:gap-3">
                               {millRateChanged ? (
                                 <span className={METRO_CHANGED_BADGE_CLASS}>
-                                  <ExclamationTriangleIcon
-                                    className="size-4 shrink-0 sm:size-3.5"
+                                  <span
+                                    className={LEVY_CHANGED_BADGE_LEAD_SLOT_CLASS}
                                     aria-hidden
-                                  />
+                                  >
+                                    <ExclamationTriangleIcon className="block size-full" />
+                                  </span>
                                   Changed
+                                  {millDelta != null && millDelta > 0 ? (
+                                    <span
+                                      className={LEVY_CHANGED_BADGE_ARROW_SLOT_CLASS}
+                                      aria-hidden
+                                    >
+                                      <ArrowUpIcon
+                                        className={LEVY_CHANGED_BADGE_ARROW_SVG_CLASS}
+                                      />
+                                    </span>
+                                  ) : millDelta != null && millDelta < 0 ? (
+                                    <span
+                                      className={LEVY_CHANGED_BADGE_ARROW_SLOT_CLASS}
+                                      aria-hidden
+                                    >
+                                      <ArrowDownIcon
+                                        className={LEVY_CHANGED_BADGE_ARROW_SVG_CLASS}
+                                      />
+                                    </span>
+                                  ) : null}
                                 </span>
                               ) : null}
                               <div className="flex w-full min-w-0 items-end justify-between gap-3">

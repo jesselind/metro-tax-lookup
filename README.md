@@ -156,17 +156,17 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - App import site: `src/data/metroLevies.ts` (flip the year file there when shipping a newer extract)
    - YoY mill changes in the UI use each purpose's `rateMillsPrevious` vs `rateMillsCurrent` from that PDF column (never sum a summary Total with the part purposes that make it up)
    - Stack callout when any authority has a published mill change: **amber**, plain-language line (`Your property tax bill changed from last year.` via `src/content/levyYoYCopy.ts`). Means a rate on the bill changed; no claim you owe more or less overall. No stack-level bill $. Click scrolls to first Changed tile.
-   - Tile details: percent change in mill rate when prior mills are known (e.g. `2.0% higher than last year`); mills fallback otherwise. Whole YoY summary box toggles year-by-year breakdown (`aria-expanded`). Breakdown: mills per tax year, **About $X*** at readable size, difference shows mills + dollars, one `*` footnote with popover on "today's assessed value" (`YOY_THEORETICAL_DOLLAR_POPOVER_BODY` — no prior-year assessed).
+   - Tile details: percent change in mill rate when prior mills are known (e.g. `2.0% higher than last year`); mills fallback otherwise. Whole YoY summary box toggles year-by-year breakdown (`aria-expanded`). Breakdown: mills per tax year, **About $X*** at readable size, difference shows mills + dollars, one `*` footnote with popover on "today's assessed value" (`YOY_THEORETICAL_DOLLAR_POPOVER_BODY` — no prior-year assessed). **Mill rate over time** inline SVG chart when at least three Levy % years exist for that AUTH (`AuthorityMillsHistoryChart`, `authorityMillsSeries`).
    - Metro purpose YoY only when Public Info purpose sums reconcile to AUTH Levy % totals (`metroPurposeTotalsReconcileWithAuth`); else AUTH path (see `metroPurposeYoYTrustedForLine`). **Total** section label only when purpose sub-rows are shown.
    - Core helper: `src/lib/metroLevyYearOverYear.ts` (`buildLevyLineYoYViewModel`, `millRatePercentChange`, `metroDistrictTileYoYSummary`, `billImpactCalloutForLevyLines`, `levyStackRateChangeCalloutSurfaceClasses`). Surfaces: `HomeParcelAddressLookup`, `LevyStackVisualization`, `LevyLineDistrictDetailDialog`.
    - Tests: `npm run test:unit` (includes YoY helpers), `npm run test:metro-extract` (extractor), `e2e/metro-yoy.spec.ts` (Playwright)
 
-5. Rebuild authority mills-by-tax-year JSON (all-tile YoY priors from Levy %):
-   - `tools/extract_authority_mills_by_tax_year.py`
-   - Source PDFs (local): `supporting-data/certs/2024 Taxing District Levy Percentages.pdf` and `supporting-data/certs/2025 Taxing District Levy Percentage.pdf` (Assessor Mill Levies hub; see `/sources`). Years are **Tax Year** labels from the PDFs — do not relabel Tax Year 2025 as budget year 2026.
+5. Rebuild authority mills-by-tax-year JSON (all-tile YoY priors + modal history from Levy %):
+   - `tools/extract_authority_mills_by_tax_year.py` (default: Tax Years 2018–2025 from `supporting-data/certs/`; override with repeatable `--pdf YEAR PATH`)
+   - Source PDFs (local): Assessor Mill Levies hub — `2018` through `2025 Taxing District Levy Percentage(s).pdf` (see `/sources`). Years are **Tax Year** labels from the PDFs — do not relabel Tax Year 2025 as budget year 2026.
    - Writes shipping JSON to `public/data/arapahoe-authority-mills-by-tax-year.json` (AUTH `code` → `millsByTaxYear`). Optional raw audit under `supporting-data/authority-mills/` (gitignored). Does **not** bake into `arapahoe-levy-stacks-by-tag-id.json`.
-   - Join key: stack line `code` (AUTH). App import: `src/data/authorityMillsByTaxYear.ts`. Lookups: `src/lib/authorityMillsHistory.ts`.
-   - Tests: `npm run test:authority-mills-extract`, `npm run test:unit` (AUTH + YoY helpers)
+   - Join key: stack line `code` (AUTH). App import: `src/data/authorityMillsByTaxYear.ts`. Lookups: `src/lib/authorityMillsHistory.ts`. Chart: `src/lib/authorityMillsChartLayout.ts`, `src/components/AuthorityMillsHistoryChart.tsx`.
+   - Tests: `npm run test:authority-mills-extract`, `npm run test:unit` (AUTH, chart layout, YoY helpers), `e2e/metro-yoy.spec.ts`
 
 6. Optional legacy district tooling (not used for the app runtime bundle above):
    - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`
