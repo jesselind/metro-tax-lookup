@@ -144,12 +144,20 @@ class ResolvePdfByYearTests(unittest.TestCase):
         self.assertEqual(pdf_by_year[2025].name, "2025 Taxing District Levy Percentage.pdf")
 
     def test_merges_repeatable_overrides(self) -> None:
+        import tempfile
         from pathlib import Path
 
-        override = Path("supporting-data/certs/custom-2024.pdf")
-        pdf_by_year = resolve_pdf_by_year([("2024", override)])
-        self.assertEqual(pdf_by_year[2024], override)
-        self.assertEqual(pdf_by_year[2025].name, "2025 Taxing District Levy Percentage.pdf")
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+            override_path = tmp.name
+            pdf_by_year = resolve_pdf_by_year([("2024", override_path)])
+            resolved = pdf_by_year[2024]
+            self.assertIsInstance(resolved, Path)
+            self.assertTrue(resolved.is_file())
+            self.assertEqual(str(resolved), override_path)
+        self.assertEqual(
+            pdf_by_year[2025].name,
+            "2025 Taxing District Levy Percentage.pdf",
+        )
 
 
 if __name__ == "__main__":

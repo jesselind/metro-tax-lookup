@@ -386,7 +386,7 @@ def write_outputs(
 
 
 def resolve_pdf_by_year(
-  overrides: Optional[Sequence[Tuple[str, Path]]],
+  overrides: Optional[Sequence[Tuple[str, str | Path]]],
 ) -> Dict[int, Path]:
   """Merge default Levy % PDF paths with optional --pdf YEAR PATH overrides."""
   pdf_by_year: Dict[int, Path] = dict(DEFAULT_PDF_BY_YEAR)
@@ -397,7 +397,7 @@ def resolve_pdf_by_year(
       tax_year = int(tax_year_text)
     except ValueError as exc:
       raise SystemExit(f"Invalid tax year for --pdf: {tax_year_text!r}") from exc
-    pdf_by_year[tax_year] = pdf_path
+    pdf_by_year[tax_year] = Path(pdf_path)
   return pdf_by_year
 
 

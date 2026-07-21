@@ -15,4 +15,4 @@ export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
 export const AUTHORITY_MILLS_HISTORY_CHART_HEADING = "Mill rate over time";
 
 export const AUTHORITY_MILLS_HISTORY_CHART_CAPTION =
-  "Total mills for this authority from county Taxing District Levy Percentage tables.";
+  "Total mills for this authority from county property tax tables.";
