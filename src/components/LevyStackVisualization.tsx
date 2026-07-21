@@ -44,12 +44,10 @@ import {
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
-import { metroLgIdKeyFromDolaMatch } from "@/lib/metroDistrictFromLevyLines";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
   LEVY_TILE_OPEN_BTN_ATTR,
-  listMetroLevyPurposeChangesForLgId,
-  metroLgIdsWithPurposeMillChanges,
+  lineIdsWithMillRateChanges,
 } from "@/lib/metroLevyYearOverYear";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
@@ -108,11 +106,13 @@ const LEVY_TILE_USD_CLASS =
   "font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] text-[1.625rem]";
 
 /**
- * Metro YoY cue on dark levy tiles: full-width strip under mills.
- * Title keeps menu clearance (pr-11); badge / Details › do not share that pad.
+ * YoY cue on dark levy tiles: full-width strip above Details › / $.
+ * Anchored with the bottom block so side-by-side badges share one baseline
+ * (title wrap no longer shifts the badge). Title keeps menu clearance (pr-11);
+ * badge / Details › do not share that pad.
  */
 const METRO_CHANGED_BADGE_CLASS =
-  "mt-2 inline-flex w-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 border-amber-950 bg-amber-300 px-2 py-1 text-xs font-extrabold uppercase leading-tight tracking-wide text-amber-950 shadow-[0_1px_0_rgba(0,0,0,0.25)] ring-1 ring-white/50 sm:mt-2 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[0.7rem]";
+  "inline-flex w-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 border-amber-950 bg-amber-300 px-2 py-1 text-xs font-extrabold uppercase leading-tight tracking-wide text-amber-950 shadow-[0_1px_0_rgba(0,0,0,0.25)] ring-1 ring-white/50 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[0.7rem]";
 
 function formatPct(p: number): string {
   if (!Number.isFinite(p)) return "0.0";
@@ -336,8 +336,8 @@ export function LevyStackVisualization({
     return annualTaxDollarsFromAssessedMills(assessedForLevyDollars, sumMills);
   }, [assessedForLevyDollars, sumMills]);
 
-  const metroLgIdsWithMillChanges = useMemo(
-    () => metroLgIdsWithPurposeMillChanges(lines),
+  const lineIdsWithMillChanges = useMemo(
+    () => lineIdsWithMillRateChanges(lines),
     [lines],
   );
 
@@ -397,18 +397,12 @@ export function LevyStackVisualization({
 
   const firstChangedLevyTileId = useMemo(() => {
     for (const item of tilesSorted) {
-      const sourceLine = lines.find((l) => l.id === item.id);
-      if (
-        sourceLine != null &&
-        metroLgIdsWithMillChanges.has(
-          metroLgIdKeyFromDolaMatch(sourceLine.dolaMatch),
-        )
-      ) {
+      if (lineIdsWithMillChanges.has(item.id)) {
         return item.id;
       }
     }
     return null;
-  }, [tilesSorted, lines, metroLgIdsWithMillChanges]);
+  }, [tilesSorted, lineIdsWithMillChanges]);
 
   const actionLine = useMemo(
     () => (tileActionsId ? lines.find((l) => l.id === tileActionsId) : undefined),
@@ -438,9 +432,6 @@ export function LevyStackVisualization({
       pct,
       match,
       dolaMatch: line.dolaMatch ?? null,
-      metroPurposeChanges: listMetroLevyPurposeChangesForLgId(
-        metroLgIdKeyFromDolaMatch(line.dolaMatch),
-      ),
     };
   }, [detailLineId, lines, sumMills, specialDistrictFile]);
 
@@ -563,11 +554,8 @@ export function LevyStackVisualization({
                 const pctLabel = formatPct(item.pct);
                 const isEditing = editingId === item.id;
                 const sourceLine = lines.find((l) => l.id === item.id);
-                const metroMillRateChanged =
-                  sourceLine != null &&
-                  metroLgIdsWithMillChanges.has(
-                    metroLgIdKeyFromDolaMatch(sourceLine.dolaMatch),
-                  );
+                const millRateChanged =
+                  sourceLine != null && lineIdsWithMillChanges.has(sourceLine.id);
                 const lineDollarsRounded =
                   assessedForLevyDollars != null
                     ? annualTaxDollarsFromAssessedMills(
@@ -686,13 +674,13 @@ export function LevyStackVisualization({
                           aria-label={
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value${
-                                  metroMillRateChanged
-                                    ? ", metro district mill rate changed from last year"
+                                  millRateChanged
+                                    ? ", changed from last year"
                                     : ""
                                 }`
                               : `View district details for ${item.authority}, ${formatMills(item.mills)} mills${
-                                  metroMillRateChanged
-                                    ? ", metro district mill rate changed from last year"
+                                  millRateChanged
+                                    ? ", changed from last year"
                                     : ""
                                 }`
                           }
@@ -731,7 +719,9 @@ export function LevyStackVisualization({
                               <p className={TILE_MILLS_SUBTLE_CLASS}>
                                 {formatMills(item.mills)} mills
                               </p>
-                              {metroMillRateChanged ? (
+                            </div>
+                            <div className="flex w-full min-w-0 flex-col gap-2 self-end sm:gap-3">
+                              {millRateChanged ? (
                                 <span className={METRO_CHANGED_BADGE_CLASS}>
                                   <ExclamationTriangleIcon
                                     className="size-4 shrink-0 sm:size-3.5"
@@ -740,28 +730,28 @@ export function LevyStackVisualization({
                                   Changed
                                 </span>
                               ) : null}
-                            </div>
-                            <div className="flex w-full min-w-0 items-end justify-between gap-3 self-end">
-                              <div className="flex min-w-0 flex-col items-start gap-1 self-end">
-                                <span
-                                  className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} self-start`}
-                                  aria-hidden
-                                >
-                                  Details ›
-                                </span>
-                              </div>
-                              <div className="flex min-w-0 flex-col items-end gap-y-1 sm:gap-y-1.5">
-                                {lineDollarsRounded != null ? (
-                                  <p className={LEVY_TILE_USD_CLASS}>
-                                    <span className="sr-only">
-                                      Estimated annual levy from assessed value:{" "}
-                                    </span>
-                                    {formatUsdWhole(lineDollarsRounded)}
+                              <div className="flex w-full min-w-0 items-end justify-between gap-3">
+                                <div className="flex min-w-0 flex-col items-start gap-1 self-end">
+                                  <span
+                                    className={`${TILE_DETAILS_CUE_ON_DARK_CLASS} self-start`}
+                                    aria-hidden
+                                  >
+                                    Details ›
+                                  </span>
+                                </div>
+                                <div className="flex min-w-0 flex-col items-end gap-y-1 sm:gap-y-1.5">
+                                  {lineDollarsRounded != null ? (
+                                    <p className={LEVY_TILE_USD_CLASS}>
+                                      <span className="sr-only">
+                                        Estimated annual levy from assessed value:{" "}
+                                      </span>
+                                      {formatUsdWhole(lineDollarsRounded)}
+                                    </p>
+                                  ) : null}
+                                  <p className={LEVY_TILE_PCT_CLASS}>
+                                    {pctLabel}%
                                   </p>
-                                ) : null}
-                                <p className={LEVY_TILE_PCT_CLASS}>
-                                  {pctLabel}%
-                                </p>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1165,7 +1155,6 @@ export function LevyStackVisualization({
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}
-          metroPurposeChanges={detailContext.metroPurposeChanges}
           totalAssessedForEstimate={assessedForLevyDollars}
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}

@@ -33,12 +33,49 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await expect(
       page.getByRole("status").filter({
-        hasText: /Your tax bill has changed since last year/i,
+        hasText: /Your property tax bill changed from last year/i,
       }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("button", { name: /Scroll to the first rate that changed/i }),
+      page.getByRole("button", {
+        name: /Your property tax bill changed from last year/i,
+      }),
     ).toHaveCount(0);
+  });
+
+  test("AUTH history change shows Changed badge and bill-impact callout", async ({
+    page,
+  }) => {
+    await installSyntheticCountyData(page, { includeAuthYoY: true });
+    await page.goto("/");
+    await searchSyntheticAddress(page);
+
+    await expect(page.getByText(nonMetroAuthorityLabel)).toBeVisible();
+    await expect(page.getByText("Changed", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status").filter({
+        hasText: /Your property tax bill changed from last year/i,
+      }),
+    ).toBeVisible();
+
+    await page
+      .getByRole("button", {
+        name: new RegExp(
+          `View district details for ${nonMetroAuthorityLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+        ),
+      })
+      .click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole("region", { name: /1\.000 mills higher than last year/i }),
+    ).toBeVisible();
+    await dialog
+      .getByRole("button", { name: /Show year-by-year breakdown/i })
+      .click();
+    await expect(dialog.getByText("Tax Year 2024")).toBeVisible();
+    await expect(dialog.getByText("Tax Year 2025")).toBeVisible();
+    await expect(dialog.getByText("Each part that changed")).toHaveCount(0);
   });
 
   test("metro-matched synthetic parcel shows YoY chrome and dashboard tiles", async ({
@@ -52,12 +89,12 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText("Changed", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("status").filter({
-        hasText: /Your tax bill has changed since last year/i,
+        hasText: /Your property tax bill changed from last year/i,
       }),
     ).toBeVisible();
 
     const scrollBtn = page.getByRole("button", {
-      name: /Scroll to the first rate that changed/i,
+      name: /Your property tax bill changed from last year/i,
     });
     await expect(scrollBtn).toBeVisible();
     await scrollBtn.click();
@@ -94,15 +131,13 @@ test.describe("Metro year-over-year UI", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByRole("region", { name: /paying \$4 more than last year/i }),
+      dialog.getByRole("region", { name: /mills higher than last year/i }),
     ).toBeVisible();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(dialog.getByText(/^Difference:/)).toHaveCount(0);
 
     await dialog
-      .getByRole("button", {
-        name: /paying \$4 more than last year.*Show year-by-year breakdown/i,
-      })
+      .getByRole("button", { name: /Show year-by-year breakdown/i })
       .click();
     await expect(dialog.getByText("Total", { exact: true })).toBeVisible();
     await expect(dialog.getByText("Each part that changed")).toBeVisible();
@@ -113,14 +148,12 @@ test.describe("Metro year-over-year UI", () => {
       dialog.getByRole("heading", { name: "General operating" }),
     ).toBeVisible();
     await expect(dialog.getByText(/day-to-day money for the district/i)).toBeVisible();
-    await expect(dialog.getByText("2025").first()).toBeVisible();
-    await expect(dialog.getByText("2026").first()).toBeVisible();
+    await expect(dialog.getByText("Tax Year 2024").first()).toBeVisible();
+    await expect(dialog.getByText("Tax Year 2025").first()).toBeVisible();
     await expect(dialog.getByText(/^Difference:/).first()).toBeVisible();
 
     await dialog
-      .getByRole("button", {
-        name: /paying \$4 more than last year.*Hide year-by-year breakdown/i,
-      })
+      .getByRole("button", { name: /Hide year-by-year breakdown/i })
       .click();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(

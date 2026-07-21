@@ -37,7 +37,7 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run test:authority-mills-extract`** runs synthetic unit tests for `tools/extract_authority_mills_by_tax_year.py` (Levy % table parsing; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js build. Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
 
 ### Tests, fixtures, and PII
 
@@ -52,7 +52,8 @@ This is a **public** repo. Automated tests must not spotlight a real resident (P
 | NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
 | Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
-| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Try demo uses the PIN-less fixture; address → levy → shard uses Playwright route fulfills of synthetic JSON (`e2e/fixtures/`). `e2e/metro-yoy.spec.ts` covers metro YoY chrome (Changed badge, bill-impact callout, tax/property tiles) vs non-metro absence. Assert UI contracts / presence — not live scrapes or brittle dollar/mill snapshots |
+| Authority mills extract | `npm run test:authority-mills-extract` (`test_extract_authority_mills_by_tax_year.py`) | Levy % table parsing and AUTH collapse on synthetic rows (forkers: run after changing the authority-mills extractor) |
+| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. `e2e/metro-yoy.spec.ts` covers amber stack callout, Changed badge, mills-first modal YoY (no stack-level bill $). Assert UI contracts — not live scrapes or brittle dollar snapshots |
 
 Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
 
@@ -154,16 +155,25 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
    - Writes shipping JSON to `public/data/metro-levies-YYYY.json` and a local raw audit to `supporting-data/metro-levies/*-raw.json` (no twin shipping copy under supporting-data)
    - App import site: `src/data/metroLevies.ts` (flip the year file there when shipping a newer extract)
    - YoY mill changes in the UI use each purpose's `rateMillsPrevious` vs `rateMillsCurrent` from that PDF column (never sum a summary Total with the part purposes that make it up)
-   - Bill-impact callout ("Your tax bill has changed since last year.") when any matched metro has a published purpose change; amber, not red/green. High-level copy (not tile- or metro-specific). No whole-bill up/down dollars until priors cover more of the stack. Dollar detail stays in tile modals. Click scrolls to (and focuses) the first Changed levy tile open button via `data-levy-tile-open` / `LEVY_TILE_OPEN_BTN_SELECTOR` (not aria-label).
-   - Core helper: `src/lib/metroLevyYearOverYear.ts`. Surfaces: bill-impact callout above the property summary tiles (`HomeParcelAddressLookup`), full-width **Changed** badge under mills on metro authority tiles (`LevyStackVisualization`), modal headline in `LevyLineDistrictDetailDialog` with flat year/mills/$ breakdown behind **Show year-by-year breakdown** (omit purpose list when it only restates the total)
+   - Stack callout when any authority has a published mill change: **amber**, plain-language line (`Your property tax bill changed from last year.` via `src/content/levyYoYCopy.ts`). Means a rate on the bill changed; no claim you owe more or less overall. No stack-level bill $. Click scrolls to first Changed tile.
+   - Tile details: mills-first YoY; optional hypothetical dollars with popover on "today's assessed value" (no prior-year assessed; dollars use current assessed only).
+   - Metro purpose YoY only when Public Info purpose sums reconcile to AUTH Levy % totals (`metroPurposeTotalsReconcileWithAuth`); else AUTH path (see `metroPurposeYoYTrustedForLine`).
+   - Core helper: `src/lib/metroLevyYearOverYear.ts` (`buildLevyLineYoYViewModel`, `billImpactCalloutForLevyLines`, `levyStackRateChangeCalloutSurfaceClasses`). Surfaces: `HomeParcelAddressLookup`, `LevyStackVisualization`, `LevyLineDistrictDetailDialog` (breakdown behind separate **Show year-by-year breakdown** button).
    - Tests: `npm run test:unit` (includes YoY helpers), `npm run test:metro-extract` (extractor), `e2e/metro-yoy.spec.ts` (Playwright)
 
-5. Optional legacy district tooling (not used for the app runtime bundle above):
+5. Rebuild authority mills-by-tax-year JSON (all-tile YoY priors from Levy %):
+   - `tools/extract_authority_mills_by_tax_year.py`
+   - Source PDFs (local): `supporting-data/certs/2024 Taxing District Levy Percentages.pdf` and `supporting-data/certs/2025 Taxing District Levy Percentage.pdf` (Assessor Mill Levies hub; see `/sources`). Years are **Tax Year** labels from the PDFs — do not relabel Tax Year 2025 as budget year 2026.
+   - Writes shipping JSON to `public/data/arapahoe-authority-mills-by-tax-year.json` (AUTH `code` → `millsByTaxYear`). Optional raw audit under `supporting-data/authority-mills/` (gitignored). Does **not** bake into `arapahoe-levy-stacks-by-tag-id.json`.
+   - Join key: stack line `code` (AUTH). App import: `src/data/authorityMillsByTaxYear.ts`. Lookups: `src/lib/authorityMillsHistory.ts`.
+   - Tests: `npm run test:authority-mills-extract`, `npm run test:unit` (AUTH + YoY helpers)
+
+6. Optional legacy district tooling (not used for the app runtime bundle above):
    - `tools/import_colorado_district_layer_csv.py` — writes `supporting-data/refs/colorado-special-districts/colorado-all-special-districts.json` (gitignored) for enrichment experiments, not shipped in `public/data/`
    - `tools/enrich_district_json_county_geoids.py` — reads that JSON and optional Census GDB under `supporting-data/refs/gis/`
    - `tools/export_special_district_directory.py` — Colorado **dlall** GIS extract under `supporting-data/refs/gis/dlall/` (`dlall.dbf`)
 
-6. Optional NOV comps grid extractor (experimental tooling; not used by the Next.js bundle):
+7. Optional NOV comps grid extractor (experimental tooling; not used by the Next.js bundle):
    - `tools/parse_arapahoe_nov_comps_grid.py` reads **page 2** of a Notice-of-Valuation-style PDF when it carries the six-column comps grid (subject + five sales). It uses `pdfplumber` geometry + column bands, not line-table extraction.
    - Pair with `tools/nov_comps_grid_definitions.json` for plain-language `layTitle` / `layBody` row help plus optional `official` notes for maintainers (county citations when available).
    - Put real PDF samples under `supporting-data/_private/` (gitignored). Example default path in the script matches that layout.

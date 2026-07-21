@@ -6,15 +6,23 @@
 import { describe, expect, it } from "vitest";
 import type { LevyDistrictFromJson } from "@/lib/levyTypes";
 import {
+  billImpactCalloutForLevyLines,
+  buildLevyLineYoYViewModel,
+  levyLineHasMillRateChange,
+  levyLineMillDelta,
   levyPurposeRateChanged,
   listMetroLevyPurposeChanges,
   metroBillImpactCalloutForDistrictIds,
   metroDistrictDeltaDollarsFromRates,
+  metroDistrictForLgId,
   metroDistrictTileYoYSummary,
   metroLevyDistrictTotalChange,
   metroLgIdsWithPurposeMillChanges,
   metroPurposeChangesWorthListingSeparately,
+  metroPurposeTotalsReconcileWithAuth,
+  metroPurposeYoYTrustedForLine,
   metroYoYDirectionFromRateDelta,
+  STACK_RATE_CHANGE_CALLOUT_MESSAGE,
 } from "@/lib/metroLevyYearOverYear";
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
 
@@ -380,7 +388,8 @@ describe("metroBillImpactCalloutForDistrictIds", () => {
     expect(
       metroBillImpactCalloutForDistrictIds(["a", "b"], districts),
     ).toMatchObject({
-      message: "Your tax bill has changed since last year.",
+      message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+      direction: "neutral",
     });
   });
 
@@ -404,7 +413,8 @@ describe("metroBillImpactCalloutForDistrictIds", () => {
 
     expect(metroBillImpactCalloutForDistrictIds(["a"], districts)).toMatchObject(
       {
-        message: "Your tax bill has changed since last year.",
+        message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+        direction: "neutral",
       },
     );
   });
@@ -443,31 +453,33 @@ describe("metroYoYDirectionFromRateDelta", () => {
 });
 
 describe("metroDistrictTileYoYSummary", () => {
-  it("prefers dollar headline when assessed delta is known", () => {
-    expect(metroDistrictTileYoYSummary(4, 0.617, true)).toMatchObject({
+  it("prefers mills headline with optional theoretical dollars", () => {
+    expect(metroDistrictTileYoYSummary(0.617, 4, true)).toMatchObject({
       direction: "more",
-      headline: "You're paying $4 more than last year.",
+      headline: "This part is 0.617 mills higher than last year.",
+      theoreticalDeltaDollars: 4,
     });
   });
 
   it("uses neutral copy when only purpose rows changed", () => {
     expect(metroDistrictTileYoYSummary(null, null, true)).toMatchObject({
       direction: "neutral",
-      headline: "This levy changed from last year.",
+      headline: "This part of your bill changed from last year.",
+      theoreticalDeltaDollars: null,
     });
   });
 
   it("uses neutral copy for a tiny mills delta that would display as 0.000", () => {
-    expect(metroDistrictTileYoYSummary(null, 0.0004, true)).toMatchObject({
+    expect(metroDistrictTileYoYSummary(0.0004, null, true)).toMatchObject({
       direction: "neutral",
-      headline: "This levy changed from last year.",
+      headline: "This part of your bill changed from last year.",
     });
   });
 
-  it("uses neutral copy when dollar delta is flat but purposes changed", () => {
+  it("omits theoretical dollars when the delta is flat", () => {
     expect(metroDistrictTileYoYSummary(0, 0, true)).toMatchObject({
       direction: "neutral",
-      headline: "This levy changed from last year.",
+      theoreticalDeltaDollars: null,
     });
   });
 });
@@ -503,5 +515,143 @@ describe("metroLgIdsWithPurposeMillChanges", () => {
       },
     ];
     expect(metroLgIdsWithPurposeMillChanges(lines).size).toBe(0);
+  });
+});
+
+describe("levyLineHasMillRateChange / billImpactCalloutForLevyLines", () => {
+  it("flags AUTH total mill changes from Levy % history", () => {
+    const line: CommittedLevyLine = {
+      id: "auth-line",
+      authority: "Englewood School",
+      mills: 51.071,
+      levyLineCode: "0101",
+    };
+    expect(levyLineHasMillRateChange(line)).toBe(true);
+    expect(billImpactCalloutForLevyLines([line])).toMatchObject({
+      direction: "neutral",
+      message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+    });
+  });
+
+  it("returns the same neutral callout when net mill deltas are down", () => {
+    const line: CommittedLevyLine = {
+      id: "fire",
+      authority: "Bennett Fire",
+      mills: 10.898,
+      levyLineCode: "4060",
+    };
+    expect(billImpactCalloutForLevyLines([line])).toMatchObject({
+      direction: "neutral",
+      message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+    });
+  });
+
+  it("returns null callout when AUTH code is absent from history", () => {
+    const line: CommittedLevyLine = {
+      id: "unknown",
+      authority: "Synthetic",
+      mills: 10,
+      levyLineCode: "9999",
+    };
+    expect(levyLineHasMillRateChange(line)).toBe(false);
+    expect(billImpactCalloutForLevyLines([line])).toBeNull();
+  });
+
+  it("returns neutral callout when any line changed", () => {
+    const line: CommittedLevyLine = {
+      id: "auth-line",
+      authority: "Englewood School",
+      mills: 51.071,
+      levyLineCode: "0101",
+    };
+    expect(billImpactCalloutForLevyLines([line])).toMatchObject({
+      direction: "neutral",
+      message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
+    });
+  });
+});
+
+describe("buildLevyLineYoYViewModel", () => {
+  it("uses AUTH totals with Tax Year labels when metro purposes are absent", () => {
+    const vm = buildLevyLineYoYViewModel(
+      {
+        levyLineCode: "0101",
+        dolaMatch: null,
+      },
+      100_000,
+    );
+    expect(vm).not.toBeNull();
+    expect(vm?.previousYearLabel).toBe("Tax Year 2024");
+    expect(vm?.currentYearLabel).toBe("Tax Year 2025");
+    expect(vm?.showPurposeDetails).toBe(false);
+    expect(vm?.totalCompare?.previousMillsLabel).toBe("50.071");
+    expect(vm?.totalCompare?.currentMillsLabel).toBe("51.071");
+    expect(vm?.summary.headline).toMatch(/1\.000 mills higher/i);
+    expect(vm?.summary.theoreticalDeltaDollars).toBe(100);
+  });
+
+  it("prefers metro purpose path when Public Info purposes changed", () => {
+    const vm = buildLevyLineYoYViewModel(
+      {
+        levyLineCode: "8888",
+        dolaMatch: {
+          method: "fuzzy",
+          confidence: "high",
+          lgId: "65214",
+        },
+      },
+      6800,
+    );
+    expect(vm).not.toBeNull();
+    expect(vm?.showPurposeDetails || vm?.purposeChanges.length).toBeTruthy();
+    expect(vm?.previousYearLabel).toBe("Tax Year 2024");
+    expect(vm?.currentYearLabel).toBe("Tax Year 2025");
+  });
+
+  it("falls back to AUTH totals when Public Info parts do not reconcile", () => {
+    const line = {
+      levyLineCode: "4570",
+      dolaMatch: {
+        method: "fuzzy" as const,
+        confidence: "high" as const,
+        lgId: "65416",
+      },
+    };
+    const skyRanch1 = metroDistrictForLgId("65416");
+    expect(skyRanch1).not.toBeNull();
+    expect(metroPurposeTotalsReconcileWithAuth(skyRanch1!)).toBe(false);
+    expect(metroPurposeYoYTrustedForLine(line)).toBe(false);
+    // 78.446 -> 76.08 = -2.366 mills (not the bogus -120 from bad prior ops).
+    expect(levyLineMillDelta(line)).toBeCloseTo(-2.366, 3);
+
+    const vm = buildLevyLineYoYViewModel(line, 500_000);
+    expect(vm).not.toBeNull();
+    expect(vm?.showPurposeDetails).toBe(false);
+    expect(vm?.purposeChanges).toHaveLength(0);
+    expect(vm?.totalCompare?.previousMillsLabel).toBe("78.446");
+    expect(vm?.totalCompare?.currentMillsLabel).toBe("76.080");
+    expect(vm?.totalCompare?.differenceMillsLabel).toBe("-2.366");
+  });
+
+  it("keeps metro purpose path when parts reconcile to AUTH (Sky Ranch #3)", () => {
+    const line = {
+      levyLineCode: "4571",
+      dolaMatch: {
+        method: "fuzzy" as const,
+        confidence: "high" as const,
+        lgId: "65417",
+      },
+    };
+    const skyRanch3 = metroDistrictForLgId("65417");
+    expect(skyRanch3).not.toBeNull();
+    expect(metroPurposeTotalsReconcileWithAuth(skyRanch3!)).toBe(true);
+    expect(metroPurposeYoYTrustedForLine(line)).toBe(true);
+    expect(levyLineMillDelta(line)).toBeCloseTo(-0.431, 3);
+
+    const vm = buildLevyLineYoYViewModel(line, 500_000);
+    expect(vm).not.toBeNull();
+    expect(vm?.totalCompare?.previousMillsLabel).toBe("119.387");
+    expect(vm?.totalCompare?.currentMillsLabel).toBe("118.956");
+    expect(vm?.purposeChanges.length).toBeGreaterThan(0);
   });
 });

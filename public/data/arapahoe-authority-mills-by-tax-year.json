@@ -1,0 +1,3880 @@
+{
+  "_meta": {
+    "bundledAsOf": "2026-07-20",
+    "taxYears": [
+      2024,
+      2025
+    ],
+    "joinKey": "Stack line `code` (AUTH). Look up authorities[code].millsByTaxYear.",
+    "pdfTagNote": "Levy % PDF TAG is a short tax-area code. It is not the same as Levy.aspx tagId in arapahoe-levy-stacks-by-tag-id.json. Exception maps use PDF TAG keys for audit; app YoY joins AUTH totals.",
+    "yearSemantics": "Numbers are Tax Year mills from the county Levy % PDFs. Do not relabel Tax Year 2025 as budget year 2026.",
+    "sources": [
+      {
+        "taxYear": 2024,
+        "type": "taxing_district_levy_percentage",
+        "title": "Taxing District Levy Percentage - Tax Year 2024",
+        "file": "supporting-data/certs/2024 Taxing District Levy Percentages.pdf"
+      },
+      {
+        "taxYear": 2025,
+        "type": "taxing_district_levy_percentage",
+        "title": "Taxing District Levy Percentage - Tax Year 2025",
+        "file": "supporting-data/certs/2025 Taxing District Levy Percentage.pdf"
+      }
+    ],
+    "statsByTaxYear": {
+      "2024": {
+        "rowCount": 12732,
+        "uniqueAuthorityCount": 542,
+        "uniformAuthorityCount": 542,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      },
+      "2025": {
+        "rowCount": 13862,
+        "uniqueAuthorityCount": 545,
+        "uniformAuthorityCount": 544,
+        "exceptionAuthorityCount": 1,
+        "tagAuthConflictCount": 2
+      }
+    }
+  },
+  "authorities": {
+    "0101": {
+      "name": "ENGLEWOOD SCHOOL DIST # 1",
+      "millsByTaxYear": {
+        "2024": 50.071,
+        "2025": 51.071
+      }
+    },
+    "0201": {
+      "name": "SHERIDAN SCHOOL DIST # 2",
+      "millsByTaxYear": {
+        "2024": 41.21,
+        "2025": 41.947
+      }
+    },
+    "0501": {
+      "name": "CHERRY CRK SCHOOL DIST 5",
+      "millsByTaxYear": {
+        "2024": 53.962,
+        "2025": 54.108
+      }
+    },
+    "0601": {
+      "name": "LITTLETON SCHOOL DIST # 6",
+      "millsByTaxYear": {
+        "2024": 64.793,
+        "2025": 65.193
+      }
+    },
+    "0701": {
+      "name": "DEER TRAIL SCHOOLS # 26J",
+      "millsByTaxYear": {
+        "2024": 37.067,
+        "2025": 36.679
+      }
+    },
+    "0801": {
+      "name": "AURORA SCHOOL DIST # 28J",
+      "millsByTaxYear": {
+        "2024": 71.331,
+        "2025": 73.186
+      }
+    },
+    "0901": {
+      "name": "BENNETT SCHOOL DIST # 29",
+      "millsByTaxYear": {
+        "2024": 25.328,
+        "2025": 25.38
+      }
+    },
+    "1001": {
+      "name": "STRASBURG SCHOOLS # 31J",
+      "millsByTaxYear": {
+        "2024": 40.758,
+        "2025": 38.531
+      }
+    },
+    "1101": {
+      "name": "BYERS SCHOOL DIST # 32J",
+      "millsByTaxYear": {
+        "2024": 30.647,
+        "2025": 30.189
+      }
+    },
+    "2998": {
+      "name": "ARAPAHOE COUNTY",
+      "millsByTaxYear": {
+        "2024": 15.885,
+        "2025": 15.959
+      }
+    },
+    "2999": {
+      "name": "DEVELOPMENTAL DISABILITY",
+      "millsByTaxYear": {
+        "2024": 1.0,
+        "2025": 1.0
+      }
+    },
+    "3001": {
+      "name": "CITY OF AURORA",
+      "millsByTaxYear": {
+        "2024": 6.613,
+        "2025": 7.087
+      }
+    },
+    "3002": {
+      "name": "TOWN OF BOW MAR",
+      "millsByTaxYear": {
+        "2024": 23.37,
+        "2025": 14.882
+      }
+    },
+    "3003": {
+      "name": "CHERRY HILLS VILLAGE",
+      "millsByTaxYear": {
+        "2024": 14.722,
+        "2025": 14.722
+      }
+    },
+    "3004": {
+      "name": "COLUMBINE VALLEY",
+      "millsByTaxYear": {
+        "2024": 7.363,
+        "2025": 7.298
+      }
+    },
+    "3005": {
+      "name": "DEER TRAIL",
+      "millsByTaxYear": {
+        "2024": 13.453,
+        "2025": 12.916
+      }
+    },
+    "3006": {
+      "name": "CITY OF ENGLEWOOD",
+      "millsByTaxYear": {
+        "2024": 11.783,
+        "2025": 9.736
+      }
+    },
+    "3007": {
+      "name": "CITY OF GLENDALE",
+      "millsByTaxYear": {
+        "2024": 18.67,
+        "2025": 18.67
+      }
+    },
+    "3008": {
+      "name": "CITY OF GREENWOOD VILLAGE",
+      "millsByTaxYear": {
+        "2024": 2.932,
+        "2025": 2.932
+      }
+    },
+    "3009": {
+      "name": "CITY OF LITTLETON",
+      "millsByTaxYear": {
+        "2024": 2.0,
+        "2025": 2.0
+      }
+    },
+    "3010": {
+      "name": "CITY OF SHERIDAN",
+      "millsByTaxYear": {
+        "2024": 16.533,
+        "2025": 16.634
+      }
+    },
+    "3011": {
+      "name": "TOWN OF FOXFIELD",
+      "millsByTaxYear": {
+        "2024": 4.982,
+        "2025": 4.982
+      }
+    },
+    "3012": {
+      "name": "TOWN OF BENNETT",
+      "millsByTaxYear": {
+        "2024": 11.95,
+        "2025": 11.33
+      }
+    },
+    "3013": {
+      "name": "CITY OF CENTENNIAL",
+      "millsByTaxYear": {
+        "2024": 5.002,
+        "2025": 5.076
+      }
+    },
+    "4000": {
+      "name": "THE AVENUES METRO DIS #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4001": {
+      "name": "THE AVENUES METRO DIS #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4002": {
+      "name": "THE AVENUES METRO DIS #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4003": {
+      "name": "THE AVENUES METRO DIS #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4004": {
+      "name": "THE AVENUES METRO DIS #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4006": {
+      "name": "ADONEA METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 50.187,
+        "2025": 50.804
+      }
+    },
+    "4007": {
+      "name": "ABILENE STN METRO DIS #1",
+      "millsByTaxYear": {
+        "2024": 40.0,
+        "2025": 40.0
+      }
+    },
+    "4008": {
+      "name": "ABILENE STN METRO DIS #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4011": {
+      "name": "AGATE CONSERVATION DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4012": {
+      "name": "ARAPAHOE COUNTY L.E.A.",
+      "millsByTaxYear": {
+        "2024": 4.982,
+        "2025": 4.982
+      }
+    },
+    "4014": {
+      "name": "ARAPAHOE CTY RECREATION",
+      "millsByTaxYear": {
+        "2024": 0.615,
+        "2025": 0.593
+      }
+    },
+    "4015": {
+      "name": "ALAMEDA CTR URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4020": {
+      "name": "ANTELOPE WATER SYSTEM GID",
+      "millsByTaxYear": {
+        "2024": 21.236,
+        "2025": 20.754
+      }
+    },
+    "4023": {
+      "name": "ARAP ESTATES WATER DIST DISSOLVED 2018",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4024": {
+      "name": "ARAPAHOE LAKE PUBLIC PARK",
+      "millsByTaxYear": {
+        "2024": 20.38,
+        "2025": 20.38
+      }
+    },
+    "4025": {
+      "name": "TRAILS PARK & REC DIST",
+      "millsByTaxYear": {
+        "2024": 6.14,
+        "2025": 6.14
+      }
+    },
+    "4026": {
+      "name": "ARAPAHOE LIBRARY DISTRICT",
+      "millsByTaxYear": {
+        "2024": 5.715,
+        "2025": 5.719
+      }
+    },
+    "4035": {
+      "name": "ARAPAHOE W & W PID",
+      "millsByTaxYear": {
+        "2024": 7.9,
+        "2025": 7.5
+      }
+    },
+    "4036": {
+      "name": "AURORA CRSRDS METRO DIS 1",
+      "millsByTaxYear": {
+        "2024": 10.002,
+        "2025": 10.74
+      }
+    },
+    "4037": {
+      "name": "AURORA CRSRDS METRO DIS 2",
+      "millsByTaxYear": {
+        "2024": 63.023,
+        "2025": 65.517
+      }
+    },
+    "4038": {
+      "name": "CROSSROADS EAST METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 30.0,
+        "2025": 64.444
+      }
+    },
+    "4039": {
+      "name": "AURORA CROSSROADS METRO DISTRICT NO 2 BO",
+      "millsByTaxYear": {
+        "2024": 53.021,
+        "2025": 54.777
+      }
+    },
+    "4042": {
+      "name": "ANTELOPE HLS GEN IMP DIST",
+      "millsByTaxYear": {
+        "2024": 36.71,
+        "2025": 36.71
+      }
+    },
+    "4043": {
+      "name": "AURORA CENTRETECH METRO",
+      "millsByTaxYear": {
+        "2024": 38.197,
+        "2025": 39.148
+      }
+    },
+    "4044": {
+      "name": "ASPEN GROVE BUSINESS IMP",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4045": {
+      "name": "ASPEN BUSINESS PARK METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4046": {
+      "name": "ASPEN GROVE BID BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4047": {
+      "name": "AUR CTY CNTR II URA AREA 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4048": {
+      "name": "BEACON POINT METRO DIST",
+      "millsByTaxYear": {
+        "2024": 60.0,
+        "2025": 64.612
+      }
+    },
+    "4049": {
+      "name": "AUR CTY CNTR II URA AREA 2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4050": {
+      "name": "AUR CTY CNTR II URA AREA 3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4051": {
+      "name": "AUR CTY CNTR II URA AREA 4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4052": {
+      "name": "LITTLETON DDA LEVY",
+      "millsByTaxYear": {
+        "2024": 3.0,
+        "2025": 3.0
+      }
+    },
+    "4053": {
+      "name": "LITTLETON DDA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4055": {
+      "name": "BELLEVIEW PLACE METRO DIST",
+      "millsByTaxYear": {
+        "2024": 131.513,
+        "2025": 136.999
+      }
+    },
+    "4060": {
+      "name": "BENNETT FIRE PROTECTION",
+      "millsByTaxYear": {
+        "2024": 13.233,
+        "2025": 10.898
+      }
+    },
+    "4065": {
+      "name": "BIJOU CREEK METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 72.378,
+        "2025": 39.545
+      }
+    },
+    "4070": {
+      "name": "BOW MAR WATER & SAN DIST",
+      "millsByTaxYear": {
+        "2024": 11.317,
+        "2025": 11.317
+      }
+    },
+    "4071": {
+      "name": "BRAVADA NEHER METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4072": {
+      "name": "BRAVADA NEHER METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4073": {
+      "name": "BRAVADA NEHER METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4074": {
+      "name": "BRAVADA NEHER METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4075": {
+      "name": "BRISTOL METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 81.857,
+        "2025": 78.38
+      }
+    },
+    "4076": {
+      "name": "BRAVADA NEHER METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4081": {
+      "name": "BCKGHM UR AUTH TIF AREA 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4082": {
+      "name": "BCKGHM UR AUTH TIF AREA 2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4083": {
+      "name": "BUCKINGHAM URA AREA 3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4085": {
+      "name": "BYERS FIRE PROTECTION",
+      "millsByTaxYear": {
+        "2024": 9.774,
+        "2025": 9.774
+      }
+    },
+    "4086": {
+      "name": "BYERS PARK & REC DIST",
+      "millsByTaxYear": {
+        "2024": 2.589,
+        "2025": 2.589
+      }
+    },
+    "4090": {
+      "name": "BYERS WATER & SAN DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4100": {
+      "name": "SMFR FIRE PROTECTION DISTRICT",
+      "millsByTaxYear": {
+        "2024": 9.29,
+        "2025": 12.25
+      }
+    },
+    "4115": {
+      "name": "CASTLEWOOD W&S DIST A",
+      "millsByTaxYear": {
+        "2024": 0.864,
+        "2025": 0.879
+      }
+    },
+    "4116": {
+      "name": "CASTLEWOOD W&S DIST B",
+      "millsByTaxYear": {
+        "2024": 0.593,
+        "2025": 0.593
+      }
+    },
+    "4117": {
+      "name": "CASTLEWOOD W&S DIST C",
+      "millsByTaxYear": {
+        "2024": 0.512,
+        "2025": 0.584
+      }
+    },
+    "4118": {
+      "name": "CASTLEWOOD W&S DIST D",
+      "millsByTaxYear": {
+        "2024": 0.589,
+        "2025": 0.649
+      }
+    },
+    "4119": {
+      "name": "CASTLEWOOD W&S DIST E",
+      "millsByTaxYear": {
+        "2024": 0.235,
+        "2025": 0.275
+      }
+    },
+    "4122": {
+      "name": "CENTENNIAL DOWNS METRO",
+      "millsByTaxYear": {
+        "2024": 12.207,
+        "2025": 0.0
+      }
+    },
+    "4123": {
+      "name": "CENTENNIAL 25 METRO DIST DISSOLVED 2017",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4124": {
+      "name": "CENTENNIAL 360 METRO DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4125": {
+      "name": "CENTENNIAL URA - SGLENN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4126": {
+      "name": "CHARLOUS PARK WATER DIST DISSOLVED 2019",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4129": {
+      "name": "CHAPARRAL METRO DIST",
+      "millsByTaxYear": {
+        "2024": 9.877,
+        "2025": 11.047
+      }
+    },
+    "4131": {
+      "name": "CHERRY CREEK BASIN AUTH",
+      "millsByTaxYear": {
+        "2024": 0.43,
+        "2025": 0.45
+      }
+    },
+    "4133": {
+      "name": "CC CORP CTR - GLNDL URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4134": {
+      "name": "CC CORP CENTER METRO DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4135": {
+      "name": "CHERRY CRK RQT CLB GID",
+      "millsByTaxYear": {
+        "2024": 17.105,
+        "2025": 17.105
+      }
+    },
+    "4141": {
+      "name": "CHERRY CRK VALLEY WAT & S",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4150": {
+      "name": "CHERRY CREEK VILLAGE WTR",
+      "millsByTaxYear": {
+        "2024": 2.403,
+        "2025": 2.802
+      }
+    },
+    "4153": {
+      "name": "CHERRY CREEK VISTA P&R-A",
+      "millsByTaxYear": {
+        "2024": 8.644,
+        "2025": 9.007
+      }
+    },
+    "4154": {
+      "name": "CHERRY CREEK VISTA P&R-B",
+      "millsByTaxYear": {
+        "2024": 9.149,
+        "2025": 9.545
+      }
+    },
+    "4156": {
+      "name": "CHERRY HILLS CITY MET DIS",
+      "millsByTaxYear": {
+        "2024": 97.888,
+        "2025": 81.773
+      }
+    },
+    "4161": {
+      "name": "CHERRY HILLS FIRE BOND",
+      "millsByTaxYear": {
+        "2024": 0.5,
+        "2025": 0.5
+      }
+    },
+    "4170": {
+      "name": "CHERRY HILLS HGTS WATER",
+      "millsByTaxYear": {
+        "2024": 5.201,
+        "2025": 5.11
+      }
+    },
+    "4171": {
+      "name": "CHERRY HILLS HEIGHTS W&SA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4172": {
+      "name": "CHERRY HILLS NO METRO",
+      "millsByTaxYear": {
+        "2024": 6.781,
+        "2025": 7.285
+      }
+    },
+    "4191": {
+      "name": "CITY OF CH. HILLS SAN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4192": {
+      "name": "E-470 COMMERCIAL METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4193": {
+      "name": "E-470 COMMERCIAL METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4194": {
+      "name": "E-470 COMMERCIAL METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4195": {
+      "name": "CITYSET METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4196": {
+      "name": "CITYSET METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4197": {
+      "name": "CITYSET UR AREA GLENDALE",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4198": {
+      "name": "CHARLOU PARK 3RD FILING GID",
+      "millsByTaxYear": {
+        "2024": 10.0,
+        "2025": 10.0
+      }
+    },
+    "4206": {
+      "name": "CHERRY PARK GEN IMP DIST",
+      "millsByTaxYear": {
+        "2024": 3.771,
+        "2025": 4.437
+      }
+    },
+    "4213": {
+      "name": "COAL CREEK METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4214": {
+      "name": "COAL CREEK METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4215": {
+      "name": "COAL CREEK METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4216": {
+      "name": "COAL CREEK METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4217": {
+      "name": "COAL CREEK METRO DIST #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4219": {
+      "name": "CHERRYVALE SANITATION",
+      "millsByTaxYear": {
+        "2024": 9.75,
+        "2025": 8.75
+      }
+    },
+    "4223": {
+      "name": "CITADEL ON COLFAX BID",
+      "millsByTaxYear": {
+        "2024": 71.0,
+        "2025": 74.613
+      }
+    },
+    "4225": {
+      "name": "CORNERSTAR METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 62.316,
+        "2025": 69.424
+      }
+    },
+    "4226": {
+      "name": "CORNERSTAR MD BONDS ONLY",
+      "millsByTaxYear": {
+        "2024": 39.123,
+        "2025": 42.508
+      }
+    },
+    "4228": {
+      "name": "COBBLEWOOD GID",
+      "millsByTaxYear": {
+        "2024": 23.0,
+        "2025": 23.0
+      }
+    },
+    "4229": {
+      "name": "COLFAX SABLE METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 71.0,
+        "2025": 77.538
+      }
+    },
+    "4230": {
+      "name": "COLUMBIA METRO DIST",
+      "millsByTaxYear": {
+        "2024": 1.64,
+        "2025": 1.64
+      }
+    },
+    "4231": {
+      "name": "COPPERLEAF METRO DIST. #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4232": {
+      "name": "COPPERLEAF METRO DIST. #2",
+      "millsByTaxYear": {
+        "2024": 27.25,
+        "2025": 27.25
+      }
+    },
+    "4233": {
+      "name": "COPPERLEAF METRO DIST. #3",
+      "millsByTaxYear": {
+        "2024": 67.418,
+        "2025": 72.219
+      }
+    },
+    "4234": {
+      "name": "COPPERLEAF METRO DIST. #4",
+      "millsByTaxYear": {
+        "2024": 55.431,
+        "2025": 55.602
+      }
+    },
+    "4235": {
+      "name": "COPPERLEAF METRO DIST. #5",
+      "millsByTaxYear": {
+        "2024": 60.0,
+        "2025": 36.166
+      }
+    },
+    "4236": {
+      "name": "COPPERLEAF METRO DIST. #6",
+      "millsByTaxYear": {
+        "2024": 68.04,
+        "2025": 72.7
+      }
+    },
+    "4237": {
+      "name": "COPPERLEAF METRO DIST. #7",
+      "millsByTaxYear": {
+        "2024": 60.0,
+        "2025": 60.0
+      }
+    },
+    "4238": {
+      "name": "COPPERLEAF METRO DIST. #8",
+      "millsByTaxYear": {
+        "2024": 60.0,
+        "2025": 60.0
+      }
+    },
+    "4239": {
+      "name": "COPPERLEAF METRO DIS #9",
+      "millsByTaxYear": {
+        "2024": 67.858,
+        "2025": 71.642
+      }
+    },
+    "4240": {
+      "name": "COLUMBINE WATER & SAN",
+      "millsByTaxYear": {
+        "2024": 2.755,
+        "2025": 2.769
+      }
+    },
+    "4241": {
+      "name": "COLUMBINE SQUARE URA DISSOLVED 2020",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4242": {
+      "name": "COMANCHE XING METRO DIST",
+      "millsByTaxYear": {
+        "2024": 49.367,
+        "2025": 50.0
+      }
+    },
+    "4244": {
+      "name": "COMMONS AT EAST CREEK METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 100.923,
+        "2025": 99.364
+      }
+    },
+    "4245": {
+      "name": "CONSERVATORY METRO DIS",
+      "millsByTaxYear": {
+        "2024": 35.951,
+        "2025": 35.951
+      }
+    },
+    "4246": {
+      "name": "COTTONWOOD CREEK METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 45.0,
+        "2025": 45.0
+      }
+    },
+    "4247": {
+      "name": "COTTONWOOD CREEK METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 45.0
+      }
+    },
+    "4248": {
+      "name": "COPE CONSERVATION DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4249": {
+      "name": "COTTONWOOD CREEK METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 21.481
+      }
+    },
+    "4250": {
+      "name": "COTTONWOOD CREEK METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 74.946
+      }
+    },
+    "4251": {
+      "name": "COTTONWOOD CREEK METRO DIST #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 21.481
+      }
+    },
+    "4252": {
+      "name": "COUNTRY HOMES METRO P-A",
+      "millsByTaxYear": {
+        "2024": 14.65,
+        "2025": 13.282
+      }
+    },
+    "4253": {
+      "name": "COUNTRY HOMES METRO P-B",
+      "millsByTaxYear": {
+        "2024": 5.322,
+        "2025": 4.666
+      }
+    },
+    "4256": {
+      "name": "CROSS CREEK METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 37.801,
+        "2025": 39.702
+      }
+    },
+    "4258": {
+      "name": "FITZ GATEWAY A URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4259": {
+      "name": "FITZ GATEWAY B URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4260": {
+      "name": "CUNNINGHAM FIRE DIST DISSOLVED 2020",
+      "millsByTaxYear": {
+        "2024": 9.25,
+        "2025": 9.25
+      }
+    },
+    "4262": {
+      "name": "EAST CREEK CONSOLIDATED METRO DISTRICT T",
+      "millsByTaxYear": {
+        "2024": 74.504,
+        "2025": 29.174
+      }
+    },
+    "4263": {
+      "name": "EAST CREEK CONSOLIDATED METRO DISTRICT T",
+      "millsByTaxYear": {
+        "2024": 42.169,
+        "2025": 42.169
+      }
+    },
+    "4264": {
+      "name": "FITZ VILLAGE MD #4 DISSOLVED 2024",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4266": {
+      "name": "GLENDALE DDA LEVY",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4267": {
+      "name": "DEER TRAIL CONSERVATION",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4268": {
+      "name": "DEER TRAIL FIRE DISTRICT",
+      "millsByTaxYear": {
+        "2024": 7.032,
+        "2025": 7.032
+      }
+    },
+    "4269": {
+      "name": "EASTERN HILLS METRO DIS#9",
+      "millsByTaxYear": {
+        "2024": 20.0,
+        "2025": 20.0
+      }
+    },
+    "4270": {
+      "name": "DEVONSHIRE HGTS WAT & SAN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4271": {
+      "name": "EASTERN ADCO METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4272": {
+      "name": "EASTERN HILLS METR DIS#10",
+      "millsByTaxYear": {
+        "2024": 60.0,
+        "2025": 51.035
+      }
+    },
+    "4273": {
+      "name": "DOVE VALLEY METRO DIST",
+      "millsByTaxYear": {
+        "2024": 10.551,
+        "2025": 10.114
+      }
+    },
+    "4274": {
+      "name": "DOVE VALLEY METRO BONDS",
+      "millsByTaxYear": {
+        "2024": 5.175,
+        "2025": 5.175
+      }
+    },
+    "4275": {
+      "name": "E. ARAPAHOE METRO DIST",
+      "millsByTaxYear": {
+        "2024": 9.792,
+        "2025": 9.792
+      }
+    },
+    "4276": {
+      "name": "EASTERN HILLS METRO DIST1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4277": {
+      "name": "EASTERN HILLS METRO DIST2",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4278": {
+      "name": "FOUNDRY METRO DIST #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4279": {
+      "name": "EASTERN HILLS METRO DIST4",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4280": {
+      "name": "EAST VIRGINIA VILLAGE METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 133.733,
+        "2025": 132.607
+      }
+    },
+    "4281": {
+      "name": "EAGLE BEND METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4282": {
+      "name": "EAGLE BEND METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 19.5,
+        "2025": 18.5
+      }
+    },
+    "4284": {
+      "name": "EASTERN HILLS METRO DIST5",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4285": {
+      "name": "EASTERN HILLS METRO DIST6",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4286": {
+      "name": "EASTERN HILLS METRO DIST7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4287": {
+      "name": "EASTERN HILLS MET DIST #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4288": {
+      "name": "EASTERN HILLS METR DIS#11",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4289": {
+      "name": "EASTERN HILLS METR DIS#12",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4290": {
+      "name": "E. CHERRY CREEK WATER & S",
+      "millsByTaxYear": {
+        "2024": 4.273,
+        "2025": 4.468
+      }
+    },
+    "4291": {
+      "name": "E. CHERRY CRK VAL WATER",
+      "millsByTaxYear": {
+        "2024": 2.755,
+        "2025": 3.311
+      }
+    },
+    "4292": {
+      "name": "E CHERRY HILLS WATER DISSOLVED 2014",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4293": {
+      "name": "E.CHRY CRK VAL W&S BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4295": {
+      "name": "E QUINCY HLNDS METRO DIST",
+      "millsByTaxYear": {
+        "2024": 14.142,
+        "2025": 14.142
+      }
+    },
+    "4296": {
+      "name": "EASTERN HILLS METR DIS#13",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4297": {
+      "name": "E. SMOKY HILL METRO #1",
+      "millsByTaxYear": {
+        "2024": 20.4,
+        "2025": 20.4
+      }
+    },
+    "4298": {
+      "name": "E. SMOKY HILL METRO #2",
+      "millsByTaxYear": {
+        "2024": 9.866,
+        "2025": 9.866
+      }
+    },
+    "4299": {
+      "name": "EASTERN HILLS METR DIS#14",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4300": {
+      "name": "E. VALLEY METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 14.357,
+        "2025": 14.162
+      }
+    },
+    "4302": {
+      "name": "ESTANCIA METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 62.13,
+        "2025": 66.102
+      }
+    },
+    "4303": {
+      "name": "EASTERN HILLS METR DIS#15",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4304": {
+      "name": "EASTERN HILLS METRO DISTRICT #21",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4305": {
+      "name": "EASTERN HILLS METRO DISTRICT #22",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4306": {
+      "name": "EASTERN HILLS METRO DISTRICT #23",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 4.0
+      }
+    },
+    "4307": {
+      "name": "ENG IRONWORKS TIF DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4308": {
+      "name": "FIDDLERS BUSINESS IM DIST",
+      "millsByTaxYear": {
+        "2024": 76.0,
+        "2025": 88.0
+      }
+    },
+    "4309": {
+      "name": "FITZSIMONS URB REN TAX IN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4310": {
+      "name": "GLENDALE DDA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4311": {
+      "name": "EASTERN HILLS METR DIS#16",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4312": {
+      "name": "EASTERN HILLS METR DIS#17",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4313": {
+      "name": "EASTERN HILLS METR DIS#18",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4314": {
+      "name": "EASTERN HILLS METR DIS#19",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4315": {
+      "name": "FOXFIELD METRO DIST #1 DISSOLVED 2019",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4316": {
+      "name": "EASTERN HILLS METR DIS#20",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4317": {
+      "name": "EAGLE'S NEST METRO DIST",
+      "millsByTaxYear": {
+        "2024": 26.039,
+        "2025": 30.779
+      }
+    },
+    "4318": {
+      "name": "FOUNDRY METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 58.055,
+        "2025": 58.055
+      }
+    },
+    "4319": {
+      "name": "FOUNDRY METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4320": {
+      "name": "FOXRIDGE GEN IMP DIST",
+      "millsByTaxYear": {
+        "2024": 5.305,
+        "2025": 4.864
+      }
+    },
+    "4321": {
+      "name": "FITZSIMONS VLG MET DIS #1",
+      "millsByTaxYear": {
+        "2024": 63.113,
+        "2025": 64.777
+      }
+    },
+    "4322": {
+      "name": "FITZSIMONS VLG MET DIS #2",
+      "millsByTaxYear": {
+        "2024": 63.176,
+        "2025": 64.777
+      }
+    },
+    "4323": {
+      "name": "FITZSIMONS VLG MET DIS #3",
+      "millsByTaxYear": {
+        "2024": 62.138,
+        "2025": 65.505
+      }
+    },
+    "4324": {
+      "name": "FOREST TRACE METRO DIS #1",
+      "millsByTaxYear": {
+        "2024": 16.655,
+        "2025": 16.655
+      }
+    },
+    "4325": {
+      "name": "FOREST TRACE METRO DIS #2",
+      "millsByTaxYear": {
+        "2024": 4.0,
+        "2025": 4.0
+      }
+    },
+    "4326": {
+      "name": "FOREST TRACE METRO DIS #3",
+      "millsByTaxYear": {
+        "2024": 58.603,
+        "2025": 59.832
+      }
+    },
+    "4327": {
+      "name": "FOUNDRY METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4328": {
+      "name": "FOUNDRY METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4329": {
+      "name": "FOUNDRY METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4330": {
+      "name": "GALLERIA METRO DIST",
+      "millsByTaxYear": {
+        "2024": 37.0,
+        "2025": 5.0
+      }
+    },
+    "4331": {
+      "name": "GALLERIA METRO DIST BONDS",
+      "millsByTaxYear": {
+        "2024": 35.0,
+        "2025": 0.0
+      }
+    },
+    "4332": {
+      "name": "FOUNDRY METRO DISTRICT #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4333": {
+      "name": "FOUNDRY METRO DISTRICT #7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4334": {
+      "name": "GLENDALE URBAN RNWL AUTH",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4335": {
+      "name": "GRNWD ATHL CLUB METRO DIS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4336": {
+      "name": "GREENWOOD METRO DIS BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4337": {
+      "name": "HAVANA BUSINESS IMP DIS",
+      "millsByTaxYear": {
+        "2024": 4.5,
+        "2025": 4.5
+      }
+    },
+    "4338": {
+      "name": "GLDSMTH MTR DST BLK K SUB",
+      "millsByTaxYear": {
+        "2024": 38.0,
+        "2025": 38.0
+      }
+    },
+    "4339": {
+      "name": "GOLDSMITH METRO BOND",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4340": {
+      "name": "GOLDSMITH GULCH SAN",
+      "millsByTaxYear": {
+        "2024": 1.421,
+        "2025": 1.551
+      }
+    },
+    "4341": {
+      "name": "GOLDSMITH METRO DIST",
+      "millsByTaxYear": {
+        "2024": 7.651,
+        "2025": 7.767
+      }
+    },
+    "4342": {
+      "name": "GOODMAN METRO DIST",
+      "millsByTaxYear": {
+        "2024": 20.25,
+        "2025": 19.25
+      }
+    },
+    "4343": {
+      "name": "GREENWOOD NORTH METRO",
+      "millsByTaxYear": {
+        "2024": 7.05,
+        "2025": 7.05
+      }
+    },
+    "4344": {
+      "name": "GREENWOOD CONSOLIDATED METRO SOUTH",
+      "millsByTaxYear": {
+        "2024": 0.01,
+        "2025": 0.01
+      }
+    },
+    "4345": {
+      "name": "GREENWOOD CONSOLIDATED METRO NORTH",
+      "millsByTaxYear": {
+        "2024": 4.0,
+        "2025": 5.0
+      }
+    },
+    "4347": {
+      "name": "GREENWOOD S. METRO DEBT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4348": {
+      "name": "GREENWOOD VILLAGE SEWER DISSOLVED 2017",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4349": {
+      "name": "HAVANA WATER & SANITATION",
+      "millsByTaxYear": {
+        "2024": 3.812,
+        "2025": 4.131
+      }
+    },
+    "4350": {
+      "name": "HI-LIN WATER & SANITATION",
+      "millsByTaxYear": {
+        "2024": 2.196,
+        "2025": 2.322
+      }
+    },
+    "4351": {
+      "name": "HERITAGE GREENS METRO",
+      "millsByTaxYear": {
+        "2024": 9.896,
+        "2025": 9.734
+      }
+    },
+    "4352": {
+      "name": "GRAND AVE METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 71.283,
+        "2025": 73.379
+      }
+    },
+    "4353": {
+      "name": "HEATHER GARDENS METRO",
+      "millsByTaxYear": {
+        "2024": 11.105,
+        "2025": 12.178
+      }
+    },
+    "4355": {
+      "name": "BLACKSTONE METRO DIST",
+      "millsByTaxYear": {
+        "2024": 55.242,
+        "2025": 55.309
+      }
+    },
+    "4356": {
+      "name": "HEATHER RIDGE METR DIS #1",
+      "millsByTaxYear": {
+        "2024": 27.97,
+        "2025": 27.97
+      }
+    },
+    "4357": {
+      "name": "HIGHLINE BUSINESS IM DIST",
+      "millsByTaxYear": {
+        "2024": 4.636,
+        "2025": 0.0
+      }
+    },
+    "4358": {
+      "name": "HIGHLAND PARK METRO",
+      "millsByTaxYear": {
+        "2024": 8.822,
+        "2025": 9.31
+      }
+    },
+    "4359": {
+      "name": "HIGHLINE GLEN METRO DIST DISSOLVED 2019",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4360": {
+      "name": "HILLCREST WATER & SAN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4361": {
+      "name": "HORIZON METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4362": {
+      "name": "HORIZON METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 80.78,
+        "2025": 74.996
+      }
+    },
+    "4363": {
+      "name": "HORIZON METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 50.764,
+        "2025": 53.762
+      }
+    },
+    "4364": {
+      "name": "HORIZON METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 50.0,
+        "2025": 53.762
+      }
+    },
+    "4365": {
+      "name": "HILLS AT CHERRY CREEK MD",
+      "millsByTaxYear": {
+        "2024": 8.251,
+        "2025": 8.49
+      }
+    },
+    "4366": {
+      "name": "HORIZON METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 80.0,
+        "2025": 16.514
+      }
+    },
+    "4367": {
+      "name": "HORIZON METRO DISTRICT #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4368": {
+      "name": "HORIZON METRO DISTRICT #7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4369": {
+      "name": "HORIZON METRO DISTRICT #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4370": {
+      "name": "HORIZON METRO DISTRICT #9",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4371": {
+      "name": "INVERNESS W&S BONDS N METRO",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4372": {
+      "name": "INVRNSS MET IMP DST BONDS N METRO",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4373": {
+      "name": "HORIZON METRO DSTRT #10",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4374": {
+      "name": "PRAIRIE POINT METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 86.591,
+        "2025": 86.591
+      }
+    },
+    "4375": {
+      "name": "PRAIRIE POINT METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 86.591,
+        "2025": 86.591
+      }
+    },
+    "4376": {
+      "name": "PRAIRIE POINT METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 86.591,
+        "2025": 86.591
+      }
+    },
+    "4377": {
+      "name": "INVERNESS N METRO DSTRT",
+      "millsByTaxYear": {
+        "2024": 11.4,
+        "2025": 11.4
+      }
+    },
+    "4378": {
+      "name": "INVERNESS SANITATION DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4379": {
+      "name": "INVERNESS WATER BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4380": {
+      "name": "HOLLY HILLS WATER & SAN",
+      "millsByTaxYear": {
+        "2024": 2.716,
+        "2025": 2.716
+      }
+    },
+    "4381": {
+      "name": "INVERNESS WATER & SAN",
+      "millsByTaxYear": {
+        "2024": 1.25,
+        "2025": 0.5
+      }
+    },
+    "4382": {
+      "name": "INVERNESS METRO IMPROVE",
+      "millsByTaxYear": {
+        "2024": 4.21,
+        "2025": 4.56
+      }
+    },
+    "4383": {
+      "name": "INTERSTATE S METRO DIST DISSOLVED",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4384": {
+      "name": "LANDMARK METRO DISSOLVED 2019",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4385": {
+      "name": "LANDMARK METRO BOND DISSOLVED 2019",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4386": {
+      "name": "KENT PLACE METRO DIS #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4387": {
+      "name": "KENT PLACE METRO DIS #2",
+      "millsByTaxYear": {
+        "2024": 48.63,
+        "2025": 48.333
+      }
+    },
+    "4388": {
+      "name": "HORIZON UPTOWN URB RNWL A",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4389": {
+      "name": "LIBERTY HILL METRO",
+      "millsByTaxYear": {
+        "2024": 7.373,
+        "2025": 7.477
+      }
+    },
+    "4390": {
+      "name": "LITTLETON FIRE DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4391": {
+      "name": "GARDENS ON HAVANA M DIS 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4392": {
+      "name": "GARDENS ON HAVANA M DIS 2",
+      "millsByTaxYear": {
+        "2024": 25.0,
+        "2025": 26.174
+      }
+    },
+    "4393": {
+      "name": "GARDENS ON HAVANA M DIS 3",
+      "millsByTaxYear": {
+        "2024": 41.419,
+        "2025": 44.324
+      }
+    },
+    "4394": {
+      "name": "LITTLETON BOULEVARD URA DISSOLVED 2017",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4397": {
+      "name": "ILIFF COMMONS METRO DST#2",
+      "millsByTaxYear": {
+        "2024": 68.954,
+        "2025": 51.439
+      }
+    },
+    "4398": {
+      "name": "ILIFF COMMONS METRO DST#3",
+      "millsByTaxYear": {
+        "2024": 61.326,
+        "2025": 61.269
+      }
+    },
+    "4399": {
+      "name": "ILIFF COMMONS METRO DIST #4 DISSOLVED 2015",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4400": {
+      "name": "LIVERPOOL METRO",
+      "millsByTaxYear": {
+        "2024": 26.238,
+        "2025": 16.672
+      }
+    },
+    "4401": {
+      "name": "ILIFF STATION URA TIF AREA 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4402": {
+      "name": "ILIFF STATION URA TIF AREA #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4403": {
+      "name": "INVRNS W&S DST BNDS FRFLD",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4404": {
+      "name": "INVRNS MID BNDS FAIRFIELD",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4405": {
+      "name": "FITZ II URA TIF AREA 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4406": {
+      "name": "FITZ II URA TIF AREA 2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4407": {
+      "name": "FITZ URA II TIF AREA 3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4408": {
+      "name": "FITZ URA II TIF AREA 4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4409": {
+      "name": "HAVANA NORTH URA AREA 2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4410": {
+      "name": "FESTIVAL COMMONS METRO DIST",
+      "millsByTaxYear": {
+        "2025": 0.0
+      }
+    },
+    "4411": {
+      "name": "GARDENS AT EAST ILIFF METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 82.543,
+        "2025": 80.088
+      }
+    },
+    "4412": {
+      "name": "HARRISON OAKS METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 6.0,
+        "2025": 6.0
+      }
+    },
+    "4413": {
+      "name": "IRON WORKS METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 55.526,
+        "2025": 58.571
+      }
+    },
+    "4414": {
+      "name": "HIGHLINE CROSSING METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 100.892,
+        "2025": 65.947
+      }
+    },
+    "4415": {
+      "name": "LITTLETON VLG MD #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4416": {
+      "name": "LITTLETON VLG MD #2",
+      "millsByTaxYear": {
+        "2024": 43.525,
+        "2025": 46.0
+      }
+    },
+    "4417": {
+      "name": "LITTLETON VLG MD #3",
+      "millsByTaxYear": {
+        "2024": 66.599,
+        "2025": 68.526
+      }
+    },
+    "4418": {
+      "name": "ILIFF AVENUE METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 64.477,
+        "2025": 69.12
+      }
+    },
+    "4419": {
+      "name": "KIOWA CONSERVATION DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4420": {
+      "name": "INVERNESS W&S BONDS VIII APTS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4421": {
+      "name": "INVERNESS MET IMP BONDS VIII APTS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4422": {
+      "name": "INVERNESS W&S BONDS AMLI #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4423": {
+      "name": "INVERNESS MET IMP BONDS AMLI #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4424": {
+      "name": "INVERNESS W&S BONDS GOLF VILLAS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4425": {
+      "name": "INVERNESS MET IMP BONDS GOLF VILLAS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4426": {
+      "name": "ENGLEWOOD DDA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4427": {
+      "name": "BUCKLEY METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 49.892,
+        "2025": 51.556
+      }
+    },
+    "4428": {
+      "name": "BUCKLEY METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 49.892,
+        "2025": 51.556
+      }
+    },
+    "4429": {
+      "name": "BUCKLEY METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 81.778,
+        "2025": 80.237
+      }
+    },
+    "4430": {
+      "name": "BUCKLEY METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 49.892,
+        "2025": 51.556
+      }
+    },
+    "4435": {
+      "name": "SANTA FE PARK METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 54.048,
+        "2025": 55.85
+      }
+    },
+    "4436": {
+      "name": "SANTA FE PARK METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4437": {
+      "name": "SANTA FE PARK METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 22.866,
+        "2025": 23.628
+      }
+    },
+    "4438": {
+      "name": "SANTA FE PARK METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4439": {
+      "name": "BUCKLEY YARD METRO DIST #1 DISSOLVED 2023",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4440": {
+      "name": "BUCKLEY YARD METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 41.998,
+        "2025": 37.047
+      }
+    },
+    "4443": {
+      "name": "COPPERLEAF METROPOLITAL DISTRICT NO. 3 -",
+      "millsByTaxYear": {
+        "2024": 64.765,
+        "2025": 69.373
+      }
+    },
+    "4444": {
+      "name": "COPPERLEAF METROPOLITAL DISTRICT NO. 4 -",
+      "millsByTaxYear": {
+        "2024": 53.414,
+        "2025": 53.414
+      }
+    },
+    "4450": {
+      "name": "BUCKLEY YARD METROPOLITAN DISTRICT #2 SU",
+      "millsByTaxYear": {
+        "2024": 21.406,
+        "2025": 22.082
+      }
+    },
+    "4456": {
+      "name": "ENGLEWOOD DDA WELLNESS DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4459": {
+      "name": "LOST CREEK WATER MGMT",
+      "millsByTaxYear": {
+        "2024": 0.945,
+        "2025": 0.945
+      }
+    },
+    "4460": {
+      "name": "RANGEVIEW METRO DIST",
+      "millsByTaxYear": {
+        "2024": 25.0,
+        "2025": 25.0
+      }
+    },
+    "4462": {
+      "name": "PLAZA 1 URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4463": {
+      "name": "PLAZA 2 URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4464": {
+      "name": "PLAZA 3 URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4465": {
+      "name": "MEADOW HLS CNTRY CLUB GID",
+      "millsByTaxYear": {
+        "2024": 30.49,
+        "2025": 4.14
+      }
+    },
+    "4466": {
+      "name": "PLAZA 4 URA",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4470": {
+      "name": "MANSFIELD HGTS WATER, SAN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4472": {
+      "name": "MARIN METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4473": {
+      "name": "MJC METROPOLITAN DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4474": {
+      "name": "MURPHY CREEK METRO #4 BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4476": {
+      "name": "MURPHY CREEK METRO DIST#1",
+      "millsByTaxYear": {
+        "2024": 8.0,
+        "2025": 8.0
+      }
+    },
+    "4477": {
+      "name": "MURPHY CREEK METRO DIST#2",
+      "millsByTaxYear": {
+        "2024": 67.209,
+        "2025": 71.105
+      }
+    },
+    "4478": {
+      "name": "MURPHY CREEK METRO DIST#3",
+      "millsByTaxYear": {
+        "2024": 34.24,
+        "2025": 31.115
+      }
+    },
+    "4479": {
+      "name": "MURPHY CREEK METRO DIST#4",
+      "millsByTaxYear": {
+        "2024": 69.824,
+        "2025": 74.562
+      }
+    },
+    "4480": {
+      "name": "NORMANDY ESTATES METRO",
+      "millsByTaxYear": {
+        "2024": 15.0,
+        "2025": 15.0
+      }
+    },
+    "4481": {
+      "name": "TALLGRASS MD BONDS ONLY",
+      "millsByTaxYear": {
+        "2024": 25.0,
+        "2025": 24.012
+      }
+    },
+    "4482": {
+      "name": "TALL GRASS METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 26.5,
+        "2025": 25.512
+      }
+    },
+    "4483": {
+      "name": "NORTH KIOWA BIJOU WATER",
+      "millsByTaxYear": {
+        "2024": 0.02,
+        "2025": 0.02
+      }
+    },
+    "4484": {
+      "name": "MINERAL BID",
+      "millsByTaxYear": {
+        "2024": 31.182,
+        "2025": 36.333
+      }
+    },
+    "4485": {
+      "name": "OAK PARK METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 40.539,
+        "2025": 43.208
+      }
+    },
+    "4486": {
+      "name": "NORTH BROADWAY URA DISSOLVED 2017",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4487": {
+      "name": "MURPHY CREEK METRO DIST #5",
+      "millsByTaxYear": {
+        "2024": 67.446,
+        "2025": 65.517
+      }
+    },
+    "4493": {
+      "name": "PARKSIDE AT CITY CENTRE METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 13.376,
+        "2025": 12.305
+      }
+    },
+    "4494": {
+      "name": "PARKSIDE AT CITY CENTRE BID",
+      "millsByTaxYear": {
+        "2024": 66.522,
+        "2025": 68.078
+      }
+    },
+    "4500": {
+      "name": "ORCHARD HILLS METRO REC",
+      "millsByTaxYear": {
+        "2024": 1.331,
+        "2025": 1.331
+      }
+    },
+    "4501": {
+      "name": "PIONEER BUSINESS METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 20.0,
+        "2025": 20.0
+      }
+    },
+    "4502": {
+      "name": "ORCHARD VALLEY METRO",
+      "millsByTaxYear": {
+        "2024": 10.989,
+        "2025": 10.989
+      }
+    },
+    "4503": {
+      "name": "WESTRAY BID",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4504": {
+      "name": "PARKER JRDN MTRO DIS BOND",
+      "millsByTaxYear": {
+        "2024": 1.208,
+        "2025": 1.23
+      }
+    },
+    "4505": {
+      "name": "PANORAMA MT DIS BOND ONLY",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4506": {
+      "name": "PANORAMA METRO DIST",
+      "millsByTaxYear": {
+        "2024": 10.319,
+        "2025": 10.37
+      }
+    },
+    "4507": {
+      "name": "PARKER JORDAN METRO",
+      "millsByTaxYear": {
+        "2024": 3.708,
+        "2025": 3.23
+      }
+    },
+    "4508": {
+      "name": "PARKER FIRE PROT DIST DISSOLVED 2016",
+      "millsByTaxYear": {
+        "2024": 9.406,
+        "2025": 9.406
+      }
+    },
+    "4510": {
+      "name": "PINEY CREEK METRO DIST DISSOLVED 2016",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4511": {
+      "name": "PARKER FIRE BOND DISSOLVED 2017",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4513": {
+      "name": "PEORIA PARK GID",
+      "millsByTaxYear": {
+        "2024": 4.855,
+        "2025": 4.855
+      }
+    },
+    "4514": {
+      "name": "PIER POINT 7 GEN IMP DIST",
+      "millsByTaxYear": {
+        "2024": 20.5,
+        "2025": 20.5
+      }
+    },
+    "4515": {
+      "name": "PINEY CREEK VIL METRO DIS",
+      "millsByTaxYear": {
+        "2024": 43.162,
+        "2025": 42.148
+      }
+    },
+    "4516": {
+      "name": "PIONEER HILLS METRO DISTR",
+      "millsByTaxYear": {
+        "2024": 35.8,
+        "2025": 37.88
+      }
+    },
+    "4517": {
+      "name": "PROSPER METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4518": {
+      "name": "PROSPER METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4519": {
+      "name": "PROSPER METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4520": {
+      "name": "PLATTE CANYON WATER & SAN",
+      "millsByTaxYear": {
+        "2024": 7.107,
+        "2025": 7.119
+      }
+    },
+    "4521": {
+      "name": "RIVERWALK METRO DIST # 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4522": {
+      "name": "RIVERWALK METRO DIST # 2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4523": {
+      "name": "RIVERWALK METRO DIST # 3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4524": {
+      "name": "RIVERWALK GLENDALE URA DISSOLVED 2016",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4525": {
+      "name": "POLO RESERVE METRO DIST",
+      "millsByTaxYear": {
+        "2024": 8.479,
+        "2025": 26.665
+      }
+    },
+    "4526": {
+      "name": "PROSPER METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 41.474
+      }
+    },
+    "4527": {
+      "name": "PROSPER COORDINATING METRO DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4528": {
+      "name": "REGIONAL TRANSPORTATION",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4529": {
+      "name": "SABLE ALTURA FIRE DIST",
+      "millsByTaxYear": {
+        "2024": 11.985,
+        "2025": 11.551
+      }
+    },
+    "4530": {
+      "name": "SABLE ALTURA FIRE BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4531": {
+      "name": "PROSPER W & S FINANCING METRO DIST",
+      "millsByTaxYear": {
+        "2024": 20.0,
+        "2025": 40.116
+      }
+    },
+    "4532": {
+      "name": "PROSPER P & R FINANCING METRO DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 9.17
+      }
+    },
+    "4533": {
+      "name": "SADDLE ROCK METRO DISTRCT",
+      "millsByTaxYear": {
+        "2024": 32.673,
+        "2025": 32.736
+      }
+    },
+    "4534": {
+      "name": "SADDLE ROCK S METRO DIST #1 DISSOLVED 2021",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4535": {
+      "name": "SADDLE RK S METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 26.0,
+        "2025": 26.6
+      }
+    },
+    "4536": {
+      "name": "SADDLE RK S METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 26.0,
+        "2025": 26.6
+      }
+    },
+    "4537": {
+      "name": "SADDLE ROCK S MET DIST #4",
+      "millsByTaxYear": {
+        "2024": 26.0,
+        "2025": 26.6
+      }
+    },
+    "4538": {
+      "name": "SANTA FE URA DISSOLVED 2017",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4539": {
+      "name": "PROSPER REGIONAL WATER & SAN DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4540": {
+      "name": "POWHATON RD METRO DIST # 1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4541": {
+      "name": "POWHATON RD METRO DIST # 2",
+      "millsByTaxYear": {
+        "2024": 53.203,
+        "2025": 52.153
+      }
+    },
+    "4542": {
+      "name": "POWHATON RD METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 76.799,
+        "2025": 82.715
+      }
+    },
+    "4543": {
+      "name": "PRONGHORN VALLEY METRO DIST",
+      "millsByTaxYear": {
+        "2024": 69.885,
+        "2025": 70.846
+      }
+    },
+    "4544": {
+      "name": "RIVER PARK METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 63.33,
+        "2025": 41.314
+      }
+    },
+    "4545": {
+      "name": "SERENITY RIDGE MTR DIS #1 DISSOLVED 2025",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4546": {
+      "name": "SERENITY RIDGE MTR DIS #2",
+      "millsByTaxYear": {
+        "2024": 44.012,
+        "2025": 42.061
+      }
+    },
+    "4547": {
+      "name": "PLATTE CANYON TH METRO DIST DISSOLVED 2023",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4548": {
+      "name": "INOVA AERO METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4550": {
+      "name": "SHERIDAN SANITATION",
+      "millsByTaxYear": {
+        "2024": 0.585,
+        "2025": 0.585
+      }
+    },
+    "4551": {
+      "name": "SENAC S METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 68.175,
+        "2025": 67.433
+      }
+    },
+    "4552": {
+      "name": "SENAC S METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4553": {
+      "name": "SENAC S METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4554": {
+      "name": "SENAC S METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4555": {
+      "name": "PROSPER METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4556": {
+      "name": "PROSPER METRO DISTRICT #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4557": {
+      "name": "PROSPER METRO DISTRICT #7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4558": {
+      "name": "PROSPER METRO DISTRICT #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4559": {
+      "name": "PROSPER METRO DISTRICT #9",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4560": {
+      "name": "SHERIDAN SANITATION # 2 A",
+      "millsByTaxYear": {
+        "2024": 0.438,
+        "2025": 0.416
+      }
+    },
+    "4562": {
+      "name": "PROSPER METRO DISTRICT #10",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4563": {
+      "name": "SOUTHGLENN METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 12.0,
+        "2025": 12.0
+      }
+    },
+    "4565": {
+      "name": "SHERIDAN URBAN RNWL PLN",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4567": {
+      "name": "SKY RANCH METRO DISTRICT #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4568": {
+      "name": "SKY RANCH METRO DISTRICT #7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4569": {
+      "name": "SKY RANCH METRO DISTRICT #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4570": {
+      "name": "SKY RANCH METRO DIST. #1",
+      "millsByTaxYear": {
+        "2024": 78.446,
+        "2025": 76.08
+      }
+    },
+    "4571": {
+      "name": "SKY RANCH METRO DIST. #3",
+      "millsByTaxYear": {
+        "2024": 119.387,
+        "2025": 118.956
+      }
+    },
+    "4572": {
+      "name": "SKY RANCH METRO DIST. #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4573": {
+      "name": "SKY RANCH METRO DIST. #5",
+      "millsByTaxYear": {
+        "2024": 113.004,
+        "2025": 113.006
+      }
+    },
+    "4574": {
+      "name": "JONES METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 20.797,
+        "2025": 21.481
+      }
+    },
+    "4575": {
+      "name": "JONES METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 26.698,
+        "2025": 28.443
+      }
+    },
+    "4576": {
+      "name": "JONES METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 20.797,
+        "2025": 21.481
+      }
+    },
+    "4577": {
+      "name": "JONES METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 20.797,
+        "2025": 21.481
+      }
+    },
+    "4578": {
+      "name": "JONES METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 20.797,
+        "2025": 21.481
+      }
+    },
+    "4580": {
+      "name": "SKYLINE FIRE PROTECTION",
+      "millsByTaxYear": {
+        "2024": 9.502,
+        "2025": 9.655
+      }
+    },
+    "4581": {
+      "name": "SLC METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4582": {
+      "name": "SLC METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 15.09,
+        "2025": 15.09
+      }
+    },
+    "4583": {
+      "name": "SLC METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 15.09,
+        "2025": 16.164
+      }
+    },
+    "4584": {
+      "name": "SLC METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 15.09,
+        "2025": 15.09
+      }
+    },
+    "4585": {
+      "name": "SMOKY HILL METRO DIST",
+      "millsByTaxYear": {
+        "2024": 21.058,
+        "2025": 21.058
+      }
+    },
+    "4587": {
+      "name": "SORREL RANCH METRO DIST",
+      "millsByTaxYear": {
+        "2024": 38.666,
+        "2025": 38.074
+      }
+    },
+    "4590": {
+      "name": "SOUTH ARAPAHOE SANITATION",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4610": {
+      "name": "SOUTHEAST ENGLEWOOD WATER",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4615": {
+      "name": "STHEST PUB IMP METRO DIS",
+      "millsByTaxYear": {
+        "2024": 2.0,
+        "2025": 2.0
+      }
+    },
+    "4616": {
+      "name": "SE METRO IMP DIST. BONDS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4620": {
+      "name": "SOUTH ENGLEWOOD SAN # 1A",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4625": {
+      "name": "SOUTHGLENN METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 60.0,
+        "2025": 66.701
+      }
+    },
+    "4626": {
+      "name": "SOUTHGLENN MD BONDS ONLY",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4629": {
+      "name": "SOUTHERN METRO DIST",
+      "millsByTaxYear": {
+        "2024": 3.5,
+        "2025": 3.5
+      }
+    },
+    "4630": {
+      "name": "SOUTHGATE SANITATION DIST",
+      "millsByTaxYear": {
+        "2024": 0.445,
+        "2025": 0.465
+      }
+    },
+    "4631": {
+      "name": "SOUTHGATE CORP CNTR METRO",
+      "millsByTaxYear": {
+        "2024": 0.8,
+        "2025": 0.8
+      }
+    },
+    "4639": {
+      "name": "SPARK METRO DIST BOND ONLY DISSOLVED 2014",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4640": {
+      "name": "SOUTHGATE WATER DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4642": {
+      "name": "SOUTHLANDS METRO DIST 1",
+      "millsByTaxYear": {
+        "2024": 42.0,
+        "2025": 42.0
+      }
+    },
+    "4643": {
+      "name": "SOUTHLANDS METRO DIST 2",
+      "millsByTaxYear": {
+        "2024": 69.167,
+        "2025": 61.245
+      }
+    },
+    "4644": {
+      "name": "SOUTHSHORE METRO DIST #1 DISSOLVED 2024",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4645": {
+      "name": "SOUTHSHORE METRO DIST",
+      "millsByTaxYear": {
+        "2024": 61.646,
+        "2025": 64.068
+      }
+    },
+    "4646": {
+      "name": "SOUTHLANDS MET DIS #1 BND",
+      "millsByTaxYear": {
+        "2024": 23.5,
+        "2025": 32.0
+      }
+    },
+    "4647": {
+      "name": "S SUB P&R DIST BNDS GWV",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4648": {
+      "name": "S SBRBN P&R DIS BNDS (CH)",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4650": {
+      "name": "S SUBURBAN PARK & REC",
+      "millsByTaxYear": {
+        "2024": 8.286,
+        "2025": 8.8
+      }
+    },
+    "4670": {
+      "name": "SOUTHWEST METRO WATER & S",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4672": {
+      "name": "POWHATON RD METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4673": {
+      "name": "POWHATON RD METRO DIST #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4675": {
+      "name": "STERLING HILLS METRO DIST DISSOLVED",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4676": {
+      "name": "STERLING HLS W METRO DIST",
+      "millsByTaxYear": {
+        "2024": 43.014,
+        "2025": 43.014
+      }
+    },
+    "4680": {
+      "name": "STRASBURG FIRE DIST",
+      "millsByTaxYear": {
+        "2024": 12.614,
+        "2025": 12.614
+      }
+    },
+    "4681": {
+      "name": "STRASBURG METRO PARK&REC",
+      "millsByTaxYear": {
+        "2024": 5.01,
+        "2025": 5.01
+      }
+    },
+    "4690": {
+      "name": "STRASBURG WATER & SAN",
+      "millsByTaxYear": {
+        "2024": 4.0,
+        "2025": 3.77
+      }
+    },
+    "4691": {
+      "name": "POWHATON RD METRO DIST #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4692": {
+      "name": "POWHATON RD METRO DIST #9",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4693": {
+      "name": "POWHATON RD METRO DIST #10",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4694": {
+      "name": "POWHATON RD METRO DIST #11",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4698": {
+      "name": "SUNDANCE HILLS METRO",
+      "millsByTaxYear": {
+        "2024": 14.872,
+        "2025": 26.875
+      }
+    },
+    "4699": {
+      "name": "SUBURBAN METRO DIST",
+      "millsByTaxYear": {
+        "2024": 0.382,
+        "2025": 0.399
+      }
+    },
+    "4700": {
+      "name": "TALLYNS REACH METRO DIST #1 DISSOLVED 2019",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4701": {
+      "name": "TALLYN'S REACH MET DIST#2",
+      "millsByTaxYear": {
+        "2024": 7.118,
+        "2025": 5.984
+      }
+    },
+    "4702": {
+      "name": "TALLYN'S REACH MET DIST#3",
+      "millsByTaxYear": {
+        "2024": 38.344,
+        "2025": 41.458
+      }
+    },
+    "4703": {
+      "name": "13TH AVE STATION METRO DIST",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4704": {
+      "name": "TOLLGATE CRK COMMONS MD 1 DISSOLVED 2024",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4705": {
+      "name": "TOLLGATE CRK COMMONS MD 2 DISSOLVED 2024",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4706": {
+      "name": "THE POINT METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 46.0,
+        "2025": 52.22
+      }
+    },
+    "4708": {
+      "name": "TOLLGATE XING METRO DIS#2",
+      "millsByTaxYear": {
+        "2024": 46.0,
+        "2025": 52.06
+      }
+    },
+    "4709": {
+      "name": "EAST BEND METRO DIST",
+      "millsByTaxYear": {
+        "2024": 85.061,
+        "2025": 84.51
+      }
+    },
+    "4710": {
+      "name": "TRADITIONS METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 24.604,
+        "2025": 24.687
+      }
+    },
+    "4711": {
+      "name": "3RD & HAVANA METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 66.481,
+        "2025": 70.443
+      }
+    },
+    "4712": {
+      "name": "URBAN DRAINAGE & FLOOD",
+      "millsByTaxYear": {
+        "2024": 0.9,
+        "2025": 0.9
+      }
+    },
+    "4713": {
+      "name": "URBN DRNGE&FLD (S PLATTE)",
+      "millsByTaxYear": {
+        "2024": 0.1,
+        "2025": 0.1
+      }
+    },
+    "4714": {
+      "name": "VALLEY SANITATION DIST BOND",
+      "millsByTaxYear": {
+        "2025": 0.831
+      }
+    },
+    "4715": {
+      "name": "POWHATON RD METRO DIST #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4716": {
+      "name": "POWHATON RD METRO DIST #7",
+      "millsByTaxYear": {
+        "2024": 40.0,
+        "2025": 40.0
+      }
+    },
+    "4717": {
+      "name": "VALENTIA COURT METRO DIS",
+      "millsByTaxYear": {
+        "2024": 59.402,
+        "2025": 63.68
+      }
+    },
+    "4718": {
+      "name": "VALLEY CLUB POINT MET DIS",
+      "millsByTaxYear": {
+        "2024": 55.0,
+        "2025": 55.0
+      }
+    },
+    "4719": {
+      "name": "CH HILLS VLG SOUTHMOOR/HUDSON PKWY GID",
+      "millsByTaxYear": {
+        "2024": 10.5,
+        "2025": 10.5
+      }
+    },
+    "4720": {
+      "name": "VALLEY SANITATION DIST",
+      "millsByTaxYear": {
+        "2024": 2.342,
+        "2025": 2.288
+      }
+    },
+    "4721": {
+      "name": "HARVEST CROSSING METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4722": {
+      "name": "HARVEST CROSSING METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4732": {
+      "name": "VERMILION CREEK METRO DIST #2",
+      "millsByTaxYear": {
+        "2025": 64.443
+      }
+    },
+    "4733": {
+      "name": "VERMILION CREEK METRO DIS",
+      "millsByTaxYear": {
+        "2024": 71.283,
+        "2025": 64.443
+      }
+    },
+    "4734": {
+      "name": "VERMILION CREEK METRO DIST #3",
+      "millsByTaxYear": {
+        "2025": 64.443
+      }
+    },
+    "4735": {
+      "name": "MARVELLA METROPOLITAN DISTRICT",
+      "millsByTaxYear": {
+        "2024": 66.715,
+        "2025": 76.215
+      }
+    },
+    "4737": {
+      "name": "VILLAGE CTR OUTER RNG SUB",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4738": {
+      "name": "HARVEST CROSSING METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 70.59,
+        "2025": 74.953
+      }
+    },
+    "4739": {
+      "name": "HARVEST CROSSING METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 70.59,
+        "2025": 74.953
+      }
+    },
+    "4740": {
+      "name": "VILLAGES AT MURPHY CREEK METRO DIST #3\nDISSOLVED 2022",
+      "millsByTaxYear": {
+        "2024": 0.0
+      }
+    },
+    "4741": {
+      "name": "VILLAGES AT MURPHY CREEK METRO DIST #4\nDISSOLVED 2022",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4742": {
+      "name": "WALNUT HILLS GEN IMP",
+      "millsByTaxYear": {
+        "2024": 2.375,
+        "2025": 2.404
+      }
+    },
+    "4744": {
+      "name": "W. ARAP. CONSERVATION DIS",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4745": {
+      "name": "WHISPERING PINES MET DS#1",
+      "millsByTaxYear": {
+        "2024": 65.613,
+        "2025": 67.661
+      }
+    },
+    "4746": {
+      "name": "WHISPERING PINES MET DS#2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4747": {
+      "name": "WHEATLANDS METRO DIS #1 DISSOLVED 2024",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4748": {
+      "name": "WHEATLANDS METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 72.0,
+        "2025": 80.0
+      }
+    },
+    "4750": {
+      "name": "WILLOW TRACE METRO DIST",
+      "millsByTaxYear": {
+        "2024": 31.75,
+        "2025": 31.75
+      }
+    },
+    "4751": {
+      "name": "WILLOWS WATER DIST",
+      "millsByTaxYear": {
+        "2024": 3.551,
+        "2025": 3.872
+      }
+    },
+    "4752": {
+      "name": "WATERSTONE METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 79.861,
+        "2025": 75.006
+      }
+    },
+    "4753": {
+      "name": "WATERSTONE METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4754": {
+      "name": "WILD PLUM METRO DISTRICT",
+      "millsByTaxYear": {
+        "2024": 51.311,
+        "2025": 47.543
+      }
+    },
+    "4755": {
+      "name": "WALNUT PEACEMAKER METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4756": {
+      "name": "WALNUT PEACEMAKER METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4757": {
+      "name": "WALNUT PEACEMAKER METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4758": {
+      "name": "WALNUT PEACEMAKER METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4759": {
+      "name": "WALNUT PEACEMAKER METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4760": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 70.0,
+        "2025": 70.0
+      }
+    },
+    "4761": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4762": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4763": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4764": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4765": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4766": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4767": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4768": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #9",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4769": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #10",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4770": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #11",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4771": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #12",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4772": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #13",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4773": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #14",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4774": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #15",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4775": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #16",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4776": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #17",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4777": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #18",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4778": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #19",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4779": {
+      "name": "WATKINS ROAD HOLDINGS METRO DISTRICT #20",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4780": {
+      "name": "WILLOW CREEK GID #1 & #2",
+      "millsByTaxYear": {
+        "2024": 5.588,
+        "2025": 5.948
+      }
+    },
+    "4781": {
+      "name": "WILLOW CREEK GID #2 DISSOLVED 2021",
+      "millsByTaxYear": {
+        "2024": 6.75,
+        "2025": 6.75
+      }
+    },
+    "4782": {
+      "name": "YALE METRO DISTRICT #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4783": {
+      "name": "YALE METRO DISTRICT #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4784": {
+      "name": "YALE METRO DISTRICT #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4785": {
+      "name": "EASTGATE METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4786": {
+      "name": "EASTGATE METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4787": {
+      "name": "EASTGATE METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4788": {
+      "name": "EASTGATE METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4789": {
+      "name": "4789 EASTGATE METRO DIST #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4790": {
+      "name": "EASTGATE METRO DIST #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4791": {
+      "name": "FIRST CREEK POWHATON METRO DIST #1",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4792": {
+      "name": "FIRST CREEK POWHATON METRO DIST #2",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4793": {
+      "name": "FIRST CREEK POWHATON METRO DIST #3",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4794": {
+      "name": "FIRST CREEK POWHATON METRO DIST #4",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4795": {
+      "name": "FIRST CREEK POWHATON METRO DIST #5",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4796": {
+      "name": "FIRST CREEK POWHATON METRO DIST #6",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4797": {
+      "name": "FIRST CREEK POWHATON METRO DIST #7",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4798": {
+      "name": "FIRST CREEK POWHATON METRO DIST #8",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4799": {
+      "name": "FIRST CREEK POWHATON METRO DIST #9",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4800": {
+      "name": "FIRST CREEK POWHATON METRO DIST #10",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4801": {
+      "name": "FIRST CREEK POWHATON METRO DIST #11",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4802": {
+      "name": "FIRST CREEK POWHATON METRO DIST #12",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    }
+  },
+  "exceptionsByTaxYear": {
+    "2025": {
+      "4739": {
+        "name": "HARVEST CROSSING METRO DIST #4",
+        "defaultMills": 74.953,
+        "byPdfTag": {
+          "0202": 74.953,
+          "1400": 74.953,
+          "1671": 74.953,
+          "1900": 74.953,
+          "1981": 0.0,
+          "2027": 74.953,
+          "2049": 74.953,
+          "2055": 74.953
+        },
+        "note": "AUTH total mills vary by Levy % PDF TAG in this tax year. byPdfTag keys are PDF TAG codes, not Levy.aspx tagId."
+      }
+    }
+  }
+}

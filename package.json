@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -20,6 +20,7 @@
     "test:nov-comps-parser": "python3 -m unittest discover -s tools -p test_parse_arapahoe_nov_comps_grid.py -q",
     "test:parcel-index": "python3 -m unittest discover -s tools -p test_build_arapahoe_parcel_levy_index.py -q",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
+    "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q",
     "start": "next start",
     "lint": "eslint"
   },
