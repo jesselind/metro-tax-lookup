@@ -6,10 +6,10 @@
 import {
   COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION,
   COUNTY_COMPS_PDF_ASSESSOR_PREFIX,
-  COUNTY_COMPS_PDF_EXPERIENCE_AFTER,
-  COUNTY_COMPS_PDF_EXPERIENCE_BEFORE,
-  COUNTY_COMPS_PDF_NO_FILE_FOUND,
+  COUNTY_COMPS_PDF_POPOVER_2027_NOTE,
+  COUNTY_COMPS_PDF_POPOVER_ASSESSOR_NOTE,
   COUNTY_COMPS_PDF_SOURCES_LEAD,
+  COUNTY_COMPS_PDF_NO_FILE_FOUND,
   COUNTY_COMPS_PDF_TRY_IF_VALUE_CHANGED,
   COUNTY_COMPS_PDF_TRY_LINK_LABEL,
 } from "@/content/countyCompsPdfGuidance";
@@ -26,20 +26,8 @@ export function CountyCompsPdfUnavailablePopoverBody({
   const safeHref = safeHttpOrHttpsUrl(countyHref);
   return (
     <div className="text-sm leading-relaxed text-slate-800">
-      <p>
-        {COUNTY_COMPS_PDF_EXPERIENCE_BEFORE}{" "}
-        <span className="font-medium text-slate-900">
-          {COUNTY_COMPS_PDF_NO_FILE_FOUND}
-        </span>
-        {" "}
-        {COUNTY_COMPS_PDF_EXPERIENCE_AFTER}
-      </p>
-      <p className="mt-3">
-        {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
-        {COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION}
-      </p>
       {safeHref ? (
-        <p className="mt-3">
+        <p className="mb-3">
           <a
             href={safeHref}
             target="_blank"
@@ -53,6 +41,19 @@ export function CountyCompsPdfUnavailablePopoverBody({
           {COUNTY_COMPS_PDF_TRY_IF_VALUE_CHANGED}
         </p>
       ) : null}
+      <p>
+        This county link may return{" "}
+        <span className="font-semibold text-slate-900">
+          {COUNTY_COMPS_PDF_NO_FILE_FOUND}
+        </span>
+        .
+      </p>
+      <p className="mt-2">
+        {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
+        {COUNTY_COMPS_PDF_POPOVER_ASSESSOR_NOTE}
+        {" "}
+        {COUNTY_COMPS_PDF_POPOVER_2027_NOTE}
+      </p>
     </div>
   );
 }

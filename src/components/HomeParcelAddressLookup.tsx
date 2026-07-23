@@ -9,7 +9,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyCompsPdfUnavailablePopoverBody } from "@/components/CountyCompsPdfGuidance";
-import { CountyCompsPdfHelpPopover, COMPS_PDF_ICON_CONTROL_CLASS } from "@/components/CountyCompsPdfHelpPopover";
+import {
+  CountyCompsPdfHelpPopover,
+  COMPS_PDF_ICON_CONTROL_CLASS,
+} from "@/components/CountyCompsPdfHelpPopover";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
@@ -26,6 +29,10 @@ import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
+import {
+  COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
+  COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
+} from "@/content/countyCompsPdfGuidance";
 import {
   btnOutlinePrimaryMd,
   btnOutlineSecondaryMd,
@@ -92,6 +99,8 @@ import {
   DASHBOARD_SECTION_META_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   INPUT_CLASS,
+  PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS,
+  PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS,
   PARCEL_SUMMARY_ROW_CLASS,
   PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
   PARCEL_SUMMARY_TILE_BODY_CLASS,
@@ -182,24 +191,6 @@ const PROPERTY_DETAILS_JUMP_CHEVRON = (
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-    />
-  </svg>
-);
-
-const PROPERTY_DETAILS_JUMP_ICON = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="size-6"
-    aria-hidden
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125V5.625a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
     />
   </svg>
 );
@@ -791,10 +782,12 @@ export function HomeParcelAddressLookup({
         >
           <span
             aria-hidden
-            className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-base font-bold leading-snug tracking-tight sm:text-lg"
+            className="text-base font-bold leading-snug tracking-tight text-balance sm:text-lg"
           >
-            <span className="min-w-0">{billImpactCallout.message}</span>
-            <span className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} whitespace-nowrap`}>
+            {billImpactCallout.message}
+            <span
+              className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} ml-3 whitespace-nowrap sm:ml-4`}
+            >
               Details ›
             </span>
           </span>
@@ -873,6 +866,22 @@ export function HomeParcelAddressLookup({
           </time>
         </p>
       ) : null}
+      {levyLoadedMeta?.parcelValues.propertyClassification ? (
+        <p
+          id="home-parcel-property-class"
+          className={DASHBOARD_SECTION_META_CLASS}
+        >
+          <ParcelGlossaryPopoverTrigger
+            termId="term-property-classification"
+            textTrigger="Property classification"
+            textTriggerId="property-classification-term-first"
+            variant="parcel-record"
+            textTriggerClassName={`text-inherit ${TERM_LINK_CLASS}`}
+          />
+          {": "}
+          {levyLoadedMeta.parcelValues.propertyClassification}
+        </p>
+      ) : null}
   </>
   );
 
@@ -907,8 +916,8 @@ export function HomeParcelAddressLookup({
     );
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
+    <div className="space-y-3 sm:space-y-5">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
         {/* Property first in DOM for lg+ tab order; order-2 on small screens keeps levy above property visually. */}
         <section
           id={HOME_PROPERTY_DETAILS_ID}
@@ -934,7 +943,7 @@ export function HomeParcelAddressLookup({
             </a>
           ) : null}
         </section>
-        <div className="order-1 mb-3 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:mb-0">
+        <div className="order-1 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1">
           {levySectionLead}
         </div>
         <div className="order-1 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-2">
@@ -1480,163 +1489,147 @@ export function HomeParcelAddressLookup({
                   ) : null}
                 </div>
             ) : null}
-            {!busy &&
-            levyLoadedMeta &&
-            lockedAddressHeadline &&
-            levyLoadedMeta.parcelValues.propertyClassification ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
-                id="home-parcel-property-class"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <ParcelGlossaryPopoverTrigger
-                      termId="term-property-classification"
-                      textTrigger="Property classification"
-                      textTriggerId="property-classification-term-first"
-                    />
-                  </div>
-                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
-                    {levyLoadedMeta.parcelValues.propertyClassification}
-                  </p>
-                </div>
-              </div>
-            ) : null}
             {!busy && levyReadyForSummary && levyLoadedMeta ? (
               <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
+                className={
+                  homeCompsGridPdfHref &&
+                  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
+                    ? PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS
+                    : PARCEL_SUMMARY_TILE_CLASS_POPOVER
+                }
                 id="home-parcel-comps-pdf"
               >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <ParcelGlossaryPopoverTrigger
-                      termId="term-comps"
-                      textTrigger="Comps PDF"
-                      textTriggerId="comps-pdf-term-first"
-                      ariaLabel="Brief definition of comps and the county PDF."
-                    />
-                  </div>
-                  {homeCompsGridPdfHref ? (
-                    // TODO(comps-pdf-hosted-unavailable): Remove this branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
-                    ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
-                      <div className="flex justify-center">
-                        <CountyCompsPdfHelpPopover
-                          ariaLabel="County comps PDF availability"
-                          icon={compsIcon}
-                        >
-                          <CountyCompsPdfUnavailablePopoverBody
-                            countyHref={homeCompsGridPdfHref}
+                <div
+                  className={
+                    homeCompsGridPdfHref &&
+                    ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
+                      ? `${PARCEL_SUMMARY_TILE_BODY_CLASS} relative`
+                      : PARCEL_SUMMARY_TILE_BODY_CLASS
+                  }
+                >
+                  {homeCompsGridPdfHref &&
+                  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+                    // TODO(comps-pdf-hosted-unavailable): Remove unavailable branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
+                    <CountyCompsPdfHelpPopover
+                      ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}
+                      icon={compsIcon}
+                      tileTrigger={{
+                        labelClassName: PARCEL_SUMMARY_TILE_LABEL_CLASS,
+                        label: (
+                          <ParcelGlossaryPopoverTrigger
+                            termId="term-comps"
+                            textTrigger="Comps PDF"
+                            textTriggerId="comps-pdf-term-first"
+                            ariaLabel="Brief definition of comps and the county PDF."
                           />
-                        </CountyCompsPdfHelpPopover>
-                      </div>
-                    ) : (
-                      <a
-                        href={homeCompsGridPdfHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={COMPS_PDF_ICON_CONTROL_CLASS}
-                        aria-label="Open county comps grid PDF for this property (opens in a new tab)"
-                      >
-                        {compsIcon}
-                      </a>
-                    )
-                  ) : isDemoMode ? (
-                    <div className="flex justify-center">
-                      <CountyCompsPdfHelpPopover
-                        ariaLabel="Comps PDF is unavailable for this property"
-                        icon={compsIcon}
-                      >
-                        <>
-                          Demo mode does not include a comps PDF. Select{" "}
-                          <strong className="font-semibold text-slate-900">
-                            Start over
-                          </strong>
-                          {", "}
-                          then enter your address to open your county comps PDF.
-                        </>
-                      </CountyCompsPdfHelpPopover>
-                    </div>
-                  ) : (
-                    <div
-                      className="space-y-2"
-                      role="status"
-                      aria-live="polite"
+                        ),
+                        status: (
+                          <p className={PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS}>
+                            {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
+                          </p>
+                        ),
+                      }}
                     >
-                      <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
-                        No county comps PDF from here: this PIN is missing an
-                        assessor parcel id (AIN) in the bundled parcel index.
-                      </p>
-                      <div className="flex justify-center sm:justify-start">
-                        <CountyCompsPdfHelpPopover
-                          ariaLabel="Why there is no comps PDF link for this property"
-                          icon={compsIcon}
-                        >
-                          <>
-                            <p className="text-sm leading-relaxed text-slate-800">
-                              We build the county link from your PIN&apos;s AIN in
-                              the bundled{" "}
-                              <span className="font-mono text-xs sm:text-sm">
-                                arapahoe-pin-to-tag.json
-                              </span>
-                              . If that field is empty, we
-                              cannot form{" "}
-                              <span className="whitespace-nowrap">
-                                FileDownload.ashx?AIN=…
-                              </span>{" "}
-                              safely.
-                            </p>
-                            <p className="mt-3 text-sm leading-relaxed text-slate-800">
-                              Open{" "}
-                              <a
-                                href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={COUNTY_EXTERNAL_LINK_CLASS}
-                              >
-                                Arapahoe property search
-                                <span className="sr-only">
-                                  {" "}
-                                  (opens in a new tab)
-                                </span>
-                              </a>
-                              {" "}
-                              to reach your parcel and comps from the county. For
-                              how the bundle is built, see{" "}
-                              <PreserveSessionDocLink href="/sources">
-                                Sources
-                              </PreserveSessionDocLink>
-                              .
-                            </p>
-                          </>
-                        </CountyCompsPdfHelpPopover>
+                      <CountyCompsPdfUnavailablePopoverBody
+                        countyHref={homeCompsGridPdfHref}
+                      />
+                    </CountyCompsPdfHelpPopover>
+                  ) : (
+                    <>
+                      <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                        <ParcelGlossaryPopoverTrigger
+                          termId="term-comps"
+                          textTrigger="Comps PDF"
+                          textTriggerId="comps-pdf-term-first"
+                          ariaLabel="Brief definition of comps and the county PDF."
+                        />
                       </div>
-                    </div>
+                      {homeCompsGridPdfHref ? (
+                        <a
+                          href={homeCompsGridPdfHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={COMPS_PDF_ICON_CONTROL_CLASS}
+                          aria-label="Open county comps grid PDF for this property (opens in a new tab)"
+                        >
+                          {compsIcon}
+                        </a>
+                      ) : isDemoMode ? (
+                        <div className="flex justify-center">
+                          <CountyCompsPdfHelpPopover
+                            ariaLabel="Comps PDF is unavailable for this property"
+                            icon={compsIcon}
+                          >
+                            <>
+                              Demo mode does not include a comps PDF. Select{" "}
+                              <strong className="font-semibold text-slate-900">
+                                Start over
+                              </strong>
+                              {", "}
+                              then enter your address to open your county comps PDF.
+                            </>
+                          </CountyCompsPdfHelpPopover>
+                        </div>
+                      ) : (
+                        <div
+                          className="space-y-2"
+                          role="status"
+                          aria-live="polite"
+                        >
+                          <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
+                            No county comps PDF from here: this PIN is missing an
+                            assessor parcel id (AIN) in the bundled parcel index.
+                          </p>
+                          <div className="flex justify-center sm:justify-start">
+                            <CountyCompsPdfHelpPopover
+                              ariaLabel="Why there is no comps PDF link for this property"
+                              icon={compsIcon}
+                            >
+                              <>
+                                <p className="text-sm leading-relaxed text-slate-800">
+                                  We build the county link from your PIN&apos;s AIN in
+                                  the bundled{" "}
+                                  <span className="font-mono text-xs sm:text-sm">
+                                    arapahoe-pin-to-tag.json
+                                  </span>
+                                  . If that field is empty, we
+                                  cannot form{" "}
+                                  <span className="whitespace-nowrap">
+                                    FileDownload.ashx?AIN=…
+                                  </span>{" "}
+                                  safely.
+                                </p>
+                                <p className="mt-3 text-sm leading-relaxed text-slate-800">
+                                  Open{" "}
+                                  <a
+                                    href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={COUNTY_EXTERNAL_LINK_CLASS}
+                                  >
+                                    Arapahoe property search
+                                    <span className="sr-only">
+                                      {" "}
+                                      (opens in a new tab)
+                                    </span>
+                                  </a>
+                                  {" "}
+                                  to reach your parcel and comps from the county. For
+                                  how the bundle is built, see{" "}
+                                  <PreserveSessionDocLink href="/sources">
+                                    Sources
+                                  </PreserveSessionDocLink>
+                                  .
+                                </p>
+                              </>
+                            </CountyCompsPdfHelpPopover>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
-            ) : null}
-            {!busy && levyReadyForSummary && showPropertyDetailsColumn ? (
-              <a
-                href={`#${HOME_PROPERTY_DETAILS_ID}`}
-                id="home-parcel-record-jump-tile"
-                aria-label="Jump to property details"
-                className={`${PARCEL_SUMMARY_TILE_CLASS} w-full min-h-11 max-w-full cursor-pointer border-2 border-indigo-300/90 bg-indigo-50/90 shadow-sm transition-colors hover:border-indigo-400 hover:bg-indigo-100/80 active:bg-indigo-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 sm:w-max lg:hidden`}
-              >
-                <div className="flex min-h-11 flex-row items-center gap-3 px-3.5 py-3 sm:px-4">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-indigo-100 text-indigo-700">
-                    {PROPERTY_DETAILS_JUMP_ICON}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                      County parcel record
-                    </span>
-                    <span className="mt-1 block text-base font-semibold leading-snug text-indigo-950 sm:text-lg">
-                      Jump to property details
-                    </span>
-                  </span>
-                  <span className="text-indigo-600">{PROPERTY_DETAILS_JUMP_CHEVRON}</span>
-                </div>
-              </a>
             ) : null}
           </div>
           {!busy &&
@@ -1651,6 +1644,14 @@ export function HomeParcelAddressLookup({
             <InlineErrorCallout className="mt-1" liveRegion="polite">
               {error}
             </InlineErrorCallout>
+          ) : null}
+          {showHomeLevyMetroAndHub ? (
+            <div
+              id={HOME_LEVY_BREAKDOWN_ID}
+              className="scroll-mt-6 sm:scroll-mt-8"
+            >
+              {levyAndPropertyLayout}
+            </div>
           ) : null}
         </div>
       )}
@@ -1752,7 +1753,7 @@ export function HomeParcelAddressLookup({
             <InlineErrorCallout liveRegion="polite">{levyLoadError}</InlineErrorCallout>
           ) : null}
 
-      {(showParcelPinSection || showHomeLevyMetroAndHub) ? (
+      {!addressSearchLocked && (showParcelPinSection || showHomeLevyMetroAndHub) ? (
         <div
           id={HOME_LEVY_BREAKDOWN_ID}
           className={`scroll-mt-6 space-y-5 sm:scroll-mt-8 ${!showHomeLevyMetroAndHub ? "min-h-px" : ""}`}
