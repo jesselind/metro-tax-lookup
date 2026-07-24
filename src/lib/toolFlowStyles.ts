@@ -130,9 +130,8 @@ export const LEVY_STACK_TILE_GRID_CLASS =
 export const PARCEL_SUMMARY_ROW_CLASS =
   "flex w-full min-w-0 flex-row flex-wrap items-stretch justify-start gap-3 sm:gap-4";
 
-/** Actual / assessed / property-tax value tiles: row on small screens; `sm:contents` joins the parent row at sm+. */
-export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS =
-  "flex w-full min-w-0 flex-row flex-wrap items-stretch gap-3 sm:contents";
+/** Value tiles join the parent summary row at all breakpoints (no full-width wrapper). */
+export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS = "contents";
 
 /**
  * Parcel tiles: border + radius on the outer frame, padding + scroll on an inner body.
@@ -156,11 +155,18 @@ export const PARCEL_SUMMARY_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIPPED} w
  */
 export const PARCEL_SUMMARY_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0`;
 
-/** Value tiles: equal width on small screens (fill pair row); content-sized from sm up with the address tile. */
-export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIPPED} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+/** Value tiles: same content-sized width as {@link PARCEL_SUMMARY_TILE_CLASS}. */
+export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIPPED} w-max max-w-full min-w-0`;
 
 /** Value tile variant for label popovers (see {@link PARCEL_SUMMARY_TILE_CLASS_POPOVER}). */
-export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} min-w-0 flex-1 max-w-full sm:w-max sm:max-w-full sm:flex-none`;
+export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0`;
+
+/** Comps PDF tile when county comparables are limited (no default slate border; stark alert frame). */
+export const PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} flex min-h-0 min-w-0 w-max max-w-full cursor-pointer flex-col overflow-visible border-[3px] border-red-600 bg-white shadow-sm`;
+
+/** Status line inside the limited Comps PDF summary tile. */
+export const PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS =
+  "min-w-0 flex-1 text-[0.9375rem] font-semibold leading-snug text-slate-900 sm:text-base";
 
 /**
  * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale;

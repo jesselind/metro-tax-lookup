@@ -10,6 +10,8 @@
  * Use explicit `{" "}` after inline elements (e.g. </strong>, </dfn>) so JSX does not collapse spaces.
  */
 
+import { CountyCompsPdfAssessorAvailabilityCopy } from "@/components/CountyCompsPdfGuidance";
+import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
   TermMillLevyFullBody,
   TermLgIdFullBody,
@@ -19,8 +21,6 @@ import {
 import {
   COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST,
   COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST,
-  COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION,
-  COUNTY_COMPS_PDF_ASSESSOR_PREFIX,
   COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST,
 } from "@/content/countyCompsPdfGuidance";
 import {
@@ -30,7 +30,6 @@ import {
 } from "@/lib/arapahoeCountyUrls";
 import { glossaryTermHref } from "@/lib/glossary";
 import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
-import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
   CODE_INLINE_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -486,8 +485,7 @@ export function TermCompsAside() {
         {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
           <>
             {COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST}
-            {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
-            {COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION}
+            <CountyCompsPdfAssessorAvailabilityCopy />
           </>
         ) : (
           COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST

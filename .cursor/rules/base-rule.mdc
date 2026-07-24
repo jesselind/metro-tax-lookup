@@ -90,6 +90,17 @@ This rule **overrides** the instinct to be balanced or reassuring. Soft praise i
 - **Human-friendly documentation:** Put methodology, provenance, citations, audit guidance, and **definitions of technical terms** on the **in-app Sources** page (`/sources`). The repo **README** stays **technical** (developers, GitHub, pipeline). Do **not** paste long narrative methodology into README - **cross-link `/sources`**. On Sources, spell out or link jargon on **first substantive use** (e.g. **JSON** with an in-page definition or footnote), not only in README.
 - **Documentation when you change things:** Any addition or change that affects how the app works, what data it uses, how it is built or deployed, or how users should interpret results must include updates to **README.md** and/or **`src/app/sources/page.tsx`** as appropriate before the work is considered complete. README: setup, pipeline, file paths. `/sources`: narrative, citations, and **plain explanations** for readers who want depth. If unsure, prefer `/sources` for human narrative and README for a short cross-link only.
 
+### Response length and conversation style (mandatory)
+
+Default to **short** replies. Do **not** blindside the user with too little info when a decision, risk, or blocker matters — say that plainly in a sentence, then stop.
+
+- **Lead with the answer** in the first sentence or two. No preamble or survey.
+- **No overview reports** (except review and audit responses; see below). Do not dump every issue, option, or bullet in one message. Pick **one** point (or one question) and go deep on that; wait for the user before the next.
+- **Prefer one question at a time** over option menus. Engage collaboratively; the user will steer what to unpack next.
+- **Discussion and strategy:** keep it tight unless the user asks to go deeper. Skip tables and diagrams unless requested or essential.
+- **Longer is OK when** the task needs it: code diffs, debugging, audits they asked for, or they say "explain in detail."
+- **Review and audit responses** override the **No overview reports** and **pick one point** limits above: list every still-valid issue, risk, gap, and actionable follow-up in a single response (per **Review and audit responses**), while staying concise and scannable elsewhere.
+
 ### General AI behavior
 
 - **High level first.** Lead with the direct answer or recommendation before detail. On new topics, assume the user wants the headline, not a survey — they will ask to go deeper or you can offer to.

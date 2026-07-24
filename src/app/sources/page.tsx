@@ -523,7 +523,8 @@ export default function SourcesPage() {
             number.
           </li>
           <li>
-            <strong>Property classification:</strong>{" "}The summary uses the
+            <strong>Property classification:</strong>{" "}At the top of Property
+            details (above the county parcel-record panel), we show the
             assessor&apos;s class description from the mart export. A paper
             notice may still say Residential or Commercial for the same parcel;
             see{" "}
@@ -629,6 +630,9 @@ export default function SourcesPage() {
           </li>
           <li>
             <strong>Comps PDF</strong>{" "}uses the parcel&apos;s AIN when available.{" "}
+            When county hosting is limited, the home summary tile uses a red
+            alert border with a short status; the whole tile opens the full explanation
+            (the PDF icon is a visual cue), and includes a link to try the county download if your value changed.{" "}
             <CountyCompsPdfSourcesAvailabilityNote /> The in-page comps grid is
             demo-only today (
             <strong className="text-slate-900">Try demo property</strong>
