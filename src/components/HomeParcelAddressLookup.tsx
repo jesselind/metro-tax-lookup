@@ -925,11 +925,21 @@ export function HomeParcelAddressLookup({
 
   const levyAndPropertyLayout = showPropertyDetailsColumn ? (
     <div className="space-y-3 sm:space-y-5">
+      {/*
+        Levy first in DOM so mobile visual/keyboard match. On lg, grid placement
+        puts property in the left column (sidebar) without CSS order; tab order
+        still follows DOM (levy, then property).
+      */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
-        {/* Property first in DOM for lg+ tab order; order-2 on small screens keeps levy above property visually. */}
+        <div className="space-y-3 lg:col-span-2 lg:col-start-2 lg:row-start-1">
+          {levySectionLead}
+        </div>
+        <div className="lg:col-span-2 lg:col-start-2 lg:row-start-2">
+          {levyBreakdownMain}
+        </div>
         <section
           id={HOME_PROPERTY_DETAILS_ID}
-          className="order-2 flex flex-col gap-3 scroll-mt-6 sm:scroll-mt-8 lg:order-none lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+          className="flex flex-col gap-3 scroll-mt-6 sm:scroll-mt-8 lg:col-start-1 lg:row-start-1 lg:row-span-2"
           aria-labelledby="parcel-record-heading"
         >
           <div className="space-y-3">{propertyDetailsHeader}</div>
@@ -951,12 +961,6 @@ export function HomeParcelAddressLookup({
             </a>
           ) : null}
         </section>
-        <div className="order-1 space-y-3 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-1">
-          {levySectionLead}
-        </div>
-        <div className="order-1 lg:order-none lg:col-span-2 lg:col-start-2 lg:row-start-2">
-          {levyBreakdownMain}
-        </div>
       </div>
       <ParcelRecordExtendedSection
         loading={parcelRecordLoading}

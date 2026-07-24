@@ -4,10 +4,12 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import {
-  COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION,
+  COUNTY_COMPS_PDF_ASSESSOR_NOTE_EMPHASIS,
+  COUNTY_COMPS_PDF_ASSESSOR_NOTE_LEAD,
+  COUNTY_COMPS_PDF_ASSESSOR_NOTE_TAIL,
   COUNTY_COMPS_PDF_ASSESSOR_PREFIX,
-  COUNTY_COMPS_PDF_POPOVER_2027_NOTE,
-  COUNTY_COMPS_PDF_POPOVER_ASSESSOR_NOTE,
+  COUNTY_COMPS_PDF_ASSESSOR_2027_NOTE,
+  COUNTY_COMPS_PDF_POPOVER_OTHERWISE_UNAVAILABLE,
   COUNTY_COMPS_PDF_SOURCES_LEAD,
   COUNTY_COMPS_PDF_NO_FILE_FOUND,
   COUNTY_COMPS_PDF_TRY_IF_VALUE_CHANGED,
@@ -15,6 +17,26 @@ import {
 } from "@/content/countyCompsPdfGuidance";
 import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
+
+const EMPHASIS_CLASS = "font-semibold text-slate-900";
+
+/** Shared Assessor availability copy (popover, /sources, glossary). */
+export function CountyCompsPdfAssessorAvailabilityCopy() {
+  return (
+    <>
+      {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
+      {COUNTY_COMPS_PDF_ASSESSOR_NOTE_LEAD}
+      {" "}
+      <strong className={EMPHASIS_CLASS}>
+        {COUNTY_COMPS_PDF_ASSESSOR_NOTE_EMPHASIS}
+      </strong>
+      {" "}
+      {COUNTY_COMPS_PDF_ASSESSOR_NOTE_TAIL}
+      {" "}
+      {COUNTY_COMPS_PDF_ASSESSOR_2027_NOTE}
+    </>
+  );
+}
 
 type CountyCompsPdfUnavailablePopoverBodyProps = {
   countyHref: string;
@@ -42,17 +64,14 @@ export function CountyCompsPdfUnavailablePopoverBody({
         </p>
       ) : null}
       <p>
-        This county link may return{" "}
-        <span className="font-semibold text-slate-900">
+        {COUNTY_COMPS_PDF_POPOVER_OTHERWISE_UNAVAILABLE}{" "}
+        <strong className={EMPHASIS_CLASS}>
           {COUNTY_COMPS_PDF_NO_FILE_FOUND}
-        </span>
+        </strong>
         .
       </p>
       <p className="mt-2">
-        {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
-        {COUNTY_COMPS_PDF_POPOVER_ASSESSOR_NOTE}
-        {" "}
-        {COUNTY_COMPS_PDF_POPOVER_2027_NOTE}
+        <CountyCompsPdfAssessorAvailabilityCopy />
       </p>
     </div>
   );
@@ -63,10 +82,11 @@ export function CountyCompsPdfSourcesAvailabilityNote() {
   return (
     <>
       {COUNTY_COMPS_PDF_SOURCES_LEAD}{" "}
-      <strong className="text-slate-900">{COUNTY_COMPS_PDF_NO_FILE_FOUND}</strong>
+      <strong className={EMPHASIS_CLASS}>
+        {COUNTY_COMPS_PDF_NO_FILE_FOUND}
+      </strong>
       {". "}
-      {COUNTY_COMPS_PDF_ASSESSOR_PREFIX}
-      {COUNTY_COMPS_PDF_ASSESSOR_EXPLANATION}
+      <CountyCompsPdfAssessorAvailabilityCopy />
     </>
   );
 }
