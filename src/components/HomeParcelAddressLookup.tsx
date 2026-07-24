@@ -173,6 +173,7 @@ const AC_SECTION = "section-arapahoe-situs";
 
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
+const HOME_LEVY_BREAKDOWN_ARIA_LABEL = "Property tax breakdown";
 
 /** Property details panel (below levy stack on small screens). */
 const HOME_PROPERTY_DETAILS_ID = "home-property-details";
@@ -699,6 +700,13 @@ export function HomeParcelAddressLookup({
   /** PIN entry + workbench shortcut stay hidden until address search needs a manual PIN path. */
   const showParcelPinSection =
     showCountyPinFallback || (hits != null && hits.length > 1);
+
+  /** Locked vs unlocked levy shells are mutually exclusive; share one ID, never both. */
+  const showHomeLevyBreakdownRegion =
+    addressSearchLocked && showHomeLevyMetroAndHub;
+  const showHomeLevyBreakdownWorkbenchShell =
+    !addressSearchLocked &&
+    (showParcelPinSection || showHomeLevyMetroAndHub);
 
   /**
    * Accuracy / report email callout: not on the empty address form; only after a submitted
@@ -1645,10 +1653,12 @@ export function HomeParcelAddressLookup({
               {error}
             </InlineErrorCallout>
           ) : null}
-          {showHomeLevyMetroAndHub ? (
+          {showHomeLevyBreakdownRegion ? (
             <div
               id={HOME_LEVY_BREAKDOWN_ID}
               className="scroll-mt-6 sm:scroll-mt-8"
+              role="region"
+              aria-label={HOME_LEVY_BREAKDOWN_ARIA_LABEL}
             >
               {levyAndPropertyLayout}
             </div>
@@ -1753,12 +1763,12 @@ export function HomeParcelAddressLookup({
             <InlineErrorCallout liveRegion="polite">{levyLoadError}</InlineErrorCallout>
           ) : null}
 
-      {!addressSearchLocked && (showParcelPinSection || showHomeLevyMetroAndHub) ? (
+      {showHomeLevyBreakdownWorkbenchShell ? (
         <div
           id={HOME_LEVY_BREAKDOWN_ID}
           className={`scroll-mt-6 space-y-5 sm:scroll-mt-8 ${!showHomeLevyMetroAndHub ? "min-h-px" : ""}`}
           role={showHomeLevyMetroAndHub ? "region" : undefined}
-          aria-label={showHomeLevyMetroAndHub ? "Property tax breakdown" : undefined}
+          aria-label={showHomeLevyMetroAndHub ? HOME_LEVY_BREAKDOWN_ARIA_LABEL : undefined}
         >
           {showHomeLevyMetroAndHub ? (
           <>
