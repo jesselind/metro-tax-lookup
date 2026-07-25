@@ -17,7 +17,6 @@ function dataRequest(
   path: string,
   init?: {
     method?: string;
-    ip?: string;
     realIp?: string;
     vercelForwardedFor?: string;
   },
@@ -28,9 +27,6 @@ function dataRequest(
   }
   if (init?.realIp) {
     headers.set("x-real-ip", init.realIp);
-  }
-  if (init?.ip) {
-    headers.set("x-forwarded-for", init.ip);
   }
   return new NextRequest(`http://127.0.0.1:3000${path}`, {
     method: init?.method ?? "GET",
@@ -125,6 +121,11 @@ describe("proxy `/data` rate limiting", () => {
       const res = await proxy(dataRequest(HEAVY_PATH, { realIp: ip }));
       expect(res.status).toBe(200);
       expect(res.headers.get("X-RateLimit-Limit")).toBeNull();
+      expect(res.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
     }
+    const disallowed = await proxy(
+      dataRequest(HEAVY_PATH, { method: "POST", realIp: ip }),
+    );
+    expect(disallowed.status).toBe(405);
   });
 });

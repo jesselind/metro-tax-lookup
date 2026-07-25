@@ -25,11 +25,11 @@ describe("clientIpFromHeaders", () => {
     expect(clientIpFromHeaders(headers)).toBe("203.0.113.10");
   });
 
-  it("falls back to the first x-forwarded-for hop when platform headers are absent", () => {
+  it("ignores standalone x-forwarded-for when platform headers are absent", () => {
     const headers = new Headers({
       "x-forwarded-for": "198.51.100.2, 10.0.0.1",
     });
-    expect(clientIpFromHeaders(headers)).toBe("198.51.100.2");
+    expect(clientIpFromHeaders(headers)).toBe("unknown");
   });
 
   it("falls back to the default when no client headers are present", () => {

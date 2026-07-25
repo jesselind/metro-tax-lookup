@@ -6,10 +6,10 @@
 /**
  * Best-effort client IP for rate limiting behind Vercel / reverse proxies.
  *
- * Prefer platform-set headers (`x-vercel-forwarded-for`, then `x-real-ip`) over
- * client-controlled `x-forwarded-for`. A client can prepend spoofed hops to
- * `x-forwarded-for`, so its leftmost value is untrusted and only used as a
- * last-resort fallback (e.g. some non-Vercel local setups).
+ * Prefer platform-set headers (`x-vercel-forwarded-for`, then `x-real-ip`).
+ * Do not use client-controlled `x-forwarded-for`: a client can prepend spoofed
+ * hops, so its leftmost value is untrusted as a limiter identity. When trusted
+ * headers are absent, return the fallback (shared bucket).
  */
 
 /** First hop from a comma-separated forwarding header, or null if empty. */
@@ -28,9 +28,6 @@ export function clientIpFromHeaders(
 
   const realIp = headers.get("x-real-ip")?.trim();
   if (realIp) return realIp;
-
-  const fromForwarded = firstHop(headers.get("x-forwarded-for"));
-  if (fromForwarded) return fromForwarded;
 
   return fallback;
 }

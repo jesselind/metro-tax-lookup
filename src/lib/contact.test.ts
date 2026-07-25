@@ -14,6 +14,9 @@ import { SYNTHETIC_AIN, SYNTHETIC_PIN } from "@/lib/syntheticTestIds";
 
 describe("REPORT_PROBLEM_MAILTO_HREF", () => {
   it("uses Civic Lookup branding in the prefilled feedback email", () => {
+    expect(REPORT_PROBLEM_MAILTO_HREF.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(
+      true,
+    );
     const query = REPORT_PROBLEM_MAILTO_HREF.slice(
       `mailto:${CONTACT_EMAIL}?`.length,
     );

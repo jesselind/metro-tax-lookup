@@ -22,10 +22,6 @@ import {
  * Matcher is `/data` only so HTML and `_next` assets are untouched.
  */
 export function proxy(request: NextRequest) {
-  if (process.env.RATE_LIMIT_DISABLED === "1") {
-    return NextResponse.next();
-  }
-
   const { pathname } = request.nextUrl;
 
   if (!pathname.startsWith("/data/")) {
@@ -39,6 +35,10 @@ export function proxy(request: NextRequest) {
         headers: { Allow: "GET, HEAD", "Cache-Control": "no-store" },
       }),
     );
+  }
+
+  if (process.env.RATE_LIMIT_DISABLED === "1") {
+    return withDataHeaders(NextResponse.next());
   }
 
   const ip = clientIpFromHeaders(request.headers);
