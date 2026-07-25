@@ -15,6 +15,11 @@ import {
   SITE_CONTENT_MAX_WIDTH_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import {
+  SITE_BRAND_MARK,
+  SITE_BRAND_NAME,
+  TRADEMARK_OWNER,
+} from "@/content/trademarkNotice";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +32,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Arapahoe County property tax tools",
+  title: {
+    default: SITE_BRAND_NAME,
+    template: `%s | ${SITE_BRAND_NAME}`,
+  },
+  applicationName: SITE_BRAND_NAME,
+  appleWebApp: {
+    title: SITE_BRAND_NAME,
+  },
   description:
     "Citizen-friendly tools to help Arapahoe County residents understand property taxes using publicly available state and county data.",
 };
@@ -89,6 +101,17 @@ export default function RootLayout({
               </p>
               <p className="mt-3 text-center text-xs text-slate-500 sm:text-sm">
                 Version {APP_VERSION} · Last updated {SITE_LAST_UPDATED_LABEL}
+              </p>
+              <p className="mt-3 text-center text-xs leading-relaxed text-slate-500 sm:text-sm">
+                {SITE_BRAND_MARK}
+                {" "}
+                is a trademark of {TRADEMARK_OWNER}. The code is open under
+                AGPL; the name is not. Details on the{" "}
+                <Link href="/privacy#trademark" className={TERM_LINK_CLASS}>
+                  Privacy
+                </Link>
+                {" "}
+                page.
               </p>
               <GitHubRepoButton />
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">

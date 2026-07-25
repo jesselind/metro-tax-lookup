@@ -12,7 +12,7 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Property tax tools", level: 1 }),
+    page.getByRole("heading", { name: "Civic Lookup", level: 1 }),
   ).toBeVisible();
   await expect(page.getByRole("form", { name: "Address lookup" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Street address" })).toBeVisible();

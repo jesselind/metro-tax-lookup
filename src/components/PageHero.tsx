@@ -12,7 +12,8 @@ import {
 } from "@/lib/toolFlowStyles";
 
 type PageHeroProps = {
-  title: string;
+  /** Page title (plain string or markup, e.g. brand name + trademark mark). */
+  title: ReactNode;
   /** Optional control (e.g. Start over) on the right. Same row as the title at all widths. */
   actions?: ReactNode;
 };

@@ -38,7 +38,7 @@ import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { glossaryTermHref } from "@/lib/glossary";
 
 export const metadata = {
-  title: "Sources | Property tax tools",
+  title: "Sources",
   description:
     "How to verify numbers against Arapahoe County and Colorado sources, plus plain-language methodology for how this site matches parcels, levies, and district contact.",
 };
