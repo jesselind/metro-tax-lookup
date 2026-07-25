@@ -5,7 +5,7 @@
 
 /**
  * Policy for `/data/*` requests: method allowlist + per-path rate tiers.
- * Tuned for legitimate lookups (a few large JSON fetches per session) while
+ * Tuned for mass demos on shared WiFi (library, classroom) while still
  * slowing bulk scrapes that burn Vercel Hobby bandwidth. Limits are per IP
  * per {@link DATA_RATE_WINDOW_MS} (shared NAT / venue WiFi counts as one IP).
  */
@@ -21,15 +21,16 @@ export const HEAVY_DATA_PATHS = new Set([
 
 /**
  * Requests per IP per window for heavy bundles.
- * Sized for a few full page loads sharing one NAT (venue WiFi), not scrapers.
+ * ~3 heavy fetches per cold session; 180 allows ~60 people on one WiFi IP
+ * opening the app in the same minute (CDN-warm traffic often never hits this).
  */
-export const HEAVY_DATA_LIMIT = 24;
+export const HEAVY_DATA_LIMIT = 180;
 
 /**
  * Requests per IP per window for other `/data` JSON (shards, smaller files).
- * Many real addresses on one shared IP should still clear this comfortably.
+ * Sized so a room of concurrent address lookups on one NAT stays under the cap.
  */
-export const OTHER_DATA_LIMIT = 120;
+export const OTHER_DATA_LIMIT = 600;
 
 const ALLOWED_METHODS = new Set(["GET", "HEAD"]);
 
