@@ -1,0 +1,6 @@
+# Discourage polite crawlers from bulk-downloading county JSON dumps.
+# Attackers ignore robots.txt; rate limiting lives in src/proxy.ts.
+
+User-agent: *
+Allow: /
+Disallow: /data/

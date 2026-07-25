@@ -81,6 +81,22 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      /**
+       * County JSON under /data changes only on redeploy. Let the CDN keep copies so
+       * repeat scrapes (and legit revisits) burn less origin bandwidth. Rate limiting
+       * in src/proxy.ts still applies on cache misses / colder shard traffic.
+       */
+      {
+        source: "/data/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value:
+              "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+          },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
     ];
   },
 };

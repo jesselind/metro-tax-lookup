@@ -4,10 +4,11 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { StaticArticleShell } from "@/components/StaticArticleShell";
+import { TRADEMARK_NOTICE } from "@/content/trademarkNotice";
 
 export const metadata = {
-  title: "Privacy policy | Metro district tax share",
-  description: "Privacy policy for the Metro district tax share tool.",
+  title: "Privacy policy",
+  description: "Privacy policy for Civic Lookup.",
 };
 
 export default function PrivacyPage() {
@@ -61,6 +62,16 @@ export default function PrivacyPage() {
           This site links to external websites (for example, the county
           property search). Those sites have their own privacy practices.
         </p>
+      </section>
+
+      <section
+        id="trademark"
+        className="mt-8 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg"
+      >
+        <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+          Trademark
+        </h2>
+        <p>{TRADEMARK_NOTICE}</p>
       </section>
     </StaticArticleShell>
   );

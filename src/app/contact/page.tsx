@@ -6,10 +6,11 @@
 import { MailContactCard } from "@/components/MailContactCard";
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import { CONTACT_EMAIL, CONTACT_MAILTO_HREF } from "@/lib/contact";
+import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
 
 export const metadata = {
-  title: "Contact | Metro district tax share",
-  description: "Contact the maintainer of the Metro district tax share tool.",
+  title: "Contact",
+  description: `Contact the maintainer of ${SITE_BRAND_NAME}.`,
 };
 
 export default function ContactPage() {

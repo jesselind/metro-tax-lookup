@@ -9,7 +9,7 @@ import { AllTermDefinitionAsides } from "@/content/termDefinitions";
 import { SOURCES_PAGE_INNER_CLASS } from "@/lib/toolFlowStyles";
 
 export const metadata = {
-  title: "Glossary | Property tax tools",
+  title: "Glossary",
   description:
     "Plain-language definitions for PINs, mills, LG IDs, assessed value, and related Arapahoe property-tax terms used in this site.",
 };

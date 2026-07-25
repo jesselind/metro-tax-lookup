@@ -6,9 +6,24 @@
 import { describe, expect, it } from "vitest";
 import {
   CONTACT_EMAIL,
+  REPORT_PROBLEM_MAILTO_HREF,
   buildMissingParcelDataMailtoHref,
 } from "@/lib/contact";
+import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
 import { SYNTHETIC_AIN, SYNTHETIC_PIN } from "@/lib/syntheticTestIds";
+
+describe("REPORT_PROBLEM_MAILTO_HREF", () => {
+  it("uses Civic Lookup branding in the prefilled feedback email", () => {
+    const query = REPORT_PROBLEM_MAILTO_HREF.slice(
+      `mailto:${CONTACT_EMAIL}?`.length,
+    );
+    const params = new URLSearchParams(query);
+    expect(params.get("subject")).toBe(`${SITE_BRAND_NAME} feedback`);
+    expect(params.get("body")).toContain(
+      `Hello, I found an issue with ${SITE_BRAND_NAME}.`,
+    );
+  });
+});
 
 describe("buildMissingParcelDataMailtoHref", () => {
   it("includes field label, PIN, and AIN in a mailto to the site contact", () => {

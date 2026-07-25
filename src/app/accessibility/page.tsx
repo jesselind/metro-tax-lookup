@@ -5,12 +5,12 @@
 
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import { CONTACT_EMAIL, CONTACT_MAILTO_HREF } from "@/lib/contact";
+import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
 import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 export const metadata = {
-  title: "Accessibility statement | Metro district tax share",
-  description:
-    "Accessibility statement for the Metro district tax share tool.",
+  title: "Accessibility statement",
+  description: `Accessibility statement for ${SITE_BRAND_NAME}.`,
 };
 
 export default function AccessibilityPage() {

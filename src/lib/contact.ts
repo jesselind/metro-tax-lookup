@@ -5,7 +5,9 @@
 
 /** Single source for site contact email and mailto helpers. */
 
-export const CONTACT_EMAIL = "metro.tax.lookup@pm.me";
+import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
+
+export const CONTACT_EMAIL = "info@civiclookup.com";
 
 export const CONTACT_MAILTO_HREF = `mailto:${CONTACT_EMAIL}`;
 
@@ -17,9 +19,9 @@ function buildMailtoHref(subject: string, body?: string): string {
   return href;
 }
 
-const REPORT_PROBLEM_SUBJECT = "Property tax lookup issue";
+const REPORT_PROBLEM_SUBJECT = `${SITE_BRAND_NAME} feedback`;
 
-const REPORT_PROBLEM_BODY = `Hello, I found an issue with the property tax lookup tool.
+const REPORT_PROBLEM_BODY = `Hello, I found an issue with ${SITE_BRAND_NAME}.
 
 
 1. What looks wrong (say it in your own words):
