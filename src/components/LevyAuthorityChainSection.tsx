@@ -12,7 +12,7 @@
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import {
   GlossaryTermPopover,
-  type FlowGlossaryTermId,
+  isFlowGlossaryTermId,
 } from "@/components/GlossaryTermPopover";
 import {
   isLevyAuthorityChainInlineTermId,
@@ -31,7 +31,7 @@ type Props = {
  * Turn one word into an in-place definition popover when the entry asks for it.
  * Falls back to plain text if the term is unknown or the word is not found.
  * Allowed term ids come from JSON `allowedInlineTermIds` (same list the
- * validator uses).
+ * validator uses) and must also resolve a flow glossary brief.
  */
 function renderWithInlineTerm(
   text: string,
@@ -39,7 +39,12 @@ function renderWithInlineTerm(
   match: string | undefined,
   textTriggerId: string,
 ): ReactNode {
-  if (!termId || !match || !isLevyAuthorityChainInlineTermId(termId)) {
+  if (
+    !termId ||
+    !match ||
+    !isLevyAuthorityChainInlineTermId(termId) ||
+    !isFlowGlossaryTermId(termId)
+  ) {
     return text;
   }
   const at = text.toLowerCase().indexOf(match.toLowerCase());
@@ -50,7 +55,7 @@ function renderWithInlineTerm(
     <>
       {text.slice(0, at)}
       <GlossaryTermPopover
-        termId={termId as FlowGlossaryTermId}
+        termId={termId}
         textTrigger={text.slice(at, at + match.length)}
         textTriggerId={textTriggerId}
       />

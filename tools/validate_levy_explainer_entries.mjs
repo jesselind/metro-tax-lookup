@@ -23,10 +23,19 @@ function normalizeLgIdForExplainer(raw) {
   return digits.length <= 5 ? digits.padStart(5, "0") : digits;
 }
 
+/** Align with src/lib/levyEntryMatch.ts normalizeLevyAuthorityLabel. */
+function normalizeLabelFrag(raw) {
+  return String(raw)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function sortedLabelKey(frags) {
   if (!Array.isArray(frags)) return "";
   const parts = frags
-    .map((f) => String(f).toLowerCase().trim())
+    .map((f) => normalizeLabelFrag(f))
     .filter((f) => f.length > 0)
     .sort();
   return parts.join("|");

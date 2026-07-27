@@ -40,11 +40,13 @@ test.describe("Levy authority chain (prototype)", () => {
       chain.getByText(/According to Arapahoe County's certified election results/i),
     ).toBeVisible();
 
-    await chain.getByText("See each step").click();
+    await chain.locator("summary", { hasText: "See each step" }).click();
     await expect(chain.getByText("Who gets this money?")).toBeVisible();
     await expect(chain.getByText("Ballot Issue 4A: More operating money")).toBeVisible();
 
-    await chain.getByText("What we still cannot say").click();
+    await chain
+      .locator("summary", { hasText: "What we still cannot say" })
+      .click();
     await expect(
       chain.getByText(/have not yet linked a county or school table that splits/i),
     ).toBeVisible();

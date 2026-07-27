@@ -109,7 +109,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 ### Authority chain (`levy-authority-chain-entries.json`)
 
-Hand-curated **Who authorized this?** trail for selected stack rows (prototype: Cherry Creek School Dist 5, AUTH `0501`). Each fact requires an `https` official source. Open gaps must stay honest when causality is not proven. Match keys share `src/lib/levyEntryMatch.ts` with levy explainers (same order; authority-chain label-only skips keyed entries). Validate with `npm run validate:levy-authority-chain` (also in `prebuild`). Narrative: `/sources`. Authoring notes: `docs/levy-explainer-authoring.md`.
+Hand-curated **Who authorized this?** trail for selected stack rows (prototype: Cherry Creek School Dist 5, AUTH `0501`). Each fact requires an `https` source URL; the validator checks the `https` scheme only. Whether a host is an official public record remains a manual authoring check. Open gaps must stay honest when causality is not proven. Match keys share `src/lib/levyEntryMatch.ts` with levy explainers (same order; authority-chain label-only skips keyed entries). Validate with `npm run validate:levy-authority-chain` (also in `prebuild`). Narrative: `/sources`. Authoring notes: `docs/levy-explainer-authoring.md`.
 
 ## Regenerating data (full pipeline)
 

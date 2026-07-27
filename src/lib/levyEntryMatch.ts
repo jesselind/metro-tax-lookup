@@ -75,7 +75,7 @@ function entryMatchesLabel(
   const all = match.labelContainsAll;
   if (!all?.length) return false;
   const frags = all
-    .map((frag) => frag.toLowerCase().trim())
+    .map((frag) => normalizeLevyAuthorityLabel(frag))
     .filter((frag) => frag.length > 0);
   if (!frags.length) return false;
   return frags.every((frag) => normalizedLabel.includes(frag));
@@ -91,8 +91,6 @@ function entryMatchesLgIdWithLabelGuard(
   if (!lg) return false;
   if (match.levyLineCode?.trim()) return false;
   if (normalizeLgIdForExplainer(lg) !== normalizedOptionsLgId) return false;
-  const frags = match.labelContainsAll;
-  if (!frags?.length) return false;
   return entryMatchesLabel(match, normalizedLabel);
 }
 
@@ -114,6 +112,7 @@ export function findFirstMatchingLevyEntry<
   authorityLabel: string,
   options?: FindMatchingLevyEntryOptions,
 ): T | null {
+  const normalizedLabel = normalizeLevyAuthorityLabel(authorityLabel);
   const code = options?.levyLineCode?.trim().toUpperCase() ?? "";
   if (code) {
     for (const e of entries) {
@@ -121,11 +120,10 @@ export function findFirstMatchingLevyEntry<
     }
   }
   const optLg = normalizeLgIdForExplainer(options?.lgId);
-  if (optLg) {
-    const n = normalizeLevyAuthorityLabel(authorityLabel);
-    if (n) {
-      for (const e of entries) {
-        if (entryMatchesLgIdWithLabelGuard(e.match, optLg, n)) return e;
+  if (optLg && normalizedLabel) {
+    for (const e of entries) {
+      if (entryMatchesLgIdWithLabelGuard(e.match, optLg, normalizedLabel)) {
+        return e;
       }
     }
   }
@@ -135,12 +133,11 @@ export function findFirstMatchingLevyEntry<
       if (entryMatchesSourceTag(e.match, tag)) return e;
     }
   }
-  const n = normalizeLevyAuthorityLabel(authorityLabel);
-  if (!n) return null;
+  if (!normalizedLabel) return null;
   const skipKeyed = Boolean(options?.skipKeyedEntriesOnLabelOnly);
   for (const e of entries) {
     if (skipKeyed && hasKeyedMatch(e.match)) continue;
-    if (entryMatchesLabel(e.match, n)) return e;
+    if (entryMatchesLabel(e.match, normalizedLabel)) return e;
   }
   return null;
 }

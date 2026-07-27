@@ -2,6 +2,8 @@
 /**
  * Validates public/data/levy-authority-chain-entries.json:
  * shape, unique ids/match keys, https sources on every fact, no em dash.
+ * allowedInlineTermIds must resolve a flow glossary brief (same set as
+ * isFlowGlossaryTermId in GlossaryTermPopover).
  *
  * Usage: node tools/validate_levy_authority_chain_entries.mjs
  */
@@ -15,6 +17,9 @@ const root = join(__dirname, "..");
 const path = join(root, "public/data/levy-authority-chain-entries.json");
 
 const EM_DASH = /\u2014/;
+
+/** Extra briefs on FlowGlossaryTermId beyond parcel + levy-modal registries. */
+const EXTRA_FLOW_BRIEF_TERM_IDS = ["term-mill-levy", "term-pin", "term-tag"];
 
 function assertInlineTerm(step, id, fieldPrefix, haystack, allowedTermIds) {
   const termIdKey = `${fieldPrefix}TermId`;
@@ -46,6 +51,12 @@ function fail(msg) {
   process.exit(1);
 }
 
+function assertObject(value, context) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    fail(`${context} must be an object`);
+  }
+}
+
 function assertNoEmDash(str, context) {
   if (typeof str !== "string" || !str.length) return;
   if (EM_DASH.test(str)) {
@@ -64,14 +75,65 @@ function normalizeLgId(raw) {
   return digits.length <= 5 ? digits.padStart(5, "0") : digits;
 }
 
+/** Align with src/lib/levyEntryMatch.ts normalizeLevyAuthorityLabel. */
+function normalizeLabelFrag(raw) {
+  return String(raw)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function sortedLabelKey(frags) {
   if (!Array.isArray(frags)) return "";
   const parts = frags
-    .map((f) => String(f).toLowerCase().trim())
+    .map((f) => normalizeLabelFrag(f))
     .filter((f) => f.length > 0)
     .sort();
   return parts.join("|");
 }
+
+/**
+ * Parse `export const NAME = [ "term-…", … ] as const` from a TS source file.
+ */
+function parseTermIdConstArray(filePath, constName) {
+  const src = readFileSync(filePath, "utf8");
+  const re = new RegExp(
+    `${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as const`,
+  );
+  const m = src.match(re);
+  if (!m) {
+    fail(`could not parse ${constName} from ${filePath}`);
+  }
+  const ids = [];
+  for (const hit of m[1].matchAll(/"(term-[^"]+)"/g)) {
+    ids.push(hit[1]);
+  }
+  if (ids.length === 0) {
+    fail(`${constName} in ${filePath} had no term ids`);
+  }
+  return ids;
+}
+
+/** Same brief-capable ids as isFlowGlossaryTermId (GlossaryTermPopover). */
+function loadFlowGlossaryBriefTermIds() {
+  const ids = new Set(EXTRA_FLOW_BRIEF_TERM_IDS);
+  for (const id of parseTermIdConstArray(
+    join(root, "src/lib/levyModalTermIds.ts"),
+    "LEVY_MODAL_TERM_IDS",
+  )) {
+    ids.add(id);
+  }
+  for (const id of parseTermIdConstArray(
+    join(root, "src/content/termDefinitionBodies.tsx"),
+    "PARCEL_GLOSSARY_TERM_IDS",
+  )) {
+    ids.add(id);
+  }
+  return ids;
+}
+
+const flowBriefTermIds = loadFlowGlossaryBriefTermIds();
 
 const raw = readFileSync(path, "utf8");
 let data;
@@ -93,6 +155,11 @@ for (const termId of data.allowedInlineTermIds) {
   }
   if (allowedTermIds.has(termId)) {
     fail(`duplicate allowedInlineTermIds entry: ${termId}`);
+  }
+  if (!flowBriefTermIds.has(termId)) {
+    fail(
+      `allowedInlineTermIds entry "${termId}" is not a flow glossary brief id (isFlowGlossaryTermId)`,
+    );
   }
   allowedTermIds.add(termId);
 }
@@ -188,6 +255,7 @@ for (const entry of data.entries) {
 
   const stepIds = new Set();
   for (const step of entry.steps) {
+    assertObject(step, `[${id}] step`);
     if (!isNonEmptyString(step.id)) fail(`[${id}] step missing id`);
     if (stepIds.has(step.id)) fail(`[${id}] duplicate step id: ${step.id}`);
     stepIds.add(step.id);
@@ -200,6 +268,7 @@ for (const entry of data.entries) {
     if (!Array.isArray(step.facts)) fail(`[${id}] step ${step.id} facts must be an array`);
     const factLabels = new Set();
     for (const fact of step.facts) {
+      assertObject(fact, `[${id}] step ${step.id} fact`);
       if (!isNonEmptyString(fact.label)) {
         fail(`[${id}] step ${step.id} fact missing label`);
       }
@@ -219,6 +288,7 @@ for (const entry of data.entries) {
         );
       }
       for (const src of fact.sources) {
+        assertObject(src, `[${id}] step ${step.id} fact "${fact.label}" source`);
         if (!isNonEmptyString(src.text)) {
           fail(`[${id}] source missing text on fact "${fact.label}"`);
         }
@@ -234,6 +304,7 @@ for (const entry of data.entries) {
 
   const gapIds = new Set();
   for (const gap of entry.openGaps) {
+    assertObject(gap, `[${id}] openGap`);
     if (!isNonEmptyString(gap.id)) fail(`[${id}] openGap missing id`);
     if (gapIds.has(gap.id)) fail(`[${id}] duplicate openGap id: ${gap.id}`);
     gapIds.add(gap.id);

@@ -8,7 +8,7 @@ import { DisclosureChevron } from "@/components/DisclosureChevron";
 import { InfoIcon } from "@/components/InfoIcon";
 
 const SUMMARY_CLASS =
-  "cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5";
+  "cursor-pointer list-none bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5 [&::-webkit-details-marker]:hidden";
 
 type InfoDetailsProps = {
   title: string;

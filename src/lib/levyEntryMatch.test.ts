@@ -82,4 +82,58 @@ describe("levyEntryMatch", () => {
       findFirstMatchingLevyEntry(entries, "UNRELATED", { lgId: "64116" }),
     ).toBeNull();
   });
+
+  it("excludes LG id path when entry declares levyLineCode", () => {
+    const codedOnly = [
+      {
+        id: "coded",
+        match: {
+          levyLineCode: "4528",
+          lgId: "64116",
+          labelContainsAll: ["regional", "transport"],
+        },
+      },
+    ];
+    // LG path skips coded rows; skipKeyed blocks label-only fallthrough so the
+    // exclusion is isolated despite matching lgId and labels.
+    expect(
+      findFirstMatchingLevyEntry(codedOnly, "REGIONAL TRANSPORTATION", {
+        lgId: "64116",
+        skipKeyedEntriesOnLabelOnly: true,
+      }),
+    ).toBeNull();
+  });
+
+  it("matches sourceTagId before label keywords", () => {
+    const entries = [
+      {
+        id: "by-label",
+        match: { labelContainsAll: ["cherry", "creek"] },
+      },
+      {
+        id: "by-tag",
+        match: {
+          sourceTagId: "TAG-99",
+          labelContainsAll: ["unrelated"],
+        },
+      },
+    ];
+    expect(
+      findFirstMatchingLevyEntry(entries, "CHERRY CREEK SCHOOL", {
+        sourceTagId: "TAG-99",
+      })?.id,
+    ).toBe("by-tag");
+  });
+
+  it("normalizes labelContainsAll fragments like the authority label", () => {
+    const entries = [
+      {
+        id: "punctuated",
+        match: { labelContainsAll: ["cherry-creek", "school"] },
+      },
+    ];
+    expect(
+      findFirstMatchingLevyEntry(entries, "CHERRY CREEK SCHOOL")?.id,
+    ).toBe("punctuated");
+  });
 });

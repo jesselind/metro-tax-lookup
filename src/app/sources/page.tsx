@@ -316,7 +316,8 @@ export default function SourcesPage() {
           <strong className="font-semibold text-slate-900">
             Who authorized this? (Cherry Creek School District prototype):
           </strong>{" "}
-          For the Cherry Creek school row on a levy stack (county code{" "}
+          For the Cherry Creek school row on your property-tax breakdown (county
+          code{" "}
           <strong className="font-semibold text-slate-900">0501</strong>
           ), tile details can show a plain-language trail from voters and the
           school board to the published rate, with{" "}

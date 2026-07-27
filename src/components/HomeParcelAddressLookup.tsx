@@ -945,6 +945,7 @@ export function HomeParcelAddressLookup({
           aria-labelledby="parcel-record-heading"
         >
           <div className="space-y-3">{propertyDetailsHeader}</div>
+          {propertyClassificationLine}
           <ParcelRecordPanel
             loading={parcelRecordLoading}
             loadFailed={parcelRecordLoadFailed}
@@ -952,7 +953,6 @@ export function HomeParcelAddressLookup({
             pin={trimmedParcelPin}
             demoMode={isDemoMode}
           />
-          {propertyClassificationLine}
           {showParcelRecordExtendedJump ? (
             <a
               href={`#${PARCEL_RECORD_EXTENDED_SECTION_ID}`}
