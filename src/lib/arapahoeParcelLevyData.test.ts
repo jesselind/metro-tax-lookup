@@ -5,11 +5,17 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  ainLookupCandidates,
+  getAinToPinIndex,
+  looksLikeAinInput,
+  looksLikeParcelIdInput,
+  looksLikePinOnlyInput,
   lookupParcelRecordRow,
   PARCEL_RECORD_SHARD_PREFIX_LENGTH,
   parcelRecordShardPrefixes,
   parcelRecordShardUrl,
   pinLookupCandidates,
+  resolvePinKeyFromParcelIdInput,
 } from "./arapahoeParcelLevyData";
 import {
   SYNTHETIC_AIN,
@@ -73,5 +79,37 @@ describe("lookupParcelRecordRow", () => {
     expect(
       lookupParcelRecordRow(SYNTHETIC_PIN_NO_LEADING_ZERO, file)?.ain,
     ).toBe(SYNTHETIC_AIN);
+  });
+});
+
+describe("AIN and parcel-id input helpers", () => {
+  it("normalizes AIN candidates to 12 digits", () => {
+    expect(ainLookupCandidates(SYNTHETIC_AIN)).toEqual(["100000000001"]);
+    expect(ainLookupCandidates("1000 00 0 00 001")).toEqual(["100000000001"]);
+    expect(ainLookupCandidates(SYNTHETIC_PIN)).toEqual([]);
+  });
+
+  it("detects AIN vs PIN-only vs street-like input", () => {
+    expect(looksLikeAinInput(SYNTHETIC_AIN)).toBe(true);
+    expect(looksLikePinOnlyInput(SYNTHETIC_PIN)).toBe(true);
+    expect(looksLikeParcelIdInput(SYNTHETIC_AIN)).toBe(true);
+    expect(looksLikeParcelIdInput("1940 Holly St")).toBe(false);
+  });
+
+  it("resolves AIN to PIN through the reverse index", () => {
+    const file = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_PIN]: { tagId: "1", tagShortDescr: "0001", ain: SYNTHETIC_AIN },
+      },
+    };
+    expect(getAinToPinIndex(file).get("100000000001")).toBe(SYNTHETIC_PIN);
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN)).toBe(
+      SYNTHETIC_PIN,
+    );
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_PIN)).toBe(
+      SYNTHETIC_PIN,
+    );
   });
 });

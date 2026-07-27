@@ -534,11 +534,23 @@ export default function SourcesPage() {
           <li>
             <strong>Address and PIN:</strong>{" "}Search uses situs house number
             (plus optional number suffix), street name with direction and street
-            type stripped for matching, and optional unit.{" "}
+            type stripped for matching, and optional unit. Incomplete or lightly
+            misspelled street types (for example{" "}
+            <strong className="text-slate-900">stree</strong>
+            {" "}
+            for street) and close street-name typos are resolved against other
+            roads at the same house number; when several streets are plausible,
+            the form offers choices. You can also paste a parcel{" "}
+            <strong className="text-slate-900">PIN</strong>
+            {" "}
+            or assessor{" "}
+            <strong className="text-slate-900">AIN</strong>
+            {" "}
+            into the address or parcel-id field.{" "}
             <strong className="text-slate-900">Search</strong>{" "}or{" "}
             <strong className="text-slate-900">Enter</strong>{" "}from any field.
             One address can match many parcels; when several match, choose{" "}
-            <strong className="text-slate-900">View levy breakdown</strong>{" "}on
+            <strong className="text-slate-900">Use this property</strong>{" "}on
             the row you want.{" "}
             <strong className="text-slate-900">Business personal property</strong>{" "}
             is out of scope. Nothing is sent to our servers; address fields are

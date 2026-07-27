@@ -6,12 +6,12 @@
 import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
 import {
-  SYNTHETIC_E2E_ADDRESS,
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_OWNER,
   SYNTHETIC_E2E_SITUS_LINE,
   SYNTHETIC_PIN,
 } from "./fixtures/syntheticCountyData";
+import { searchSyntheticAddress } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 const authorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
@@ -24,11 +24,8 @@ test("synthetic address loads levy stack and property details", async ({
 }) => {
   await installSyntheticCountyData(page);
   await page.goto("/");
+  await searchSyntheticAddress(page);
 
-  await page.getByRole("textbox", { name: "Street address" }).fill(SYNTHETIC_E2E_ADDRESS);
-  await page.getByRole("button", { name: "Search" }).click();
-
-  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
   await expect(page.getByText(authorityLabel)).toBeVisible();
   await expect(page.locator("#parcel-record-heading")).toBeVisible();
 

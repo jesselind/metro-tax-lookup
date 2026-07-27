@@ -3,18 +3,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
-import { SYNTHETIC_E2E_ADDRESS, SYNTHETIC_E2E_AUTHORITY } from "./fixtures/syntheticCountyData";
+import { SYNTHETIC_E2E_AUTHORITY } from "./fixtures/syntheticCountyData";
+import { searchSyntheticAddress } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 const authorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
-
-async function searchSyntheticAddress(page: Page) {
-  await page.getByRole("textbox", { name: "Street address" }).fill(SYNTHETIC_E2E_ADDRESS);
-  await page.getByRole("button", { name: "Search" }).click();
-  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
-}
 
 test.describe("Levy authority chain (prototype)", () => {
   test("AUTH 0501 tile details show Who authorized this? panel", async ({
