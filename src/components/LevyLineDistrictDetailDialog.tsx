@@ -20,7 +20,9 @@ import { AuthorityMillsHistoryChart } from "@/components/AuthorityMillsHistoryCh
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSection";
+import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
+import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
 import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
@@ -326,6 +328,11 @@ export function LevyLineDistrictDetailDialog({
     Boolean(districtWebsiteHref) || mailingLinesForRecord.length > 0;
 
   const levyExplainerEntry = findLevyExplainerEntry(authorityLabel, {
+    levyLineCode,
+    sourceTagId,
+    lgId: dolaMatch?.lgId ?? undefined,
+  });
+  const levyAuthorityChainEntry = findLevyAuthorityChainEntry(authorityLabel, {
     levyLineCode,
     sourceTagId,
     lgId: dolaMatch?.lgId ?? undefined,
@@ -772,6 +779,12 @@ export function LevyLineDistrictDetailDialog({
             {showMillsHistoryChart ? (
               <div className="mt-4">
                 <AuthorityMillsHistoryChart series={millsHistory} />
+              </div>
+            ) : null}
+
+            {levyAuthorityChainEntry ? (
+              <div className="mt-4">
+                <LevyAuthorityChainSection entry={levyAuthorityChainEntry} />
               </div>
             ) : null}
 

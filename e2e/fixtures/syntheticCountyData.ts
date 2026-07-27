@@ -157,6 +157,12 @@ export const SYNTHETIC_LEVY_STACKS_WITH_METRO = {
  */
 export const SYNTHETIC_E2E_AUTH_YOY_CODE = "0101";
 
+/**
+ * County AUTH code for the hand-curated Cherry Creek authority-chain prototype
+ * (`levy-authority-chain-entries.json`). Label stays synthetic; match is by code.
+ */
+export const SYNTHETIC_E2E_AUTHORITY_CHAIN_CODE = "0501";
+
 export const SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY = {
   ...SYNTHETIC_LEVY_STACKS,
   stacksByTagId: {
@@ -172,6 +178,29 @@ export const SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY = {
             method: "none" as const,
             confidence: "low" as const,
             mills: 51.071,
+          },
+        },
+      ],
+    },
+  },
+};
+
+/** Levy stack whose AUTH code matches the authority-chain prototype entry. */
+export const SYNTHETIC_LEVY_STACKS_WITH_AUTHORITY_CHAIN = {
+  ...SYNTHETIC_LEVY_STACKS,
+  stacksByTagId: {
+    [SYNTHETIC_E2E_TAG_ID]: {
+      ...SYNTHETIC_LEVY_STACKS.stacksByTagId[SYNTHETIC_E2E_TAG_ID],
+      lines: [
+        {
+          code: SYNTHETIC_E2E_AUTHORITY_CHAIN_CODE,
+          authorityName: SYNTHETIC_E2E_AUTHORITY,
+          effectiveYear: "2025",
+          status: "A",
+          dolaMatch: {
+            method: "none" as const,
+            confidence: "low" as const,
+            mills: 54.108,
           },
         },
       ],

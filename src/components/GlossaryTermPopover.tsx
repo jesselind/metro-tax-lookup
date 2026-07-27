@@ -43,6 +43,15 @@ const EXTRA_BRIEFS: Record<
   "term-tag": { title: "TAG", Brief: TermTagBriefBody },
 };
 
+/** True when {@link GlossaryTermPopover} can resolve a brief for this id. */
+export function isFlowGlossaryTermId(id: string): id is FlowGlossaryTermId {
+  return (
+    id in EXTRA_BRIEFS ||
+    id in parcelGlossaryTermBriefRegistry ||
+    id in levyModalTermRegistry
+  );
+}
+
 function resolveBrief(termId: FlowGlossaryTermId): { title: string; Brief: FC } {
   if (termId in EXTRA_BRIEFS) {
     return EXTRA_BRIEFS[termId as keyof typeof EXTRA_BRIEFS];

@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "prototypeNote": "Hand-curated chain-of-authority entries. Every fact needs at least one official https source. Do not infer mill YoY causality without a fund-level certification cite. Resident strings: plain language first. Do not hard-code another parcel's TAG in shared district entries. Parcel verification lives elsewhere in the results.",
+  "allowedInlineTermIds": ["term-mill-levy", "term-mills"],
+  "entries": [
+    {
+      "id": "cherry-creek-5-school-authority-chain",
+      "match": {
+        "levyLineCode": "0501"
+      },
+      "heading": "Who authorized this?",
+      "summary": "According to Arapahoe County's certified election results, voters approved Cherry Creek's Ballot Issues 4A and 4B in November 2024. The school board then set the rate the county puts on your bill.",
+      "summarySource": {
+        "text": "According to Arapahoe County's certified election results",
+        "url": "https://www.arapahoeco.gov/your_county/votes/records_data/election_results.php"
+      },
+      "steps": [
+        {
+          "id": "who-sets",
+          "title": "Who gets this money?",
+          "body": "This part of your tax goes to Cherry Creek School District No. 5.",
+          "facts": [
+            {
+              "label": "Name on the county tax list",
+              "value": "CHERRY CRK SCHOOL DIST 5",
+              "sources": [
+                {
+                  "text": "County mill levy hub (rate tables by tax year)",
+                  "url": "https://www.arapahoeco.gov/your_county/county_departments/assessor/mill_levies_and_tax_districts.php#outer-96"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "certified-mills",
+          "title": "What changed?",
+          "body": "Each year the county publishes one total rate for this school district. That published total is what this app charts for this row.",
+          "bodyTermId": "term-mill-levy",
+          "bodyTermMatch": "rate",
+          "facts": [
+            {
+              "label": "2025 total rate (mills)",
+              "value": "54.108",
+              "sources": [
+                {
+                  "text": "County rate table for 2025 (PDF)",
+                  "url": "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
+                },
+                {
+                  "text": "County mill levy hub (all year PDFs)",
+                  "url": "https://www.arapahoeco.gov/your_county/county_departments/assessor/mill_levies_and_tax_districts.php#outer-96"
+                }
+              ]
+            },
+            {
+              "label": "2024 total rate (mills)",
+              "value": "53.962",
+              "sources": [
+                {
+                  "text": "County rate table for 2024 (PDF)",
+                  "url": "https://www.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ballot-4a-override",
+          "title": "Ballot Issue 4A: More operating money",
+          "body": "Issue 4A asked for a tax increase of $9 million for 2025 (and more in later years, within state limits). The ballot said the rate could not jump by more than one mill in any one year. The money was for school needs listed on the ballot, such as safety staff, teachers, mental health support, and classroom technology.",
+          "facts": [
+            {
+              "label": "Official ballot wording",
+              "value": "County Notice of Election (TABOR notice)",
+              "sources": [
+                {
+                  "text": "Opens to page 10 (PDF)",
+                  "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Arapahoe%20County_TABOR%20Notice_2024.pdf#page=10"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ballot-4b-debt",
+          "title": "Ballot Issue 4B: Borrowing for buildings",
+          "body": "The same ballot asked voters to let the district borrow up to $950 million for school buildings and related work (with a repayment cost capped at $1.85 billion, and annual taxes to repay the debt capped at $99.9 million). Approving the loan is not the same as saying those building costs already make up today's published total rate. Bonds may be sold over time.",
+          "facts": [
+            {
+              "label": "Official ballot wording",
+              "value": "County Notice of Election (TABOR notice)",
+              "sources": [
+                {
+                  "text": "Opens to page 12 (PDF)",
+                  "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Arapahoe%20County_TABOR%20Notice_2024.pdf#page=12"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "county-reported-results",
+          "title": "What Arapahoe County reports for 4A and 4B",
+          "body": "These are the county's published vote counts for both issues. This app reports what that record says; it does not independently verify election administration.",
+          "facts": [
+            {
+              "label": "County vote counts",
+              "value": "4A\nYes: 90,002 (56.76%)\nNo: 68,565 (43.24%)\n\n4B\nYes: 87,498 (55.52%)\nNo: 70,091 (44.48%)",
+              "sources": [
+                {
+                  "text": "County election results page (choose 2024 General Election)",
+                  "url": "https://www.arapahoeco.gov/your_county/votes/records_data/election_results.php"
+                },
+                {
+                  "text": "Download election results PDF (opens to page 21)",
+                  "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Official%20Summary%20Report%20by%20Method_330948_OU.pdf#page=21"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "district-budget-attribution",
+          "title": "What the school district's own budget says",
+          "body": "The district's adopted budget for 2025-26 says local property tax includes $9 million of new money (described there as 1 mill) from an increase the budget calls voter-approved. That is the district explaining its own budget. It is not the same document as the county's one-number total rate for this row.",
+          "facts": [
+            {
+              "label": "District budget",
+              "value": "Cherry Creek School District adopted budget (2025-26)",
+              "sources": [
+                {
+                  "text": "Open the budget PDF",
+                  "url": "https://resources.finalsite.net/images/v1747755872/cherrycreekschoolsorg/gspsidnmpaahpjmil5vz/2025-2026ProposedFinancialPlanBudget.pdf"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "id": "no-fund-level-mill-split",
+          "body": "We have not yet linked a county or school table that splits this district's total rate into parts, such as day-to-day operations, the increase described in 4A, and paying back bonds. Without that split, we cannot say which portions of the total rate are affected by Ballot Issues 4A or 4B."
+        }
+      ]
+    }
+  ]
+}

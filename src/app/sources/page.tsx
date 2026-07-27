@@ -175,9 +175,12 @@ export default function SourcesPage() {
           </Link>
           {" "}
           matches a metro district in the bundled mill schedule. There is no
-          manual district picker. When more than one metro appears on your stack,
-          the headline uses <strong>combined</strong>{" "}certified metro mills in
-          county stack order. Use{" "}
+          manual district picker. The metro card shows{" "}
+          <strong>one</strong>{" "}headline tile: debt-service share when those mills
+          appear on your stack, otherwise total metro share. When more than one
+          metro appears, that headline uses <strong>combined</strong>{" "}certified
+          metro mills in county stack order. The breakdown below still lists each
+          metro part. Use{" "}
           <strong className="text-slate-900">Start over</strong>{" "}in the address
           card to reset the home page flow.
         </p>
@@ -308,6 +311,31 @@ export default function SourcesPage() {
           chart when we have at least three tax years of Levy Percentage data
           for that authority (currently Tax Years 2018 through 2025). It shows
           total mills only, not dollars on your bill.
+        </p>
+        <p className="mt-3 text-slate-700">
+          <strong className="font-semibold text-slate-900">
+            Who authorized this? (Cherry Creek School District prototype):
+          </strong>{" "}
+          For the Cherry Creek school row on your property-tax breakdown (county
+          code{" "}
+          <strong className="font-semibold text-slate-900">0501</strong>
+          ), tile details can show a plain-language trail from voters and the
+          school board to the published rate, with{" "}
+          <strong className="font-semibold text-slate-900">See each step</strong>
+          {" "}
+          for the full trail. Every figure links to an official record (county
+          rate PDF, the county Notice of Election with the exact ballot wording,
+          the county&apos;s certified election results (web, with a PDF download
+          option), and the district&apos;s adopted budget). The panel states
+          what it does{" "}
+          <strong className="font-semibold text-slate-900">not</strong>
+          {" "}
+          claim yet, including a split of the total rate into parts that would
+          prove why that total changed year to year. Data lives in{" "}
+          <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
+            public/data/levy-authority-chain-entries.json
+          </code>
+          .
         </p>
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
@@ -523,10 +551,10 @@ export default function SourcesPage() {
             number.
           </li>
           <li>
-            <strong>Property classification:</strong>{" "}At the top of Property
-            details (above the county parcel-record panel), we show the
-            assessor&apos;s class description from the mart export. A paper
-            notice may still say Residential or Commercial for the same parcel;
+            <strong>Property classification:</strong>{" "}Under the first Property
+            details panel, we show the assessor&apos;s class description from the
+            mart export. A paper notice may still say Residential or Commercial
+            for the same parcel;
             see{" "}
             <Link
               href={glossaryTermHref("term-property-classification")}

@@ -874,24 +874,26 @@ export function HomeParcelAddressLookup({
           </time>
         </p>
       ) : null}
-      {levyLoadedMeta?.parcelValues.propertyClassification ? (
-        <p
-          id="home-parcel-property-class"
-          className={DASHBOARD_SECTION_META_CLASS}
-        >
-          <ParcelGlossaryPopoverTrigger
-            termId="term-property-classification"
-            textTrigger="Property classification"
-            textTriggerId="property-classification-term-first"
-            variant="parcel-record"
-            textTriggerClassName={`text-inherit ${TERM_LINK_CLASS}`}
-          />
-          {": "}
-          {levyLoadedMeta.parcelValues.propertyClassification}
-        </p>
-      ) : null}
   </>
   );
+
+  const propertyClassificationLine =
+    levyLoadedMeta?.parcelValues.propertyClassification ? (
+      <p
+        id="home-parcel-property-class"
+        className={DASHBOARD_SECTION_META_CLASS}
+      >
+        <ParcelGlossaryPopoverTrigger
+          termId="term-property-classification"
+          textTrigger="Property classification"
+          textTriggerId="property-classification-term-first"
+          variant="parcel-record"
+          textTriggerClassName={`text-inherit ${TERM_LINK_CLASS}`}
+        />
+        {": "}
+        {levyLoadedMeta.parcelValues.propertyClassification}
+      </p>
+    ) : null;
 
   const propertyDetailsBelowPanel =
     levyLines.length > 0 && levyLoadedMeta ? (
@@ -943,6 +945,7 @@ export function HomeParcelAddressLookup({
           aria-labelledby="parcel-record-heading"
         >
           <div className="space-y-3">{propertyDetailsHeader}</div>
+          {propertyClassificationLine}
           <ParcelRecordPanel
             loading={parcelRecordLoading}
             loadFailed={parcelRecordLoadFailed}
