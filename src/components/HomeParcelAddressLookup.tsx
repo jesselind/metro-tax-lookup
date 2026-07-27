@@ -226,6 +226,10 @@ export function HomeParcelAddressLookup({
   const [streetDidYouMean, setStreetDidYouMean] = useState<
     SitusStreetSuggestion[] | null
   >(null);
+  /** Polite status when search used an approximate street name. */
+  const [addressMatchStatus, setAddressMatchStatus] = useState<string | null>(
+    null,
+  );
   /** Live street suggestions for the current house number (typeahead). */
   const [streetTypeahead, setStreetTypeahead] = useState<
     SitusStreetSuggestion[]
@@ -554,6 +558,7 @@ export function HomeParcelAddressLookup({
     setError(null);
     setHits(null);
     setStreetDidYouMean(null);
+    setAddressMatchStatus(null);
     setStreetTypeaheadOpen(false);
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
@@ -691,6 +696,9 @@ export function HomeParcelAddressLookup({
       }
       if (result.approximateStreet) {
         setStreetName(result.matchedStreetNameKey);
+        setAddressMatchStatus(
+          `Showing results for ${result.matchedStreetNameKey}. No exact match for ${nameNorm}.`,
+        );
         if (!useAdvanced) {
           setSimpleAddressLine(
             [num, suffix, result.matchedStreetNameKey, unitTrim]
@@ -715,6 +723,7 @@ export function HomeParcelAddressLookup({
 
   function applyStreetSuggestion(suggestion: SitusStreetSuggestion) {
     setStreetDidYouMean(null);
+    setAddressMatchStatus(null);
     setStreetTypeaheadOpen(false);
     setError(null);
     setStreetName(suggestion.streetNameKey);
@@ -738,6 +747,7 @@ export function HomeParcelAddressLookup({
     setError(null);
     setHits(null);
     setStreetDidYouMean(null);
+    setAddressMatchStatus(null);
     setStreetTypeahead([]);
     setStreetTypeaheadOpen(false);
     setShowCountyPinFallback(false);
@@ -767,6 +777,7 @@ export function HomeParcelAddressLookup({
     setStreetDidYouMean(null);
     setStreetTypeahead([]);
     setStreetTypeaheadOpen(false);
+    setAddressMatchStatus(null);
     setHits([{ pin: DEMO_DISPLAY_PIN, label: DEMO_ADDRESS_LABEL }]);
     setParcelPin(DEMO_DISPLAY_PIN);
     setLevyLoadBusy(true);
@@ -1143,6 +1154,11 @@ export function HomeParcelAddressLookup({
       <h2 id="home-tool-heading" className="sr-only">
         Property tax lookup and breakdown
       </h2>
+      {addressMatchStatus ? (
+        <p className="sr-only" role="status" aria-live="polite">
+          {addressMatchStatus}
+        </p>
+      ) : null}
       {!addressSearchLocked ? (
         <div className="w-full min-w-0">
           {error ? (
@@ -1238,13 +1254,26 @@ export function HomeParcelAddressLookup({
                       window.setTimeout(() => setStreetTypeaheadOpen(false), 120);
                     }}
                     onKeyDown={(e) => {
+                      if (
+                        e.key === "ArrowDown" &&
+                        !streetTypeaheadOpen &&
+                        streetTypeahead.length > 0
+                      ) {
+                        e.preventDefault();
+                        setStreetTypeaheadOpen(true);
+                        setStreetTypeaheadActiveIndex(0);
+                        return;
+                      }
                       if (!streetTypeaheadOpen || streetTypeahead.length === 0) {
                         return;
                       }
                       if (e.key === "ArrowDown") {
                         e.preventDefault();
                         setStreetTypeaheadActiveIndex((i) =>
-                          Math.min(i + 1, streetTypeahead.length - 1),
+                          Math.min(
+                            (i < 0 ? 0 : i) + 1,
+                            streetTypeahead.length - 1,
+                          ),
                         );
                       } else if (e.key === "ArrowUp") {
                         e.preventDefault();

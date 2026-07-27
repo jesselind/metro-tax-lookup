@@ -329,8 +329,10 @@ export function resolvePinKeyFromParcelIdInput(
   for (const k of pinLookupCandidates(raw)) {
     if (file.byPin[k]) return k;
   }
+  const ainCands = ainLookupCandidates(raw);
+  if (ainCands.length === 0) return null;
   const ainIndex = getAinToPinIndex(file);
-  for (const ain of ainLookupCandidates(raw)) {
+  for (const ain of ainCands) {
     const pin = ainIndex.get(ain);
     if (pin && file.byPin[pin]) return pin;
   }

@@ -692,7 +692,7 @@ export function scoreStreetNameMatch(
   return 1 + dist;
 }
 
-/** num → streetNameNorm → full situs keys for that pair. */
+/** num → streetNameNorm → full situs keys for that pair (lazy per house number). */
 type SitusByNumberIndex = Map<string, Map<string, string[]>>;
 
 const situsNumberIndexCache = new WeakMap<
@@ -700,21 +700,30 @@ const situsNumberIndexCache = new WeakMap<
   SitusByNumberIndex
 >();
 
-function getSitusByNumberIndex(file: ArapahoeSitusToPinsFile): SitusByNumberIndex {
-  const cached = situsNumberIndexCache.get(file);
+/**
+ * Streets at one house number. Builds and caches that number's bucket on first
+ * use instead of duplicating the full byKey map up front.
+ */
+function getStreetsByNameForNumber(
+  file: ArapahoeSitusToPinsFile,
+  numKey: string,
+): Map<string, string[]> {
+  let root = situsNumberIndexCache.get(file);
+  if (!root) {
+    root = new Map();
+    situsNumberIndexCache.set(file, root);
+  }
+  const cached = root.get(numKey);
   if (cached) return cached;
-  const idx: SitusByNumberIndex = new Map();
+
+  const byName = new Map<string, string[]>();
+  const prefix = `${numKey}|`;
   for (const key of Object.keys(file.byKey)) {
+    if (!key.startsWith(prefix)) continue;
     const parts = key.split("|");
-    if (parts.length < 3) continue;
-    const num = parts[0]!;
+    if (parts.length < 3 || parts[0] !== numKey) continue;
     const name = parts[1]!;
-    if (!num || !name) continue;
-    let byName = idx.get(num);
-    if (!byName) {
-      byName = new Map();
-      idx.set(num, byName);
-    }
+    if (!name) continue;
     let keys = byName.get(name);
     if (!keys) {
       keys = [];
@@ -722,8 +731,8 @@ function getSitusByNumberIndex(file: ArapahoeSitusToPinsFile): SitusByNumberInde
     }
     keys.push(key);
   }
-  situsNumberIndexCache.set(file, idx);
-  return idx;
+  root.set(numKey, byName);
+  return byName;
 }
 
 function dedupePinHits(hits: ArapahoeSitusPinHit[]): ArapahoeSitusPinHit[] {
@@ -743,26 +752,20 @@ function hitsForNumberAndStreetName(
   nameNorm: string,
   unitRaw: string,
 ): ArapahoeSitusPinHit[] {
-  const byName = getSitusByNumberIndex(file).get(numKey);
-  if (!byName) return [];
+  const byName = getStreetsByNameForNumber(file, numKey);
   const keys = byName.get(nameNorm);
   if (!keys || keys.length === 0) return [];
   const unitKey = normalizeUnitKey(unitRaw);
   const unitExact: string[] = [];
   const unitEmpty: string[] = [];
-  const unitOther: string[] = [];
   for (const k of keys) {
     const u = k.slice(k.lastIndexOf("|") + 1);
     if (u === unitKey) unitExact.push(k);
     else if (u === "") unitEmpty.push(k);
-    else unitOther.push(k);
   }
-  const ordered =
-    unitExact.length > 0
-      ? unitExact
-      : unitEmpty.length > 0
-        ? unitEmpty
-        : unitOther;
+  // Never fall back to other units (would auto-load the wrong apartment).
+  const ordered = unitExact.length > 0 ? unitExact : unitEmpty;
+  if (ordered.length === 0) return [];
   const hits: ArapahoeSitusPinHit[] = [];
   for (const k of ordered) {
     const bucket = file.byKey[k];
@@ -817,8 +820,8 @@ function collectScoredStreetsForNumber(
   unit: string,
   options?: { allowSubstring?: boolean },
 ): SitusStreetSuggestion[] {
-  const byName = getSitusByNumberIndex(file).get(numKey);
-  if (!byName || byName.size === 0 || !query) return [];
+  const byName = getStreetsByNameForNumber(file, numKey);
+  if (byName.size === 0 || !query) return [];
 
   const scored: SitusStreetSuggestion[] = [];
   for (const [candName] of byName) {

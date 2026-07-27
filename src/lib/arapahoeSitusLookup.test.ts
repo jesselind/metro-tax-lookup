@@ -101,6 +101,69 @@ describe("lookupPinsBySitusFuzzy", () => {
       expect(names).toContain("HOLY");
     }
   });
+
+  it("returns none for an unknown street at a known number", () => {
+    const result = lookupPinsBySitusFuzzy(
+      miniSitusFile(),
+      "1940",
+      "",
+      "Zzyzx",
+      "",
+    );
+    expect(result.kind).toBe("none");
+  });
+
+  it("matches an exact unit and does not fall back to other units", () => {
+    const file: ArapahoeSitusToPinsFile = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 1,
+      entryCount: 3,
+      byKey: {
+        [`1940|HOLLY|`]: [{ pin: "010000010", label: "1940 HOLLY (aggregate)" }],
+        [`1940|HOLLY|2B`]: [
+          { pin: SYNTHETIC_PIN, label: "1940 HOLLY UNIT 2B" },
+        ],
+        [`1940|HOLLY|3C`]: [
+          { pin: "010000011", label: "1940 HOLLY UNIT 3C" },
+        ],
+      },
+    };
+    const exact = lookupPinsBySitusFuzzy(file, "1940", "", "Holly", "2B");
+    expect(exact.kind).toBe("match");
+    if (exact.kind === "match") {
+      expect(exact.hits.map((h) => h.pin)).toEqual([SYNTHETIC_PIN]);
+    }
+    const unknownUnit = lookupPinsBySitusFuzzy(
+      file,
+      "1940",
+      "",
+      "Holly",
+      "99Z",
+    );
+    expect(unknownUnit.kind).toBe("match");
+    if (unknownUnit.kind === "match") {
+      // Falls back to empty-unit aggregate only, never other units.
+      expect(unknownUnit.hits.map((h) => h.pin)).toEqual(["010000010"]);
+    }
+  });
+
+  it("returns none when a unit is requested and only other units exist", () => {
+    const file: ArapahoeSitusToPinsFile = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 1,
+      entryCount: 2,
+      byKey: {
+        [`1940|HOLLY|2B`]: [
+          { pin: SYNTHETIC_PIN, label: "1940 HOLLY UNIT 2B" },
+        ],
+        [`1940|HOLLY|3C`]: [
+          { pin: "010000011", label: "1940 HOLLY UNIT 3C" },
+        ],
+      },
+    };
+    const result = lookupPinsBySitusFuzzy(file, "1940", "", "Holly", "99Z");
+    expect(result.kind).toBe("none");
+  });
 });
 
 describe("suggestSitusStreetsForNumber", () => {
