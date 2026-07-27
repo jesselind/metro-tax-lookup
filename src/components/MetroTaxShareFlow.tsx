@@ -131,16 +131,16 @@ export type MetroTaxShareFlowProps = {
   prefillTotalMills?: number | null;
   metroFromLevyStack?: MetroFromLevyStack;
   /**
-   * When positive (e.g. from parcel assessed value), metro headline tiles show
+   * When positive (e.g. from parcel assessed value), the metro headline tile shows
    * estimated annual dollar amounts from mills × assessed ÷ 1000.
    */
   totalAssessedForEstimate?: number | null;
   /**
-   * Section heading (and optional lead copy) rendered above metro headline tiles when
+   * Section heading (and optional lead copy) rendered above the metro headline tile when
    * metro districts are present — e.g. "Where is your money going?" on the home page.
    */
   sectionLead?: ReactNode;
-  /** Levy stack and related content below metro headline tiles. */
+  /** Levy stack and related content below the metro headline tile. */
   children?: ReactNode;
 };
 
@@ -417,11 +417,9 @@ export function MetroTaxShareFlow({
         : "";
     resultAnnouncement =
       totalDistrictShare > 0
-        ? `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${metroLabel}.${totalLine}${
-            showDebtHeadline
-              ? ` ${debtShareOfTotal.toFixed(1)} percent of your property taxes are paying off ${debtMetroLabel} debt.`
-              : ""
-          } ${taxRateSplitAnnouncement}`
+        ? showDebtHeadline
+          ? `${debtShareOfTotal.toFixed(1)} percent of your property taxes are paying off ${debtMetroLabel} debt.${totalLine} ${taxRateSplitAnnouncement}`
+          : `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${metroLabel}.${totalLine} ${taxRateSplitAnnouncement}`
         : `No metro district mills shown on your property tax bill.${totalLine} ${taxRateSplitAnnouncement}`;
   } else if (totalMills > 0 && activeDistrictIds.length === 0) {
     resultAnnouncement =
@@ -527,22 +525,12 @@ export function MetroTaxShareFlow({
     </span>
   );
 
+  /** One headline only: debt service when present, otherwise total metro share. */
   const metroShareBlock = showResultCard ? (
     <div className="min-w-0 w-full max-w-full space-y-3">
       <div
         className={`min-w-0 w-full max-w-full sm:w-fit ${METRO_PERCENT_TILES_GRID_CLASS}`}
       >
-        {perDistrictBundles.length > 0 ? (
-          <a
-            href={`#${metroBreakdownPanelId}`}
-            className={shareTileLinkClass}
-            aria-label={metroShareCardJumpLabel}
-          >
-            {shareTileLinkInner}
-          </a>
-        ) : (
-          <div className={shareTileSurfaceClass}>{shareTileInner}</div>
-        )}
         {showDebtHeadline ? (
           perDistrictBundles.length > 0 ? (
             <a
@@ -555,7 +543,17 @@ export function MetroTaxShareFlow({
           ) : (
             <div className={debtTileSurfaceClass}>{debtTileInner}</div>
           )
-        ) : null}
+        ) : perDistrictBundles.length > 0 ? (
+          <a
+            href={`#${metroBreakdownPanelId}`}
+            className={shareTileLinkClass}
+            aria-label={metroShareCardJumpLabel}
+          >
+            {shareTileLinkInner}
+          </a>
+        ) : (
+          <div className={shareTileSurfaceClass}>{shareTileInner}</div>
+        )}
       </div>
     </div>
   ) : null;

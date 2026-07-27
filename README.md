@@ -107,6 +107,10 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 
 **In-app term links in explainer copy:** use `{{term:term-id|link label}}` (for example `{{term:term-special-districts|special district}}`). The levy detail modal turns that into a control that opens a brief in the modal, with **More in Glossary** linking to `/glossary#term-…`.
 
+### Authority chain (`levy-authority-chain-entries.json`)
+
+Hand-curated **Who authorized this?** trail for selected stack rows (prototype: Cherry Creek School Dist 5, AUTH `0501`). Each fact requires an `https` official source. Open gaps must stay honest when causality is not proven. Match keys share `src/lib/levyEntryMatch.ts` with levy explainers (same order; authority-chain label-only skips keyed entries). Validate with `npm run validate:levy-authority-chain` (also in `prebuild`). Narrative: `/sources`. Authoring notes: `docs/levy-explainer-authoring.md`.
+
 ## Regenerating data (full pipeline)
 
 1. Create Python env and install deps:
@@ -190,6 +194,7 @@ Modal pattern, tone, and copy rules: **`docs/levy-explainer-authoring.md`**. Not
 - **Try demo property:** Committed PIN-less fixture **`src/data/demo-property.json`** (loaded via `loadDemoProperty()` in `src/lib/demoProperty.ts`). Identity fields, Book Page, and permit numbers are fictional; clerk links stay off in demo UI. Fixture shape is asserted at module load. Refresh the fixture when you intentionally update demo dollars / levy / building shape — do not point demo at a real PIN.
 - Static term definitions live in `src/content/termDefinitions.tsx` and render on **`/glossary`**. Prefer underlined text popovers (`GlossaryTermPopover` / `ParcelGlossaryPopoverTrigger`) for brief help in flows; full asides are glossary-only. Mid-flow links to **`/glossary`** or **`/sources`** use **`PreserveSessionDocLink`** (new tab + `rel="noopener noreferrer"`) so client-side parcel results stay in the origin tab; header/footer stay same-tab. Parcel-record label glossaries live in `parcelGlossaryTermBriefRegistry` (`termDefinitionBodies.tsx`); skip a glossary when there is no citable, useful brief (Neighborhood / Neighborhood Code, Owner Address, City/State/Zip, and Acreage today).
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json` (authoring: `docs/levy-explainer-authoring.md`).
+- Authority-chain panel (sourced "Who authorized this?") is data-driven from `public/data/levy-authority-chain-entries.json`.
 - **Docs split:** README = technical (this file). `/sources` = verify steps, citations, methodology. `/glossary` = term definitions. Avoid copying the same long block into both README and Sources.
 - **Browser e2e (Playwright):** Install browsers once with `npx playwright install` (CI uses `npx playwright install --with-deps`). **IDE:** start this app (`npm run dev` on :3000), then run tests from the Playwright extension (the extension does not start the app for you). **CLI:** `npm run test:e2e` / `test:e2e:ui` reuses :3000 on `localhost` when this app is already up; otherwise starts `next dev` there. If another project owns :3000, stop it or set `E2E_PORT`. **CI:** build then `next start` on `127.0.0.1:3100` (`.github/workflows/playwright.yml`; push/PR to `main` + `workflow_dispatch`). Job: `permissions: contents: read`, checkout `persist-credentials: false`.
 

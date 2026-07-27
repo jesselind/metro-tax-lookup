@@ -12,15 +12,10 @@
  */
 import type { LevyExplainerEntry } from "@/lib/levyExplainer";
 import { LevyExplainerCitationBlocks } from "@/components/LevyExplainerCitations";
+import { DisclosureSummary } from "@/components/DisclosureSummary";
 import { isLevyModalTermId } from "@/lib/levyModalTermIds";
 import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import type { ReactNode } from "react";
-
-const DETAILS_SUMMARY_CLASS =
-  "cursor-pointer list-none text-sm font-semibold text-slate-900 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-50 sm:text-base [&::-webkit-details-marker]:hidden";
-
-const CHEVRON_CLASS =
-  "h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180";
 
 /** In-app term link: `{{term:term-special-districts|special district}}` */
 const TERM_LINK_TOKEN = /\{\{term:([^|]+)\|([^}]+)\}\}/g;
@@ -116,23 +111,7 @@ export function LevyExplainerModalSection({
 
       {hasCitations ? (
         <details className="group mt-2.5 border-t border-sky-200/80 pt-2.5">
-          <summary className={DETAILS_SUMMARY_CLASS}>
-            <span className="flex items-center justify-between gap-2">
-              <span>More detail and sources</span>
-              <svg
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden
-                className={CHEVRON_CLASS}
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </span>
-          </summary>
+          <DisclosureSummary label="More detail and sources" />
           <div className="mt-2 space-y-2.5">
             <LevyExplainerCitationBlocks
               blocks={entry.citationBlocks}

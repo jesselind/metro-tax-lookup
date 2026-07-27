@@ -4,13 +4,11 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { ReactNode } from "react";
+import { DisclosureChevron } from "@/components/DisclosureChevron";
 import { InfoIcon } from "@/components/InfoIcon";
 
 const SUMMARY_CLASS =
   "cursor-pointer bg-transparent px-4 py-3 text-indigo-950 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-700 sm:px-5";
-
-const CHEVRON_CLASS =
-  "h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open:rotate-180";
 
 type InfoDetailsProps = {
   title: string;
@@ -48,18 +46,7 @@ export function InfoDetails({
               <InfoIcon />
               <span className="truncate">{title}</span>
             </span>
-            <svg
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden
-              className={CHEVRON_CLASS}
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <DisclosureChevron />
           </span>
         </summary>
         <div className="bg-transparent px-4 pb-4 text-base text-slate-800 sm:px-5">
