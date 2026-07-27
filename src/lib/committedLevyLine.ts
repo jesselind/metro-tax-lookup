@@ -15,11 +15,13 @@ import type {
   ArapahoePinToTagRow,
 } from "@/lib/arapahoeParcelLevyData";
 import {
+  ainLookupCandidates,
   displayMartAuthorityName,
   fetchArapahoeLevyStacksJson,
   fetchArapahoePinToTagJson,
   formatPropertyClassificationDisplay,
   pinLookupCandidates,
+  resolvePinKeyFromParcelIdInput,
 } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 
@@ -204,29 +206,24 @@ export async function loadLevyStackFromPin(
       error: "Levy stack data failed to load. Try again later.",
     };
   }
-  const candidates = pinLookupCandidates(pinInput);
-  if (candidates.length === 0) {
-    return {
-      ok: false,
-      error: "Enter your parcel PIN (digits from the county record).",
-    };
-  }
-  let row: ArapahoePinToTagRow | undefined;
-  let matchedPinKey = "";
-  for (const k of candidates) {
-    const hit = pins.byPin[k];
-    if (hit) {
-      row = hit;
-      matchedPinKey = k;
-      break;
+  const matchedPinKey = resolvePinKeyFromParcelIdInput(pins, pinInput);
+  if (!matchedPinKey) {
+    const pinCands = pinLookupCandidates(pinInput);
+    const ainCands = ainLookupCandidates(pinInput);
+    if (pinCands.length === 0 && ainCands.length === 0) {
+      return {
+        ok: false,
+        error:
+          "Enter your parcel PIN or AIN (digits from the county record).",
+      };
     }
-  }
-  if (!row) {
+    const tried = [...pinCands, ...ainCands].join(" / ");
     return {
       ok: false,
-      error: `No parcel found for PIN ${candidates.join(" / ")}. Copy the 9-digit PIN from your Arapahoe property record (dashes and spaces are OK).`,
+      error: `No parcel found for ${tried}. Copy the 9-digit PIN or the assessor AIN from your Arapahoe property record (dashes and spaces are OK).`,
     };
   }
+  const row = pins.byPin[matchedPinKey]!;
   const stack = stacks.stacksByTagId[row.tagId];
   if (!stack) {
     return {

@@ -263,6 +263,81 @@ export function pinLookupCandidates(raw: string): string[] {
 }
 
 /**
+ * Assessor AIN is typically ####-##-#-##-### (12 digits). Returns digit-only keys
+ * for reverse lookup against the pin map.
+ */
+export function ainLookupCandidates(raw: string): string[] {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 12) return [digits];
+  return [];
+}
+
+/** True when the string looks like a county AIN (formatted or 12 digits), not a street. */
+export function looksLikeAinInput(raw: string): boolean {
+  const t = raw.trim();
+  if (!t || /[A-Za-z]/.test(t)) return false;
+  if (/^\d{4}-\d{2}-\d-\d{2}-\d{3}$/.test(t)) return true;
+  return ainLookupCandidates(t).length > 0;
+}
+
+/**
+ * True when the string looks like a parcel PIN only (7–9 digits, optional
+ * dashes/spaces) — safe to treat as an id rather than a street address.
+ */
+export function looksLikePinOnlyInput(raw: string): boolean {
+  const t = raw.trim();
+  if (!t || /[A-Za-z]/.test(t)) return false;
+  if (!/^[\d\s-]+$/.test(t)) return false;
+  const digits = t.replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 9;
+}
+
+/** PIN or AIN paste into the address or parcel-id field. */
+export function looksLikeParcelIdInput(raw: string): boolean {
+  return looksLikeAinInput(raw) || looksLikePinOnlyInput(raw);
+}
+
+const ainToPinIndexCache = new WeakMap<ArapahoePinToTagFile, Map<string, string>>();
+
+/**
+ * Digits-only AIN → first PIN that carries that AIN (Main Parcel export).
+ * Built once per loaded pin map.
+ */
+export function getAinToPinIndex(file: ArapahoePinToTagFile): Map<string, string> {
+  const cached = ainToPinIndexCache.get(file);
+  if (cached) return cached;
+  const idx = new Map<string, string>();
+  for (const pin of Object.keys(file.byPin)) {
+    const row = file.byPin[pin];
+    const ain = typeof row?.ain === "string" ? row.ain.trim() : "";
+    if (!ain) continue;
+    const dig = ain.replace(/\D/g, "");
+    if (dig.length !== 12) continue;
+    if (!idx.has(dig)) idx.set(dig, pin);
+  }
+  ainToPinIndexCache.set(file, idx);
+  return idx;
+}
+
+/**
+ * Resolve a user PIN or AIN paste to a 9-digit pin map key, or null.
+ */
+export function resolvePinKeyFromParcelIdInput(
+  file: ArapahoePinToTagFile,
+  raw: string,
+): string | null {
+  for (const k of pinLookupCandidates(raw)) {
+    if (file.byPin[k]) return k;
+  }
+  const ainIndex = getAinToPinIndex(file);
+  for (const ain of ainLookupCandidates(raw)) {
+    const pin = ainIndex.get(ain);
+    if (pin && file.byPin[pin]) return pin;
+  }
+  return null;
+}
+
+/**
  * Mart Field6 is county ALL CAPS; produce readable title-ish text for the stack UI.
  */
 export function displayMartAuthorityName(allCaps: string): string {

@@ -56,20 +56,22 @@ import {
   fetchArapahoeLevyStacksJson,
   fetchArapahoeParcelRecordForPin,
   fetchArapahoePinToTagJson,
+  looksLikeParcelIdInput,
   type ArapahoeParcelRecordRow,
 } from "@/lib/arapahoeParcelLevyData";
 import {
-  buildSitusLookupKey,
   fetchArapahoeSitusToPinsJson,
-  lookupPinsBySitusKey,
+  lookupPinsBySitusFuzzy,
   normalizeStreetNameKey,
   parseSimpleAddressLineForSitusLookup,
   resolveSitusFieldsForLookup,
   situsUnitLooksLikeStreetAutofillDuplicate,
+  suggestSitusStreetsForNumber,
   SITUS_AUTOFILL_LINE1_MAX_LEN,
   SITUS_INPUT_MAX_LEN,
   SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN,
   trySitusAutofillBlurSplit,
+  type SitusStreetSuggestion,
 } from "@/lib/arapahoeSitusLookup";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import {
@@ -197,6 +199,7 @@ const PROPERTY_DETAILS_JUMP_CHEVRON = (
 );
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
+const HOME_ADDRESS_STREET_SUGGESTIONS_ID = "home-address-street-suggestions";
 
 export type HomeParcelAddressLookupProps = {
   /** Fires when the header should offer Start over (any active address / result / PIN path). */
@@ -219,6 +222,18 @@ export function HomeParcelAddressLookup({
   const [hits, setHits] = useState<{ pin: string; label: string }[] | null>(
     null,
   );
+  /** Close street-name alternatives when exact/fuzzy auto-match is ambiguous. */
+  const [streetDidYouMean, setStreetDidYouMean] = useState<
+    SitusStreetSuggestion[] | null
+  >(null);
+  /** Live street suggestions for the current house number (typeahead). */
+  const [streetTypeahead, setStreetTypeahead] = useState<
+    SitusStreetSuggestion[]
+  >([]);
+  const [streetTypeaheadOpen, setStreetTypeaheadOpen] = useState(false);
+  const [streetTypeaheadActiveIndex, setStreetTypeaheadActiveIndex] =
+    useState(-1);
+  const streetTypeaheadListId = "home-address-street-typeahead";
   const [showCountyPinFallback, setShowCountyPinFallback] = useState(false);
 
   const [levyLines, setLevyLines] = useState<CommittedLevyLine[]>([]);
@@ -361,7 +376,7 @@ export function HomeParcelAddressLookup({
   }
 
   const loadLevyStack = useCallback(
-    async (pin: string) => {
+    async (pin: string): Promise<boolean> => {
     const requestId = ++levyLoadRequestRef.current;
     const isCurrentRequest = () => requestId === levyLoadRequestRef.current;
     parcelRecordRequestRef.current += 1;
@@ -375,10 +390,10 @@ export function HomeParcelAddressLookup({
     setParcelRecordBundledAsOf(null);
     try {
       const result = await loadLevyStackFromPin(pin);
-      if (!isCurrentRequest()) return;
+      if (!isCurrentRequest()) return false;
       if (!result.ok) {
         setLevyLoadError(result.error);
-        return;
+        return false;
       }
       setLevyLines(result.lines);
       setLevyAwaitingTemplateMills(result.awaitingTemplateMills);
@@ -394,8 +409,9 @@ export function HomeParcelAddressLookup({
         parcelTaxYear: result.parcelTaxYear,
         ain: result.ain,
       });
-      if (!isCurrentRequest()) return;
+      if (!isCurrentRequest()) return false;
       void loadParcelRecord(result.matchedPin);
+      return true;
     } finally {
       if (isCurrentRequest()) {
         setLevyLoadBusy(false);
@@ -404,6 +420,69 @@ export function HomeParcelAddressLookup({
     },
     [loadParcelRecord],
   );
+
+  const streetTypeaheadRequestRef = useRef(0);
+  const refreshStreetTypeahead = useCallback(
+    async (
+      num: string,
+      suffix: string,
+      namePartial: string,
+      open: boolean,
+    ) => {
+      if (!num.trim() || !/\d/.test(num)) {
+        setStreetTypeahead([]);
+        setStreetTypeaheadOpen(false);
+        return;
+      }
+      const requestId = ++streetTypeaheadRequestRef.current;
+      const data = await fetchArapahoeSitusToPinsJson();
+      if (requestId !== streetTypeaheadRequestRef.current) return;
+      if (!data?.byKey) {
+        setStreetTypeahead([]);
+        return;
+      }
+      const list = suggestSitusStreetsForNumber(
+        data,
+        num,
+        suffix,
+        namePartial,
+      );
+      if (requestId !== streetTypeaheadRequestRef.current) return;
+      setStreetTypeahead(list);
+      setStreetTypeaheadActiveIndex(-1);
+      setStreetTypeaheadOpen(open && list.length > 0);
+    },
+    [],
+  );
+
+  /** Debounced street typeahead for the simple address line. */
+  useEffect(() => {
+    if (addressSearchLocked || busy || showAdvancedAddressFields) {
+      setStreetTypeaheadOpen(false);
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      const parsed = parseSimpleAddressLineForSitusLookup(simpleAddressLine);
+      if (!parsed || !parsed.streetNumber.trim()) {
+        setStreetTypeahead([]);
+        setStreetTypeaheadOpen(false);
+        return;
+      }
+      void refreshStreetTypeahead(
+        parsed.streetNumber,
+        parsed.streetNumberSuffix,
+        parsed.streetName,
+        parsed.streetName.trim().length >= 1,
+      );
+    }, 180);
+    return () => window.clearTimeout(handle);
+  }, [
+    addressSearchLocked,
+    busy,
+    showAdvancedAddressFields,
+    simpleAddressLine,
+    refreshStreetTypeahead,
+  ]);
 
   const sumMills = useMemo(() => {
     const s = levyLines.reduce((acc, l) => acc + l.mills, 0);
@@ -474,18 +553,38 @@ export function HomeParcelAddressLookup({
     clearAllLevyState();
     setError(null);
     setHits(null);
+    setStreetDidYouMean(null);
+    setStreetTypeaheadOpen(false);
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
 
     const useAdvanced = showAdvancedAddressFields;
 
-    let resolvedBlock: ReturnType<typeof resolveSitusFieldsForLookup>;
     if (!useAdvanced) {
       const rawSimple = simpleAddressLine.trim();
       if (!rawSimple) {
         setError("Enter your street address.");
         return;
       }
+      if (looksLikeParcelIdInput(rawSimple)) {
+        setBusy(true);
+        try {
+          setParcelPin(rawSimple);
+          const ok = await loadLevyStack(rawSimple);
+          if (ok) {
+            setAddressSearchLocked(true);
+          } else {
+            setShowCountyPinFallback(true);
+          }
+        } finally {
+          setBusy(false);
+        }
+        return;
+      }
+    }
+
+    let resolvedBlock: ReturnType<typeof resolveSitusFieldsForLookup>;
+    if (!useAdvanced) {
       const parsed = parseSimpleAddressLineForSitusLookup(simpleAddressLine);
       if (!parsed) {
         setError("That address line is too long. Shorten it and try again.");
@@ -534,7 +633,7 @@ export function HomeParcelAddressLookup({
       setError(
         useAdvanced
           ? "Enter the street number (digits)."
-          : "Start with the building number (digits), then the street — for example 1234 Main Street.",
+          : "Start with the building number (digits), then the street (for example 1234 Main Street).",
       );
       return;
     }
@@ -542,14 +641,14 @@ export function HomeParcelAddressLookup({
       setError(
         useAdvanced
           ? "Enter a street name."
-          : "Include the street name after the number — for example 1234 Main Street.",
+          : "Include the street name after the number (for example 1234 Main Street).",
       );
       return;
     }
     const nameNorm = normalizeStreetNameKey(nameRaw);
     if (!nameNorm) {
       setError(
-        "Could not read a street name from that — try the main name of the road (for example Holly for South Holly Circle).",
+        "Could not read a street name from that. Try the main name of the road (for example Holly for South Holly Circle).",
       );
       return;
     }
@@ -564,13 +663,14 @@ export function HomeParcelAddressLookup({
         );
         return;
       }
-      const key = buildSitusLookupKey(num, suffix, nameRaw, unitTrim);
-      if (!key) {
-        setError("Could not build a lookup key from those fields.");
-        return;
-      }
-      const list = lookupPinsBySitusKey(data, key);
-      if (list.length === 0) {
+      const result = lookupPinsBySitusFuzzy(
+        data,
+        num,
+        suffix,
+        nameRaw,
+        unitTrim,
+      );
+      if (result.kind === "none") {
         if (!useAdvanced) {
           setShowAdvancedAddressFields(true);
           setError(
@@ -580,10 +680,26 @@ export function HomeParcelAddressLookup({
         }
         setShowCountyPinFallback(true);
         setError(
-          "Still no match. Use your Parcel PIN from the county site (see the help section), or double-check spelling and unit.",
+          "Still no match. Use your Parcel PIN or AIN from the county site (see the help section), or double-check spelling and unit.",
         );
         return;
       }
+      if (result.kind === "suggest") {
+        setShowAdvancedAddressFields(true);
+        setStreetDidYouMean(result.suggestions);
+        return;
+      }
+      if (result.approximateStreet) {
+        setStreetName(result.matchedStreetNameKey);
+        if (!useAdvanced) {
+          setSimpleAddressLine(
+            [num, suffix, result.matchedStreetNameKey, unitTrim]
+              .filter(Boolean)
+              .join(" "),
+          );
+        }
+      }
+      const list = result.hits;
       setHits(list);
       if (list.length === 1) {
         setAddressSearchLocked(true);
@@ -597,6 +713,21 @@ export function HomeParcelAddressLookup({
     }
   }
 
+  function applyStreetSuggestion(suggestion: SitusStreetSuggestion) {
+    setStreetDidYouMean(null);
+    setStreetTypeaheadOpen(false);
+    setError(null);
+    setStreetName(suggestion.streetNameKey);
+    setShowAdvancedAddressFields(true);
+    const list = suggestion.hits;
+    setHits(list);
+    if (list.length === 1) {
+      setAddressSearchLocked(true);
+      setParcelPin(list[0].pin);
+      void loadLevyStack(list[0].pin);
+    }
+  }
+
   const resetAddressForm = useCallback(() => {
     setSimpleAddressLine("");
     setShowAdvancedAddressFields(false);
@@ -606,6 +737,9 @@ export function HomeParcelAddressLookup({
     setUnit("");
     setError(null);
     setHits(null);
+    setStreetDidYouMean(null);
+    setStreetTypeahead([]);
+    setStreetTypeaheadOpen(false);
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
     setIsDemoMode(false);
@@ -630,6 +764,9 @@ export function HomeParcelAddressLookup({
     setStreetNumberSuffix("");
     setStreetName("");
     setUnit("");
+    setStreetDidYouMean(null);
+    setStreetTypeahead([]);
+    setStreetTypeaheadOpen(false);
     setHits([{ pin: DEMO_DISPLAY_PIN, label: DEMO_ADDRESS_LABEL }]);
     setParcelPin(DEMO_DISPLAY_PIN);
     setLevyLoadBusy(true);
@@ -1042,7 +1179,14 @@ export function HomeParcelAddressLookup({
             }
             aria-label="Address lookup"
             aria-describedby={
-              error ? HOME_ADDRESS_LOOKUP_ERROR_ID : undefined
+              [
+                error ? HOME_ADDRESS_LOOKUP_ERROR_ID : null,
+                streetDidYouMean != null && streetDidYouMean.length > 0
+                  ? HOME_ADDRESS_STREET_SUGGESTIONS_ID
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" ") || undefined
             }
             noValidate
             aria-busy={busy}
@@ -1053,7 +1197,7 @@ export function HomeParcelAddressLookup({
           >
             {!showAdvancedAddressFields ? (
               <>
-                <div className="flex min-w-0 flex-col gap-y-1">
+                <div className="relative flex min-w-0 flex-col gap-y-1">
                   <label
                     htmlFor="home-address-simple-line"
                     className={FIELD_LABEL_CLASS}
@@ -1073,10 +1217,87 @@ export function HomeParcelAddressLookup({
                     maxLength={SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN}
                     className={INPUT_ROW}
                     value={simpleAddressLine}
-                    onChange={(e) => setSimpleAddressLine(e.target.value)}
+                    role="combobox"
+                    aria-haspopup="listbox"
+                    aria-expanded={streetTypeaheadOpen}
+                    aria-controls={streetTypeaheadListId}
+                    aria-autocomplete="list"
+                    aria-activedescendant={
+                      streetTypeaheadOpen && streetTypeaheadActiveIndex >= 0
+                        ? `${streetTypeaheadListId}-opt-${streetTypeaheadActiveIndex}`
+                        : undefined
+                    }
+                    onChange={(e) => {
+                      setSimpleAddressLine(e.target.value);
+                      setStreetDidYouMean(null);
+                    }}
+                    onFocus={() => {
+                      void fetchArapahoeSitusToPinsJson();
+                    }}
+                    onBlur={() => {
+                      window.setTimeout(() => setStreetTypeaheadOpen(false), 120);
+                    }}
+                    onKeyDown={(e) => {
+                      if (!streetTypeaheadOpen || streetTypeahead.length === 0) {
+                        return;
+                      }
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setStreetTypeaheadActiveIndex((i) =>
+                          Math.min(i + 1, streetTypeahead.length - 1),
+                        );
+                      } else if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setStreetTypeaheadActiveIndex((i) => Math.max(i - 1, 0));
+                      } else if (e.key === "Escape") {
+                        e.preventDefault();
+                        setStreetTypeaheadOpen(false);
+                      } else if (
+                        e.key === "Enter" &&
+                        streetTypeaheadActiveIndex >= 0
+                      ) {
+                        e.preventDefault();
+                        applyStreetSuggestion(
+                          streetTypeahead[streetTypeaheadActiveIndex]!,
+                        );
+                      }
+                    }}
                     disabled={busy}
                     placeholder="e.g. 1234 South Holly Street"
                   />
+                  {streetTypeaheadOpen && streetTypeahead.length > 0 ? (
+                    <ul
+                      id={streetTypeaheadListId}
+                      role="listbox"
+                      aria-label="Street suggestions"
+                      className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-slate-200 bg-white py-1 shadow-md"
+                    >
+                      {streetTypeahead.map((s, idx) => (
+                        <li
+                          key={s.streetNameKey}
+                          id={`${streetTypeaheadListId}-opt-${idx}`}
+                          role="option"
+                          aria-selected={idx === streetTypeaheadActiveIndex}
+                          className={`cursor-pointer px-3 py-2 text-sm ${
+                            idx === streetTypeaheadActiveIndex
+                              ? "bg-sky-50 text-slate-900"
+                              : "text-slate-800 hover:bg-slate-50"
+                          }`}
+                          onMouseDown={(ev) => {
+                            ev.preventDefault();
+                            applyStreetSuggestion(s);
+                          }}
+                        >
+                          <span className="block font-medium">
+                            {s.streetNameKey}
+                          </span>
+                          <span className="block text-xs text-slate-600">
+                            {s.sampleLabel}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
                 <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 md:w-auto md:flex-none md:flex-col md:justify-end">
                   <button
@@ -1189,7 +1410,10 @@ export function HomeParcelAddressLookup({
                     maxLength={SITUS_INPUT_MAX_LEN.streetName}
                     className={`${INPUT_ROW} ${addressSitusGrid.streetInput}`}
                     value={streetName}
-                    onChange={(e) => setStreetName(e.target.value)}
+                    onChange={(e) => {
+                      setStreetName(e.target.value);
+                      setStreetDidYouMean(null);
+                    }}
                     onBlur={(e) => applySitusBlurSplit(e.target.value, "street")}
                     disabled={busy}
                     placeholder="e.g. Holly or South Holly Circle"
@@ -1280,6 +1504,36 @@ export function HomeParcelAddressLookup({
             We do not save your address. This uses publicly available data. We
             do not track you.
           </p>
+          {streetDidYouMean != null && streetDidYouMean.length > 0 ? (
+            <div
+              id={HOME_ADDRESS_STREET_SUGGESTIONS_ID}
+              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mt-4`}
+              role="region"
+              aria-live="polite"
+              aria-label="Suggested streets"
+            >
+              <p className="mb-2 text-sm font-semibold text-slate-900">
+                No exact street match. Did you mean one of these?
+              </p>
+              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
+                {streetDidYouMean.map((s) => (
+                  <li key={s.streetNameKey}>
+                    <button
+                      type="button"
+                      className={`${btnOutlinePrimaryMd} w-full cursor-pointer justify-start px-3 py-2.5 text-left`}
+                      disabled={levyLoadBusy}
+                      onClick={() => applyStreetSuggestion(s)}
+                    >
+                      <span className="font-semibold">{s.streetNameKey}</span>
+                      <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                        {s.sampleLabel}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {hits != null && hits.length > 1 ? (
             <div
               className={`${ADDRESS_LOOKUP_PANEL_CLASS} mt-4`}
@@ -1288,7 +1542,7 @@ export function HomeParcelAddressLookup({
               aria-label="Matching properties"
             >
               <p className="mb-2 text-sm font-semibold text-slate-900">
-                {hits.length} properties matched — pick the row that matches your
+                {hits.length} properties matched. Pick the row that matches your
                 unit or legal description
               </p>
               <p className="mb-3 text-sm text-slate-700">
@@ -1681,15 +1935,15 @@ export function HomeParcelAddressLookup({
                 id="home-parcel-pin-heading"
                 className="mb-2 text-sm font-semibold text-slate-900 sm:text-base"
               >
-                Parcel PIN
+                Parcel PIN or AIN
               </h3>
               <p
                 id="home-parcel-pin-hint"
                 className="mb-3 text-sm text-slate-700"
               >
                 {showCountyPinFallback
-                  ? "Enter the PIN from your county parcel record (see help below if needed)."
-                  : "Pick the row that matches your property below, or type a PIN here if you already know it. If you are unsure, verify on the county parcel record (see note under the list)."}
+                  ? "Enter the PIN (or AIN) from your county parcel record (see help below if needed)."
+                  : "Pick the row that matches your property below, or type a PIN or AIN here if you already know it. If you are unsure, verify on the county parcel record (see note under the list)."}
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
                 <div className="min-w-0 w-full sm:min-w-[12rem] sm:flex-1">
@@ -1697,21 +1951,21 @@ export function HomeParcelAddressLookup({
                     htmlFor="home-parcel-pin-input"
                     className="sr-only"
                   >
-                    Parcel PIN
+                    Parcel PIN or AIN
                   </label>
                   <input
                     id="home-parcel-pin-input"
                     type="text"
-                    inputMode="numeric"
+                    inputMode="text"
                     autoComplete="off"
                     spellCheck={false}
-                    maxLength={24}
+                    maxLength={32}
                     className={INPUT_PIN_ROW}
                     value={parcelPin}
                     onChange={(e) => setParcelPin(e.target.value)}
                     onFocus={() => prefetchParcelLevyJsonBundle()}
                     disabled={levyLoadBusy}
-                    placeholder="from address search or county record"
+                    placeholder="9-digit PIN or AIN from county record"
                     aria-describedby="home-parcel-pin-hint"
                   />
                 </div>
@@ -1735,8 +1989,8 @@ export function HomeParcelAddressLookup({
                   Add levies without a PIN
                 </a>
                 <span className="font-normal text-slate-600">
-                  {" "}
-                  — use{" "}
+                  {": "}
+                  use{" "}
                   <strong className="font-semibold text-slate-800">Add tile</strong>
                   {" "}
                   in the levy section with rows from{" "}
@@ -1762,7 +2016,10 @@ export function HomeParcelAddressLookup({
               </h3>
               <CountyParcelPinLookupHelp includeLevyTableScreenshots />
               <p className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-700">
-                Enter that PIN in the <strong>Parcel PIN</strong> section above.
+                Enter that PIN (or AIN) in the{" "}
+                <strong>Parcel PIN or AIN</strong>
+                {" "}
+                section above.
               </p>
             </div>
           ) : null}

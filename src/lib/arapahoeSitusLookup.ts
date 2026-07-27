@@ -607,3 +607,322 @@ export function lookupPinsBySitusKey(
   const hits = file.byKey[key];
   return hits ? [...hits] : [];
 }
+
+/** Max suggestions shown after a fuzzy miss or in street typeahead. */
+export const SITUS_SUGGESTION_LIMIT = 6;
+
+/**
+ * Like {@link normalizeStreetNameKey}, but also drops a trailing token that looks
+ * like an unfinished or lightly misspelled street type (e.g. STREE → STREET).
+ * Only strips when another name token remains, so "Park" as a road name is kept.
+ */
+export function normalizeStreetNameKeySoft(raw: string): string {
+  const base = normalizeStreetNameKey(raw);
+  if (!base) return "";
+  const tokens = base.split(" ").filter(Boolean);
+  if (tokens.length < 2) return base;
+  const last = tokens[tokens.length - 1]!;
+  if (!tokenLooksLikeIncompleteStreetType(last)) return base;
+  return tokens.slice(0, -1).join(" ");
+}
+
+function tokenLooksLikeIncompleteStreetType(token: string): boolean {
+  if (STREET_TYPE_TOKENS.has(token) || STREET_DIR_TOKENS.has(token)) {
+    return false;
+  }
+  if (token.length < 2) return false;
+  for (const type of STREET_TYPE_TOKENS) {
+    if (type.length <= token.length) continue;
+    // Proper prefix of a known type, not too far from the full word.
+    if (type.startsWith(token) && type.length - token.length <= 2) {
+      return true;
+    }
+    if (
+      Math.abs(type.length - token.length) <= 1 &&
+      levenshteinDistance(token, type) === 1
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  const prev = new Array<number>(b.length + 1);
+  const cur = new Array<number>(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    cur[0] = i;
+    const ca = a.charCodeAt(i - 1);
+    for (let j = 1; j <= b.length; j++) {
+      const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
+      cur[j] = Math.min(
+        (prev[j] ?? 0) + 1,
+        (cur[j - 1] ?? 0) + 1,
+        (prev[j - 1] ?? 0) + cost,
+      );
+    }
+    for (let j = 0; j <= b.length; j++) prev[j] = cur[j] ?? 0;
+  }
+  return prev[b.length] ?? b.length;
+}
+
+/**
+ * Lower is better. Returns null when the pair is too far apart to suggest.
+ */
+export function scoreStreetNameMatch(
+  queryNorm: string,
+  candidateNorm: string,
+): number | null {
+  if (!queryNorm || !candidateNorm) return null;
+  if (queryNorm === candidateNorm) return 0;
+  if (candidateNorm.startsWith(queryNorm) && queryNorm.length >= 2) {
+    return 0.5;
+  }
+  if (queryNorm.startsWith(candidateNorm) && candidateNorm.length >= 2) {
+    return 0.75;
+  }
+  const dist = levenshteinDistance(queryNorm, candidateNorm);
+  const maxLen = Math.max(queryNorm.length, candidateNorm.length);
+  const maxDist = maxLen <= 4 ? 1 : maxLen <= 8 ? 2 : 3;
+  if (dist > maxDist) return null;
+  return 1 + dist;
+}
+
+/** num → streetNameNorm → full situs keys for that pair. */
+type SitusByNumberIndex = Map<string, Map<string, string[]>>;
+
+const situsNumberIndexCache = new WeakMap<
+  ArapahoeSitusToPinsFile,
+  SitusByNumberIndex
+>();
+
+function getSitusByNumberIndex(file: ArapahoeSitusToPinsFile): SitusByNumberIndex {
+  const cached = situsNumberIndexCache.get(file);
+  if (cached) return cached;
+  const idx: SitusByNumberIndex = new Map();
+  for (const key of Object.keys(file.byKey)) {
+    const parts = key.split("|");
+    if (parts.length < 3) continue;
+    const num = parts[0]!;
+    const name = parts[1]!;
+    if (!num || !name) continue;
+    let byName = idx.get(num);
+    if (!byName) {
+      byName = new Map();
+      idx.set(num, byName);
+    }
+    let keys = byName.get(name);
+    if (!keys) {
+      keys = [];
+      byName.set(name, keys);
+    }
+    keys.push(key);
+  }
+  situsNumberIndexCache.set(file, idx);
+  return idx;
+}
+
+function dedupePinHits(hits: ArapahoeSitusPinHit[]): ArapahoeSitusPinHit[] {
+  const seen = new Set<string>();
+  const out: ArapahoeSitusPinHit[] = [];
+  for (const h of hits) {
+    if (seen.has(h.pin)) continue;
+    seen.add(h.pin);
+    out.push(h);
+  }
+  return out;
+}
+
+function hitsForNumberAndStreetName(
+  file: ArapahoeSitusToPinsFile,
+  numKey: string,
+  nameNorm: string,
+  unitRaw: string,
+): ArapahoeSitusPinHit[] {
+  const byName = getSitusByNumberIndex(file).get(numKey);
+  if (!byName) return [];
+  const keys = byName.get(nameNorm);
+  if (!keys || keys.length === 0) return [];
+  const unitKey = normalizeUnitKey(unitRaw);
+  const unitExact: string[] = [];
+  const unitEmpty: string[] = [];
+  const unitOther: string[] = [];
+  for (const k of keys) {
+    const u = k.slice(k.lastIndexOf("|") + 1);
+    if (u === unitKey) unitExact.push(k);
+    else if (u === "") unitEmpty.push(k);
+    else unitOther.push(k);
+  }
+  const ordered =
+    unitExact.length > 0
+      ? unitExact
+      : unitEmpty.length > 0
+        ? unitEmpty
+        : unitOther;
+  const hits: ArapahoeSitusPinHit[] = [];
+  for (const k of ordered) {
+    const bucket = file.byKey[k];
+    if (bucket) hits.push(...bucket);
+  }
+  return dedupePinHits(hits);
+}
+
+export type SitusStreetSuggestion = {
+  streetNameKey: string;
+  sampleLabel: string;
+  hits: ArapahoeSitusPinHit[];
+  score: number;
+};
+
+export type SitusFuzzyLookupResult =
+  | {
+      kind: "match";
+      hits: ArapahoeSitusPinHit[];
+      /** True when the street name was soft-stripped or fuzzy-matched. */
+      approximateStreet: boolean;
+      matchedStreetNameKey: string;
+    }
+  | {
+      kind: "suggest";
+      suggestions: SitusStreetSuggestion[];
+    }
+  | { kind: "none" };
+
+function streetNameVariantsForLookup(nameRaw: string): string[] {
+  const exact = normalizeStreetNameKey(nameRaw);
+  const soft = normalizeStreetNameKeySoft(nameRaw);
+  const out: string[] = [];
+  const push = (v: string) => {
+    if (v && !out.includes(v)) out.push(v);
+  };
+  push(exact);
+  push(soft);
+  if (exact.includes(" ")) {
+    const tokens = exact.split(" ").filter(Boolean);
+    if (tokens.length >= 2) {
+      push(tokens.slice(0, -1).join(" "));
+    }
+  }
+  return out;
+}
+
+function collectScoredStreetsForNumber(
+  file: ArapahoeSitusToPinsFile,
+  numKey: string,
+  query: string,
+  unit: string,
+  options?: { allowSubstring?: boolean },
+): SitusStreetSuggestion[] {
+  const byName = getSitusByNumberIndex(file).get(numKey);
+  if (!byName || byName.size === 0 || !query) return [];
+
+  const scored: SitusStreetSuggestion[] = [];
+  for (const [candName] of byName) {
+    let score = scoreStreetNameMatch(query, candName);
+    if (
+      score == null &&
+      options?.allowSubstring &&
+      candName.includes(query) &&
+      query.length >= 2
+    ) {
+      score = 3;
+    }
+    if (score == null) continue;
+    const hits = hitsForNumberAndStreetName(file, numKey, candName, unit);
+    if (hits.length === 0) continue;
+    scored.push({
+      streetNameKey: candName,
+      sampleLabel: hits[0]?.label ?? candName,
+      hits,
+      score,
+    });
+  }
+  scored.sort(
+    (a, b) => a.score - b.score || a.streetNameKey.localeCompare(b.streetNameKey),
+  );
+  return scored;
+}
+
+/**
+ * Exact key first, then soft street-type cleanup, then fuzzy street names for
+ * the same house number. When several streets are close, returns suggestions.
+ */
+export function lookupPinsBySitusFuzzy(
+  file: ArapahoeSitusToPinsFile,
+  streetNumber: string,
+  numberSuffix: string,
+  streetName: string,
+  unit: string,
+): SitusFuzzyLookupResult {
+  const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
+  if (!numKey) return { kind: "none" };
+
+  const variants = streetNameVariantsForLookup(streetName);
+  if (variants.length === 0) return { kind: "none" };
+
+  for (let i = 0; i < variants.length; i++) {
+    const nameNorm = variants[i]!;
+    const hits = hitsForNumberAndStreetName(file, numKey, nameNorm, unit);
+    if (hits.length > 0) {
+      return {
+        kind: "match",
+        hits,
+        approximateStreet: i > 0,
+        matchedStreetNameKey: nameNorm,
+      };
+    }
+  }
+
+  const scored = collectScoredStreetsForNumber(
+    file,
+    numKey,
+    variants[0]!,
+    unit,
+  );
+  if (scored.length === 0) return { kind: "none" };
+
+  const best = scored[0]!;
+  const second = scored[1];
+  const uniquelyBest =
+    best.score <= 2 && (!second || second.score - best.score >= 0.5);
+
+  if (uniquelyBest) {
+    return {
+      kind: "match",
+      hits: best.hits,
+      approximateStreet: true,
+      matchedStreetNameKey: best.streetNameKey,
+    };
+  }
+
+  return {
+    kind: "suggest",
+    suggestions: scored.slice(0, SITUS_SUGGESTION_LIMIT),
+  };
+}
+
+/**
+ * Typeahead: street names at this house number that prefix- or fuzzy-match the
+ * partial street field.
+ */
+export function suggestSitusStreetsForNumber(
+  file: ArapahoeSitusToPinsFile,
+  streetNumber: string,
+  numberSuffix: string,
+  streetNamePartial: string,
+  limit: number = SITUS_SUGGESTION_LIMIT,
+): SitusStreetSuggestion[] {
+  const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
+  if (!numKey) return [];
+  const query =
+    normalizeStreetNameKeySoft(streetNamePartial) ||
+    normalizeStreetNameKey(streetNamePartial);
+  if (!query) return [];
+  return collectScoredStreetsForNumber(file, numKey, query, "", {
+    allowSubstring: true,
+  }).slice(0, Math.max(1, limit));
+}
