@@ -5,7 +5,13 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyCompsPdfUnavailablePopoverBody } from "@/components/CountyCompsPdfGuidance";
@@ -29,6 +35,7 @@ import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
+import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
 import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
@@ -80,6 +87,7 @@ import {
   billImpactCalloutForLevyLines,
   levyStackRateChangeCalloutSurfaceClasses,
 } from "@/lib/metroLevyYearOverYear";
+import { buildSitusEnvelopeDisplayRows } from "@/lib/addressLabelDifference";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import {
@@ -309,10 +317,18 @@ export function HomeParcelAddressLookup({
     setUnit("");
   }, [unit, streetNumber, streetNumberSuffix, streetName]);
 
-  /** After Start over, return focus to the first visible address field. */
+  /**
+   * Lock → property report: jump to top (same-page swap keeps window scroll).
+   * Unlock → Start over: return focus to the first visible address field.
+   */
   useEffect(() => {
     const wasLocked = prevAddressSearchLockedRef.current;
     prevAddressSearchLockedRef.current = addressSearchLocked;
+    if (addressSearchLocked && !wasLocked) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.getElementById("page-top")?.focus({ preventScroll: true });
+      return;
+    }
     if (!addressSearchLocked && wasLocked) {
       document
         .getElementById(
@@ -874,6 +890,18 @@ export function HomeParcelAddressLookup({
     return hits.find((h) => h.pin === pin)?.label ?? null;
   }, [hits, trimmedParcelPin]);
 
+  /** Envelope rows for multi-match pick list (street + city, difference marks). */
+  const multiHitEnvelopeRows = useMemo(() => {
+    if (hits == null || hits.length < 2) return null;
+    return buildSitusEnvelopeDisplayRows(hits.map((h) => h.label));
+  }, [hits]);
+
+  /** Same envelope layout for simple-line typeahead suggestions. */
+  const streetTypeaheadEnvelopeRows = useMemo(
+    () => buildSitusEnvelopeDisplayRows(streetTypeahead.map((s) => s.sampleLabel)),
+    [streetTypeahead],
+  );
+
   const homeLevyStackProps: LevyStackVisualizationProps = {
     lines: levyLines,
     setLines: setLevyLines,
@@ -1170,14 +1198,111 @@ export function HomeParcelAddressLookup({
               {error}
             </InlineErrorCallout>
           ) : null}
+          {hits != null && hits.length > 1 ? (
+            <div
+              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mb-4`}
+              role="region"
+              aria-live="polite"
+              aria-label="Matching properties"
+            >
+              <p className="mb-2 text-sm font-semibold text-slate-900">
+                {hits.length} properties matched. Pick the row that matches your
+                unit or legal description
+              </p>
+              <p className="mb-3 text-sm text-slate-700">
+                Not sure which PIN is yours? Open your parcel on the{" "}
+                <a
+                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={COUNTY_EXTERNAL_LINK_CLASS}
+                >
+                  county property search
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>{" "}
+                and compare the PIN to the address, unit, or legal description.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
+                {hits.map((h, hitIndex) => {
+                  const envelope = multiHitEnvelopeRows?.[hitIndex];
+                  return (
+                    <li
+                      key={h.pin}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-slate-900">
+                            PIN:{" "}
+                            <span className="font-mono">{h.pin}</span>
+                          </span>
+                          {envelope != null ? (
+                            <SitusEnvelopeAddress
+                              row={envelope}
+                              className="mt-1"
+                            />
+                          ) : (
+                            <span className="mt-1 block text-slate-700">
+                              {h.label}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
+                          disabled={levyLoadBusy}
+                          onClick={() => {
+                            setAddressSearchLocked(true);
+                            setParcelPin(h.pin);
+                            void loadLevyStack(h.pin);
+                          }}
+                        >
+                          Use this property
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+          {streetDidYouMean != null && streetDidYouMean.length > 0 ? (
+            <div
+              id={HOME_ADDRESS_STREET_SUGGESTIONS_ID}
+              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mb-4`}
+              role="region"
+              aria-live="polite"
+              aria-label="Suggested streets"
+            >
+              <p className="mb-2 text-sm font-semibold text-slate-900">
+                No exact street match. Did you mean one of these?
+              </p>
+              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
+                {streetDidYouMean.map((s) => (
+                  <li key={s.streetNameKey}>
+                    <button
+                      type="button"
+                      className={`${btnOutlinePrimaryMd} w-full cursor-pointer justify-start px-3 py-2.5 text-left`}
+                      disabled={levyLoadBusy}
+                      onClick={() => applyStreetSuggestion(s)}
+                    >
+                      <span className="font-semibold">{s.streetNameKey}</span>
+                      <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
+                        {s.sampleLabel}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {showAdvancedAddressFields ? (
             <div className="mb-3">
               <p className="text-sm font-medium text-slate-800">Refine address</p>
               {hits != null && hits.length > 1 ? (
                 <p className="mt-1 text-sm text-slate-600">
                   If none of the matching rows is yours, adjust these fields and
-                  search again. You can also pick a row in the list or use your
-                  PIN from the county site.
+                  search again. You can also use your PIN from the county site.
                 </p>
               ) : (
                 <p className="mt-1 text-sm text-slate-600">
@@ -1298,33 +1423,32 @@ export function HomeParcelAddressLookup({
                     <ul
                       id={streetTypeaheadListId}
                       role="listbox"
-                      aria-label="Street suggestions"
-                      className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-slate-200 bg-white py-1 shadow-md"
+                      aria-label="Address suggestions"
+                      className="absolute top-full z-20 mt-1 max-h-[min(24rem,55vh)] w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-md divide-y divide-slate-200"
                     >
-                      {streetTypeahead.map((s, idx) => (
-                        <li
-                          key={s.streetNameKey}
-                          id={`${streetTypeaheadListId}-opt-${idx}`}
-                          role="option"
-                          aria-selected={idx === streetTypeaheadActiveIndex}
-                          className={`cursor-pointer px-3 py-2 text-sm ${
-                            idx === streetTypeaheadActiveIndex
-                              ? "bg-sky-50 text-slate-900"
-                              : "text-slate-800 hover:bg-slate-50"
-                          }`}
-                          onMouseDown={(ev) => {
-                            ev.preventDefault();
-                            applyStreetSuggestion(s);
-                          }}
-                        >
-                          <span className="block font-medium">
-                            {s.streetNameKey}
-                          </span>
-                          <span className="block text-xs text-slate-600">
-                            {s.sampleLabel}
-                          </span>
-                        </li>
-                      ))}
+                      {streetTypeahead.map((s, idx) => {
+                        const pin = s.hits[0]?.pin ?? s.streetNameKey;
+                        const envelope = streetTypeaheadEnvelopeRows[idx]!;
+                        return (
+                          <li
+                            key={`${pin}-${idx}`}
+                            id={`${streetTypeaheadListId}-opt-${idx}`}
+                            role="option"
+                            aria-selected={idx === streetTypeaheadActiveIndex}
+                            className={`flex min-h-[4.25rem] cursor-pointer items-center px-4 py-3.5 text-base ${
+                              idx === streetTypeaheadActiveIndex
+                                ? "bg-sky-50 text-slate-900"
+                                : "bg-white text-slate-800 active:bg-slate-50 hover:bg-slate-50"
+                            }`}
+                            onMouseDown={(ev) => {
+                              ev.preventDefault();
+                              applyStreetSuggestion(s);
+                            }}
+                          >
+                            <SitusEnvelopeAddress row={envelope} />
+                          </li>
+                        );
+                      })}
                     </ul>
                   ) : null}
                 </div>
@@ -1533,93 +1657,6 @@ export function HomeParcelAddressLookup({
             We do not save your address. This uses publicly available data. We
             do not track you.
           </p>
-          {streetDidYouMean != null && streetDidYouMean.length > 0 ? (
-            <div
-              id={HOME_ADDRESS_STREET_SUGGESTIONS_ID}
-              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mt-4`}
-              role="region"
-              aria-live="polite"
-              aria-label="Suggested streets"
-            >
-              <p className="mb-2 text-sm font-semibold text-slate-900">
-                No exact street match. Did you mean one of these?
-              </p>
-              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
-                {streetDidYouMean.map((s) => (
-                  <li key={s.streetNameKey}>
-                    <button
-                      type="button"
-                      className={`${btnOutlinePrimaryMd} w-full cursor-pointer justify-start px-3 py-2.5 text-left`}
-                      disabled={levyLoadBusy}
-                      onClick={() => applyStreetSuggestion(s)}
-                    >
-                      <span className="font-semibold">{s.streetNameKey}</span>
-                      <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                        {s.sampleLabel}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {hits != null && hits.length > 1 ? (
-            <div
-              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mt-4`}
-              role="region"
-              aria-live="polite"
-              aria-label="Matching properties"
-            >
-              <p className="mb-2 text-sm font-semibold text-slate-900">
-                {hits.length} properties matched. Pick the row that matches your
-                unit or legal description
-              </p>
-              <p className="mb-3 text-sm text-slate-700">
-                Not sure which PIN is yours? Open your parcel on the{" "}
-                <a
-                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={COUNTY_EXTERNAL_LINK_CLASS}
-                >
-                  county property search
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>{" "}
-                and compare the PIN to the address, unit, or legal description.
-              </p>
-              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
-                {hits.map((h) => (
-                  <li
-                    key={h.pin}
-                    className="rounded-md border border-slate-200 bg-white px-3 py-3"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                      <div className="min-w-0">
-                        <span className="font-mono font-semibold text-slate-900">
-                          {h.pin}
-                        </span>
-                        <span className="mt-1 block text-slate-700">
-                          {h.label}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
-                        disabled={levyLoadBusy}
-                        onClick={() => {
-                          setAddressSearchLocked(true);
-                          setParcelPin(h.pin);
-                          void loadLevyStack(h.pin);
-                        }}
-                      >
-                        Use this property
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </div>
       ) : (
         <div className="min-w-0 space-y-3">

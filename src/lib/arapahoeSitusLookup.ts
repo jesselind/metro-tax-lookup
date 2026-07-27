@@ -576,11 +576,20 @@ export function buildSitusLookupKey(
 
 let situsCache: Promise<ArapahoeSitusToPinsFile | null> | null = null;
 
+/**
+ * Bump when regenerating situs JSON with a label/schema change so browsers do
+ * not keep a stale copy under /data max-age caching.
+ */
+export const ARAPAHOE_SITUS_TO_PINS_CACHE_BUST = "20260727zip";
+
 export function fetchArapahoeSitusToPinsJson(): Promise<ArapahoeSitusToPinsFile | null> {
   if (!situsCache) {
-    situsCache = fetch("/data/arapahoe-situs-to-pins.json", {
-      credentials: "same-origin",
-    })
+    situsCache = fetch(
+      `/data/arapahoe-situs-to-pins.json?v=${ARAPAHOE_SITUS_TO_PINS_CACHE_BUST}`,
+      {
+        credentials: "same-origin",
+      },
+    )
       .then(async (r) => {
         if (!r.ok) return null;
         let parsed: unknown;
@@ -608,8 +617,14 @@ export function lookupPinsBySitusKey(
   return hits ? [...hits] : [];
 }
 
-/** Max suggestions shown after a fuzzy miss or in street typeahead. */
+/** Max street-name suggestions after a fuzzy miss (did-you-mean). */
 export const SITUS_SUGGESTION_LIMIT = 6;
+
+/**
+ * Max address rows in the simple-line typeahead after expanding multi-pin
+ * streets (condo/townhome units) into one suggestion per parcel.
+ */
+export const SITUS_TYPEAHEAD_ADDRESS_LIMIT = 40;
 
 /**
  * Like {@link normalizeStreetNameKey}, but also drops a trailing token that looks
@@ -909,15 +924,17 @@ export function lookupPinsBySitusFuzzy(
 }
 
 /**
- * Typeahead: street names at this house number that prefix- or fuzzy-match the
- * partial street field.
+ * Typeahead: addresses at this house number whose street prefix- or fuzzy-matches
+ * the partial street field. Multi-pin streets (units) expand to one row per
+ * parcel so condo lists are not collapsed to the first sample label.
  */
 export function suggestSitusStreetsForNumber(
   file: ArapahoeSitusToPinsFile,
   streetNumber: string,
   numberSuffix: string,
   streetNamePartial: string,
-  limit: number = SITUS_SUGGESTION_LIMIT,
+  streetLimit: number = SITUS_SUGGESTION_LIMIT,
+  addressLimit: number = SITUS_TYPEAHEAD_ADDRESS_LIMIT,
 ): SitusStreetSuggestion[] {
   const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
   if (!numKey) return [];
@@ -925,7 +942,23 @@ export function suggestSitusStreetsForNumber(
     normalizeStreetNameKeySoft(streetNamePartial) ||
     normalizeStreetNameKey(streetNamePartial);
   if (!query) return [];
-  return collectScoredStreetsForNumber(file, numKey, query, "", {
+  const streets = collectScoredStreetsForNumber(file, numKey, query, "", {
     allowSubstring: true,
-  }).slice(0, Math.max(1, limit));
+  }).slice(0, Math.max(1, streetLimit));
+
+  const expanded: SitusStreetSuggestion[] = [];
+  for (const street of streets) {
+    for (const hit of street.hits) {
+      expanded.push({
+        streetNameKey: street.streetNameKey,
+        sampleLabel: hit.label,
+        hits: [hit],
+        score: street.score,
+      });
+      if (expanded.length >= Math.max(1, addressLimit)) {
+        return expanded;
+      }
+    }
+  }
+  return expanded;
 }

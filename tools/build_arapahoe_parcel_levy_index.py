@@ -443,6 +443,22 @@ def row_situs_lookup_key(row: dict[str, str]) -> str | None:
     return f"{num}|{name}|{unit}"
 
 
+def format_situs_locality(city: str, state: str, postal: str) -> str:
+    """City / state / ZIP last line for situs labels (postage-style)."""
+    city_s = strip_field(city)
+    state_s = strip_field(state)
+    postal_s = strip_field(postal)
+    if city_s and not state_s:
+        state_s = "CO"
+    if city_s and postal_s:
+        return f"{city_s}, {state_s} {postal_s}".strip()
+    if city_s and state_s:
+        return f"{city_s}, {state_s}"
+    if city_s:
+        return city_s
+    return " ".join(x for x in (state_s, postal_s) if x)
+
+
 def format_situs_label(row: dict[str, str]) -> str:
     """Human-readable situs line for UI labels (falls back to PIN)."""
     n = strip_field(row.get("SAAddrNumber", ""))
@@ -451,12 +467,16 @@ def format_situs_label(row: dict[str, str]) -> str:
     typ = strip_field(row.get("SAStreetType", ""))
     post = strip_field(row.get("SAPostdirectional", ""))
     unit = strip_field(row.get("SAUnitNumber", ""))
-    city = strip_field(row.get("SACity", ""))
     line1 = " ".join(x for x in (n, pre, name, typ, post) if x)
     if unit:
         line1 = f"{line1} Unit {unit}".strip()
-    if city:
-        return f"{line1}, {city}".strip()
+    locality = format_situs_locality(
+        row.get("SACity", ""),
+        row.get("SAState", ""),
+        row.get("SAPostalCd", ""),
+    )
+    if locality:
+        return f"{line1}, {locality}".strip() if line1 else locality
     return line1 or strip_field(row.get("Pin", ""))
 
 

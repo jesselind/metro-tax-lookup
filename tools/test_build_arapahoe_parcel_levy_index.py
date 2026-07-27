@@ -16,6 +16,8 @@ import unittest
 
 from build_arapahoe_parcel_levy_index import (
     attach_computed_assessed_values,
+    format_situs_label,
+    format_situs_locality,
     local_assessed_split_fields,
     normalize_integerish_code,
     ownership_type_label_from_owner_lp_types,
@@ -193,6 +195,39 @@ class NormalizeIntegerishCodeTests(unittest.TestCase):
         self.assertEqual(normalize_integerish_code("1.5"), "1.5")
         self.assertEqual(normalize_integerish_code(""), "")
         self.assertEqual(normalize_integerish_code(None), "")
+
+
+class FormatSitusLabelTests(unittest.TestCase):
+    def test_locality_includes_state_and_zip(self) -> None:
+        self.assertEqual(
+            format_situs_locality("ENGLEWOOD", "CO", "80111-5541"),
+            "ENGLEWOOD, CO 80111-5541",
+        )
+
+    def test_locality_defaults_state_to_co(self) -> None:
+        self.assertEqual(
+            format_situs_locality("AURORA", "", "80012"),
+            "AURORA, CO 80012",
+        )
+
+    def test_label_includes_unit_city_state_zip(self) -> None:
+        label = format_situs_label(
+            {
+                "SAAddrNumber": "6420",
+                "SAPredirectional": "S",
+                "SAStreetName": "DAYTON",
+                "SAStreetType": "ST",
+                "SAUnitNumber": "J01",
+                "SACity": "ENGLEWOOD",
+                "SAState": "CO",
+                "SAPostalCd": "80111-5541",
+                "Pin": "031835674",
+            }
+        )
+        self.assertEqual(
+            label,
+            "6420 S DAYTON ST Unit J01, ENGLEWOOD, CO 80111-5541",
+        )
 
 
 if __name__ == "__main__":

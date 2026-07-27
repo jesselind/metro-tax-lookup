@@ -1,12 +1,29 @@
 ---
-description: Prevent local Playwright browser crashes and repeated macOS crash dialogs
+description: Prevent local Playwright browser crashes and false "browsers missing" diagnoses
 alwaysApply: true
 ---
 
-# Run Playwright outside the sandbox
+# Run Playwright outside the sandbox (macOS)
 
-- On this macOS workspace, run Playwright browser tests outside the sandbox from the first attempt (for example, use the shell tool with `required_permissions: ["all"]`).
-- Do not first try `npm run test:e2e`, `CI=1 npm run test:e2e`, or other Playwright browser commands in the sandbox.
-- Sandboxed Playwright launches can report a missing Chromium executable and repeatedly abort Firefox or WebKit during retries, producing many "quit unexpectedly" macOS dialogs.
+## How to run e2e from the agent
+
+- On this macOS workspace, run Playwright browser tests outside the sandbox from the first attempt (`required_permissions: ["all"]`).
+- **Always override the browser cache path.** Cursor injects `PLAYWRIGHT_BROWSERS_PATH` pointing at an empty `cursor-sandbox-cache/.../playwright` tree. That is **not** the user's install. Prefix every Playwright e2e command with:
+
+  ```bash
+  PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:e2e
+  ```
+
+  (Same override for any `npx playwright test ...` invocation.)
+
+- Do not first try Playwright in the sandbox without `all` and without that path override.
+
+## Do not misdiagnose
+
+- If launch fails with a path under **`cursor-sandbox-cache`** or says the executable is missing there: **Playwright is installed on this machine.** Fix the env (`PLAYWRIGHT_BROWSERS_PATH` as above + `all` permissions). Do **not** tell the user browsers are missing. Do **not** recommend `npx playwright install` for that failure.
+- Only suggest `npx playwright install` if launch fails against **`$HOME/Library/Caches/ms-playwright`** (or after unsetting the sandbox path) with a genuine missing-browser error.
 - If a browser launch fails, inspect the first failure before retrying. Do not allow repeated cross-browser retries when the failure is environmental.
+
+## Scope
+
 - Run the full Playwright suite across **chromium**, **firefox**, and **webkit** (all three projects). Do not stop at a single browser unless the user scoped the request to one.
