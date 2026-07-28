@@ -9,6 +9,10 @@ import {
   type LevyEntryLookupContext,
   type LevyEntryMatchKeys,
 } from "@/lib/levyEntryMatch";
+import {
+  buildLevyAuthorityChainEntry,
+  type LevyAuthorityChainEntryRecord,
+} from "@/lib/levyAuthorityChainBuild";
 
 export type LevyAuthorityChainLink = {
   text: string;
@@ -24,19 +28,9 @@ export type LevyAuthorityChainFact = {
 export type LevyAuthorityChainStep = {
   id: string;
   title: string;
-  /**
-   * Optional in-place definition for one word in {@link title}: opens a brief
-   * popover (not a jump to the modal footer). `titleTermMatch` is the exact
-   * word to make the trigger; `titleTermId` must be listed in the JSON
-   * `allowedInlineTermIds` field.
-   */
   titleTermId?: string;
   titleTermMatch?: string;
   body: string;
-  /**
-   * Same as {@link titleTermId}/{@link titleTermMatch}, but for one word in
-   * {@link body}.
-   */
   bodyTermId?: string;
   bodyTermMatch?: string;
   facts: LevyAuthorityChainFact[];
@@ -49,29 +43,27 @@ export type LevyAuthorityChainOpenGap = {
 
 export type LevyAuthorityChainMatch = LevyEntryMatchKeys;
 
+/** Built view model for {@link LevyAuthorityChainSection}. */
 export type LevyAuthorityChainEntry = {
   id: string;
   match: LevyAuthorityChainMatch;
   heading: string;
   summary: string;
-  /** Optional linked attribution whose text must appear verbatim in `summary`. */
   summarySource?: LevyAuthorityChainLink;
+  summaryTermId?: string;
+  summaryTermMatch?: string;
   steps: LevyAuthorityChainStep[];
   openGaps: LevyAuthorityChainOpenGap[];
 };
 
-type LevyAuthorityChainFile = {
+type LevyAuthorityChainFileV2 = {
   version: number;
   prototypeNote?: string;
-  /**
-   * Glossary brief ids allowed on step title/body. Single source of truth for
-   * the UI allowlist and `validate:levy-authority-chain`.
-   */
   allowedInlineTermIds: string[];
-  entries: LevyAuthorityChainEntry[];
+  entries: LevyAuthorityChainEntryRecord[];
 };
 
-const file = raw as LevyAuthorityChainFile;
+const file = raw as LevyAuthorityChainFileV2;
 
 function readAllowedInlineTermIds(ids: unknown): readonly string[] {
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -103,8 +95,16 @@ export function isLevyAuthorityChainInlineTermId(id: string): boolean {
   return LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS.includes(id);
 }
 
-export const LEVY_AUTHORITY_CHAIN_ENTRIES: LevyAuthorityChainEntry[] =
+/** Structured records from JSON (facts only; prose is templated). */
+export const LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS: LevyAuthorityChainEntryRecord[] =
   file.entries;
+
+/**
+ * Resident-facing entries built from structured JSON + shared templates.
+ * Used by the UI and e2e (expected copy is deterministic from records + templates).
+ */
+export const LEVY_AUTHORITY_CHAIN_ENTRIES: LevyAuthorityChainEntry[] =
+  LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.map(buildLevyAuthorityChainEntry);
 
 export type LevyAuthorityChainLookupContext = LevyEntryLookupContext;
 

@@ -7,28 +7,29 @@ import type { Page } from "@playwright/test";
 import {
   SYNTHETIC_LEVY_STACKS,
   SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY,
-  SYNTHETIC_LEVY_STACKS_WITH_AUTHORITY_CHAIN,
   SYNTHETIC_LEVY_STACKS_WITH_METRO,
   SYNTHETIC_PARCEL_RECORD_SHARD,
   SYNTHETIC_PIN_SHARD_PREFIX,
   SYNTHETIC_PIN_TO_TAG,
   SYNTHETIC_SITUS_TO_PINS,
+  syntheticLevyStacksForAuthorityChain,
 } from "../fixtures/syntheticCountyData";
 
 export type InstallSyntheticCountyDataOptions = {
   /** When true, include a levy line whose LG ID matches bundled metro YoY test data. */
   includeMetro?: boolean;
   /**
-   * When true (and not includeMetro / includeAuthorityChain), use an AUTH code
-   * that changed in bundled Levy % history so all-tile YoY chrome can be
+   * When true (and not includeMetro / authorityChainLevyLineCode), use an AUTH
+   * code that changed in bundled Levy % history so all-tile YoY chrome can be
    * asserted without a metro match.
    */
   includeAuthYoY?: boolean;
   /**
-   * When true (and not includeMetro), use AUTH `0501` so the Cherry Creek
-   * authority-chain prototype panel appears in tile details.
+   * County AUTH / levy line code that matches a curated
+   * `levy-authority-chain-entries.json` entry (for example `0501`, `0601`).
+   * Wins over includeAuthYoY; ignored when includeMetro is true.
    */
-  includeAuthorityChain?: boolean;
+  authorityChainLevyLineCode?: string;
 };
 
 /**
@@ -40,10 +41,11 @@ export async function installSyntheticCountyData(
   page: Page,
   options: InstallSyntheticCountyDataOptions = {},
 ): Promise<void> {
+  const authorityCode = options.authorityChainLevyLineCode?.trim();
   const levyStacks = options.includeMetro
     ? SYNTHETIC_LEVY_STACKS_WITH_METRO
-    : options.includeAuthorityChain
-      ? SYNTHETIC_LEVY_STACKS_WITH_AUTHORITY_CHAIN
+    : authorityCode
+      ? syntheticLevyStacksForAuthorityChain(authorityCode)
       : options.includeAuthYoY
         ? SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY
         : SYNTHETIC_LEVY_STACKS;

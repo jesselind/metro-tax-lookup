@@ -10,6 +10,7 @@ import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionL
 import {
   PARCEL_GLOSSARY_POPOVER_PANEL_CLASS,
   ParcelTermPopoverPanel,
+  TermDebtFreeSchoolsMillLevyBriefBody,
   TermLevyBriefBody,
   TermPinBriefBody,
   TermTagBriefBody,
@@ -32,15 +33,23 @@ export type FlowGlossaryTermId =
   | LevyModalTermId
   | "term-mill-levy"
   | "term-pin"
-  | "term-tag";
+  | "term-tag"
+  | "term-debt-free-schools-mill-levy";
 
 const EXTRA_BRIEFS: Record<
-  "term-mill-levy" | "term-pin" | "term-tag",
+  | "term-mill-levy"
+  | "term-pin"
+  | "term-tag"
+  | "term-debt-free-schools-mill-levy",
   { title: string; Brief: FC }
 > = {
   "term-mill-levy": { title: "Mill levy", Brief: TermLevyBriefBody },
   "term-pin": { title: "PIN", Brief: TermPinBriefBody },
   "term-tag": { title: "TAG", Brief: TermTagBriefBody },
+  "term-debt-free-schools-mill-levy": {
+    title: "Debt-free schools mill levy",
+    Brief: TermDebtFreeSchoolsMillLevyBriefBody,
+  },
 };
 
 /** True when {@link GlossaryTermPopover} can resolve a brief for this id. */

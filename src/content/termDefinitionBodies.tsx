@@ -184,12 +184,138 @@ export function TermGeneralOperatingBriefBody() {
 
 export function TermBondsBriefBody() {
   return (
-    <p className={BRIEF_P}>
-      <strong className="font-semibold text-slate-900">Bonds</strong>
-      {" "}
-      are loans the district took out for big projects (roads, parks, buildings).
-      This part of your tax helps pay those loans back over time.
-    </p>
+    <div className="space-y-2">
+      <p className={BRIEF_P}>
+        <strong className="font-semibold text-slate-900">Bonds</strong>
+        {" "}
+        are loans for big projects such as school buildings. When voters approve a
+        bond measure, they usually set ceilings: how much the district may borrow,
+        and how much property tax may go to repay that debt each year.
+      </p>
+      <p className={BRIEF_P}>
+        A yes vote is permission within those caps, not a promise that one fixed
+        chunk of today&apos;s published total rate is already locked in as
+        building-debt tax. The district may sell the loans in pieces over several
+        years. The bond-repayment part of your school tax can rise or fall as
+        loans are issued or paid down.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Colorado school-finance name for a cash capital/tech mill levy (C.R.S. 22-54-108.7).
+ * Origin of the phrase in this app: LPS Adopted Budget glossary (not the ballot title).
+ * LPS hosts the PDF on its CMS CDN; deep-link to the glossary page.
+ */
+const LPS_DEBT_FREE_SCHOOLS_MILL_LEVY_GLOSSARY_PDF =
+  "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5485/Lps/396569ba-7c07-4364-9c67-51cea622cd2d/20252026-Adopted-Budget.pdf#page=248";
+
+export function TermDebtFreeSchoolsMillLevyBriefBody() {
+  return (
+    <div className="space-y-2">
+      <p className={BRIEF_P}>
+        <strong className="font-semibold text-slate-900">
+          Debt-free schools mill levy
+        </strong>
+        {" "}
+        is the name Littleton Public Schools uses in its budget for Ballot Issue
+        4C (November 2020). It is a property-tax mill levy under Colorado law
+        (C.R.S. 22-54-108.7). The ballot put the new tax into a capital
+        construction, technology, and maintenance fund so the district could pay
+        those costs with cash instead of issuing new bonds for them. It is not
+        itself a bond. A district can still have separate bond debt from other
+        elections.
+      </p>
+      <p className={BRIEF_P}>
+        <a
+          href={LPS_DEBT_FREE_SCHOOLS_MILL_LEVY_GLOSSARY_PDF}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          LPS 2025-2026 Adopted Budget glossary
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+      </p>
+    </div>
+  );
+}
+
+export function TermDebtFreeSchoolsMillLevyFullBody() {
+  return (
+    <>
+      <p className={FULL_P}>
+        <dfn className="font-semibold not-italic text-slate-900">
+          Debt-free schools mill levy
+        </dfn>
+        {" "}
+        is school-finance wording for a kind of mill levy override under Colorado
+        law (C.R.S. 22-54-108.7). Littleton Public Schools uses that name in its
+        budget materials for Ballot Issue 4C, which voters approved in November
+        2020.
+      </p>
+      <p className={FULL_P}>
+        On the ballot, the measure asked for a property-tax increase and said the
+        new money would go into a supplemental capital construction, technology,
+        and maintenance fund. The point of that design is to pay those facility
+        and tech costs with tax cash rather than by selling new bonds for them.
+        That is why districts call it &quot;debt-free.&quot; It does not mean
+        your tax bill has no school debt: LPS still has separate bond debt from
+        other elections (including the November 2018 building bond).
+      </p>
+      <p className={FULL_P}>
+        Littleton Public Schools defines the phrase in its
+        {" "}
+        <a
+          href={LPS_DEBT_FREE_SCHOOLS_MILL_LEVY_GLOSSARY_PDF}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          2025-2026 Adopted Budget glossary
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        . The Colorado General Assembly&apos;s
+        {" "}
+        <a
+          href="https://leg.colorado.gov/bills/hb16-1354"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Debt-free Schools Act (HB16-1354)
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        is the statute that created this kind of mill levy. Arapahoe County&apos;s
+        {" "}
+        <a
+          href="https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Official%20Summary%20Report.pdf#page=15"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          2020 Official Summary Report
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        records the Ballot Issue 4C result. The county&apos;s
+        {" "}
+        <a
+          href="https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php#outer-2402sub-2512"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          2020 Past Elections File Library
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        does not include a Notice of Election or a usable English sample ballot
+        with the 4C wording.
+      </p>
+    </>
   );
 }
 

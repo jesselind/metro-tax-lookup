@@ -267,9 +267,10 @@ export default function SourcesPage() {
           </strong>
           {" "}
           That means at least one county-published rate on your bill is different
-          from Tax Year 2024. It does not say whether you owe more or less overall
-          (we do not have your prior-year assessed value in this tool). Clicking
-          that note scrolls to the first Changed tile. In tile details, a short
+          from Tax Year 2024. It does not say whether you owe more or less overall.
+          This tool does not compare your prior-year treasurer bill total, and it
+          does not have your prior-year assessed value. Clicking that note scrolls
+          to the first Changed tile. In tile details, a short
           percent summary appears when we know last year&apos;s mill rate (for
           example{" "}
           <strong className="font-semibold text-slate-900">
@@ -314,24 +315,46 @@ export default function SourcesPage() {
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="font-semibold text-slate-900">
-            Who authorized this? (Cherry Creek School District prototype):
+            Who authorized this? (school district prototypes):
           </strong>{" "}
-          For the Cherry Creek school row on your property-tax breakdown (county
-          code{" "}
+          For selected school rows on your property-tax breakdown (Cherry Creek,
+          county code{" "}
           <strong className="font-semibold text-slate-900">0501</strong>
+          ; Littleton Public Schools, county code{" "}
+          <strong className="font-semibold text-slate-900">0601</strong>
           ), tile details can show a plain-language trail from voters and the
           school board to the published rate, with{" "}
           <strong className="font-semibold text-slate-900">See each step</strong>
           {" "}
-          for the full trail. Every figure links to an official record (county
-          rate PDF, the county Notice of Election with the exact ballot wording,
-          the county&apos;s certified election results (web, with a PDF download
-          option), and the district&apos;s adopted budget). The panel states
-          what it does{" "}
-          <strong className="font-semibold text-slate-900">not</strong>
+          for the full trail. Prefer the best official document we can verify;
+          when that file is missing, the trail still links the next-best official
+          place (often that year&apos;s{" "}
+          <a
+            href="https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Past Elections File Library
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
           {" "}
-          claim yet, including a split of the total rate into parts that would
-          prove why that total changed year to year. Data lives in{" "}
+          section) so you can see where we looked and why the ideal PDF is not
+          linked. Typical deep-links include county rate tables, election
+          notices, Official Summary reports, and district budget PDFs when
+          published. Some jargon (for example{" "}
+          <strong className="font-semibold text-slate-900">
+            debt-free schools mill levy
+          </strong>
+          {" "}
+          or bonds) has a brief in-place definition. The panel also notes{" "}
+          <strong className="font-semibold text-slate-900">
+            What we don&apos;t know yet
+          </strong>
+          {" "}
+          when we cannot yet split a year-to-year rate change into parts, or
+          cannot link ballot wording. Data
+          lives in{" "}
           <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
             public/data/levy-authority-chain-entries.json
           </code>
