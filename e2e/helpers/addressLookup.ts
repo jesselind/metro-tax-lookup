@@ -29,7 +29,7 @@ export function streetAddressField(page: Page): Locator {
  *
  * Call after `installSyntheticCountyData(page)` (when needed) and `page.goto("/")`.
  * Dismisses an open typeahead listbox before clicking Search so the submit
- * control stays actionable.
+ * control stays actionable. Escape still closes the list; blur alone does not.
  */
 export async function searchSyntheticAddress(page: Page): Promise<void> {
   const street = streetAddressField(page);

@@ -246,6 +246,9 @@ export function HomeParcelAddressLookup({
   const [streetTypeaheadActiveIndex, setStreetTypeaheadActiveIndex] =
     useState(-1);
   const streetTypeaheadListId = "home-address-street-typeahead";
+  /** Simple-line combobox field + listbox (outside pointer closes the list). */
+  const streetTypeaheadRootRef = useRef<HTMLDivElement>(null);
+  const simpleAddressInputRef = useRef<HTMLInputElement>(null);
   const [showCountyPinFallback, setShowCountyPinFallback] = useState(false);
 
   const [levyLines, setLevyLines] = useState<CommittedLevyLine[]>([]);
@@ -503,6 +506,24 @@ export function HomeParcelAddressLookup({
     simpleAddressLine,
     refreshStreetTypeahead,
   ]);
+
+  /**
+   * Keep the typeahead open after the field blurs (e.g. scroll dismisses the
+   * mobile keyboard). Close on outside pointer, Tab/focus to a control outside
+   * the combobox, Escape, Search, or pick.
+   */
+  useEffect(() => {
+    if (!streetTypeaheadOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const root = streetTypeaheadRootRef.current;
+      if (!root || !(e.target instanceof Node)) return;
+      if (!root.contains(e.target)) {
+        setStreetTypeaheadOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [streetTypeaheadOpen]);
 
   const sumMills = useMemo(() => {
     const s = levyLines.reduce((acc, l) => acc + l.mills, 0);
@@ -1338,7 +1359,10 @@ export function HomeParcelAddressLookup({
           >
             {!showAdvancedAddressFields ? (
               <>
-                <div className="relative flex min-w-0 flex-col gap-y-1">
+                <div
+                  ref={streetTypeaheadRootRef}
+                  className="relative flex min-w-0 flex-col gap-y-1"
+                >
                   <label
                     htmlFor="home-address-simple-line"
                     className={FIELD_LABEL_CLASS}
@@ -1346,6 +1370,7 @@ export function HomeParcelAddressLookup({
                     Street address
                   </label>
                   <input
+                    ref={simpleAddressInputRef}
                     id="home-address-simple-line"
                     type="text"
                     name="address-line1"
@@ -1375,8 +1400,15 @@ export function HomeParcelAddressLookup({
                     onFocus={() => {
                       void fetchArapahoeSitusToPinsJson();
                     }}
-                    onBlur={() => {
-                      window.setTimeout(() => setStreetTypeaheadOpen(false), 120);
+                    onBlur={(e) => {
+                      // Scroll / iOS Done: relatedTarget is null — keep list open.
+                      // Tab or focus move to a control outside the combobox: close.
+                      const next = e.relatedTarget;
+                      if (!(next instanceof Node)) return;
+                      const root = streetTypeaheadRootRef.current;
+                      if (root != null && !root.contains(next)) {
+                        setStreetTypeaheadOpen(false);
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (
@@ -1425,6 +1457,12 @@ export function HomeParcelAddressLookup({
                       role="listbox"
                       aria-label="Address suggestions"
                       className="absolute top-full z-20 mt-1 max-h-[min(24rem,55vh)] w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-md divide-y divide-slate-200"
+                      onScroll={() => {
+                        const input = simpleAddressInputRef.current;
+                        if (input != null && document.activeElement === input) {
+                          input.blur();
+                        }
+                      }}
                     >
                       {streetTypeahead.map((s, idx) => {
                         const pin = s.hits[0]?.pin ?? s.streetNameKey;
