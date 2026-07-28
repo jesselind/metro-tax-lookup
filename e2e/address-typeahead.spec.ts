@@ -27,9 +27,12 @@ test("typeahead stays open after blur; closes on outside pointer", async ({
   await street.evaluate((el) => (el as HTMLInputElement).blur());
   await expect(list).toBeVisible();
 
+  // Refocus so the list onScroll active-element branch runs (blur while focused).
+  await street.focus();
   await list.evaluate((el) => {
     el.dispatchEvent(new Event("scroll", { bubbles: true }));
   });
+  await expect(street).not.toBeFocused();
   await expect(list).toBeVisible();
 
   await page.getByRole("heading", { name: "Civic Lookup", level: 1 }).click();

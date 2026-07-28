@@ -16,7 +16,7 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 
 ### Final checks gate (user-invoked macro)
 
-**User phrases:** “Do final checks” / “Run final checks” (also “final checks” in that spirit).
+**User phrases:** "Do final checks" / "Run final checks" (also "final checks" in that spirit).
 
 These phrases are a **macro**. Do **not** wait for the user to restate the checklist. Do **not** run this gate automatically after phases or commits; only when the user invokes it.
 
@@ -24,14 +24,14 @@ When invoked, on **touched / in-scope work** for the current conversation (or th
 
 1. **Due diligence review:** KISS, YAGNI, DRY, OWASP Top 10, a11y (WCAG 2.1 AA), anti-patterns, stack best practices (Next.js / React / Tailwind as used here), and appropriate JSDoc and/or inline comments on non-obvious code (present where helpful; not noise on trivial code).
 2. **Docs:** Update applicable docs if the work changed behavior, data, build/deploy, or how users should interpret results — typically `README.md` and/or `src/app/sources/page.tsx`; also authoring docs (e.g. `docs/levy-explainer-authoring.md`) or other in-repo docs when they are the right place. Follow the docs split already in this rule (README technical; `/sources` narrative).
-3. **E2E:** Update Playwright coverage if UI contracts changed, then **run** the full suite (chromium, firefox, webkit) per `.cursor/rules/playwright-macos-sandbox.mdc` (`PLAYWRIGHT_BROWSERS_PATH` + `all` permissions). This overrides the general “prefer the user run CLI” preference for this gate only.
+3. **E2E:** Update Playwright coverage if UI contracts changed, then **run** the full suite (chromium, firefox, webkit) per `.cursor/rules/playwright-macos-sandbox.mdc` (`PLAYWRIGHT_BROWSERS_PATH` + `all` permissions). This overrides the general "prefer the user run CLI" preference for this gate only.
 4. **Report** using **Review and audit responses** below (issues / risks / gaps / follow-ups only). Include remaining e2e or docs gaps as issues; do not narrate green passes unless the user asked for command output.
 
 ### Review and audit responses (mandatory - read before any review-style answer)
 
 This rule **overrides** the instinct to be balanced or reassuring. Soft praise in a review response hides what still needs attention.
 
-**Triggers:** The user asks for a **review**, **audit**, **final checks** / **final check**, **pre-commit check**, **pass**, or to **ensure / verify** something against **DRY, KISS, YAGNI, OWASP, anti-patterns, a11y**, security, or similar - including phrases like "anything needing to change" or "etc." in that spirit. **“Do/run final checks”** also runs the **Final checks gate** above (review + docs + e2e), not review-only.
+**Triggers:** The user asks for a **review**, **audit**, **final checks** / **final check**, **pre-commit check**, **pass**, or to **ensure / verify** something against **DRY, KISS, YAGNI, OWASP, anti-patterns, a11y**, security, or similar - including phrases like "anything needing to change" or "etc." in that spirit. **"Do/run final checks"** also runs the **Final checks gate** above (review + docs + e2e), not review-only.
 
 **Output format:**
 
