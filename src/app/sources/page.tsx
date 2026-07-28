@@ -552,7 +552,8 @@ export default function SourcesPage() {
             One address can match many parcels; when several match, choose{" "}
             <strong className="text-slate-900">Use this property</strong>{" "}on
             the row you want. Rows show the county situs street line and a second
-            line with city, state, and ZIP from the Main Parcel export.{" "}
+            line with city, state, and ZIP from the Main Parcel export (the county
+            file with parcel address details).{" "}
             <strong className="text-slate-900">Business personal property</strong>{" "}
             is out of scope. Nothing is sent to our servers; address fields are
             length-capped in the browser.

@@ -14,7 +14,11 @@ alwaysApply: true
   PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:e2e
   ```
 
-  (Same override for any `npx playwright test ...` invocation.)
+  Same full prefix for any direct Playwright invocation:
+
+  ```bash
+  PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npx playwright test ...
+  ```
 
 - Do not first try Playwright in the sandbox without `all` and without that path override.
 

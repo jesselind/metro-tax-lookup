@@ -210,6 +210,9 @@ class FormatSitusLabelTests(unittest.TestCase):
             "AURORA, CO 80012",
         )
 
+    def test_locality_zip_only_unchanged(self) -> None:
+        self.assertEqual(format_situs_locality("", "", "80111"), "80111")
+
     def test_label_includes_unit_city_state_zip(self) -> None:
         label = format_situs_label(
             {
