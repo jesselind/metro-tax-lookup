@@ -176,4 +176,29 @@ describe("suggestSitusStreetsForNumber", () => {
     );
     expect(list.some((s) => s.streetNameKey === "HOLLY")).toBe(true);
   });
+
+  it("expands multi-unit streets into one suggestion per parcel", () => {
+    const file: ArapahoeSitusToPinsFile = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 1,
+      entryCount: 2,
+      byKey: {
+        [`6420|DAYTON|`]: [
+          { pin: "010000101", label: "6420 S DAYTON ST Unit J01, ENGLEWOOD" },
+          { pin: "010000102", label: "6420 S DAYTON ST Unit J02, ENGLEWOOD" },
+          { pin: "010000103", label: "6420 S DAYTON ST Unit J03, ENGLEWOOD" },
+        ],
+      },
+    };
+    const list = suggestSitusStreetsForNumber(file, "6420", "", "Dayton");
+    expect(list).toHaveLength(3);
+    expect(list.map((s) => s.hits[0]?.pin)).toEqual([
+      "010000101",
+      "010000102",
+      "010000103",
+    ]);
+    expect(list.every((s) => s.hits.length === 1)).toBe(true);
+    expect(list[0]?.sampleLabel).toContain("J01");
+    expect(list[2]?.sampleLabel).toContain("J03");
+  });
 });

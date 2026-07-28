@@ -48,7 +48,7 @@ export async function installSyntheticCountyData(
         ? SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY
         : SYNTHETIC_LEVY_STACKS;
 
-  await fulfillJson(page, "**/data/arapahoe-situs-to-pins.json", SYNTHETIC_SITUS_TO_PINS);
+  await fulfillJson(page, "**/data/arapahoe-situs-to-pins.json*", SYNTHETIC_SITUS_TO_PINS);
   await fulfillJson(page, "**/data/arapahoe-pin-to-tag.json", SYNTHETIC_PIN_TO_TAG);
   await fulfillJson(
     page,
