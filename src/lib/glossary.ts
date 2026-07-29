@@ -20,6 +20,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-assessed-value",
   "term-assessment-year",
   "term-comps",
+  "term-debt-free-schools-mill-levy",
   "term-nov-comps-improvement-style",
   "term-nov-comps-improvement-type",
   "term-nov-comps-luc",
@@ -39,7 +40,6 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-tag",
   "term-tax-entity",
   "term-tax-year",
-  "term-debt-free-schools-mill-levy",
 ] as const;
 
 export type GlossaryFullEntryTermId = (typeof GLOSSARY_FULL_ENTRY_TERM_IDS)[number];

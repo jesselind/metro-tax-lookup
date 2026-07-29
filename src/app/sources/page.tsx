@@ -21,6 +21,7 @@ import {
   ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF,
   ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF,
   ARAPAHOE_COMP_SHEET_PDF_URL,
+  ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY,
 } from "@/lib/arapahoeCountyUrls";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import type { LevyDataFile } from "@/lib/levyTypes";
@@ -330,7 +331,7 @@ export default function SourcesPage() {
           when that file is missing, the trail still links the next-best official
           place (often that year&apos;s{" "}
           <a
-            href="https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php"
+            href={ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY}
             target="_blank"
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}

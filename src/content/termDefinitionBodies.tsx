@@ -250,8 +250,8 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           Debt-free schools mill levy
         </dfn>
         {" "}
-        is school-finance wording for a kind of mill levy override under Colorado
-        law (C.R.S. 22-54-108.7). Littleton Public Schools uses that name in its
+        is school-finance wording for a property-tax mill levy under Colorado law
+        (C.R.S. 22-54-108.7). Littleton Public Schools uses that name in its
         budget materials for Ballot Issue 4C, which voters approved in November
         2020.
       </p>

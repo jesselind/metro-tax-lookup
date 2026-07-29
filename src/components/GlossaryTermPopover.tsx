@@ -27,20 +27,21 @@ import {
 } from "@/lib/toolFlowStyles";
 import type { FC, ReactNode } from "react";
 
-/** Terms with a brief popover on the property/levy flow (not only parcel registry). */
-export type FlowGlossaryTermId =
-  | ParcelGlossaryTermId
-  | LevyModalTermId
+/** Extra flow briefs not already in parcel or levy-modal registries. */
+type ExtraFlowGlossaryTermId =
   | "term-mill-levy"
   | "term-pin"
   | "term-tag"
   | "term-debt-free-schools-mill-levy";
 
+/** Terms with a brief popover on the property/levy flow (not only parcel registry). */
+export type FlowGlossaryTermId =
+  | ParcelGlossaryTermId
+  | LevyModalTermId
+  | ExtraFlowGlossaryTermId;
+
 const EXTRA_BRIEFS: Record<
-  | "term-mill-levy"
-  | "term-pin"
-  | "term-tag"
-  | "term-debt-free-schools-mill-levy",
+  ExtraFlowGlossaryTermId,
   { title: string; Brief: FC }
 > = {
   "term-mill-levy": { title: "Mill levy", Brief: TermLevyBriefBody },

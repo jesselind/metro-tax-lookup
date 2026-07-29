@@ -10,6 +10,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { PARCEL_GLOSSARY_TERM_IDS } from "@/content/termDefinitionBodies";
 import {
   AUTHORITY_CHAIN_HEADING,
   OPEN_GAP_BODIES,
@@ -19,6 +20,7 @@ import {
   buildLevyAuthorityChainEntry,
   type LevyAuthorityChainEntryRecord,
 } from "@/lib/levyAuthorityChainBuild";
+import { LEVY_MODAL_TERM_IDS } from "@/lib/levyModalTermIds";
 
 const EM_DASH = /\u2014/;
 
@@ -102,37 +104,12 @@ function sortedLabelKey(frags: unknown): string {
   return parts.join("|");
 }
 
-function parseTermIdConstArray(filePath: string, constName: string): string[] {
-  const src = readFileSync(filePath, "utf8");
-  const re = new RegExp(
-    `${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as const`,
-  );
-  const m = src.match(re);
-  if (!m) {
-    fail(`could not parse ${constName} from ${filePath}`);
-  }
-  const ids: string[] = [];
-  for (const hit of m[1].matchAll(/"(term-[^"]+)"/g)) {
-    ids.push(hit[1]);
-  }
-  if (ids.length === 0) {
-    fail(`${constName} in ${filePath} had no term ids`);
-  }
-  return ids;
-}
-
-function loadFlowGlossaryBriefTermIds(root: string): Set<string> {
-  const ids = new Set(EXTRA_FLOW_BRIEF_TERM_IDS);
-  for (const id of parseTermIdConstArray(
-    join(root, "src/lib/levyModalTermIds.ts"),
-    "LEVY_MODAL_TERM_IDS",
-  )) {
+function loadFlowGlossaryBriefTermIds(): Set<string> {
+  const ids = new Set<string>(EXTRA_FLOW_BRIEF_TERM_IDS);
+  for (const id of LEVY_MODAL_TERM_IDS) {
     ids.add(id);
   }
-  for (const id of parseTermIdConstArray(
-    join(root, "src/content/termDefinitionBodies.tsx"),
-    "PARCEL_GLOSSARY_TERM_IDS",
-  )) {
+  for (const id of PARCEL_GLOSSARY_TERM_IDS) {
     ids.add(id);
   }
   return ids;
@@ -176,29 +153,41 @@ type LevyAuthorityChainFileV2 = {
  */
 export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
   const path = join(root, "public/data/levy-authority-chain-entries.json");
-  const flowBriefTermIds = loadFlowGlossaryBriefTermIds(root);
-
   const raw = readFileSync(path, "utf8");
-  let data: LevyAuthorityChainFileV2;
+  let data: unknown;
   try {
-    data = JSON.parse(raw) as LevyAuthorityChainFileV2;
+    data = JSON.parse(raw);
   } catch (e) {
     fail(`invalid JSON: ${(e as Error).message}`);
   }
+  validateLevyAuthorityChainData(data);
+}
 
-  if (data.version !== 2) {
+/**
+ * Validate a parsed authority-chain file object (version 2).
+ * Exported for focused negative-path unit tests.
+ */
+export function validateLevyAuthorityChainData(data: unknown): void {
+  const flowBriefTermIds = loadFlowGlossaryBriefTermIds();
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    fail("top-level value must be an object");
+  }
+  const file = data as LevyAuthorityChainFileV2;
+
+  if (file.version !== 2) {
     fail("top-level `version` must be 2 (structured template records)");
   }
-  if (!Array.isArray(data.entries)) fail("top-level `entries` must be an array");
+  if (!Array.isArray(file.entries)) fail("top-level `entries` must be an array");
   if (
-    !Array.isArray(data.allowedInlineTermIds) ||
-    data.allowedInlineTermIds.length === 0
+    !Array.isArray(file.allowedInlineTermIds) ||
+    file.allowedInlineTermIds.length === 0
   ) {
     fail("top-level `allowedInlineTermIds` must be a non-empty array");
   }
 
   const allowedTermIds = new Set<string>();
-  for (const termId of data.allowedInlineTermIds) {
+  for (const termId of file.allowedInlineTermIds) {
     if (!isNonEmptyString(termId)) {
       fail("`allowedInlineTermIds` entries must be non-empty strings");
     }
@@ -219,7 +208,7 @@ export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
   const byLgAndLabel = new Map<string, string>();
   const byLabelOnly = new Map<string, string>();
 
-  for (const record of data.entries) {
+  for (const record of file.entries) {
     if (!record || typeof record !== "object") fail("each entry must be an object");
     const id = record.id;
     if (!isNonEmptyString(id)) fail("entry missing non-empty `id`");
@@ -406,6 +395,11 @@ export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
         fail(`[${id}] measure ${measure.stepId} invalid bodyLead`);
       }
       if (measure.maxMillIncreasePerYear !== undefined) {
+        if (measure.kind !== "override") {
+          fail(
+            `[${id}] measure ${measure.stepId} maxMillIncreasePerYear only on override measures`,
+          );
+        }
         if (
           typeof measure.maxMillIncreasePerYear !== "number" ||
           !Number.isFinite(measure.maxMillIncreasePerYear) ||
@@ -413,6 +407,18 @@ export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
         ) {
           fail(
             `[${id}] measure ${measure.stepId} maxMillIncreasePerYear must be a positive number`,
+          );
+        }
+      }
+      if (measure.titleYearSuffix !== undefined) {
+        if (measure.kind !== "bond") {
+          fail(
+            `[${id}] measure ${measure.stepId} titleYearSuffix only on bond measures`,
+          );
+        }
+        if (!isNonEmptyString(measure.titleYearSuffix)) {
+          fail(
+            `[${id}] measure ${measure.stepId} titleYearSuffix must be a non-empty string`,
           );
         }
       }
@@ -438,16 +444,6 @@ export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
         measure.resultsSource,
         `[${id}] measure ${measure.stepId} resultsSource`,
       );
-      if (measure.titleTermMatch && measure.kind === "debt_free_mill") {
-        const title = `Ballot Issue ${measure.ballotIssue}: Debt-free schools mill levy`;
-        if (
-          !title.toLowerCase().includes(measure.titleTermMatch.toLowerCase())
-        ) {
-          fail(
-            `[${id}] measure ${measure.stepId} titleTermMatch not in built title`,
-          );
-        }
-      }
       if (measure.bodyTermId === "term-bonds" && measure.kind !== "bond") {
         fail(
           `[${id}] measure ${measure.stepId} term-bonds only on bond measures`,

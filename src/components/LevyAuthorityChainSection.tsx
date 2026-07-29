@@ -17,9 +17,9 @@
  *
  * Structure (same for every entry):
  * 1. Heading + short summary (optional linked county attribution + inline term)
- * 2. "See each step" — ordered trail with sourced facts
- * 3. Optional "What we don't know yet" — resident-facing limits only (no
- *    authoring/debug notes such as missing URLs or HTTP errors)
+ * 2. {@link AUTHORITY_CHAIN_STEPS_DISCLOSURE} — ordered trail with sourced facts
+ * 3. Optional {@link AUTHORITY_CHAIN_GAPS_DISCLOSURE} — resident-facing limits
+ *    only (no authoring/debug notes such as missing URLs or HTTP errors)
  */
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import {
@@ -217,8 +217,8 @@ function FactValue({ value }: { value: string }) {
         .split("\n")
         .map((line) => line.trim())
         .filter(Boolean)
-        .map((line) => (
-          <p key={line}>{line}</p>
+        .map((line, index) => (
+          <p key={index}>{line}</p>
         ))}
     </div>
   );
