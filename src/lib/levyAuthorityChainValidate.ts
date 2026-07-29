@@ -13,8 +13,10 @@ import { join } from "node:path";
 import { PARCEL_GLOSSARY_TERM_IDS } from "@/content/termDefinitionBodies";
 import {
   AUTHORITY_CHAIN_HEADING,
+  getAuthorityChainFamilyPack,
   OPEN_GAP_BODIES,
   SUMMARY_ATTRIBUTION_TEXT,
+  type LevyAuthorityChainFamily,
 } from "@/content/levyAuthorityChainTemplates";
 import {
   buildLevyAuthorityChainEntry,
@@ -29,12 +31,23 @@ const EXTRA_FLOW_BRIEF_TERM_IDS = [
   "term-pin",
   "term-tag",
   "term-debt-free-schools-mill-levy",
+  "term-tabor",
 ];
 
-const MEASURE_KINDS = new Set(["override", "bond", "debt_free_mill"]);
+const FAMILIES = new Set<LevyAuthorityChainFamily>(["school", "county"]);
+const MEASURE_KINDS = new Set([
+  "override",
+  "bond",
+  "debt_free_mill",
+  "tabor_revenue_retention",
+]);
 const BODY_LEADS = new Set(["approved", "also_approved", "earlier_approved"]);
 const BALLOT_TEXT_KINDS = new Set(["notice", "sample_ballot", "unavailable"]);
-const GOVERNING_BODIES = new Set(["school_board", "board"]);
+const GOVERNING_BODIES = new Set([
+  "school_board",
+  "board",
+  "board_of_county_commissioners",
+]);
 const OPEN_GAP_NO_STABLE_BALLOT_TEXT = "no-stable-ballot-text";
 
 function isNonEmptyString(s: unknown): s is string {
@@ -215,6 +228,12 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     if (byEntryId.has(id)) fail(`duplicate entry id: ${id}`);
     byEntryId.set(id, true);
 
+    if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
+      fail(`[${id}] family must be school or county`);
+    }
+    const family = record.family as LevyAuthorityChainFamily;
+    const familyPack = getAuthorityChainFamilyPack(family);
+
     const match = record.match;
     if (!match || typeof match !== "object") fail(`[${id}] missing \`match\``);
 
@@ -286,7 +305,9 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       fail(`[${id}] authority.countyListName required`);
     }
     if (!GOVERNING_BODIES.has(record.authority.governingBody)) {
-      fail(`[${id}] authority.governingBody must be school_board or board`);
+      fail(
+        `[${id}] authority.governingBody must be school_board, board, or board_of_county_commissioners`,
+      );
     }
     assertNoEmDash(
       record.authority.displayName,
@@ -381,7 +402,12 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
       if (!MEASURE_KINDS.has(measure.kind)) {
         fail(
-          `[${id}] measure ${measure.stepId} kind must be override, bond, or debt_free_mill`,
+          `[${id}] measure ${measure.stepId} kind must be override, bond, debt_free_mill, or tabor_revenue_retention`,
+        );
+      }
+      if (!familyPack.measureKinds.has(measure.kind)) {
+        fail(
+          `[${id}] measure ${measure.stepId} kind ${measure.kind} is not valid for family ${family}`,
         );
       }
       if (!isNonEmptyString(measure.electionMonthYear)) {
@@ -407,6 +433,33 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         ) {
           fail(
             `[${id}] measure ${measure.stepId} maxMillIncreasePerYear must be a positive number`,
+          );
+        }
+      }
+      if (measure.maxAuthorizedMills !== undefined) {
+        if (measure.kind !== "tabor_revenue_retention") {
+          fail(
+            `[${id}] measure ${measure.stepId} maxAuthorizedMills only on tabor_revenue_retention measures`,
+          );
+        }
+        if (
+          typeof measure.maxAuthorizedMills !== "number" ||
+          !Number.isFinite(measure.maxAuthorizedMills) ||
+          measure.maxAuthorizedMills <= 0
+        ) {
+          fail(
+            `[${id}] measure ${measure.stepId} maxAuthorizedMills must be a positive number`,
+          );
+        }
+      }
+      if (measure.kind === "tabor_revenue_retention") {
+        if (
+          typeof measure.maxAuthorizedMills !== "number" ||
+          !Number.isFinite(measure.maxAuthorizedMills) ||
+          measure.maxAuthorizedMills <= 0
+        ) {
+          fail(
+            `[${id}] measure ${measure.stepId} tabor_revenue_retention requires maxAuthorizedMills`,
           );
         }
       }
@@ -451,24 +504,25 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
     }
 
-    if (record.districtBudget !== undefined) {
-      assertObject(record.districtBudget, `[${id}] districtBudget`);
-      if (!isNonEmptyString(record.districtBudget.authorityShortName)) {
-        fail(`[${id}] districtBudget.authorityShortName required`);
+    if (record.budget !== undefined) {
+      assertObject(record.budget, `[${id}] budget`);
+      if (!isNonEmptyString(record.budget.authorityShortName)) {
+        fail(`[${id}] budget.authorityShortName required`);
       }
-      if (!isNonEmptyString(record.districtBudget.detail)) {
-        fail(`[${id}] districtBudget.detail required`);
+      if (!isNonEmptyString(record.budget.detail)) {
+        fail(`[${id}] budget.detail required`);
       }
-      if (!isNonEmptyString(record.districtBudget.factValue)) {
-        fail(`[${id}] districtBudget.factValue required`);
+      if (!isNonEmptyString(record.budget.factValue)) {
+        fail(`[${id}] budget.factValue required`);
       }
-      assertNoEmDash(
-        record.districtBudget.detail,
-        `[${id}].districtBudget.detail`,
-      );
-      assertHttpsSource(
-        record.districtBudget.source,
-        `[${id}] districtBudget.source`,
+      assertNoEmDash(record.budget.detail, `[${id}].budget.detail`);
+      assertHttpsSource(record.budget.source, `[${id}] budget.source`);
+    }
+    if (
+      (record as { districtBudget?: unknown }).districtBudget !== undefined
+    ) {
+      fail(
+        `[${id}] districtBudget was renamed to budget; update the JSON field`,
       );
     }
 
@@ -519,6 +573,25 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         step.body,
         allowedTermIds,
       );
+      if (step.bodyTerms) {
+        for (const [i, term] of step.bodyTerms.entries()) {
+          if (!isNonEmptyString(term.termId) || !allowedTermIds.has(term.termId)) {
+            fail(
+              `[${id}] built step ${step.id} bodyTerms[${i}].termId must be allowed`,
+            );
+          }
+          if (!isNonEmptyString(term.match)) {
+            fail(
+              `[${id}] built step ${step.id} bodyTerms[${i}].match must be non-empty`,
+            );
+          }
+          if (!step.body.toLowerCase().includes(term.match.toLowerCase())) {
+            fail(
+              `[${id}] built step ${step.id} bodyTerms[${i}].match "${term.match}" not found in body`,
+            );
+          }
+        }
+      }
       for (const fact of step.facts) {
         assertNoEmDash(fact.label, `[${id}] built fact label`);
         assertNoEmDash(fact.value, `[${id}] built fact value`);

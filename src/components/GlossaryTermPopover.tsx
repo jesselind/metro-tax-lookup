@@ -14,6 +14,7 @@ import {
   TermLevyBriefBody,
   TermPinBriefBody,
   TermTagBriefBody,
+  TermTaborBriefBody,
   levyModalTermRegistry,
   parcelGlossaryTermBriefRegistry,
   type ParcelGlossaryTermId,
@@ -32,7 +33,8 @@ type ExtraFlowGlossaryTermId =
   | "term-mill-levy"
   | "term-pin"
   | "term-tag"
-  | "term-debt-free-schools-mill-levy";
+  | "term-debt-free-schools-mill-levy"
+  | "term-tabor";
 
 /** Terms with a brief popover on the property/levy flow (not only parcel registry). */
 export type FlowGlossaryTermId =
@@ -51,6 +53,7 @@ const EXTRA_BRIEFS: Record<
     title: "Debt-free schools mill levy",
     Brief: TermDebtFreeSchoolsMillLevyBriefBody,
   },
+  "term-tabor": { title: "TABOR", Brief: TermTaborBriefBody },
 };
 
 /** True when {@link GlossaryTermPopover} can resolve a brief for this id. */

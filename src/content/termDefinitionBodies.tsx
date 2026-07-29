@@ -11,7 +11,11 @@
 
 import type { FC } from "react";
 import type { LevyModalTermId } from "@/lib/levyModalTermIds";
-import { COLORADO_DPT_ASSESSED_VALUE_SECTION_URL } from "@/lib/arapahoeCountyUrls";
+import {
+  COLORADO_DOR_TABOR_URL,
+  COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
+  COLORADO_LEG_TABOR_URL,
+} from "@/lib/arapahoeCountyUrls";
 import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 const BRIEF_P =
@@ -314,6 +318,98 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
         {" "}
         does not include a Notice of Election or a usable English sample ballot
         with the 4C wording.
+      </p>
+    </>
+  );
+}
+
+/**
+ * Colorado Taxpayer's Bill of Rights (TABOR). Brief for authority-chain and
+ * other flows; full aside on `/glossary`. Official state links in both.
+ */
+export function TermTaborBriefBody() {
+  return (
+    <div className="space-y-2">
+      <p className={BRIEF_P}>
+        <strong className="font-semibold text-slate-900">TABOR</strong>
+        {" "}
+        (Taxpayer&apos;s Bill of Rights) is a Colorado constitution rule. It
+        limits how much tax money many state and local governments can keep when
+        collections rise fast. It also usually requires voter approval for new
+        taxes or higher tax rates. When growth would push collections over the
+        limit, a local government may temporarily lower the rate on your bill
+        unless voters approve keeping more.
+      </p>
+      <p className={BRIEF_P}>
+        Official explainers:{" "}
+        <a
+          href={COLORADO_DOR_TABOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Colorado Department of Revenue (TABOR)
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        and{" "}
+        <a
+          href={COLORADO_LEG_TABOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Colorado General Assembly (TABOR)
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        .
+      </p>
+    </div>
+  );
+}
+
+export function TermTaborFullBody() {
+  return (
+    <>
+      <p className={FULL_P}>
+        <dfn className="font-semibold not-italic text-slate-900">TABOR</dfn>
+        {" "}
+        stands for the Taxpayer&apos;s Bill of Rights. Colorado voters added it
+        to the state constitution in 1992 (Article X, Section 20). It limits how
+        much tax money many state and local governments can keep when collections
+        rise fast, and it usually requires voter approval before a government
+        adopts a new tax or raises a tax rate.
+      </p>
+      <p className={FULL_P}>
+        On a property-tax bill, that can show up as a temporary discount (a
+        temporary tax credit) that lowers the rate so the government stays under
+        the revenue limit. Voters can approve a measure that lets the government
+        keep and spend more without raising the maximum rate. That is a different
+        decision from raising the legal mill-rate cap itself.
+      </p>
+      <p className={FULL_P}>
+        Official state explainers:{" "}
+        <a
+          href={COLORADO_DOR_TABOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Colorado Department of Revenue (TABOR)
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        and the{" "}
+        <a
+          href={COLORADO_LEG_TABOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Colorado General Assembly TABOR page
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        .
       </p>
     </>
   );

@@ -316,15 +316,17 @@ export default function SourcesPage() {
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="font-semibold text-slate-900">
-            Who authorized this? (school district prototypes):
+            Who authorized this?:
           </strong>{" "}
-          For selected school rows on your property-tax breakdown (Cherry Creek,
-          county code{" "}
+          For selected rows on your property-tax breakdown (Cherry Creek, county
+          code{" "}
           <strong className="font-semibold text-slate-900">0501</strong>
           ; Littleton Public Schools, county code{" "}
           <strong className="font-semibold text-slate-900">0601</strong>
+          ; Arapahoe County, county code{" "}
+          <strong className="font-semibold text-slate-900">2998</strong>
           ), tile details can show a plain-language trail from voters and the
-          school board to the published rate, with{" "}
+          governing body to the published rate, with{" "}
           <strong className="font-semibold text-slate-900">See each step</strong>
           {" "}
           for the full trail. Prefer the best official document we can verify;
@@ -342,8 +344,10 @@ export default function SourcesPage() {
           {" "}
           section) so you can see where we looked and why the ideal PDF is not
           linked. Typical deep-links include county rate tables, election
-          notices, Official Summary reports, and district budget PDFs when
-          published. Some jargon (for example{" "}
+          notices, Official Summary reports, and budget PDFs when published. For
+          Arapahoe County Ballot Issue 1A, the mills step pairs Tax Years 2023
+          and 2024 (temporary discount ended; maximum rate unchanged), not the
+          latest year-over-year pair alone. Some jargon (for example{" "}
           <strong className="font-semibold text-slate-900">
             debt-free schools mill levy
           </strong>

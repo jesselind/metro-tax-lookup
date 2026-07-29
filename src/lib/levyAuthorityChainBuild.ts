@@ -17,24 +17,20 @@ import {
   buildSummaryAlsoClause,
   buildSummarySecondSentence,
   buildSummaryVoterClause,
-  ballotStepBody,
-  ballotStepTitle,
-  districtBudgetBody,
   FACT_LABEL_BALLOT_TEXT,
   FACT_LABEL_COUNTY_LIST_NAME,
-  FACT_LABEL_DISTRICT_BUDGET,
   FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
   formatVoteTotals,
-  MILLS_STEP_BODY,
+  getAuthorityChainFamilyPack,
   millsYearLabel,
   OPEN_GAP_BODIES,
   type LevyAuthorityChainBodyLead,
+  type LevyAuthorityChainFamily,
   type LevyAuthorityChainGoverningBody,
   type LevyAuthorityChainMeasureKind,
   type LevyAuthorityChainOpenGapId,
-  STEP_TITLE_DISTRICT_BUDGET,
   STEP_TITLE_HOW_VOTED,
   STEP_TITLE_WHAT_CHANGED,
   STEP_TITLE_WHO_GETS,
@@ -62,6 +58,8 @@ export type LevyAuthorityChainMeasureRecord = {
   /** Injected into the kind-specific body template. */
   detail: string;
   maxMillIncreasePerYear?: number;
+  /** Cap stated on the ballot (e.g. county TABOR retention max mills). */
+  maxAuthorizedMills?: number;
   titleYearSuffix?: string;
   bodyLead?: LevyAuthorityChainBodyLead;
   /**
@@ -106,7 +104,7 @@ export type LevyAuthorityChainMillsSpec = {
   priorRateSource: LevyAuthorityChainSourceLink;
 };
 
-export type LevyAuthorityChainDistrictBudgetSpec = {
+export type LevyAuthorityChainBudgetSpec = {
   authorityShortName: string;
   detail: string;
   factValue: string;
@@ -124,13 +122,15 @@ export type LevyAuthorityChainAuthoritySpec = {
 /** Structured JSON entry (version 2). No free-form step prose. */
 export type LevyAuthorityChainEntryRecord = {
   id: string;
+  /** Selects the family pack (school / county / …) for injected wording. */
+  family: LevyAuthorityChainFamily;
   match: LevyEntryMatchKeys;
   authority: LevyAuthorityChainAuthoritySpec;
   summarySource: LevyAuthorityChainSourceLink;
   summary: LevyAuthorityChainSummarySpec;
   mills: LevyAuthorityChainMillsSpec;
   measures: LevyAuthorityChainMeasureRecord[];
-  districtBudget?: LevyAuthorityChainDistrictBudgetSpec;
+  budget?: LevyAuthorityChainBudgetSpec;
   openGapIds: LevyAuthorityChainOpenGapId[];
 };
 
@@ -182,13 +182,13 @@ function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityC
 }
 
 function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack(record.family);
   const { mills } = record;
-  return {
+  const [primary, ...rest] = pack.millsBodyTerms;
+  const step: LevyAuthorityChainStep = {
     id: "certified-mills",
     title: STEP_TITLE_WHAT_CHANGED,
-    body: MILLS_STEP_BODY,
-    bodyTermId: "term-mill-levy",
-    bodyTermMatch: "rate",
+    body: pack.millsStepBody,
     facts: [
       {
         label: millsYearLabel(mills.currentYear),
@@ -202,25 +202,35 @@ function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityCha
       },
     ],
   };
+  if (primary) {
+    step.bodyTermId = primary.termId;
+    step.bodyTermMatch = primary.match;
+  }
+  if (rest.length > 0) {
+    step.bodyTerms = rest.map((t) => ({ termId: t.termId, match: t.match }));
+  }
+  return step;
 }
 
-function buildMeasureStep(measure: LevyAuthorityChainMeasureRecord): LevyAuthorityChainStep {
+function buildMeasureStep(
+  family: LevyAuthorityChainFamily,
+  measure: LevyAuthorityChainMeasureRecord,
+): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack(family);
   const bodyLead = measure.bodyLead ?? "approved";
   return {
     id: measure.stepId,
-    title: ballotStepTitle(
+    title: pack.ballotStepTitle(
       measure.ballotIssue,
       measure.kind,
       measure.titleYearSuffix,
     ),
     titleTermId: measure.titleTermId,
     titleTermMatch: measure.titleTermMatch,
-    body: ballotStepBody(
-      measure.kind,
-      measure.detail,
-      bodyLead,
-      measure.maxMillIncreasePerYear,
-    ),
+    body: pack.ballotStepBody(measure.kind, measure.detail, bodyLead, {
+      maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
+      maxAuthorizedMills: measure.maxAuthorizedMills,
+    }),
     bodyTermId: measure.bodyTermId,
     bodyTermMatch: measure.bodyTermMatch,
     facts: [
@@ -252,18 +262,20 @@ function buildVotesStep(measures: LevyAuthorityChainMeasureRecord[]): LevyAuthor
   };
 }
 
-function buildDistrictBudgetStep(
-  budget: LevyAuthorityChainDistrictBudgetSpec,
+function buildBudgetStep(
+  family: LevyAuthorityChainFamily,
+  budget: LevyAuthorityChainBudgetSpec,
 ): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack(family);
   return {
-    id: "district-budget-attribution",
-    title: STEP_TITLE_DISTRICT_BUDGET,
-    body: districtBudgetBody(budget.authorityShortName, budget.detail),
+    id: "budget-attribution",
+    title: pack.budgetStepTitle,
+    body: pack.budgetBody(budget.authorityShortName, budget.detail),
     bodyTermId: budget.bodyTermId,
     bodyTermMatch: budget.bodyTermMatch,
     facts: [
       {
-        label: FACT_LABEL_DISTRICT_BUDGET,
+        label: pack.budgetFactLabel,
         value: budget.factValue,
         sources: [budget.source],
       },
@@ -291,15 +303,24 @@ export function buildLevyAuthorityChainEntry(
     );
   }
 
+  const pack = getAuthorityChainFamilyPack(record.family);
+  for (const measure of record.measures) {
+    if (!pack.measureKinds.has(measure.kind)) {
+      throw new Error(
+        `[${record.id}] measure kind ${measure.kind} is not valid for family ${record.family}`,
+      );
+    }
+  }
+
   const steps: LevyAuthorityChainStep[] = [
     buildWhoSetsStep(record),
     buildMillsStep(record),
-    ...record.measures.map(buildMeasureStep),
+    ...record.measures.map((m) => buildMeasureStep(record.family, m)),
     buildVotesStep(record.measures),
   ];
 
-  if (record.districtBudget) {
-    steps.push(buildDistrictBudgetStep(record.districtBudget));
+  if (record.budget) {
+    steps.push(buildBudgetStep(record.family, record.budget));
   }
 
   const entry: LevyAuthorityChainEntry = {

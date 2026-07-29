@@ -17,6 +17,7 @@ import {
   TermMillLevyFullBody,
   TermLgIdFullBody,
   TermSpecialDistrictsFullBody,
+  TermTaborFullBody,
   TermTaxEntityFullBody,
 } from "@/content/termDefinitionBodies";
 import {
@@ -795,6 +796,14 @@ export function TermSpecialDistrictsAside() {
   );
 }
 
+export function TermTaborAside() {
+  return (
+    <TermAside id="term-tabor" title="TABOR" titleId="term-tabor-title">
+      <TermTaborFullBody />
+    </TermAside>
+  );
+}
+
 export function TermLgIdAside() {
   return (
     <TermAside id="term-lg-id" title="LG ID" titleId="term-lg-id-title">
@@ -861,6 +870,7 @@ export function AllTermDefinitionAsides() {
       <TermSitusAddressAside />
       <TermSpecialDistrictsAside />
       <TermStateUseAside />
+      <TermTaborAside />
       <TermTagAside />
       <TermTaxEntityAside />
       <TermTaxYearAside />

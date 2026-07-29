@@ -37,6 +37,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-situs-address",
   "term-special-districts",
   "term-state-use",
+  "term-tabor",
   "term-tag",
   "term-tax-entity",
   "term-tax-year",

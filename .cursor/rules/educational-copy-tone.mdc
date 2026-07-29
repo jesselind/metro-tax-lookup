@@ -13,6 +13,7 @@ This app is **educational first**. Copy should feel like a **clear explanation**
 - Aim for roughly **middle-school readability**: plain words, **short sentences**, **one main idea per paragraph**.
 - Readers are **smart** but not steeped in **DOLA**, registry, or assessor-office jargon. If a sentence only makes sense to someone who already works in county tax data, **split it** or **swap the term for what it does on their bill or notice**.
 - **Lint (informal):** Would this sound OK **read aloud** to a curious neighbor? If not, revise.
+- **Final checks:** When the user invokes **final checks**, the base-rule gate includes an explicit **Farmer read** step on touched resident-facing copy. Do not skip it. Read the **built** wording (templates + facts as the UI shows them). Extreme on purpose: keep us away from tax-accountant and county-form voice.
 
 ## What to prioritize
 
@@ -42,3 +43,5 @@ It does **not** require rewriting unrelated files just because they are open; ap
 ## Focused passes
 
 A **full tone pass** (e.g. Glossary + modal briefs only) is a **deliberate editorial task**, not implied by every code change. When the user asks for that pass, treat it as a **single coordinated edit** with this checklist in mind.
+
+**Final checks Farmer read** (base-rule gate step 2) is narrower: only **touched / in-scope** resident-facing copy in that conversation, but it is **mandatory** when final checks run.
