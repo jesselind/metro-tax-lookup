@@ -14,5 +14,6 @@ export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
 /** Modal mill-rate history chart (Levy % AUTH totals). */
 export const AUTHORITY_MILLS_HISTORY_CHART_HEADING = "Mill rate over time";
 
+/** Caption under the mill-rate history chart heading. */
 export const AUTHORITY_MILLS_HISTORY_CHART_CAPTION =
   "Total mills for this authority from county property tax tables.";

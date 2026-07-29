@@ -20,6 +20,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-assessed-value",
   "term-assessment-year",
   "term-comps",
+  "term-debt-free-schools-mill-levy",
   "term-nov-comps-improvement-style",
   "term-nov-comps-improvement-type",
   "term-nov-comps-luc",

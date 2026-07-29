@@ -1,13 +1,13 @@
 {
   "name": "metro-tax-lookup",
-  "version": "4.5.3",
+  "version": "4.5.4",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
     "predev": "node tools/ensure_nov_grid_for_build.mjs",
     "dev": "next dev",
     "validate:levy-explainer": "node tools/validate_levy_explainer_entries.mjs",
-    "validate:levy-authority-chain": "node tools/validate_levy_authority_chain_entries.mjs",
+    "validate:levy-authority-chain": "vitest run src/lib/levyAuthorityChainValidate.test.ts",
     "prebuild": "node tools/ensure_nov_grid_for_build.mjs && npm run validate:levy-explainer && npm run validate:levy-authority-chain",
     "ci:test:nov-comps-parser": "npm run test:nov-comps-parser",
     "ci:test:parcel-index": "npm run test:parcel-index",

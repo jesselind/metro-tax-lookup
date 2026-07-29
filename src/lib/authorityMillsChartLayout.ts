@@ -12,13 +12,13 @@ import type { AuthorityMillsSeriesPoint } from "@/lib/authorityMillsHistory";
 
 export const AUTHORITY_MILLS_CHART_VIEWBOX = {
   width: 320,
-  height: 132,
+  height: 116,
 } as const;
 
 export const AUTHORITY_MILLS_CHART_PADDING = {
-  top: 14,
+  top: 8,
   right: 10,
-  bottom: 28,
+  bottom: 24,
   left: 10,
 } as const;
 
@@ -56,7 +56,7 @@ function yRangePadding(millsValues: number[]): { yMin: number; yMax: number } {
     return { yMin: rawMin - pad, yMax: rawMax + pad };
   }
   const span = rawMax - rawMin;
-  const pad = Math.max(span * 0.12, 0.05);
+  const pad = Math.max(span * 0.08, 0.04);
   return { yMin: rawMin - pad, yMax: rawMax + pad };
 }
 

@@ -22,10 +22,19 @@ These phrases are a **macro**. Do **not** wait for the user to restate the check
 
 When invoked, on **touched / in-scope work** for the current conversation (or the scope the user names):
 
-1. **Due diligence review:** KISS, YAGNI, DRY, OWASP Top 10, a11y (WCAG 2.1 AA), anti-patterns, stack best practices (Next.js / React / Tailwind as used here), and appropriate JSDoc and/or inline comments on non-obvious code (present where helpful; not noise on trivial code).
+1. **Due diligence review:** KISS, YAGNI, DRY, OWASP Top 10, a11y (WCAG 2.1 AA), anti-patterns, stack best practices (Next.js / React / Tailwind as used here), and appropriate JSDoc and/or inline comments on non-obvious code (present where helpful; not noise on trivial code). **Fix** clear defects in that scope as you go.
 2. **Docs:** Update applicable docs if the work changed behavior, data, build/deploy, or how users should interpret results — typically `README.md` and/or `src/app/sources/page.tsx`; also authoring docs (e.g. `docs/levy-explainer-authoring.md`) or other in-repo docs when they are the right place. Follow the docs split already in this rule (README technical; `/sources` narrative).
 3. **E2E:** Update Playwright coverage if UI contracts changed, then **run** the full suite (chromium, firefox, webkit) per `.cursor/rules/playwright-macos-sandbox.mdc` (`PLAYWRIGHT_BROWSERS_PATH` + `all` permissions). This overrides the general "prefer the user run CLI" preference for this gate only.
-4. **Report** using **Review and audit responses** below (issues / risks / gaps / follow-ups only). Include remaining e2e or docs gaps as issues; do not narrate green passes unless the user asked for command output.
+4. **Triage anything still open** before you report (situational): **fix** it now when it is in scope and actionable; **or** record it in the right durable place. Use `openGaps` in curated JSON when the gap is part of that entry's honest limits; use `/sources` or authoring docs when residents need to know how to interpret results. For deferred engineering, research, or follow-ups that are not fixed in this pass, use **`docs/_working/`** (see **Working docs** below). Do **not** leave fixable in-scope work or tracked follow-ups only in chat.
+5. **Report** using **Review and audit responses** below. List **only** what is still unresolved after steps 1–4 (or point to the `docs/_working/` file where it is tracked). Do not narrate green passes unless the user asked for command output.
+
+### Working docs (`docs/_working/`)
+
+Scratch and in-progress notes live under **`docs/_working/`**. When the work is done, **delete** the doc.
+
+- **Issues and follow-ups** from reviews or final checks: add them to the **relevant** working doc for that topic; if none exists, **create** a new appropriately named file (for example `docs/_working/authority-chain-e2e.md`).
+- **Do not** duplicate the same follow-up in chat and in a working doc; the doc is the handoff.
+- **Not** for permanent product narrative (use `/sources`) or shipped authoring rules (use `docs/*.md` at repo root).
 
 ### Review and audit responses (mandatory - read before any review-style answer)
 
@@ -35,7 +44,8 @@ This rule **overrides** the instinct to be balanced or reassuring. Soft praise i
 
 **Output format:**
 
-- **Only** list **issues, risks, gaps, and actionable follow-ups** (what to fix, verify manually, or decide).
+- **Only** list **issues, risks, gaps, and actionable follow-ups** that are **still unresolved** after you fixed or recorded them (see Final checks gate step 4).
+- **Do not report** as open issues: items you already fixed; intentional `openGaps` already in curated JSON; speculative test or polish ideas unless the user asked for a backlog; follow-ups already recorded in `docs/_working/` (name the file path instead of repeating the list).
 - **Forbidden:** Sections or bullets on what is **fine**, **good**, **satisfactory**, **passing**, **already met**, **in good shape**, or **meets [principle]**; **praise** or **reassurance**; a **Summary** that mixes positives and negatives; **What we changed** framed only as praise; framing fixes as achievements.
 - **Forbidden:** Saying build, lint, or tests **passed** or **succeeded** unless the user explicitly asked for that command output.
 - If you **made edits** in the same turn: report **only remaining** issues after those edits (or one sentence if none).

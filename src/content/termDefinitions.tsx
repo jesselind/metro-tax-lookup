@@ -13,6 +13,7 @@
 import { CountyCompsPdfAssessorAvailabilityCopy } from "@/components/CountyCompsPdfGuidance";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
+  TermDebtFreeSchoolsMillLevyFullBody,
   TermMillLevyFullBody,
   TermLgIdFullBody,
   TermSpecialDistrictsFullBody,
@@ -770,6 +771,18 @@ export function TermMillLevyAside() {
   );
 }
 
+export function TermDebtFreeSchoolsMillLevyAside() {
+  return (
+    <TermAside
+      id="term-debt-free-schools-mill-levy"
+      title="Debt-free schools mill levy"
+      titleId="term-debt-free-schools-mill-levy-title"
+    >
+      <TermDebtFreeSchoolsMillLevyFullBody />
+    </TermAside>
+  );
+}
+
 export function TermSpecialDistrictsAside() {
   return (
     <TermAside
@@ -831,6 +844,7 @@ export function AllTermDefinitionAsides() {
       <TermAssessedValueAside />
       <TermAssessmentYearAside />
       <TermCompsAside />
+      <TermDebtFreeSchoolsMillLevyAside />
       <TermNovCompsImprovementStyleAside />
       <TermNovCompsImprovementTypeAside />
       <TermNovCompsLucAside />

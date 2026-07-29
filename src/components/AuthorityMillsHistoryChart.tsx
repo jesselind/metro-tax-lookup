@@ -53,12 +53,12 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
         {AUTHORITY_MILLS_HISTORY_CHART_CAPTION}
       </p>
 
-      <div className="mt-3 w-full">
+      <div className="mt-2 w-full">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           width="100%"
           height="auto"
-          className="block max-h-40 w-full text-slate-600"
+          className="block max-h-36 w-full text-slate-600"
           role="img"
           aria-label={ariaLabel}
           preserveAspectRatio="xMidYMid meet"
@@ -117,7 +117,7 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
         </svg>
       </div>
 
-      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-sm tabular-nums text-slate-800 sm:text-[0.9375rem]">
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm tabular-nums text-slate-800 sm:text-[0.9375rem]">
         <div className="min-w-0">
           <dt className="text-xs text-slate-500">{formatTaxYearLabel(first.taxYear)}</dt>
           <dd className="font-semibold">

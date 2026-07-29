@@ -49,6 +49,10 @@ export const ARAPAHOE_COMP_SHEET_PDF_URL =
 export const ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB =
   "https://www.arapahoeco.gov/your_county/county_departments/assessor/mill_levies_and_tax_districts.php#outer-96";
 
+/** Clerk Past Elections File Library (year folders / Official Summary hubs). */
+export const ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY =
+  "https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php";
+
 export const ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF =
   "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490";
 

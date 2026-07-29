@@ -777,13 +777,13 @@ export function LevyLineDistrictDetailDialog({
             ) : null}
 
             {showMillsHistoryChart ? (
-              <div className="mt-4">
+              <div className="mt-3">
                 <AuthorityMillsHistoryChart series={millsHistory} />
               </div>
             ) : null}
 
             {levyAuthorityChainEntry ? (
-              <div className="mt-4">
+              <div className="mt-3">
                 <LevyAuthorityChainSection entry={levyAuthorityChainEntry} />
               </div>
             ) : null}
