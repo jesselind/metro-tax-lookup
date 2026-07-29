@@ -11,6 +11,7 @@ import {
   PARCEL_GLOSSARY_POPOVER_PANEL_CLASS,
   ParcelTermPopoverPanel,
   TermDebtFreeSchoolsMillLevyBriefBody,
+  TermDeBrucingBriefBody,
   TermLevyBriefBody,
   TermPinBriefBody,
   TermTagBriefBody,
@@ -34,6 +35,7 @@ type ExtraFlowGlossaryTermId =
   | "term-pin"
   | "term-tag"
   | "term-debt-free-schools-mill-levy"
+  | "term-de-brucing"
   | "term-tabor";
 
 /** Terms with a brief popover on the property/levy flow (not only parcel registry). */
@@ -52,6 +54,10 @@ const EXTRA_BRIEFS: Record<
   "term-debt-free-schools-mill-levy": {
     title: "Debt-free schools mill levy",
     Brief: TermDebtFreeSchoolsMillLevyBriefBody,
+  },
+  "term-de-brucing": {
+    title: "De-Brucing",
+    Brief: TermDeBrucingBriefBody,
   },
   "term-tabor": { title: "TABOR", Brief: TermTaborBriefBody },
 };

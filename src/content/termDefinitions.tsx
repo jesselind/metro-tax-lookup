@@ -14,6 +14,7 @@ import { CountyCompsPdfAssessorAvailabilityCopy } from "@/components/CountyComps
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
   TermDebtFreeSchoolsMillLevyFullBody,
+  TermDeBrucingFullBody,
   TermMillLevyFullBody,
   TermLgIdFullBody,
   TermSpecialDistrictsFullBody,
@@ -784,6 +785,18 @@ export function TermDebtFreeSchoolsMillLevyAside() {
   );
 }
 
+export function TermDeBrucingAside() {
+  return (
+    <TermAside
+      id="term-de-brucing"
+      title="De-Brucing"
+      titleId="term-de-brucing-title"
+    >
+      <TermDeBrucingFullBody />
+    </TermAside>
+  );
+}
+
 export function TermSpecialDistrictsAside() {
   return (
     <TermAside
@@ -853,6 +866,7 @@ export function AllTermDefinitionAsides() {
       <TermAssessedValueAside />
       <TermAssessmentYearAside />
       <TermCompsAside />
+      <TermDeBrucingAside />
       <TermDebtFreeSchoolsMillLevyAside />
       <TermNovCompsImprovementStyleAside />
       <TermNovCompsImprovementTypeAside />

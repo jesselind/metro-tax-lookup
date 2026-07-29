@@ -324,6 +324,80 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
 }
 
 /**
+ * De-Brucing (Colorado nickname for a TABOR revenue-retention vote).
+ * Brief for authority-chain; full aside on `/glossary`.
+ */
+export function TermDeBrucingBriefBody() {
+  return (
+    <div className="space-y-2">
+      <p className={BRIEF_P}>
+        <strong className="font-semibold text-slate-900">De-Brucing</strong>
+        {" "}
+        is a nickname Coloradans use for a voter measure that lets a local
+        government keep and spend tax money above{" "}
+        <strong className="font-semibold text-slate-900">TABOR</strong>
+        {" "}
+        revenue limits. The name comes from Douglas Bruce, who helped pass
+        TABOR. It is not the same as raising the maximum mill rate on your bill.
+        A higher rate cap still needs its own voter approval.
+      </p>
+    </div>
+  );
+}
+
+export function TermDeBrucingFullBody() {
+  return (
+    <>
+      <p className={FULL_P}>
+        <dfn className="font-semibold not-italic text-slate-900">De-Brucing</dfn>
+        {" "}
+        is a nickname for a ballot measure that lets a Colorado local government
+        keep and spend revenue that{" "}
+        <strong className="font-semibold text-slate-900">TABOR</strong>
+        {" "}
+        (the Taxpayer&apos;s Bill of Rights) would otherwise limit. People use
+        the name because Douglas Bruce helped write and pass TABOR. Hearing
+        &quot;de-Bruce&quot; in the news usually means this kind of revenue vote,
+        not a brand-new tax by itself.
+      </p>
+      <p className={FULL_P}>
+        On a property-tax bill, a de-Brucing measure lets the government keep
+        revenue that TABOR would otherwise require returning to taxpayers. The
+        government may then end a temporary tax credit that had lowered the mill
+        rate on your bill so it stayed under the old keep-limit. What you pay on
+        that bill line can rise even when the ballot said there was no new tax
+        and no higher maximum mill rate. Raising the legal rate cap is a separate
+        voter decision.
+      </p>
+      <p className={FULL_P}>
+        Official TABOR explainers:{" "}
+        <a
+          href={COLORADO_DOR_TABOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Colorado Department of Revenue (TABOR)
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        and the{" "}
+        <a
+          href={COLORADO_LEG_TABOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          Colorado General Assembly TABOR page
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        .
+      </p>
+    </>
+  );
+}
+
+/**
  * Colorado Taxpayer's Bill of Rights (TABOR). Brief for authority-chain and
  * other flows; full aside on `/glossary`. Official state links in both.
  */
@@ -334,11 +408,10 @@ export function TermTaborBriefBody() {
         <strong className="font-semibold text-slate-900">TABOR</strong>
         {" "}
         (Taxpayer&apos;s Bill of Rights) is a Colorado constitution rule. It
-        limits how much tax money many state and local governments can keep when
-        collections rise fast. It also usually requires voter approval for new
-        taxes or higher tax rates. When growth would push collections over the
-        limit, a local government may temporarily lower the rate on your bill
-        unless voters approve keeping more.
+        caps how much tax money many state and local governments may keep.
+        Without voter permission to keep more, money collected above that limit
+        must go back to taxpayers. It also usually requires voter approval for
+        new taxes or higher tax rates.
       </p>
       <p className={BRIEF_P}>
         Official explainers:{" "}
@@ -375,17 +448,21 @@ export function TermTaborFullBody() {
         <dfn className="font-semibold not-italic text-slate-900">TABOR</dfn>
         {" "}
         stands for the Taxpayer&apos;s Bill of Rights. Colorado voters added it
-        to the state constitution in 1992 (Article X, Section 20). It limits how
-        much tax money many state and local governments can keep when collections
-        rise fast, and it usually requires voter approval before a government
-        adopts a new tax or raises a tax rate.
+        to the state constitution in 1992 (Article X, Section 20). It caps how
+        much tax money many state and local governments may keep. Without voter
+        permission to keep more, money collected above that limit must go back
+        to taxpayers. TABOR also usually requires voter approval before a
+        government adopts a new tax or raises a tax rate.
       </p>
       <p className={FULL_P}>
-        On a property-tax bill, that can show up as a temporary discount (a
-        temporary tax credit) that lowers the rate so the government stays under
-        the revenue limit. Voters can approve a measure that lets the government
-        keep and spend more without raising the maximum rate. That is a different
-        decision from raising the legal mill-rate cap itself.
+        On a property-tax bill, some local governments stay under the keep-limit
+        with a temporary tax credit that lowers the mill rate shown on the bill.
+        That means they collect less up front. It is not the same as refunding
+        money already collected over the limit. Voters can approve a measure that
+        lets the government keep and spend more without raising the maximum mill
+        rate. Coloradans often call that kind of vote{" "}
+        <strong className="font-semibold text-slate-900">de-Brucing</strong>
+        . That is different from raising the legal mill-rate cap itself.
       </p>
       <p className={FULL_P}>
         Official state explainers:{" "}

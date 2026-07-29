@@ -58,7 +58,7 @@ export const OPEN_GAP_BODIES = {
     "For at least one ballot measure in this trail, Arapahoe County's published election files do not include a Notice of Election or a usable English sample ballot. We link that year's Past Elections File Library section so you can see what the county posted. Vote totals still come from the Official Summary Report.",
   /** County temporary-discount story: one published total, no component split. */
   "no-temporary-credit-mill-split":
-    "The county publishes one total rate on the bill. From that table alone, we cannot separate how much of the jump came from ending the temporary discount versus other small year-to-year changes.",
+    "The county publishes one total rate on the bill (15.885 mills for Tax Year 2024). Ballot Issue 1A's maximum rate of 15.821 mills is not that same total, so the ballot cap does not describe every part of today's published county rate. From the rate table alone, we cannot separate how much of the jump came from ending the temporary tax credit versus other small year-to-year changes.",
 } as const;
 
 export type LevyAuthorityChainOpenGapId = keyof typeof OPEN_GAP_BODIES;
@@ -106,7 +106,7 @@ export const MILLS_STEP_BODY =
   "The county publishes one total rate for this authority each year. The figures below compare two tax years.";
 
 const COUNTY_MILLS_STEP_BODY =
-  "What you pay the county went up after Ballot Issue 1A. That vote did not raise the county's maximum tax rate. It let the county stop using a temporary discount that had kept the billed rate lower. Colorado's TABOR rules limit how much tax money many local governments can keep when values or collections rise fast; the county had been staying under that limit with the discount. The figures below are the county's total rate for Tax Years 2023 and 2024, the years that show that jump.";
+  "Ballot Issue 1A changed the amount of tax money the county is required to return to you. Voters let the county keep money that TABOR would otherwise have required returning to taxpayers, so you pay more on the county line of your bill. That vote did not raise the county's maximum tax rate. Before 1A, the county stayed under the TABOR keep-limit with a temporary tax credit that lowered the mill rate on your bill (collecting less up front, instead of taking the full authorized amount and sending refunds later). After voters allowed the county to keep more, that credit ended and the billed rate rose. The figures below are the county's total rate for Tax Years 2023 and 2024, the years that show that jump.";
 
 export type LevyAuthorityChainMillsBodyTerm = {
   termId: "term-mill-levy" | "term-tabor";
@@ -191,7 +191,7 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
   ballotStepTitle(ballotIssue, kind) {
     switch (kind) {
       case "tabor_revenue_retention":
-        return `Ballot Issue ${ballotIssue}: Ending the temporary county tax discount`;
+        return `Ballot Issue ${ballotIssue}: Ending the temporary tax credit on your bill`;
       default:
         throw new Error(`county pack does not support measure kind: ${kind}`);
     }
@@ -200,16 +200,13 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
     const lead = BODY_LEAD_PHRASES[bodyLead];
     switch (kind) {
       case "tabor_revenue_retention": {
-        const max =
-          options?.maxAuthorizedMills != null
-            ? String(options.maxAuthorizedMills)
-            : null;
-        if (max == null) {
+        if (options?.maxAuthorizedMills == null) {
           throw new Error(
             "tabor_revenue_retention requires maxAuthorizedMills",
           );
         }
-        return `${lead} letting the county keep and spend money that state revenue limits (TABOR) would otherwise have blocked, for needs such as ${detail}. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+        const max = options.maxAuthorizedMills.toFixed(3);
+        return `${lead} letting the county keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
       }
       default:
         throw new Error(`county pack does not support measure kind: ${kind}`);

@@ -31,6 +31,7 @@ const EXTRA_FLOW_BRIEF_TERM_IDS = [
   "term-pin",
   "term-tag",
   "term-debt-free-schools-mill-levy",
+  "term-de-brucing",
   "term-tabor",
 ];
 
