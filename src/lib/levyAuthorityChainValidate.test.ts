@@ -125,4 +125,61 @@ describe("levyAuthorityChainValidate", () => {
       /at most one tabor_revenue_retention/i,
     );
   });
+
+  it("rejects authority.governmentBillName on non-county family entries", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const school = entries.find((e) => e.family === "school")!;
+    (school.authority as Record<string, unknown>).governmentBillName =
+      "Cherry Creek School District";
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /authority\.governmentBillName only applies to county family entries/i,
+    );
+  });
+
+  it("requires mills.stepBody when mills.bodyTerms is present", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const county = entries.find((e) => e.id === "arapahoe-county-authority-chain")!;
+    const mills = county.mills as Record<string, unknown>;
+    delete mills.stepBody;
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /mills\.bodyTerms requires mills\.stepBody/i,
+    );
+  });
+
+  it("rejects titlePlain on non-tabor_revenue_retention measures", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const override = (
+      entries[0]!.measures as Array<Record<string, unknown>>
+    ).find((m) => m.kind === "override")!;
+    override.titlePlain = "Not a TABOR vote";
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /titlePlain only on tabor_revenue_retention measures/i,
+    );
+  });
+
+  it("requires titlePlain on tabor_revenue_retention measures", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const county = entries.find((e) => e.id === "arapahoe-county-authority-chain")!;
+    const tabor = (
+      county.measures as Array<Record<string, unknown>>
+    ).find((m) => m.kind === "tabor_revenue_retention")!;
+    delete tabor.titlePlain;
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /tabor_revenue_retention requires titlePlain/i,
+    );
+  });
+
+  it("requires no-temporary-credit-mill-split to reference a valid tabor measure", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const school = entries.find((e) => e.family === "school")!;
+    school.openGapIds = ["no-temporary-credit-mill-split"];
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /no-temporary-credit-mill-split requires exactly one tabor_revenue_retention measure with maxAuthorizedMills/i,
+    );
+  });
 });

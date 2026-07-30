@@ -247,7 +247,8 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
           );
         }
         const governmentBillName =
-          options.governmentBillName?.trim() || COUNTY_GOVERNMENT_BILL_NAME_DEFAULT;
+          options?.governmentBillName?.trim() ||
+          COUNTY_GOVERNMENT_BILL_NAME_DEFAULT;
         const max = options.maxAuthorizedMills.toFixed(3);
         return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
       }
