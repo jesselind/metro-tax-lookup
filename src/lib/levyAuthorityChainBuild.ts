@@ -17,6 +17,7 @@ import {
   buildSummaryAlsoClause,
   buildSummarySecondSentence,
   buildSummaryVoterClause,
+  COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_BALLOT_TEXT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
@@ -26,15 +27,17 @@ import {
   getAuthorityChainFamilyPack,
   millsYearLabel,
   OPEN_GAP_BODIES,
+  OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
+  temporaryCreditMillSplitOpenGapBody,
   type LevyAuthorityChainBodyLead,
   type LevyAuthorityChainFamily,
   type LevyAuthorityChainGoverningBody,
   type LevyAuthorityChainMeasureKind,
+  type LevyAuthorityChainMillsBodyTerm,
   type LevyAuthorityChainOpenGapId,
   STEP_TITLE_HOW_VOTED,
   STEP_TITLE_WHAT_CHANGED,
   STEP_TITLE_WHO_GETS,
-  SUMMARY_ATTRIBUTION_TEXT,
   VOTES_STEP_BODY,
   voteFactLabel,
   whoGetsBody,
@@ -61,6 +64,11 @@ export type LevyAuthorityChainMeasureRecord = {
   /** Cap stated on the ballot (e.g. county TABOR retention max mills). */
   maxAuthorizedMills?: number;
   titleYearSuffix?: string;
+  /**
+   * Plain-language title after "Ballot Issue X: " (required for
+   * `tabor_revenue_retention`; bill-first, not a nickname headline).
+   */
+  titlePlain?: string;
   bodyLead?: LevyAuthorityChainBodyLead;
   /**
    * Ballot wording source. Follow the next-best ladder: Notice of Election /
@@ -102,6 +110,13 @@ export type LevyAuthorityChainMillsSpec = {
   priorMills: string;
   currentRateSource: LevyAuthorityChainSourceLink;
   priorRateSource: LevyAuthorityChainSourceLink;
+  /**
+   * Optional entry-specific "What changed?" takeaway. When omitted, the family
+   * pack default chrome is used (shared school/county rate-table sentence).
+   */
+  stepBody?: string;
+  /** Glossary popovers for `stepBody` (or pack default when `stepBody` omitted). */
+  bodyTerms?: LevyAuthorityChainMillsBodyTerm[];
 };
 
 export type LevyAuthorityChainBudgetSpec = {
@@ -117,6 +132,11 @@ export type LevyAuthorityChainAuthoritySpec = {
   displayName: string;
   countyListName: string;
   governingBody: LevyAuthorityChainGoverningBody;
+  /**
+   * Bill wording for county-family retention copy (e.g. "the county").
+   * Defaults to {@link COUNTY_GOVERNMENT_BILL_NAME_DEFAULT} when omitted.
+   */
+  governmentBillName?: string;
 };
 
 /** Structured JSON entry (version 2). No free-form step prose. */
@@ -147,7 +167,21 @@ function ballotTextFactValue(
   }
 }
 
-function buildSummary(record: LevyAuthorityChainEntryRecord): string {
+function governmentBillNameForRecord(
+  record: LevyAuthorityChainEntryRecord,
+): string {
+  const custom = record.authority.governmentBillName?.trim();
+  if (custom) return custom;
+  if (record.family === "county") {
+    return COUNTY_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
+  return "";
+}
+
+function buildSummary(
+  record: LevyAuthorityChainEntryRecord,
+  summaryAttribution: string,
+): string {
   const headline = buildSummaryVoterClause(
     record.summary.headlineIssues,
     record.summary.headlineElection,
@@ -158,7 +192,7 @@ function buildSummary(record: LevyAuthorityChainEntryRecord): string {
       buildSummaryAlsoClause(a.issues, a.election, a.suffix),
     ) ?? [];
   const voterParts = [headline, ...alsoClauses];
-  const first = `${SUMMARY_ATTRIBUTION_TEXT}, ${voterParts[0]}.`;
+  const first = `${summaryAttribution}, ${voterParts[0]}.`;
   const middle =
     voterParts.length > 1
       ? ` ${voterParts.slice(1).join(". ")}.`
@@ -184,11 +218,13 @@ function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityC
 function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
   const pack = getAuthorityChainFamilyPack(record.family);
   const { mills } = record;
-  const [primary, ...rest] = pack.millsBodyTerms;
+  const body = mills.stepBody?.trim() ? mills.stepBody.trim() : pack.millsStepBody;
+  const terms = mills.bodyTerms ?? pack.millsBodyTerms;
+  const [primary, ...rest] = terms;
   const step: LevyAuthorityChainStep = {
     id: "certified-mills",
     title: STEP_TITLE_WHAT_CHANGED,
-    body: pack.millsStepBody,
+    body,
     facts: [
       {
         label: millsYearLabel(mills.currentYear),
@@ -213,23 +249,28 @@ function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityCha
 }
 
 function buildMeasureStep(
-  family: LevyAuthorityChainFamily,
+  record: LevyAuthorityChainEntryRecord,
   measure: LevyAuthorityChainMeasureRecord,
 ): LevyAuthorityChainStep {
+  const family = record.family;
   const pack = getAuthorityChainFamilyPack(family);
   const bodyLead = measure.bodyLead ?? "approved";
+  const governmentBillName =
+    measure.kind === "tabor_revenue_retention"
+      ? governmentBillNameForRecord(record)
+      : undefined;
   return {
     id: measure.stepId,
-    title: pack.ballotStepTitle(
-      measure.ballotIssue,
-      measure.kind,
-      measure.titleYearSuffix,
-    ),
+    title: pack.ballotStepTitle(measure.ballotIssue, measure.kind, {
+      titleYearSuffix: measure.titleYearSuffix,
+      titlePlain: measure.titlePlain,
+    }),
     titleTermId: measure.titleTermId,
     titleTermMatch: measure.titleTermMatch,
     body: pack.ballotStepBody(measure.kind, measure.detail, bodyLead, {
       maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
       maxAuthorizedMills: measure.maxAuthorizedMills,
+      governmentBillName,
     }),
     bodyTermId: measure.bodyTermId,
     bodyTermMatch: measure.bodyTermMatch,
@@ -283,11 +324,41 @@ function buildBudgetStep(
   };
 }
 
-function buildOpenGaps(ids: LevyAuthorityChainOpenGapId[]): LevyAuthorityChainOpenGap[] {
-  return ids.map((id) => ({
-    id,
-    body: OPEN_GAP_BODIES[id],
-  }));
+function buildOpenGaps(
+  record: LevyAuthorityChainEntryRecord,
+): LevyAuthorityChainOpenGap[] {
+  return record.openGapIds.map((id) => {
+    if (id === OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT) {
+      const taborMeasures = record.measures.filter(
+        (m) => m.kind === "tabor_revenue_retention",
+      );
+      const tabor = taborMeasures[0];
+      if (
+        taborMeasures.length !== 1 ||
+        !tabor ||
+        typeof tabor.maxAuthorizedMills !== "number" ||
+        !Number.isFinite(tabor.maxAuthorizedMills)
+      ) {
+        throw new Error(
+          `[${record.id}] openGap ${OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT} requires exactly one tabor_revenue_retention measure with maxAuthorizedMills`,
+        );
+      }
+      return {
+        id,
+        body: temporaryCreditMillSplitOpenGapBody({
+          publisherBillName: governmentBillNameForRecord(record),
+          currentMills: record.mills.currentMills,
+          currentYear: record.mills.currentYear,
+          ballotIssue: tabor.ballotIssue,
+          maxAuthorizedMills: tabor.maxAuthorizedMills,
+        }),
+      };
+    }
+    return {
+      id,
+      body: OPEN_GAP_BODIES[id as keyof typeof OPEN_GAP_BODIES],
+    };
+  });
 }
 
 /**
@@ -296,14 +367,24 @@ function buildOpenGaps(ids: LevyAuthorityChainOpenGapId[]): LevyAuthorityChainOp
 export function buildLevyAuthorityChainEntry(
   record: LevyAuthorityChainEntryRecord,
 ): LevyAuthorityChainEntry {
-  const summarySource = record.summarySource;
-  if (summarySource.text !== SUMMARY_ATTRIBUTION_TEXT) {
-    throw new Error(
-      `[${record.id}] summarySource.text must be exactly SUMMARY_ATTRIBUTION_TEXT`,
-    );
+  const trimmedSummaryText = record.summarySource.text.trim();
+  if (!trimmedSummaryText) {
+    throw new Error(`[${record.id}] summarySource.text must be non-empty`);
   }
+  const summarySource: LevyAuthorityChainSourceLink = {
+    text: trimmedSummaryText,
+    url: record.summarySource.url,
+  };
 
   const pack = getAuthorityChainFamilyPack(record.family);
+  const taborMeasureCount = record.measures.filter(
+    (m) => m.kind === "tabor_revenue_retention",
+  ).length;
+  if (taborMeasureCount > 1) {
+    throw new Error(
+      `[${record.id}] at most one tabor_revenue_retention measure per entry`,
+    );
+  }
   for (const measure of record.measures) {
     if (!pack.measureKinds.has(measure.kind)) {
       throw new Error(
@@ -315,7 +396,7 @@ export function buildLevyAuthorityChainEntry(
   const steps: LevyAuthorityChainStep[] = [
     buildWhoSetsStep(record),
     buildMillsStep(record),
-    ...record.measures.map((m) => buildMeasureStep(record.family, m)),
+    ...record.measures.map((m) => buildMeasureStep(record, m)),
     buildVotesStep(record.measures),
   ];
 
@@ -327,10 +408,10 @@ export function buildLevyAuthorityChainEntry(
     id: record.id,
     match: record.match,
     heading: AUTHORITY_CHAIN_HEADING,
-    summary: buildSummary(record),
+    summary: buildSummary(record, summarySource.text),
     summarySource,
     steps,
-    openGaps: buildOpenGaps(record.openGapIds),
+    openGaps: buildOpenGaps(record),
   };
 
   if (record.summary.summaryTermId && record.summary.summaryTermMatch) {

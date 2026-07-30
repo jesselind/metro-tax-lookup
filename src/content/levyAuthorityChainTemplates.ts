@@ -19,8 +19,8 @@
 
 export const AUTHORITY_CHAIN_HEADING = "Who authorized this?";
 
-export const SUMMARY_ATTRIBUTION_TEXT =
-  "According to Arapahoe County's certified election results";
+/** Default bill wording for county-family entries when JSON omits `governmentBillName`. */
+export const COUNTY_GOVERNMENT_BILL_NAME_DEFAULT = "the county";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -47,6 +47,7 @@ export type LevyAuthorityChainGoverningBody =
 
 export type LevyAuthorityChainFamily = "school" | "county";
 
+/** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
   "no-fund-level-mill-split":
     "On your bill, this authority is one total mill rate, not separate amounts for each ballot issue. Public county records do not show how many mills came from each voter approval, from bond repayment, or from the base levy, so we cannot say which vote accounts for this year's change.",
@@ -56,12 +57,37 @@ export const OPEN_GAP_BODIES = {
    */
   "no-stable-ballot-text":
     "For at least one ballot measure in this trail, Arapahoe County's published election files do not include a Notice of Election or a usable English sample ballot. We link that year's Past Elections File Library section so you can see what the county posted. Vote totals still come from the Official Summary Report.",
-  /** County temporary-discount story: one published total, no component split. */
-  "no-temporary-credit-mill-split":
-    "The county publishes one total rate on the bill (15.885 mills for Tax Year 2024). Ballot Issue 1A's maximum rate of 15.821 mills is not that same total, so the ballot cap does not describe every part of today's published county rate. From the rate table alone, we cannot separate how much of the jump came from ending the temporary tax credit versus other small year-to-year changes.",
 } as const;
 
-export type LevyAuthorityChainOpenGapId = keyof typeof OPEN_GAP_BODIES;
+/**
+ * Parameterized gap: billed total vs ballot max after a temporary tax credit ends.
+ * Numbers come from the entry's mills pair + TABOR retention measure (not pack prose).
+ */
+export const OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT =
+  "no-temporary-credit-mill-split" as const;
+
+export type LevyAuthorityChainOpenGapId =
+  | keyof typeof OPEN_GAP_BODIES
+  | typeof OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT;
+
+export function temporaryCreditMillSplitOpenGapBody(params: {
+  publisherBillName: string;
+  currentMills: string;
+  currentYear: number;
+  ballotIssue: string;
+  maxAuthorizedMills: number;
+}): string {
+  const max = params.maxAuthorizedMills.toFixed(3);
+  const publisher = capitalizeResidentPhrase(params.publisherBillName);
+  return `${publisher} publishes one total rate on the bill (${params.currentMills} mills for Tax Year ${params.currentYear}). Ballot Issue ${params.ballotIssue}'s maximum rate of ${max} mills is not that same total, so the ballot cap does not describe every part of today's published county rate. From the rate table alone, we cannot separate how much of the jump came from ending the temporary tax credit versus other small year-to-year changes.`;
+}
+
+/** All known openGap ids (static + parameterized). */
+export const KNOWN_OPEN_GAP_IDS: ReadonlySet<LevyAuthorityChainOpenGapId> =
+  new Set<LevyAuthorityChainOpenGapId>([
+    ...(Object.keys(OPEN_GAP_BODIES) as Array<keyof typeof OPEN_GAP_BODIES>),
+    OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
+  ]);
 
 export const VOTES_STEP_BODY = "County certified totals:";
 
@@ -101,29 +127,36 @@ const SCHOOL_BOND_CEILING_SENTENCE =
 
 const SCHOOL_DEBT_FREE_MILL_CLOSING = "That is a mill levy, not a bond.";
 
-/** Default school mills chrome (also exported for unit tests). */
+/**
+ * Default mills chrome for school and county packs when the entry does not
+ * supply an entry-specific `mills.stepBody` takeaway.
+ */
 export const MILLS_STEP_BODY =
   "The county publishes one total rate for this authority each year. The figures below compare two tax years.";
-
-const COUNTY_MILLS_STEP_BODY =
-  "Ballot Issue 1A changed the amount of tax money the county is required to return to you. Voters let the county keep money that TABOR would otherwise have required returning to taxpayers, so you pay more on the county line of your bill. That vote did not raise the county's maximum tax rate. Before 1A, the county stayed under the TABOR keep-limit with a temporary tax credit that lowered the mill rate on your bill (collecting less up front, instead of taking the full authorized amount and sending refunds later). After voters allowed the county to keep more, that credit ended and the billed rate rose. The figures below are the county's total rate for Tax Years 2023 and 2024, the years that show that jump.";
 
 export type LevyAuthorityChainMillsBodyTerm = {
   termId: "term-mill-levy" | "term-tabor";
   match: string;
 };
 
+export type LevyAuthorityChainBallotTitleOptions = {
+  titleYearSuffix?: string;
+  /** Plain-language title after "Ballot Issue X: " (required for some kinds). */
+  titlePlain?: string;
+};
+
 export type LevyAuthorityChainFamilyPack = {
   budgetStepTitle: string;
   budgetFactLabel: string;
+  /** Default "What changed?" body when JSON omits `mills.stepBody`. */
   millsStepBody: string;
-  /** Glossary popovers on the mills step body (first-match each; non-overlapping). */
+  /** Glossary popovers on the default mills body (entry may override via `mills.bodyTerms`). */
   millsBodyTerms: readonly LevyAuthorityChainMillsBodyTerm[];
   measureKinds: ReadonlySet<LevyAuthorityChainMeasureKind>;
   ballotStepTitle: (
     ballotIssue: string,
     kind: LevyAuthorityChainMeasureKind,
-    titleYearSuffix?: string,
+    options?: LevyAuthorityChainBallotTitleOptions,
   ) => string;
   ballotStepBody: (
     kind: LevyAuthorityChainMeasureKind,
@@ -132,6 +165,8 @@ export type LevyAuthorityChainFamilyPack = {
     options?: {
       maxMillIncreasePerYear?: number;
       maxAuthorizedMills?: number;
+      /** County TABOR retention: who keeps revenue (e.g. "the county"). */
+      governmentBillName?: string;
     },
   ) => string;
   budgetBody: (authorityShortName: string, detail: string) => string;
@@ -143,8 +178,10 @@ const SCHOOL_PACK: LevyAuthorityChainFamilyPack = {
   millsStepBody: MILLS_STEP_BODY,
   millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
   measureKinds: new Set(["override", "bond", "debt_free_mill"]),
-  ballotStepTitle(ballotIssue, kind, titleYearSuffix) {
-    const yearPart = titleYearSuffix ? ` (${titleYearSuffix})` : "";
+  ballotStepTitle(ballotIssue, kind, options) {
+    const yearPart = options?.titleYearSuffix
+      ? ` (${options.titleYearSuffix})`
+      : "";
     switch (kind) {
       case "override":
         return `Ballot Issue ${ballotIssue}: More operating money`;
@@ -182,16 +219,20 @@ const SCHOOL_PACK: LevyAuthorityChainFamilyPack = {
 const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
   budgetStepTitle: "What the county's budget says",
   budgetFactLabel: "County budget",
-  millsStepBody: COUNTY_MILLS_STEP_BODY,
-  millsBodyTerms: [
-    { termId: "term-tabor", match: "TABOR" },
-    { termId: "term-mill-levy", match: "total rate" },
-  ],
+  millsStepBody: MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
   measureKinds: new Set(["tabor_revenue_retention"]),
-  ballotStepTitle(ballotIssue, kind) {
+  ballotStepTitle(ballotIssue, kind, options) {
     switch (kind) {
-      case "tabor_revenue_retention":
-        return `Ballot Issue ${ballotIssue}: Ending the temporary tax credit on your bill`;
+      case "tabor_revenue_retention": {
+        const titlePlain = options?.titlePlain?.trim();
+        if (!titlePlain) {
+          throw new Error(
+            "tabor_revenue_retention requires titlePlain (bill-first step title)",
+          );
+        }
+        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
+      }
       default:
         throw new Error(`county pack does not support measure kind: ${kind}`);
     }
@@ -205,8 +246,11 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
             "tabor_revenue_retention requires maxAuthorizedMills",
           );
         }
+        const governmentBillName =
+          options?.governmentBillName?.trim() ||
+          COUNTY_GOVERNMENT_BILL_NAME_DEFAULT;
         const max = options.maxAuthorizedMills.toFixed(3);
-        return `${lead} letting the county keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+        return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
       }
       default:
         throw new Error(`county pack does not support measure kind: ${kind}`);
@@ -229,6 +273,12 @@ export function getAuthorityChainFamilyPack(
   family: LevyAuthorityChainFamily,
 ): LevyAuthorityChainFamilyPack {
   return FAMILY_PACKS[family];
+}
+
+export function capitalizeResidentPhrase(phrase: string): string {
+  const trimmed = phrase.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
 export function whoGetsBody(displayName: string): string {
