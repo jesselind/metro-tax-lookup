@@ -462,7 +462,8 @@ export function TermTaborFullBody() {
         lets the government keep and spend more without raising the maximum mill
         rate. Coloradans often call that kind of vote{" "}
         <strong className="font-semibold text-slate-900">de-Brucing</strong>
-        . That is different from raising the legal mill-rate cap itself.
+        {". "}
+        That is different from raising the legal mill-rate cap itself.
       </p>
       <p className={FULL_P}>
         Official state explainers:{" "}
