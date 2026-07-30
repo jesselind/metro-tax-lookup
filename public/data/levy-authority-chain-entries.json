@@ -1,15 +1,18 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records. Resident wording is built from levyAuthorityChainTemplates.ts; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
     "term-debt-free-schools-mill-levy",
-    "term-bonds"
+    "term-bonds",
+    "term-tabor",
+    "term-de-brucing"
   ],
   "entries": [
     {
       "id": "cherry-creek-5-school-authority-chain",
+      "family": "school",
       "match": {
         "levyLineCode": "0501"
       },
@@ -90,7 +93,7 @@
           "bodyTermMatch": "Bonds"
         }
       ],
-      "districtBudget": {
+      "budget": {
         "authorityShortName": "Cherry Creek",
         "detail": "describes about $9 million (1 mill) of new local property tax from that voter-approved increase",
         "factValue": "2025-2026 Adopted Financial Plan",
@@ -103,6 +106,7 @@
     },
     {
       "id": "littleton-6-school-authority-chain",
+      "family": "school",
       "match": {
         "levyLineCode": "0601"
       },
@@ -195,7 +199,7 @@
           "bodyTermMatch": "Bonds"
         }
       ],
-      "districtBudget": {
+      "budget": {
         "authorityShortName": "LPS",
         "detail": "ties the 2020 vote to its debt-free schools mill levy and still describes the 2018 building bonds",
         "factValue": "2025-2026 Adopted Budget glossary",
@@ -207,6 +211,77 @@
         "bodyTermMatch": "debt-free schools mill levy"
       },
       "openGapIds": ["no-fund-level-mill-split", "no-stable-ballot-text"]
+    },
+    {
+      "id": "arapahoe-county-authority-chain",
+      "family": "county",
+      "match": {
+        "levyLineCode": "2998"
+      },
+      "authority": {
+        "displayName": "Arapahoe County",
+        "countyListName": "ARAPAHOE COUNTY",
+        "governingBody": "board_of_county_commissioners"
+      },
+      "summarySource": {
+        "text": "According to Arapahoe County's certified election results",
+        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Official%20Summary%20Report%20by%20Method_330948_OU.pdf#page=18"
+      },
+      "summary": {
+        "headlineIssues": ["1A"],
+        "headlineElection": "November 2024"
+      },
+      "mills": {
+        "currentYear": 2024,
+        "currentMills": "15.885",
+        "priorYear": 2023,
+        "priorMills": "11.206",
+        "currentRateSource": {
+          "text": "County rate table for 2024 (PDF)",
+          "url": "https://www.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
+        },
+        "priorRateSource": {
+          "text": "County rate table for 2023 (PDF)",
+          "url": "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/Taxing%20District%20Levy%20Percentage%202023.pdf?t=202402070945160"
+        }
+      },
+      "measures": [
+        {
+          "stepId": "ballot-1a-tabor-retention",
+          "ballotIssue": "1A",
+          "kind": "tabor_revenue_retention",
+          "electionMonthYear": "November 2024",
+          "detail": "roads, public safety, and housing help",
+          "maxAuthorizedMills": 15.821,
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "2024 County Notice of Election (Ballot Issue 1A)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Arapahoe%20County_TABOR%20Notice_2024.pdf#page=4"
+          },
+          "bodyTermId": "term-de-brucing",
+          "bodyTermMatch": "de-Brucing",
+          "votes": {
+            "yes": "76,421",
+            "yesPct": "56.78%",
+            "no": "58,176",
+            "noPct": "43.22%"
+          },
+          "resultsSource": {
+            "text": "2024 Official Summary Report",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Official%20Summary%20Report%20by%20Method_330948_OU.pdf#page=18"
+          }
+        }
+      ],
+      "budget": {
+        "authorityShortName": "Arapahoe County",
+        "detail": "explains Ballot Issue 1A and why the county total rate became 15.885 after the temporary tax credit ended",
+        "factValue": "2025 Arapahoe County Adopted Budget",
+        "source": {
+          "text": "2025 Arapahoe County Adopted Budget",
+          "url": "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf"
+        }
+      },
+      "openGapIds": ["no-temporary-credit-mill-split"]
     }
   ]
 }

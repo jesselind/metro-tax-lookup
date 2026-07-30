@@ -137,8 +137,10 @@ export async function assertAuthorityChainPanel(
     const step = entry.steps[i]!;
     const item = stepItems.nth(i);
     await expect(item.getByText(step.title, { exact: true })).toBeVisible();
-    const bodyProbe = step.body.slice(0, 40);
-    await expect(item.getByText(bodyProbe, { exact: false })).toBeVisible();
+    // Body is the second <p> in the step (title, then body). Avoid matching
+    // fact <dd> text that shares a short body string (e.g. "Arapahoe County").
+    const bodyProbe = step.body.slice(0, Math.min(40, step.body.length));
+    await expect(item.locator("p").nth(1)).toContainText(bodyProbe);
     if (step.titleTermMatch) {
       await expect(
         item.getByRole("button", { name: step.titleTermMatch, exact: true }),
@@ -147,6 +149,11 @@ export async function assertAuthorityChainPanel(
     if (step.bodyTermMatch) {
       await expect(
         item.getByRole("button", { name: step.bodyTermMatch, exact: true }),
+      ).toBeVisible();
+    }
+    for (const extra of step.bodyTerms ?? []) {
+      await expect(
+        item.getByRole("button", { name: extra.match, exact: true }),
       ).toBeVisible();
     }
   }

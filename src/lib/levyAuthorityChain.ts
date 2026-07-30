@@ -25,6 +25,11 @@ export type LevyAuthorityChainFact = {
   sources: LevyAuthorityChainLink[];
 };
 
+export type LevyAuthorityChainInlineTerm = {
+  termId: string;
+  match: string;
+};
+
 export type LevyAuthorityChainStep = {
   id: string;
   title: string;
@@ -33,6 +38,8 @@ export type LevyAuthorityChainStep = {
   body: string;
   bodyTermId?: string;
   bodyTermMatch?: string;
+  /** Additional body glosses after {@link bodyTermId} (non-overlapping matches). */
+  bodyTerms?: LevyAuthorityChainInlineTerm[];
   facts: LevyAuthorityChainFact[];
 };
 

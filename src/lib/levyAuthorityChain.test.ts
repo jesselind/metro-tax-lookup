@@ -88,12 +88,16 @@ describe("levyAuthorityChain", () => {
       "term-debt-free-schools-mill-levy",
     );
     expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain("term-bonds");
+    expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain("term-tabor");
+    expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain("term-de-brucing");
     expect(isLevyAuthorityChainInlineTermId("term-mill-levy")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-mills")).toBe(true);
     expect(
       isLevyAuthorityChainInlineTermId("term-debt-free-schools-mill-levy"),
     ).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-bonds")).toBe(true);
+    expect(isLevyAuthorityChainInlineTermId("term-tabor")).toBe(true);
+    expect(isLevyAuthorityChainInlineTermId("term-de-brucing")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-lg-id")).toBe(false);
     for (const entry of LEVY_AUTHORITY_CHAIN_ENTRIES) {
       if (entry.summaryTermId) {

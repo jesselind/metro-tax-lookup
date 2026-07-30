@@ -14,9 +14,11 @@ import { CountyCompsPdfAssessorAvailabilityCopy } from "@/components/CountyComps
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
   TermDebtFreeSchoolsMillLevyFullBody,
+  TermDeBrucingFullBody,
   TermMillLevyFullBody,
   TermLgIdFullBody,
   TermSpecialDistrictsFullBody,
+  TermTaborFullBody,
   TermTaxEntityFullBody,
 } from "@/content/termDefinitionBodies";
 import {
@@ -783,6 +785,18 @@ export function TermDebtFreeSchoolsMillLevyAside() {
   );
 }
 
+export function TermDeBrucingAside() {
+  return (
+    <TermAside
+      id="term-de-brucing"
+      title="De-Brucing"
+      titleId="term-de-brucing-title"
+    >
+      <TermDeBrucingFullBody />
+    </TermAside>
+  );
+}
+
 export function TermSpecialDistrictsAside() {
   return (
     <TermAside
@@ -791,6 +805,14 @@ export function TermSpecialDistrictsAside() {
       titleId="term-special-districts-title"
     >
       <TermSpecialDistrictsFullBody />
+    </TermAside>
+  );
+}
+
+export function TermTaborAside() {
+  return (
+    <TermAside id="term-tabor" title="TABOR" titleId="term-tabor-title">
+      <TermTaborFullBody />
     </TermAside>
   );
 }
@@ -844,6 +866,7 @@ export function AllTermDefinitionAsides() {
       <TermAssessedValueAside />
       <TermAssessmentYearAside />
       <TermCompsAside />
+      <TermDeBrucingAside />
       <TermDebtFreeSchoolsMillLevyAside />
       <TermNovCompsImprovementStyleAside />
       <TermNovCompsImprovementTypeAside />
@@ -861,6 +884,7 @@ export function AllTermDefinitionAsides() {
       <TermSitusAddressAside />
       <TermSpecialDistrictsAside />
       <TermStateUseAside />
+      <TermTaborAside />
       <TermTagAside />
       <TermTaxEntityAside />
       <TermTaxYearAside />

@@ -49,11 +49,12 @@ export function MetroDistrictInfoDetails({
         <p>
           On top of that, many metro district debt service mill levies are approved
           by voters as TABOR-exempt. Colorado&apos;s Taxpayer&apos;s Bill of Rights
-          (TABOR) normally limits how fast local government tax revenue can grow.
-          But metro district voters can approve mill levies that are TABOR-exempt,
-          especially for debt payments. Those levies are allowed to increase as
-          needed to cover bonds and other obligations, even when other parts of a tax
-          bill are held down by TABOR limits.
+          (TABOR) caps how much tax money many local governments may keep, and
+          money collected above that limit must go back to taxpayers without voter
+          permission to keep more. But metro district voters can approve mill
+          levies that are TABOR-exempt, especially for debt payments. Those levies
+          are allowed to increase as needed to cover bonds and other obligations,
+          even when other parts of a tax bill are held down by TABOR limits.
         </p>
         <p>
           Early on, the only &quot;voters&quot; in a new metro district are often the

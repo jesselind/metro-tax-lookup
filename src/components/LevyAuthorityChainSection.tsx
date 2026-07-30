@@ -44,38 +44,60 @@ type Props = {
 };
 
 /**
- * Turn one word/phrase into an in-place glossary popover when the entry asks.
- * Falls back to plain text if the term is unknown or the match is not found.
+ * Turn one or more words/phrases into in-place glossary popovers.
+ * Overlapping matches are skipped so we never nest interactive controls.
  */
-function renderWithInlineTerm(
+function renderWithInlineTerms(
   text: string,
-  termId: string | undefined,
-  match: string | undefined,
-  textTriggerId: string,
+  terms: Array<{ termId: string; match: string }>,
+  idPrefix: string,
 ): ReactNode {
-  if (
-    !termId ||
-    !match ||
-    !isLevyAuthorityChainInlineTermId(termId) ||
-    !isFlowGlossaryTermId(termId)
-  ) {
-    return text;
+  type Mark = { start: number; end: number; termId: string };
+  const marks: Mark[] = [];
+  for (const term of terms) {
+    if (
+      !isLevyAuthorityChainInlineTermId(term.termId) ||
+      !isFlowGlossaryTermId(term.termId)
+    ) {
+      continue;
+    }
+    const at = text.toLowerCase().indexOf(term.match.toLowerCase());
+    if (at < 0) continue;
+    marks.push({
+      start: at,
+      end: at + term.match.length,
+      termId: term.termId,
+    });
   }
-  const at = text.toLowerCase().indexOf(match.toLowerCase());
-  if (at < 0) {
-    return text;
-  }
-  return (
-    <>
-      {text.slice(0, at)}
+  marks.sort((a, b) => a.start - b.start);
+  if (marks.length === 0) return text;
+
+  const out: ReactNode[] = [];
+  let cursor = 0;
+  for (const mark of marks) {
+    if (mark.start < cursor) continue;
+    if (mark.start > cursor) {
+      out.push(text.slice(cursor, mark.start));
+    }
+    if (!isFlowGlossaryTermId(mark.termId)) {
+      out.push(text.slice(mark.start, mark.end));
+      cursor = mark.end;
+      continue;
+    }
+    out.push(
       <GlossaryTermPopover
-        termId={termId}
-        textTrigger={text.slice(at, at + match.length)}
-        textTriggerId={textTriggerId}
-      />
-      {text.slice(at + match.length)}
-    </>
-  );
+        key={`${idPrefix}-${mark.start}`}
+        termId={mark.termId}
+        textTrigger={text.slice(mark.start, mark.end)}
+        textTriggerId={`${idPrefix}-${mark.start}`}
+      />,
+    );
+    cursor = mark.end;
+  }
+  if (cursor < text.length) {
+    out.push(text.slice(cursor));
+  }
+  return out;
 }
 
 /** Official source links under a fact (labels name the document, not a page #). */
@@ -189,19 +211,30 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
 }
 
 function renderStepTitle(entry: LevyAuthorityChainEntry, step: LevyAuthorityChainStep): ReactNode {
-  return renderWithInlineTerm(
+  if (!step.titleTermId || !step.titleTermMatch) {
+    return step.title;
+  }
+  return renderWithInlineTerms(
     step.title,
-    step.titleTermId,
-    step.titleTermMatch,
+    [{ termId: step.titleTermId, match: step.titleTermMatch }],
     `levy-authority-chain-${entry.id}-${step.id}-title-term`,
   );
 }
 
 function renderStepBody(entry: LevyAuthorityChainEntry, step: LevyAuthorityChainStep): ReactNode {
-  return renderWithInlineTerm(
+  const terms: Array<{ termId: string; match: string }> = [];
+  if (step.bodyTermId && step.bodyTermMatch) {
+    terms.push({ termId: step.bodyTermId, match: step.bodyTermMatch });
+  }
+  if (step.bodyTerms) {
+    terms.push(...step.bodyTerms);
+  }
+  if (terms.length === 0) {
+    return step.body;
+  }
+  return renderWithInlineTerms(
     step.body,
-    step.bodyTermId,
-    step.bodyTermMatch,
+    terms,
     `levy-authority-chain-${entry.id}-${step.id}-body-term`,
   );
 }

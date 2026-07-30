@@ -58,3 +58,10 @@ export const ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF =
 
 export const ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF =
   "https://www.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/2025%20Certification%20of%20Levies%20and%20Revenues.pdf?t=202412301249070";
+
+/** Colorado Department of Revenue: plain explainer for TABOR (state revenue limits). */
+export const COLORADO_DOR_TABOR_URL = "https://tax.colorado.gov/tabor";
+
+/** Colorado General Assembly / Legislative Council handbook page on TABOR. */
+export const COLORADO_LEG_TABOR_URL =
+  "https://content.leg.colorado.gov/content/tabor";
