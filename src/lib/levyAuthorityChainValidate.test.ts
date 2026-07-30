@@ -103,4 +103,26 @@ describe("levyAuthorityChainValidate", () => {
       /term-bonds only on bond/i,
     );
   });
+
+  it("rejects summarySource.text with leading or trailing whitespace", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const first = entries[0]!;
+    (first.summarySource as { text: string }).text =
+      " According to Arapahoe County's certified election results";
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /leading or trailing whitespace/i,
+    );
+  });
+
+  it("rejects more than one tabor_revenue_retention measure per entry", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const county = entries.find((e) => e.id === "arapahoe-county-authority-chain")!;
+    const measures = county.measures as Array<Record<string, unknown>>;
+    measures.push({ ...measures[0], stepId: "ballot-1a-dup" });
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /at most one tabor_revenue_retention/i,
+    );
+  });
 });

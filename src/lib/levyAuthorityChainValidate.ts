@@ -14,9 +14,10 @@ import { PARCEL_GLOSSARY_TERM_IDS } from "@/content/termDefinitionBodies";
 import {
   AUTHORITY_CHAIN_HEADING,
   getAuthorityChainFamilyPack,
-  OPEN_GAP_BODIES,
-  SUMMARY_ATTRIBUTION_TEXT,
+  KNOWN_OPEN_GAP_IDS,
+  OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
   type LevyAuthorityChainFamily,
+  type LevyAuthorityChainOpenGapId,
 } from "@/content/levyAuthorityChainTemplates";
 import {
   buildLevyAuthorityChainEntry,
@@ -318,14 +319,31 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       record.authority.countyListName,
       `[${id}].authority.countyListName`,
     );
+    if (record.authority.governmentBillName !== undefined) {
+      if (!isNonEmptyString(record.authority.governmentBillName)) {
+        fail(`[${id}] authority.governmentBillName must be a non-empty string when set`);
+      }
+      assertNoEmDash(
+        record.authority.governmentBillName,
+        `[${id}].authority.governmentBillName`,
+      );
+      if (family !== "county") {
+        fail(
+          `[${id}] authority.governmentBillName only applies to county family entries`,
+        );
+      }
+    }
 
     const summarySource = assertHttpsSource(
       record.summarySource,
       `[${id}] summarySource`,
     );
-    if (summarySource.text !== SUMMARY_ATTRIBUTION_TEXT) {
+    if (!summarySource.text.trim()) {
+      fail(`[${id}] summarySource.text must be non-empty`);
+    }
+    if (summarySource.text !== summarySource.text.trim()) {
       fail(
-        `[${id}] summarySource.text must equal SUMMARY_ATTRIBUTION_TEXT from levyAuthorityChainTemplates.ts`,
+        `[${id}] summarySource.text must not have leading or trailing whitespace`,
       );
     }
 
@@ -384,6 +402,39 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       record.mills.priorRateSource,
       `[${id}] mills.priorRateSource`,
     );
+    if (record.mills.stepBody !== undefined) {
+      if (!isNonEmptyString(record.mills.stepBody)) {
+        fail(`[${id}] mills.stepBody must be a non-empty string when set`);
+      }
+      assertNoEmDash(record.mills.stepBody, `[${id}].mills.stepBody`);
+    }
+    if (record.mills.bodyTerms !== undefined) {
+      if (!Array.isArray(record.mills.bodyTerms)) {
+        fail(`[${id}] mills.bodyTerms must be an array when set`);
+      }
+      if (!isNonEmptyString(record.mills.stepBody)) {
+        fail(
+          `[${id}] mills.bodyTerms requires mills.stepBody (pack defaults use pack millsBodyTerms instead)`,
+        );
+      }
+      const stepBodyHaystack = record.mills.stepBody;
+      for (const [i, term] of record.mills.bodyTerms.entries()) {
+        assertObject(term, `[${id}] mills.bodyTerms entry`);
+        if (!isNonEmptyString(term.termId) || !allowedTermIds.has(term.termId)) {
+          fail(
+            `[${id}] mills.bodyTerms[${i}].termId must be one of ${[...allowedTermIds].join(", ")}`,
+          );
+        }
+        if (!isNonEmptyString(term.match)) {
+          fail(`[${id}] mills.bodyTerms[${i}].match must be a non-empty string`);
+        }
+        if (!stepBodyHaystack.toLowerCase().includes(term.match.toLowerCase())) {
+          fail(
+            `[${id}] mills.bodyTerms[${i}].match "${term.match}" not found in mills.stepBody`,
+          );
+        }
+      }
+    }
 
     if (!Array.isArray(record.measures) || record.measures.length === 0) {
       fail(`[${id}] measures must be a non-empty array`);
@@ -463,6 +514,27 @@ export function validateLevyAuthorityChainData(data: unknown): void {
             `[${id}] measure ${measure.stepId} tabor_revenue_retention requires maxAuthorizedMills`,
           );
         }
+        if (!isNonEmptyString(measure.titlePlain)) {
+          fail(
+            `[${id}] measure ${measure.stepId} tabor_revenue_retention requires titlePlain`,
+          );
+        }
+        assertNoEmDash(
+          measure.titlePlain,
+          `[${id}].measure.${measure.stepId}.titlePlain`,
+        );
+      }
+      if (measure.titlePlain !== undefined) {
+        if (measure.kind !== "tabor_revenue_retention") {
+          fail(
+            `[${id}] measure ${measure.stepId} titlePlain only on tabor_revenue_retention measures`,
+          );
+        }
+        if (!isNonEmptyString(measure.titlePlain)) {
+          fail(
+            `[${id}] measure ${measure.stepId} titlePlain must be a non-empty string`,
+          );
+        }
       }
       if (measure.titleYearSuffix !== undefined) {
         if (measure.kind !== "bond") {
@@ -505,6 +577,13 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
     }
 
+    if (
+      record.measures.filter((m) => m.kind === "tabor_revenue_retention").length >
+      1
+    ) {
+      fail(`[${id}] at most one tabor_revenue_retention measure per entry`);
+    }
+
     if (record.budget !== undefined) {
       assertObject(record.budget, `[${id}] budget`);
       if (!isNonEmptyString(record.budget.authorityShortName)) {
@@ -534,11 +613,27 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     for (const gapId of record.openGapIds) {
       if (!isNonEmptyString(gapId))
         fail(`[${id}] openGapIds entry must be non-empty`);
-      if (!OPEN_GAP_BODIES[gapId as keyof typeof OPEN_GAP_BODIES]) {
+      if (!KNOWN_OPEN_GAP_IDS.has(gapId as LevyAuthorityChainOpenGapId)) {
         fail(`[${id}] unknown openGapIds entry: ${gapId}`);
       }
       if (gapIds.has(gapId)) fail(`[${id}] duplicate openGapId: ${gapId}`);
       gapIds.add(gapId);
+    }
+    if (gapIds.has(OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT)) {
+      const taborMeasures = record.measures.filter(
+        (m) => m.kind === "tabor_revenue_retention",
+      );
+      const tabor = taborMeasures[0];
+      if (
+        taborMeasures.length !== 1 ||
+        !tabor ||
+        typeof tabor.maxAuthorizedMills !== "number" ||
+        !Number.isFinite(tabor.maxAuthorizedMills)
+      ) {
+        fail(
+          `[${id}] openGapIds ${OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT} requires exactly one tabor_revenue_retention measure with maxAuthorizedMills`,
+        );
+      }
     }
     if (
       hasUnavailableBallotText &&
@@ -553,8 +648,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     if (built.heading !== AUTHORITY_CHAIN_HEADING) {
       fail(`[${id}] built heading must be AUTHORITY_CHAIN_HEADING`);
     }
-    if (!built.summary.includes(SUMMARY_ATTRIBUTION_TEXT)) {
-      fail(`[${id}] built summary must include attribution text`);
+    if (!built.summary.includes(summarySource.text)) {
+      fail(`[${id}] built summary must include summarySource.text`);
     }
     assertNoEmDash(built.summary, `[${id}] built summary`);
     for (const step of built.steps) {

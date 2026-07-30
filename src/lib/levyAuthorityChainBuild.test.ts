@@ -11,7 +11,7 @@ import {
   STEP_TITLE_HOW_VOTED,
   STEP_TITLE_WHAT_CHANGED,
   STEP_TITLE_WHO_GETS,
-  SUMMARY_ATTRIBUTION_TEXT,
+  temporaryCreditMillSplitOpenGapBody,
 } from "@/content/levyAuthorityChainTemplates";
 import { buildLevyAuthorityChainEntry } from "@/lib/levyAuthorityChainBuild";
 import {
@@ -27,7 +27,7 @@ describe("levyAuthorityChainBuild", () => {
     const entry = buildLevyAuthorityChainEntry(record);
 
     expect(entry.heading).toBe(AUTHORITY_CHAIN_HEADING);
-    expect(entry.summary).toContain(SUMMARY_ATTRIBUTION_TEXT);
+    expect(entry.summary).toContain(record.summarySource.text);
     expect(entry.summary).toContain("Ballot Issue 4A and Ballot Issue 4B");
     expect(entry.steps[0]?.title).toBe(STEP_TITLE_WHO_GETS);
     expect(entry.steps[1]?.title).toBe(STEP_TITLE_WHAT_CHANGED);
@@ -82,7 +82,13 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.openGaps[0]?.body).toContain("15.885");
     expect(entry.openGaps[0]?.body).toContain("15.821");
     expect(entry.openGaps[0]?.body).toBe(
-      OPEN_GAP_BODIES["no-temporary-credit-mill-split"],
+      temporaryCreditMillSplitOpenGapBody({
+        publisherBillName: "the county",
+        currentMills: "15.885",
+        currentYear: 2024,
+        ballotIssue: "1A",
+        maxAuthorizedMills: 15.821,
+      }),
     );
   });
 
@@ -117,6 +123,20 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.openGaps.find((g) => g.id === "no-stable-ballot-text")?.body).toBe(
       OPEN_GAP_BODIES["no-stable-ballot-text"],
     );
+  });
+
+  it("trimmed summarySource.text matches built summary for link overlay", () => {
+    const record = structuredClone(
+      LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+        (r) => r.id === "cherry-creek-5-school-authority-chain",
+      )!,
+    );
+    const padded = `  ${record.summarySource.text}  `;
+    record.summarySource.text = padded;
+    const entry = buildLevyAuthorityChainEntry(record);
+    expect(entry.summarySource.text).toBe(padded.trim());
+    expect(entry.summary).toContain(entry.summarySource.text);
+    expect(entry.summary.indexOf(entry.summarySource.text)).toBe(0);
   });
 
   it("exports built entries aligned with records", () => {

@@ -236,6 +236,11 @@
         "currentMills": "15.885",
         "priorYear": 2023,
         "priorMills": "11.206",
+        "stepBody": "Ballot Issue 1A changed the amount of tax money the county is required to return to you. Voters let the county keep money that TABOR would otherwise have required returning to taxpayers, so you pay more on the county line of your bill. That vote did not raise the county's maximum tax rate. Before 1A, the county stayed under the TABOR keep-limit with a temporary tax credit that lowered the mill rate on your bill (collecting less up front, instead of taking the full authorized amount and sending refunds later). After voters allowed the county to keep more, that credit ended and the billed rate rose. The figures below are the county's total rate for Tax Years 2023 and 2024, the years that show that jump.",
+        "bodyTerms": [
+          { "termId": "term-tabor", "match": "TABOR" },
+          { "termId": "term-mill-levy", "match": "total rate" }
+        ],
         "currentRateSource": {
           "text": "County rate table for 2024 (PDF)",
           "url": "https://www.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
@@ -251,6 +256,7 @@
           "ballotIssue": "1A",
           "kind": "tabor_revenue_retention",
           "electionMonthYear": "November 2024",
+          "titlePlain": "Ending the temporary tax credit on your bill",
           "detail": "roads, public safety, and housing help",
           "maxAuthorizedMills": 15.821,
           "ballotTextKind": "notice",

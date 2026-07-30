@@ -17,7 +17,7 @@
 export const AUTHORITY_CHAIN_STEPS_DISCLOSURE = "See each step";
 
 /**
- * Expand control for honest limits (e.g. no fund-level split yet).
- * Gaps are for residents ("what we don't know"), not authoring/debug notes.
+ * Expand control for honest limits (e.g. no fund-level mill split from public records).
+ * Gaps are for residents (what we cannot claim for sure), not authoring/debug notes.
  */
-export const AUTHORITY_CHAIN_GAPS_DISCLOSURE = "What we don't know yet";
+export const AUTHORITY_CHAIN_GAPS_DISCLOSURE = "What we can't say for sure";
