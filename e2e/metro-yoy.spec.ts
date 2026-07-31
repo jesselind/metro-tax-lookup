@@ -65,7 +65,7 @@ test.describe("Metro year-over-year UI", () => {
       dialog.getByRole("region", { name: /2\.0% higher than last year/i }),
     ).toBeVisible();
     await dialog
-      .getByRole("button", { name: /Show year-by-year breakdown/i })
+      .getByRole("button", { name: /2\.0% higher than last year\. Details\./i })
       .click();
     await expect(dialog.getByText("Tax Year 2024").first()).toBeVisible();
     await expect(dialog.getByText("Tax Year 2025").first()).toBeVisible();
@@ -157,7 +157,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(dialog.getByText(/^Difference:/).first()).toBeVisible();
 
     await dialog
-      .getByRole("button", { name: /Hide year-by-year breakdown/i })
+      .getByRole("button", { name: /% higher than last year\. Hide details\./i })
       .click();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(

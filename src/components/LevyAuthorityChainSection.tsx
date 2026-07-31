@@ -133,8 +133,9 @@ function SourceLinks({
 }
 
 /**
- * Summary with optional linked attribution and one inline glossary term.
- * Overlapping marks are skipped so we never nest interactive controls.
+ * Summary with optional linked attribution, ballot-issue bold/links, and one
+ * inline glossary term. Overlapping marks are skipped so we never nest
+ * interactive controls.
  */
 function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
   const source = entry.summarySource;
@@ -149,7 +150,12 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
       ? termIdRaw
       : null;
 
-  type Mark = { start: number; end: number; kind: "source" | "term" };
+  type Mark = {
+    start: number;
+    end: number;
+    kind: "source" | "term" | "issue";
+    issueUrl?: string;
+  };
   const marks: Mark[] = [];
   if (source && safeHref) {
     const at = entry.summary.indexOf(source.text);
@@ -161,6 +167,22 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
     const at = entry.summary.toLowerCase().indexOf(termMatch.toLowerCase());
     if (at >= 0) {
       marks.push({ start: at, end: at + termMatch.length, kind: "term" });
+    }
+  }
+  for (const issue of entry.summaryIssueMarks ?? []) {
+    let from = 0;
+    while (from < entry.summary.length) {
+      const at = entry.summary.indexOf(issue.match, from);
+      if (at < 0) break;
+      const end = at + issue.match.length;
+      const issueUrl = issue.url ? safeHttpOrHttpsUrl(issue.url) ?? undefined : undefined;
+      marks.push({
+        start: at,
+        end,
+        kind: "issue",
+        issueUrl: issueUrl || undefined,
+      });
+      from = end;
     }
   }
   marks.sort((a, b) => a.start - b.start);
@@ -201,6 +223,30 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
           textTriggerId={`levy-authority-chain-${entry.id}-summary-term`}
         />,
       );
+    } else if (mark.kind === "issue") {
+      if (mark.issueUrl) {
+        out.push(
+          <a
+            key={`summary-issue-${mark.start}`}
+            href={mark.issueUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${TERM_LINK_CLASS} font-semibold text-inherit`}
+          >
+            {slice}
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>,
+        );
+      } else {
+        out.push(
+          <strong
+            key={`summary-issue-${mark.start}`}
+            className="font-semibold text-slate-900"
+          >
+            {slice}
+          </strong>,
+        );
+      }
     }
     cursor = mark.end;
   }

@@ -52,6 +52,9 @@ export function collectAuthorityChainSourceUrls(
     if (safe && !urls.includes(safe)) urls.push(safe);
   };
   push(entry.summarySource?.url);
+  for (const mark of entry.summaryIssueMarks ?? []) {
+    push(mark.url);
+  }
   for (const step of entry.steps) {
     for (const fact of step.facts) {
       for (const src of fact.sources) {
@@ -127,6 +130,21 @@ export async function assertAuthorityChainPanel(
     await expect(
       chain.getByRole("button", { name: entry.summaryTermMatch, exact: true }),
     ).toBeVisible();
+  }
+
+  // Ballot Issue highlights must work before "See each step" (collapsed trail).
+  for (const mark of entry.summaryIssueMarks ?? []) {
+    if (mark.url) {
+      const href = safeHttpOrHttpsUrl(mark.url);
+      expect(href, `summary issue link for ${mark.match}`).toBeTruthy();
+      await expect(
+        chain.getByRole("link", { name: mark.match }),
+      ).toHaveAttribute("href", href!);
+    } else {
+      await expect(
+        chain.getByText(mark.match, { exact: true }),
+      ).toBeVisible();
+    }
   }
 
   await chain.locator("summary", { hasText: AUTHORITY_CHAIN_STEPS_DISCLOSURE }).click();

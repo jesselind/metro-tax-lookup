@@ -14,8 +14,8 @@
 
 import {
   AUTHORITY_CHAIN_HEADING,
+  ballotIssuePhrase,
   buildSummaryAlsoClause,
-  buildSummarySecondSentence,
   buildSummaryVoterClause,
   COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_BALLOT_TEXT,
@@ -49,6 +49,7 @@ import type {
   LevyAuthorityChainLink,
   LevyAuthorityChainOpenGap,
   LevyAuthorityChainStep,
+  LevyAuthorityChainSummaryIssueMark,
 } from "@/lib/levyAuthorityChain";
 
 export type LevyAuthorityChainSourceLink = LevyAuthorityChainLink;
@@ -193,11 +194,48 @@ function buildSummary(
     ) ?? [];
   const voterParts = [headline, ...alsoClauses];
   const first = `${summaryAttribution}, ${voterParts[0]}.`;
-  const middle =
-    voterParts.length > 1
-      ? ` ${voterParts.slice(1).join(". ")}.`
-      : "";
-  return `${first}${middle} ${buildSummarySecondSentence(record.authority.governingBody)}`;
+  if (voterParts.length === 1) {
+    return first;
+  }
+  return `${first} ${voterParts.slice(1).join(". ")}.`;
+}
+
+/**
+ * Bold (and link when possible) each Ballot Issue phrase in the always-visible
+ * summary. URLs come from the matching measure's ballotTextSource (notice,
+ * sample, or next-best hub). No match / no URL → bold-only fallback so the
+ * summary stays useful without a brittle hard requirement.
+ */
+function buildSummaryIssueMarks(
+  record: LevyAuthorityChainEntryRecord,
+  summary: string,
+): LevyAuthorityChainSummaryIssueMark[] {
+  const issueIds = new Set<string>();
+  for (const id of record.summary.headlineIssues) {
+    issueIds.add(id);
+  }
+  for (const also of record.summary.also ?? []) {
+    for (const id of also.issues) {
+      issueIds.add(id);
+    }
+  }
+
+  const urlByIssue = new Map<string, string>();
+  for (const measure of record.measures) {
+    const url = measure.ballotTextSource.url.trim();
+    if (!url || urlByIssue.has(measure.ballotIssue)) continue;
+    urlByIssue.set(measure.ballotIssue, url);
+  }
+
+  const marks: LevyAuthorityChainSummaryIssueMark[] = [];
+  for (const id of issueIds) {
+    const match = ballotIssuePhrase(id);
+    if (!summary.includes(match)) continue;
+    const url = urlByIssue.get(id);
+    marks.push(url ? { match, url } : { match });
+  }
+  marks.sort((a, b) => summary.indexOf(a.match) - summary.indexOf(b.match));
+  return marks;
 }
 
 function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
@@ -404,15 +442,22 @@ export function buildLevyAuthorityChainEntry(
     steps.push(buildBudgetStep(record.family, record.budget));
   }
 
+  const summary = buildSummary(record, summarySource.text);
+  const summaryIssueMarks = buildSummaryIssueMarks(record, summary);
+
   const entry: LevyAuthorityChainEntry = {
     id: record.id,
     match: record.match,
     heading: AUTHORITY_CHAIN_HEADING,
-    summary: buildSummary(record, summarySource.text),
+    summary,
     summarySource,
     steps,
     openGaps: buildOpenGaps(record),
   };
+
+  if (summaryIssueMarks.length > 0) {
+    entry.summaryIssueMarks = summaryIssueMarks;
+  }
 
   if (record.summary.summaryTermId && record.summary.summaryTermMatch) {
     entry.summaryTermId = record.summary.summaryTermId;

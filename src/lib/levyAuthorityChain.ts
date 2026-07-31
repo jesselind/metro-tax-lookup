@@ -59,8 +59,20 @@ export type LevyAuthorityChainEntry = {
   summarySource?: LevyAuthorityChainLink;
   summaryTermId?: string;
   summaryTermMatch?: string;
+  /**
+   * Ballot Issue phrases in the always-visible summary. Derived from measures
+   * (ballot text / next-best hub). Bold always; link when a URL is present.
+   */
+  summaryIssueMarks?: LevyAuthorityChainSummaryIssueMark[];
   steps: LevyAuthorityChainStep[];
   openGaps: LevyAuthorityChainOpenGap[];
+};
+
+/** One summary highlight for a ballot issue name (e.g. "Ballot Issue 1A"). */
+export type LevyAuthorityChainSummaryIssueMark = {
+  match: string;
+  /** Ballot text or next-best hub; omit to bold without a link. */
+  url?: string;
 };
 
 type LevyAuthorityChainFileV2 = {

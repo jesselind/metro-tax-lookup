@@ -24,7 +24,11 @@ import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSectio
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
 import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
-import { COUNTY_EXTERNAL_LINK_CLASS, TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  TERM_LINK_CLASS,
+  TILE_DETAILS_CUE_ON_LIGHT_CLASS,
+} from "@/lib/toolFlowStyles";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
 import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
@@ -111,6 +115,8 @@ function LevyYoYSummaryBlock({
   headlineClassName,
   showCollapsedDollarLine,
   collapsedDollarFootnoteId,
+  /** Inline "Details ›" on the same line as the headline (expandable YoY box). */
+  showDetailsCue = false,
 }: {
   summary: MetroDistrictTileYoYSummary;
   headlineId: string;
@@ -118,6 +124,7 @@ function LevyYoYSummaryBlock({
   /** When there is no year-by-year breakdown, show dollars once below the mills headline. */
   showCollapsedDollarLine: boolean;
   collapsedDollarFootnoteId?: string;
+  showDetailsCue?: boolean;
 }) {
   const collapsedDollars =
     showCollapsedDollarLine && summary.theoreticalDeltaDollars != null
@@ -132,9 +139,19 @@ function LevyYoYSummaryBlock({
     <>
       <span
         id={headlineId}
-        className={`block text-lg font-bold leading-snug tracking-tight sm:text-xl ${headlineClassName}`}
+        className={`text-lg font-bold leading-snug tracking-tight text-balance sm:text-xl ${
+          showDetailsCue ? "" : "block "
+        }${headlineClassName}`}
       >
         {summary.headline}
+        {showDetailsCue ? (
+          <span
+            aria-hidden
+            className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} ml-3 whitespace-nowrap sm:ml-4`}
+          >
+            Details ›
+          </span>
+        ) : null}
       </span>
       {collapsedAmount != null ? (
         <p
@@ -567,23 +584,24 @@ export function LevyLineDistrictDetailDialog({
                   <>
                     <button
                       type="button"
-                      className="w-full cursor-pointer border-0 bg-transparent px-3 py-3 text-left transition-colors hover:bg-black/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50 sm:px-4 sm:py-3.5"
+                      className="group w-full cursor-pointer border-0 bg-transparent px-3 py-3 text-left transition-colors hover:bg-black/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50 sm:px-4 sm:py-3.5"
                       aria-expanded={metroYoYBreakdownOpen}
                       aria-controls={metroYoYBreakdownPanelId}
+                      aria-label={
+                        metroYoYBreakdownOpen
+                          ? `${yoy.summary.headline}. Hide details.`
+                          : `${yoy.summary.headline}. Details.`
+                      }
                       onClick={toggleMetroYoYBreakdown}
                     >
-                      <span className="pointer-events-none block">
+                      <span className="pointer-events-none">
                         <LevyYoYSummaryBlock
                           summary={yoy.summary}
                           headlineId="levy-detail-metro-yoy-heading"
                           headlineClassName={metroYoySurface.headline}
                           showCollapsedDollarLine={false}
+                          showDetailsCue
                         />
-                        <span className="mt-3 block text-sm font-semibold text-slate-900 underline decoration-slate-400 underline-offset-2 sm:text-base">
-                          {metroYoYBreakdownOpen
-                            ? "Hide year-by-year breakdown"
-                            : "Show year-by-year breakdown"}
-                        </span>
                       </span>
                     </button>
                     <div

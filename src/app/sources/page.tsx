@@ -280,10 +280,11 @@ export default function SourcesPage() {
           ). Tap anywhere on that colored summary box to open the year-by-year
           breakdown; the underlined{" "}
           <strong className="font-semibold text-slate-900">
-            Show year-by-year breakdown
+            Details ›
           </strong>
           {" "}
-          line is a hint that more detail is available. Each tax year shows
+          cue on the same line as the percent headline signals that more is
+          available. Each tax year shows
           county mills first, then{" "}
           <strong className="font-semibold text-slate-900">About $X</strong>
           {" "}
@@ -311,8 +312,10 @@ export default function SourcesPage() {
           </strong>
           {" "}
           chart when we have at least three tax years of Levy Percentage data
-          for that authority (currently Tax Years 2018 through 2025). It shows
-          total mills only, not dollars on your bill.
+          for that authority (currently Tax Years 2018 through 2025). The
+          heading opens a short note that the chart is total mills from county
+          property tax tables. It shows total mills only, not dollars on your
+          bill.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="font-semibold text-slate-900">

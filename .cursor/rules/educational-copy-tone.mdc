@@ -9,11 +9,11 @@ This app is **educational first**. Copy should feel like a **clear explanation**
 
 ## Audience and bar
 
-- **Bar:** a 75-year-old fourth-generation farmer can use it. Simple enough to use without tax-data expertise, at every turn. Prefer **KISS** always: **one clear takeaway before more detail**.
+- **Bar:** a **smart but tech-illiterate** resident can use it cold — someone who **struggles with devices and websites** and has no tax-office expertise. That struggle is real; it is not an insult and not the same as being unintelligent. Prefer **KISS** always: **one clear takeaway before more detail**.
 - Aim for roughly **middle-school readability**: plain words, **short sentences**, **one main idea per paragraph**.
 - Readers are **smart** but not steeped in **DOLA**, registry, or assessor-office jargon. If a sentence only makes sense to someone who already works in county tax data, **split it** or **swap the term for what it does on their bill or notice**.
 - **Lint (informal):** Would this sound OK **read aloud** to a curious neighbor? If not, revise.
-- **Final checks:** When the user invokes **final checks**, the base-rule gate includes an explicit **Farmer read** step on touched resident-facing copy. Do not skip it. Read the **built** wording (templates + facts as the UI shows them). Extreme on purpose: keep us away from tax-accountant and county-form voice.
+- **Final checks:** When the user invokes **final checks**, the base-rule gate includes an explicit **Resident cold-read** step on touched resident-facing copy. Do not skip it. Read the **built** wording (templates + facts as the UI shows them). Extreme on purpose: keep us away from tax-accountant and county-form voice. **Report** judgment calls; only fix mechanical slips that do not change meaning unless the user asked for a rewrite (see base-rule final-checks **bright line**).
 
 ## What to prioritize
 
@@ -44,4 +44,4 @@ It does **not** require rewriting unrelated files just because they are open; ap
 
 A **full tone pass** (e.g. Glossary + modal briefs only) is a **deliberate editorial task**, not implied by every code change. When the user asks for that pass, treat it as a **single coordinated edit** with this checklist in mind.
 
-**Final checks Farmer read** (base-rule gate step 2) is narrower: only **touched / in-scope** resident-facing copy in that conversation, but it is **mandatory** when final checks run.
+**Final checks Resident cold-read** (base-rule gate step 2) is narrower: only **touched / in-scope** resident-facing copy in that conversation, but it is **mandatory** when final checks run. Report voice/clarity issues; do not redesign copy or disclosure without explicit permission.

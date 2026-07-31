@@ -6,6 +6,8 @@
 /**
  * Inline SVG mill-rate timeline for levy tile details (Levy % AUTH totals).
  * Renders only when the parent passes a series with at least two points.
+ * Heading opens an InfoHintPopover for the source caption (locked UX:
+ * docs/_working/locked-decisions.md).
  */
 
 import { useMemo, useId } from "react";
@@ -21,6 +23,8 @@ import {
 } from "@/content/levyYoYCopy";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { formatTaxYearLabel } from "@/lib/metroLevyYearOverYear";
+import { InfoHintPopover } from "@/components/InfoHintPopover";
+import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 type Props = {
   series: AuthorityMillsSeriesPoint[];
@@ -43,15 +47,14 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
       role="region"
       aria-labelledby={headingId}
     >
-      <p
-        id={headingId}
-        className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-xs"
+      <InfoHintPopover
+        textTrigger={AUTHORITY_MILLS_HISTORY_CHART_HEADING}
+        textTriggerId={headingId}
+        textTriggerClassName={`${TERM_LINK_CLASS} text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-xs`}
+        ariaLabel="What this chart shows"
       >
-        {AUTHORITY_MILLS_HISTORY_CHART_HEADING}
-      </p>
-      <p className="mt-1 text-sm leading-snug text-slate-600 sm:text-[0.9375rem]">
-        {AUTHORITY_MILLS_HISTORY_CHART_CAPTION}
-      </p>
+        <p>{AUTHORITY_MILLS_HISTORY_CHART_CAPTION}</p>
+      </InfoHintPopover>
 
       <div className="mt-2 w-full">
         <svg

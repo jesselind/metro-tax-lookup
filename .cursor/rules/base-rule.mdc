@@ -18,25 +18,43 @@ Implementation can be precise. **User-facing copy and layout should lean away fr
 
 **User phrases:** "Do final checks" / "Run final checks" (also "final checks" in that spirit).
 
-These phrases are a **macro**. Do **not** wait for the user to restate the checklist. Do **not** run this gate automatically after phases or commits; only when the user invokes it.
+These phrases are a **macro checklist** so the user does not retype the same pre-commit review every time. Treat them like a **PR review**: apply **dev principles** and **fix** clear issues that arise under those principles **without** asking permission for each one — **when the resident-facing product stays the same**. Do **not** treat the macro as permission to redesign UI, rewrite copy, or change interaction patterns.
+
+**Bright line (mandatory):**
+
+- **Fix without re-asking** — DRY, KISS, YAGNI, OWASP, anti-patterns, stack best practices, types/hooks/tests/validation, and **a11y hardening that keeps the same UX** (e.g. missing `cursor-pointer` on an already-clickable control, focus/keyboard/Escape/`aria-*` on an existing popover or disclosure, label association). The end user should still see **largely the same product**.
+- **Do not change without explicit permission** — layout, visual design, progressive disclosure (popover vs always-visible, default open/closed), column order, headings/labels/buttons, resident-facing wording/voice, or any a11y "fix" that **alters what the resident sees or how they move through the UI** (e.g. flattening a popover into always-visible text, swapping sidebar sides). Report those; wait for a go-ahead.
+
+When unsure which side of the line a fix is on: **ask** (one short question), do not guess.
+
+Do **not** wait for the user to restate the checklist. Do **not** run this gate automatically after phases or commits; only when the user invokes it.
 
 When invoked, on **touched / in-scope work** for the current conversation (or the scope the user names):
 
-1. **Due diligence review:** KISS, YAGNI, DRY, OWASP Top 10, a11y (WCAG 2.1 AA), anti-patterns, stack best practices (Next.js / React / Tailwind as used here), and appropriate JSDoc and/or inline comments on non-obvious code (present where helpful; not noise on trivial code). **Fix** clear defects in that scope as you go.
-2. **Farmer read (resident copy):** For any **new or edited resident-facing** strings in scope (UI, authority chain / explainer templates, openGaps, glossary briefs, modal copy, hub hints/errors, `aria-label` text meant for residents), **read the real wording as shipped** (built trail text, not only the JSON facts). Ask: would a **tech-illiterate 75-year-old farmer** who is worried about why their taxes went up, and who wants to **follow the money**, understand this cold? One clear takeaway before jargon. Undefined assessor/spreadsheet talk (**row**, **abatement**, **R&A**, **this app charts**, and similar) fails. Precise terms are fine when **glossed in place** (popover or short plain clause) per `.cursor/rules/educational-copy-tone.mdc`. **Fix** failures in this pass; do not leave them for a later tone cleanup unless you record them in `docs/_working/`.
-3. **Docs:** Update applicable docs if the work changed behavior, data, build/deploy, or how users should interpret results — typically `README.md` and/or `src/app/sources/page.tsx`; also authoring docs (e.g. `docs/levy-explainer-authoring.md`) or other in-repo docs when they are the right place. Follow the docs split already in this rule (README technical; `/sources` narrative).
-4. **E2E:** Update Playwright coverage if UI contracts changed, then **run** the full suite (chromium, firefox, webkit) per `.cursor/rules/playwright-macos-sandbox.mdc` (`PLAYWRIGHT_BROWSERS_PATH` + `all` permissions). This overrides the general "prefer the user run CLI" preference for this gate only. When `CI=1` uses `next start`, run a **fresh `npm run build`** after JSON/template changes so e2e hits the new copy.
-5. **Triage anything still open** before you report (situational): **fix** it now when it is in scope and actionable; **or** record it in the right durable place. Use `openGaps` in curated JSON when the gap is part of that entry's honest limits; use `/sources` or authoring docs when residents need to know how to interpret results. For deferred engineering, research, or follow-ups that are not fixed in this pass, use **`docs/_working/`** (see **Working docs** below). Do **not** leave fixable in-scope work or tracked follow-ups only in chat.
+1. **Due diligence review:** KISS, YAGNI, DRY, OWASP Top 10, a11y (WCAG 2.1 AA), anti-patterns, stack best practices (Next.js / React / Tailwind as used here), and appropriate JSDoc and/or inline comments on non-obvious code (present where helpful; not noise on trivial code). **Fix** clear issues on the **fix-without-re-asking** side of the bright line. **Report** (do not implement) anything on the **ask-first** side.
+2. **Resident cold-read (copy QA):** For any **new or edited resident-facing** strings in scope (UI, authority chain / explainer templates, openGaps, glossary briefs, modal copy, hub hints/errors, `aria-label` text meant for residents), **read the real wording as shipped** (built trail text, not only the JSON facts). Bar: would a **smart but tech-illiterate** resident — someone who **struggles with devices and websites**, is worried about why their taxes went up, and wants to **follow the money** — understand this cold? Tech struggle is real; it is not an insult and not the same as being unintelligent. One clear takeaway before insider terms. Undefined assessor/spreadsheet talk (**row**, **abatement**, **R&A**, **this app charts**, and similar) fails. Precise terms are fine when **glossed in place** per `.cursor/rules/educational-copy-tone.mdc`. **Report** readability/voice concerns. Mechanical slips that do not change meaning (glued JSX spaces, accidental em dashes / smart quotes, accidental "levy lines" stacking the author already forbids) may be fixed; **do not** rewrite voice, structure, or disclosure without explicit permission.
+3. **Docs:** Update applicable docs if the work changed behavior, data, build/deploy, or how users should interpret results — typically `README.md` and/or `src/app/sources/page.tsx`; also authoring docs (e.g. `docs/levy-explainer-authoring.md`) or other in-repo docs when they are the right place. Follow the docs split already in this rule (README technical; `/sources` narrative). Doc updates that describe **already-shipped** behavior are fine; do not use docs as a back door to redesign the UI.
+4. **E2E:** Update Playwright coverage if UI contracts changed, then **run** the full suite (chromium, firefox, webkit) per `.cursor/rules/playwright-macos-sandbox.mdc` (`PLAYWRIGHT_BROWSERS_PATH` + `all` permissions). This overrides the general "prefer the user run CLI" preference for this gate only. When `CI=1` uses `next start`, run a **fresh `npm run build`** after JSON/template changes so e2e hits the new copy. E2E updates must **match** current UI, not invent new UX.
+5. **Triage anything still open** before you report: **fix** bright-line engineering/a11y-in-place issues; **list or record** ask-first product/UX/copy items. Use `openGaps` in curated JSON only when that pattern already fits the entry's honest limits (do not invent new resident essays). Deferred engineering/research → topic files under **`docs/_working/`**. Optional cross-chat memory → **`docs/_working/locked-decisions.md`** (not a whitelist). Do **not** leave tracked follow-ups only in chat.
 6. **Report** using **Review and audit responses** below. List **only** what is still unresolved after steps 1–5 (or point to the `docs/_working/` file where it is tracked). Do not narrate green passes unless the user asked for command output.
+
+#### Final checks: product surface vs engineering (mandatory)
+
+"Fix relevant issues that arise" means **dev-principle fixes** where the **resident still gets the same product**. It does **not** mean redesign.
+
+- **Same product, fix freely:** refactors, DRY, dead code, validation, security hygiene, tests, comments, and a11y that only hardens the **existing** control (name, role, focus, keyboard, Escape, `cursor-pointer` on something already interactive).
+- **Different product, ask first:** anything a careful resident would notice as a change in layout, flow, disclosure, or wording — including "a11y" that replaces a popover/disclosure with always-visible text or reorders major regions.
+- **Popovers and disclosures are not inherently bad a11y** when implemented correctly.
+- **`docs/_working/locked-decisions.md`** is optional durable memory across chats, not a whitelist. Default for product-surface changes: **ask first**.
 
 ### Working docs (`docs/_working/`)
 
-Scratch and in-progress notes live under **`docs/_working/`**. When the work is done, **delete** the doc.
+Scratch and in-progress notes live under **`docs/_working/`** (gitignored — not public source control). Topic files: when that work is done, **delete** the topic doc.
 
-- **Issues and follow-ups** from reviews or final checks: add them to the **relevant** working doc for that topic; if none exists, **create** a new appropriately named file (for example `docs/_working/authority-chain-e2e.md`).
+- **Issues and follow-ups** from reviews or final checks: add them to the **relevant** topic working doc; if none exists, **create** a new appropriately named file (for example `docs/_working/authority-chain-e2e.md`).
 - **Do not** duplicate the same follow-up in chat and in a working doc; the doc is the handoff.
 - **Not** for permanent product narrative (use `/sources`) or shipped authoring rules (use `docs/*.md` at repo root).
-
+- **Persistent optional memory:** **`docs/_working/locked-decisions.md`** survives topic cleanup. Short author decisions for cross-chat continuity only. Keep non-sensitive. Do **not** treat it as the only barrier to UI edits — final checks already forbid UI/UX changes without explicit permission. Do **not** delete this file when closing a feature working doc.
 ### Review and audit responses (mandatory - read before any review-style answer)
 
 This rule **overrides** the instinct to be balanced or reassuring. Soft praise in a review response hides what still needs attention.
@@ -46,13 +64,15 @@ This rule **overrides** the instinct to be balanced or reassuring. Soft praise i
 **Output format:**
 
 - **Only** list **issues, risks, gaps, and actionable follow-ups** that are **still unresolved** after you fixed or recorded them (see Final checks gate step 5).
-- **Do not report** as open issues: items you already fixed; intentional `openGaps` already in curated JSON; speculative test or polish ideas unless the user asked for a backlog; follow-ups already recorded in `docs/_working/` (name the file path instead of repeating the list).
+- **UI/UX / copy / product-surface items:** list for the author (ask-first side of the bright line). Do **not** implement those in the same pass unless the user already ordered that change.
+- **Dev-principle / same-product fixes** you already applied need not be listed as open.
+- **Do not report** as open issues: intentional `openGaps` already in curated JSON; speculative test or polish ideas unless the user asked for a backlog; follow-ups already recorded in `docs/_working/` (name the file path instead of repeating the list).
 - **Forbidden:** Sections or bullets on what is **fine**, **good**, **satisfactory**, **passing**, **already met**, **in good shape**, or **meets [principle]**; **praise** or **reassurance**; a **Summary** that mixes positives and negatives; **What we changed** framed only as praise; framing fixes as achievements.
 - **Forbidden:** Saying build, lint, or tests **passed** or **succeeded** unless the user explicitly asked for that command output.
-- If you **made edits** in the same turn: report **only remaining** issues after those edits (or one sentence if none).
+- If you **made edits** in the same turn: they must stay on the **same-product** side of the final-checks bright line; report **only remaining** issues (or one sentence if none).
 - If **nothing** is wrong after a sincere pass: **one short sentence** only, e.g. `No issues to flag from this pass.`
 
-**Scoped audits** (DRY, KISS, YAGNI, OWASP, a11y, etc.) use this same format: **negatives and actions only**, never confirmation that a principle was satisfied. A scoped ask is **not** the full Final checks gate unless the user used the macro phrases.
+**Scoped audits** (DRY, KISS, YAGNI, OWASP, a11y, etc.) use this same format: **negatives and actions only**, never confirmation that a principle was satisfied. A scoped ask is **not** the full Final checks gate unless the user used the macro phrases. Same bright line: fix same-product principle issues; report product-surface changes.
 
 ### Core preferences
 
@@ -83,7 +103,8 @@ This rule **overrides** the instinct to be balanced or reassuring. Soft praise i
 - **Screen readers and assistive tech:** Provide proper names, roles, and states; associate labels with fields; surface errors and dynamic results (`role="alert"`, `aria-live`, regions) so non-visual users get the same outcomes as sighted users.
 - **Do not rely on** color alone, hover-only cues, or pointer-only gestures for essential information or actions.
 - **Forms and search:** Use real `<form>` + submit semantics where users expect Enter to act; keep labels, hints, and validation perceivable and programmatically tied to inputs.
-- **Baseline:** Meet or exceed **WCAG 2.1 AA**; when in doubt, choose the more inclusive option.
+- **Baseline:** Meet or exceed **WCAG 2.1 AA**; when in doubt, choose the more inclusive option **that still respects deliberate progressive disclosure**. Popovers, disclosures, and "Details" cues are valid patterns when named and operable correctly; do not flatten them solely because supporting text is not always on screen.
+- **Final checks / review:** See the final-checks **bright line**. Harden a11y **in place** when the UX stays the same; report (do not ship) a11y ideas that redesign disclosure or layout.
 
 ### Framework-specific
 
@@ -108,7 +129,7 @@ This rule **overrides** the instinct to be balanced or reassuring. Soft praise i
 - **Who this is for:** The **general public** - including people whose eyes glaze over at **financial statements, spreadsheets, and dense government forms**. Write for them first. When copy reads like it was pasted from a county assessor or treasurer page, **consider rewriting** for warmth and clarity (exceptions are fine when accuracy requires it).
 - **How it should feel:** **Light, clear, and inviting** - quick to understand, low cognitive load, **enlightening** without being flip or fear-based (skip bait like "shocking" or "alarming" your bill). Prefer **everyday words**, short lines, and a calm confidence that the tool is on the user's side.
 - **Show, do not just tell:** Prefer UI/UX that demonstrates meaning directly (clear labels, hierarchy, affordances, examples, context in place) over extra explanatory prose. Use text to support interaction, not replace it.
-- **Define assumed knowledge:** Treat undefined jargon/acronyms as a product bug risk. On first meaningful use, either define inline in plain language or link to an in-app definition. Assume mixed familiarity (from farmers to accountants) and avoid relying on insider tax/government shorthand.
+- **Define assumed knowledge:** Treat undefined jargon/acronyms as a product bug risk. On first meaningful use, either define inline in plain language or link to an in-app definition. Assume mixed familiarity (tech-illiterate residents through accountants) and avoid relying on insider tax/government shorthand.
 - **Steer away from in primary UI** (headings, labels, buttons, hints, errors, empty states, hub cards, main flows): heavy **county website echo** (their jargon as the main story, or "same as the county search" as the value prop) and **piles of tax/assessor jargon** when plain language would do. **Prefer** explaining in human terms in the flow; **save** bureaucracy-shaped detail for people who want depth.
 - **When jargon is needed:** Lead with **plain language in the UI**; put **precise terms, methodology, or citations** on **`/sources`** (or another dedicated in-app explanation), with a **first-use definition or footnote** there when you introduce something technical. Occasional terms in the UI are OK if wrapped in plain English.
 - **Human-friendly documentation:** Put methodology, provenance, citations, audit guidance, and **definitions of technical terms** on the **in-app Sources** page (`/sources`). The repo **README** stays **technical** (developers, GitHub, pipeline). Do **not** paste long narrative methodology into README - **cross-link `/sources`**. On Sources, spell out or link jargon on **first substantive use** (e.g. **JSON** with an in-page definition or footnote), not only in README.
