@@ -8,7 +8,7 @@ alwaysApply: false
 
 JSX line breaks around inline tags are not reliable spaces (`greenside`, `them).The`).
 
-After `</strong>`, `</dfn>`, `</em>`, `</b>`, `</span>`, `</code>`, etc., if more text follows, use `{" "}`. Same after a period/paren before a following tag when a line break might sit between them.
+Between preceding text and a following inline tag (`<strong>`, `<dfn>`, `<em>`, `<b>`, `<span>`, `<code>`, etc.), use `{" "}` so the space is not lost across a line break (e.g. `The{" "}<strong>`). Same after a period/paren before a following tag. After a closing inline tag, if more text follows, use `{" "}` as well.
 
 ```tsx
 The{" "}

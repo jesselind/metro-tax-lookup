@@ -86,7 +86,8 @@ test.describe("Metro year-over-year UI", () => {
     const year2018Panel = page.locator(`[id="${year2018PanelId}"]`);
     await expect(year2018Panel).toBeVisible();
     await expect(year2018Panel).toContainText("Tax Year 2018");
-    await expect(year2018Panel).toContainText("mills");
+    // AUTH 0101 (Englewood School Dist #1) Tax Year 2018 in bundled Levy %.
+    await expect(year2018Panel).toContainText("52.373 mills");
 
     await expect(dialog.getByText("Total", { exact: true })).toHaveCount(0);
     await expect(dialog.getByText("Each part that changed")).toHaveCount(0);
