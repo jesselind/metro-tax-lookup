@@ -308,14 +308,13 @@ export default function SourcesPage() {
           {" "}
           Below that box, tile details include a simple{" "}
           <strong className="font-semibold text-slate-900">
-            Mill rate over time
+            Total mills from county property tax tables
           </strong>
           {" "}
           chart when we have at least three tax years of Levy Percentage data
-          for that authority (currently Tax Years 2018 through 2025). The
-          heading opens a short note that the chart is total mills from county
-          property tax tables. It shows total mills only, not dollars on your
-          bill.
+          for that authority (currently Tax Years 2018 through 2025). It shows
+          total mills only, not dollars on your bill. Tap a year on the chart
+          to see that year&apos;s mills.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="font-semibold text-slate-900">

@@ -11,9 +11,6 @@ export const STACK_RATE_CHANGE_CALLOUT_MESSAGE =
 export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
   "We don't currently have your assessed value from last year. These dollar amounts are based on your assessed value this year.";
 
-/** Modal mill-rate history chart (Levy % AUTH totals). */
-export const AUTHORITY_MILLS_HISTORY_CHART_HEADING = "Mill rate over time";
-
-/** Caption under the mill-rate history chart heading. */
-export const AUTHORITY_MILLS_HISTORY_CHART_CAPTION =
-  "Total mills for this authority from county property tax tables.";
+/** Modal mill-rate history chart heading (Levy % AUTH totals). */
+export const AUTHORITY_MILLS_HISTORY_CHART_HEADING =
+  "Total mills from county property tax tables";

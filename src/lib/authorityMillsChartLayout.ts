@@ -17,15 +17,21 @@ export const AUTHORITY_MILLS_CHART_VIEWBOX = {
 
 export const AUTHORITY_MILLS_CHART_PADDING = {
   top: 8,
-  right: 10,
+  /**
+   * No side inset: first/last points align with the footer mill readouts.
+   * Endpoint year labels use start/end anchors so they grow inward.
+   */
+  right: 0,
   bottom: 24,
-  left: 10,
+  left: 0,
 } as const;
 
 export type AuthorityMillsChartLayoutPoint = AuthorityMillsSeriesPoint & {
   x: number;
   y: number;
   showYearLabel: boolean;
+  /** SVG textAnchor for the year label when shown. */
+  yearLabelAnchor: "start" | "middle" | "end";
 };
 
 export type AuthorityMillsChartLayout = {
@@ -83,11 +89,14 @@ export function buildAuthorityMillsChartLayout(
       (series.length === 1 ? plotWidth / 2 : (index / (series.length - 1)) * plotWidth);
     const y =
       pad.top + plotHeight - ((point.mills - yMin) / ySpan) * plotHeight;
+    const yearLabelAnchor =
+      index === 0 ? "start" : index === series.length - 1 ? "end" : "middle";
     return {
       ...point,
       x,
       y,
       showYearLabel: labelIndices.has(index),
+      yearLabelAnchor,
     };
   });
 
@@ -111,5 +120,5 @@ export function authorityMillsChartAriaLabel(
   }
   const first = series[0]!;
   const last = series[series.length - 1]!;
-  return `Mill rate from ${first.mills} mills in Tax Year ${first.taxYear} to ${last.mills} mills in Tax Year ${last.taxYear}.`;
+  return `Total mills from ${first.mills} in Tax Year ${first.taxYear} to ${last.mills} in Tax Year ${last.taxYear}. Year markers on the chart open that year's mills.`;
 }

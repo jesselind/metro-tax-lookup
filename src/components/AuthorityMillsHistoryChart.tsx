@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+"use client";
+
 /**
  * Inline SVG mill-rate timeline for levy tile details (Levy % AUTH totals).
  * Renders only when the parent passes a series with at least two points.
- * Heading opens an InfoHintPopover for the source caption (locked UX:
- * docs/_working/locked-decisions.md).
+ * Descriptive heading only (no caption popover): keeps y-axis space on mobile.
+ * Year dots open {@link InfoHintPopover} with that year's mills.
  */
 
 import { useMemo, useId } from "react";
@@ -17,14 +19,10 @@ import {
   buildAuthorityMillsChartLayout,
 } from "@/lib/authorityMillsChartLayout";
 import type { AuthorityMillsSeriesPoint } from "@/lib/authorityMillsHistory";
-import {
-  AUTHORITY_MILLS_HISTORY_CHART_CAPTION,
-  AUTHORITY_MILLS_HISTORY_CHART_HEADING,
-} from "@/content/levyYoYCopy";
+import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "@/content/levyYoYCopy";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { formatTaxYearLabel } from "@/lib/metroLevyYearOverYear";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
-import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 type Props = {
   series: AuthorityMillsSeriesPoint[];
@@ -32,6 +30,7 @@ type Props = {
 
 export function AuthorityMillsHistoryChart({ series }: Props) {
   const headingId = useId();
+  const pointTriggerIdBase = useId().replace(/:/g, "");
   const gradientId = useId().replace(/:/g, "");
   const layout = useMemo(() => buildAuthorityMillsChartLayout(series), [series]);
   if (!layout || series.length < 2) return null;
@@ -47,21 +46,19 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
       role="region"
       aria-labelledby={headingId}
     >
-      <InfoHintPopover
-        textTrigger={AUTHORITY_MILLS_HISTORY_CHART_HEADING}
-        textTriggerId={headingId}
-        textTriggerClassName={`${TERM_LINK_CLASS} text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-xs`}
-        ariaLabel="What this chart shows"
+      <p
+        id={headingId}
+        className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-xs"
       >
-        <p>{AUTHORITY_MILLS_HISTORY_CHART_CAPTION}</p>
-      </InfoHintPopover>
+        {AUTHORITY_MILLS_HISTORY_CHART_HEADING}
+      </p>
 
-      <div className="mt-2 w-full">
+      <div className="relative mt-2 w-full overflow-visible">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           width="100%"
           height="auto"
-          className="block max-h-36 w-full text-slate-600"
+          className="block h-auto w-full text-slate-600"
           role="img"
           aria-label={ariaLabel}
           preserveAspectRatio="xMidYMid meet"
@@ -92,32 +89,58 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
               vectorEffect="non-scaling-stroke"
             />
 
-            {layout.points.map((point) => (
-              <g key={point.taxYear}>
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={point.taxYear === last.taxYear ? 4.5 : 3.5}
-                  fill={point.taxYear === last.taxYear ? "rgb(2 132 199)" : "white"}
-                  stroke="rgb(2 132 199)"
-                  strokeWidth="2"
-                  vectorEffect="non-scaling-stroke"
-                />
-                {point.showYearLabel ? (
-                  <text
-                    x={point.x}
-                    y={height - 8}
-                    textAnchor="middle"
-                    className="fill-slate-500 text-[10px] font-medium"
-                    style={{ fontSize: 10 }}
-                  >
-                    {point.taxYear}
-                  </text>
-                ) : null}
-              </g>
-            ))}
+            {layout.points.map((point) =>
+              point.showYearLabel ? (
+                <text
+                  key={`year-${point.taxYear}`}
+                  x={point.x}
+                  y={height - 8}
+                  textAnchor={point.yearLabelAnchor}
+                  className="fill-slate-500 text-[10px] font-medium"
+                  style={{ fontSize: 10 }}
+                >
+                  {point.taxYear}
+                </text>
+              ) : null,
+            )}
           </g>
         </svg>
+
+        {layout.points.map((point) => {
+          const yearLabel = formatTaxYearLabel(point.taxYear);
+          const millsLabel = formatCountyLevyMillsDisplay(point.mills);
+          const isLatest = point.taxYear === last.taxYear;
+          return (
+            <span
+              key={point.taxYear}
+              className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                left: `${(point.x / width) * 100}%`,
+                top: `${(point.y / height) * 100}%`,
+              }}
+            >
+              <InfoHintPopover
+                textTriggerId={`${pointTriggerIdBase}-${point.taxYear}`}
+                textTriggerClassName="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full"
+                textTriggerAriaLabel={`${yearLabel}, ${millsLabel} mills`}
+                ariaLabel={`${yearLabel} mill rate`}
+                customTrigger={
+                  <span
+                    className={`block rounded-full border-2 border-sky-600 ${
+                      isLatest
+                        ? "h-2.5 w-2.5 bg-sky-600"
+                        : "h-2 w-2 bg-white"
+                    }`}
+                    aria-hidden="true"
+                  />
+                }
+              >
+                <p className="font-semibold text-slate-900">{yearLabel}</p>
+                <p className="mt-0.5 tabular-nums">{millsLabel} mills</p>
+              </InfoHintPopover>
+            </span>
+          );
+        })}
       </div>
 
       <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm tabular-nums text-slate-800 sm:text-[0.9375rem]">

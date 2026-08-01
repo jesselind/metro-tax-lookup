@@ -2,156 +2,46 @@
 alwaysApply: true
 ---
 
-## Rule: Base behavior for metro-tax-lookup
+## metro-tax-lookup
 
-You are helping build a public, static-data web tool that makes **Arapahoe-focused property tax and metro-district context** easier to understand.
+Public static-data tool for Arapahoe-focused property tax and metro-district context. Prefer clarity over a thin county-site clone. No database or user accounts unless explicitly requested; prefer in-repo static data.
 
-- **North star:** Push toward an experience that feels **markedly more helpful** than county sites and PDFs alone (clarity, speed, privacy, explanation, fewer dead ends). That is a **direction**, not a pass/fail gate on every line of copy - but if the whole product drifts into "thin clone" territory, step back and **re-center** (change course, cut scope, or sharpen what is unique).
+**Taxpayer context:** Help residents see what they pay and how to inquire. Prefer honest next steps over empty outcomes. When bill LG ID and directory contact differ, frame registry website/address as how listings often work (admin/management mail), not as ID alignment. Registry mail is often a shared admin contact: say that in general terms; do not name firms unless citable. Prefer a short neutral note over alarm chrome.
 
-- **Taxpayer empowerment (chief aim):** The product serves **residents and concerned citizens** who need to understand **what they pay** and **how to inquire** about a levy line. Prefer **illuminating** what is easy to miss in public data (district layers, LG ID / tax entity, governance and administration patterns) over **empty or opaque** outcomes. When match quality is uncertain, prefer **honest, calm copy** and **actionable next steps** (identifiers on the bill, county/treasurer, in-app Sources) over **nothing**. When **bill LG ID** and **directory** contact row **differ**, **frame** registry website/address as **how public listings work** (often **administrative** or **management** mail), not as a guarantee the IDs align — **explain** rather than **omit** useful registry context. **Registry mailing addresses** often reflect **administrative** or **third-party management** contacts shared by many districts; explain that pattern in **general terms** without naming specific firms unless citable. **Substance over alarm styling:** avoid heavy warning chrome where a short neutral note suffices.
+**UI (this product):** Mobile-first, single high-contrast light theme. Primary payoff first; supporting detail below. Clickable controls: `cursor-pointer` on the hit target; disabled: `cursor-not-allowed`; leave text inputs alone.
 
-Implementation can be precise. **User-facing copy and layout should lean away from** county-site tone and spreadsheet vibes - **aim for** something people actually want to use.
+**Docs:** Behavior/data/build/interpretation changes → `README.md` (technical) and/or `src/app/sources/page.tsx` (narrative). Cross-link; keep long methodology out of README. Levy explainer JSON: `docs/levy-explainer-authoring.md`.
 
-**Concrete copy rules:** `.cursor/rules/educational-copy-tone.mdc` (educational tone, plain language, bill-centered explanations) and `.cursor/rules/plain-language-no-lines-jargon.mdc` (avoid stacked "[thing] lines" phrasing in primary UI).
+**Also:** `.cursor/rules/jsx-whitespace.mdc` (TSX/JSX), `.cursor/rules/playwright-macos-sandbox.mdc` (e2e).
 
-### Final checks gate (user-invoked macro)
+### Resident-facing copy
 
-**User phrases:** "Do final checks" / "Run final checks" (also "final checks" in that spirit).
+Educational first: clear explanation, not a government catalog. Apply when **touching** resident-facing text (glossary, popovers, modal briefs, levy explainer JSON, hub strings/hints/errors, resident `aria-label`s). Do not rewrite unrelated open files. Full tone passes only when asked.
 
-These phrases are a **macro checklist** so the user does not retype the same pre-commit review every time. Treat them like a **PR review**: apply **dev principles** and **fix** clear issues that arise under those principles **without** asking permission for each one — **when the resident-facing product stays the same**. Do **not** treat the macro as permission to redesign UI, rewrite copy, or change interaction patterns.
+- **Bar:** Smart but tech-illiterate resident (may struggle with devices; not unintelligent). One clear takeaway before insider terms. Middle-school readability. Neighbor read-aloud test.
+- **Priorities:** What it means for the bill first. Gloss jargon in place. No em dashes (U+2014) in definition/glossary copy. Popovers define on-screen jargon, not app internals (`/sources` / README).
+- **"[thing] lines":** Levy and mills are fine. Avoid accountant-style "levy lines" / "district lines" / "mills lines" as the main UI explanation (spirit, not a word ban). Prefer bill entries, breakdown, each metro levy. Do not rename code identifiers. Fix stacked pattern in visible strings when you touch the file.
 
-**Bright line (mandatory):**
+### Final checks (user-invoked only)
 
-- **Fix without re-asking** — DRY, KISS, YAGNI, OWASP, anti-patterns, stack best practices, types/hooks/tests/validation, and **a11y hardening that keeps the same UX** (e.g. missing `cursor-pointer` on an already-clickable control, focus/keyboard/Escape/`aria-*` on an existing popover or disclosure, label association). The end user should still see **largely the same product**.
-- **Do not change without explicit permission** — layout, visual design, progressive disclosure (popover vs always-visible, default open/closed), column order, headings/labels/buttons, resident-facing wording/voice, or any a11y "fix" that **alters what the resident sees or how they move through the UI** (e.g. flattening a popover into always-visible text, swapping sidebar sides). Report those; wait for a go-ahead.
+Phrases: "Do final checks" / "Run final checks". Touched or named scope only. Not redesign permission. Do not auto-run after phases/commits.
 
-When unsure which side of the line a fix is on: **ask** (one short question), do not guess.
+- **Fix without asking:** same-product engineering/a11y-in-place (types, tests, validation, `cursor-pointer` on already-clickable controls, focus/keyboard/Escape/`aria-*` on existing popovers, label association).
+- **Ask first:** layout, visual design, disclosure, column order, labels/copy/voice, or a11y that changes what residents see or how they move. Popovers/disclosures are fine when correct. Unsure → one question.
 
-Do **not** wait for the user to restate the checklist. Do **not** run this gate automatically after phases or commits; only when the user invokes it.
-
-When invoked, on **touched / in-scope work** for the current conversation (or the scope the user names):
-
-1. **Due diligence review:** KISS, YAGNI, DRY, OWASP Top 10, a11y (WCAG 2.1 AA), anti-patterns, stack best practices (Next.js / React / Tailwind as used here), and appropriate JSDoc and/or inline comments on non-obvious code (present where helpful; not noise on trivial code). **Fix** clear issues on the **fix-without-re-asking** side of the bright line. **Report** (do not implement) anything on the **ask-first** side.
-2. **Resident cold-read (copy QA):** For any **new or edited resident-facing** strings in scope (UI, authority chain / explainer templates, openGaps, glossary briefs, modal copy, hub hints/errors, `aria-label` text meant for residents), **read the real wording as shipped** (built trail text, not only the JSON facts). Bar: would a **smart but tech-illiterate** resident — someone who **struggles with devices and websites**, is worried about why their taxes went up, and wants to **follow the money** — understand this cold? Tech struggle is real; it is not an insult and not the same as being unintelligent. One clear takeaway before insider terms. Undefined assessor/spreadsheet talk (**row**, **abatement**, **R&A**, **this app charts**, and similar) fails. Precise terms are fine when **glossed in place** per `.cursor/rules/educational-copy-tone.mdc`. **Report** readability/voice concerns. Mechanical slips that do not change meaning (glued JSX spaces, accidental em dashes / smart quotes, accidental "levy lines" stacking the author already forbids) may be fixed; **do not** rewrite voice, structure, or disclosure without explicit permission.
-3. **Docs:** Update applicable docs if the work changed behavior, data, build/deploy, or how users should interpret results — typically `README.md` and/or `src/app/sources/page.tsx`; also authoring docs (e.g. `docs/levy-explainer-authoring.md`) or other in-repo docs when they are the right place. Follow the docs split already in this rule (README technical; `/sources` narrative). Doc updates that describe **already-shipped** behavior are fine; do not use docs as a back door to redesign the UI.
-4. **E2E:** Update Playwright coverage if UI contracts changed, then **run** the full suite (chromium, firefox, webkit) per `.cursor/rules/playwright-macos-sandbox.mdc` (`PLAYWRIGHT_BROWSERS_PATH` + `all` permissions). This overrides the general "prefer the user run CLI" preference for this gate only. When `CI=1` uses `next start`, run a **fresh `npm run build`** after JSON/template changes so e2e hits the new copy. E2E updates must **match** current UI, not invent new UX.
-5. **Triage anything still open** before you report: **fix** bright-line engineering/a11y-in-place issues; **list or record** ask-first product/UX/copy items. Use `openGaps` in curated JSON only when that pattern already fits the entry's honest limits (do not invent new resident essays). Deferred engineering/research → topic files under **`docs/_working/`**. Optional cross-chat memory → **`docs/_working/locked-decisions.md`** (not a whitelist). Do **not** leave tracked follow-ups only in chat.
-6. **Report** using **Review and audit responses** below. List **only** what is still unresolved after steps 1–5 (or point to the `docs/_working/` file where it is tracked). Do not narrate green passes unless the user asked for command output.
-
-#### Final checks: product surface vs engineering (mandatory)
-
-"Fix relevant issues that arise" means **dev-principle fixes** where the **resident still gets the same product**. It does **not** mean redesign.
-
-- **Same product, fix freely:** refactors, DRY, dead code, validation, security hygiene, tests, comments, and a11y that only hardens the **existing** control (name, role, focus, keyboard, Escape, `cursor-pointer` on something already interactive).
-- **Different product, ask first:** anything a careful resident would notice as a change in layout, flow, disclosure, or wording — including "a11y" that replaces a popover/disclosure with always-visible text or reorders major regions.
-- **Popovers and disclosures are not inherently bad a11y** when implemented correctly.
-- **`docs/_working/locked-decisions.md`** is optional durable memory across chats, not a whitelist. Default for product-surface changes: **ask first**.
+1. Due diligence: fix same-product; report ask-first.
+2. Resident cold-read on new/edited resident-facing strings (built wording). Report voice issues; mechanical slips only may be fixed.
+3. Docs if needed (above).
+4. E2E if UI contracts changed; full chromium/firefox/webkit per Playwright rule. Fresh `npm run build` after JSON/template changes when `CI=1` uses `next start`. Match current UI.
+5. Triage: `docs/_working/` for deferred research (optional handoff). `locked-decisions.md` survives topic cleanup; not a whitelist.
+6. Report per **Review responses**.
 
 ### Working docs (`docs/_working/`)
 
-Scratch and in-progress notes live under **`docs/_working/`** (gitignored — not public source control). Topic files: when that work is done, **delete** the topic doc.
+Gitignored scratch; delete topic files when done. Not for `/sources` narrative or shipped `docs/*.md`. Open review findings must stay in the review response (or another visible durable tracker); `_working/` must not be the sole record.
 
-- **Issues and follow-ups** from reviews or final checks: add them to the **relevant** topic working doc; if none exists, **create** a new appropriately named file (for example `docs/_working/authority-chain-e2e.md`).
-- **Do not** duplicate the same follow-up in chat and in a working doc; the doc is the handoff.
-- **Not** for permanent product narrative (use `/sources`) or shipped authoring rules (use `docs/*.md` at repo root).
-- **Persistent optional memory:** **`docs/_working/locked-decisions.md`** survives topic cleanup. Short author decisions for cross-chat continuity only. Keep non-sensitive. Do **not** treat it as the only barrier to UI edits — final checks already forbid UI/UX changes without explicit permission. Do **not** delete this file when closing a feature working doc.
-### Review and audit responses (mandatory - read before any review-style answer)
+### Review responses
 
-This rule **overrides** the instinct to be balanced or reassuring. Soft praise in a review response hides what still needs attention.
+Triggers: review, audit, final checks, pre-commit check, or verify against the usual engineering principles. Final-checks phrases run the full gate above; scoped audits use this format only.
 
-**Triggers:** The user asks for a **review**, **audit**, **final checks** / **final check**, **pre-commit check**, **pass**, or to **ensure / verify** something against **DRY, KISS, YAGNI, OWASP, anti-patterns, a11y**, security, or similar - including phrases like "anything needing to change" or "etc." in that spirit. **"Do/run final checks"** also runs the **Final checks gate** above (review + docs + e2e), not review-only.
-
-**Output format:**
-
-- **Only** list **issues, risks, gaps, and actionable follow-ups** that are **still unresolved** after you fixed or recorded them (see Final checks gate step 5).
-- **UI/UX / copy / product-surface items:** list for the author (ask-first side of the bright line). Do **not** implement those in the same pass unless the user already ordered that change.
-- **Dev-principle / same-product fixes** you already applied need not be listed as open.
-- **Do not report** as open issues: intentional `openGaps` already in curated JSON; speculative test or polish ideas unless the user asked for a backlog; follow-ups already recorded in `docs/_working/` (name the file path instead of repeating the list).
-- **Forbidden:** Sections or bullets on what is **fine**, **good**, **satisfactory**, **passing**, **already met**, **in good shape**, or **meets [principle]**; **praise** or **reassurance**; a **Summary** that mixes positives and negatives; **What we changed** framed only as praise; framing fixes as achievements.
-- **Forbidden:** Saying build, lint, or tests **passed** or **succeeded** unless the user explicitly asked for that command output.
-- If you **made edits** in the same turn: they must stay on the **same-product** side of the final-checks bright line; report **only remaining** issues (or one sentence if none).
-- If **nothing** is wrong after a sincere pass: **one short sentence** only, e.g. `No issues to flag from this pass.`
-
-**Scoped audits** (DRY, KISS, YAGNI, OWASP, a11y, etc.) use this same format: **negatives and actions only**, never confirmation that a principle was satisfied. A scoped ask is **not** the full Final checks gate unless the user used the macro phrases. Same bright line: fix same-product principle issues; report product-surface changes.
-
-### Core preferences
-
-- Use clear, maintainable, well-typed code.
-- Favor functional components and hooks when using React.
-- Design mobile-first, responsive layouts with a single, high-contrast light theme.
-- **UI/UX and feel:** Treat this as a **real product**, not a bare form dump. Aim for **great** interaction design - clear hierarchy, generous spacing, responsive behavior, helpful feedback, and polish. The overall vibe should be **light and engaging** - **fun** is a valid target alongside accessible and trustworthy.
-
-### Pointer (cursor) affordances
-
-- **Hover must read as clickable:** Any control that responds to click or tap (native or custom `button`, `a`, disclosure/accordion headers, segment toggles, hub card links, icon-only controls, draggable handles, etc.) must show an explicit **`cursor-pointer`** on the interactive surface in Tailwind (`className` on the element that receives the click, or a parent that covers the full hit target). Do not leave the default arrow on something that is obviously interactive.
-- **Chevrons and icons inside buttons** inherit from the parent; ensure the **parent** button/link has `cursor-pointer` so hovering the caret matches the rest of the control.
-- **Disabled:** Use **`cursor-not-allowed`** (and `disabled:` styles) when the control is visibly disabled; do not use `cursor-pointer` there.
-- **Text fields:** Keep default text cursor on inputs and textareas; do not force `cursor-pointer` on plain inputs.
-
-### Information hierarchy (progressive disclosure)
-
-- **Primary first:** The main payoff (visualization, totals, the core widget) should appear **before** supporting context so users are not buried in fine print on the way to the answer.
-- **Supporting detail below:** Metadata (e.g. matched PIN, TAG id, verification links), extra links, and explanatory accordions belong **under** the primary content for users who want to dig deeper - not stacked above tiles, charts, or key results.
-- **Avoid redundancy:** Do not repeat the same idea in a subsection heading and the parent card title; one clear label per region is enough.
-- **Light separators:** Do not use extra horizontal rules or heavy borders between adjacent blocks that are already part of one flow (e.g. between a help accordion and a mode toggle). Separate only when it genuinely aids scanning.
-- **Levy line detail modals and explainer JSON** (`public/data/levy-explainer-entries.json`): See **`docs/levy-explainer-authoring.md`** (modal pattern, tone, validation).
-
-### Accessibility (critical)
-
-- **Accessibility is a first-class requirement**, not a visual polish pass. The app is for the **general public**, including people who **do not** navigate primarily by sight.
-- **Keyboard and focus:** Every flow must be fully operable with keyboard only - tab order that matches reading order, no keyboard traps, visible focus states, and correct use of native controls (`button`, `a`, `input`) or equivalent roles and keyboard handlers for custom widgets.
-- **Screen readers and assistive tech:** Provide proper names, roles, and states; associate labels with fields; surface errors and dynamic results (`role="alert"`, `aria-live`, regions) so non-visual users get the same outcomes as sighted users.
-- **Do not rely on** color alone, hover-only cues, or pointer-only gestures for essential information or actions.
-- **Forms and search:** Use real `<form>` + submit semantics where users expect Enter to act; keep labels, hints, and validation perceivable and programmatically tied to inputs.
-- **Baseline:** Meet or exceed **WCAG 2.1 AA**; when in doubt, choose the more inclusive option **that still respects deliberate progressive disclosure**. Popovers, disclosures, and "Details" cues are valid patterns when named and operable correctly; do not flatten them solely because supporting text is not always on screen.
-- **Final checks / review:** See the final-checks **bright line**. Harden a11y **in place** when the UX stays the same; report (do not ship) a11y ideas that redesign disclosure or layout.
-
-### Framework-specific
-
-- Follow established best practices for Next.js/React components and Tailwind CSS utility usage.
-- **JSX prose / whitespace:** Inline tags (`<strong>`, `<dfn>`, etc.) plus line breaks can drop spaces between words. Use explicit `{" "}` after closing inline tags before more text; see `.cursor/rules/jsx-whitespace.mdc`.
-
-### Engineering principles
-
-- Follow DRY (don't repeat yourself) and KISS (keep it simple).
-- Apply YAGNI (don't build features or abstractions until they are needed).
-- Observe at least the OWASP Top 10 security guidelines in design and implementation.
-
-### Project-specific rules
-
-- Avoid adding a database or user accounts unless explicitly requested by the user.
-- Prefer simple, static data files checked into the repo when possible.
-- **Never use smart quotes or smart apostrophes** (e.g. curly " " ' '). Use only straight/ASCII quotes and apostrophes (U+0022, U+0027) in code, docs, and copy. This avoids encoding mismatches, broken search/replace, and inconsistent display.
-
-### Audience, tone, and language (user-facing)
-
-- **Plain language (levy / mills OK; "levy lines" pattern not):** Avoid accountant-style **"levy lines" / "district lines" / "mills lines"** stacked phrasing in user-facing strings; **levy** and **mills** are fine when clear. Intent is **spirit** (readable for the public), not a ban on every word. See `.cursor/rules/plain-language-no-lines-jargon.mdc`.
-- **Who this is for:** The **general public** - including people whose eyes glaze over at **financial statements, spreadsheets, and dense government forms**. Write for them first. When copy reads like it was pasted from a county assessor or treasurer page, **consider rewriting** for warmth and clarity (exceptions are fine when accuracy requires it).
-- **How it should feel:** **Light, clear, and inviting** - quick to understand, low cognitive load, **enlightening** without being flip or fear-based (skip bait like "shocking" or "alarming" your bill). Prefer **everyday words**, short lines, and a calm confidence that the tool is on the user's side.
-- **Show, do not just tell:** Prefer UI/UX that demonstrates meaning directly (clear labels, hierarchy, affordances, examples, context in place) over extra explanatory prose. Use text to support interaction, not replace it.
-- **Define assumed knowledge:** Treat undefined jargon/acronyms as a product bug risk. On first meaningful use, either define inline in plain language or link to an in-app definition. Assume mixed familiarity (tech-illiterate residents through accountants) and avoid relying on insider tax/government shorthand.
-- **Steer away from in primary UI** (headings, labels, buttons, hints, errors, empty states, hub cards, main flows): heavy **county website echo** (their jargon as the main story, or "same as the county search" as the value prop) and **piles of tax/assessor jargon** when plain language would do. **Prefer** explaining in human terms in the flow; **save** bureaucracy-shaped detail for people who want depth.
-- **When jargon is needed:** Lead with **plain language in the UI**; put **precise terms, methodology, or citations** on **`/sources`** (or another dedicated in-app explanation), with a **first-use definition or footnote** there when you introduce something technical. Occasional terms in the UI are OK if wrapped in plain English.
-- **Human-friendly documentation:** Put methodology, provenance, citations, audit guidance, and **definitions of technical terms** on the **in-app Sources** page (`/sources`). The repo **README** stays **technical** (developers, GitHub, pipeline). Do **not** paste long narrative methodology into README - **cross-link `/sources`**. On Sources, spell out or link jargon on **first substantive use** (e.g. **JSON** with an in-page definition or footnote), not only in README.
-- **Documentation when you change things:** Any addition or change that affects how the app works, what data it uses, how it is built or deployed, or how users should interpret results must include updates to **README.md** and/or **`src/app/sources/page.tsx`** as appropriate before the work is considered complete. README: setup, pipeline, file paths. `/sources`: narrative, citations, and **plain explanations** for readers who want depth. If unsure, prefer `/sources` for human narrative and README for a short cross-link only.
-
-### Response length and conversation style (mandatory)
-
-Default to **short** replies. Do **not** blindside the user with too little info when a decision, risk, or blocker matters — say that plainly in a sentence, then stop.
-
-- **Lead with the answer** in the first sentence or two. No preamble or survey.
-- **No overview reports** (except review and audit responses; see below). Do not dump every issue, option, or bullet in one message. Pick **one** point (or one question) and go deep on that; wait for the user before the next.
-- **Prefer one question at a time** over option menus. Engage collaboratively; the user will steer what to unpack next.
-- **Discussion and strategy:** keep it tight unless the user asks to go deeper. Skip tables and diagrams unless requested or essential.
-- **Longer is OK when** the task needs it: code diffs, debugging, audits they asked for, or they say "explain in detail."
-- **Review and audit responses** override the **No overview reports** and **pick one point** limits above: list every still-valid issue, risk, gap, and actionable follow-up in a single response (per **Review and audit responses**), while staying concise and scannable elsewhere.
-
-### General AI behavior
-
-- **High level first.** Lead with the direct answer or recommendation before detail. On new topics, assume the user wants the headline, not a survey — they will ask to go deeper or you can offer to.
-- **Length follows the task.** Short back-and-forth is the default; longer answers are fine when the work truly needs it (implementation with real diffs, debugging, audits the user asked for, nuanced tradeoffs they are actively deciding). Do not pad routine questions with file maps, phase recaps, or exhaustive option lists.
-- **Develop ideas iteratively.** It is OK to expand across turns as the conversation narrows; do not front-load the full essay on turn one.
-- Keep code and explanations concise.
-- Explain non-trivial changes or design choices briefly when suggesting edits.
-- Prefer the user to run terminal/CLI commands; only suggest commands, and assume non-trivial commands may be rejected or run manually by the user.
-- Do not run any `git` commands (status/diff/log/commit/push/etc.) unless the user explicitly asks you to run them.
+List only still-unresolved issues. Product-surface items: list, do not implement unless ordered. Already-fixed same-product items need not be listed. Do not re-list curated `openGaps`, speculative backlog, or items on a visible durable tracker (name the tracker). No praise or "what's fine" sections; no claiming build/lint/tests passed unless asked. Nothing open: one short sentence.

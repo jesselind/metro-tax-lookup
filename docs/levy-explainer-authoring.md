@@ -44,7 +44,7 @@ Resident-facing strings in `levy-explainer-entries.json` should feel **friendly 
 - **Punctuation in explainer JSON:** Prefer commas and periods. **No em dashes** in resident-facing strings; `npm run validate:levy-explainer` rejects U+2014 (same spirit as levy line detail shell copy in `LevyLineDistrictDetailDialog.tsx`).
 - **Reference shape:** See **`urban-drainage-south-platte-levy`** for rebrand / old legal name vs public name in conversational prose, with statute and district links in **citations** only.
 
-App-wide audience and plain-language rules remain in `.cursor/rules/base-rule.mdc` and `.cursor/rules/plain-language-no-lines-jargon.mdc`. This section is the canonical guide for **levy explainer JSON** tone.
+App-wide audience and plain-language rules remain in `.cursor/rules/base-rule.mdc`. This section is the canonical guide for **levy explainer JSON** tone.
 
 ## Levy line detail modal (shared chrome, all rows)
 

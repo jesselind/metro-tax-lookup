@@ -19,7 +19,7 @@ import { createPortal } from "react-dom";
 const TEXT_TRIGGER_BUTTON_RESET =
   "cursor-pointer border-0 bg-transparent p-0 text-left leading-snug outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40";
 
-type InfoHintPopoverProps = {
+type InfoHintPopoverBase = {
   children: ReactNode;
   disabled?: boolean;
   /** Merged into the floating panel (e.g. wider max-width or scroll). */
@@ -30,9 +30,8 @@ type InfoHintPopoverProps = {
    * {@link textTriggerAriaLabel} is set.
    */
   ariaLabel?: string;
-  textTrigger: string;
   textTriggerId: string;
-  /** Typography + underline affordance for the text trigger. */
+  /** Typography + underline affordance for the text trigger (or layout for custom). */
   textTriggerClassName: string;
   /**
    * When several triggers share the same visible text (e.g. "No data found"),
@@ -41,12 +40,27 @@ type InfoHintPopoverProps = {
   textTriggerAriaLabel?: string;
 };
 
+export type InfoHintPopoverProps = InfoHintPopoverBase &
+  (
+    | {
+        textTrigger: string;
+        customTrigger?: undefined;
+      }
+    | {
+        /** Non-text control (e.g. chart dot). Requires {@link textTriggerAriaLabel}. */
+        customTrigger: ReactNode;
+        textTrigger?: undefined;
+        textTriggerAriaLabel: string;
+      }
+  );
+
 /** Portaled panels must clear modal shells (`z-[100]`). */
 const PANEL_BASE =
   "w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal text-slate-700 shadow-lg outline-none z-[110]";
 
 /**
  * Text-trigger floating note for in-flow definitions and hints.
+ * Optional {@link InfoHintPopoverProps.customTrigger} for icon/dot controls.
  * Root is a phrasing-content `<span>` (not `<div>`) so triggers stay valid inside
  * `<p>` and similar parents without hydration nesting warnings.
  * Click outside or Escape closes. Panels portal to `document.body` so they are
@@ -63,6 +77,7 @@ export function InfoHintPopover({
   panelClassName,
   ariaLabel,
   textTrigger,
+  customTrigger,
   textTriggerId,
   textTriggerClassName,
   textTriggerAriaLabel,
@@ -200,7 +215,7 @@ export function InfoHintPopover({
   return (
     <span
       // Do not set leading-none: text triggers wrap; default leading is on the button reset.
-      className={`relative inline-block min-w-0 max-w-full shrink ${open ? "z-40" : ""}`}
+      className={`relative inline-block min-w-0 max-w-full shrink ${open ? "z-40" : ""} ${customTrigger ? "leading-none" : ""}`}
       ref={wrapRef}
     >
       <button
@@ -215,7 +230,7 @@ export function InfoHintPopover({
         title={ariaLabel}
         onClick={() => setOpen((v) => !v)}
       >
-        {textTrigger}
+        {customTrigger ?? textTrigger}
       </button>
       {panel && typeof document !== "undefined"
         ? createPortal(panel, document.body)

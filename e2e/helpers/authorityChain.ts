@@ -133,17 +133,34 @@ export async function assertAuthorityChainPanel(
   }
 
   // Ballot Issue highlights must work before "See each step" (collapsed trail).
+  // UI bold/links every occurrence of mark.match in the summary.
   for (const mark of entry.summaryIssueMarks ?? []) {
+    let expectedCount = 0;
+    let searchFrom = 0;
+    while (searchFrom < entry.summary.length) {
+      const at = entry.summary.indexOf(mark.match, searchFrom);
+      if (at < 0) break;
+      expectedCount += 1;
+      searchFrom = at + mark.match.length;
+    }
     if (mark.url) {
       const href = safeHttpOrHttpsUrl(mark.url);
       expect(href, `summary issue link for ${mark.match}`).toBeTruthy();
+      const links = chain.getByRole("link", { name: mark.match });
       await expect(
-        chain.getByRole("link", { name: mark.match }),
-      ).toHaveAttribute("href", href!);
+        links,
+        `summary issue link count for ${mark.match}`,
+      ).toHaveCount(expectedCount);
+      for (let i = 0; i < expectedCount; i++) {
+        await expect(
+          links.nth(i),
+          `summary issue link[${i}] for ${mark.match}`,
+        ).toHaveAttribute("href", href!);
+      }
     } else {
       await expect(
         chain.getByText(mark.match, { exact: true }),
-      ).toBeVisible();
+      ).toHaveCount(expectedCount);
     }
   }
 
