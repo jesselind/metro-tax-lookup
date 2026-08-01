@@ -30,20 +30,17 @@ describe("authorityMillsChartLayout", () => {
     expect(layout!.points[0]!.x).toBeLessThan(layout!.points[2]!.x);
     expect(layout!.points[0]!.y).toBeGreaterThan(layout!.points[2]!.y);
     expect(layout!.fillBaselineY).toBeGreaterThan(0);
+    expect(layout!.points[0]!.yearLabelAnchor).toBe("start");
+    expect(layout!.points[2]!.yearLabelAnchor).toBe("end");
   });
 
   it("summarizes endpoints for SVG aria-label", () => {
-    expect(
-      authorityMillsChartAriaLabel([
-        { taxYear: 2018, mills: 50.071 },
-        { taxYear: 2025, mills: 51.071 },
-      ]),
-    ).toContain("Tax Year 2018");
-    expect(
-      authorityMillsChartAriaLabel([
-        { taxYear: 2018, mills: 50.071 },
-        { taxYear: 2025, mills: 51.071 },
-      ]),
-    ).toContain("Tax Year 2025");
+    const label = authorityMillsChartAriaLabel([
+      { taxYear: 2018, mills: 50.071 },
+      { taxYear: 2025, mills: 51.071 },
+    ]);
+    expect(label).toContain("Tax Year 2018");
+    expect(label).toContain("Tax Year 2025");
+    expect(label).toContain("Year markers");
   });
 });

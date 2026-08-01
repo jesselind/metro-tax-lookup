@@ -5,6 +5,7 @@
 
 import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
+import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "../src/content/levyYoYCopy";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_METRO_AUTHORITY,
@@ -65,18 +66,29 @@ test.describe("Metro year-over-year UI", () => {
       dialog.getByRole("region", { name: /2\.0% higher than last year/i }),
     ).toBeVisible();
     await dialog
-      .getByRole("button", { name: /Show year-by-year breakdown/i })
+      .getByRole("button", { name: /2\.0% higher than last year\. Details\./i })
       .click();
     await expect(dialog.getByText("Tax Year 2024").first()).toBeVisible();
     await expect(dialog.getByText("Tax Year 2025").first()).toBeVisible();
-    await expect(
-      dialog.getByRole("region", { name: /Mill rate over time/i }),
-    ).toBeVisible();
-    await expect(
-      dialog
-        .getByRole("region", { name: /Mill rate over time/i })
-        .getByText("Tax Year 2018"),
-    ).toBeVisible();
+    const millsChart = dialog.getByRole("region", {
+      name: AUTHORITY_MILLS_HISTORY_CHART_HEADING,
+    });
+    await expect(millsChart).toBeVisible();
+    await expect(millsChart.getByText("Tax Year 2018")).toBeVisible();
+
+    const year2018Dot = millsChart.getByRole("button", {
+      name: /Tax Year 2018,/i,
+    });
+    await year2018Dot.click();
+    await expect(year2018Dot).toHaveAttribute("aria-expanded", "true");
+    const year2018PanelId = await year2018Dot.getAttribute("aria-controls");
+    expect(year2018PanelId).toBeTruthy();
+    const year2018Panel = page.locator(`[id="${year2018PanelId}"]`);
+    await expect(year2018Panel).toBeVisible();
+    await expect(year2018Panel).toContainText("Tax Year 2018");
+    // AUTH 0101 (Englewood School Dist #1) Tax Year 2018 in bundled Levy %.
+    await expect(year2018Panel).toContainText("52.373 mills");
+
     await expect(dialog.getByText("Total", { exact: true })).toHaveCount(0);
     await expect(dialog.getByText("Each part that changed")).toHaveCount(0);
   });
@@ -157,7 +169,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(dialog.getByText(/^Difference:/).first()).toBeVisible();
 
     await dialog
-      .getByRole("button", { name: /Hide year-by-year breakdown/i })
+      .getByRole("button", { name: /% higher than last year\. Hide details\./i })
       .click();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(

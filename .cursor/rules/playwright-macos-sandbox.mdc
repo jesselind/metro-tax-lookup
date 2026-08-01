@@ -1,33 +1,14 @@
 ---
-description: Prevent local Playwright browser crashes and false "browsers missing" diagnoses
+description: Playwright macOS: PLAYWRIGHT_BROWSERS_PATH + all; do not misdiagnose browsers
 alwaysApply: true
 ---
 
-# Run Playwright outside the sandbox (macOS)
+# Playwright (macOS agent)
 
-## How to run e2e from the agent
+Use `required_permissions: ["all"]` and:
 
-- On this macOS workspace, run Playwright browser tests outside the sandbox from the first attempt (`required_permissions: ["all"]`).
-- **Always override the browser cache path.** Cursor injects `PLAYWRIGHT_BROWSERS_PATH` pointing at an empty `cursor-sandbox-cache/.../playwright` tree. That is **not** the user's install. Prefix every Playwright e2e command with:
+```bash
+PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:e2e
+```
 
-  ```bash
-  PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:e2e
-  ```
-
-  Same full prefix for any direct Playwright invocation:
-
-  ```bash
-  PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npx playwright test ...
-  ```
-
-- Do not first try Playwright in the sandbox without `all` and without that path override.
-
-## Do not misdiagnose
-
-- If launch fails with a path under **`cursor-sandbox-cache`** or says the executable is missing there: **Playwright is installed on this machine.** Fix the env (`PLAYWRIGHT_BROWSERS_PATH` as above + `all` permissions). Do **not** tell the user browsers are missing. Do **not** recommend `npx playwright install` for that failure.
-- Only suggest `npx playwright install` if launch fails against **`$HOME/Library/Caches/ms-playwright`** (or after unsetting the sandbox path) with a genuine missing-browser error.
-- If a browser launch fails, inspect the first failure before retrying. Do not allow repeated cross-browser retries when the failure is environmental.
-
-## Scope
-
-- Run the full Playwright suite across **chromium**, **firefox**, and **webkit** (all three projects). Do not stop at a single browser unless the user scoped the request to one.
+Same prefix for `npx playwright test ...`. Cursor's sandbox path under `cursor-sandbox-cache` is empty: that is not a missing install. Only suggest `npx playwright install` if failure is against `$HOME/Library/Caches/ms-playwright`. Inspect the first launch failure before cross-browser retries. Run chromium, firefox, and webkit unless the user scoped to one.

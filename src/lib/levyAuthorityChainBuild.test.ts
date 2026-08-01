@@ -29,6 +29,16 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.heading).toBe(AUTHORITY_CHAIN_HEADING);
     expect(entry.summary).toContain(record.summarySource.text);
     expect(entry.summary).toContain("Ballot Issue 4A and Ballot Issue 4B");
+    expect(entry.summaryIssueMarks).toEqual([
+      {
+        match: "Ballot Issue 4A",
+        url: record.measures[0]!.ballotTextSource.url,
+      },
+      {
+        match: "Ballot Issue 4B",
+        url: record.measures[1]!.ballotTextSource.url,
+      },
+    ]);
     expect(entry.steps[0]?.title).toBe(STEP_TITLE_WHO_GETS);
     expect(entry.steps[1]?.title).toBe(STEP_TITLE_WHAT_CHANGED);
     expect(entry.steps[1]?.body).toBe(MILLS_STEP_BODY);
@@ -46,7 +56,14 @@ describe("levyAuthorityChainBuild", () => {
     const entry = buildLevyAuthorityChainEntry(record);
 
     expect(entry.summary).toContain("Ballot Issue 1A");
-    expect(entry.summary).toContain("Board of County Commissioners");
+    expect(entry.summary).not.toMatch(/sets the rate/i);
+    expect(entry.summary).not.toContain("Board of County Commissioners");
+    expect(entry.summaryIssueMarks).toEqual([
+      {
+        match: "Ballot Issue 1A",
+        url: record.measures[0]!.ballotTextSource.url,
+      },
+    ]);
     expect(entry.steps[1]?.body).toContain(
       "amount of tax money the county is required to return to you",
     );
@@ -101,6 +118,16 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.summary).toContain("Ballot Issue 4C");
     expect(entry.summary).toContain("November 2018");
     expect(entry.summaryTermMatch).toBe("debt-free schools mill levy");
+    expect(entry.summaryIssueMarks).toEqual([
+      {
+        match: "Ballot Issue 4C",
+        url: record.measures[0]!.ballotTextSource.url,
+      },
+      {
+        match: "Ballot Issue 4A",
+        url: record.measures[1]!.ballotTextSource.url,
+      },
+    ]);
     expect(entry.steps.filter((s) => s.id.startsWith("ballot-")).length).toBe(2);
   });
 

@@ -36,14 +36,18 @@ export const FACT_VALUE_COUNTY_SAMPLE_BALLOT = "County sample ballot";
 export const FACT_VALUE_BALLOT_TEXT_UNAVAILABLE =
   "Not available in county election files";
 
-export const GOVERNING_BODY_LABELS = {
-  school_board: "school board",
-  board: "board",
-  board_of_county_commissioners: "Board of County Commissioners",
-} as const;
+/**
+ * Allowed `authority.governingBody` ids in JSON (validation + future trail inject).
+ * Do not invent unsourced summary claims from these (e.g. who "sets" the rate).
+ */
+export const GOVERNING_BODY_IDS = [
+  "school_board",
+  "board",
+  "board_of_county_commissioners",
+] as const;
 
 export type LevyAuthorityChainGoverningBody =
-  keyof typeof GOVERNING_BODY_LABELS;
+  (typeof GOVERNING_BODY_IDS)[number];
 
 export type LevyAuthorityChainFamily = "school" | "county";
 
@@ -302,19 +306,18 @@ export function formatVoteTotals(
   return `Yes: ${yes} (${yesPct})\nNo: ${no} (${noPct})`;
 }
 
+/** Single ballot-issue phrase as it appears in summary prose. */
+export function ballotIssuePhrase(ballotIssue: string): string {
+  return `Ballot Issue ${ballotIssue}`;
+}
+
 /** Format ballot issue list for summary ("4A and 4B" or "4A"). */
 export function formatBallotIssueList(issues: string[]): string {
   if (issues.length === 0) return "";
-  if (issues.length === 1) return `Ballot Issue ${issues[0]}`;
+  if (issues.length === 1) return ballotIssuePhrase(issues[0]!);
   const last = issues[issues.length - 1]!;
-  const rest = issues.slice(0, -1).map((i) => `Ballot Issue ${i}`);
-  return `${rest.join(", ")} and Ballot Issue ${last}`;
-}
-
-export function buildSummarySecondSentence(
-  governingBody: LevyAuthorityChainGoverningBody,
-): string {
-  return `The ${GOVERNING_BODY_LABELS[governingBody]} sets the rate that appears on your bill.`;
+  const rest = issues.slice(0, -1).map((i) => ballotIssuePhrase(i));
+  return `${rest.join(", ")} and ${ballotIssuePhrase(last)}`;
 }
 
 export function buildSummaryVoterClause(

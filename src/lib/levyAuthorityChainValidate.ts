@@ -652,6 +652,22 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       fail(`[${id}] built summary must include summarySource.text`);
     }
     assertNoEmDash(built.summary, `[${id}] built summary`);
+    for (const mark of built.summaryIssueMarks ?? []) {
+      if (!isNonEmptyString(mark.match)) {
+        fail(`[${id}] summaryIssueMarks.match must be non-empty`);
+      }
+      if (!built.summary.includes(mark.match)) {
+        fail(
+          `[${id}] summaryIssueMarks match "${mark.match}" must appear in built summary`,
+        );
+      }
+      if (mark.url !== undefined) {
+        assertHttpsSource(
+          { text: mark.match, url: mark.url },
+          `[${id}] summaryIssueMarks url for "${mark.match}"`,
+        );
+      }
+    }
     for (const step of built.steps) {
       assertNoEmDash(step.title, `[${id}] built step ${step.id} title`);
       assertNoEmDash(step.body, `[${id}] built step ${step.id} body`);
