@@ -40,12 +40,13 @@ const EXTRA_FLOW_BRIEF_TERM_IDS = [
   "term-tabor",
 ];
 
-const FAMILIES = new Set<LevyAuthorityChainFamily>(["school", "county"]);
+const FAMILIES = new Set<LevyAuthorityChainFamily>(["school", "county", "metro"]);
 const MEASURE_KINDS = new Set([
   "override",
   "bond",
   "debt_free_mill",
   "tabor_revenue_retention",
+  "operations_mill",
 ]);
 const BODY_LEADS = new Set(["approved", "also_approved", "earlier_approved"]);
 const BALLOT_TEXT_KINDS = new Set(["notice", "sample_ballot", "unavailable"]);
@@ -239,7 +240,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     byEntryId.set(id, true);
 
     if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
-      fail(`[${id}] family must be school or county`);
+      fail(`[${id}] family must be school, county, or metro`);
     }
     const family = record.family as LevyAuthorityChainFamily;
     const familyPack = getAuthorityChainFamilyPack(family);
@@ -463,7 +464,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
       if (!MEASURE_KINDS.has(measure.kind)) {
         fail(
-          `[${id}] measure ${measure.stepId} kind must be override, bond, debt_free_mill, or tabor_revenue_retention`,
+          `[${id}] measure ${measure.stepId} kind must be override, bond, debt_free_mill, tabor_revenue_retention, or operations_mill`,
         );
       }
       if (!familyPack.measureKinds.has(measure.kind)) {
@@ -599,10 +600,24 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           `[${id}].measure.${measure.stepId}.titlePlain`,
         );
       }
-      if (measure.titlePlain !== undefined) {
-        if (measure.kind !== "tabor_revenue_retention") {
+      if (measure.kind === "operations_mill") {
+        if (!isNonEmptyString(measure.titlePlain)) {
           fail(
-            `[${id}] measure ${measure.stepId} titlePlain only on tabor_revenue_retention measures`,
+            `[${id}] measure ${measure.stepId} operations_mill requires titlePlain`,
+          );
+        }
+        assertNoEmDash(
+          measure.titlePlain,
+          `[${id}].measure.${measure.stepId}.titlePlain`,
+        );
+      }
+      if (measure.titlePlain !== undefined) {
+        if (
+          measure.kind !== "tabor_revenue_retention" &&
+          measure.kind !== "operations_mill"
+        ) {
+          fail(
+            `[${id}] measure ${measure.stepId} titlePlain only on tabor_revenue_retention or operations_mill measures`,
           );
         }
         if (!isNonEmptyString(measure.titlePlain)) {

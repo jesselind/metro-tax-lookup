@@ -199,6 +199,99 @@ describe("levyAuthorityChainBuild", () => {
     ).toBe(OPEN_GAP_BODIES["ballot-text-spanish-only-ai-translation"]);
   });
 
+  it("builds metro pack bond and operations_mill titles from facts", () => {
+    const entry = buildLevyAuthorityChainEntry({
+      id: "metro-pack-smoke",
+      family: "metro",
+      match: { levyLineCode: "9999" },
+      authority: {
+        displayName: "Example Metro District",
+        countyListName: "EXAMPLE METRO",
+        governingBody: "board",
+      },
+      summarySource: {
+        text: "According to Arapahoe County's certified election results",
+        url: "https://example.arapahoeco.gov/results.pdf",
+      },
+      summary: {
+        headlineIssues: ["5A", "5B"],
+        headlineElection: "November 2022",
+      },
+      mills: {
+        currentYear: 2025,
+        currentMills: "50.000",
+        priorYear: 2024,
+        priorMills: "45.000",
+        currentRateSource: {
+          text: "County rate table for 2025 (PDF)",
+          url: "https://example.arapahoeco.gov/2025.pdf",
+        },
+        priorRateSource: {
+          text: "County rate table for 2024 (PDF)",
+          url: "https://example.arapahoeco.gov/2024.pdf",
+        },
+      },
+      measures: [
+        {
+          stepId: "ballot-5a-ops",
+          ballotIssue: "5A",
+          kind: "operations_mill",
+          electionMonthYear: "November 2022",
+          titlePlain: "Operations and maintenance",
+          detail: "up to 10 mills for operations and maintenance",
+          ballotTextKind: "notice",
+          ballotTextSource: {
+            text: "2022 County Notice of Election",
+            url: "https://example.arapahoeco.gov/notice.pdf",
+          },
+          votes: {
+            yes: "1",
+            yesPct: "60%",
+            no: "1",
+            noPct: "40%",
+          },
+          resultsSource: {
+            text: "2022 Official Summary Report",
+            url: "https://example.arapahoeco.gov/summary.pdf",
+          },
+        },
+        {
+          stepId: "ballot-5b-debt",
+          ballotIssue: "5B",
+          kind: "bond",
+          electionMonthYear: "November 2022",
+          bodyLead: "also_approved",
+          detail: "up to $10 million for streets and parks",
+          ballotTextKind: "notice",
+          ballotTextSource: {
+            text: "2022 County Notice of Election",
+            url: "https://example.arapahoeco.gov/notice.pdf#page=2",
+          },
+          votes: {
+            yes: "1",
+            yesPct: "55%",
+            no: "1",
+            noPct: "45%",
+          },
+          resultsSource: {
+            text: "2022 Official Summary Report",
+            url: "https://example.arapahoeco.gov/summary.pdf",
+          },
+        },
+      ],
+      openGapIds: ["no-fund-level-mill-split"],
+    });
+
+    const ops = entry.steps.find((s) => s.id === "ballot-5a-ops");
+    const bond = entry.steps.find((s) => s.id === "ballot-5b-debt");
+    expect(ops?.title).toBe("Ballot Issue 5A: Operations and maintenance");
+    expect(ops?.body).toContain("up to 10 mills for operations and maintenance");
+    expect(bond?.title).toBe(
+      "Ballot Issue 5B: Borrowing for district projects",
+    );
+    expect(bond?.body).toContain("metro district tax");
+  });
+
   it("trimmed summarySource.text matches built summary for link overlay", () => {
     const record = structuredClone(
       LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(

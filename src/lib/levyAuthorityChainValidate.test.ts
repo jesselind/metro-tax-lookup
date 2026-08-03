@@ -188,7 +188,7 @@ describe("levyAuthorityChainValidate", () => {
     );
   });
 
-  it("rejects titlePlain on non-tabor_revenue_retention measures", () => {
+  it("rejects titlePlain on measures that do not use bill-first titles", () => {
     const data = cloneShipped();
     const entries = data.entries as Array<Record<string, unknown>>;
     const override = (
@@ -196,7 +196,7 @@ describe("levyAuthorityChainValidate", () => {
     ).find((m) => m.kind === "override")!;
     override.titlePlain = "Not a TABOR vote";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /titlePlain only on tabor_revenue_retention measures/i,
+      /titlePlain only on tabor_revenue_retention or operations_mill/i,
     );
   });
 

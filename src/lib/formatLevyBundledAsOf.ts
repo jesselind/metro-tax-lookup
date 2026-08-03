@@ -4,11 +4,23 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Formats snapshot.bundledAsOf (YYYY-MM-DD) for display without UTC timezone shifts.
+ * Formats snapshot.bundledAsOf (YYYY-MM-DD) or a month stamp (YYYY-MM) for
+ * display without UTC timezone shifts. Month-only inputs become "August 2026".
  */
 export function formatLevyBundledAsOf(isoDate: string): string {
   const parts = isoDate.split("-").map((p) => parseInt(p, 10));
-  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) {
+  if (parts.some((n) => Number.isNaN(n))) {
+    return isoDate;
+  }
+  if (parts.length === 2) {
+    const [y, m] = parts;
+    const local = new Date(y, m - 1, 1);
+    return local.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+  }
+  if (parts.length !== 3) {
     return isoDate;
   }
   const [y, m, d] = parts;

@@ -11,6 +11,12 @@ import {
 } from "@/content/authorityChainUnlocatedSources";
 
 describe("authorityChainUnlocatedSources", () => {
+  it("keeps every nextBest.url on https", () => {
+    for (const row of AUTHORITY_CHAIN_UNLOCATED_SOURCES) {
+      expect(row.nextBest.url.startsWith("https://")).toBe(true);
+    }
+  });
+
   it("keeps Littleton 4C open with a next-best https hub", () => {
     const open = openAuthorityChainUnlocatedSources();
     const littleton4c = open.find(
@@ -18,7 +24,6 @@ describe("authorityChainUnlocatedSources", () => {
     );
     expect(littleton4c).toBeDefined();
     expect(littleton4c?.authCode).toBe("0601");
-    expect(littleton4c?.nextBest.url.startsWith("https://")).toBe(true);
     expect(AUTHORITY_CHAIN_UNLOCATED_SOURCES.length).toBeGreaterThanOrEqual(1);
     expect(AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE.length).toBeGreaterThan(
       0,

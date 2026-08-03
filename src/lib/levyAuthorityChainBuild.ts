@@ -24,6 +24,7 @@ import {
   buildSummaryAlsoClause,
   buildSummaryVoterClause,
   COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
+  METRO_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_BALLOT_TEXT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
@@ -83,7 +84,8 @@ export type LevyAuthorityChainMeasureRecord = {
   titleYearSuffix?: string;
   /**
    * Plain-language title after "Ballot Issue X: " (required for
-   * `tabor_revenue_retention`; bill-first, not a nickname headline).
+   * `tabor_revenue_retention` and metro `operations_mill`; bill-first, not a
+   * nickname headline).
    */
   titlePlain?: string;
   bodyLead?: LevyAuthorityChainBodyLead;
@@ -219,6 +221,9 @@ function governmentBillNameForRecord(
   if (custom) return custom;
   if (record.family === "county") {
     return COUNTY_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
+  if (record.family === "metro") {
+    return METRO_GOVERNMENT_BILL_NAME_DEFAULT;
   }
   return "";
 }

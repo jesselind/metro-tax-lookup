@@ -36,8 +36,10 @@ import {
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "@/data/metroLevies";
 import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
+import { OpenDetailsOnHash } from "@/components/OpenDetailsOnHash";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import { glossaryTermHref } from "@/lib/glossary";
+import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { AUTHORITY_CHAIN_GAPS_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
 import {
   AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE,
@@ -139,6 +141,7 @@ export default function SourcesPage() {
       contentClassName={SOURCES_PAGE_INNER_CLASS}
     >
       <SourcesGlossaryRedirect />
+      <OpenDetailsOnHash id="authority-chain-unlocated-sources" />
       <nav
         aria-label="On this page"
         className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
@@ -384,7 +387,10 @@ export default function SourcesPage() {
           .
         </p>
         {unlocatedAuthorityChainSources.length > 0 ? (
-          <details className="group mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 sm:px-4">
+          <details
+            id="authority-chain-unlocated-sources"
+            className="group mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 sm:px-4"
+          >
             <DisclosureSummary
               label={AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE}
             />
@@ -400,55 +406,62 @@ export default function SourcesPage() {
                 link the next-best official place so you can see where we looked.
               </p>
               <ul className="list-none space-y-4 p-0">
-                {unlocatedAuthorityChainSources.map((row) => (
-                  <li
-                    key={row.id}
-                    className="rounded-md border border-slate-200 bg-white px-3 py-3"
-                  >
-                    <p className="font-semibold text-slate-900">
-                      {row.authorityLabel}
-                      {" "}
-                      (AUTH{" "}
-                      <strong className="font-semibold text-slate-900">
-                        {row.authCode}
-                      </strong>
-                      ):{" "}
-                      {row.measureLabel}
-                    </p>
-                    <p className="mt-2">
-                      <strong className="font-semibold text-slate-900">
-                        What we looked for:
-                      </strong>
-                      {" "}
-                      {row.sought}
-                    </p>
-                    <p className="mt-2">
-                      <strong className="font-semibold text-slate-900">
-                        Where we looked:
-                      </strong>
-                      {" "}
-                      {row.lookedWhere}
-                    </p>
-                    <p className="mt-2">
-                      <strong className="font-semibold text-slate-900">
-                        What we link instead:
-                      </strong>
-                      {" "}
-                      <a
-                        href={row.nextBest.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={TERM_LINK_CLASS}
-                      >
-                        {row.nextBest.text}
-                        <span className="sr-only"> (opens in a new tab)</span>
-                      </a>
-                    </p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      Noted {row.notedAsOf}.
-                    </p>
-                  </li>
-                ))}
+                {unlocatedAuthorityChainSources.map((row) => {
+                  const nextBestHref = safeHttpOrHttpsUrl(row.nextBest.url);
+                  return (
+                    <li
+                      key={row.id}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {row.authorityLabel}
+                        {" "}
+                        (AUTH{" "}
+                        <strong className="font-semibold text-slate-900">
+                          {row.authCode}
+                        </strong>
+                        ):{" "}
+                        {row.measureLabel}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          What we looked for:
+                        </strong>
+                        {" "}
+                        {row.sought}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          Where we looked:
+                        </strong>
+                        {" "}
+                        {row.lookedWhere}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          What we link instead:
+                        </strong>
+                        {" "}
+                        {nextBestHref ? (
+                          <a
+                            href={nextBestHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={TERM_LINK_CLASS}
+                          >
+                            {row.nextBest.text}
+                            <span className="sr-only"> (opens in a new tab)</span>
+                          </a>
+                        ) : (
+                          row.nextBest.text
+                        )}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600">
+                        Noted {formatLevyBundledAsOf(row.notedAsOf)}.
+                      </p>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </details>

@@ -16,7 +16,10 @@ import {
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
   COLORADO_LEG_TABOR_URL,
 } from "@/lib/arapahoeCountyUrls";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  TERM_LINK_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const BRIEF_P =
   "text-sm leading-relaxed text-slate-800 sm:text-base";
@@ -268,39 +271,21 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
         November 2018 building bond).
       </p>
       <p className={FULL_P}>
-        Among Arapahoe County&apos;s currently published election files for
-        November 2020, we could only locate a sample ballot in Spanish (see the
-        {" "}
-        <a
-          href="https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Sample%20Ballot%20SPA.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          2020 Spanish sample ballot
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        , which includes Asunto 4C). We could not locate an English Notice of
-        Election or English sample ballot among the currently published files in
-        the county&apos;s
-        {" "}
-        <a
-          href="https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php#outer-2402sub-2512"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          2020 Past Elections File Library
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        . That does not mean an English ballot never existed. English wording
-        shown in the
+        English wording shown for Ballot Issue 4C in the
         {" "}
         <strong className="font-semibold text-slate-900">Who authorized this?</strong>
         {" "}
-        trail is an AI translation of that Spanish sample. It is not the legal
-        English ballot text, and it is not an official county English
-        translation.
+        trail is an AI translation of a county Spanish sample ballot. It is not
+        the legal English ballot text. Research details are under
+        {" "}
+        <a
+          href="/sources#authority-chain-unlocated-sources"
+          className={TERM_LINK_CLASS}
+        >
+          Official documents we could not find
+        </a>
+        {" "}
+        on the Sources page.
       </p>
       <p className={FULL_P}>
         Littleton Public Schools defines the phrase in its
@@ -570,7 +555,17 @@ export function TermAssessedValueBriefBody() {
       The smaller number your tax bill is actually based on. Colorado takes the county&apos;s full
       (actual / appraised) value and applies an assessment rate (a state percentage). Districts
       charge their mill levies against this smaller number. Most homes now have two assessed
-      figures: one for schools and one for other local governments.
+      figures: one for schools and one for other local governments. Rates and examples:{" "}
+      <a
+        href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
+        className={COUNTY_EXTERNAL_LINK_CLASS}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+      .
     </p>
   );
 }

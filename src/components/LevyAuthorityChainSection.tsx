@@ -21,6 +21,7 @@
  * 3. Optional {@link AUTHORITY_CHAIN_GAPS_DISCLOSURE} — resident-facing limits
  *    only (no authoring/debug notes such as missing URLs or HTTP errors)
  */
+import { DisclosureChevron } from "@/components/DisclosureChevron";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import {
   GlossaryTermPopover,
@@ -36,7 +37,10 @@ import {
   type LevyAuthorityChainStep,
 } from "@/lib/levyAuthorityChain";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
-import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  TERM_LINK_CLASS,
+  TOOL_OUTLINED_TOGGLE_BUTTON_CLASS,
+} from "@/lib/toolFlowStyles";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -409,10 +413,18 @@ export function LevyAuthorityChainSection({ entry }: Props) {
               </p>
               {step.bodyDisclosure ? (
                 <details className="group/ai-translation mt-2">
-                  <DisclosureSummary
-                    label={step.bodyDisclosure.label}
-                    chevronClassName="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open/ai-translation:rotate-180"
-                  />
+                  {/*
+                    Nested disclosure: outlined toggle button chrome (same
+                    recipe as other show/hide controls), not a link underline
+                    and not a second panel-header summary. Expanded body stays
+                    a flat blockquote (no nested card/box).
+                  */}
+                  <summary
+                    className={`${TOOL_OUTLINED_TOGGLE_BUTTON_CLASS} list-none text-left [&::-webkit-details-marker]:hidden`}
+                  >
+                    <span className="min-w-0 flex-1">{step.bodyDisclosure.label}</span>
+                    <DisclosureChevron className="h-4 w-4 shrink-0 text-slate-600 transition-transform duration-150 group-open/ai-translation:rotate-180" />
+                  </summary>
                   <blockquote className="mt-2 whitespace-pre-line border-l-2 border-amber-300/90 pl-3 text-sm leading-relaxed text-slate-800 sm:text-base">
                     {step.bodyDisclosure.body}
                   </blockquote>

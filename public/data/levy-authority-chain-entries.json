@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",

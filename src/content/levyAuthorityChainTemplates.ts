@@ -7,8 +7,8 @@
  * Canonical resident-facing strings for the authority chain panel.
  * JSON supplies facts only; wording lives here (KISS / DRY).
  *
- * Master trail (shared step order + chrome) + family packs (`school`, `county`)
- * inject nouns, measure kinds, budget labels, and mills takeaways.
+ * Master trail (shared step order + chrome) + family packs (`school`, `county`,
+ * `metro`) inject nouns, measure kinds, budget labels, and mills takeaways.
  *
  * Ideology (also in `docs/levy-explainer-authoring.md`): always show the
  * next-best official source. Prefer the exact document; when it is missing,
@@ -35,6 +35,9 @@ export const AUTHORITY_CHAIN_HEADING = "Who authorized this?";
 
 /** Default bill wording for county-family entries when JSON omits `governmentBillName`. */
 export const COUNTY_GOVERNMENT_BILL_NAME_DEFAULT = "the county";
+
+/** Default bill wording for metro-family entries when JSON omits `governmentBillName`. */
+export const METRO_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -66,7 +69,7 @@ export const GOVERNING_BODY_IDS = [
 export type LevyAuthorityChainGoverningBody =
   (typeof GOVERNING_BODY_IDS)[number];
 
-export type LevyAuthorityChainFamily = "school" | "county";
+export type LevyAuthorityChainFamily = "school" | "county" | "metro";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -123,7 +126,9 @@ export type LevyAuthorityChainMeasureKind =
   | "override"
   | "bond"
   | "debt_free_mill"
-  | "tabor_revenue_retention";
+  | "tabor_revenue_retention"
+  /** Metro O&M / general mill authorization (bill-first `titlePlain` required). */
+  | "operations_mill";
 
 export type LevyAuthorityChainBodyLead =
   | "approved"
@@ -191,6 +196,12 @@ const SCHOOL_BOND_REPAYMENT_CHANGE_SENTENCE =
 const SCHOOL_BOND_CEILING_SENTENCE =
   "That vote set ceilings. It did not lock in one fixed share of today's total rate.";
 
+const METRO_BOND_REPAYMENT_CHANGE_SENTENCE =
+  "Bonds may be sold over time, so the repayment part of your metro district tax can change.";
+
+const METRO_BOND_CEILING_SENTENCE =
+  "That vote set ceilings. It did not lock in one fixed share of today's total rate.";
+
 const SCHOOL_DEBT_FREE_MILL_CLOSING = "That is a mill levy, not a bond.";
 
 /**
@@ -225,9 +236,12 @@ export type LevyAuthorityChainFamilyPack = {
     options?: LevyAuthorityChainBallotTitleOptions,
   ) => string;
   /**
-   * Ballot-framed measure body. Call only when `ballotTextKind` is `notice` or
-   * `sample_ballot`. For `unavailable`, the builder uses
-   * {@link unavailableBallotMeasureBody} instead (hard-facts rule).
+   * Ballot-framed measure body for official English `notice` / `sample_ballot`
+   * text. Do not use for Spanish AI-translated samples
+   * (`ballotTextLanguage: "es"` + `ballotTextEnglishSource: "ai_translation"`);
+   * the builder supplies findability copy + disclosed translation instead.
+   * For `unavailable`, the builder uses {@link unavailableBallotMeasureBody}
+   * (hard-facts rule).
    */
   ballotStepBody: (
     kind: LevyAuthorityChainMeasureKind,
@@ -332,12 +346,81 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Metropolitan / Title-32 special district pack. First consumer: Sky Ranch
+ * (`4571`). Kinds cover common metro ballots: debt, O&M mill authorizations,
+ * and TABOR retention. Prefer `titlePlain` for bill-first O&M / retention titles.
+ */
+const METRO_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: "What the district's budget says",
+  budgetFactLabel: "District budget",
+  millsStepBody: MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set(["bond", "operations_mill", "tabor_revenue_retention"]),
+  ballotStepTitle(ballotIssue, kind, options) {
+    const yearPart = options?.titleYearSuffix
+      ? ` (${options.titleYearSuffix})`
+      : "";
+    switch (kind) {
+      case "bond":
+        return `Ballot Issue ${ballotIssue}: Borrowing for district projects${yearPart}`;
+      case "operations_mill": {
+        const titlePlain = options?.titlePlain?.trim();
+        if (!titlePlain) {
+          throw new Error(
+            "operations_mill requires titlePlain (bill-first step title)",
+          );
+        }
+        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
+      }
+      case "tabor_revenue_retention": {
+        const titlePlain = options?.titlePlain?.trim();
+        if (!titlePlain) {
+          throw new Error(
+            "tabor_revenue_retention requires titlePlain (bill-first step title)",
+          );
+        }
+        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
+      }
+      default:
+        throw new Error(`metro pack does not support measure kind: ${kind}`);
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead, options) {
+    const lead = BODY_LEAD_PHRASES[bodyLead];
+    switch (kind) {
+      case "bond":
+        return `${lead} borrowing ${detail}. ${METRO_BOND_CEILING_SENTENCE} ${METRO_BOND_REPAYMENT_CHANGE_SENTENCE}`;
+      case "operations_mill":
+        return `${lead} ${detail}.`;
+      case "tabor_revenue_retention": {
+        if (options?.maxAuthorizedMills == null) {
+          throw new Error(
+            "tabor_revenue_retention requires maxAuthorizedMills",
+          );
+        }
+        const governmentBillName =
+          options?.governmentBillName?.trim() ||
+          METRO_GOVERNMENT_BILL_NAME_DEFAULT;
+        const max = options.maxAuthorizedMills.toFixed(3);
+        return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+      }
+      default:
+        throw new Error(`metro pack does not support measure kind: ${kind}`);
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
 > = {
   school: SCHOOL_PACK,
   county: COUNTY_PACK,
+  metro: METRO_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
