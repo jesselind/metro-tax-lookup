@@ -56,6 +56,7 @@ export function collectAuthorityChainSourceUrls(
     push(mark.url);
   }
   for (const step of entry.steps) {
+    push(step.bodyLink?.url);
     for (const fact of step.facts) {
       for (const src of fact.sources) {
         push(src.url);
@@ -176,6 +177,15 @@ export async function assertAuthorityChainPanel(
     // fact <dd> text that shares a short body string (e.g. "Arapahoe County").
     const bodyProbe = step.body.slice(0, Math.min(40, step.body.length));
     await expect(item.locator("p").nth(1)).toContainText(bodyProbe);
+    if (step.bodyDisclosure) {
+      await expect(
+        item.locator("summary", { hasText: step.bodyDisclosure.label }),
+      ).toBeVisible();
+      // Collapsed by default: translated substance is not forced open.
+      await expect(
+        item.getByText(step.bodyDisclosure.body.slice(0, 48), { exact: false }),
+      ).toBeHidden();
+    }
     if (step.titleTermMatch) {
       await expect(
         item.getByRole("button", { name: step.titleTermMatch, exact: true }),

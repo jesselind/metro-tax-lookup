@@ -15,6 +15,20 @@
  * wrong language, or dead, link where we looked (year file library / hub) so
  * residents understand why, and use openGaps for honest limits. Never invent
  * a 404 path or leave a sourced fact with nowhere to go when a hub exists.
+ *
+ * Hard-facts rule (ballot substance):
+ * - `notice` / English `sample_ballot`: pack ballot body + `detail` from that PDF.
+ * - Spanish sample (locked): if that is the only ballot wording we can link among
+ *   currently published county files, **use it**. Do not imply English never existed.
+ *   Set `ballotTextLanguage: "es"` + `ballotTextEnglishSource: "ai_translation"`.
+ *   Link the Spanish PDF; intro via {@link nonEnglishSampleAiTranslatedMeasureIntro};
+ *   AI English behind a collapsed disclosure
+ *   (label discloses AI / not legal English; body is translated `detail` only).
+ *   Disclose clearly: not legal English ballot text, not an official
+ *   county English translation. Keep openGap + unlocated row for missing English.
+ * - `unavailable`: {@link unavailableBallotMeasureBody} only; omit `detail`;
+ *   put other official restatements in `supportingFacts` / `budget`.
+ * Dead / resident-unreachable URLs are not cites.
  */
 
 export const AUTHORITY_CHAIN_HEADING = "Who authorized this?";
@@ -32,7 +46,10 @@ export const FACT_LABEL_COUNTY_LIST_NAME = "Name on the county tax list";
 export const FACT_LABEL_BALLOT_TEXT = "Ballot text";
 export const FACT_VALUE_COUNTY_ELECTION_NOTICE = "County election notice";
 export const FACT_VALUE_COUNTY_SAMPLE_BALLOT = "County sample ballot";
-/** When no stable English notice or sample ballot can be linked (next-best: hub). */
+/** Sample ballot linked in Spanish (English Notice/sample not located among published files). */
+export const FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY =
+  "County sample ballot (Spanish)";
+/** When no stable notice or sample ballot can be linked (next-best: hub). */
 export const FACT_VALUE_BALLOT_TEXT_UNAVAILABLE =
   "Not available in county election files";
 
@@ -61,6 +78,13 @@ export const OPEN_GAP_BODIES = {
    */
   "no-stable-ballot-text":
     "For at least one ballot measure in this trail, Arapahoe County's published election files do not include a Notice of Election or a usable English sample ballot. We link that year's Past Elections File Library section so you can see what the county posted. Vote totals still come from the Official Summary Report.",
+  /**
+   * Use when the linked sample is non-English and the measure body English is
+   * an AI translation (ballotTextLanguage es + ballotTextEnglishSource
+   * ai_translation).
+   */
+  "ballot-text-spanish-only-ai-translation":
+    "For at least one ballot measure in this trail, we could not locate an English Notice of Election or English sample ballot among Arapahoe County's currently published election files. Those files do include a Spanish sample ballot with the measure wording, which we link. That does not mean an English ballot never existed. The English wording in the measure step is an AI translation of that Spanish sample. It is not the legal English ballot text, and it is not an official county English translation.",
 } as const;
 
 /**
@@ -112,6 +136,44 @@ export const BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
   earlier_approved: "Voters earlier approved",
 };
 
+/**
+ * Measure-step body when `ballotTextKind` is `unavailable`.
+ * Claims only that voters approved the named issue in that election (vote
+ * totals stay on How people voted + resultsSource). Does not interpolate
+ * program detail. Reusable for every family/kind until a live ballot PDF exists.
+ */
+export function unavailableBallotMeasureBody(
+  ballotIssue: string,
+  electionMonthYear: string,
+): string {
+  return `Voters approved Ballot Issue ${ballotIssue} in ${electionMonthYear}. The county's published election files do not include the ballot wording for this measure.`;
+}
+
+/**
+ * Sentence used when English Notice/sample was not located among currently
+ * published county files (Spanish sample is linked separately). Linked at
+ * build time to the year's Past Elections File Library hub.
+ */
+export const NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE =
+  "We could not locate an English Notice of Election or English sample ballot among the currently published files.";
+
+/**
+ * Measure-step intro when the official linked sample is Spanish (English
+ * Notice/sample not located among currently published county files) and English
+ * substance is an AI translation behind {@link AUTHORITY_CHAIN_AI_TRANSLATION_DISCLOSURE}.
+ * Plain findability ("we could only locate"); do not imply an English ballot never
+ * existed. The English-not-located sentence is linked to the file-library hub at
+ * build time.
+ */
+export function nonEnglishSampleAiTranslatedMeasureIntro(params: {
+  ballotIssue: string;
+  electionMonthYear: string;
+  /** Resident language label, e.g. "Spanish". */
+  languageLabel: string;
+}): string {
+  return `Voters approved Ballot Issue ${params.ballotIssue} in ${params.electionMonthYear}. We could only locate a sample ballot in ${params.languageLabel}. ${NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE}`;
+}
+
 /** School pack: override cap sentence; interpolates curated max mills per year. */
 export const OVERRIDE_MAX_MILL_SENTENCE =
   "The rate could not rise by more than one mill in any one year.";
@@ -162,6 +224,11 @@ export type LevyAuthorityChainFamilyPack = {
     kind: LevyAuthorityChainMeasureKind,
     options?: LevyAuthorityChainBallotTitleOptions,
   ) => string;
+  /**
+   * Ballot-framed measure body. Call only when `ballotTextKind` is `notice` or
+   * `sample_ballot`. For `unavailable`, the builder uses
+   * {@link unavailableBallotMeasureBody} instead (hard-facts rule).
+   */
   ballotStepBody: (
     kind: LevyAuthorityChainMeasureKind,
     detail: string,

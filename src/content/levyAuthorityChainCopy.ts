@@ -21,3 +21,11 @@ export const AUTHORITY_CHAIN_STEPS_DISCLOSURE = "See each step";
  * Gaps are for residents (what we cannot claim for sure), not authoring/debug notes.
  */
 export const AUTHORITY_CHAIN_GAPS_DISCLOSURE = "What we can't say for sure";
+
+/**
+ * Nested disclosure on a measure step: AI English of a Spanish sample ballot.
+ * Collapsed by default. Label must make clear this is not legal English ballot text
+ * and not an official county English translation (body is the translation only).
+ */
+export const AUTHORITY_CHAIN_AI_TRANSLATION_DISCLOSURE =
+  "AI translation of the Spanish sample (not legal English ballot text; not an official county translation)";

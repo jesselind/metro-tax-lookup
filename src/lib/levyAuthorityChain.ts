@@ -40,6 +40,22 @@ export type LevyAuthorityChainStep = {
   bodyTermMatch?: string;
   /** Additional body glosses after {@link bodyTermId} (non-overlapping matches). */
   bodyTerms?: LevyAuthorityChainInlineTerm[];
+  /**
+   * Optional nested disclosure under the step body (collapsed by default).
+   * Used for AI English of a Spanish sample ballot.
+   */
+  bodyDisclosure?: {
+    label: string;
+    body: string;
+  };
+  /**
+   * Optional in-body link (e.g. English-not-located sentence → file library hub).
+   * `match` must appear in {@link body}.
+   */
+  bodyLink?: {
+    match: string;
+    url: string;
+  };
   facts: LevyAuthorityChainFact[];
 };
 

@@ -1,0 +1,75 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
+/**
+ * Durable list of official documents we could not locate for authority-chain
+ * trails. Canonical for authors (edit here; do not park hunts only in
+ * `docs/_working/`). Open items also render in a disclosure on `/sources`.
+ *
+ * When a live Notice / English sample appears: flip `status` to `resolved`,
+ * update the authority-chain JSON (`ballotTextKind`, sources, openGaps), then
+ * keep the row here as history or remove it.
+ */
+
+export type AuthorityChainUnlocatedSourceStatus = "open" | "resolved";
+
+export type AuthorityChainUnlocatedSource = {
+  /** Stable id for authors and tests. */
+  id: string;
+  status: AuthorityChainUnlocatedSourceStatus;
+  /** Month noted (YYYY-MM). */
+  notedAsOf: string;
+  /** Authority name residents recognize. */
+  authorityLabel: string;
+  /** County AUTH / levy line code when known. */
+  authCode: string;
+  /** Ballot or measure label (e.g. Ballot Issue 4C, November 2020). */
+  measureLabel: string;
+  /** What we looked for (resident-plain). */
+  sought: string;
+  /** Where we looked (resident-plain). */
+  lookedWhere: string;
+  /** What the trail links instead (next-best). */
+  nextBest: {
+    text: string;
+    url: string;
+  };
+  /** Optional author-only note (not shown on /sources). */
+  authorNote?: string;
+};
+
+/**
+ * Disclosure label on `/sources` for open rows.
+ * Progressive disclosure: default page stays short.
+ */
+export const AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE =
+  "Official documents we could not find";
+
+export const AUTHORITY_CHAIN_UNLOCATED_SOURCES: readonly AuthorityChainUnlocatedSource[] =
+  [
+    {
+      id: "littleton-0601-4c-2020-ballot-text",
+      status: "open",
+      notedAsOf: "2026-08",
+      authorityLabel: "Littleton Public Schools",
+      authCode: "0601",
+      measureLabel: "Ballot Issue 4C (November 2020)",
+      sought:
+        "Arapahoe County Notice of Election / TABOR notice, or a usable English sample ballot, with the Ballot Issue 4C wording.",
+      lookedWhere:
+        "Arapahoe County Past Elections File Library for the 2020 general election. A Spanish sample ballot with Asunto 4C wording is published; no English Notice or English sample with 4C wording was found among the currently published files in that library. Vote totals are in the 2020 Official Summary Report.",
+      nextBest: {
+        text: "2020 County sample ballot (Spanish)",
+        url: "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Sample%20Ballot%20SPA.pdf",
+      },
+      authorNote:
+        "Trail uses ballotTextKind sample_ballot + ballotTextLanguage es + ballotTextEnglishSource ai_translation + openGap ballot-text-spanish-only-ai-translation. County file library lists the SPA PDF twice (identical). Optional later hunt: English Notice/sample via clerk, Wayback, Colorado SOS.",
+    },
+  ];
+
+/** Open blockers shown on `/sources`. */
+export function openAuthorityChainUnlocatedSources(): AuthorityChainUnlocatedSource[] {
+  return AUTHORITY_CHAIN_UNLOCATED_SOURCES.filter((row) => row.status === "open");
+}

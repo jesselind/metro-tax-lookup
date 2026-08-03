@@ -275,14 +275,88 @@ function renderStepBody(entry: LevyAuthorityChainEntry, step: LevyAuthorityChain
   if (step.bodyTerms) {
     terms.push(...step.bodyTerms);
   }
-  if (terms.length === 0) {
+
+  type Mark = {
+    start: number;
+    end: number;
+    kind: "link" | "term";
+    termId?: string;
+    href?: string;
+  };
+  const marks: Mark[] = [];
+  const bodyLink = step.bodyLink;
+  const linkHref = bodyLink ? safeHttpOrHttpsUrl(bodyLink.url) : null;
+  if (bodyLink && linkHref) {
+    const at = step.body.indexOf(bodyLink.match);
+    if (at >= 0) {
+      marks.push({
+        start: at,
+        end: at + bodyLink.match.length,
+        kind: "link",
+        href: linkHref,
+      });
+    }
+  }
+  for (const term of terms) {
+    if (
+      !isLevyAuthorityChainInlineTermId(term.termId) ||
+      !isFlowGlossaryTermId(term.termId)
+    ) {
+      continue;
+    }
+    const at = step.body.toLowerCase().indexOf(term.match.toLowerCase());
+    if (at < 0) continue;
+    marks.push({
+      start: at,
+      end: at + term.match.length,
+      kind: "term",
+      termId: term.termId,
+    });
+  }
+  marks.sort((a, b) => a.start - b.start);
+  if (marks.length === 0) {
     return step.body;
   }
-  return renderWithInlineTerms(
-    step.body,
-    terms,
-    `levy-authority-chain-${entry.id}-${step.id}-body-term`,
-  );
+
+  const out: ReactNode[] = [];
+  let cursor = 0;
+  for (const mark of marks) {
+    if (mark.start < cursor) continue;
+    if (mark.start > cursor) {
+      out.push(step.body.slice(cursor, mark.start));
+    }
+    const slice = step.body.slice(mark.start, mark.end);
+    if (mark.kind === "link" && mark.href) {
+      out.push(
+        <a
+          key={`body-link-${mark.start}`}
+          href={mark.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${TERM_LINK_CLASS} text-inherit`}
+        >
+          {slice}
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>,
+      );
+    } else if (mark.kind === "term" && mark.termId && isFlowGlossaryTermId(mark.termId)) {
+      out.push(
+        <GlossaryTermPopover
+          key={`body-term-${mark.start}`}
+          termId={mark.termId}
+          textTrigger={slice}
+          textTriggerId={`levy-authority-chain-${entry.id}-${step.id}-body-term-${mark.start}`}
+        />,
+      );
+    } else {
+      out.push(slice);
+    }
+    cursor = mark.end;
+  }
+  if (cursor < step.body.length) {
+    out.push(step.body.slice(cursor));
+  }
+  return out;
 }
 
 /** Yes/No (or other) multi-line fact values as stacked lines; single-line as plain text. */
@@ -333,6 +407,17 @@ export function LevyAuthorityChainSection({ entry }: Props) {
               <p className="mt-1.5 text-sm leading-relaxed text-slate-800 sm:text-base">
                 {renderStepBody(entry, step)}
               </p>
+              {step.bodyDisclosure ? (
+                <details className="group/ai-translation mt-2">
+                  <DisclosureSummary
+                    label={step.bodyDisclosure.label}
+                    chevronClassName="h-5 w-5 shrink-0 text-slate-600 transition-transform duration-150 group-open/ai-translation:rotate-180"
+                  />
+                  <blockquote className="mt-2 whitespace-pre-line border-l-2 border-amber-300/90 pl-3 text-sm leading-relaxed text-slate-800 sm:text-base">
+                    {step.bodyDisclosure.body}
+                  </blockquote>
+                </details>
+              ) : null}
               {step.facts.length > 0 ? (
                 <dl className="mt-3 space-y-3">
                   {step.facts.map((fact) => (

@@ -131,25 +131,72 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.steps.filter((s) => s.id.startsWith("ballot-")).length).toBe(2);
   });
 
-  it("builds unavailable ballot text with file-library hub and open gap", () => {
+  it("builds Spanish sample ballot with AI-translation disclosure", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (r) => r.id === "littleton-6-school-authority-chain",
     )!;
     const entry = buildLevyAuthorityChainEntry(record);
     const ballot4c = entry.steps.find((s) => s.id === "ballot-4c-debt-free");
-    expect(ballot4c?.facts[0]?.value).toBe(
-      "Not available in county election files",
+    expect(ballot4c?.body).toContain("Voters approved Ballot Issue 4C");
+    expect(ballot4c?.body).toContain(
+      "We could only locate a sample ballot in Spanish",
     );
-    expect(ballot4c?.facts[0]?.sources).toEqual([
-      {
-        text: "2020 Past Elections File Library (General)",
-        url: "https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php#outer-2402sub-2512",
-      },
-    ]);
-    expect(entry.openGaps.map((g) => g.id)).toContain("no-stable-ballot-text");
-    expect(entry.openGaps.find((g) => g.id === "no-stable-ballot-text")?.body).toBe(
-      OPEN_GAP_BODIES["no-stable-ballot-text"],
+    expect(ballot4c?.body).not.toMatch(/sample ballot only/i);
+    expect(ballot4c?.body).toContain(
+      "We could not locate an English Notice of Election or English sample ballot among the currently published files",
     );
+    expect(ballot4c?.bodyLink?.match).toContain("We could not locate");
+    expect(ballot4c?.bodyLink?.url).toContain(
+      "past_elections_file_library.php",
+    );
+    expect(ballot4c?.body).not.toContain("$12,000,000");
+    expect(ballot4c?.body).not.toContain("AI translation");
+    expect(ballot4c?.bodyDisclosure?.label).toContain("AI translation");
+    expect(ballot4c?.bodyDisclosure?.label).toContain(
+      "not legal English ballot text",
+    );
+    expect(ballot4c?.bodyDisclosure?.label).toContain(
+      "not an official county translation",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).not.toMatch(/^This is an AI translation/i);
+    expect(ballot4c?.bodyDisclosure?.body).not.toContain(
+      "That is a mill levy, not a bond",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain("$12,000,000");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("22-54-108.7");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("General Fund");
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "Arapahoe County School District Number Six",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "classes in career orientation, technology, and specialized trades",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain("computer sciences;");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("needs?;");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("mitigations or reductions");
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "modernization of existing technologies",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "applied in accordance with Section 22-54-108.7",
+    );
+    expect(ballot4c?.facts[0]?.value).toBe("County sample ballot (Spanish)");
+    expect(ballot4c?.facts[0]?.sources[0]?.url).toContain(
+      "Sample%20Ballot%20SPA.pdf",
+    );
+    expect(ballot4c?.facts).toHaveLength(1);
+    const budget = entry.steps.find((s) => s.id === "budget-attribution");
+    expect(budget?.body).toContain("up to 11 mills");
+    expect(entry.openGaps.map((g) => g.id)).toContain(
+      "ballot-text-spanish-only-ai-translation",
+    );
+    expect(entry.openGaps.map((g) => g.id)).not.toContain(
+      "no-stable-ballot-text",
+    );
+    expect(
+      entry.openGaps.find((g) => g.id === "ballot-text-spanish-only-ai-translation")
+        ?.body,
+    ).toBe(OPEN_GAP_BODIES["ballot-text-spanish-only-ai-translation"]);
   });
 
   it("trimmed summarySource.text matches built summary for link overlay", () => {

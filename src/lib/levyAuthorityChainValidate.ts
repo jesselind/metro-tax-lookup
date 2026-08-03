@@ -6,6 +6,10 @@
 /**
  * Validates `public/data/levy-authority-chain-entries.json` (version 2):
  * structured records, https sources, template alignment, no em dash on built copy.
+ *
+ * Hard-facts: `unavailable` → forbid `detail`, require `no-stable-ballot-text`.
+ * Spanish sample + AI English → require language/englishSource fields, `detail`,
+ * and openGap `ballot-text-spanish-only-ai-translation`.
  */
 
 import { readFileSync } from "node:fs";
@@ -51,6 +55,10 @@ const GOVERNING_BODIES = new Set([
   "board_of_county_commissioners",
 ]);
 const OPEN_GAP_NO_STABLE_BALLOT_TEXT = "no-stable-ballot-text";
+const OPEN_GAP_BALLOT_TEXT_SPANISH_ONLY_AI =
+  "ballot-text-spanish-only-ai-translation";
+const BALLOT_TEXT_LANGUAGES = new Set(["es"]);
+const BALLOT_TEXT_ENGLISH_SOURCES = new Set(["ai_translation"]);
 
 function isNonEmptyString(s: unknown): s is string {
   return typeof s === "string" && s.trim().length > 0;
@@ -441,6 +449,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
     const stepIds = new Set<string>();
     let hasUnavailableBallotText = false;
+    let hasSpanishAiTranslatedBallotText = false;
     for (const measure of record.measures) {
       assertObject(measure, `[${id}] measure`);
       if (!isNonEmptyString(measure.stepId))
@@ -465,10 +474,76 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       if (!isNonEmptyString(measure.electionMonthYear)) {
         fail(`[${id}] measure ${measure.stepId} missing electionMonthYear`);
       }
-      if (!isNonEmptyString(measure.detail)) {
-        fail(`[${id}] measure ${measure.stepId} missing detail`);
+      if (!BALLOT_TEXT_KINDS.has(measure.ballotTextKind)) {
+        fail(
+          `[${id}] measure ${measure.stepId} ballotTextKind must be notice, sample_ballot, or unavailable`,
+        );
       }
-      assertNoEmDash(measure.detail, `[${id}].measure.${measure.stepId}.detail`);
+      // Hard-facts: ballot-framed `detail` only with live Notice / sample ballot.
+      // When unavailable, substance belongs in supportingFacts / budget, not detail.
+      if (measure.ballotTextKind === "unavailable") {
+        hasUnavailableBallotText = true;
+        if (
+          measure.detail !== undefined &&
+          typeof measure.detail === "string" &&
+          measure.detail.trim().length > 0
+        ) {
+          fail(
+            `[${id}] measure ${measure.stepId} must omit detail when ballotTextKind is unavailable (use supportingFacts and/or budget; vote-identity body only)`,
+          );
+        }
+      } else if (!isNonEmptyString(measure.detail)) {
+        fail(
+          `[${id}] measure ${measure.stepId} missing detail (required when ballotTextKind is notice or sample_ballot)`,
+        );
+      }
+      if (typeof measure.detail === "string") {
+        assertNoEmDash(
+          measure.detail,
+          `[${id}].measure.${measure.stepId}.detail`,
+        );
+      }
+      if (measure.ballotTextLanguage !== undefined) {
+        if (!BALLOT_TEXT_LANGUAGES.has(measure.ballotTextLanguage)) {
+          fail(
+            `[${id}] measure ${measure.stepId} ballotTextLanguage must be es when set`,
+          );
+        }
+        if (measure.ballotTextKind !== "sample_ballot") {
+          fail(
+            `[${id}] measure ${measure.stepId} ballotTextLanguage only on sample_ballot measures`,
+          );
+        }
+        if (measure.ballotTextEnglishSource !== "ai_translation") {
+          fail(
+            `[${id}] measure ${measure.stepId} ballotTextLanguage es requires ballotTextEnglishSource ai_translation`,
+          );
+        }
+        assertHttpsSource(
+          measure.ballotTextEnglishHuntSource,
+          `[${id}] measure ${measure.stepId} ballotTextEnglishHuntSource`,
+        );
+        hasSpanishAiTranslatedBallotText = true;
+      }
+      if (measure.ballotTextEnglishSource !== undefined) {
+        if (!BALLOT_TEXT_ENGLISH_SOURCES.has(measure.ballotTextEnglishSource)) {
+          fail(
+            `[${id}] measure ${measure.stepId} ballotTextEnglishSource must be ai_translation when set`,
+          );
+        }
+        if (measure.ballotTextLanguage !== "es") {
+          fail(
+            `[${id}] measure ${measure.stepId} ballotTextEnglishSource requires ballotTextLanguage es`,
+          );
+        }
+      }
+      if (measure.ballotTextEnglishHuntSource !== undefined) {
+        if (measure.ballotTextLanguage !== "es") {
+          fail(
+            `[${id}] measure ${measure.stepId} ballotTextEnglishHuntSource only when ballotTextLanguage is es`,
+          );
+        }
+      }
       if (measure.bodyLead !== undefined && !BODY_LEADS.has(measure.bodyLead)) {
         fail(`[${id}] measure ${measure.stepId} invalid bodyLead`);
       }
@@ -548,18 +623,52 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           );
         }
       }
-      if (!BALLOT_TEXT_KINDS.has(measure.ballotTextKind)) {
-        fail(
-          `[${id}] measure ${measure.stepId} ballotTextKind must be notice, sample_ballot, or unavailable`,
-        );
-      }
-      if (measure.ballotTextKind === "unavailable") {
-        hasUnavailableBallotText = true;
-      }
       assertHttpsSource(
         measure.ballotTextSource,
         `[${id}] measure ${measure.stepId} ballotTextSource`,
       );
+      if (measure.supportingFacts !== undefined) {
+        if (!Array.isArray(measure.supportingFacts)) {
+          fail(
+            `[${id}] measure ${measure.stepId} supportingFacts must be an array`,
+          );
+        }
+        measure.supportingFacts.forEach((fact, factIndex) => {
+          assertObject(
+            fact,
+            `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}]`,
+          );
+          if (!isNonEmptyString(fact.label)) {
+            fail(
+              `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}] missing label`,
+            );
+          }
+          if (!isNonEmptyString(fact.value)) {
+            fail(
+              `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}] missing value`,
+            );
+          }
+          assertNoEmDash(
+            fact.label,
+            `[${id}].measure.${measure.stepId}.supportingFacts[${factIndex}].label`,
+          );
+          assertNoEmDash(
+            fact.value,
+            `[${id}].measure.${measure.stepId}.supportingFacts[${factIndex}].value`,
+          );
+          if (!Array.isArray(fact.sources) || fact.sources.length === 0) {
+            fail(
+              `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}] needs at least one source`,
+            );
+          }
+          fact.sources.forEach((source, sourceIndex) => {
+            assertHttpsSource(
+              source,
+              `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}].sources[${sourceIndex}]`,
+            );
+          });
+        });
+      }
       assertObject(measure.votes, `[${id}] measure ${measure.stepId} votes`);
       for (const key of ["yes", "yesPct", "no", "noPct"] as const) {
         if (!isNonEmptyString(measure.votes[key])) {
@@ -643,6 +752,14 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         `[${id}] openGapIds must include ${OPEN_GAP_NO_STABLE_BALLOT_TEXT} when any measure has ballotTextKind unavailable`,
       );
     }
+    if (
+      hasSpanishAiTranslatedBallotText &&
+      !gapIds.has(OPEN_GAP_BALLOT_TEXT_SPANISH_ONLY_AI)
+    ) {
+      fail(
+        `[${id}] openGapIds must include ${OPEN_GAP_BALLOT_TEXT_SPANISH_ONLY_AI} when any measure uses Spanish sample + AI translation`,
+      );
+    }
 
     const built = buildLevyAuthorityChainEntry(record);
     if (built.heading !== AUTHORITY_CHAIN_HEADING) {
@@ -671,6 +788,36 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     for (const step of built.steps) {
       assertNoEmDash(step.title, `[${id}] built step ${step.id} title`);
       assertNoEmDash(step.body, `[${id}] built step ${step.id} body`);
+      if (step.bodyDisclosure) {
+        if (!isNonEmptyString(step.bodyDisclosure.label)) {
+          fail(`[${id}] built step ${step.id} bodyDisclosure.label required`);
+        }
+        if (!isNonEmptyString(step.bodyDisclosure.body)) {
+          fail(`[${id}] built step ${step.id} bodyDisclosure.body required`);
+        }
+        assertNoEmDash(
+          step.bodyDisclosure.label,
+          `[${id}] built step ${step.id} bodyDisclosure.label`,
+        );
+        assertNoEmDash(
+          step.bodyDisclosure.body,
+          `[${id}] built step ${step.id} bodyDisclosure.body`,
+        );
+      }
+      if (step.bodyLink) {
+        if (!isNonEmptyString(step.bodyLink.match)) {
+          fail(`[${id}] built step ${step.id} bodyLink.match required`);
+        }
+        if (!step.body.includes(step.bodyLink.match)) {
+          fail(
+            `[${id}] built step ${step.id} bodyLink.match must appear in body`,
+          );
+        }
+        assertHttpsSource(
+          { text: step.bodyLink.match, url: step.bodyLink.url },
+          `[${id}] built step ${step.id} bodyLink`,
+        );
+      }
       assertInlineTermOnRecord(
         step as unknown as Record<string, unknown>,
         id,
