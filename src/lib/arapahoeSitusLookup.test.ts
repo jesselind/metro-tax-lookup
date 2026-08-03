@@ -177,11 +177,11 @@ describe("suggestSitusStreetsForNumber", () => {
     expect(list.some((s) => s.streetNameKey === "HOLLY")).toBe(true);
   });
 
-  it("expands multi-unit streets into one suggestion per parcel", () => {
+  it("keeps one place suggestion with all PINs (no per-PIN duplicate rows)", () => {
     const file: ArapahoeSitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
-      entryCount: 2,
+      entryCount: 3,
       byKey: {
         [`6420|DAYTON|`]: [
           { pin: "010000101", label: "6420 S DAYTON ST Unit J01, ENGLEWOOD" },
@@ -191,14 +191,77 @@ describe("suggestSitusStreetsForNumber", () => {
       },
     };
     const list = suggestSitusStreetsForNumber(file, "6420", "", "Dayton");
-    expect(list).toHaveLength(3);
-    expect(list.map((s) => s.hits[0]?.pin)).toEqual([
+    expect(list).toHaveLength(1);
+    expect(list[0]?.hits.map((h) => h.pin)).toEqual([
       "010000101",
       "010000102",
       "010000103",
     ]);
-    expect(list.every((s) => s.hits.length === 1)).toBe(true);
-    expect(list[0]?.sampleLabel).toContain("J01");
-    expect(list[2]?.sampleLabel).toContain("J03");
+  });
+
+  it("collapses shared-situs Real + personal accounts to one typeahead place", () => {
+    const file: ArapahoeSitusToPinsFile = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 1,
+      entryCount: 3,
+      byKey: {
+        [`7700|BROADWAY|`]: [
+          {
+            pin: "033458621",
+            label: "7700 S BROADWAY, LITTLETON, CO 80122-2628",
+          },
+          {
+            pin: "034687611",
+            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+          },
+          {
+            pin: "034816461",
+            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+          },
+        ],
+      },
+    };
+    const list = suggestSitusStreetsForNumber(file, "7700", "", "Broadway");
+    expect(list).toHaveLength(1);
+    expect(list[0]?.hits).toHaveLength(3);
+    expect(list[0]?.hits.map((h) => h.pin)).toContain("034816461");
+    expect(list[0]?.sampleLabel).toBe(
+      "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+    );
+  });
+});
+
+describe("lookupPinsBySitusFuzzy multi-account situs", () => {
+  it("returns every PIN at a shared non-residential situs", () => {
+    const file: ArapahoeSitusToPinsFile = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 1,
+      entryCount: 3,
+      byKey: {
+        [`7700|BROADWAY|`]: [
+          {
+            pin: "033458621",
+            label: "7700 S BROADWAY, LITTLETON, CO 80122-2628",
+          },
+          {
+            pin: "034687611",
+            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+          },
+          {
+            pin: "034816461",
+            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+          },
+        ],
+      },
+    };
+    const result = lookupPinsBySitusFuzzy(file, "7700", "", "Broadway", "");
+    expect(result.kind).toBe("match");
+    if (result.kind === "match") {
+      expect(result.hits.map((h) => h.pin).sort()).toEqual([
+        "033458621",
+        "034687611",
+        "034816461",
+      ]);
+    }
   });
 });

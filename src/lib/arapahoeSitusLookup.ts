@@ -10,6 +10,8 @@
  * Normalization must stay in sync with _STREET_* helpers in that script.
  */
 
+import { pickSitusPlaceSampleLabel } from "@/lib/situsMultiPinChooser";
+
 export type ArapahoeSitusPinHit = {
   pin: string;
   label: string;
@@ -621,8 +623,9 @@ export function lookupPinsBySitusKey(
 export const SITUS_SUGGESTION_LIMIT = 6;
 
 /**
- * Max address rows in the simple-line typeahead after expanding multi-pin
- * streets (condo/townhome units) into one suggestion per parcel.
+ * Max **place** rows in the simple-line typeahead (one row per house number +
+ * street name). Multi-PIN places keep all accounts on `hits` for the post-pick
+ * chooser; typeahead must not emit duplicate address lines per PIN.
  */
 export const SITUS_TYPEAHEAD_ADDRESS_LIMIT = 40;
 
@@ -854,7 +857,7 @@ function collectScoredStreetsForNumber(
     if (hits.length === 0) continue;
     scored.push({
       streetNameKey: candName,
-      sampleLabel: hits[0]?.label ?? candName,
+      sampleLabel: pickSitusPlaceSampleLabel(hits) || candName,
       hits,
       score,
     });
@@ -924,9 +927,13 @@ export function lookupPinsBySitusFuzzy(
 }
 
 /**
- * Typeahead: addresses at this house number whose street prefix- or fuzzy-matches
- * the partial street field. Multi-pin streets (units) expand to one row per
- * parcel so condo lists are not collapsed to the first sample label.
+ * Typeahead: places at this house number whose street prefix- or fuzzy-matches
+ * the partial street field.
+ *
+ * One suggestion per place (number + street name). When several PINs share that
+ * situs (condo units, Real + business personal property), all PINs stay on
+ * `hits` and the UI shows the multi-match chooser after pick — typeahead must
+ * not list duplicate address lines per PIN (Porter/Radiology crack).
  */
 export function suggestSitusStreetsForNumber(
   file: ArapahoeSitusToPinsFile,
@@ -942,23 +949,11 @@ export function suggestSitusStreetsForNumber(
     normalizeStreetNameKeySoft(streetNamePartial) ||
     normalizeStreetNameKey(streetNamePartial);
   if (!query) return [];
-  const streets = collectScoredStreetsForNumber(file, numKey, query, "", {
+  const placeCap = Math.min(
+    Math.max(1, streetLimit),
+    Math.max(1, addressLimit),
+  );
+  return collectScoredStreetsForNumber(file, numKey, query, "", {
     allowSubstring: true,
-  }).slice(0, Math.max(1, streetLimit));
-
-  const expanded: SitusStreetSuggestion[] = [];
-  for (const street of streets) {
-    for (const hit of street.hits) {
-      expanded.push({
-        streetNameKey: street.streetNameKey,
-        sampleLabel: hit.label,
-        hits: [hit],
-        score: street.score,
-      });
-      if (expanded.length >= Math.max(1, addressLimit)) {
-        return expanded;
-      }
-    }
-  }
-  return expanded;
+  }).slice(0, placeCap);
 }

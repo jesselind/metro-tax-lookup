@@ -759,6 +759,24 @@ export function TermTaxRollBriefBody() {
   );
 }
 
+export function TermRealPropertyBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The land and buildings at an address. This is the physical property tax
+      account for the site (a home, hospital, store, vacant lot, and similar).
+    </p>
+  );
+}
+
+export function TermBusinessPersonalPropertyBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Equipment and other business property at a location (copiers, machinery,
+      fixtures, and similar). A separate tax account from the building and land.
+    </p>
+  );
+}
+
 export function TermAssessmentYearBriefBody() {
   return (
     <p className={BRIEF_P}>
@@ -905,6 +923,8 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-state-use",
   "term-subdivision",
   "term-tax-roll",
+  "term-real-property",
+  "term-business-personal-property",
   "term-assessment-year",
   "term-tax-year",
   "term-appraised-total",
@@ -991,6 +1011,14 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-tax-roll": {
     title: "Tax roll",
     Brief: TermTaxRollBriefBody,
+  },
+  "term-real-property": {
+    title: "Real property",
+    Brief: TermRealPropertyBriefBody,
+  },
+  "term-business-personal-property": {
+    title: "Business personal property",
+    Brief: TermBusinessPersonalPropertyBriefBody,
   },
   "term-assessment-year": {
     title: "Assessment year",

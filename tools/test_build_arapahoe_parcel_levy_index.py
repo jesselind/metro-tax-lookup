@@ -18,7 +18,9 @@ from build_arapahoe_parcel_levy_index import (
     attach_computed_assessed_values,
     format_situs_label,
     format_situs_locality,
+    is_residential_state_use_code,
     local_assessed_split_fields,
+    non_residential_assessed_split_fields,
     normalize_integerish_code,
     ownership_type_label_from_owner_lp_types,
     parcel_row_qualifies_for_dual_assessed_splits,
@@ -32,6 +34,7 @@ def _real_improvement_row(assessment_year: str = "2026") -> dict[str, str]:
         "AssessmentYear": assessment_year,
         "TaxRollDescr": "Real",
         "PropertyClassDescr": "Improvement",
+        "StateUseCd": "1177",
     }
 
 
@@ -101,9 +104,24 @@ class AssessedSplitQualificationTests(unittest.TestCase):
                     "AssessmentYear": "2026",
                     "TaxRollDescr": "Real",
                     "PropertyClassDescr": "Real",
+                    "StateUseCd": "1177",
                 }
             )
         )
+
+    def test_school_requires_residential_state_use(self) -> None:
+        self.assertFalse(
+            parcel_row_qualifies_for_school_assessed_splits(
+                {
+                    "AssessmentYear": "2026",
+                    "TaxRollDescr": "Real",
+                    "PropertyClassDescr": "Improvement",
+                    "StateUseCd": "9179",
+                }
+            )
+        )
+        self.assertTrue(is_residential_state_use_code("1177"))
+        self.assertFalse(is_residential_state_use_code("9179"))
 
 
 class AssessedSplitMathTests(unittest.TestCase):
@@ -164,9 +182,40 @@ class AssessedSplitMathTests(unittest.TestCase):
                 "AssessmentYear": "2026",
                 "TaxRollDescr": "Real",
                 "PropertyClassDescr": "Real",
+                "StateUseCd": "1177",
             },
         )
         self.assertIn("assessedLand", rec)
+        self.assertNotIn("schoolAssessedTotal", rec)
+
+    def test_non_residential_proportional_split(self) -> None:
+        """Hospital-style non-residential: proportional split, no school assessed."""
+        improvement = 110047224.0
+        land = 25008510.0
+        total = 135055734.0
+        total_assessed = 36465048.0
+        fields = non_residential_assessed_split_fields(
+            improvement, land, total, total_assessed
+        )
+        self.assertEqual(fields["assessedBuilding"], 29712750)
+        self.assertEqual(fields["assessedLand"], 6752298)
+        rec: dict = {
+            "improvementActual": improvement,
+            "landActual": land,
+            "totalActual": total,
+            "totalAssessed": total_assessed,
+        }
+        attach_computed_assessed_values(
+            rec,
+            {
+                "AssessmentYear": "2026",
+                "TaxRollDescr": "Real",
+                "PropertyClassDescr": "Improvement",
+                "StateUseCd": "9179",
+            },
+        )
+        self.assertEqual(rec["assessedBuilding"], 29712750)
+        self.assertEqual(rec["assessedLand"], 6752298)
         self.assertNotIn("schoolAssessedTotal", rec)
 
     def test_attach_skips_all_before_2025(self) -> None:

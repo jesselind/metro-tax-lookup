@@ -183,6 +183,12 @@ def parse_assessment_year_cell(val: Any) -> int | None:
     return year if 1900 <= year <= 2100 else None
 
 
+def is_residential_state_use_code(state_use_cd: str | None) -> bool:
+    """State use 1xxx is residential for DPT assessment-rate rules."""
+    code = normalize_integerish_code(state_use_cd or "")
+    return bool(code) and code.startswith("1")
+
+
 def parcel_row_qualifies_for_dual_assessed_splits(row: dict[str, str]) -> bool:
     """Local assessed building/land splits apply to real property from 2025."""
     year = parse_assessment_year_cell(row.get("AssessmentYear"))
@@ -192,8 +198,10 @@ def parcel_row_qualifies_for_dual_assessed_splits(row: dict[str, str]) -> bool:
 
 
 def parcel_row_qualifies_for_school_assessed_splits(row: dict[str, str]) -> bool:
-    """School assessed splits apply to improved residential (county Improvement class) from 2025."""
+    """School assessed splits apply to improved residential (state use 1xxx) from 2025."""
     if not parcel_row_qualifies_for_dual_assessed_splits(row):
+        return False
+    if not is_residential_state_use_code(row.get("StateUseCd")):
         return False
     return strip_field(row.get("PropertyClassDescr", "")) == "Improvement"
 
@@ -237,7 +245,7 @@ def local_assessed_split_fields(
     land_actual: float | None,
     total_assessed: float | None,
 ) -> dict[str, int]:
-    """County-style local assessed building/land (totalAssessed comes from mart)."""
+    """County-style residential local assessed building/land (totalAssessed from mart)."""
     if total_assessed is None or not math.isfinite(total_assessed):
         return {}
     total_int = round(total_assessed)
@@ -256,13 +264,50 @@ def local_assessed_split_fields(
     return {}
 
 
+def non_residential_assessed_split_fields(
+    improvement_actual: float | None,
+    land_actual: float | None,
+    total_actual: float | None,
+    total_assessed: float | None,
+) -> dict[str, int]:
+    """Non-residential: split mart total assessed in proportion to appraised actuals."""
+    if total_assessed is None or not math.isfinite(total_assessed):
+        return {}
+    total_int = round(total_assessed)
+    imp = _positive_actual(improvement_actual)
+    land = _positive_actual(land_actual)
+    actual_total = _positive_actual(total_actual)
+    if imp == 0 and land > 0:
+        return {"assessedBuilding": 0, "assessedLand": total_int}
+    if imp > 0 and land == 0:
+        return {"assessedBuilding": total_int, "assessedLand": 0}
+    if imp > 0 and land > 0 and actual_total > 0:
+        building_assessed = round(total_int * (imp / actual_total))
+        return {
+            "assessedBuilding": building_assessed,
+            "assessedLand": max(0, total_int - building_assessed),
+        }
+    return {}
+
+
 def attach_computed_assessed_values(rec: dict[str, Any], row: dict[str, str]) -> None:
     """Add school and local assessed splits when DPT dual-rate rules apply."""
-    if parcel_row_qualifies_for_dual_assessed_splits(row):
+    if not parcel_row_qualifies_for_dual_assessed_splits(row):
+        return
+    if is_residential_state_use_code(row.get("StateUseCd")):
         rec.update(
             local_assessed_split_fields(
                 rec.get("improvementActual"),
                 rec.get("landActual"),
+                rec.get("totalAssessed"),
+            )
+        )
+    else:
+        rec.update(
+            non_residential_assessed_split_fields(
+                rec.get("improvementActual"),
+                rec.get("landActual"),
+                rec.get("totalActual"),
                 rec.get("totalAssessed"),
             )
         )
