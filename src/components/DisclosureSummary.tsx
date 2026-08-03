@@ -17,9 +17,19 @@ type Props = {
   label: string;
   /** Extra classes on `<summary>` (e.g. smaller text). Appended after the base class. */
   className?: string;
+  /**
+   * Optional chevron classes. Use a named `group-open/…:rotate-180` when this
+   * summary sits inside a nested `<details className="group/…">` so the caret
+   * is not driven by an outer `group`.
+   */
+  chevronClassName?: string;
 };
 
-export function DisclosureSummary({ label, className }: Props) {
+export function DisclosureSummary({
+  label,
+  className,
+  chevronClassName,
+}: Props) {
   const summaryClass = className
     ? `${DISCLOSURE_SUMMARY_CLASS} ${className}`
     : DISCLOSURE_SUMMARY_CLASS;
@@ -27,7 +37,7 @@ export function DisclosureSummary({ label, className }: Props) {
     <summary className={summaryClass}>
       <span className="flex items-center justify-between gap-2">
         <span>{label}</span>
-        <DisclosureChevron />
+        <DisclosureChevron className={chevronClassName} />
       </span>
     </summary>
   );

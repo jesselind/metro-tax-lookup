@@ -59,11 +59,51 @@ describe("levyAuthorityChainValidate", () => {
     const first = entries[0]!;
     const measures = first.measures as Array<Record<string, unknown>>;
     measures[0]!.ballotTextKind = "unavailable";
+    delete measures[0]!.detail;
     first.openGapIds = (first.openGapIds as string[]).filter(
       (id) => id !== "no-stable-ballot-text",
     );
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
       /no-stable-ballot-text/i,
+    );
+  });
+
+  it("rejects measure detail when ballotTextKind is unavailable", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const littleton = entries.find(
+      (e) => e.id === "littleton-6-school-authority-chain",
+    )!;
+    const measure = (littleton.measures as Array<Record<string, unknown>>).find(
+      (m) => m.stepId === "ballot-4c-debt-free",
+    )!;
+    measure.ballotTextKind = "unavailable";
+    delete measure.ballotTextLanguage;
+    delete measure.ballotTextEnglishSource;
+    delete measure.ballotTextEnglishHuntSource;
+    measure.detail = "up to 11 mills over time";
+    littleton.openGapIds = [
+      ...new Set([
+        ...((littleton.openGapIds as string[]) ?? []),
+        "no-stable-ballot-text",
+      ]),
+    ];
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /omit detail when ballotTextKind is unavailable/i,
+    );
+  });
+
+  it("requires spanish AI openGap when sample is Spanish with AI translation", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const littleton = entries.find(
+      (e) => e.id === "littleton-6-school-authority-chain",
+    )!;
+    littleton.openGapIds = (littleton.openGapIds as string[]).filter(
+      (id) => id !== "ballot-text-spanish-only-ai-translation",
+    );
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /ballot-text-spanish-only-ai-translation/i,
     );
   });
 
@@ -148,7 +188,7 @@ describe("levyAuthorityChainValidate", () => {
     );
   });
 
-  it("rejects titlePlain on non-tabor_revenue_retention measures", () => {
+  it("rejects titlePlain on measures that do not use bill-first titles", () => {
     const data = cloneShipped();
     const entries = data.entries as Array<Record<string, unknown>>;
     const override = (
@@ -156,7 +196,7 @@ describe("levyAuthorityChainValidate", () => {
     ).find((m) => m.kind === "override")!;
     override.titlePlain = "Not a TABOR vote";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /titlePlain only on tabor_revenue_retention measures/i,
+      /titlePlain only on tabor_revenue_retention or operations_mill/i,
     );
   });
 

@@ -10,6 +10,12 @@
  * Source ladder: prefer the best verified official document; when unavailable,
  * keep a next-best hub link (show where we looked). See authoring
  * "Next-best source" in `docs/levy-explainer-authoring.md`.
+ *
+ * Hard-facts (measure body): English `notice` / `sample_ballot` → pack body +
+ * `detail`. Non-English sample (`ballotTextLanguage: "es"` +
+ * `ballotTextEnglishSource: "ai_translation"`) → intro + collapsed
+ * `bodyDisclosure` AI translation. `unavailable` →
+ * {@link unavailableBallotMeasureBody}; omit `detail`. See templates header.
  */
 
 import {
@@ -18,14 +24,18 @@ import {
   buildSummaryAlsoClause,
   buildSummaryVoterClause,
   COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
+  METRO_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_BALLOT_TEXT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
+  FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY,
   formatVoteTotals,
   getAuthorityChainFamilyPack,
   millsYearLabel,
+  nonEnglishSampleAiTranslatedMeasureIntro,
+  NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE,
   OPEN_GAP_BODIES,
   OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
   temporaryCreditMillSplitOpenGapBody,
@@ -38,10 +48,12 @@ import {
   STEP_TITLE_HOW_VOTED,
   STEP_TITLE_WHAT_CHANGED,
   STEP_TITLE_WHO_GETS,
+  unavailableBallotMeasureBody,
   VOTES_STEP_BODY,
   voteFactLabel,
   whoGetsBody,
 } from "@/content/levyAuthorityChainTemplates";
+import { AUTHORITY_CHAIN_AI_TRANSLATION_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
 import type { LevyEntryMatchKeys } from "@/lib/levyEntryMatch";
 import type {
   LevyAuthorityChainEntry,
@@ -59,25 +71,56 @@ export type LevyAuthorityChainMeasureRecord = {
   ballotIssue: string;
   kind: LevyAuthorityChainMeasureKind;
   electionMonthYear: string;
-  /** Injected into the kind-specific body template. */
-  detail: string;
+  /**
+   * Injected into the kind-specific **ballot** body template when
+   * `ballotTextKind` is `notice` or English `sample_ballot`. For Spanish
+   * sample + AI translation, `detail` is the AI-translated substance after the
+   * disclosure sentences. Omit when `ballotTextKind` is `unavailable`.
+   */
+  detail?: string;
   maxMillIncreasePerYear?: number;
   /** Cap stated on the ballot (e.g. county TABOR retention max mills). */
   maxAuthorizedMills?: number;
   titleYearSuffix?: string;
   /**
    * Plain-language title after "Ballot Issue X: " (required for
-   * `tabor_revenue_retention`; bill-first, not a nickname headline).
+   * `tabor_revenue_retention` and metro `operations_mill`; bill-first, not a
+   * nickname headline).
    */
   titlePlain?: string;
   bodyLead?: LevyAuthorityChainBodyLead;
   /**
-   * Ballot wording source. Follow the next-best ladder: Notice of Election /
-   * TABOR PDF, else English sample ballot, else (`unavailable`) the year's
-   * Past Elections File Library section so residents see where we looked.
+   * Ballot wording source. Ladder: Notice of Election / TABOR PDF, else
+   * English sample ballot, else Spanish sample with AI-translation
+   * disclosure fields, else (`unavailable`) the year's file-library hub.
    */
   ballotTextSource: LevyAuthorityChainSourceLink;
   ballotTextKind: "notice" | "sample_ballot" | "unavailable";
+  /**
+   * Language of the linked sample/notice. Omit for English. `"es"` requires
+   * `ballotTextEnglishSource: "ai_translation"` and openGap
+   * `ballot-text-spanish-only-ai-translation`.
+   */
+  ballotTextLanguage?: "es";
+  /**
+   * How English measure-body substance was produced when the linked PDF is
+   * non-English. Required when `ballotTextLanguage` is `"es"`.
+   */
+  ballotTextEnglishSource?: "ai_translation";
+  /**
+   * Where we looked for English Notice / English sample when only a non-English
+   * sample is linked (typically that year's Past Elections File Library hub).
+   * Required when `ballotTextLanguage` is `"es"`. The built step links
+   * {@link NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE} from templates to this URL.
+   */
+  ballotTextEnglishHuntSource?: LevyAuthorityChainSourceLink;
+  /**
+   * Extra attributed facts on the measure step (after Ballot text). Use when
+   * ballot wording is missing but another official public record restates the
+   * measure (district budget excerpt, another district's resolution, etc.).
+   * Label and value must match what that source says; do not sell as ballot text.
+   */
+  supportingFacts?: LevyAuthorityChainFact[];
   votes: {
     yes: string;
     yesPct: string;
@@ -157,12 +200,15 @@ export type LevyAuthorityChainEntryRecord = {
 
 function ballotTextFactValue(
   kind: "notice" | "sample_ballot" | "unavailable",
+  language?: "es",
 ): string {
   switch (kind) {
     case "notice":
       return FACT_VALUE_COUNTY_ELECTION_NOTICE;
     case "sample_ballot":
-      return FACT_VALUE_COUNTY_SAMPLE_BALLOT;
+      return language === "es"
+        ? FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY
+        : FACT_VALUE_COUNTY_SAMPLE_BALLOT;
     case "unavailable":
       return FACT_VALUE_BALLOT_TEXT_UNAVAILABLE;
   }
@@ -175,6 +221,9 @@ function governmentBillNameForRecord(
   if (custom) return custom;
   if (record.family === "county") {
     return COUNTY_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
+  if (record.family === "metro") {
+    return METRO_GOVERNMENT_BILL_NAME_DEFAULT;
   }
   return "";
 }
@@ -201,10 +250,11 @@ function buildSummary(
 }
 
 /**
- * Bold (and link when possible) each Ballot Issue phrase in the always-visible
- * summary. URLs come from the matching measure's ballotTextSource (notice,
- * sample, or next-best hub). No match / no URL → bold-only fallback so the
- * summary stays useful without a brittle hard requirement.
+ * Bold (and link when we have real ballot wording) each Ballot Issue phrase in
+ * the always-visible summary. Link URLs come only from measures with
+ * `ballotTextKind` `notice` or `sample_ballot`. `unavailable` keeps bold-only:
+ * the hub stays on the trail fact / next-best path, not on the issue name.
+ * No match → skip. Election results stay on `summarySource` / votes facts.
  */
 function buildSummaryIssueMarks(
   record: LevyAuthorityChainEntryRecord,
@@ -220,18 +270,24 @@ function buildSummaryIssueMarks(
     }
   }
 
-  const urlByIssue = new Map<string, string>();
+  const ballotTextUrlByIssue = new Map<string, string>();
   for (const measure of record.measures) {
+    if (
+      measure.ballotTextKind !== "notice" &&
+      measure.ballotTextKind !== "sample_ballot"
+    ) {
+      continue;
+    }
     const url = measure.ballotTextSource.url.trim();
-    if (!url || urlByIssue.has(measure.ballotIssue)) continue;
-    urlByIssue.set(measure.ballotIssue, url);
+    if (!url || ballotTextUrlByIssue.has(measure.ballotIssue)) continue;
+    ballotTextUrlByIssue.set(measure.ballotIssue, url);
   }
 
   const marks: LevyAuthorityChainSummaryIssueMark[] = [];
   for (const id of issueIds) {
     const match = ballotIssuePhrase(id);
     if (!summary.includes(match)) continue;
-    const url = urlByIssue.get(id);
+    const url = ballotTextUrlByIssue.get(id);
     marks.push(url ? { match, url } : { match });
   }
   marks.sort((a, b) => summary.indexOf(a.match) - summary.indexOf(b.match));
@@ -297,6 +353,57 @@ function buildMeasureStep(
     measure.kind === "tabor_revenue_retention"
       ? governmentBillNameForRecord(record)
       : undefined;
+  let body: string;
+  let bodyDisclosure: LevyAuthorityChainStep["bodyDisclosure"];
+  let bodyLink: LevyAuthorityChainStep["bodyLink"];
+  if (measure.ballotTextKind === "unavailable") {
+    body = unavailableBallotMeasureBody(
+      measure.ballotIssue,
+      measure.electionMonthYear,
+    );
+  } else if (
+    measure.ballotTextKind === "sample_ballot" &&
+    measure.ballotTextLanguage === "es" &&
+    measure.ballotTextEnglishSource === "ai_translation"
+  ) {
+    // Hard-facts: Spanish sample is official; AI English stays collapsed;
+    // English-not-located sentence links the file-library hunt hub.
+    body = nonEnglishSampleAiTranslatedMeasureIntro({
+      ballotIssue: measure.ballotIssue,
+      electionMonthYear: measure.electionMonthYear,
+      languageLabel: "Spanish",
+    });
+    const huntUrl = measure.ballotTextEnglishHuntSource?.url?.trim();
+    if (huntUrl) {
+      bodyLink = {
+        match: NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE,
+        url: huntUrl,
+      };
+    }
+    const substance = (measure.detail ?? "").trim();
+    bodyDisclosure = {
+      label: AUTHORITY_CHAIN_AI_TRANSLATION_DISCLOSURE,
+      // Translation only; caveats live on the disclosure label (no duplicate lead).
+      body: substance,
+    };
+  } else {
+    body = pack.ballotStepBody(measure.kind, measure.detail ?? "", bodyLead, {
+      maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
+      maxAuthorizedMills: measure.maxAuthorizedMills,
+      governmentBillName,
+    });
+  }
+  const facts: LevyAuthorityChainFact[] = [
+    {
+      label: FACT_LABEL_BALLOT_TEXT,
+      value: ballotTextFactValue(
+        measure.ballotTextKind,
+        measure.ballotTextLanguage,
+      ),
+      sources: [measure.ballotTextSource],
+    },
+    ...(measure.supportingFacts ?? []),
+  ];
   return {
     id: measure.stepId,
     title: pack.ballotStepTitle(measure.ballotIssue, measure.kind, {
@@ -305,20 +412,12 @@ function buildMeasureStep(
     }),
     titleTermId: measure.titleTermId,
     titleTermMatch: measure.titleTermMatch,
-    body: pack.ballotStepBody(measure.kind, measure.detail, bodyLead, {
-      maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
-      maxAuthorizedMills: measure.maxAuthorizedMills,
-      governmentBillName,
-    }),
+    body,
+    ...(bodyLink ? { bodyLink } : {}),
+    ...(bodyDisclosure ? { bodyDisclosure } : {}),
     bodyTermId: measure.bodyTermId,
     bodyTermMatch: measure.bodyTermMatch,
-    facts: [
-      {
-        label: FACT_LABEL_BALLOT_TEXT,
-        value: ballotTextFactValue(measure.ballotTextKind),
-        sources: [measure.ballotTextSource],
-      },
-    ],
+    facts,
   };
 }
 

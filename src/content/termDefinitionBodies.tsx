@@ -16,7 +16,10 @@ import {
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
   COLORADO_LEG_TABOR_URL,
 } from "@/lib/arapahoeCountyUrls";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  TERM_LINK_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const BRIEF_P =
   "text-sm leading-relaxed text-slate-800 sm:text-base";
@@ -223,13 +226,12 @@ export function TermDebtFreeSchoolsMillLevyBriefBody() {
           Debt-free schools mill levy
         </strong>
         {" "}
-        is the name Littleton Public Schools uses in its budget for Ballot Issue
-        4C (November 2020). It is a property-tax mill levy under Colorado law
-        (C.R.S. 22-54-108.7). The ballot put the new tax into a capital
-        construction, technology, and maintenance fund so the district could pay
-        those costs with cash instead of issuing new bonds for them. It is not
-        itself a bond. A district can still have separate bond debt from other
-        elections.
+        is the name Littleton Public Schools uses in its budget for a property-tax
+        mill levy under Colorado law (C.R.S. 22-54-108.7). LPS ties that name to
+        Ballot Issue 4C (November 2020). The budget describes paying capital,
+        technology, and maintenance costs with tax cash instead of issuing new
+        bonds for them. It is not itself a bond. A district can still have
+        separate bond debt from other elections.
       </p>
       <p className={BRIEF_P}>
         <a
@@ -256,17 +258,34 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
         {" "}
         is school-finance wording for a property-tax mill levy under Colorado law
         (C.R.S. 22-54-108.7). Littleton Public Schools uses that name in its
-        budget materials for Ballot Issue 4C, which voters approved in November
-        2020.
+        budget materials and ties it to Ballot Issue 4C, which voters approved
+        in November 2020.
       </p>
       <p className={FULL_P}>
-        On the ballot, the measure asked for a property-tax increase and said the
-        new money would go into a supplemental capital construction, technology,
-        and maintenance fund. The point of that design is to pay those facility
-        and tech costs with tax cash rather than by selling new bonds for them.
-        That is why districts call it &quot;debt-free.&quot; It does not mean
-        your tax bill has no school debt: LPS still has separate bond debt from
-        other elections (including the November 2018 building bond).
+        LPS&apos;s adopted budget describes the levy as putting new tax money into
+        a supplemental capital construction, technology, and maintenance fund so
+        the district can pay those facility and tech costs with tax cash rather
+        than by selling new bonds for them. That is why districts call it
+        &quot;debt-free.&quot; It does not mean your tax bill has no school debt:
+        LPS still has separate bond debt from other elections (including the
+        November 2018 building bond).
+      </p>
+      <p className={FULL_P}>
+        English wording shown for Ballot Issue 4C in the
+        {" "}
+        <strong className="font-semibold text-slate-900">Who authorized this?</strong>
+        {" "}
+        trail is an AI translation of a county Spanish sample ballot. It is not
+        the legal English ballot text. Research details are under
+        {" "}
+        <a
+          href="/sources#authority-chain-unlocated-sources"
+          className={TERM_LINK_CLASS}
+        >
+          Official documents we could not find
+        </a>
+        {" "}
+        on the Sources page.
       </p>
       <p className={FULL_P}>
         Littleton Public Schools defines the phrase in its
@@ -304,20 +323,7 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
-        records the Ballot Issue 4C result. The county&apos;s
-        {" "}
-        <a
-          href="https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php#outer-2402sub-2512"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          2020 Past Elections File Library
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        {" "}
-        does not include a Notice of Election or a usable English sample ballot
-        with the 4C wording.
+        records the Ballot Issue 4C result.
       </p>
     </>
   );
@@ -549,7 +555,17 @@ export function TermAssessedValueBriefBody() {
       The smaller number your tax bill is actually based on. Colorado takes the county&apos;s full
       (actual / appraised) value and applies an assessment rate (a state percentage). Districts
       charge their mill levies against this smaller number. Most homes now have two assessed
-      figures: one for schools and one for other local governments.
+      figures: one for schools and one for other local governments. Rates and examples:{" "}
+      <a
+        href={COLORADO_DPT_ASSESSED_VALUE_SECTION_URL}
+        className={COUNTY_EXTERNAL_LINK_CLASS}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+      .
     </p>
   );
 }

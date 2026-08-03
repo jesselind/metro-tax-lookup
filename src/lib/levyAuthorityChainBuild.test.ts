@@ -131,25 +131,216 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.steps.filter((s) => s.id.startsWith("ballot-")).length).toBe(2);
   });
 
-  it("builds unavailable ballot text with file-library hub and open gap", () => {
+  it("builds Spanish sample ballot with AI-translation disclosure", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (r) => r.id === "littleton-6-school-authority-chain",
     )!;
     const entry = buildLevyAuthorityChainEntry(record);
     const ballot4c = entry.steps.find((s) => s.id === "ballot-4c-debt-free");
-    expect(ballot4c?.facts[0]?.value).toBe(
-      "Not available in county election files",
+    expect(ballot4c?.body).toContain("Voters approved Ballot Issue 4C");
+    expect(ballot4c?.body).toContain(
+      "We could only locate a sample ballot in Spanish",
     );
-    expect(ballot4c?.facts[0]?.sources).toEqual([
-      {
-        text: "2020 Past Elections File Library (General)",
-        url: "https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php#outer-2402sub-2512",
+    expect(ballot4c?.body).not.toMatch(/sample ballot only/i);
+    expect(ballot4c?.body).toContain(
+      "We could not locate an English Notice of Election or English sample ballot among the currently published files",
+    );
+    expect(ballot4c?.bodyLink?.match).toContain("We could not locate");
+    expect(ballot4c?.bodyLink?.url).toContain(
+      "past_elections_file_library.php",
+    );
+    expect(ballot4c?.body).not.toContain("$12,000,000");
+    expect(ballot4c?.body).not.toContain("AI translation");
+    expect(ballot4c?.bodyDisclosure?.label).toContain("AI translation");
+    expect(ballot4c?.bodyDisclosure?.label).toContain(
+      "not legal English ballot text",
+    );
+    expect(ballot4c?.bodyDisclosure?.label).toContain(
+      "not an official county translation",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).not.toMatch(/^This is an AI translation/i);
+    expect(ballot4c?.bodyDisclosure?.body).not.toContain(
+      "That is a mill levy, not a bond",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain("$12,000,000");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("22-54-108.7");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("General Fund");
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "Arapahoe County School District Number Six",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "classes in career orientation, technology, and specialized trades",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain("computer sciences;");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("needs?;");
+    expect(ballot4c?.bodyDisclosure?.body).toContain("mitigations or reductions");
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "modernization of existing technologies",
+    );
+    expect(ballot4c?.bodyDisclosure?.body).toContain(
+      "applied in accordance with Section 22-54-108.7",
+    );
+    expect(ballot4c?.facts[0]?.value).toBe("County sample ballot (Spanish)");
+    expect(ballot4c?.facts[0]?.sources[0]?.url).toContain(
+      "Sample%20Ballot%20SPA.pdf",
+    );
+    expect(ballot4c?.facts).toHaveLength(1);
+    const budget = entry.steps.find((s) => s.id === "budget-attribution");
+    expect(budget?.body).toContain("up to 11 mills");
+    expect(entry.openGaps.map((g) => g.id)).toContain(
+      "ballot-text-spanish-only-ai-translation",
+    );
+    expect(entry.openGaps.map((g) => g.id)).not.toContain(
+      "no-stable-ballot-text",
+    );
+    expect(
+      entry.openGaps.find((g) => g.id === "ballot-text-spanish-only-ai-translation")
+        ?.body,
+    ).toBe(OPEN_GAP_BODIES["ballot-text-spanish-only-ai-translation"]);
+  });
+
+  it("builds metro pack bond, operations_mill, and tabor titles from facts", () => {
+    const taborMeasure = {
+      stepId: "ballot-5c-tabor",
+      ballotIssue: "5C",
+      kind: "tabor_revenue_retention" as const,
+      electionMonthYear: "November 2022",
+      titlePlain: "Keeping revenue under the mill cap",
+      maxAuthorizedMills: 50,
+      detail: "streets, parks, and operations",
+      ballotTextKind: "notice" as const,
+      ballotTextSource: {
+        text: "2022 County Notice of Election",
+        url: "https://example.arapahoeco.gov/notice.pdf#page=3",
       },
-    ]);
-    expect(entry.openGaps.map((g) => g.id)).toContain("no-stable-ballot-text");
-    expect(entry.openGaps.find((g) => g.id === "no-stable-ballot-text")?.body).toBe(
-      OPEN_GAP_BODIES["no-stable-ballot-text"],
+      votes: {
+        yes: "1",
+        yesPct: "58%",
+        no: "1",
+        noPct: "42%",
+      },
+      resultsSource: {
+        text: "2022 Official Summary Report",
+        url: "https://example.arapahoeco.gov/summary.pdf",
+      },
+    };
+    const record = {
+      id: "metro-pack-smoke",
+      family: "metro" as const,
+      match: { levyLineCode: "9999" },
+      authority: {
+        displayName: "Example Metro District",
+        countyListName: "EXAMPLE METRO",
+        governingBody: "board" as const,
+      },
+      summarySource: {
+        text: "According to Arapahoe County's certified election results",
+        url: "https://example.arapahoeco.gov/results.pdf",
+      },
+      summary: {
+        headlineIssues: ["5A", "5B"],
+        headlineElection: "November 2022",
+      },
+      mills: {
+        currentYear: 2025,
+        currentMills: "50.000",
+        priorYear: 2024,
+        priorMills: "45.000",
+        currentRateSource: {
+          text: "County rate table for 2025 (PDF)",
+          url: "https://example.arapahoeco.gov/2025.pdf",
+        },
+        priorRateSource: {
+          text: "County rate table for 2024 (PDF)",
+          url: "https://example.arapahoeco.gov/2024.pdf",
+        },
+      },
+      measures: [
+        {
+          stepId: "ballot-5a-ops",
+          ballotIssue: "5A",
+          kind: "operations_mill" as const,
+          electionMonthYear: "November 2022",
+          titlePlain: "Operations and maintenance",
+          detail: "up to 10 mills for operations and maintenance",
+          ballotTextKind: "notice" as const,
+          ballotTextSource: {
+            text: "2022 County Notice of Election",
+            url: "https://example.arapahoeco.gov/notice.pdf",
+          },
+          votes: {
+            yes: "1",
+            yesPct: "60%",
+            no: "1",
+            noPct: "40%",
+          },
+          resultsSource: {
+            text: "2022 Official Summary Report",
+            url: "https://example.arapahoeco.gov/summary.pdf",
+          },
+        },
+        {
+          stepId: "ballot-5b-debt",
+          ballotIssue: "5B",
+          kind: "bond" as const,
+          electionMonthYear: "November 2022",
+          bodyLead: "also_approved" as const,
+          detail: "up to $10 million for streets and parks",
+          ballotTextKind: "notice" as const,
+          ballotTextSource: {
+            text: "2022 County Notice of Election",
+            url: "https://example.arapahoeco.gov/notice.pdf#page=2",
+          },
+          votes: {
+            yes: "1",
+            yesPct: "55%",
+            no: "1",
+            noPct: "45%",
+          },
+          resultsSource: {
+            text: "2022 Official Summary Report",
+            url: "https://example.arapahoeco.gov/summary.pdf",
+          },
+        },
+        taborMeasure,
+      ],
+      openGapIds: ["no-fund-level-mill-split" as const],
+    };
+    const entry = buildLevyAuthorityChainEntry(record);
+
+    const ops = entry.steps.find((s) => s.id === "ballot-5a-ops");
+    const bond = entry.steps.find((s) => s.id === "ballot-5b-debt");
+    const tabor = entry.steps.find((s) => s.id === "ballot-5c-tabor");
+    expect(ops?.title).toBe("Ballot Issue 5A: Operations and maintenance");
+    expect(ops?.body).toContain("up to 10 mills for operations and maintenance");
+    expect(bond?.title).toBe(
+      "Ballot Issue 5B: Borrowing for district projects",
     );
+    expect(bond?.body).toContain("metro district tax");
+    expect(tabor?.title).toBe(
+      "Ballot Issue 5C: Keeping revenue under the mill cap",
+    );
+    expect(tabor?.body).toContain("de-Brucing");
+    expect(tabor?.body).toContain("50.000");
+    expect(tabor?.body).toContain("the district");
+
+    expect(() =>
+      buildLevyAuthorityChainEntry({
+        ...record,
+        measures: [{ ...taborMeasure, titlePlain: undefined }],
+      }),
+    ).toThrow(/tabor_revenue_retention requires titlePlain/);
+    expect(() =>
+      buildLevyAuthorityChainEntry({
+        ...record,
+        measures: [
+          {
+            ...taborMeasure,
+            maxAuthorizedMills: undefined,
+          },
+        ],
+      }),
+    ).toThrow(/tabor_revenue_retention requires maxAuthorizedMills/);
   });
 
   it("trimmed summarySource.text matches built summary for link overlay", () => {

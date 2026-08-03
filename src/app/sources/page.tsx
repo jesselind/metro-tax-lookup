@@ -36,7 +36,15 @@ import {
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "@/data/metroLevies";
 import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
+import { OpenDetailsOnHash } from "@/components/OpenDetailsOnHash";
+import { DisclosureSummary } from "@/components/DisclosureSummary";
 import { glossaryTermHref } from "@/lib/glossary";
+import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
+import { AUTHORITY_CHAIN_GAPS_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
+import {
+  AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE,
+  openAuthorityChainUnlocatedSources,
+} from "@/content/authorityChainUnlocatedSources";
 
 export const metadata = {
   title: "Sources",
@@ -104,6 +112,7 @@ export default function SourcesPage() {
   const levyJson = levyData as LevyDataFile;
   const bundledIso = levyJson.snapshot?.bundledAsOf;
   const bundledLabel = bundledIso ? formatLevyBundledAsOf(bundledIso) : null;
+  const unlocatedAuthorityChainSources = openAuthorityChainUnlocatedSources();
 
   return (
     <StaticArticleShell
@@ -132,6 +141,7 @@ export default function SourcesPage() {
       contentClassName={SOURCES_PAGE_INNER_CLASS}
     >
       <SourcesGlossaryRedirect />
+      <OpenDetailsOnHash id="authority-chain-unlocated-sources" />
       <nav
         aria-label="On this page"
         className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
@@ -359,17 +369,103 @@ export default function SourcesPage() {
           for a TABOR revenue vote) has a brief in-place definition. The panel
           also notes{" "}
           <strong className="font-semibold text-slate-900">
-            What we don&apos;t know yet
+            {AUTHORITY_CHAIN_GAPS_DISCLOSURE}
           </strong>
           {" "}
           when we cannot yet split a year-to-year rate change into parts, or
-          cannot link ballot wording. Data
+          cannot link ballot wording. In rare cases the only county sample ballot
+          we can link is in another language; we link that official PDF, say when
+          we cannot find English among the currently published files, and show
+          AI-translated English in a collapsed disclosure labeled as not legal
+          ballot text (not an official county translation). That does not mean
+          an English ballot never existed. The same pattern may apply on other
+          trails if a similar gap appears. Data
           lives in{" "}
           <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
             public/data/levy-authority-chain-entries.json
           </code>
           .
         </p>
+        {unlocatedAuthorityChainSources.length > 0 ? (
+          <details
+            id="authority-chain-unlocated-sources"
+            className="group mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 sm:px-4"
+          >
+            <DisclosureSummary
+              label={AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE}
+            />
+            <div className="mt-3 space-y-4 border-t border-slate-200 pt-3 text-slate-700">
+              <p>
+                Sometimes the public record we want is not posted (or not in a
+                form we can honestly link). Below are those gaps for the{" "}
+                <strong className="font-semibold text-slate-900">
+                  Who authorized this?
+                </strong>
+                {" "}
+                trails. Vote totals may still come from the Official Summary. We
+                link the next-best official place so you can see where we looked.
+              </p>
+              <ul className="list-none space-y-4 p-0">
+                {unlocatedAuthorityChainSources.map((row) => {
+                  const nextBestHref = safeHttpOrHttpsUrl(row.nextBest.url);
+                  return (
+                    <li
+                      key={row.id}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {row.authorityLabel}
+                        {" "}
+                        (AUTH{" "}
+                        <strong className="font-semibold text-slate-900">
+                          {row.authCode}
+                        </strong>
+                        ):{" "}
+                        {row.measureLabel}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          What we looked for:
+                        </strong>
+                        {" "}
+                        {row.sought}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          Where we looked:
+                        </strong>
+                        {" "}
+                        {row.lookedWhere}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          What we link instead:
+                        </strong>
+                        {" "}
+                        {nextBestHref ? (
+                          <a
+                            href={nextBestHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={TERM_LINK_CLASS}
+                          >
+                            {row.nextBest.text}
+                            <span className="sr-only"> (opens in a new tab)</span>
+                          </a>
+                        ) : (
+                          row.nextBest.text
+                        )}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600">
+                        Noted {formatLevyBundledAsOf(row.notedAsOf)}.
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </details>
+        ) : null}
         {bundledLabel && bundledIso ? (
           <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
             <span className="font-semibold text-slate-900">Data snapshot:</span>{" "}Metro levy rates in this tool were last bundled on{" "}
