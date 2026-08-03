@@ -346,6 +346,19 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+function requireTrimmedBallotTitlePlain(
+  titlePlain: string | undefined,
+  kind: "operations_mill" | "tabor_revenue_retention",
+): string {
+  const trimmed = titlePlain?.trim();
+  if (!trimmed) {
+    throw new Error(
+      `${kind} requires titlePlain (bill-first step title)`,
+    );
+  }
+  return trimmed;
+}
+
 /**
  * Metropolitan / Title-32 special district pack. First consumer: Sky Ranch
  * (`4571`). Kinds cover common metro ballots: debt, O&M mill authorizations,
@@ -365,21 +378,17 @@ const METRO_PACK: LevyAuthorityChainFamilyPack = {
       case "bond":
         return `Ballot Issue ${ballotIssue}: Borrowing for district projects${yearPart}`;
       case "operations_mill": {
-        const titlePlain = options?.titlePlain?.trim();
-        if (!titlePlain) {
-          throw new Error(
-            "operations_mill requires titlePlain (bill-first step title)",
-          );
-        }
+        const titlePlain = requireTrimmedBallotTitlePlain(
+          options?.titlePlain,
+          "operations_mill",
+        );
         return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
       }
       case "tabor_revenue_retention": {
-        const titlePlain = options?.titlePlain?.trim();
-        if (!titlePlain) {
-          throw new Error(
-            "tabor_revenue_retention requires titlePlain (bill-first step title)",
-          );
-        }
+        const titlePlain = requireTrimmedBallotTitlePlain(
+          options?.titlePlain,
+          "tabor_revenue_retention",
+        );
         return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
       }
       default:

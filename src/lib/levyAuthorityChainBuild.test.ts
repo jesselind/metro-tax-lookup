@@ -199,15 +199,39 @@ describe("levyAuthorityChainBuild", () => {
     ).toBe(OPEN_GAP_BODIES["ballot-text-spanish-only-ai-translation"]);
   });
 
-  it("builds metro pack bond and operations_mill titles from facts", () => {
-    const entry = buildLevyAuthorityChainEntry({
+  it("builds metro pack bond, operations_mill, and tabor titles from facts", () => {
+    const taborMeasure = {
+      stepId: "ballot-5c-tabor",
+      ballotIssue: "5C",
+      kind: "tabor_revenue_retention" as const,
+      electionMonthYear: "November 2022",
+      titlePlain: "Keeping revenue under the mill cap",
+      maxAuthorizedMills: 50,
+      detail: "streets, parks, and operations",
+      ballotTextKind: "notice" as const,
+      ballotTextSource: {
+        text: "2022 County Notice of Election",
+        url: "https://example.arapahoeco.gov/notice.pdf#page=3",
+      },
+      votes: {
+        yes: "1",
+        yesPct: "58%",
+        no: "1",
+        noPct: "42%",
+      },
+      resultsSource: {
+        text: "2022 Official Summary Report",
+        url: "https://example.arapahoeco.gov/summary.pdf",
+      },
+    };
+    const record = {
       id: "metro-pack-smoke",
-      family: "metro",
+      family: "metro" as const,
       match: { levyLineCode: "9999" },
       authority: {
         displayName: "Example Metro District",
         countyListName: "EXAMPLE METRO",
-        governingBody: "board",
+        governingBody: "board" as const,
       },
       summarySource: {
         text: "According to Arapahoe County's certified election results",
@@ -235,11 +259,11 @@ describe("levyAuthorityChainBuild", () => {
         {
           stepId: "ballot-5a-ops",
           ballotIssue: "5A",
-          kind: "operations_mill",
+          kind: "operations_mill" as const,
           electionMonthYear: "November 2022",
           titlePlain: "Operations and maintenance",
           detail: "up to 10 mills for operations and maintenance",
-          ballotTextKind: "notice",
+          ballotTextKind: "notice" as const,
           ballotTextSource: {
             text: "2022 County Notice of Election",
             url: "https://example.arapahoeco.gov/notice.pdf",
@@ -258,11 +282,11 @@ describe("levyAuthorityChainBuild", () => {
         {
           stepId: "ballot-5b-debt",
           ballotIssue: "5B",
-          kind: "bond",
+          kind: "bond" as const,
           electionMonthYear: "November 2022",
-          bodyLead: "also_approved",
+          bodyLead: "also_approved" as const,
           detail: "up to $10 million for streets and parks",
-          ballotTextKind: "notice",
+          ballotTextKind: "notice" as const,
           ballotTextSource: {
             text: "2022 County Notice of Election",
             url: "https://example.arapahoeco.gov/notice.pdf#page=2",
@@ -278,18 +302,45 @@ describe("levyAuthorityChainBuild", () => {
             url: "https://example.arapahoeco.gov/summary.pdf",
           },
         },
+        taborMeasure,
       ],
-      openGapIds: ["no-fund-level-mill-split"],
-    });
+      openGapIds: ["no-fund-level-mill-split" as const],
+    };
+    const entry = buildLevyAuthorityChainEntry(record);
 
     const ops = entry.steps.find((s) => s.id === "ballot-5a-ops");
     const bond = entry.steps.find((s) => s.id === "ballot-5b-debt");
+    const tabor = entry.steps.find((s) => s.id === "ballot-5c-tabor");
     expect(ops?.title).toBe("Ballot Issue 5A: Operations and maintenance");
     expect(ops?.body).toContain("up to 10 mills for operations and maintenance");
     expect(bond?.title).toBe(
       "Ballot Issue 5B: Borrowing for district projects",
     );
     expect(bond?.body).toContain("metro district tax");
+    expect(tabor?.title).toBe(
+      "Ballot Issue 5C: Keeping revenue under the mill cap",
+    );
+    expect(tabor?.body).toContain("de-Brucing");
+    expect(tabor?.body).toContain("50.000");
+    expect(tabor?.body).toContain("the district");
+
+    expect(() =>
+      buildLevyAuthorityChainEntry({
+        ...record,
+        measures: [{ ...taborMeasure, titlePlain: undefined }],
+      }),
+    ).toThrow(/tabor_revenue_retention requires titlePlain/);
+    expect(() =>
+      buildLevyAuthorityChainEntry({
+        ...record,
+        measures: [
+          {
+            ...taborMeasure,
+            maxAuthorizedMills: undefined,
+          },
+        ],
+      }),
+    ).toThrow(/tabor_revenue_retention requires maxAuthorizedMills/);
   });
 
   it("trimmed summarySource.text matches built summary for link overlay", () => {
