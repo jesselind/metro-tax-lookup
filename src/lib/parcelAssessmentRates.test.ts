@@ -58,6 +58,32 @@ describe("resolveParcelAssessmentProfile", () => {
       }).assessedRateLabel,
     ).toBe("26%");
   });
+
+  it("uses mode none for non-REAL tax roll", () => {
+    const profile = resolveParcelAssessmentProfile({
+      stateUseCd: "9179",
+      taxRollDescr: "Personal",
+      propertyClassDescr: "Personal",
+      assessmentYear: "2026",
+      improvementActual: 100,
+    });
+    expect(profile.mode).toBe("none");
+    expect(profile.assessedRateLabel).toBeNull();
+    expect(profile.showSchoolAssessedRow).toBe(false);
+  });
+
+  it("uses mode none for pre-2025 non-residential", () => {
+    const profile = resolveParcelAssessmentProfile({
+      stateUseCd: "9179",
+      taxRollDescr: "Real",
+      propertyClassDescr: "Improvement",
+      assessmentYear: "2024",
+      improvementActual: 100,
+    });
+    expect(profile.mode).toBe("none");
+    expect(profile.assessedRateLabel).toBeNull();
+    expect(profile.showSchoolAssessedRow).toBe(false);
+  });
 });
 
 describe("nonResidentialAssessedRateLabel", () => {
@@ -140,5 +166,29 @@ describe("buildParcelValueTableRows", () => {
     ]);
     const assessed = rows.find((r) => r.kind === "assessed");
     expect(assessed?.rateLabel).toBe("6.8%");
+  });
+
+  it("keeps mart assessed splits for pre-2025 non-residential", () => {
+    const rows = buildParcelValueTableRows({
+      ...porterHospital,
+      assessmentYear: "2024",
+    });
+    expect(rows.map((r) => r.kind)).toEqual(["appraised", "assessed"]);
+    const assessed = rows.find((r) => r.kind === "assessed");
+    expect(assessed?.rateLabel).toBeNull();
+    expect(assessed?.values.building).toBe(porterHospital.assessedBuilding);
+    expect(assessed?.values.land).toBe(porterHospital.assessedLand);
+  });
+
+  it("keeps mart assessed splits for non-REAL accounts", () => {
+    const rows = buildParcelValueTableRows({
+      ...porterHospital,
+      taxRollDescr: "Personal",
+      propertyClassDescr: "Personal",
+    });
+    expect(rows.map((r) => r.kind)).toEqual(["appraised", "assessed"]);
+    const assessed = rows.find((r) => r.kind === "assessed");
+    expect(assessed?.rateLabel).toBeNull();
+    expect(assessed?.values.building).toBe(porterHospital.assessedBuilding);
   });
 });

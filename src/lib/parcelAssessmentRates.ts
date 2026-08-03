@@ -98,20 +98,21 @@ export function resolveParcelAssessmentProfile(
     (record.propertyClassDescr ?? "").trim() === "Improvement";
   const residential = isResidentialStateUseCode(record.stateUseCd);
 
-  if (
-    !isReal ||
-    year == null ||
-    year < DUAL_ASSESSED_MIN_ASSESSMENT_YEAR ||
-    !residential
-  ) {
+  if (!isReal || year == null || year < DUAL_ASSESSED_MIN_ASSESSMENT_YEAR) {
     return {
-      mode: residential ? "none" : "single_rate",
-      assessedRateLabel: residential
-        ? null
-        : nonResidentialAssessedRateLabel(
-            record.stateUseCd,
-            record.improvementActual,
-          ),
+      mode: "none",
+      assessedRateLabel: null,
+      showSchoolAssessedRow: false,
+    };
+  }
+
+  if (!residential) {
+    return {
+      mode: "single_rate",
+      assessedRateLabel: nonResidentialAssessedRateLabel(
+        record.stateUseCd,
+        record.improvementActual,
+      ),
       showSchoolAssessedRow: false,
     };
   }

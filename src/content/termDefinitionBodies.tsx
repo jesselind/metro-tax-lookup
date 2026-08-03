@@ -772,7 +772,8 @@ export function TermBusinessPersonalPropertyBriefBody() {
   return (
     <p className={BRIEF_P}>
       Equipment and other business property at a location (copiers, machinery,
-      fixtures, and similar). A separate tax account from the building and land.
+      fixtures, and similar). The county taxes this on a separate tax account
+      from the building and land at the same address.
     </p>
   );
 }

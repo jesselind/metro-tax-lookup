@@ -938,7 +938,6 @@ export function HomeParcelAddressLookup({
   /** Load pin-to-tag whenever the multi-account chooser is shown. */
   useEffect(() => {
     if (hits == null || hits.length < 2) {
-      setMultiMatchPinToTag(null);
       return;
     }
     let cancelled = false;

@@ -352,9 +352,10 @@ describe("levyAuthorityChainBuild", () => {
     const padded = `  ${record.summarySource.text}  `;
     record.summarySource.text = padded;
     const entry = buildLevyAuthorityChainEntry(record);
-    expect(entry.summarySource.text).toBe(padded.trim());
-    expect(entry.summary).toContain(entry.summarySource.text);
-    expect(entry.summary.indexOf(entry.summarySource.text)).toBe(0);
+    const trimmed = padded.trim();
+    expect(entry.summarySource?.text).toBe(trimmed);
+    expect(entry.summary).toContain(trimmed);
+    expect(entry.summary.indexOf(trimmed)).toBe(0);
   });
 
   it("exports built entries aligned with records", () => {

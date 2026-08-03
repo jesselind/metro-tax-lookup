@@ -770,12 +770,25 @@ export default function SourcesPage() {
             assessment-year summary tile shows the tax year as a secondary line.
           </li>
           <li>
-            <strong>Assessed school value</strong>{" "}is not a mart column. For
-            improved <strong>residential</strong> property (state use code
-            starting with 1) from 2025 onward, the app applies the Colorado
-            DPT school assessment rate (7.05% for 2026) to appraised building
-            and land, rounded the way the county parcel page does. Non-residential
-            property does not show a school assessed row.
+            <strong>Assessed school value</strong>
+            {" "}
+            is the taxable value school districts use for the school portion of
+            your property tax bill. It is not a mart column. For improved
+            {" "}
+            <strong>residential</strong>
+            {" "}
+            property from 2025 onward, the app computes it with the Colorado
+            {" "}
+            <strong>Department of Property Taxation</strong>
+            {" "}
+            (DPT) school assessment rate (7.05% for 2026) on appraised building
+            and land, rounded the way the county parcel page does. Residential
+            parcels use a
+            {" "}
+            <strong>state use code</strong>
+            {" "}
+            starting with 1 (a county classification for how land is used).
+            Non-residential property does not show a school assessed row.
           </li>
           <li>
             <strong>Assessed value</strong>{" "}totals come from the mart total
