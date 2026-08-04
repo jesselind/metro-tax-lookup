@@ -69,8 +69,14 @@ Do **not** put real homeowner PINs in tests "because they match the county site.
 - **Row help and Glossary:** Row help merges from **`tools/nov_comps_grid_definitions.json`** when the grid JSON has no definitions block. Some row popovers link to **`/glossary`** for longer code context (LUC, improvement type/style, valuation grade).
 
 - Fallback path: users can add levy rows manually without PIN.
-- Policy/reference pages: `/sources`, `/glossary`, `/privacy`, `/accessibility`.
+- Policy/reference pages: `/sources`, `/changelog`, `/glossary`, `/privacy`, `/accessibility`.
 - All runtime data is static JSON under `public/data/`.
+
+### Releasing a version
+
+1. Bump `version` in `package.json` (footer / `/changelog` intro read it via `APP_VERSION` in `src/lib/siteRelease.ts`).
+2. Add a **hand-written** entry at the top of `src/content/changelog.ts` (resident takeaways, not commit subjects). `src/content/changelog.test.ts` fails if the newest entry is not the current version.
+3. Ship. Optional later: backfill older versions on `/changelog`.
 
 **Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. CSP lives in `next.config.ts` and intentionally omits `upgrade-insecure-requests` (that header is baked at build time and breaks WebKit against plain-HTTP `next start` / e2e); terminate TLS at the edge and keep HSTS for HTTPS responses. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
 

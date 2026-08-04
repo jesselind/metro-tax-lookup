@@ -797,8 +797,10 @@ export default function SourcesPage() {
             2026 after the temporary reduction on the first $700,000 of actual
             value; building = total minus that land split). Non-residential splits
             allocate the mart total in proportion to appraised building and land.
-            Rate labels on assessed rows follow state use (see DPT chart); they
-            are not hardcoded to residential rates. Logic lives in{" "}
+            Rate labels on assessed rows follow state use when it maps cleanly to
+            a DPT chart row (for example commercial 25%/26%, industrial 26%);
+            exempt and other unmapped codes omit the parenthetical rather than
+            invent a percent. Logic lives in{" "}
             <code>src/lib/parcelAssessmentRates.ts</code> (display) and the build
             script (bundled shards).
           </li>

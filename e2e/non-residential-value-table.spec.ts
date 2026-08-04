@@ -38,10 +38,12 @@ test("non-residential parcel shows proportional assessed split without school ro
     name: "Appraised and assessed values by total, building, and land",
   });
   await expect(valuesTable).toBeVisible();
+  // Exempt 9xxx (synthetic hospital): no invented chart percent parenthetical.
   const assessedRow = valuesTable.getByRole("row", {
-    name: /2026 Assessed Value \(26%\)/,
+    name: /2026 Assessed Value/,
   });
   await expect(assessedRow).toBeVisible();
+  await expect(assessedRow).not.toContainText(/\(\d+(\.\d+)?%\)/);
   await expect(
     valuesTable.getByRole("row", { name: /Assessed School Value/ }),
   ).toHaveCount(0);
