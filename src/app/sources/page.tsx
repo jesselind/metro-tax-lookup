@@ -770,21 +770,37 @@ export default function SourcesPage() {
             assessment-year summary tile shows the tax year as a secondary line.
           </li>
           <li>
-            <strong>Assessed school value</strong>{" "}is not a mart column. For
-            improved residential property from 2025 onward, the build applies
-            the Colorado DPT school assessment rate (7.05% for 2026) to
-            appraised building and land, rounded the way the county parcel page
-            does.
+            <strong>Assessed school value</strong>
+            {" "}
+            is the taxable value school districts use for the school portion of
+            your property tax bill. It is not a mart column. For improved
+            {" "}
+            <strong>residential</strong>
+            {" "}
+            property from 2025 onward, the app computes it with the Colorado
+            {" "}
+            <strong>Department of Property Taxation</strong>
+            {" "}
+            (DPT) school assessment rate (7.05% for 2026) on appraised building
+            and land, rounded the way the county parcel page does. Residential
+            parcels use a
+            {" "}
+            <strong>state use code</strong>
+            {" "}
+            starting with 1 (a county classification for how land is used).
+            Non-residential property does not show a school assessed row.
           </li>
           <li>
             <strong>Assessed value</strong>{" "}totals come from the mart total
-            assessed figure. Building and land assessed columns follow the
-            county pattern (local land = appraised land × local DPT rate; local
-            building = total minus that land split). For 2026 residential
-            local-government rules: 6.8% after the temporary reduction on the
-            first $700,000 of actual value. School assessed rows use full
-            appraised amounts × 7.05%. Rates are fixed in the build for 2025+
-            today; update when a new assessment year ships (see README).
+            assessed figure. Building and land columns follow the county pattern.
+            Residential local splits use the DPT local rate on land (6.8% for
+            2026 after the temporary reduction on the first $700,000 of actual
+            value; building = total minus that land split). Non-residential splits
+            allocate the mart total in proportion to appraised building and land.
+            Rate labels on assessed rows follow state use (see DPT chart); they
+            are not hardcoded to residential rates. Logic lives in{" "}
+            <code>src/lib/parcelAssessmentRates.ts</code> (display) and the build
+            script (bundled shards).
           </li>
           <li>
             <strong>Ownership type</strong>{" "}uses legal-party owner rows: one

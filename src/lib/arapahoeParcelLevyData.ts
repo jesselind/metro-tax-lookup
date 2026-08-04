@@ -195,14 +195,14 @@ export type ArapahoeParcelRecordRow = {
   landActual?: number | null;
   totalAssessed?: number | null;
   /**
-   * Local assessed building split (computed from totalAssessed + actuals; 2025+ real).
-   * Rates: COLORADO_LOCAL_ASSESSED_RATE in build_arapahoe_parcel_levy_index.py.
+   * Local assessed building split (computed; 2025+ real). UI may recompute from
+   * state use via parcelAssessmentRates.ts; bundled shards use the build script.
    */
   assessedBuilding?: number | null;
   assessedLand?: number | null;
   /**
-   * School assessed total (DPT school rate × actual; rounded per building/land).
-   * Rate: COLORADO_SCHOOL_ASSESSED_RATE in the build script (fixed for 2025+ today).
+   * School assessed total (residential improvement only; DPT school rate).
+   * Omitted from the values table for non-residential property.
    */
   schoolAssessedTotal?: number | null;
   schoolAssessedBuilding?: number | null;

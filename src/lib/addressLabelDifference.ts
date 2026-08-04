@@ -61,6 +61,15 @@ export function formatSitusLocalityEnvelopeLine(locality: string): string {
   return `${trimmed}, CO`;
 }
 
+/**
+ * Typeahead shows one row per place; ZIP+4 often differs by tax account at the
+ * same situs. Strip the +4 extension for the suggestion only (chooser keeps full
+ * labels).
+ */
+export function situsLabelForTypeaheadDisplay(label: string): string {
+  return label.replace(/(\d{5})-\d{4}\b/g, "$1");
+}
+
 function normalizeAddressLabelToken(token: string): string {
   return token.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "").toUpperCase();
 }

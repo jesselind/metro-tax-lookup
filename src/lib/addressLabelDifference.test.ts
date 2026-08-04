@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSitusEnvelopeDisplayRows,
   segmentAddressLabelsByDifference,
+  situsLabelForTypeaheadDisplay,
   splitSitusLabelEnvelopeLines,
 } from "./addressLabelDifference";
 
@@ -108,5 +109,18 @@ describe("buildSitusEnvelopeDisplayRows", () => {
     expect(rows[0]?.localityLine).toBe("ENGLEWOOD, CO 80111-5541");
     expect(rows[0]?.streetSegments?.find((s) => s.emphasize)?.text).toBe("J01");
     expect(rows[1]?.streetSegments?.find((s) => s.emphasize)?.text).toBe("J02");
+  });
+});
+
+describe("situsLabelForTypeaheadDisplay", () => {
+  it("strips ZIP+4 for typeahead only", () => {
+    expect(
+      situsLabelForTypeaheadDisplay(
+        "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+      ),
+    ).toBe("7700 S BROADWAY, LITTLETON, CO 80122");
+    expect(situsLabelForTypeaheadDisplay("1940 S HOLLY ST, ENGLEWOOD, CO")).toBe(
+      "1940 S HOLLY ST, ENGLEWOOD, CO",
+    );
   });
 });

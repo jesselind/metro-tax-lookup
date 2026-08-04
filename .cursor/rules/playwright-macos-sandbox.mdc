@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Playwright (macOS agent)
 
+Vitest and `next dev` do **not** run the production TypeScript gate (`tsconfig` includes `*.test.ts`). Before CI-style e2e locally, run `npm run typecheck` and a fresh `npm run build`.
+
 Use `required_permissions: ["all"]` and:
 
 ```bash

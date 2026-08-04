@@ -15,10 +15,7 @@ import type {
   ParcelRecordTransfer,
 } from "@/lib/arapahoeParcelLevyData";
 import { formatUsdWhole } from "@/lib/formatUsd";
-import {
-  COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
-  COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
-} from "@/lib/coloradoDptAssessmentRates";
+import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
@@ -80,8 +77,6 @@ const VALUE_ROW_GLOSSARY: Record<
     termId: ParcelGlossaryTermId;
     label: string;
     triggerIdSuffix: string;
-    /** DPT residential assessment rate shown in the row header (assessed rows only). */
-    rateLabel?: string;
   }
 > = {
   appraised: {
@@ -93,15 +88,11 @@ const VALUE_ROW_GLOSSARY: Record<
     termId: "term-assessed-total",
     label: "Assessed Value",
     triggerIdSuffix: "assessed-value",
-    /** 2026 DPT residential local-government rate (see popover for $700k reduction). */
-    rateLabel: COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
   },
   "assessed-school": {
     termId: "term-assessed-school-value",
     label: "Assessed School Value",
     triggerIdSuffix: "assessed-school-value",
-    /** 2026 DPT residential school rate. */
-    rateLabel: COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
   },
 };
 
@@ -304,23 +295,26 @@ function saleTableHeaderLabel(label: string): ColumnHeaderLabel {
 function valueRowDisplayLabel(
   year: string,
   kind: "appraised" | "assessed" | "assessed-school",
+  rateLabel?: string | null,
 ): string {
   const glossary = VALUE_ROW_GLOSSARY[kind];
   const base = year ? `${year} ${glossary.label}` : glossary.label;
-  return glossary.rateLabel ? `${base} (${glossary.rateLabel})` : base;
+  return rateLabel ? `${base} (${rateLabel})` : base;
 }
 
 function ValueRowLabel({
   year,
   kind,
+  rateLabel,
 }: {
   year: string;
   kind: "appraised" | "assessed" | "assessed-school";
+  rateLabel?: string | null;
 }) {
   const glossary = VALUE_ROW_GLOSSARY[kind];
   return (
     <ParcelRecordTableGlossaryLabel
-      text={valueRowDisplayLabel(year, kind)}
+      text={valueRowDisplayLabel(year, kind, rateLabel)}
       termId={glossary.termId}
       triggerIdSuffix={glossary.triggerIdSuffix}
     />
@@ -343,47 +337,13 @@ function formatValueCell(
   return formatUsdWhole(value);
 }
 
-type ValueColumn = {
-  total?: number | null;
-  building?: number | null;
-  land?: number | null;
-};
-
 function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   const year = (record.assessmentYear ?? "").trim();
   const yearNote = parcelTaxAssessmentYearNote(
     record.parcelTaxYear,
     record.assessmentYear,
   );
-  const rows: {
-    kind: "appraised" | "assessed" | "assessed-school";
-    values: ValueColumn;
-  }[] = [
-    {
-      kind: "appraised",
-      values: {
-        total: record.totalActual,
-        building: record.improvementActual,
-        land: record.landActual,
-      },
-    },
-    {
-      kind: "assessed",
-      values: {
-        total: record.totalAssessed,
-        building: record.assessedBuilding,
-        land: record.assessedLand,
-      },
-    },
-    {
-      kind: "assessed-school",
-      values: {
-        total: record.schoolAssessedTotal,
-        building: record.schoolAssessedBuilding,
-        land: record.schoolAssessedLand,
-      },
-    },
-  ];
+  const rows = buildParcelValueTableRows(record);
 
   const hasAnyValue = rows.some(
     (row) =>
@@ -426,13 +386,14 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
           moneyColumns
         />
         {rowsToShow.map((row) => {
-          const rowLabel = valueRowDisplayLabel(year, row.kind);
+          const rowLabel = valueRowDisplayLabel(year, row.kind, row.rateLabel);
           return (
             <tr key={row.kind}>
               <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
                 <ValueRowLabel
                   year={year}
                   kind={row.kind}
+                  rateLabel={row.rateLabel}
                 />
               </th>
               <td className={MONEY_TD_CLASS}>

@@ -27,6 +27,19 @@ export const SYNTHETIC_E2E_ADDRESS = "9999 Synthetic Test Road";
 /** Must match `buildSitusLookupKey` for {@link SYNTHETIC_E2E_ADDRESS}. */
 export const SYNTHETIC_E2E_SITUS_KEY = "9999|SYNTHETIC TEST|";
 
+/**
+ * Multi-account situs (Real + business personal) for chooser e2e.
+ * Street type "Road" drops in normalizeStreetNameKey → `8888|SYNTHETIC HOSPITAL|`.
+ */
+export const SYNTHETIC_MULTI_E2E_ADDRESS = "8888 Synthetic Hospital Road";
+export const SYNTHETIC_MULTI_E2E_SITUS_KEY = "8888|SYNTHETIC HOSPITAL|";
+/** Real / Improvement account at the multi situs. */
+export const SYNTHETIC_MULTI_REAL_PIN = "010000201";
+/** Business personal property account at the same situs. */
+export const SYNTHETIC_MULTI_PERSONAL_PIN = "010000202";
+export const SYNTHETIC_MULTI_REAL_OWNER = "E2E SYNTHETIC HOSPITAL";
+export const SYNTHETIC_MULTI_PERSONAL_OWNER = "E2E SYNTHETIC EQUIPMENT LLC";
+
 /** Fake TAG id used only inside e2e mocks (not a real county TAG). */
 export const SYNTHETIC_E2E_TAG_ID = "9090909";
 
@@ -55,12 +68,22 @@ export const SYNTHETIC_SITUS_TO_PINS = {
     taxYear: "2025",
   },
   lookupVersion: 1,
-  entryCount: 1,
+  entryCount: 2,
   byKey: {
     [SYNTHETIC_E2E_SITUS_KEY]: [
       {
         pin: SYNTHETIC_PIN,
         label: `${SYNTHETIC_E2E_ADDRESS} — PIN ${SYNTHETIC_PIN}`,
+      },
+    ],
+    [SYNTHETIC_MULTI_E2E_SITUS_KEY]: [
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: `${SYNTHETIC_MULTI_E2E_ADDRESS}, E2E CITY, CO 80000-1111`,
+      },
+      {
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: `${SYNTHETIC_MULTI_E2E_ADDRESS}, E2E CITY, CO 80000-2222`,
       },
     ],
   },
@@ -84,6 +107,28 @@ export const SYNTHETIC_PIN_TO_TAG = {
       propertyClassDescr: "Residential",
       ownerList: SYNTHETIC_E2E_OWNER,
       ain: SYNTHETIC_AIN,
+    },
+    [SYNTHETIC_MULTI_REAL_PIN]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: "E2E",
+      totalActual: 50000000,
+      totalAssessed: 12500000,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Improvement",
+      ownerList: SYNTHETIC_MULTI_REAL_OWNER,
+      ain: "1000-00-0-00-201",
+    },
+    [SYNTHETIC_MULTI_PERSONAL_PIN]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: "E2E",
+      totalActual: 24000,
+      totalAssessed: 6000,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Personal",
+      ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER,
+      ain: "1000-00-0-00-202",
     },
   },
 };
@@ -232,6 +277,27 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
       neighborhoodCode: null,
       totalActual: 100000,
       totalAssessed: 6800,
+    },
+    [SYNTHETIC_MULTI_REAL_PIN]: {
+      ain: "1000-00-0-00-201",
+      situsAddress: "8888 SYNTHETIC HOSPITAL RD",
+      situsCity: "E2E CITY",
+      ownerList: SYNTHETIC_MULTI_REAL_OWNER,
+      ownershipType: "Corporate",
+      stateUseCd: "9179",
+      taxRollDescr: "Real",
+      propertyClassDescr: "Improvement",
+      assessmentYear: "2026",
+      parcelTaxYear: "2025",
+      totalActual: 50_000_000,
+      improvementActual: 40_000_000,
+      landActual: 10_000_000,
+      totalAssessed: 12_500_000,
+      assessedBuilding: 9_999_999,
+      assessedLand: 2_500_001,
+      schoolAssessedTotal: 2_820_000,
+      schoolAssessedBuilding: 2_256_000,
+      schoolAssessedLand: 564_000,
     },
   },
 };

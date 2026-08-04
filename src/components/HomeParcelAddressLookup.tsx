@@ -65,6 +65,7 @@ import {
   fetchArapahoePinToTagJson,
   looksLikeParcelIdInput,
   type ArapahoeParcelRecordRow,
+  type ArapahoePinToTagFile,
 } from "@/lib/arapahoeParcelLevyData";
 import {
   fetchArapahoeSitusToPinsJson,
@@ -80,6 +81,7 @@ import {
   trySitusAutofillBlurSplit,
   type SitusStreetSuggestion,
 } from "@/lib/arapahoeSitusLookup";
+import { enrichSitusPinHitsForChooser, situsAccountKindGlossaryTermId } from "@/lib/situsMultiPinChooser";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
@@ -87,7 +89,7 @@ import {
   billImpactCalloutForLevyLines,
   levyStackRateChangeCalloutSurfaceClasses,
 } from "@/lib/metroLevyYearOverYear";
-import { buildSitusEnvelopeDisplayRows } from "@/lib/addressLabelDifference";
+import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import {
@@ -230,6 +232,9 @@ export function HomeParcelAddressLookup({
   const [hits, setHits] = useState<{ pin: string; label: string }[] | null>(
     null,
   );
+  /** pin-to-tag for multi-match chooser enrichment (owner / Real vs BPP / values). */
+  const [multiMatchPinToTag, setMultiMatchPinToTag] =
+    useState<ArapahoePinToTagFile | null>(null);
   /** Close street-name alternatives when exact/fuzzy auto-match is ambiguous. */
   const [streetDidYouMean, setStreetDidYouMean] = useState<
     SitusStreetSuggestion[] | null
@@ -594,6 +599,7 @@ export function HomeParcelAddressLookup({
     clearAllLevyState();
     setError(null);
     setHits(null);
+    setMultiMatchPinToTag(null);
     setStreetDidYouMean(null);
     setAddressMatchStatus(null);
     setStreetTypeaheadOpen(false);
@@ -783,6 +789,7 @@ export function HomeParcelAddressLookup({
     setUnit("");
     setError(null);
     setHits(null);
+    setMultiMatchPinToTag(null);
     setStreetDidYouMean(null);
     setAddressMatchStatus(null);
     setStreetTypeahead([]);
@@ -911,15 +918,45 @@ export function HomeParcelAddressLookup({
     return hits.find((h) => h.pin === pin)?.label ?? null;
   }, [hits, trimmedParcelPin]);
 
+  /**
+   * Multi-match list: join pin-to-tag for owner / Real vs business personal
+   * property / values, sorted so primary Real accounts surface first.
+   */
+  const enrichedMultiHits = useMemo(() => {
+    if (hits == null || hits.length < 2) return null;
+    return enrichSitusPinHitsForChooser(hits, multiMatchPinToTag);
+  }, [hits, multiMatchPinToTag]);
+
   /** Envelope rows for multi-match pick list (street + city, difference marks). */
   const multiHitEnvelopeRows = useMemo(() => {
-    if (hits == null || hits.length < 2) return null;
-    return buildSitusEnvelopeDisplayRows(hits.map((h) => h.label));
+    if (enrichedMultiHits == null) return null;
+    return buildSitusEnvelopeDisplayRows(
+      enrichedMultiHits.map((h) => h.label),
+    );
+  }, [enrichedMultiHits]);
+
+  /** Load pin-to-tag whenever the multi-account chooser is shown. */
+  useEffect(() => {
+    if (hits == null || hits.length < 2) {
+      return;
+    }
+    let cancelled = false;
+    void fetchArapahoePinToTagJson().then((data) => {
+      if (!cancelled) setMultiMatchPinToTag(data);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [hits]);
 
-  /** Same envelope layout for simple-line typeahead suggestions. */
+  /** Same envelope layout for simple-line typeahead suggestions (+4 stripped). */
   const streetTypeaheadEnvelopeRows = useMemo(
-    () => buildSitusEnvelopeDisplayRows(streetTypeahead.map((s) => s.sampleLabel)),
+    () =>
+      buildSitusEnvelopeDisplayRows(
+        streetTypeahead.map((s) =>
+          situsLabelForTypeaheadDisplay(s.sampleLabel),
+        ),
+      ),
     [streetTypeahead],
   );
 
@@ -1227,11 +1264,13 @@ export function HomeParcelAddressLookup({
               aria-label="Matching properties"
             >
               <p className="mb-2 text-sm font-semibold text-slate-900">
-                {hits.length} properties matched. Pick the row that matches your
-                unit or legal description
+                {hits.length} accounts matched at this address. Pick the row that
+                matches your unit, owner, or account type
               </p>
               <p className="mb-3 text-sm text-slate-700">
-                Not sure which PIN is yours? Open your parcel on the{" "}
+                One street can have several tax accounts (for example a building
+                plus business personal property). Not sure which PIN is yours?
+                Open your parcel on the{" "}
                 <a
                   href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
                   target="_blank"
@@ -1241,11 +1280,19 @@ export function HomeParcelAddressLookup({
                   county property search
                   <span className="sr-only"> (opens in a new tab)</span>
                 </a>{" "}
-                and compare the PIN to the address, unit, or legal description.
+                and compare the PIN to the owner or legal description.
               </p>
               <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
-                {hits.map((h, hitIndex) => {
+                {(enrichedMultiHits ?? hits).map((h, hitIndex) => {
                   const envelope = multiHitEnvelopeRows?.[hitIndex];
+                  const enriched =
+                    enrichedMultiHits != null
+                      ? enrichedMultiHits[hitIndex]
+                      : null;
+                  const accountKindTermId =
+                    enriched != null
+                      ? situsAccountKindGlossaryTermId(enriched.accountKind)
+                      : null;
                   return (
                     <li
                       key={h.pin}
@@ -1253,10 +1300,40 @@ export function HomeParcelAddressLookup({
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                         <div className="min-w-0">
-                          <span className="font-semibold text-slate-900">
-                            PIN:{" "}
-                            <span className="font-mono">{h.pin}</span>
-                          </span>
+                          {multiMatchPinToTag != null &&
+                          enriched?.ownerList ? (
+                            <p className="text-base font-semibold leading-snug text-slate-900">
+                              {enriched.ownerList}
+                            </p>
+                          ) : null}
+                          {multiMatchPinToTag != null &&
+                          enriched?.accountKindLabel ? (
+                            <p className="mt-1 text-sm font-medium text-slate-800">
+                              {accountKindTermId != null ? (
+                                <ParcelGlossaryPopoverTrigger
+                                  termId={accountKindTermId}
+                                  textTrigger={enriched.accountKindLabel}
+                                  textTriggerId={`multi-match-account-kind-${h.pin}`}
+                                  variant="parcel-record"
+                                />
+                              ) : (
+                                enriched.accountKindLabel
+                              )}
+                            </p>
+                          ) : null}
+                          <p
+                            className={`text-sm text-slate-600 ${
+                              multiMatchPinToTag != null &&
+                              (enriched?.ownerList || enriched?.accountKindLabel)
+                                ? "mt-1"
+                                : ""
+                            }`}
+                          >
+                            PIN{" "}
+                            <span className="font-mono text-slate-700">
+                              {h.pin}
+                            </span>
+                          </p>
                           {envelope != null ? (
                             <SitusEnvelopeAddress
                               row={envelope}
@@ -1267,10 +1344,18 @@ export function HomeParcelAddressLookup({
                               {h.label}
                             </span>
                           )}
+                          {multiMatchPinToTag != null &&
+                          enriched != null &&
+                          enriched.totalActual != null ? (
+                            <p className="mt-1 text-sm text-slate-600">
+                              Actual value:{" "}
+                              {formatUsdWhole(enriched.totalActual)}
+                            </p>
+                          ) : null}
                         </div>
                         <button
                           type="button"
-                          className={`${btnOutlinePrimaryMd} w-full shrink-0 justify-center py-2.5 sm:w-auto sm:px-4`}
+                          className={`${btnOutlinePrimaryMd} w-full shrink-0 cursor-pointer justify-center py-2.5 sm:w-auto sm:px-4`}
                           disabled={levyLoadBusy}
                           onClick={() => {
                             setAddressSearchLocked(true);
