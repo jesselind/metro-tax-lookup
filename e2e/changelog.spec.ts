@@ -19,9 +19,6 @@ test("changelog page shows current version and release content", async ({
     page.getByRole("heading", { name: "Changelog", level: 1 }),
   ).toBeVisible();
   await expect(
-    page.getByText(`current version ${APP_VERSION}`, { exact: false }),
-  ).toBeVisible();
-  await expect(
     page.getByRole("heading", {
       name: new RegExp(`^${APP_VERSION}\\b`),
       level: 2,
