@@ -7,7 +7,6 @@ import { BackToTopButton } from "@/components/BackToTopButton";
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import { CHANGELOG_ENTRIES } from "@/content/changelog";
 import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
-import { APP_VERSION } from "@/lib/siteRelease";
 
 export const metadata = {
   title: "Changelog",
@@ -31,11 +30,7 @@ function formatChangelogDate(isoDate: string): string {
 
 export default function ChangelogPage() {
   return (
-    <StaticArticleShell
-      title="Changelog"
-      intro={`Short notes on what changed for people using this tool (current version ${APP_VERSION}). Older releases may be filled in later.`}
-      footer={<BackToTopButton />}
-    >
+    <StaticArticleShell title="Changelog" footer={<BackToTopButton />}>
       <ol className="mt-6 list-none space-y-10 p-0">
         {CHANGELOG_ENTRIES.map((entry) => (
           <li key={entry.version} id={`v${entry.version.replace(/\./g, "-")}`}>
