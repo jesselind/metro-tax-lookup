@@ -25,9 +25,20 @@ describe("CHANGELOG_ENTRIES", () => {
     }
   });
 
-  it("requires date, title, and at least one highlight per entry", () => {
+  it("requires calendar-valid date, title, and at least one highlight per entry", () => {
     for (const entry of CHANGELOG_ENTRIES) {
       expect(entry.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(entry.date);
+      expect(match).not.toBeNull();
+      const y = Number(match![1]);
+      const m = Number(match![2]);
+      const d = Number(match![3]);
+      // Same local-noon construction as changelog page formatChangelogDate;
+      // rejects invalid calendar dates such as 2026-02-30.
+      const date = new Date(y, m - 1, d, 12, 0, 0);
+      expect(date.getFullYear()).toBe(y);
+      expect(date.getMonth() + 1).toBe(m);
+      expect(date.getDate()).toBe(d);
       expect(entry.title.trim().length).toBeGreaterThan(0);
       expect(entry.highlights.length).toBeGreaterThan(0);
       for (const h of entry.highlights) {
