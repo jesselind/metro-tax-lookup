@@ -6,7 +6,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Browser e2e (Phase 6b).
+ * Browser e2e.
  *
  * Local CLI: reuses this app on :3000 (`localhost`) when already up (`npm run dev`);
  * otherwise starts `next dev`. Playwright IDE: start `npm run dev` yourself first — the

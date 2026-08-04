@@ -43,10 +43,6 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   await expect(
     chooser.getByText("2 accounts matched at this address"),
   ).toBeVisible();
-  await expect(chooser.getByText(SYNTHETIC_MULTI_REAL_PIN)).toBeVisible();
-  await expect(chooser.getByText(SYNTHETIC_MULTI_PERSONAL_PIN)).toBeVisible();
-  await expect(chooser.getByText(SYNTHETIC_MULTI_REAL_OWNER)).toBeVisible();
-  await expect(chooser.getByText(SYNTHETIC_MULTI_PERSONAL_OWNER)).toBeVisible();
   await expect(
     chooser.getByRole("button", { name: "Real property" }),
   ).toBeVisible();
@@ -56,15 +52,19 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   await expect(chooser.getByText("80000-1111")).toBeVisible();
   await expect(chooser.getByText("80000-2222")).toBeVisible();
 
-  const realOwner = chooser.getByText(SYNTHETIC_MULTI_REAL_OWNER);
-  const realPin = chooser.getByText(SYNTHETIC_MULTI_REAL_PIN, { exact: true });
-  const ownerBox = await realOwner.boundingBox();
-  const pinBox = await realPin.boundingBox();
-  expect(ownerBox).not.toBeNull();
-  expect(pinBox).not.toBeNull();
-  expect(ownerBox!.y).toBeLessThan(pinBox!.y);
+  // Sort contract + reading order via listitem structure (not CSS class or geometry).
+  const items = chooser.getByRole("listitem");
+  await expect(items).toHaveCount(2);
 
-  const pins = chooser.locator(".font-mono");
-  await expect(pins.nth(0)).toHaveText(SYNTHETIC_MULTI_REAL_PIN);
-  await expect(pins.nth(1)).toHaveText(SYNTHETIC_MULTI_PERSONAL_PIN);
+  const realRow = items.nth(0);
+  const personalRow = items.nth(1);
+  await expect(realRow).toContainText(SYNTHETIC_MULTI_REAL_OWNER);
+  await expect(realRow).toContainText(SYNTHETIC_MULTI_REAL_PIN);
+  await expect(personalRow).toContainText(SYNTHETIC_MULTI_PERSONAL_OWNER);
+  await expect(personalRow).toContainText(SYNTHETIC_MULTI_PERSONAL_PIN);
+
+  const realRowText = await realRow.innerText();
+  expect(realRowText.indexOf(SYNTHETIC_MULTI_REAL_OWNER)).toBeLessThan(
+    realRowText.indexOf(SYNTHETIC_MULTI_REAL_PIN),
+  );
 });

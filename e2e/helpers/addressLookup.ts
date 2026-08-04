@@ -24,17 +24,47 @@ export function streetAddressField(page: Page): Locator {
   return page.getByLabel(STREET_ADDRESS_FIELD_LABEL, { exact: true });
 }
 
+/** Escape a string for use inside a RegExp source. */
+export function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /**
- * Fill {@link SYNTHETIC_E2E_ADDRESS}, submit Search, wait for the levy stack.
- *
- * Call after `installSyntheticCountyData(page)` (when needed) and `page.goto("/")`.
- * Dismisses an open typeahead listbox before clicking Search so the submit
- * control stays actionable. Escape still closes the list; blur alone does not.
+ * Levy tile control that opens district details for the given authority label
+ * (after `displayMartAuthorityName` if the fixture uses mart casing).
+ * Pass a tile/dialog locator to scope when more than one match may exist.
  */
-export async function searchSyntheticAddress(page: Page): Promise<void> {
+export function viewDistrictDetailsButton(
+  root: Page | Locator,
+  authorityLabel: string,
+): Locator {
+  return root.getByRole("button", {
+    name: new RegExp(
+      `View district details for ${escapeRegExp(authorityLabel)}`,
+    ),
+  });
+}
+
+/**
+ * Fill the street field, dismiss an open typeahead listbox, click Search.
+ *
+ * Escape still closes the list; blur alone does not. Call after
+ * `installSyntheticCountyData(page)` (when needed) and `page.goto("/")`.
+ */
+export async function fillStreetAndSubmitSearch(
+  page: Page,
+  address: string,
+): Promise<void> {
   const street = streetAddressField(page);
-  await street.fill(SYNTHETIC_E2E_ADDRESS);
+  await street.fill(address);
   await street.press("Escape");
   await page.getByRole("button", { name: "Search" }).click();
+}
+
+/**
+ * Fill {@link SYNTHETIC_E2E_ADDRESS}, submit Search, wait for the levy stack.
+ */
+export async function searchSyntheticAddress(page: Page): Promise<void> {
+  await fillStreetAndSubmitSearch(page, SYNTHETIC_E2E_ADDRESS);
   await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
 }

@@ -29,6 +29,7 @@ export const SYNTHETIC_E2E_SITUS_KEY = "9999|SYNTHETIC TEST|";
 
 /**
  * Multi-account situs (Real + business personal) for chooser e2e.
+ * IDs aligned with `src/lib/syntheticTestIds.ts` (`SYNTHETIC_MULTI_*`).
  * Street type "Road" drops in normalizeStreetNameKey → `8888|SYNTHETIC HOSPITAL|`.
  */
 export const SYNTHETIC_MULTI_E2E_ADDRESS = "8888 Synthetic Hospital Road";

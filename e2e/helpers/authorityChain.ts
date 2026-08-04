@@ -15,7 +15,10 @@ import {
 } from "../../src/lib/levyAuthorityChain";
 import { safeHttpOrHttpsUrl } from "../../src/lib/safeExternalHref";
 import { SYNTHETIC_E2E_AUTHORITY } from "../fixtures/syntheticCountyData";
-import { searchSyntheticAddress } from "./addressLookup";
+import {
+  searchSyntheticAddress,
+  viewDistrictDetailsButton,
+} from "./addressLookup";
 import { installSyntheticCountyData } from "./installSyntheticCountyData";
 
 export type AuthorityChainE2eCase = {
@@ -88,13 +91,7 @@ export async function openAuthorityChainPanel(
   await searchSyntheticAddress(page);
 
   const authorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
-  await page
-    .getByRole("button", {
-      name: new RegExp(
-        `View district details for ${authorityLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-      ),
-    })
-    .click();
+  await viewDistrictDetailsButton(page, authorityLabel).click();
 
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
@@ -220,16 +217,36 @@ export async function assertAuthorityChainPanel(
 }
 
 /**
+ * Unique curated https sources across the given entries (hash kept for logging).
+ * Dedupes by HTTP probe URL so shared PDFs are not hit once per entry.
+ */
+export function collectAuthorityChainSourceUrlsForEntries(
+  entries: readonly LevyAuthorityChainEntry[],
+): string[] {
+  const byProbe = new Map<string, string>();
+  for (const entry of entries) {
+    for (const href of collectAuthorityChainSourceUrls(entry)) {
+      const probe = urlForHttpProbe(href);
+      if (!byProbe.has(probe)) byProbe.set(probe, href);
+    }
+  }
+  return [...byProbe.values()];
+}
+
+/**
  * Probe curated https sources. Failures here mean a published county/district
  * link likely broke (prefer that signal over silent dead links).
  * Only requests URLs from our own JSON (not page-scraped).
  * Uses HEAD, then a tiny ranged GET, so multi-MB PDFs do not download in full.
+ *
+ * Call once for the suite (deduped URLs), not inside each panel UI case — a
+ * flaky host should not look like a panel regression.
  */
 export async function assertAuthorityChainSourceUrlsReachable(
   request: APIRequestContext,
-  entry: LevyAuthorityChainEntry,
+  hrefs: readonly string[],
 ): Promise<void> {
-  for (const href of collectAuthorityChainSourceUrls(entry)) {
+  for (const href of hrefs) {
     const probe = urlForHttpProbe(href);
     const status = await probeSourceUrlStatus(request, probe);
     expect(

@@ -13,6 +13,16 @@ import {
   pickSitusPlaceSampleLabel,
   situsAccountKindGlossaryTermId,
 } from "./situsMultiPinChooser";
+import {
+  SYNTHETIC_MULTI_LABEL_MAJORITY,
+  SYNTHETIC_MULTI_LABEL_MINORITY,
+  SYNTHETIC_MULTI_PERSONAL_OWNER,
+  SYNTHETIC_MULTI_PERSONAL_OWNER_B,
+  SYNTHETIC_MULTI_PERSONAL_PIN,
+  SYNTHETIC_MULTI_PERSONAL_PIN_B,
+  SYNTHETIC_MULTI_REAL_OWNER,
+  SYNTHETIC_MULTI_REAL_PIN,
+} from "./syntheticTestIds";
 
 describe("classifySitusPinAccountKind", () => {
   it("maps Personal to business personal property", () => {
@@ -57,58 +67,56 @@ describe("situsAccountKindGlossaryTermId", () => {
 describe("pickSitusPlaceSampleLabel", () => {
   it("prefers the most common shared label (ZIP+4 majority)", () => {
     const hits: ArapahoeSitusPinHit[] = [
-      { pin: "1", label: "7700 S BROADWAY, LITTLETON, CO 80122-2628" },
-      { pin: "2", label: "7700 S BROADWAY, LITTLETON, CO 80122-2602" },
-      { pin: "3", label: "7700 S BROADWAY, LITTLETON, CO 80122-2602" },
-      { pin: "4", label: "7700 S BROADWAY, LITTLETON, CO 80122-2602" },
+      { pin: "1", label: SYNTHETIC_MULTI_LABEL_MINORITY },
+      { pin: "2", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
+      { pin: "3", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
+      { pin: "4", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
     ];
-    expect(pickSitusPlaceSampleLabel(hits)).toBe(
-      "7700 S BROADWAY, LITTLETON, CO 80122-2602",
-    );
+    expect(pickSitusPlaceSampleLabel(hits)).toBe(SYNTHETIC_MULTI_LABEL_MAJORITY);
   });
 });
 
 describe("enrichSitusPinHitsForChooser", () => {
-  it("labels Real vs business personal and sorts hospital above equipment", () => {
+  it("labels Real vs business personal and sorts building above equipment", () => {
     const hits: ArapahoeSitusPinHit[] = [
       {
-        pin: "034687611",
-        label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
       },
       {
-        pin: "034816461",
-        label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
       },
       {
-        pin: "033458621",
-        label: "7700 S BROADWAY, LITTLETON, CO 80122-2628",
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
+        label: SYNTHETIC_MULTI_LABEL_MINORITY,
       },
     ];
     const pinToTag: ArapahoePinToTagFile = {
       snapshot: { bundledAsOf: "t", source: "test" },
       pinDigits: 9,
       byPin: {
-        "034687611": {
+        [SYNTHETIC_MULTI_PERSONAL_PIN]: {
           tagId: "1",
           tagShortDescr: "x",
           propertyClassDescr: "Personal",
-          ownerList: "RADIOLOGY IMAGING ASSOCIATES PC",
+          ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER,
           totalActual: 24289,
           totalAssessed: 6316,
         },
-        "034816461": {
+        [SYNTHETIC_MULTI_REAL_PIN]: {
           tagId: "2",
           tagShortDescr: "x",
           propertyClassDescr: "Improvement",
-          ownerList: "PORTER MEMORIAL HOSPITAL",
-          totalActual: 135055734,
-          totalAssessed: 36465048,
+          ownerList: SYNTHETIC_MULTI_REAL_OWNER,
+          totalActual: 50_000_000,
+          totalAssessed: 12_500_000,
         },
-        "033458621": {
+        [SYNTHETIC_MULTI_PERSONAL_PIN_B]: {
           tagId: "3",
           tagShortDescr: "x",
           propertyClassDescr: "Personal",
-          ownerList: "ADVENTHEALTH LITTLETON EXEMPT",
+          ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER_B,
           totalActual: 0,
           totalAssessed: 0,
         },
@@ -117,12 +125,12 @@ describe("enrichSitusPinHitsForChooser", () => {
 
     const rows = enrichSitusPinHitsForChooser(hits, pinToTag);
     expect(rows.map((r) => r.pin)).toEqual([
-      "034816461",
-      "034687611",
-      "033458621",
+      SYNTHETIC_MULTI_REAL_PIN,
+      SYNTHETIC_MULTI_PERSONAL_PIN,
+      SYNTHETIC_MULTI_PERSONAL_PIN_B,
     ]);
     expect(rows[0]?.accountKindLabel).toBe("Real property");
-    expect(rows[0]?.ownerList).toContain("PORTER");
+    expect(rows[0]?.ownerList).toContain("HOSPITAL");
     expect(rows[1]?.accountKindLabel).toBe("Business personal property");
     expect(rows[2]?.accountKindLabel).toBe("Business personal property");
   });

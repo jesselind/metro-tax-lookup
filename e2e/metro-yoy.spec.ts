@@ -10,7 +10,10 @@ import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_METRO_AUTHORITY,
 } from "./fixtures/syntheticCountyData";
-import { searchSyntheticAddress } from "./helpers/addressLookup";
+import {
+  searchSyntheticAddress,
+  viewDistrictDetailsButton,
+} from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 const nonMetroAuthorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
@@ -53,13 +56,7 @@ test.describe("Metro year-over-year UI", () => {
       }),
     ).toBeVisible();
 
-    await page
-      .getByRole("button", {
-        name: new RegExp(
-          `View district details for ${nonMetroAuthorityLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-        ),
-      })
-      .click();
+    await viewDistrictDetailsButton(page, nonMetroAuthorityLabel).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(
@@ -68,8 +65,15 @@ test.describe("Metro year-over-year UI", () => {
     await dialog
       .getByRole("button", { name: /2\.0% higher than last year\. Details\./i })
       .click();
-    await expect(dialog.getByText("Tax Year 2024").first()).toBeVisible();
-    await expect(dialog.getByText("Tax Year 2025").first()).toBeVisible();
+    const yoySummary = dialog.getByRole("region", {
+      name: /2\.0% higher than last year/i,
+    });
+    await expect(
+      yoySummary.getByText("Tax Year 2024", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      yoySummary.getByText("Tax Year 2025", { exact: true }),
+    ).toBeVisible();
     const millsChart = dialog.getByRole("region", {
       name: AUTHORITY_MILLS_HISTORY_CHART_HEADING,
     });
@@ -82,7 +86,7 @@ test.describe("Metro year-over-year UI", () => {
     await year2018Dot.click();
     await expect(year2018Dot).toHaveAttribute("aria-expanded", "true");
     const year2018PanelId = await year2018Dot.getAttribute("aria-controls");
-    expect(year2018PanelId).toBeTruthy();
+    expect(year2018PanelId).toMatch(/\S/);
     const year2018Panel = page.locator(`[id="${year2018PanelId}"]`);
     await expect(year2018Panel).toBeVisible();
     await expect(year2018Panel).toContainText("Tax Year 2018");
@@ -116,15 +120,12 @@ test.describe("Metro year-over-year UI", () => {
     const firstChangedTile = page.locator("#levy-tile-first-rate-change");
     await expect(firstChangedTile).toBeVisible();
     await expect(
-      firstChangedTile.getByRole("button", {
-        name: new RegExp(
-          `View district details for ${metroAuthorityLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-        ),
-      }),
+      viewDistrictDetailsButton(firstChangedTile, metroAuthorityLabel),
     ).toBeFocused();
 
     await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
     await expect(page.locator("#home-parcel-property-tax")).toBeVisible();
+    // Synthetic metro mills × assessed: known fixture contract.
     await expect(page.locator("#home-parcel-property-tax")).toContainText("$413");
   });
 
@@ -135,13 +136,7 @@ test.describe("Metro year-over-year UI", () => {
     await page.goto("/");
     await searchSyntheticAddress(page);
 
-    await page
-      .getByRole("button", {
-        name: new RegExp(
-          `View district details for ${metroAuthorityLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-        ),
-      })
-      .click();
+    await viewDistrictDetailsButton(page, metroAuthorityLabel).click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -159,14 +154,23 @@ test.describe("Metro year-over-year UI", () => {
     await expect(dialog.getByText("General Operating")).toBeVisible();
     await expect(dialog.getByText(/^Difference:/)).toHaveCount(4);
     await expect(dialog.getByText(/\* Dollar amounts use/i)).toBeVisible();
+
+    const purposeRow = dialog
+      .getByRole("listitem")
+      .filter({ hasText: "General Operating" });
+    await expect(
+      purposeRow.getByText("Tax Year 2024", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      purposeRow.getByText("Tax Year 2025", { exact: true }),
+    ).toBeVisible();
+    await expect(purposeRow.getByText(/^Difference:/)).toBeVisible();
+
     await dialog.getByRole("button", { name: "General Operating" }).click();
     await expect(
       dialog.getByRole("heading", { name: "General operating" }),
     ).toBeVisible();
     await expect(dialog.getByText(/day-to-day money for the district/i)).toBeVisible();
-    await expect(dialog.getByText("Tax Year 2024").first()).toBeVisible();
-    await expect(dialog.getByText("Tax Year 2025").first()).toBeVisible();
-    await expect(dialog.getByText(/^Difference:/).first()).toBeVisible();
 
     await dialog
       .getByRole("button", { name: /% higher than last year\. Hide details\./i })
