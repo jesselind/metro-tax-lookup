@@ -100,7 +100,12 @@ export default function RootLayout({
                 to double-check a record or legal description.
               </p>
               <p className="mt-3 text-center text-xs text-slate-500 sm:text-sm">
-                Version {APP_VERSION} · Last updated {SITE_LAST_UPDATED_LABEL}
+                Version{" "}
+                <Link href="/changelog" className={TERM_LINK_CLASS}>
+                  {APP_VERSION}
+                </Link>
+                {" "}
+                · Last updated {SITE_LAST_UPDATED_LABEL}
               </p>
               <p className="mt-3 text-center text-xs leading-relaxed text-slate-500 sm:text-sm">
                 {SITE_BRAND_MARK}
@@ -121,6 +126,9 @@ export default function RootLayout({
                   </Link>
                   <Link href="/sources" className={TERM_LINK_CLASS}>
                     Sources
+                  </Link>
+                  <Link href="/changelog" className={TERM_LINK_CLASS}>
+                    Changelog
                   </Link>
                   <Link href="/glossary" className={TERM_LINK_CLASS}>
                     Glossary

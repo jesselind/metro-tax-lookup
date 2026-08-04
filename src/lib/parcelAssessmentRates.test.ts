@@ -47,7 +47,19 @@ describe("resolveParcelAssessmentProfile", () => {
     ).toBe(false);
   });
 
-  it("uses chart rate label for non-residential assessed row", () => {
+  it("uses chart rate label for commercial improved", () => {
+    expect(
+      resolveParcelAssessmentProfile({
+        stateUseCd: "2130",
+        taxRollDescr: "Real",
+        propertyClassDescr: "Improvement",
+        assessmentYear: "2026",
+        improvementActual: 100,
+      }).assessedRateLabel,
+    ).toBe("25%");
+  });
+
+  it("omits rate label for exempt / unmapped state use", () => {
     expect(
       resolveParcelAssessmentProfile({
         stateUseCd: "9179",
@@ -56,7 +68,7 @@ describe("resolveParcelAssessmentProfile", () => {
         assessmentYear: "2026",
         improvementActual: 100,
       }).assessedRateLabel,
-    ).toBe("26%");
+    ).toBeNull();
   });
 
   it("uses mode none for non-REAL tax roll", () => {
@@ -87,9 +99,20 @@ describe("resolveParcelAssessmentProfile", () => {
 });
 
 describe("nonResidentialAssessedRateLabel", () => {
-  it("maps commercial improved to 25%", () => {
+  it("maps commercial, vacant, industrial, and ag chart rows", () => {
     expect(nonResidentialAssessedRateLabel("2177", 100)).toBe("25%");
     expect(nonResidentialAssessedRateLabel("2177", 0)).toBe("26%");
+    expect(nonResidentialAssessedRateLabel("0100", 0)).toBe("26%");
+    expect(nonResidentialAssessedRateLabel("3115", 100)).toBe("26%");
+    expect(nonResidentialAssessedRateLabel("4147", 0)).toBe("25%");
+  });
+
+  it("returns null for exempt, missing, and special-formula classes", () => {
+    expect(nonResidentialAssessedRateLabel("9179", 100)).toBeNull();
+    expect(nonResidentialAssessedRateLabel("9140", 100)).toBeNull();
+    expect(nonResidentialAssessedRateLabel(null, 100)).toBeNull();
+    expect(nonResidentialAssessedRateLabel("", 0)).toBeNull();
+    expect(nonResidentialAssessedRateLabel("6000", 0)).toBeNull();
   });
 });
 
@@ -144,10 +167,27 @@ describe("buildParcelValueTableRows", () => {
     const rows = buildParcelValueTableRows(porterHospital);
     expect(rows.map((r) => r.kind)).toEqual(["appraised", "assessed"]);
     const assessed = rows.find((r) => r.kind === "assessed");
-    expect(assessed?.rateLabel).toBe("26%");
+    // Exempt 9xxx: no invented chart percent; splits still proportional.
+    expect(assessed?.rateLabel).toBeNull();
     expect(assessed?.values.building).toBe(29712750);
     expect(assessed?.values.land).toBe(6752298);
     expect(assessed?.values.total).toBe(36465048);
+  });
+
+  it("labels commercial improved assessed row at 25%", () => {
+    const rows = buildParcelValueTableRows({
+      ...porterHospital,
+      stateUseCd: "2130",
+      stateUseLabel: "Special Purpose",
+      totalActual: 50_000_000,
+      improvementActual: 40_000_000,
+      landActual: 10_000_000,
+      totalAssessed: 12_500_000,
+    });
+    const assessed = rows.find((r) => r.kind === "assessed");
+    expect(assessed?.rateLabel).toBe("25%");
+    expect(assessed?.values.building).toBe(10_000_000);
+    expect(assessed?.values.land).toBe(2_500_000);
   });
 
   it("includes school row for residential improvement", () => {

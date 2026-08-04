@@ -40,7 +40,11 @@ export function StaticArticleShell({
   contentClassName,
 }: StaticArticleShellProps) {
   return (
-    <main className="flex flex-col overflow-x-hidden bg-white text-slate-900">
+    <main
+      id="page-top"
+      tabIndex={-1}
+      className="flex flex-col overflow-x-hidden bg-white text-slate-900"
+    >
       <div className={contentClassName ?? TOOL_PAGE_INNER_CLASS_HUB}>
         <div className={TOOL_PAGE_HERO_INTRO_GROUP_CLASS}>
           <PageHero

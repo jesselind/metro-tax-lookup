@@ -797,8 +797,13 @@ export default function SourcesPage() {
             2026 after the temporary reduction on the first $700,000 of actual
             value; building = total minus that land split). Non-residential splits
             allocate the mart total in proportion to appraised building and land.
-            Rate labels on assessed rows follow state use (see DPT chart); they
-            are not hardcoded to residential rates. Logic lives in{" "}
+            The percent next to an assessed row shows which rate turned appraised
+            value into assessed value, the figure mill rates use on your property
+            tax bill. Labels follow the county&apos;s state use code (how the land
+            is classified) when that code maps cleanly to a DPT chart row (a line
+            on the state&apos;s assessment-rate table; for example commercial
+            25%/26%, industrial 26%); exempt and other unmapped codes omit the
+            parenthetical rather than invent a percent. Logic lives in{" "}
             <code>src/lib/parcelAssessmentRates.ts</code> (display) and the build
             script (bundled shards).
           </li>

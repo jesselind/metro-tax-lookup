@@ -67,18 +67,27 @@ export function isResidentialStateUseCode(
 
 /**
  * Single DPT chart rate label for non-residential state use (2026).
- * Proportional building/land splits use mart total; label is the chart row.
+ * Returns null when the code does not map cleanly to a chart row (exempt
+ * `9xxx`, mines/oil, missing code) so the UI does not invent a percent.
+ * Proportional building/land splits still use the mart total assessed.
  */
 export function nonResidentialAssessedRateLabel(
   stateUseCd: string | null | undefined,
   improvementActual: number | null | undefined,
-): string {
+): string | null {
   const code = (stateUseCd ?? "").trim().replace(/\.0+$/, "");
+  if (!code) return null;
   const hasImprovement = positiveActual(improvementActual) > 0;
   const prefix = code[0] ?? "";
-  if (prefix === "4") return "25%";
-  if (prefix === "2") return hasImprovement ? "25%" : "26%";
-  return "26%";
+  // DPT / Assessors' Library class prefixes (2026 chart + Chapter 6).
+  if (prefix === "0") return "26%"; // vacant land
+  if (prefix === "2") return hasImprovement ? "25%" : "26%"; // commercial
+  if (prefix === "3") return "26%"; // industrial
+  if (prefix === "4") return "25%"; // agricultural
+  if (prefix === "5") return "26%"; // natural resources
+  if (prefix === "8") return "26%"; // state assessed
+  // 6/7 mines & oil/gas use special formulas; 9xxx exempt is "according to use".
+  return null;
 }
 
 export function resolveParcelAssessmentProfile(
