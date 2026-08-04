@@ -33,7 +33,7 @@ Phrases: "Do final checks" / "Run final checks". Touched or named scope only. No
 2. Resident cold-read on new/edited resident-facing strings (built wording). Report voice issues; mechanical slips only may be fixed.
 3. Docs if needed (above).
 4. **Run npm gates (execute locally; fix failures before reporting done):** Match touched scope. These run **before the PR**; GitHub CI on the PR is the backup. Vitest does not typecheck (`tsconfig.json` includes `*.test.ts`).
-   - Any `.ts`/`.tsx` changed: `npm run typecheck`
+   - Any `.ts`/`.tsx` changed: `npm run typecheck` (`next typegen` + `tsc --noEmit`)
    - Test or logic in scope: `npm run test:unit` (or a targeted `vitest run` path)
    - JSON/templates, Next config, or anything that affects the production bundle: `npm run build` (same TypeScript + bundle gate as production deploy and CI e2e)
    - UI contract changed: full chromium/firefox/webkit e2e per Playwright rule — fresh `npm run typecheck`, `npm run build`, then `CI=1 npm run test:e2e` (`next start`, not `next dev`). Match current UI.

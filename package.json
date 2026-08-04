@@ -13,7 +13,7 @@
     "ci:test:parcel-index": "npm run test:parcel-index",
     "ci:test:unit": "npm run test:unit",
     "ci:typecheck": "npm run typecheck",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
