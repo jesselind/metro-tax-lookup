@@ -19,7 +19,7 @@ export type ChangelogEntry = {
   version: string;
   /** Calendar date the version shipped (YYYY-MM-DD, America/Denver). */
   date: string;
-  /** One-line resident takeaway. */
+  /** One-line technical takeaway for contributors and forkers. */
   title: string;
   /** Short bullets: what changed for someone using the tool. */
   highlights: string[];
@@ -29,7 +29,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
     version: "4.6.2",
     date: "2026-08-04",
-    title: "E2e hardening and synthetic multi-PIN fixtures",
+    title: "E2E hardening and synthetic multi-PIN fixtures",
     highlights: [
       "Playwright: shared fill/search and district-details helpers; multi-PIN chooser asserts use listitem structure instead of CSS class or bounding-box geometry.",
       "Authority-chain panel UI cases no longer embed live source URL probes; one deduped HEAD/ranged-GET test covers curated cites so a flaky host does not look like a panel regression.",
