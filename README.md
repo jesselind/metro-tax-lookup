@@ -75,7 +75,7 @@ Do **not** put real county PINs in tests "because they match the county site." A
 ### Releasing a version
 
 1. Bump `version` in `package.json` (footer reads it via `APP_VERSION` in `src/lib/siteRelease.ts`).
-2. Add a **hand-written** entry at the top of `src/content/changelog.ts` (accurate technical takeaways for contributors/forkers, not commit subjects or resident-softened marketing). `src/content/changelog.test.ts` fails if the newest entry is not the current version.
+2. Review the matching `package.json` version-bump commit and related git history, then add a **hand-written** entry at the top of `src/content/changelog.ts` (accurate technical takeaways for contributors/forkers, not commit subjects or resident-softened marketing). `src/content/changelog.test.ts` fails if the newest entry is not the current version.
 3. Ship. Older `/changelog` entries stay; only add the new version at the top.
 
 **Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. CSP lives in `next.config.ts` and intentionally omits `upgrade-insecure-requests` (that header is baked at build time and breaks WebKit against plain-HTTP `next start` / e2e); terminate TLS at the edge and keep HSTS for HTTPS responses. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
