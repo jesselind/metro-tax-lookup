@@ -12,7 +12,17 @@ import {
   suggestSitusStreetsForNumber,
   type ArapahoeSitusToPinsFile,
 } from "./arapahoeSitusLookup";
-import { SYNTHETIC_PIN } from "./syntheticTestIds";
+import {
+  SYNTHETIC_MULTI_LABEL_MAJORITY,
+  SYNTHETIC_MULTI_LABEL_MINORITY,
+  SYNTHETIC_MULTI_PERSONAL_PIN,
+  SYNTHETIC_MULTI_PERSONAL_PIN_B,
+  SYNTHETIC_MULTI_REAL_PIN,
+  SYNTHETIC_MULTI_STREET_NAME,
+  SYNTHETIC_MULTI_STREET_NUMBER,
+  SYNTHETIC_MULTI_SITUS_KEY,
+  SYNTHETIC_PIN,
+} from "./syntheticTestIds";
 
 function miniSitusFile(): ArapahoeSitusToPinsFile {
   return {
@@ -205,29 +215,32 @@ describe("suggestSitusStreetsForNumber", () => {
       lookupVersion: 1,
       entryCount: 3,
       byKey: {
-        [`7700|BROADWAY|`]: [
+        [SYNTHETIC_MULTI_SITUS_KEY]: [
           {
-            pin: "033458621",
-            label: "7700 S BROADWAY, LITTLETON, CO 80122-2628",
+            pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
+            label: SYNTHETIC_MULTI_LABEL_MINORITY,
           },
           {
-            pin: "034687611",
-            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+            pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+            label: SYNTHETIC_MULTI_LABEL_MAJORITY,
           },
           {
-            pin: "034816461",
-            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+            pin: SYNTHETIC_MULTI_REAL_PIN,
+            label: SYNTHETIC_MULTI_LABEL_MAJORITY,
           },
         ],
       },
     };
-    const list = suggestSitusStreetsForNumber(file, "7700", "", "Broadway");
+    const list = suggestSitusStreetsForNumber(
+      file,
+      SYNTHETIC_MULTI_STREET_NUMBER,
+      "",
+      SYNTHETIC_MULTI_STREET_NAME,
+    );
     expect(list).toHaveLength(1);
     expect(list[0]?.hits).toHaveLength(3);
-    expect(list[0]?.hits.map((h) => h.pin)).toContain("034816461");
-    expect(list[0]?.sampleLabel).toBe(
-      "7700 S BROADWAY, LITTLETON, CO 80122-2602",
-    );
+    expect(list[0]?.hits.map((h) => h.pin)).toContain(SYNTHETIC_MULTI_REAL_PIN);
+    expect(list[0]?.sampleLabel).toBe(SYNTHETIC_MULTI_LABEL_MAJORITY);
   });
 });
 
@@ -238,30 +251,36 @@ describe("lookupPinsBySitusFuzzy multi-account situs", () => {
       lookupVersion: 1,
       entryCount: 3,
       byKey: {
-        [`7700|BROADWAY|`]: [
+        [SYNTHETIC_MULTI_SITUS_KEY]: [
           {
-            pin: "033458621",
-            label: "7700 S BROADWAY, LITTLETON, CO 80122-2628",
+            pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
+            label: SYNTHETIC_MULTI_LABEL_MINORITY,
           },
           {
-            pin: "034687611",
-            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+            pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+            label: SYNTHETIC_MULTI_LABEL_MAJORITY,
           },
           {
-            pin: "034816461",
-            label: "7700 S BROADWAY, LITTLETON, CO 80122-2602",
+            pin: SYNTHETIC_MULTI_REAL_PIN,
+            label: SYNTHETIC_MULTI_LABEL_MAJORITY,
           },
         ],
       },
     };
-    const result = lookupPinsBySitusFuzzy(file, "7700", "", "Broadway", "");
+    const result = lookupPinsBySitusFuzzy(
+      file,
+      SYNTHETIC_MULTI_STREET_NUMBER,
+      "",
+      SYNTHETIC_MULTI_STREET_NAME,
+      "",
+    );
     expect(result.kind).toBe("match");
     if (result.kind === "match") {
       expect(result.hits.map((h) => h.pin).sort()).toEqual([
-        "033458621",
-        "034687611",
-        "034816461",
-      ]);
+        SYNTHETIC_MULTI_REAL_PIN,
+        SYNTHETIC_MULTI_PERSONAL_PIN,
+        SYNTHETIC_MULTI_PERSONAL_PIN_B,
+      ].sort());
     }
   });
 });

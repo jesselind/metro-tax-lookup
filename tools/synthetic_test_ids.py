@@ -6,7 +6,7 @@
 """Invented identifiers for Python unit tests.
 
 Keep these in sync with ``src/lib/syntheticTestIds.ts``. Do not use real
-resident PIN/AIN/address values in committed tests. See README —
+PIN/AIN/situs/owner values in committed tests. See README —
 "Tests, fixtures, and PII".
 """
 

@@ -41,7 +41,7 @@ Open `http://localhost:3000`.
 
 ### Tests, fixtures, and PII
 
-This is a **public** repo. Automated tests must not spotlight a real resident (PIN, AIN, address, owner name, neighborhood code, or other fingerprints).
+This is a **public** repo. Automated tests must not spotlight a real parcel (PIN, AIN, situs, owner-of-record, neighborhood code, or other fingerprints) — residential or commercial.
 
 **What CI uses (required, committed):** Invented identifiers and tiny synthetic objects only.
 
@@ -54,9 +54,9 @@ This is a **public** repo. Automated tests must not spotlight a real resident (P
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
 | Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
 | Authority mills extract | `npm run test:authority-mills-extract` (`test_extract_authority_mills_by_tax_year.py`) | Levy % table parsing and AUTH collapse on synthetic rows (forkers: run after changing the authority-mills extractor) |
-| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Shared address helpers in `e2e/helpers/addressLookup.ts` (street field is a combobox). `e2e/address-multi-pin-chooser.spec.ts` covers shared-situs Real + business personal property chooser. `e2e/metro-yoy.spec.ts` covers amber stack callout, Changed badge, percent YoY summary, expandable breakdown, `*` dollar footnote (no stack-level bill $). Assert UI contracts — not live scrapes or brittle dollar snapshots |
+| Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Shared helpers in `e2e/helpers/addressLookup.ts` (street combobox, fill+search, district-details button). Synthetic fixtures via route fulfill — not live county parcels. Authority-chain panel UI is separate from a deduped curated-source URL probe. Assert UI contracts; dollar checks use known synthetic mills × assessed only |
 
-Do **not** put real homeowner PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
+Do **not** put real county PINs in tests "because they match the county site." Assert shapes, normalization, joins, and heuristics on **synthetic** rows instead.
 
 **What CI does not need:** Environment variables for test parcel IDs. Requiring `REF_PIN` (or similar) for the default suite would break open-source CI and contributor onboarding. Env vars are optional for *extra* private checks only.
 
@@ -75,7 +75,7 @@ Do **not** put real homeowner PINs in tests "because they match the county site.
 ### Releasing a version
 
 1. Bump `version` in `package.json` (footer / `/changelog` intro read it via `APP_VERSION` in `src/lib/siteRelease.ts`).
-2. Add a **hand-written** entry at the top of `src/content/changelog.ts` (resident takeaways, not commit subjects). `src/content/changelog.test.ts` fails if the newest entry is not the current version.
+2. Add a **hand-written** entry at the top of `src/content/changelog.ts` (accurate technical takeaways for contributors/forkers, not commit subjects or resident-softened marketing). `src/content/changelog.test.ts` fails if the newest entry is not the current version.
 3. Ship. Optional later: backfill older versions on `/changelog`.
 
 **Security:** The app trusts JSON committed at build time. There are no Subresource Integrity hashes on static data. CSP lives in `next.config.ts` and intentionally omits `upgrade-insecure-requests` (that header is baked at build time and breaks WebKit against plain-HTTP `next start` / e2e); terminate TLS at the edge and keep HSTS for HTTPS responses. If you need stronger assurance, verify repository contents and deployment artifacts in your own process (for example signed commits or supply-chain checks on the build environment).
@@ -203,7 +203,7 @@ Hand-curated **Who authorized this?** trail (**authority chain**) for selected s
 - Levy explainer modal content is data-driven from `public/data/levy-explainer-entries.json` (authoring: `docs/levy-explainer-authoring.md`).
 - Authority-chain panel (sourced "Who authorized this?") is data-driven from `public/data/levy-authority-chain-entries.json`.
 - **Docs split:** README = technical (this file). `/sources` = verify steps, citations, methodology. `/glossary` = term definitions. Avoid copying the same long block into both README and Sources.
-- **Browser e2e (Playwright):** Install browsers once with `npx playwright install` (CI uses `npx playwright install --with-deps`). **IDE:** start this app (`npm run dev` on :3000), then run tests from the Playwright extension (the extension does not start the app for you). **CLI:** `npm run test:e2e` / `test:e2e:ui` reuses :3000 on `localhost` when this app is already up; otherwise starts `next dev` there (no production typecheck). If another project owns :3000, stop it or set `E2E_PORT`. **CI-style local:** `npm run typecheck`, `npm run build`, then `CI=1 npm run test:e2e` (`next start` on `127.0.0.1:3100`). **CI (GitHub):** `.github/workflows/playwright.yml` — three jobs: **TypeScript typecheck**, **Unit tests (Vitest)**, then **Browser e2e (Playwright)** after a production `npm run build` (push/PR to `main` + `workflow_dispatch`; `permissions: contents: read`, checkout `persist-credentials: false`). **Address lookup helpers:** `e2e/helpers/addressLookup.ts` (`streetAddressField`, `searchSyntheticAddress`) — the home street field is a labeled **combobox** (typeahead), not a textbox; use the helper (or `getByLabel`) instead of `getByRole("textbox", { name: "Street address" })`. Keep `STREET_ADDRESS_FIELD_LABEL` in sync with the visible label in `HomeParcelAddressLookup`.
+- **Browser e2e (Playwright):** Install browsers once with `npx playwright install` (CI uses `npx playwright install --with-deps`). **IDE:** start this app (`npm run dev` on :3000), then run tests from the Playwright extension (the extension does not start the app for you). **CLI:** `npm run test:e2e` / `test:e2e:ui` reuses :3000 on `localhost` when this app is already up; otherwise starts `next dev` there (no production typecheck). If another project owns :3000, stop it or set `E2E_PORT`. **CI-style local:** `npm run typecheck`, `npm run build`, then `CI=1 npm run test:e2e` (`next start` on `127.0.0.1:3100`). **CI (GitHub):** `.github/workflows/playwright.yml` — three jobs: **TypeScript typecheck**, **Unit tests (Vitest)**, then **Browser e2e (Playwright)** after a production `npm run build` (push/PR to `main` + `workflow_dispatch`; `permissions: contents: read`, checkout `persist-credentials: false`). **Address lookup helpers:** `e2e/helpers/addressLookup.ts` (`streetAddressField`, `fillStreetAndSubmitSearch`, `searchSyntheticAddress`, `viewDistrictDetailsButton`) — the home street field is a labeled **combobox** (typeahead), not a textbox; use the helper (or `getByLabel`) instead of `getByRole("textbox", { name: "Street address" })`. Keep `STREET_ADDRESS_FIELD_LABEL` in sync with the visible label in `HomeParcelAddressLookup`.
 
 ## License
 

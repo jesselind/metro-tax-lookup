@@ -10,6 +10,7 @@ import {
   situsLabelForTypeaheadDisplay,
   splitSitusLabelEnvelopeLines,
 } from "./addressLabelDifference";
+import { SYNTHETIC_MULTI_LABEL_MAJORITY } from "./syntheticTestIds";
 
 describe("splitSitusLabelEnvelopeLines", () => {
   it("splits street and city on the first comma", () => {
@@ -115,10 +116,8 @@ describe("buildSitusEnvelopeDisplayRows", () => {
 describe("situsLabelForTypeaheadDisplay", () => {
   it("strips ZIP+4 for typeahead only", () => {
     expect(
-      situsLabelForTypeaheadDisplay(
-        "7700 S BROADWAY, LITTLETON, CO 80122-2602",
-      ),
-    ).toBe("7700 S BROADWAY, LITTLETON, CO 80122");
+      situsLabelForTypeaheadDisplay(SYNTHETIC_MULTI_LABEL_MAJORITY),
+    ).toBe("8888 SYNTHETIC HOSPITAL RD, E2E CITY, CO 80000");
     expect(situsLabelForTypeaheadDisplay("1940 S HOLLY ST, ENGLEWOOD, CO")).toBe(
       "1940 S HOLLY ST, ENGLEWOOD, CO",
     );

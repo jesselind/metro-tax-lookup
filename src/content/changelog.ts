@@ -4,11 +4,14 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Resident-facing release notes. Hand-written highlights only - do not paste
- * raw commit subjects. Newest first. When you bump `package.json` version,
- * add a matching entry here (unit test enforces the current version appears).
+ * Release notes for `/changelog` (footer version link). Hand-written highlights
+ * only - do not paste raw commit subjects. Newest first. When you bump
+ * `package.json` version, add a matching entry here (unit test enforces the
+ * current version appears).
  *
- * Earlier releases are not fully backfilled yet; fill them in when convenient.
+ * Audience: contributors, forkers, and anyone tracking what shipped. Prefer
+ * accurate technical takeaways over resident-softened marketing. Earlier
+ * releases are not fully backfilled yet; fill them in when convenient.
  */
 
 export type ChangelogEntry = {
@@ -16,13 +19,23 @@ export type ChangelogEntry = {
   version: string;
   /** Calendar date the version shipped (YYYY-MM-DD, America/Denver). */
   date: string;
-  /** One-line resident takeaway. */
+  /** One-line technical takeaway for contributors and forkers. */
   title: string;
   /** Short bullets: what changed for someone using the tool. */
   highlights: string[];
 };
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+  {
+    version: "4.6.2",
+    date: "2026-08-04",
+    title: "E2E hardening and synthetic multi-PIN fixtures",
+    highlights: [
+      "Playwright: shared fill/search and district-details helpers; multi-PIN chooser asserts use listitem structure instead of CSS class or bounding-box geometry.",
+      "Authority-chain panel UI cases no longer embed live source URL probes; one deduped HEAD/ranged-GET test covers curated cites so a flaky host does not look like a panel regression.",
+      "Unit tests: replaced real hospital/Broadway PINs and owners with shared SYNTHETIC_MULTI_* IDs; README test-PII policy covers commercial parcels, not only homeowners.",
+    ],
+  },
   {
     version: "4.6.1",
     date: "2026-08-03",

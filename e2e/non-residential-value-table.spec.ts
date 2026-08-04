@@ -8,7 +8,7 @@ import {
   SYNTHETIC_MULTI_E2E_ADDRESS,
   SYNTHETIC_MULTI_REAL_PIN,
 } from "./fixtures/syntheticCountyData";
-import { streetAddressField } from "./helpers/addressLookup";
+import { fillStreetAndSubmitSearch } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 /**
@@ -19,10 +19,7 @@ test("non-residential parcel shows proportional assessed split without school ro
 }) => {
   await installSyntheticCountyData(page);
   await page.goto("/");
-
-  const street = streetAddressField(page);
-  await street.fill(SYNTHETIC_MULTI_E2E_ADDRESS);
-  await page.getByRole("button", { name: "Search" }).click();
+  await fillStreetAndSubmitSearch(page, SYNTHETIC_MULTI_E2E_ADDRESS);
 
   const chooser = page.getByRole("region", { name: "Matching properties" });
   await expect(chooser).toBeVisible();

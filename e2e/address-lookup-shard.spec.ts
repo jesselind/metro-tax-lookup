@@ -34,7 +34,14 @@ test("synthetic address loads levy stack and property details", async ({
   await expect(
     details.getByText(SYNTHETIC_E2E_SITUS_LINE, { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText(SYNTHETIC_PIN).first()).toBeVisible();
+  // Matched PIN lives in the county-compare strip (below the details column), not
+  // inside #home-property-details.
+  await expect(
+    page
+      .getByRole("region", { name: "See how the county displays your data" })
+      .getByText(SYNTHETIC_PIN, { exact: true }),
+  ).toBeVisible();
   await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
+  // Synthetic mills × assessed: known fixture contract, not a live county snapshot.
   await expect(page.locator("#home-parcel-property-tax")).toContainText("$68");
 });
