@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.7.0",
+    date: "2026-08-05",
+    title: "Campaign disclosure connection, Open Graph share image, footer accuracy",
+    highlights: [
+      "Campaign disclosure: home outline control, footer sentence, Privacy external-links mention, and bottom \"Paid for by...\" line; all `campaign*` strings live in `src/lib/siteConfig.ts` and are marked FORK REQUIRED.",
+      "Open Graph / Twitter large-image metadata with committed 1200x630 art (`src/assets/images/OG-image.png`); `metadataBase` / `SITE_CONFIG.siteOrigin` (override via `NEXT_PUBLIC_SITE_URL`).",
+      "Footer accuracy copy: try to match published county/state figures, invite Contact when something looks wrong; Contact intro invites error reports.",
+    ],
+  },
+  {
     version: "4.6.2",
     date: "2026-08-04",
     title: "E2E hardening and synthetic multi-PIN fixtures",

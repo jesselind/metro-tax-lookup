@@ -4,6 +4,8 @@ Static Next.js app (**Civic Lookup™**) that helps residents understand Arapaho
 
 Not affiliated with Arapahoe County. Informational only. Verify with official county sources. Not legal or tax advice.
 
+This deployment of **Civic Lookup** was built for the [Jesse Lind for Assessor](https://jesselindforassessor.com/) campaign. The tool itself is an independent educational site (not a county website). Footer includes the campaign "Paid for by..." disclaimer when configured. **Fork required:** search `FORK REQUIRED` and edit or null out every `campaign*` field in `src/lib/siteConfig.ts` (URL, labels, paid-for-by) so you do not ship another campaign's chrome. Set `siteOrigin` (or `NEXT_PUBLIC_SITE_URL`) to your production HTTPS origin so Open Graph / Twitter cards resolve absolute image URLs. Share preview art: `src/assets/images/OG-image.png` (1200x630), wired in `src/app/layout.tsx` metadata.
+
 ## Product aim (taxpayer empowerment)
 
 The tool is for **residents and concerned citizens**, not only for reproducing county tables. The chief aim is to **empower taxpayers** with clearer context about **who** levies a tax, **identifiers** that tie to public records, and **where to inquire** when something is unclear. When structure is **obfuscated** (by complexity or by how data is published), the app should **shed light** rather than hide behind empty states — including the reality that **districts may use private administrators or shared mailing addresses**, in plain language and without naming specific firms unless citable. When a data match is uncertain, prefer **calm, actionable guidance** (bill names and IDs, county/treasurer paths, `/sources`) over **alarm-only** UI. When **bill LG ID** and **directory LG ID** differ, we still show **state registry** contact where we have it, with framing: public mail often reflects **administration or management**, not a single tidy join to tax-line IDs. Narrative methodology lives on the in-app **`/sources`** page; this README stays technical for contributors.
@@ -14,7 +16,7 @@ This file is for **repository visitors and contributors**: setup, app/architectu
 
 The in-app **`/sources`** page is for **residents and auditors**: verify-without-code steps, official citations, and plain-language methodology (matching, assessed splits, district contact vs tax IDs). Do **not** duplicate long pipeline or path dump on `/sources` — link here instead. Do **not** paste long resident methodology into this README — link `/sources`.
 
-**Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`.
+**Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`. Placeholder for multi-county / plug-and-play work: `docs/_working/plug-n-play-multi-county.md`.
 
 ## Quick start
 

@@ -24,4 +24,15 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Try demo property" }),
   ).toBeVisible();
+  // Campaign disclosure (SITE_CONFIG.campaign*); forks that clear campaignSiteUrl must drop this assert.
+  await expect(
+    page.getByRole("link", {
+      name: /Built by Jesse Lind for his Arapahoe County Assessor campaign/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Paid for by Jesse Lind for Assessor. Registered agent: Jesse Lind.",
+    ),
+  ).toBeVisible();
 });

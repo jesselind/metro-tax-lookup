@@ -17,7 +17,7 @@ export default function ContactPage() {
   return (
     <StaticArticleShell
       title="Contact"
-      intro="Questions or feedback about this site? Reach out by email."
+      intro="Questions or feedback about this site? Reach out by email. If a number looks wrong, we want to hear about it so we can fix it."
     >
       <section className="mt-8">
         <MailContactCard

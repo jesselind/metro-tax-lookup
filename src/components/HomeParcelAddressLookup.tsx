@@ -12,6 +12,11 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  CampaignSiteLink,
+  hasCampaignSiteLink,
+} from "@/components/CampaignSiteLink";
+import { SITE_CONFIG } from "@/lib/siteConfig";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { CountyCompsPdfUnavailablePopoverBody } from "@/components/CountyCompsPdfGuidance";
@@ -1780,6 +1785,14 @@ export function HomeParcelAddressLookup({
             We do not save your address. This uses publicly available data. We
             do not track you.
           </p>
+          {hasCampaignSiteLink() ? (
+            <div className="mt-3 text-center">
+              {/* FORK REQUIRED: SITE_CONFIG.campaignHomeDisclosureLabel + campaignSiteUrl */}
+              <CampaignSiteLink variant="outline">
+                {SITE_CONFIG.campaignHomeDisclosureLabel}
+              </CampaignSiteLink>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="min-w-0 space-y-3">
