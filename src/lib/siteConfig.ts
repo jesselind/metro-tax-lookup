@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { safeGithubRepoUrl } from "@/lib/safeGithubRepoUrl";
+import { safeSiteOrigin } from "@/lib/safeSiteOrigin";
 
 /**
  * Deployment-specific site chrome (repo link, optional campaign disclosure,
@@ -18,9 +19,8 @@ import { safeGithubRepoUrl } from "@/lib/safeGithubRepoUrl";
  * `campaign*` field below. Leaving another candidate's campaign URL, disclosure
  * copy, or "Paid for by" line on a redeployed fork is incorrect and misleading.
  * Home/footer/privacy UI reads these values; do not hardcode a different
- * campaign elsewhere. Longer plug-and-play notes:
- * `docs/_working/plug-n-play-multi-county.md` (gitignored; create locally if
- * missing).
+ * campaign elsewhere. Ephemeral multi-county notes can go in `docs/_working/`
+ * (gitignored).
  * ---------------------------------------------------------------------------
  */
 export const SITE_CONFIG = {
@@ -30,13 +30,13 @@ export const SITE_CONFIG = {
   /**
    * Canonical site origin (no trailing slash) for `metadataBase` / Open Graph.
    * Override with `NEXT_PUBLIC_SITE_URL` when needed (preview deploys, forks).
+   * Only a bare HTTPS origin is accepted; invalid values fall back to the
+   * default (see {@link safeSiteOrigin}).
    *
    * **Forkers:** Set to your production HTTPS origin so share previews resolve
    * `og:image` to an absolute URL.
    */
-  siteOrigin:
-    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ||
-    "https://civiclookup.com",
+  siteOrigin: safeSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL),
 
   // --- FORK REQUIRED: campaign site link (null = hide campaign link chrome) ---
 

@@ -32,7 +32,7 @@ export function CampaignSiteLink({
 
   const base =
     variant === "outline"
-      ? `${btnOutlineSecondaryMd} box-border w-full max-w-full whitespace-normal px-3 py-2.5 text-center text-base leading-snug tracking-tight sm:w-auto`
+      ? `${btnOutlineSecondaryMd} box-border w-full max-w-full cursor-pointer whitespace-normal px-3 py-2.5 text-center text-base leading-snug tracking-tight sm:w-auto`
       : COUNTY_EXTERNAL_LINK_CLASS;
 
   return (

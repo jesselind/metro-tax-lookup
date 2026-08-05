@@ -16,7 +16,7 @@ This file is for **repository visitors and contributors**: setup, app/architectu
 
 The in-app **`/sources`** page is for **residents and auditors**: verify-without-code steps, official citations, and plain-language methodology (matching, assessed splits, district contact vs tax IDs). Do **not** duplicate long pipeline or path dump on `/sources` — link here instead. Do **not** paste long resident methodology into this README — link `/sources`.
 
-**Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`. Placeholder for multi-county / plug-and-play work: `docs/_working/plug-n-play-multi-county.md`.
+**Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`.
 
 ## Quick start
 
