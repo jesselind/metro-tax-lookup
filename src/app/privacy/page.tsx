@@ -4,6 +4,10 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { StaticArticleShell } from "@/components/StaticArticleShell";
+import {
+  CampaignSiteLink,
+  hasCampaignSiteLink,
+} from "@/components/CampaignSiteLink";
 import { CONTACT_EMAIL, CONTACT_MAILTO_HREF } from "@/lib/contact";
 import {
   SITE_BRAND_NAME,
@@ -92,7 +96,17 @@ export default function PrivacyPage() {
         </h2>
         <p>
           This site links to external websites (for example, the county
-          property search). Those sites have their own privacy practices.
+          property search
+          {hasCampaignSiteLink() ? (
+            <>
+              , and the{" "}
+              {/* FORK REQUIRED: SITE_CONFIG.campaignSiteUrl / campaignSiteLabel */}
+              <CampaignSiteLink />
+              {" "}
+              campaign site
+            </>
+          ) : null}
+          ). Those sites have their own privacy practices.
         </p>
       </section>
 

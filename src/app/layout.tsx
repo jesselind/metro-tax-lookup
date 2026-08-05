@@ -7,9 +7,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ogImage from "@/assets/images/OG-image.png";
 import { APP_VERSION, SITE_LAST_UPDATED_LABEL } from "@/lib/siteRelease";
 import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import {
+  CampaignSiteLink,
+  hasCampaignSiteLink,
+} from "@/components/CampaignSiteLink";
 import { GitHubRepoButton } from "@/components/GitHubRepoButton";
+import { SITE_CONFIG } from "@/lib/siteConfig";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   SITE_CONTENT_MAX_WIDTH_CLASS,
@@ -31,7 +37,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_DESCRIPTION =
+  "Citizen-friendly tools to help Arapahoe County residents understand property taxes using publicly available state and county data.";
+
+const OG_IMAGE_ALT = `${SITE_BRAND_NAME}: Where's your property tax going?`;
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_CONFIG.siteOrigin),
   title: {
     default: SITE_BRAND_NAME,
     template: `%s | ${SITE_BRAND_NAME}`,
@@ -40,8 +52,35 @@ export const metadata: Metadata = {
   appleWebApp: {
     title: SITE_BRAND_NAME,
   },
-  description:
-    "Citizen-friendly tools to help Arapahoe County residents understand property taxes using publicly available state and county data.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: SITE_BRAND_NAME,
+    title: SITE_BRAND_NAME,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: ogImage.src,
+        width: ogImage.width,
+        height: ogImage.height,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_BRAND_NAME,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: ogImage.src,
+        width: ogImage.width,
+        height: ogImage.height,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -67,9 +106,15 @@ export default function RootLayout({
                 official sources. Not legal or tax advice.
               </p>
               <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
-                We aim for accurate results from the sources we cite, but we cannot
-                guarantee them. Official county and state records remain the source
-                of truth. See{" "}
+                We work to show the same figures the county and state publish,
+                using the public sources we cite. We try hard, but we can still
+                make mistakes. Official county and state records remain the source
+                of truth. If something looks wrong, please{" "}
+                <Link href="/contact" className={TERM_LINK_CLASS}>
+                  Contact
+                </Link>
+                {" "}
+                us so we can fix it. See{" "}
                 <Link href="/sources" className={TERM_LINK_CLASS}>
                   Sources
                 </Link>
@@ -117,6 +162,18 @@ export default function RootLayout({
                 </Link>
                 {" "}
                 page.
+                {hasCampaignSiteLink() ? (
+                  <>
+                    {" "}
+                    {/* FORK REQUIRED: copy from SITE_CONFIG.campaignFooterDisclosure* */}
+                    {SITE_CONFIG.campaignFooterDisclosureBeforeLink}
+                    {" "}
+                    <CampaignSiteLink>
+                      {SITE_CONFIG.campaignFooterDisclosureLinkText}
+                    </CampaignSiteLink>
+                    .
+                  </>
+                ) : null}
               </p>
               <GitHubRepoButton />
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -144,6 +201,12 @@ export default function RootLayout({
                   </Link>
                 </nav>
               </div>
+              {SITE_CONFIG.campaignPaidForByDisclaimer?.trim() ? (
+                <p className="mt-6 text-center text-xs leading-relaxed text-slate-500 sm:text-sm">
+                  {/* FORK REQUIRED: SITE_CONFIG.campaignPaidForByDisclaimer */}
+                  {SITE_CONFIG.campaignPaidForByDisclaimer.trim()}
+                </p>
+              ) : null}
             </div>
           </footer>
         </div>
