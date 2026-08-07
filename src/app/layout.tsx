@@ -37,8 +37,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_DESCRIPTION =
-  "Citizen-friendly tools to help Arapahoe County residents understand property taxes using publicly available state and county data.";
+const SITE_DESCRIPTION = "Follow every cent of your property tax.";
 
 const OG_IMAGE_ALT = `${SITE_BRAND_NAME}: Where's your property tax going?`;
 
