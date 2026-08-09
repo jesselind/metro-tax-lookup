@@ -516,13 +516,16 @@ export function TermContractualObligationBriefBody() {
 export function TermPropertyClassificationBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The county&apos;s short label for what kind of property this is for tax purposes, not city
-      zoning. Records often say{" "}
+      The county&apos;s short label for what kind of property this is for tax
+      purposes, not city zoning. Records often say{" "}
       <strong className="font-semibold text-slate-900">Improvement</strong>
       {" "}
       (there is a building) even when your notice says{" "}
       <strong className="font-semibold text-slate-900">Residential</strong>
-      . Same home, different words.
+      . Same home, different words. When the county says{" "}
+      <strong className="font-semibold text-slate-900">Personal</strong>
+      , that means business personal property (equipment and similar), not a
+      house-and-land parcel.
     </p>
   );
 }
@@ -573,11 +576,24 @@ export function TermAssessedValueBriefBody() {
 export function TermCompsBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Short for{" "}
-      <strong className="font-semibold text-slate-900">comparables</strong>
-      {": "}
-      nearby properties the county thinks are like yours, used when it estimates value. Same idea as
-      &quot;comps&quot; when people buy or sell a house, but this list is the county&apos;s.
+      Nearby properties the county thinks are like yours, used when it estimates
+      value. People often call them{" "}
+      <strong className="font-semibold text-slate-900">comps</strong>
+      {" "}
+      (short for comparables). Same idea as when people buy or sell a house, but
+      this list is the county&apos;s. The control opens the county PDF for your
+      parcel.
+    </p>
+  );
+}
+
+export function TermNoticeOfValuationBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The county&apos;s letter (as a PDF) saying what it thinks your business
+      equipment and other personal property are worth for tax purposes. It can
+      also show how that value changed from last year and when you may appeal.
+      Not a list of comparable sales.
     </p>
   );
 }
@@ -748,13 +764,28 @@ export function TermSubdivisionBriefBody() {
 export function TermTaxRollBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Most homes are taxed as{" "}
+      Which tax roll the account sits on. Most homes and buildings are{" "}
       <strong className="font-semibold text-slate-900">Real</strong>
+      .{" "}
+      <strong className="font-semibold text-slate-900">Personal</strong>
       {" "}
-      property (the land and buildings). That is different from a more specific label like{" "}
-      <strong className="font-semibold text-slate-900">Improvement</strong>
-      {" "}
-      (meaning there is a building).
+      means business personal property (equipment and similar), taxed on a
+      separate account from the land and buildings at the same address.
+    </p>
+  );
+}
+
+export function TermAccountTypeBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Which kind of county account you are viewing. One street address can have
+      more than one: for example the building and land (
+      <strong className="font-semibold text-slate-900">Real property</strong>
+      ) plus separate{" "}
+      <strong className="font-semibold text-slate-900">
+        business personal property
+      </strong>{" "}
+      for equipment at the same place.
     </p>
   );
 }
@@ -914,6 +945,7 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-assessed-value",
   "term-property-tax",
   "term-comps",
+  "term-notice-of-valuation",
   "term-ain",
   "term-situs-address",
   "term-situs-city",
@@ -924,6 +956,7 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-state-use",
   "term-subdivision",
   "term-tax-roll",
+  "term-account-type",
   "term-real-property",
   "term-business-personal-property",
   "term-assessment-year",
@@ -975,7 +1008,14 @@ export const parcelGlossaryTermBriefRegistry: Record<
     title: "Property tax",
     Brief: TermPropertyTaxBriefBody,
   },
-  "term-comps": { title: "Comps PDF", Brief: TermCompsBriefBody },
+  "term-comps": {
+    title: "Comparable properties",
+    Brief: TermCompsBriefBody,
+  },
+  "term-notice-of-valuation": {
+    title: "Notice of Valuation",
+    Brief: TermNoticeOfValuationBriefBody,
+  },
   "term-ain": { title: "AIN", Brief: TermAinBriefBody },
   "term-situs-address": {
     title: "Situs address",
@@ -1012,6 +1052,10 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-tax-roll": {
     title: "Tax roll",
     Brief: TermTaxRollBriefBody,
+  },
+  "term-account-type": {
+    title: "Account type",
+    Brief: TermAccountTypeBriefBody,
   },
   "term-real-property": {
     title: "Real property",

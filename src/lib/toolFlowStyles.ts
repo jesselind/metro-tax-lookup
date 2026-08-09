@@ -127,8 +127,13 @@ export const LEVY_STACK_TILE_GRID_CLASS =
  * Parcel summary row (home): wrapping flex row; tiles use {@link PARCEL_SUMMARY_TILE_CLASS} (max-content
  * width, capped by max-w-full).
  */
+/**
+ * Summary tiles wrap into content-sized chips. `items-start` keeps each tile’s
+ * own height so a taller neighbor (e.g. comps icon) does not pad siblings.
+ */
 export const PARCEL_SUMMARY_ROW_CLASS =
-  "flex w-full min-w-0 flex-row flex-wrap items-stretch justify-start gap-3 sm:gap-4";
+  "flex w-full min-w-0 flex-row flex-wrap items-start justify-start gap-3 sm:gap-4";
+
 
 /** Value tiles join the parent summary row at all breakpoints (no full-width wrapper). */
 export const PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS = "contents";
@@ -200,6 +205,24 @@ export const PARCEL_SUMMARY_TILE_VALUE_CLASS =
 
 export const PARCEL_SUMMARY_TILE_ADDRESS_CLASS =
   "text-base font-semibold leading-snug tracking-tight text-slate-900 sm:text-lg";
+
+/**
+ * Account-type summary tile when other PINs share this situs (reopens chooser).
+ * Full-tile hit target; glossary label stays above the overlay (same idea as
+ * limited comps). Indigo frame only — never the comps red alert border.
+ */
+export const PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0 cursor-pointer border-indigo-300 bg-indigo-50/40 shadow-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50/80`;
+
+/**
+ * Invisible full-tile button behind account-type content (glossary label is
+ * `relative z-[2] pointer-events-auto` with pointerdown stopPropagation).
+ */
+export const PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_OVERLAY_CLASS =
+  "absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent p-0 transition-colors hover:bg-indigo-100/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600";
+
+/** Decorative swap glyph on the account-type value row (sized to the value line). */
+export const PARCEL_SUMMARY_ACCOUNT_SWITCH_ICON_DECORATIVE_CLASS =
+  "inline-flex shrink-0 self-center text-indigo-700";
 
 /**
  * Metro percent cards: wrap into content-sized columns. Default grid `align-items: stretch`

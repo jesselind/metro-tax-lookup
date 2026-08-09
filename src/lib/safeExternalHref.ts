@@ -47,11 +47,35 @@ export function safeArapahoeLevyAspxUrl(
 }
 
 /**
- * When true, the home "Comps PDF" control explains county FileDownload.ashx
- * availability per the Assessor's office (see countyCompsPdfGuidance.ts). Flip
- * to false once downloads work reliably again.
+ * When true, the home "Comparable properties" control explains county
+ * FileDownload.ashx availability per the Assessor's office (see
+ * countyCompsPdfGuidance.ts). Flip to false once downloads work reliably again.
  */
 export const ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE = true;
+
+const ARAPAHOE_BPP_SEARCH_HOST = "personalpropertysearch.arapahoegov.com";
+
+/**
+ * County business personal property account details page (AIN from pin map).
+ * https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=…
+ * Real-property PPINum.aspx does not serve these accounts.
+ */
+export function safeArapahoeBppAccountDetailsUrl(
+  ainRaw: string | null | undefined,
+): string | null {
+  const ain = String(ainRaw ?? "").trim();
+  if (!ain) return null;
+  try {
+    const url = new URL(`https://${ARAPAHOE_BPP_SEARCH_HOST}/Details.aspx`);
+    url.searchParams.set("AIN", ain);
+    if (url.hostname.toLowerCase() !== ARAPAHOE_BPP_SEARCH_HOST) {
+      return null;
+    }
+    return url.href;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * County parcel record page for one property (AIN from Main Parcel export).
@@ -118,6 +142,30 @@ export function safeArapahoeCompsGridPdfUrl(
   try {
     const url = new URL("https://parcelsearch.arapahoegov.com/FileDownload.ashx");
     url.searchParams.set("AIN", ain);
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * County business personal property Notice of Valuation PDF (AIN from pin map).
+ * https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=…
+ * Real-property parcelsearch FileDownload does not serve these notices.
+ */
+export function safeArapahoeBppNoticeOfValuationPdfUrl(
+  ainRaw: string | null | undefined,
+): string | null {
+  const ain = String(ainRaw ?? "").trim();
+  if (!ain) return null;
+  try {
+    const url = new URL(
+      `https://${ARAPAHOE_BPP_SEARCH_HOST}/FileDownload.ashx`,
+    );
+    url.searchParams.set("AIN", ain);
+    if (url.hostname.toLowerCase() !== ARAPAHOE_BPP_SEARCH_HOST) {
+      return null;
+    }
     return url.href;
   } catch {
     return null;

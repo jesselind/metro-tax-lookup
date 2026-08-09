@@ -683,9 +683,17 @@ export default function SourcesPage() {
             the row you want. Rows show the county situs street line and a second
             line with city, state, and ZIP from the Main Parcel export (the county
             file with parcel address details).{" "}
-            <strong className="text-slate-900">Business personal property</strong>{" "}
-            is out of scope. Nothing is sent to our servers; address fields are
-            length-capped in the browser.
+            <strong className="text-slate-900">Business personal property</strong>
+            {" "}
+            accounts can appear in that list when they share a street address with
+            Real property. Those accounts keep owner, situs, values, and the levy
+            stack for their tax district; building, land, sale, permit, and
+            comparable-properties tools stay with Real parcels. Equipment accounts
+            can open a county{" "}
+            <strong className="text-slate-900">Notice of Valuation</strong>
+            {" "}
+            PDF when an AIN is in the pin map. Nothing is sent to our servers;
+            address fields are length-capped in the browser.
           </li>
           <li>
             <strong>Taxing authority group (TAG):</strong>{" "}Your parcel maps to
@@ -799,11 +807,15 @@ export default function SourcesPage() {
             allocate the mart total in proportion to appraised building and land.
             The percent next to an assessed row shows which rate turned appraised
             value into assessed value, the figure mill rates use on your property
-            tax bill. Labels follow the county&apos;s state use code (how the land
-            is classified) when that code maps cleanly to a DPT chart row (a line
-            on the state&apos;s assessment-rate table; for example commercial
-            25%/26%, industrial 26%); exempt and other unmapped codes omit the
-            parenthetical rather than invent a percent. Logic lives in{" "}
+            tax bill. For Real property, labels follow the county&apos;s state use
+            code when that code maps cleanly to a DPT chart row (for example
+            commercial 25%/26%, industrial 26%); exempt and other unmapped codes
+            omit the parenthetical rather than invent a percent.{" "}
+            <strong className="text-slate-900">Business personal property</strong>
+            {" "}
+            uses the Colorado personal-property assessment rate for that
+            assessment year (26% for 2026; 27% for 2025; 25% from 2027), not the
+            Real state-use chart. Logic lives in{" "}
             <code>src/lib/parcelAssessmentRates.ts</code> (display) and the build
             script (bundled shards).
           </li>
@@ -821,7 +833,8 @@ export default function SourcesPage() {
             site too.
           </li>
           <li>
-            <strong>Comps PDF</strong>{" "}uses the parcel&apos;s AIN when available.{" "}
+            <strong>Comparable properties</strong>{" "}
+            (often called comps) uses the parcel&apos;s AIN when available.{" "}
             When county hosting is limited, the home summary tile uses a red
             alert border with a short status; the whole tile opens the full explanation
             (the PDF icon is a visual cue), and includes a link to try the county download if your value changed.{" "}
@@ -839,6 +852,25 @@ export default function SourcesPage() {
               <span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             explainer.
+          </li>
+          <li>
+            <strong>Notice of Valuation</strong>{" "}
+            for business personal property uses the same AIN pattern on{" "}
+            <span className="whitespace-nowrap">
+              personalpropertysearch.arapahoegov.com
+            </span>
+            {" "}
+            (<span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>
+            ). That PDF is the county notice for the equipment account, not a
+            comps grid. Real-property{" "}
+            <span className="whitespace-nowrap">parcelsearch</span>{" "}
+            FileDownload does not serve these notices. The county compare card
+            also links the account details page (
+            <span className="whitespace-nowrap">Details.aspx?AIN=…</span>
+            ) on that same host. On the home dashboard, business personal
+            property keeps the short property panel and totals-only values table
+            together in the property column; Real accounts still place the longer
+            values / sale / building / permit tables below the levy grid.
           </li>
         </ul>
 

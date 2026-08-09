@@ -18,6 +18,7 @@ import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { formatMartIntegerCodeDisplay } from "@/lib/parcelRecordDisplay";
+import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -102,6 +103,12 @@ export function ParcelRecordPanel({
   const displayRecord = useDisplayParcelRecord(record, demoMode);
 
   const parcelRecordHref = safeArapahoeParcelRecordUrl(displayRecord?.ain);
+  const isBusinessPersonal =
+    displayRecord != null &&
+    isBusinessPersonalPropertyAccount({
+      taxRollDescr: displayRecord.taxRollDescr,
+      propertyClassDescr: displayRecord.propertyClassDescr,
+    });
 
   const legalDisplay = (displayRecord?.legalDescrDisplay ?? "").trim();
   const legalFull = (displayRecord?.legalDescrFull ?? "").trim();
@@ -153,55 +160,61 @@ export function ParcelRecordPanel({
               value={displayRecord.situsCity}
               triggerIdSuffix="situs-city"
             />
-            <div className={ROW_CLASS}>
-              <dt className={LABEL_CLASS}>
-                <ParcelGlossaryPopoverTrigger
-                  termId="term-photo-sketch"
-                  textTrigger="Photo / Sketch"
-                  textTriggerId="parcel-record-photo-sketch"
-                  variant="parcel-record"
-                />
-              </dt>
-              <dd
-                className={
-                  demoMode || !parcelRecordHref ? MISSING_VALUE_CLASS : VALUE_CLASS
-                }
-              >
-                {demoMode ? (
-                  <span className={MISSING_VALUE_CLASS}>
-                    Not available in demo mode.
-                  </span>
-                ) : parcelRecordHref ? (
-                  <a
-                    href={parcelRecordHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={COUNTY_EXTERNAL_LINK_CLASS}
-                  >
-                    View on county site
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : (
-                  <ParcelRecordMissingValue
-                    fieldLabel="Photo / Sketch"
-                    triggerIdSuffix="photo-sketch"
-                    className={MISSING_TRIGGER_CLASS}
+            {!isBusinessPersonal ? (
+              <div className={ROW_CLASS}>
+                <dt className={LABEL_CLASS}>
+                  <ParcelGlossaryPopoverTrigger
+                    termId="term-photo-sketch"
+                    textTrigger="Photo / Sketch"
+                    textTriggerId="parcel-record-photo-sketch"
+                    variant="parcel-record"
                   />
-                )}
-              </dd>
-            </div>
+                </dt>
+                <dd
+                  className={
+                    demoMode || !parcelRecordHref
+                      ? MISSING_VALUE_CLASS
+                      : VALUE_CLASS
+                  }
+                >
+                  {demoMode ? (
+                    <span className={MISSING_VALUE_CLASS}>
+                      Not available in demo mode.
+                    </span>
+                  ) : parcelRecordHref ? (
+                    <a
+                      href={parcelRecordHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={COUNTY_EXTERNAL_LINK_CLASS}
+                    >
+                      View on county site
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    <ParcelRecordMissingValue
+                      fieldLabel="Photo / Sketch"
+                      triggerIdSuffix="photo-sketch"
+                      className={MISSING_TRIGGER_CLASS}
+                    />
+                  )}
+                </dd>
+              </div>
+            ) : null}
             <ParcelRecordRow
               termId="term-owner-list"
               label="Full Owner List"
               value={displayRecord.ownerList}
               triggerIdSuffix="owner-list"
             />
-            <ParcelRecordRow
-              termId="term-ownership-type"
-              label="Ownership Type"
-              value={displayRecord.ownershipType}
-              triggerIdSuffix="ownership-type"
-            />
+            {!isBusinessPersonal ? (
+              <ParcelRecordRow
+                termId="term-ownership-type"
+                label="Ownership Type"
+                value={displayRecord.ownershipType}
+                triggerIdSuffix="ownership-type"
+              />
+            ) : null}
             <ParcelRecordRow
               label="Owner Address"
               value={displayRecord.ownerDeliveryAddress}
@@ -212,57 +225,67 @@ export function ParcelRecordPanel({
               value={displayRecord.ownerCityStateZip}
               triggerIdSuffix="owner-city-state-zip"
             />
-            <ParcelRecordRow
-              label="Neighborhood"
-              value={displayRecord.neighborhood}
-              triggerIdSuffix="neighborhood"
-            />
-            <ParcelRecordRow
-              label="Neighborhood Code"
-              value={displayRecord.neighborhoodCode}
-              triggerIdSuffix="neighborhood-code"
-            />
-            <ParcelRecordRow
-              label="Acreage"
-              value={displayRecord.acreage}
-              triggerIdSuffix="acreage"
-            />
-            <ParcelRecordRow
-              termId="term-land-use"
-              label="Land Use"
-              value={displayRecord.landUse}
-              triggerIdSuffix="land-use"
-            />
-            <ParcelRecordRow
-              termId="term-state-use"
-              label="State Use"
-              value={displayRecord.stateUseLabel}
-              triggerIdSuffix="state-use"
-            />
-            <ParcelRecordRow
-              termId="term-state-use"
-              label="State Use Code"
-              value={formatMartIntegerCodeDisplay(displayRecord.stateUseCd)}
-              triggerIdSuffix="state-use-code"
-            />
+            {!isBusinessPersonal ? (
+              <>
+                <ParcelRecordRow
+                  label="Neighborhood"
+                  value={displayRecord.neighborhood}
+                  triggerIdSuffix="neighborhood"
+                />
+                <ParcelRecordRow
+                  label="Neighborhood Code"
+                  value={displayRecord.neighborhoodCode}
+                  triggerIdSuffix="neighborhood-code"
+                />
+                <ParcelRecordRow
+                  label="Acreage"
+                  value={displayRecord.acreage}
+                  triggerIdSuffix="acreage"
+                />
+                <ParcelRecordRow
+                  termId="term-land-use"
+                  label="Land Use"
+                  value={displayRecord.landUse}
+                  triggerIdSuffix="land-use"
+                />
+                <ParcelRecordRow
+                  termId="term-state-use"
+                  label="State Use"
+                  value={displayRecord.stateUseLabel}
+                  triggerIdSuffix="state-use"
+                />
+                <ParcelRecordRow
+                  termId="term-state-use"
+                  label="State Use Code"
+                  value={formatMartIntegerCodeDisplay(displayRecord.stateUseCd)}
+                  triggerIdSuffix="state-use-code"
+                />
+              </>
+            ) : null}
             <ParcelRecordRow
               termId="term-tax-roll"
               label="Tax Roll"
               value={displayRecord.taxRollDescr}
               triggerIdSuffix="tax-roll"
             />
-            <ParcelRecordRow
-              termId="term-subdivision"
-              label="Subdivision"
-              value={displayRecord.subdivisionName}
-              triggerIdSuffix="subdivision"
-            />
-            <ParcelRecordRow
-              termId="term-subdivision"
-              label="Subdivision Code"
-              value={formatMartIntegerCodeDisplay(displayRecord.subdivisionCd)}
-              triggerIdSuffix="subdivision-code"
-            />
+            {!isBusinessPersonal ? (
+              <>
+                <ParcelRecordRow
+                  termId="term-subdivision"
+                  label="Subdivision"
+                  value={displayRecord.subdivisionName}
+                  triggerIdSuffix="subdivision"
+                />
+                <ParcelRecordRow
+                  termId="term-subdivision"
+                  label="Subdivision Code"
+                  value={formatMartIntegerCodeDisplay(
+                    displayRecord.subdivisionCd,
+                  )}
+                  triggerIdSuffix="subdivision-code"
+                />
+              </>
+            ) : null}
             <div className={ROW_CLASS}>
               <dt className={LABEL_CLASS}>
                 <ParcelGlossaryPopoverTrigger

@@ -8,9 +8,13 @@
 import { useMemo } from "react";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
-import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import {
+  ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH,
+  ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
+} from "@/lib/arapahoeCountyUrls";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
+  safeArapahoeBppAccountDetailsUrl,
   safeArapahoeLevyAspxUrl,
   safeArapahoeParcelRecordUrl,
 } from "@/lib/safeExternalHref";
@@ -25,6 +29,11 @@ export type LevyCountyCompareSectionProps = {
   ain?: string | null;
   /** Demo property: show parcel record control disabled (no county link-out). */
   demoMode?: boolean;
+  /**
+   * Business personal property: Details.aspx on personalpropertysearch; search
+   * form is the BPP search (not Real property search / PPINum).
+   */
+  businessPersonal?: boolean;
 };
 
 export function LevyCountyCompareSection({
@@ -34,6 +43,7 @@ export function LevyCountyCompareSection({
   levyAspxUrl,
   ain,
   demoMode = false,
+  businessPersonal = false,
 }: LevyCountyCompareSectionProps) {
   const safeLevyTableHref = useMemo(
     () => safeArapahoeLevyAspxUrl(levyAspxUrl),
@@ -45,8 +55,26 @@ export function LevyCountyCompareSection({
     [ain],
   );
 
-  const showParcelRecordLink = !demoMode && safeParcelRecordHref != null;
-  const showParcelRecordDemoControl = demoMode;
+  const safeBppDetailsHref = useMemo(
+    () => safeArapahoeBppAccountDetailsUrl(ain),
+    [ain],
+  );
+
+  const accountRecordHref = businessPersonal
+    ? safeBppDetailsHref
+    : safeParcelRecordHref;
+  const accountRecordLabel = businessPersonal
+    ? "Open county business personal property record"
+    : "Open county parcel record";
+
+  const showAccountRecordLink = !demoMode && accountRecordHref != null;
+  const showAccountRecordDemoControl = demoMode;
+  const propertySearchHref = businessPersonal
+    ? ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH
+    : ARAPAHOE_ASSESSOR_PROPERTY_SEARCH;
+  const propertySearchLabel = businessPersonal
+    ? "County business personal property search"
+    : "County property search";
 
   return (
     <section
@@ -90,7 +118,7 @@ export function LevyCountyCompareSection({
         </div>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start">
-        {showParcelRecordDemoControl ? (
+        {showAccountRecordDemoControl ? (
           <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-auto">
             <button
               type="button"
@@ -98,7 +126,7 @@ export function LevyCountyCompareSection({
               className={COUNTY_ACTION_CLASS}
               aria-describedby="levy-county-parcel-record-demo-hint"
             >
-              Open county parcel record
+              {accountRecordLabel}
             </button>
             <p
               id="levy-county-parcel-record-demo-hint"
@@ -107,14 +135,14 @@ export function LevyCountyCompareSection({
               Not available in demo mode.
             </p>
           </div>
-        ) : showParcelRecordLink ? (
+        ) : showAccountRecordLink ? (
           <a
-            href={safeParcelRecordHref}
+            href={accountRecordHref}
             target="_blank"
             rel="noopener noreferrer"
             className={COUNTY_ACTION_CLASS}
           >
-            Open county parcel record
+            {accountRecordLabel}
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
         ) : null}
@@ -130,12 +158,12 @@ export function LevyCountyCompareSection({
           </a>
         ) : null}
         <a
-          href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+          href={propertySearchHref}
           target="_blank"
           rel="noopener noreferrer"
           className={COUNTY_ACTION_CLASS}
         >
-          County property search
+          {propertySearchLabel}
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
       </div>

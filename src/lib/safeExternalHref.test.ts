@@ -5,6 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  safeArapahoeBppAccountDetailsUrl,
+  safeArapahoeBppNoticeOfValuationPdfUrl,
   safeArapahoeClerkRecorderSearchUrl,
   safeArapahoeCompsGridPdfUrl,
   safeArapahoeLevyAspxUrl,
@@ -104,6 +106,50 @@ describe("safeArapahoeCompsGridPdfUrl", () => {
   it("URL-encodes special characters in AIN", () => {
     expect(safeArapahoeCompsGridPdfUrl("a&b=c")).toBe(
       "https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=a%26b%3Dc",
+    );
+  });
+});
+
+describe("safeArapahoeBppNoticeOfValuationPdfUrl", () => {
+  it("builds personalpropertysearch FileDownload.ashx URL from AIN", () => {
+    expect(safeArapahoeBppNoticeOfValuationPdfUrl(SYNTHETIC_AIN)).toBe(
+      `https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=${SYNTHETIC_AIN}`,
+    );
+  });
+
+  it("returns null for empty AIN", () => {
+    expect(safeArapahoeBppNoticeOfValuationPdfUrl("   ")).toBeNull();
+    expect(safeArapahoeBppNoticeOfValuationPdfUrl(null)).toBeNull();
+  });
+
+  it("URL-encodes special characters in AIN", () => {
+    expect(safeArapahoeBppNoticeOfValuationPdfUrl("a&b=c")).toBe(
+      "https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=a%26b%3Dc",
+    );
+  });
+
+  it("does not use the real-property parcelsearch host", () => {
+    const href = safeArapahoeBppNoticeOfValuationPdfUrl(SYNTHETIC_AIN);
+    expect(href).not.toMatch(/parcelsearch\.arapahoegov\.com/);
+    expect(href).toMatch(/^https:\/\/personalpropertysearch\.arapahoegov\.com\//);
+  });
+});
+
+describe("safeArapahoeBppAccountDetailsUrl", () => {
+  it("builds personalpropertysearch Details.aspx URL from AIN", () => {
+    expect(safeArapahoeBppAccountDetailsUrl(SYNTHETIC_AIN)).toBe(
+      `https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=${SYNTHETIC_AIN}`,
+    );
+  });
+
+  it("returns null for empty AIN", () => {
+    expect(safeArapahoeBppAccountDetailsUrl("")).toBeNull();
+    expect(safeArapahoeBppAccountDetailsUrl(null)).toBeNull();
+  });
+
+  it("URL-encodes special characters in AIN", () => {
+    expect(safeArapahoeBppAccountDetailsUrl("a&b=c")).toBe(
+      "https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=a%26b%3Dc",
     );
   });
 });

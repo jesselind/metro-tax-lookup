@@ -15,6 +15,7 @@ import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import {
   COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
   COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
+  coloradoPersonalPropertyAssessedRateLabel,
 } from "@/lib/coloradoDptAssessmentRates";
 
 export const COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE = 0.068;
@@ -103,9 +104,25 @@ export function resolveParcelAssessmentProfile(
   const year = parseAssessmentYear(record.assessmentYear);
   const taxRoll = (record.taxRollDescr ?? "").trim().toUpperCase();
   const isReal = taxRoll === "REAL";
+  const isPersonal =
+    taxRoll === "PERSONAL" ||
+    (taxRoll.length === 0 &&
+      ["PERSONAL", "PERSPROP"].includes(
+        (record.propertyClassDescr ?? "").trim().toUpperCase(),
+      ));
   const isImprovement =
     (record.propertyClassDescr ?? "").trim() === "Improvement";
   const residential = isResidentialStateUseCode(record.stateUseCd);
+
+  // Business personal property: flat DPT personal-property rate by year (not
+  // the Real state-use chart). Totals stay mart totals; no building/land split.
+  if (isPersonal) {
+    return {
+      mode: "single_rate",
+      assessedRateLabel: coloradoPersonalPropertyAssessedRateLabel(year),
+      showSchoolAssessedRow: false,
+    };
+  }
 
   if (!isReal || year == null || year < DUAL_ASSESSED_MIN_ASSESSMENT_YEAR) {
     return {
@@ -227,13 +244,20 @@ export function buildParcelValueTableRows(
   record: ArapahoeParcelRecordRow,
 ): ParcelValueTableRow[] {
   const profile = resolveParcelAssessmentProfile(record);
+  const taxRoll = (record.taxRollDescr ?? "").trim().toUpperCase();
+  const isPersonal =
+    taxRoll === "PERSONAL" ||
+    (taxRoll.length === 0 &&
+      ["PERSONAL", "PERSPROP"].includes(
+        (record.propertyClassDescr ?? "").trim().toUpperCase(),
+      ));
   const rows: ParcelValueTableRow[] = [
     {
       kind: "appraised",
       values: {
         total: record.totalActual,
-        building: record.improvementActual,
-        land: record.landActual,
+        building: isPersonal ? null : record.improvementActual,
+        land: isPersonal ? null : record.landActual,
       },
     },
   ];
@@ -242,7 +266,13 @@ export function buildParcelValueTableRows(
     record.totalAssessed != null && Number.isFinite(record.totalAssessed);
   if (hasAssessed) {
     let assessedValues: ParcelValueColumn;
-    if (profile.mode === "residential_dual") {
+    if (isPersonal) {
+      assessedValues = {
+        total: record.totalAssessed,
+        building: null,
+        land: null,
+      };
+    } else if (profile.mode === "residential_dual") {
       assessedValues = residentialLocalAssessedSplit(
         record.improvementActual,
         record.landActual,

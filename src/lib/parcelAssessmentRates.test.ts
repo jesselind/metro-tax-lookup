@@ -71,7 +71,7 @@ describe("resolveParcelAssessmentProfile", () => {
     ).toBeNull();
   });
 
-  it("uses mode none for non-REAL tax roll", () => {
+  it("uses personal-property DPT rate for Personal tax roll", () => {
     const profile = resolveParcelAssessmentProfile({
       stateUseCd: "9179",
       taxRollDescr: "Personal",
@@ -79,8 +79,8 @@ describe("resolveParcelAssessmentProfile", () => {
       assessmentYear: "2026",
       improvementActual: 100,
     });
-    expect(profile.mode).toBe("none");
-    expect(profile.assessedRateLabel).toBeNull();
+    expect(profile.mode).toBe("single_rate");
+    expect(profile.assessedRateLabel).toBe("26%");
     expect(profile.showSchoolAssessedRow).toBe(false);
   });
 
@@ -220,15 +220,24 @@ describe("buildParcelValueTableRows", () => {
     expect(assessed?.values.land).toBe(porterHospital.assessedLand);
   });
 
-  it("keeps mart assessed splits for non-REAL accounts", () => {
+  it("labels personal-property assessed with the DPT year rate", () => {
     const rows = buildParcelValueTableRows({
       ...porterHospital,
       taxRollDescr: "Personal",
       propertyClassDescr: "Personal",
+      assessmentYear: "2026",
+      improvementActual: null,
+      landActual: null,
+      assessedBuilding: null,
+      assessedLand: null,
     });
     expect(rows.map((r) => r.kind)).toEqual(["appraised", "assessed"]);
     const assessed = rows.find((r) => r.kind === "assessed");
-    expect(assessed?.rateLabel).toBeNull();
-    expect(assessed?.values.building).toBe(porterHospital.assessedBuilding);
+    expect(assessed?.rateLabel).toBe("26%");
+    expect(assessed?.values).toEqual({
+      total: porterHospital.totalAssessed,
+      building: null,
+      land: null,
+    });
   });
 });

@@ -129,9 +129,12 @@ export default function RootLayout({
               <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
                 Address lookup runs in your browser from static files on this
                 site; your address is not sent to us or the county when you
-                search. Coverage is Main Parcel / real property in Arapahoe
-                County (homes, buildings, land), not business personal property.
-                Use the{" "}
+                search. Coverage is Arapahoe County Main Parcel accounts (homes,
+                buildings, land) and business personal property when the county
+                lists it at that address. Equipment accounts show the fields that
+                apply to them; building, land, and comparable-properties tools stay
+                with Real property. Equipment accounts can open a county Notice of
+                Valuation PDF when an AIN is available. Use the{" "}
                 <a
                   href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
                   target="_blank"

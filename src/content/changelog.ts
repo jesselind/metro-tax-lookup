@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.7.1",
+    date: "2026-08-09",
+    title: "Business personal property dashboard and continuous property details",
+    highlights: [
+      "Business personal property accounts reuse the Real dashboard shell with a thin field set: hide comps, photo/sketch, ownership type, neighborhood/land use/subdivision, and sale/building/permit tables; keep levy stack, metro, and totals-only values.",
+      "Summary Notice of Valuation PDF and county Details deep link use personalpropertysearch AIN URLs; assessed rows use the DPT personal-property rate by year (26% in 2026).",
+      "Account type tile labels Real vs business personal property; multi-PIN situs makes the whole tile the Change account control. BPP values stay inline in the property column instead of below the levy grid.",
+    ],
+  },
+  {
     version: "4.7.0",
     date: "2026-08-05",
     title: "Campaign disclosure connection, Open Graph share image, footer accuracy",

@@ -37,6 +37,25 @@ export function classifySitusPinAccountKind(
   return "other";
 }
 
+/**
+ * True for business personal property accounts.
+ * Prefer `taxRollDescr` when the parcel-record shard is loaded; otherwise fall
+ * back to `propertyClassDescr` (pin-to-tag / summary) so summary tiles can hide
+ * Real-only chrome before the shard arrives.
+ */
+export function isBusinessPersonalPropertyAccount(fields: {
+  taxRollDescr?: string | null;
+  propertyClassDescr?: string | null;
+}): boolean {
+  const taxRoll = (fields.taxRollDescr ?? "").trim().toUpperCase();
+  if (taxRoll === "PERSONAL") return true;
+  if (taxRoll.length > 0) return false;
+  return (
+    classifySitusPinAccountKind(fields.propertyClassDescr) ===
+    "business_personal"
+  );
+}
+
 /** Short label for the chooser row (county BPP wording for Personal). */
 export function formatSitusPinAccountKindLabel(
   kind: SitusPinAccountKind,

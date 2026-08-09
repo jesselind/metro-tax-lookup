@@ -300,6 +300,22 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
       schoolAssessedBuilding: 2_256_000,
       schoolAssessedLand: 564_000,
     },
+    [SYNTHETIC_MULTI_PERSONAL_PIN]: {
+      ain: "1000-00-0-00-202",
+      situsAddress: "8888 SYNTHETIC HOSPITAL RD",
+      situsCity: "E2E CITY, CO 80000-2222",
+      ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER,
+      ownershipType: "Corporate",
+      ownerDeliveryAddress: "PO BOX 100",
+      ownerCityStateZip: "E2E CITY, CO 80000",
+      taxRollDescr: "Personal",
+      propertyClassDescr: "Personal",
+      assessmentYear: "2026",
+      parcelTaxYear: "2025",
+      totalActual: 24_000,
+      totalAssessed: 6_000,
+      legalDescrDisplay: "2000 Commercial PPA",
+    },
   },
 };
 
