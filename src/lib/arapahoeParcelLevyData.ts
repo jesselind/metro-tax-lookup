@@ -371,6 +371,97 @@ let pinCache: Promise<ArapahoePinToTagFile | null> | null = null;
 let lastPinToTagFetchFailureDetail: string | null = null;
 let lastLevyStacksFetchFailureDetail: string | null = null;
 
+const PIN_TO_TAG_URL = "/data/arapahoe-pin-to-tag.json";
+const LEVY_STACKS_URL = "/data/arapahoe-levy-stacks-by-tag-id.json";
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim() !== "";
+}
+
+function isArapahoeLevyStackLine(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  return (
+    isNonEmptyString(value.code) &&
+    isNonEmptyString(value.authorityName) &&
+    isPlainObject(value.dolaMatch)
+  );
+}
+
+function isArapahoeLevyStack(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  if (!isNonEmptyString(value.tagId) || !isNonEmptyString(value.levyAspxUrl)) {
+    return false;
+  }
+  if (!Array.isArray(value.lines)) return false;
+  return value.lines.every(isArapahoeLevyStackLine);
+}
+
+function isArapahoePinToTagRow(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  return isNonEmptyString(value.tagId) && isNonEmptyString(value.tagShortDescr);
+}
+
+/**
+ * Validate levy-stacks JSON before caching. Returns a detail string on failure.
+ */
+export function validateArapahoeLevyStacksFile(
+  data: unknown,
+  sourceUrl: string = LEVY_STACKS_URL,
+): string | null {
+  if (!isPlainObject(data)) {
+    return `${sourceUrl}: root must be an object`;
+  }
+  if (!isPlainObject(data.snapshot)) {
+    return `${sourceUrl}: missing snapshot object`;
+  }
+  if (!isNonEmptyString(data.snapshot.bundledAsOf)) {
+    return `${sourceUrl}: snapshot.bundledAsOf required`;
+  }
+  if (!isPlainObject(data.stacksByTagId)) {
+    return `${sourceUrl}: missing stacksByTagId`;
+  }
+  for (const [tagId, stack] of Object.entries(data.stacksByTagId)) {
+    if (!isArapahoeLevyStack(stack)) {
+      return `${sourceUrl}: stacksByTagId[${tagId}] has an invalid shape`;
+    }
+  }
+  return null;
+}
+
+/**
+ * Validate pin-to-tag JSON before caching. Returns a detail string on failure.
+ */
+export function validateArapahoePinToTagFile(
+  data: unknown,
+  sourceUrl: string = PIN_TO_TAG_URL,
+): string | null {
+  if (!isPlainObject(data)) {
+    return `${sourceUrl}: root must be an object`;
+  }
+  if (!isPlainObject(data.snapshot)) {
+    return `${sourceUrl}: missing snapshot object`;
+  }
+  if (!isNonEmptyString(data.snapshot.bundledAsOf)) {
+    return `${sourceUrl}: snapshot.bundledAsOf required`;
+  }
+  if (typeof data.pinDigits !== "number" || !Number.isFinite(data.pinDigits)) {
+    return `${sourceUrl}: pinDigits must be a finite number`;
+  }
+  if (!isPlainObject(data.byPin)) {
+    return `${sourceUrl}: missing byPin`;
+  }
+  for (const [pin, row] of Object.entries(data.byPin)) {
+    if (!isArapahoePinToTagRow(row)) {
+      return `${sourceUrl}: byPin[${pin}] has an invalid shape`;
+    }
+  }
+  return null;
+}
+
 export function getLastArapahoePinToTagFetchFailureDetail(): string | null {
   return lastPinToTagFetchFailureDetail;
 }
@@ -378,9 +469,6 @@ export function getLastArapahoePinToTagFetchFailureDetail(): string | null {
 export function getLastArapahoeLevyStacksFetchFailureDetail(): string | null {
   return lastLevyStacksFetchFailureDetail;
 }
-
-const PIN_TO_TAG_URL = "/data/arapahoe-pin-to-tag.json";
-const LEVY_STACKS_URL = "/data/arapahoe-levy-stacks-by-tag-id.json";
 
 /** Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads. */
 export function fetchArapahoeLevyStacksJson(): Promise<ArapahoeLevyStacksFile | null> {
@@ -392,14 +480,14 @@ export function fetchArapahoeLevyStacksJson(): Promise<ArapahoeLevyStacksFile | 
         stacksCache = null;
         return null;
       }
-      const data = result.json as ArapahoeLevyStacksFile;
-      if (!data?.stacksByTagId) {
-        lastLevyStacksFetchFailureDetail = `${LEVY_STACKS_URL}: missing stacksByTagId`;
+      const invalidDetail = validateArapahoeLevyStacksFile(result.json);
+      if (invalidDetail) {
+        lastLevyStacksFetchFailureDetail = invalidDetail;
         stacksCache = null;
         return null;
       }
       lastLevyStacksFetchFailureDetail = null;
-      return data;
+      return result.json as ArapahoeLevyStacksFile;
     })();
   }
   return stacksCache;
@@ -415,14 +503,14 @@ export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null
         pinCache = null;
         return null;
       }
-      const data = result.json as ArapahoePinToTagFile;
-      if (!data?.byPin) {
-        lastPinToTagFetchFailureDetail = `${PIN_TO_TAG_URL}: missing byPin`;
+      const invalidDetail = validateArapahoePinToTagFile(result.json);
+      if (invalidDetail) {
+        lastPinToTagFetchFailureDetail = invalidDetail;
         pinCache = null;
         return null;
       }
       lastPinToTagFetchFailureDetail = null;
-      return data;
+      return result.json as ArapahoePinToTagFile;
     })();
   }
   return pinCache;

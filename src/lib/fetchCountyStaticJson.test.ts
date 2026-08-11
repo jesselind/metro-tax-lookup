@@ -59,4 +59,42 @@ describe("fetchCountyStaticJson", () => {
     });
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+
+  it("returns a detail string after two network rejections", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("first network blip"))
+      .mockRejectedValueOnce(new Error("second network blip"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const pending = fetchCountyStaticJson("/data/example.json");
+    await vi.advanceTimersByTimeAsync(500);
+    const result = await pending;
+    expect(result).toEqual({
+      ok: false,
+      detail: "/data/example.json: second network blip",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns a detail string after two invalid JSON responses", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => {
+        throw new Error("Unexpected token");
+      },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const pending = fetchCountyStaticJson("/data/bad.json");
+    await vi.advanceTimersByTimeAsync(500);
+    const result = await pending;
+    expect(result).toEqual({
+      ok: false,
+      detail: "/data/bad.json: response was not valid JSON",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });

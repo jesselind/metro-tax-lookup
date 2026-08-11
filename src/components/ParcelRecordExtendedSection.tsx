@@ -41,6 +41,11 @@ export type ParcelRecordExtendedSectionProps = {
   pin?: string | null;
   demoMode?: boolean;
   /**
+   * Selected account classification while `record` is still loading.
+   * Once `displayRecord` is available, classification comes from the record.
+   */
+  businessPersonal?: boolean;
+  /**
    * When true (BPP continuous property column), omit the lg
    * "Property details cont." heading used for the below-grid Real layout.
    */
@@ -60,15 +65,17 @@ export function ParcelRecordExtendedSection({
   record,
   pin = null,
   demoMode = false,
+  businessPersonal = false,
   omitContinuationHeading = false,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
   const isBusinessPersonal =
-    displayRecord != null &&
-    isBusinessPersonalPropertyAccount({
-      taxRollDescr: displayRecord.taxRollDescr,
-      propertyClassDescr: displayRecord.propertyClassDescr,
-    });
+    displayRecord != null
+      ? isBusinessPersonalPropertyAccount({
+          taxRollDescr: displayRecord.taxRollDescr,
+          propertyClassDescr: displayRecord.propertyClassDescr,
+        })
+      : businessPersonal;
 
   if (!shouldShowParcelRecordExtendedSection(loading, loadFailed, record)) {
     return null;

@@ -100,7 +100,7 @@ export default function RootLayout({
             >
               <p className="text-center text-sm leading-relaxed text-slate-600 sm:text-base">
                 Not affiliated with Arapahoe County. This is an independent
-                educational tool for residents. It uses publicly available data from
+                educational tool for taxpayers. It uses publicly available data from
                 state and county sources. Always verify important numbers with
                 official sources. Not legal or tax advice.
               </p>

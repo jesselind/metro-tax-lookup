@@ -24,6 +24,31 @@ export function safeHttpOrHttpsUrl(
 
 const ARAPAHOE_PARCEL_LEVY_HOST = "parcelsearch.arapahoegov.com";
 const ARAPAHOE_CLERK_RECORDER_SEARCH_HOST = "arapahoe.co.publicsearch.us";
+const ARAPAHOE_BPP_SEARCH_HOST = "personalpropertysearch.arapahoegov.com";
+
+/**
+ * Build a same-origin Arapahoe https URL with one query param from a raw value.
+ * Trims empty values to null; rejects hostname drift after construction.
+ */
+function safeArapahoeHostedQueryUrl(
+  host: string,
+  path: string,
+  queryParam: string,
+  rawValue: string | null | undefined,
+): string | null {
+  const value = String(rawValue ?? "").trim();
+  if (!value) return null;
+  try {
+    const url = new URL(`https://${host}${path}`);
+    url.searchParams.set(queryParam, value);
+    if (url.hostname.toLowerCase() !== host.toLowerCase()) {
+      return null;
+    }
+    return url.href;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * County online levy table for a taxing authority (TAGId in query).
@@ -53,8 +78,6 @@ export function safeArapahoeLevyAspxUrl(
  */
 export const ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE = true;
 
-const ARAPAHOE_BPP_SEARCH_HOST = "personalpropertysearch.arapahoegov.com";
-
 /**
  * County business personal property account details page (AIN from pin map).
  * https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=…
@@ -63,18 +86,12 @@ const ARAPAHOE_BPP_SEARCH_HOST = "personalpropertysearch.arapahoegov.com";
 export function safeArapahoeBppAccountDetailsUrl(
   ainRaw: string | null | undefined,
 ): string | null {
-  const ain = String(ainRaw ?? "").trim();
-  if (!ain) return null;
-  try {
-    const url = new URL(`https://${ARAPAHOE_BPP_SEARCH_HOST}/Details.aspx`);
-    url.searchParams.set("AIN", ain);
-    if (url.hostname.toLowerCase() !== ARAPAHOE_BPP_SEARCH_HOST) {
-      return null;
-    }
-    return url.href;
-  } catch {
-    return null;
-  }
+  return safeArapahoeHostedQueryUrl(
+    ARAPAHOE_BPP_SEARCH_HOST,
+    "/Details.aspx",
+    "AIN",
+    ainRaw,
+  );
 }
 
 /**
@@ -84,15 +101,12 @@ export function safeArapahoeBppAccountDetailsUrl(
 export function safeArapahoeParcelRecordUrl(
   ainRaw: string | null | undefined,
 ): string | null {
-  const ain = String(ainRaw ?? "").trim();
-  if (!ain) return null;
-  try {
-    const url = new URL("https://parcelsearch.arapahoegov.com/PPINum.aspx");
-    url.searchParams.set("PPINum", ain);
-    return url.href;
-  } catch {
-    return null;
-  }
+  return safeArapahoeHostedQueryUrl(
+    ARAPAHOE_PARCEL_LEVY_HOST,
+    "/PPINum.aspx",
+    "PPINum",
+    ainRaw,
+  );
 }
 
 /**
@@ -137,15 +151,12 @@ export function safeArapahoeClerkRecorderSearchUrl(
 export function safeArapahoeCompsGridPdfUrl(
   ainRaw: string | null | undefined,
 ): string | null {
-  const ain = String(ainRaw ?? "").trim();
-  if (!ain) return null;
-  try {
-    const url = new URL("https://parcelsearch.arapahoegov.com/FileDownload.ashx");
-    url.searchParams.set("AIN", ain);
-    return url.href;
-  } catch {
-    return null;
-  }
+  return safeArapahoeHostedQueryUrl(
+    ARAPAHOE_PARCEL_LEVY_HOST,
+    "/FileDownload.ashx",
+    "AIN",
+    ainRaw,
+  );
 }
 
 /**
@@ -156,18 +167,10 @@ export function safeArapahoeCompsGridPdfUrl(
 export function safeArapahoeBppNoticeOfValuationPdfUrl(
   ainRaw: string | null | undefined,
 ): string | null {
-  const ain = String(ainRaw ?? "").trim();
-  if (!ain) return null;
-  try {
-    const url = new URL(
-      `https://${ARAPAHOE_BPP_SEARCH_HOST}/FileDownload.ashx`,
-    );
-    url.searchParams.set("AIN", ain);
-    if (url.hostname.toLowerCase() !== ARAPAHOE_BPP_SEARCH_HOST) {
-      return null;
-    }
-    return url.href;
-  } catch {
-    return null;
-  }
+  return safeArapahoeHostedQueryUrl(
+    ARAPAHOE_BPP_SEARCH_HOST,
+    "/FileDownload.ashx",
+    "AIN",
+    ainRaw,
+  );
 }

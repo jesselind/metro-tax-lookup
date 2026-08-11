@@ -686,10 +686,10 @@ export default function SourcesPage() {
             <strong className="text-slate-900">Business personal property</strong>
             {" "}
             accounts can appear in that list when they share a street address with
-            Real property. Those accounts keep owner, situs, values, and the levy
-            stack for their tax district; building, land, sale, permit, and
-            comparable-properties tools stay with Real parcels. Equipment accounts
-            can open a county{" "}
+            Real property. Those accounts keep owner, situs, values, and the
+            property-tax breakdown for their tax district; building, land, sale,
+            permit, and comparable-properties tools stay with Real parcels.
+            Equipment accounts can open a county{" "}
             <strong className="text-slate-900">Notice of Valuation</strong>
             {" "}
             PDF when an AIN is in the pin map. Nothing is sent to our servers;

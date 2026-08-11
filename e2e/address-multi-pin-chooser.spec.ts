@@ -148,6 +148,12 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   ).toHaveCount(0);
   await expect(page.getByText(/2026 Assessed Value \(26%\)/i)).toBeVisible();
   await expect(
+    page
+      .getByRole("table", { name: "Appraised and assessed values" })
+      .getByRole("row", { name: /2026 Assessed Value \(26%\)/i })
+      .getByText("$6,240"),
+  ).toBeVisible();
+  await expect(
     page.getByRole("link", {
       name: /County business personal property search/i,
     }),
@@ -155,4 +161,28 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   await expect(
     page.getByRole("link", { name: /Open county parcel record/i }),
   ).toHaveCount(0);
+
+  await page
+    .getByRole("button", {
+      name: /Account type:.*Change account at this address/i,
+    })
+    .click();
+  const switchChooser = page.getByRole("region", { name: "Matching properties" });
+  await expect(switchChooser).toBeVisible();
+  await switchChooser
+    .getByRole("listitem")
+    .filter({ hasText: SYNTHETIC_MULTI_REAL_OWNER })
+    .getByRole("button", { name: "Use this property" })
+    .click();
+  await expect(
+    page.getByLabel("Property search result summary").getByText(
+      SYNTHETIC_MULTI_REAL_OWNER,
+    ),
+  ).toBeVisible();
+  await expect(page.locator("#home-parcel-account-type")).toContainText(
+    "Real property",
+  );
+  await expect(
+    page.getByRole("link", { name: /Open county parcel record/i }),
+  ).toBeVisible();
 });

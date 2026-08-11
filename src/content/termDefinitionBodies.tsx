@@ -522,9 +522,11 @@ export function TermPropertyClassificationBriefBody() {
       {" "}
       (there is a building) even when your notice says{" "}
       <strong className="font-semibold text-slate-900">Residential</strong>
-      . Same home, different words. When the county says{" "}
+      {". "}
+      Same home, different words. When the county says{" "}
       <strong className="font-semibold text-slate-900">Personal</strong>
-      , that means business personal property (equipment and similar), not a
+      {", "}
+      that means business personal property (equipment and similar), not a
       house-and-land parcel.
     </p>
   );
@@ -778,14 +780,9 @@ export function TermTaxRollBriefBody() {
 export function TermAccountTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Which kind of county account you are viewing. One street address can have
-      more than one: for example the building and land (
-      <strong className="font-semibold text-slate-900">Real property</strong>
-      ) plus separate{" "}
-      <strong className="font-semibold text-slate-900">
-        business personal property
-      </strong>{" "}
-      for equipment at the same place.
+      Which kind of tax account this is: the land and buildings, or business
+      equipment at the same address. If more than one account matches the
+      address, swap arrows appear on this tile so you can switch.
     </p>
   );
 }

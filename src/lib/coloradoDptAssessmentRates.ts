@@ -17,6 +17,7 @@ export const COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL = "7.05%";
  * Colorado personal property assessment rate label by assessment year
  * (Assessors' Library Vol. 5 / DPT schedule).
  * 2023–2024 temporary 27.9%; then 27% (2025), 26% (2026), 25% (2027+).
+ * Non-integer years (e.g. 2026.5) return null — only whole assessment years map.
  */
 export function coloradoPersonalPropertyAssessedRateLabel(
   assessmentYear: number | null | undefined,
@@ -24,6 +25,7 @@ export function coloradoPersonalPropertyAssessedRateLabel(
   if (
     assessmentYear == null ||
     !Number.isFinite(assessmentYear) ||
+    !Number.isInteger(assessmentYear) ||
     assessmentYear < 1900 ||
     assessmentYear > 2100
   ) {

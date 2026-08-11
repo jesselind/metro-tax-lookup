@@ -1245,6 +1245,7 @@ export function HomeParcelAddressLookup({
       record={parcelRecord}
       pin={trimmedParcelPin}
       demoMode={isDemoMode}
+      businessPersonal={isBusinessPersonalAccount}
       omitContinuationHeading={isBusinessPersonalAccount}
     />
   );

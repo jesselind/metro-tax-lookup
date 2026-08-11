@@ -536,7 +536,8 @@ export function TermNoticeOfValuationAside() {
         <span className="whitespace-nowrap">
           personalpropertysearch.arapahoegov.com
         </span>
-        . The file can show prior and current actual value, the personal-property
+        {". "}
+        The file can show prior and current actual value, the personal-property
         assessment rate, and when you may appeal.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
