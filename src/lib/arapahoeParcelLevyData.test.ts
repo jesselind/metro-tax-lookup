@@ -203,34 +203,73 @@ describe("fetchArapahoeLevyStacksJson / fetchArapahoePinToTagJson validation", (
   });
 
   it("clears cache and records detail for a malformed stacks root", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
+    const validStacks = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      stacksByTagId: {
+        "1": {
+          tagId: "1",
+          levyAspxUrl: "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1",
+          lines: [
+            {
+              code: "0601",
+              authorityName: "SCHOOL",
+              dolaMatch: { method: "none", confidence: "low" },
+            },
+          ],
+        },
+      },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ notStacks: true }),
-      }),
-    );
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => validStacks,
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
     expect(await fetchArapahoeLevyStacksJson()).toBeNull();
     expect(getLastArapahoeLevyStacksFetchFailureDetail()).toMatch(
       /missing stacksByTagId|missing snapshot/,
     );
+
+    expect(await fetchArapahoeLevyStacksJson()).toEqual(validStacks);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("clears cache and records detail for a malformed pin-to-tag entry", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
+    const validPinToTag = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_PIN]: { tagId: "1", tagShortDescr: "0001" },
+      },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           snapshot: { bundledAsOf: "2026-01-01", source: "test" },
           pinDigits: 9,
           byPin: { [SYNTHETIC_PIN]: { tagId: "1" } },
         }),
-      }),
-    );
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => validPinToTag,
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
     expect(await fetchArapahoePinToTagJson()).toBeNull();
     expect(getLastArapahoePinToTagFetchFailureDetail()).toMatch(
       /has an invalid shape/,
     );
+
+    expect(await fetchArapahoePinToTagJson()).toEqual(validPinToTag);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
