@@ -10,6 +10,7 @@ import {
   classifySitusPinAccountKind,
   enrichSitusPinHitsForChooser,
   formatSitusPinAccountKindLabel,
+  isBusinessPersonalPropertyAccount,
   pickSitusPlaceSampleLabel,
   situsAccountKindGlossaryTermId,
 } from "./situsMultiPinChooser";
@@ -38,6 +39,32 @@ describe("classifySitusPinAccountKind", () => {
   it("treats unknown or empty class as other", () => {
     expect(classifySitusPinAccountKind(null)).toBe("other");
     expect(classifySitusPinAccountKind("Possessory")).toBe("other");
+  });
+});
+
+describe("isBusinessPersonalPropertyAccount", () => {
+  it("prefers tax roll, then falls back to property class", () => {
+    expect(
+      isBusinessPersonalPropertyAccount({ taxRollDescr: "Personal" }),
+    ).toBe(true);
+    expect(
+      isBusinessPersonalPropertyAccount({
+        taxRollDescr: "Real",
+        propertyClassDescr: "Personal",
+      }),
+    ).toBe(false);
+    expect(
+      isBusinessPersonalPropertyAccount({
+        taxRollDescr: null,
+        propertyClassDescr: "Personal",
+      }),
+    ).toBe(true);
+    expect(
+      isBusinessPersonalPropertyAccount({
+        taxRollDescr: "",
+        propertyClassDescr: "Improvement",
+      }),
+    ).toBe(false);
   });
 });
 

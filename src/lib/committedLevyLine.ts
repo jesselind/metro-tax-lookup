@@ -20,6 +20,8 @@ import {
   fetchArapahoeLevyStacksJson,
   fetchArapahoePinToTagJson,
   formatPropertyClassificationDisplay,
+  getLastArapahoeLevyStacksFetchFailureDetail,
+  getLastArapahoePinToTagFetchFailureDetail,
   pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
 } from "@/lib/arapahoeParcelLevyData";
@@ -184,7 +186,7 @@ export type LoadLevyStackFromPinOk = {
 
 export type LoadLevyStackFromPinResult =
   | LoadLevyStackFromPinOk
-  | { ok: false; error: string };
+  | { ok: false; error: string; technicalDetail?: string };
 
 export async function loadLevyStackFromPin(
   pinInput: string,
@@ -197,13 +199,20 @@ export async function loadLevyStackFromPin(
     return {
       ok: false,
       error:
-        "PIN lookup data is not available in this deployment. A developer must run python3 tools/build_arapahoe_parcel_levy_index.py and add public/data/arapahoe-pin-to-tag.json (see README).",
+        "We could not load parcel lookup data. Please try again in a moment.",
+      technicalDetail:
+        getLastArapahoePinToTagFetchFailureDetail() ??
+        "/data/arapahoe-pin-to-tag.json: missing or invalid",
     };
   }
   if (!stacks?.stacksByTagId) {
     return {
       ok: false,
-      error: "Levy stack data failed to load. Try again later.",
+      error:
+        "We could not load tax district data. Please try again in a moment.",
+      technicalDetail:
+        getLastArapahoeLevyStacksFetchFailureDetail() ??
+        "/data/arapahoe-levy-stacks-by-tag-id.json: missing or invalid",
     };
   }
   const matchedPinKey = resolvePinKeyFromParcelIdInput(pins, pinInput);
@@ -228,7 +237,9 @@ export async function loadLevyStackFromPin(
   if (!stack) {
     return {
       ok: false,
-      error: `TAGId ${row.tagId} is missing from the bundled stacks file. Re-run the index script so it matches the mart export.`,
+      error:
+        "We found your parcel, but could not load its tax breakdown. Please try again in a moment.",
+      technicalDetail: `TAGId ${row.tagId} missing from arapahoe-levy-stacks-by-tag-id.json for PIN ${matchedPinKey}`,
     };
   }
   const built = committedLevyLinesFromStackLines(stack.lines, stack.tagId);
@@ -236,7 +247,8 @@ export async function loadLevyStackFromPin(
     return {
       ok: false,
       error:
-        "This parcel has no mill levies to load after filtering. Try again or contact support.",
+        "This parcel has no mill levies to show after filtering. Please try again, or email us if it keeps happening.",
+      technicalDetail: `PIN ${matchedPinKey} TAGId ${row.tagId}: no levy lines after filter`,
     };
   }
   const pv = parcelValuesFromPinRow(row);

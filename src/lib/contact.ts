@@ -106,3 +106,35 @@ Notes (optional):
 Thanks!`;
   return buildMailtoHref(subject, body);
 }
+
+const MAX_MAILTO_TECHNICAL_DETAIL_LEN = 500;
+
+/** Keep technical failure notes safe for a mailto body (no control chars). */
+function sanitizeMailtoTechnicalDetail(raw: string): string {
+  return raw
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, MAX_MAILTO_TECHNICAL_DETAIL_LEN);
+}
+
+/**
+ * Prefills a report when a bundled county data file fails to load in the browser.
+ * Resident-facing UI should stay plain; put the technical detail only in the email.
+ */
+export function buildDataLoadFailureMailtoHref(technicalDetail: string): string {
+  const detail =
+    sanitizeMailtoTechnicalDetail(technicalDetail) ||
+    "(no technical detail captured)";
+  const subject = `${SITE_BRAND_NAME}: lookup data failed to load`;
+  const body = `Hello, the property tax lookup could not load a required data file.
+
+Technical detail (please leave this in the email):
+${detail}
+
+What I was doing (optional):
+
+
+Thanks!`;
+  return buildMailtoHref(subject, body);
+}

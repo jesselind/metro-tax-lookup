@@ -15,6 +15,7 @@ import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingV
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
+import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
@@ -39,12 +40,24 @@ export type ParcelRecordExtendedSectionProps = {
   /** Display PIN for missing-data mailto (demo uses the public demo PIN). */
   pin?: string | null;
   demoMode?: boolean;
+  /**
+   * Selected account classification while `record` is still loading.
+   * Once `displayRecord` is available, classification comes from the record.
+   */
+  businessPersonal?: boolean;
+  /**
+   * When true (BPP continuous property column), omit the lg
+   * "Property details cont." heading used for the below-grid Real layout.
+   */
+  omitContinuationHeading?: boolean;
 };
 
 /**
- * Extended county tables below the levy + property grid (county field order):
- * Values → Sale → Building/Area/Land Line (one table, shared column widths) → Permits.
- * No outer card chrome; loadFailed shows a status here as well as in the sidebar.
+ * Extended county tables: Values → Sale → Building/Area/Land Line → Permits.
+ * Default placement is below the levy + property grid on Real accounts.
+ * Business personal property keeps Values (totals only) and can render inline
+ * in the property column (`omitContinuationHeading`) so the short field set
+ * stays continuous.
  */
 export function ParcelRecordExtendedSection({
   loading,
@@ -52,8 +65,17 @@ export function ParcelRecordExtendedSection({
   record,
   pin = null,
   demoMode = false,
+  businessPersonal = false,
+  omitContinuationHeading = false,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
+  const isBusinessPersonal =
+    displayRecord != null
+      ? isBusinessPersonalPropertyAccount({
+          taxRollDescr: displayRecord.taxRollDescr,
+          propertyClassDescr: displayRecord.propertyClassDescr,
+        })
+      : businessPersonal;
 
   if (!shouldShowParcelRecordExtendedSection(loading, loadFailed, record)) {
     return null;
@@ -64,15 +86,24 @@ export function ParcelRecordExtendedSection({
       id={PARCEL_RECORD_EXTENDED_SECTION_ID}
       tabIndex={-1}
       className="scroll-mt-6 space-y-3 sm:scroll-mt-8"
-      aria-labelledby="parcel-record-extended-heading"
+      aria-labelledby={
+        omitContinuationHeading
+          ? undefined
+          : "parcel-record-extended-heading"
+      }
+      aria-label={
+        omitContinuationHeading ? "Appraised and assessed values" : undefined
+      }
       aria-busy={loading}
     >
-      <h3
-        id="parcel-record-extended-heading"
-        className={`${DASHBOARD_SECTION_HEADING_CLASS} hidden lg:block`}
-      >
-        Property details cont.
-      </h3>
+      {!omitContinuationHeading ? (
+        <h3
+          id="parcel-record-extended-heading"
+          className={`${DASHBOARD_SECTION_HEADING_CLASS} hidden lg:block`}
+        >
+          Property details cont.
+        </h3>
+      ) : null}
       <div
         className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
         aria-live={loading ? "polite" : undefined}
@@ -80,7 +111,9 @@ export function ParcelRecordExtendedSection({
         {loading ? (
           <>
             <div className={TABLE_SKELETON} />
-            <div className={`${TABLE_SKELETON} h-48`} />
+            {!isBusinessPersonal ? (
+              <div className={`${TABLE_SKELETON} h-48`} />
+            ) : null}
           </>
         ) : loadFailed ? (
           <p
@@ -91,17 +124,24 @@ export function ParcelRecordExtendedSection({
           </p>
         ) : displayRecord ? (
           <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
-            <ParcelRecordValueSection record={displayRecord} />
-            <ParcelRecordSaleTable
-              transfers={displayRecord.transfers}
-              ain={displayRecord.ain}
-              linkClerkRecorder={!demoMode}
+            <ParcelRecordValueSection
+              record={displayRecord}
+              totalOnly={isBusinessPersonal}
             />
-            <ParcelRecordBuildingAndLandTable
-              buildings={displayRecord.buildings}
-              landLines={displayRecord.landLines}
-            />
-            <ParcelRecordPermitTable permits={displayRecord.permits} />
+            {!isBusinessPersonal ? (
+              <>
+                <ParcelRecordSaleTable
+                  transfers={displayRecord.transfers}
+                  ain={displayRecord.ain}
+                  linkClerkRecorder={!demoMode}
+                />
+                <ParcelRecordBuildingAndLandTable
+                  buildings={displayRecord.buildings}
+                  landLines={displayRecord.landLines}
+                />
+                <ParcelRecordPermitTable permits={displayRecord.permits} />
+              </>
+            ) : null}
           </ParcelRecordReportIdsProvider>
         ) : null}
       </div>

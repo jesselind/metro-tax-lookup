@@ -249,8 +249,9 @@ function ColumnHeaderRow({
   );
 }
 
-function valueColumnHeaderLabels(): ColumnHeaderLabel[] {
-  return ["", "Total", "Building", "Land"].map((label) => {
+function valueColumnHeaderLabels(totalOnly: boolean): ColumnHeaderLabel[] {
+  const labels = totalOnly ? ["", "Total"] : ["", "Total", "Building", "Land"];
+  return labels.map((label) => {
     if (!label) {
       return label;
     }
@@ -337,7 +338,14 @@ function formatValueCell(
   return formatUsdWhole(value);
 }
 
-function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
+function ParcelValueTable({
+  record,
+  totalOnly = false,
+}: {
+  record: ArapahoeParcelRecordRow;
+  /** Business personal property: totals only (no Building / Land columns). */
+  totalOnly?: boolean;
+}) {
   const year = (record.assessmentYear ?? "").trim();
   const yearNote = parcelTaxAssessmentYearNote(
     record.parcelTaxYear,
@@ -348,8 +356,8 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
   const hasAnyValue = rows.some(
     (row) =>
       row.values.total != null ||
-      row.values.building != null ||
-      row.values.land != null,
+      (!totalOnly &&
+        (row.values.building != null || row.values.land != null)),
   );
   const rowsToShow = hasAnyValue
     ? rows
@@ -365,6 +373,8 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
     );
   }
 
+  const colSpan = totalOnly ? 2 : 4;
+
   return (
     <div className="space-y-2">
       {yearNote ? (
@@ -373,15 +383,19 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
         </p>
       ) : null}
       <table className={TABLE_CLASS}>
-      <caption className="sr-only">Appraised and assessed values by total, building, and land</caption>
+      <caption className="sr-only">
+        {totalOnly
+          ? "Appraised and assessed values"
+          : "Appraised and assessed values by total, building, and land"}
+      </caption>
       <tbody>
         <SectionTitleRow
           title="Appraised and assessed values"
           isFirst
-          colSpan={4}
+          colSpan={colSpan}
         />
         <ColumnHeaderRow
-          labels={valueColumnHeaderLabels()}
+          labels={valueColumnHeaderLabels(totalOnly)}
           blankHeader="hidden"
           moneyColumns
         />
@@ -403,25 +417,29 @@ function ParcelValueTable({ record }: { record: ArapahoeParcelRecordRow }) {
                   `${row.kind}-total`,
                 )}
               </td>
-              <td className={MONEY_TD_CLASS}>
-                {formatValueCell(
-                  row.values.building,
-                  `${rowLabel} (Building)`,
-                  `${row.kind}-building`,
-                )}
-              </td>
-              <td className={MONEY_TD_CLASS}>
-                {formatValueCell(
-                  row.values.land,
-                  `${rowLabel} (Land)`,
-                  `${row.kind}-land`,
-                )}
-              </td>
+              {!totalOnly ? (
+                <>
+                  <td className={MONEY_TD_CLASS}>
+                    {formatValueCell(
+                      row.values.building,
+                      `${rowLabel} (Building)`,
+                      `${row.kind}-building`,
+                    )}
+                  </td>
+                  <td className={MONEY_TD_CLASS}>
+                    {formatValueCell(
+                      row.values.land,
+                      `${rowLabel} (Land)`,
+                      `${row.kind}-land`,
+                    )}
+                  </td>
+                </>
+              ) : null}
             </tr>
           );
         })}
       </tbody>
-    </table>
+      </table>
     </div>
   );
 }
@@ -820,8 +838,11 @@ export function ParcelRecordPermitTable({
 /** County-style value grid (Total / Building / Land columns). */
 export function ParcelRecordValueSection({
   record,
+  totalOnly = false,
 }: {
   record: ArapahoeParcelRecordRow;
+  /** Business personal property: totals only (no Building / Land columns). */
+  totalOnly?: boolean;
 }) {
-  return <ParcelValueTable record={record} />;
+  return <ParcelValueTable record={record} totalOnly={totalOnly} />;
 }

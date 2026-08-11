@@ -29,6 +29,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-legal-description",
   "term-lg-id",
   "term-mill-levy",
+  "term-notice-of-valuation",
   "term-owner-list",
   "term-parcel",
   "term-parcel-record",

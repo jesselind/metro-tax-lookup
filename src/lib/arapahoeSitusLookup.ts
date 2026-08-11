@@ -10,6 +10,7 @@
  * Normalization must stay in sync with _STREET_* helpers in that script.
  */
 
+import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
 import { pickSitusPlaceSampleLabel } from "@/lib/situsMultiPinChooser";
 
 export type ArapahoeSitusPinHit = {
@@ -584,31 +585,42 @@ let situsCache: Promise<ArapahoeSitusToPinsFile | null> | null = null;
  */
 export const ARAPAHOE_SITUS_TO_PINS_CACHE_BUST = "20260727zip";
 
+const SITUS_TO_PINS_URL = `/data/arapahoe-situs-to-pins.json?v=${ARAPAHOE_SITUS_TO_PINS_CACHE_BUST}`;
+
+/** Last situs fetch failure detail (for resident mailto); cleared on success. */
+let lastSitusFetchFailureDetail: string | null = null;
+
+export function getLastArapahoeSitusFetchFailureDetail(): string | null {
+  return lastSitusFetchFailureDetail;
+}
+
 export function fetchArapahoeSitusToPinsJson(): Promise<ArapahoeSitusToPinsFile | null> {
   if (!situsCache) {
-    situsCache = fetch(
-      `/data/arapahoe-situs-to-pins.json?v=${ARAPAHOE_SITUS_TO_PINS_CACHE_BUST}`,
-      {
+    situsCache = (async () => {
+      const result = await fetchCountyStaticJson(SITUS_TO_PINS_URL, {
         credentials: "same-origin",
-      },
-    )
-      .then(async (r) => {
-        if (!r.ok) return null;
-        let parsed: unknown;
-        try {
-          parsed = await r.json();
-        } catch {
-          return null;
-        }
-        return validateArapahoeSitusToPinsPayload(parsed);
-      })
-      .catch(() => null);
+      });
+      if (!result.ok) {
+        lastSitusFetchFailureDetail = result.detail;
+        situsCache = null;
+        return null;
+      }
+      const validated = validateArapahoeSitusToPinsPayload(result.json);
+      if (!validated) {
+        lastSitusFetchFailureDetail = `${SITUS_TO_PINS_URL}: JSON failed schema validation`;
+        situsCache = null;
+        return null;
+      }
+      lastSitusFetchFailureDetail = null;
+      return validated;
+    })();
   }
   return situsCache;
 }
 
 export function clearArapahoeSitusDataCache(): void {
   situsCache = null;
+  lastSitusFetchFailureDetail = null;
 }
 
 export function lookupPinsBySitusKey(

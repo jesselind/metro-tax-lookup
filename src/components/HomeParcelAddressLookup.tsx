@@ -26,6 +26,7 @@ import {
 } from "@/components/CountyCompsPdfHelpPopover";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
+import { DataLoadErrorCallout } from "@/components/DataLoadErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { InfoIcon } from "@/components/InfoIcon";
@@ -74,6 +75,7 @@ import {
 } from "@/lib/arapahoeParcelLevyData";
 import {
   fetchArapahoeSitusToPinsJson,
+  getLastArapahoeSitusFetchFailureDetail,
   lookupPinsBySitusFuzzy,
   normalizeStreetNameKey,
   parseSimpleAddressLineForSitusLookup,
@@ -95,10 +97,14 @@ import {
   levyStackRateChangeCalloutSurfaceClasses,
 } from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
-import { ARAPAHOE_ASSESSOR_PROPERTY_SEARCH } from "@/lib/arapahoeCountyUrls";
+import {
+  ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH,
+  ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
+} from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import {
   ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE,
+  safeArapahoeBppNoticeOfValuationPdfUrl,
   safeArapahoeCompsGridPdfUrl,
 } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
@@ -110,6 +116,7 @@ import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import {
   parcelTaxAndAssessmentYearsDiffer,
 } from "@/lib/parcelRecordDisplay";
+import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
@@ -118,6 +125,9 @@ import {
   INPUT_CLASS,
   PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS,
   PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS,
+  PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_CLASS,
+  PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_OVERLAY_CLASS,
+  PARCEL_SUMMARY_ACCOUNT_SWITCH_ICON_DECORATIVE_CLASS,
   PARCEL_SUMMARY_ROW_CLASS,
   PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
   PARCEL_SUMMARY_TILE_BODY_CLASS,
@@ -215,6 +225,7 @@ const PROPERTY_DETAILS_JUMP_CHEVRON = (
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
 const HOME_ADDRESS_STREET_SUGGESTIONS_ID = "home-address-street-suggestions";
+const HOME_MATCHING_PROPERTIES_ID = "home-matching-properties";
 
 export type HomeParcelAddressLookupProps = {
   /** Fires when the header should offer Start over (any active address / result / PIN path). */
@@ -234,6 +245,10 @@ export function HomeParcelAddressLookup({
   const [unit, setUnit] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** When set, show DataLoadErrorCallout with mailto instead of plain error text. */
+  const [errorTechnicalDetail, setErrorTechnicalDetail] = useState<
+    string | null
+  >(null);
   const [hits, setHits] = useState<{ pin: string; label: string }[] | null>(
     null,
   );
@@ -282,6 +297,8 @@ export function HomeParcelAddressLookup({
   >(null);
   const [levyLoadBusy, setLevyLoadBusy] = useState(false);
   const [levyLoadError, setLevyLoadError] = useState<string | null>(null);
+  const [levyLoadErrorTechnicalDetail, setLevyLoadErrorTechnicalDetail] =
+    useState<string | null>(null);
   /** Parcel PIN is edited in the lookup flow only; levy and metro use loaded data, not a second PIN field. */
   const [parcelPin, setParcelPin] = useState("");
 
@@ -299,6 +316,11 @@ export function HomeParcelAddressLookup({
     string | null
   >(null);
   const prevAddressSearchLockedRef = useRef(false);
+  /**
+   * When reopening the multi-account chooser, skip the Start-over unlock focus
+   * (refine street-number field) and focus the match list at the top instead.
+   */
+  const focusMatchingPropertiesOnUnlockRef = useRef(false);
   /** Incremented on each levy load/clear so stale PIN lookups cannot apply state. */
   const levyLoadRequestRef = useRef(0);
   /** Incremented with levy loads; pairs with per-call id inside loadParcelRecord. */
@@ -333,6 +355,7 @@ export function HomeParcelAddressLookup({
   /**
    * Lock → property report: jump to top (same-page swap keeps window scroll).
    * Unlock → Start over: return focus to the first visible address field.
+   * Unlock → change account: focus the matching-properties list (not refine fields).
    */
   useEffect(() => {
     const wasLocked = prevAddressSearchLockedRef.current;
@@ -343,6 +366,14 @@ export function HomeParcelAddressLookup({
       return;
     }
     if (!addressSearchLocked && wasLocked) {
+      if (focusMatchingPropertiesOnUnlockRef.current) {
+        focusMatchingPropertiesOnUnlockRef.current = false;
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document
+          .getElementById(HOME_MATCHING_PROPERTIES_ID)
+          ?.focus({ preventScroll: true });
+        return;
+      }
       document
         .getElementById(
           showAdvancedAddressFields
@@ -362,6 +393,7 @@ export function HomeParcelAddressLookup({
     setLevyTemplateMillDrafts({});
     setLevyTemplateMillsError(null);
     setLevyLoadError(null);
+    setLevyLoadErrorTechnicalDetail(null);
     setLevyLoadBusy(false);
     setParcelPin("");
     setHomeLevyWorkbenchOpen(false);
@@ -414,6 +446,7 @@ export function HomeParcelAddressLookup({
     const isCurrentRequest = () => requestId === levyLoadRequestRef.current;
     parcelRecordRequestRef.current += 1;
     setLevyLoadError(null);
+    setLevyLoadErrorTechnicalDetail(null);
     setLevyTemplateMillsError(null);
     setLevyLoadBusy(true);
     setIsDemoMode(false);
@@ -426,6 +459,10 @@ export function HomeParcelAddressLookup({
       if (!isCurrentRequest()) return false;
       if (!result.ok) {
         setLevyLoadError(result.error);
+        setLevyLoadErrorTechnicalDetail(result.technicalDetail ?? null);
+        if (result.technicalDetail) {
+          console.error("[civic-lookup]", result.technicalDetail);
+        }
         return false;
       }
       setLevyLines(result.lines);
@@ -559,6 +596,11 @@ export function HomeParcelAddressLookup({
     [levyLoadedMeta?.ain],
   );
 
+  const homeBppNovPdfHref = useMemo(
+    () => safeArapahoeBppNoticeOfValuationPdfUrl(levyLoadedMeta?.ain),
+    [levyLoadedMeta?.ain],
+  );
+
   const metroPrefillTotalMills = useMemo(() => {
     if (levyAwaitingTemplateMills) return null;
     if (sumMills <= 0) return null;
@@ -580,7 +622,22 @@ export function HomeParcelAddressLookup({
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
     setLevyLoadError(null);
+    setLevyLoadErrorTechnicalDetail(null);
     setHomeLevyWorkbenchOpen(true);
+  }
+
+  /** Reopen the multi-account list without clearing the situs hit set. */
+  function reopenMultiAccountChooser() {
+    if (hits == null || hits.length < 2) return;
+    clearLevyStackOnly();
+    setLevyLoadError(null);
+    setLevyLoadErrorTechnicalDetail(null);
+    setParcelPin("");
+    focusMatchingPropertiesOnUnlockRef.current = true;
+    setAddressSearchLocked(false);
+    setIsDemoMode(false);
+    setHomeLevyWorkbenchOpen(false);
+    setShowAdvancedAddressFields(true);
   }
 
   function applySitusBlurSplit(
@@ -603,6 +660,7 @@ export function HomeParcelAddressLookup({
     setIsDemoMode(false);
     clearAllLevyState();
     setError(null);
+    setErrorTechnicalDetail(null);
     setHits(null);
     setMultiMatchPinToTag(null);
     setStreetDidYouMean(null);
@@ -711,9 +769,14 @@ export function HomeParcelAddressLookup({
       prefetchParcelLevyJsonBundle();
       const data = await fetchArapahoeSitusToPinsJson();
       if (!data?.byKey) {
+        const detail =
+          getLastArapahoeSitusFetchFailureDetail() ??
+          "/data/arapahoe-situs-to-pins.json: missing or invalid";
+        console.error("[civic-lookup]", detail);
         setError(
-          "Address lookup data is missing. Run npm run build:arapahoe-index with county mart CSVs in supporting-data/county-mart (see README).",
+          "We could not load address lookup data. Please try searching again in a moment.",
         );
+        setErrorTechnicalDetail(detail);
         return;
       }
       const result = lookupPinsBySitusFuzzy(
@@ -774,6 +837,7 @@ export function HomeParcelAddressLookup({
     setAddressMatchStatus(null);
     setStreetTypeaheadOpen(false);
     setError(null);
+    setErrorTechnicalDetail(null);
     setStreetName(suggestion.streetNameKey);
     setShowAdvancedAddressFields(true);
     const list = suggestion.hits;
@@ -793,6 +857,7 @@ export function HomeParcelAddressLookup({
     setStreetName("");
     setUnit("");
     setError(null);
+    setErrorTechnicalDetail(null);
     setHits(null);
     setMultiMatchPinToTag(null);
     setStreetDidYouMean(null);
@@ -815,6 +880,7 @@ export function HomeParcelAddressLookup({
       parcelRequestId === parcelRecordRequestRef.current;
     setIsDemoMode(true);
     setError(null);
+    setErrorTechnicalDetail(null);
     setShowAdvancedAddressFields(false);
     setShowCountyPinFallback(false);
     setAddressSearchLocked(true);
@@ -1134,6 +1200,18 @@ export function HomeParcelAddressLookup({
       </p>
     ) : null;
 
+  const isBusinessPersonalAccount = isBusinessPersonalPropertyAccount({
+    taxRollDescr: parcelRecord?.taxRollDescr,
+    propertyClassDescr:
+      parcelRecord?.propertyClassDescr ??
+      levyLoadedMeta?.parcelValues.propertyClassification,
+  });
+
+  const canSwitchSitusAccounts = hits != null && hits.length > 1;
+  const accountKindLabel = isBusinessPersonalAccount
+    ? "Business personal property"
+    : "Real property";
+
   const propertyDetailsBelowPanel =
     levyLines.length > 0 && levyLoadedMeta ? (
       <>
@@ -1144,6 +1222,7 @@ export function HomeParcelAddressLookup({
           levyAspxUrl={levyLoadedMeta.levyAspxUrl}
           ain={levyLoadedMeta.ain}
           demoMode={isDemoMode}
+          businessPersonal={isBusinessPersonalAccount}
         />
         <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
           <BackToTopButton />
@@ -1151,10 +1230,24 @@ export function HomeParcelAddressLookup({
       </>
     ) : null;
 
-  const showParcelRecordExtendedJump = shouldShowParcelRecordExtendedSection(
-    parcelRecordLoading,
-    parcelRecordLoadFailed,
-    parcelRecord,
+  const showParcelRecordExtendedJump =
+    !isBusinessPersonalAccount &&
+    shouldShowParcelRecordExtendedSection(
+      parcelRecordLoading,
+      parcelRecordLoadFailed,
+      parcelRecord,
+    );
+
+  const parcelRecordExtended = (
+    <ParcelRecordExtendedSection
+      loading={parcelRecordLoading}
+      loadFailed={parcelRecordLoadFailed}
+      record={parcelRecord}
+      pin={trimmedParcelPin}
+      demoMode={isDemoMode}
+      businessPersonal={isBusinessPersonalAccount}
+      omitContinuationHeading={isBusinessPersonalAccount}
+    />
   );
 
   const showTaxYearSummaryTile =
@@ -1192,6 +1285,7 @@ export function HomeParcelAddressLookup({
             demoMode={isDemoMode}
           />
           {propertyClassificationLine}
+          {isBusinessPersonalAccount ? parcelRecordExtended : null}
           {showParcelRecordExtendedJump ? (
             <a
               href={`#${PARCEL_RECORD_EXTENDED_SECTION_ID}`}
@@ -1204,13 +1298,7 @@ export function HomeParcelAddressLookup({
           ) : null}
         </section>
       </div>
-      <ParcelRecordExtendedSection
-        loading={parcelRecordLoading}
-        loadFailed={parcelRecordLoadFailed}
-        record={parcelRecord}
-        pin={trimmedParcelPin}
-        demoMode={isDemoMode}
-      />
+      {!isBusinessPersonalAccount ? parcelRecordExtended : null}
       {propertyDetailsBelowPanel}
     </div>
   ) : (
@@ -1253,17 +1341,29 @@ export function HomeParcelAddressLookup({
       {!addressSearchLocked ? (
         <div className="w-full min-w-0">
           {error ? (
-            <InlineErrorCallout
-              id={HOME_ADDRESS_LOOKUP_ERROR_ID}
-              className="mb-3"
-              liveRegion="polite"
-            >
-              {error}
-            </InlineErrorCallout>
+            errorTechnicalDetail ? (
+              <DataLoadErrorCallout
+                id={HOME_ADDRESS_LOOKUP_ERROR_ID}
+                className="mb-3"
+                liveRegion="polite"
+                message={error}
+                technicalDetail={errorTechnicalDetail}
+              />
+            ) : (
+              <InlineErrorCallout
+                id={HOME_ADDRESS_LOOKUP_ERROR_ID}
+                className="mb-3"
+                liveRegion="polite"
+              >
+                {error}
+              </InlineErrorCallout>
+            )
           ) : null}
           {hits != null && hits.length > 1 ? (
             <div
-              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mb-4`}
+              id={HOME_MATCHING_PROPERTIES_ID}
+              tabIndex={-1}
+              className={`${ADDRESS_LOOKUP_PANEL_CLASS} mb-4 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 sm:scroll-mt-8`}
               role="region"
               aria-live="polite"
               aria-label="Matching properties"
@@ -1275,7 +1375,7 @@ export function HomeParcelAddressLookup({
               <p className="mb-3 text-sm text-slate-700">
                 One street can have several tax accounts (for example a building
                 plus business personal property). Not sure which PIN is yours?
-                Open your parcel on the{" "}
+                Compare the PIN, owner, or legal description on the{" "}
                 <a
                   href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
                   target="_blank"
@@ -1284,8 +1384,20 @@ export function HomeParcelAddressLookup({
                 >
                   county property search
                   <span className="sr-only"> (opens in a new tab)</span>
-                </a>{" "}
-                and compare the PIN to the owner or legal description.
+                </a>
+                {" "}
+                for buildings and land, or the{" "}
+                <a
+                  href={ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={COUNTY_EXTERNAL_LINK_CLASS}
+                >
+                  county business personal property search
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+                {" "}
+                for equipment accounts.
               </p>
               <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
                 {(enrichedMultiHits ?? hits).map((h, hitIndex) => {
@@ -1814,6 +1926,88 @@ export function HomeParcelAddressLookup({
               </div>
             ) : null}
             {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta ? (
+              <div
+                className={
+                  canSwitchSitusAccounts
+                    ? PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_CLASS
+                    : PARCEL_SUMMARY_TILE_CLASS_POPOVER
+                }
+                id="home-parcel-account-type"
+              >
+                <div
+                  className={
+                    canSwitchSitusAccounts
+                      ? `${PARCEL_SUMMARY_TILE_BODY_CLASS} relative`
+                      : PARCEL_SUMMARY_TILE_BODY_CLASS
+                  }
+                >
+                  {canSwitchSitusAccounts ? (
+                    <>
+                      <button
+                        type="button"
+                        className={PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_OVERLAY_CLASS}
+                        onClick={reopenMultiAccountChooser}
+                        aria-label={`Account type: ${accountKindLabel}. Change account at this address.`}
+                      />
+                      <div
+                        className={`${PARCEL_SUMMARY_TILE_LABEL_CLASS} relative z-[2] pointer-events-auto`}
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                      >
+                        <ParcelGlossaryPopoverTrigger
+                          termId="term-account-type"
+                          textTrigger="Account type"
+                          textTriggerId="account-type-term-first"
+                        />
+                      </div>
+                      <div className="pointer-events-none relative z-[1] flex min-w-0 items-center gap-2.5">
+                        <p
+                          className={`${PARCEL_SUMMARY_TILE_ADDRESS_CLASS} min-w-0`}
+                        >
+                          {accountKindLabel}
+                        </p>
+                        <span
+                          className={PARCEL_SUMMARY_ACCOUNT_SWITCH_ICON_DECORATIVE_CLASS}
+                          aria-hidden
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                        <ParcelGlossaryPopoverTrigger
+                          termId="term-account-type"
+                          textTrigger="Account type"
+                          textTriggerId="account-type-term-first"
+                        />
+                      </div>
+                      <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
+                        {accountKindLabel}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+            {!busy &&
             lockedAddressHeadline &&
             (!levyReadyForSummary || levyLoadedMeta) ? (
               <div className={PARCEL_SUMMARY_TILE_CLASS}>
@@ -1960,13 +2154,105 @@ export function HomeParcelAddressLookup({
                   ) : null}
                 </div>
             ) : null}
-            {!busy && levyReadyForSummary && levyLoadedMeta ? (
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            isBusinessPersonalAccount ? (
+              <div
+                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
+                id="home-parcel-notice-of-valuation"
+              >
+                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
+                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                    <ParcelGlossaryPopoverTrigger
+                      termId="term-notice-of-valuation"
+                      textTrigger="Notice of Valuation"
+                      textTriggerId="notice-of-valuation-term-first"
+                      ariaLabel="Brief definition of Notice of Valuation."
+                    />
+                  </div>
+                  {homeBppNovPdfHref ? (
+                    <a
+                      href={homeBppNovPdfHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={COMPS_PDF_ICON_CONTROL_CLASS}
+                      aria-label="Open county Notice of Valuation PDF for this account (opens in a new tab)"
+                    >
+                      {compsIcon}
+                    </a>
+                  ) : (
+                    <div
+                      className="space-y-2"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
+                        No Notice of Valuation PDF from here: this PIN is missing
+                        an assessor id (AIN) in the bundled parcel index.
+                      </p>
+                      <div className="flex justify-center sm:justify-start">
+                        <CountyCompsPdfHelpPopover
+                          ariaLabel="Why there is no Notice of Valuation link for this account"
+                          icon={compsIcon}
+                        >
+                          <>
+                            <p className="text-sm leading-relaxed text-slate-800">
+                              We build the county link from your PIN&apos;s AIN in
+                              the bundled{" "}
+                              <span className="font-mono text-xs sm:text-sm">
+                                arapahoe-pin-to-tag.json
+                              </span>
+                              . If that field is empty, we cannot form{" "}
+                              <span className="whitespace-nowrap">
+                                FileDownload.ashx?AIN=…
+                              </span>{" "}
+                              on the business personal property site safely.
+                            </p>
+                            <p className="mt-3 text-sm leading-relaxed text-slate-800">
+                              Open{" "}
+                              <a
+                                href={
+                                  ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={COUNTY_EXTERNAL_LINK_CLASS}
+                              >
+                                Arapahoe business personal property search
+                                <span className="sr-only">
+                                  {" "}
+                                  (opens in a new tab)
+                                </span>
+                              </a>
+                              {" "}
+                              to reach your account from the county. For how the
+                              bundle is built, see{" "}
+                              <PreserveSessionDocLink href="/sources">
+                                Sources
+                              </PreserveSessionDocLink>
+                              .
+                            </p>
+                          </>
+                        </CountyCompsPdfHelpPopover>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            !isBusinessPersonalAccount ? (
               <div
                 className={
                   homeCompsGridPdfHref &&
                   ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
                     ? PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS
-                    : PARCEL_SUMMARY_TILE_CLASS_POPOVER
+                    : homeCompsGridPdfHref
+                      ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
+                      : PARCEL_SUMMARY_TILE_CLASS_POPOVER
                 }
                 id="home-parcel-comps-pdf"
               >
@@ -1989,9 +2275,9 @@ export function HomeParcelAddressLookup({
                         label: (
                           <ParcelGlossaryPopoverTrigger
                             termId="term-comps"
-                            textTrigger="Comps PDF"
+                            textTrigger="Comparable properties"
                             textTriggerId="comps-pdf-term-first"
-                            ariaLabel="Brief definition of comps and the county PDF."
+                            ariaLabel="Brief definition of comparable properties and the county PDF."
                           />
                         ),
                         status: (
@@ -2010,9 +2296,9 @@ export function HomeParcelAddressLookup({
                       <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
                         <ParcelGlossaryPopoverTrigger
                           termId="term-comps"
-                          textTrigger="Comps PDF"
+                          textTrigger="Comparable properties"
                           textTriggerId="comps-pdf-term-first"
-                          ariaLabel="Brief definition of comps and the county PDF."
+                          ariaLabel="Brief definition of comparable properties and the county PDF."
                         />
                       </div>
                       {homeCompsGridPdfHref ? (
@@ -2020,24 +2306,26 @@ export function HomeParcelAddressLookup({
                           href={homeCompsGridPdfHref}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={COMPS_PDF_ICON_CONTROL_CLASS}
-                          aria-label="Open county comps grid PDF for this property (opens in a new tab)"
+                          className={`${COMPS_PDF_ICON_CONTROL_CLASS} mt-0.5`}
+                          aria-label="Open county comparable properties PDF for this property (opens in a new tab)"
                         >
                           {compsIcon}
                         </a>
                       ) : isDemoMode ? (
                         <div className="flex justify-center">
                           <CountyCompsPdfHelpPopover
-                            ariaLabel="Comps PDF is unavailable for this property"
+                            ariaLabel="Comparable properties PDF is unavailable for this property"
                             icon={compsIcon}
                           >
                             <>
-                              Demo mode does not include a comps PDF. Select{" "}
+                              Demo mode does not include a comparable properties
+                              PDF. Select{" "}
                               <strong className="font-semibold text-slate-900">
                                 Start over
                               </strong>
                               {", "}
-                              then enter your address to open your county comps PDF.
+                              then enter your address to open your county
+                              comparable properties PDF.
                             </>
                           </CountyCompsPdfHelpPopover>
                         </div>
@@ -2048,12 +2336,13 @@ export function HomeParcelAddressLookup({
                           aria-live="polite"
                         >
                           <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
-                            No county comps PDF from here: this PIN is missing an
-                            assessor parcel id (AIN) in the bundled parcel index.
+                            No county comparable properties PDF from here: this
+                            PIN is missing an assessor parcel id (AIN) in the
+                            bundled parcel index.
                           </p>
                           <div className="flex justify-center sm:justify-start">
                             <CountyCompsPdfHelpPopover
-                              ariaLabel="Why there is no comps PDF link for this property"
+                              ariaLabel="Why there is no comparable properties PDF link for this property"
                               icon={compsIcon}
                             >
                               <>
@@ -2085,8 +2374,9 @@ export function HomeParcelAddressLookup({
                                     </span>
                                   </a>
                                   {" "}
-                                  to reach your parcel and comps from the county. For
-                                  how the bundle is built, see{" "}
+                                  to reach your parcel and comparable properties
+                                  from the county. For how the bundle is built,
+                                  see{" "}
                                   <PreserveSessionDocLink href="/sources">
                                     Sources
                                   </PreserveSessionDocLink>
@@ -2112,9 +2402,18 @@ export function HomeParcelAddressLookup({
             </p>
           ) : null}
           {error ? (
-            <InlineErrorCallout className="mt-1" liveRegion="polite">
-              {error}
-            </InlineErrorCallout>
+            errorTechnicalDetail ? (
+              <DataLoadErrorCallout
+                className="mt-1"
+                liveRegion="polite"
+                message={error}
+                technicalDetail={errorTechnicalDetail}
+              />
+            ) : (
+              <InlineErrorCallout className="mt-1" liveRegion="polite">
+                {error}
+              </InlineErrorCallout>
+            )
           ) : null}
           {showHomeLevyBreakdownRegion ? (
             <div
@@ -2226,7 +2525,17 @@ export function HomeParcelAddressLookup({
             </div>
           ) : null}
           {levyLoadError ? (
-            <InlineErrorCallout liveRegion="polite">{levyLoadError}</InlineErrorCallout>
+            levyLoadErrorTechnicalDetail ? (
+              <DataLoadErrorCallout
+                liveRegion="polite"
+                message={levyLoadError}
+                technicalDetail={levyLoadErrorTechnicalDetail}
+              />
+            ) : (
+              <InlineErrorCallout liveRegion="polite">
+                {levyLoadError}
+              </InlineErrorCallout>
+            )
           ) : null}
 
       {showHomeLevyBreakdownWorkbenchShell ? (

@@ -9,6 +9,7 @@
  */
 
 import { clearArapahoeSitusDataCache } from "@/lib/arapahoeSitusLookup";
+import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
 
 export type ArapahoeDolaMatch = {
   method: "fuzzy" | "override" | "none" | "skipped";
@@ -365,6 +366,155 @@ export function formatTaxAreaShortDescrDisplay(raw: string): string {
 
 let stacksCache: Promise<ArapahoeLevyStacksFile | null> | null = null;
 let pinCache: Promise<ArapahoePinToTagFile | null> | null = null;
+
+/** Last pin-map / stacks fetch failure (for resident mailto); cleared on success. */
+let lastPinToTagFetchFailureDetail: string | null = null;
+let lastLevyStacksFetchFailureDetail: string | null = null;
+
+const PIN_TO_TAG_URL = "/data/arapahoe-pin-to-tag.json";
+const LEVY_STACKS_URL = "/data/arapahoe-levy-stacks-by-tag-id.json";
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim() !== "";
+}
+
+function isArapahoeLevyStackLine(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  return (
+    isNonEmptyString(value.code) &&
+    isNonEmptyString(value.authorityName) &&
+    isPlainObject(value.dolaMatch)
+  );
+}
+
+function isArapahoeLevyStack(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  if (!isNonEmptyString(value.tagId) || !isNonEmptyString(value.levyAspxUrl)) {
+    return false;
+  }
+  if (!Array.isArray(value.lines)) return false;
+  return value.lines.every(isArapahoeLevyStackLine);
+}
+
+function isArapahoePinToTagRow(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  return isNonEmptyString(value.tagId) && isNonEmptyString(value.tagShortDescr);
+}
+
+/**
+ * Validate levy-stacks JSON before caching. Returns a detail string on failure.
+ */
+export function validateArapahoeLevyStacksFile(
+  data: unknown,
+  sourceUrl: string = LEVY_STACKS_URL,
+): string | null {
+  if (!isPlainObject(data)) {
+    return `${sourceUrl}: root must be an object`;
+  }
+  if (!isPlainObject(data.snapshot)) {
+    return `${sourceUrl}: missing snapshot object`;
+  }
+  if (!isNonEmptyString(data.snapshot.bundledAsOf)) {
+    return `${sourceUrl}: snapshot.bundledAsOf required`;
+  }
+  if (!isPlainObject(data.stacksByTagId)) {
+    return `${sourceUrl}: missing stacksByTagId`;
+  }
+  for (const [tagId, stack] of Object.entries(data.stacksByTagId)) {
+    if (!isArapahoeLevyStack(stack)) {
+      return `${sourceUrl}: stacksByTagId[${tagId}] has an invalid shape`;
+    }
+  }
+  return null;
+}
+
+/**
+ * Validate pin-to-tag JSON before caching. Returns a detail string on failure.
+ */
+export function validateArapahoePinToTagFile(
+  data: unknown,
+  sourceUrl: string = PIN_TO_TAG_URL,
+): string | null {
+  if (!isPlainObject(data)) {
+    return `${sourceUrl}: root must be an object`;
+  }
+  if (!isPlainObject(data.snapshot)) {
+    return `${sourceUrl}: missing snapshot object`;
+  }
+  if (!isNonEmptyString(data.snapshot.bundledAsOf)) {
+    return `${sourceUrl}: snapshot.bundledAsOf required`;
+  }
+  if (typeof data.pinDigits !== "number" || !Number.isFinite(data.pinDigits)) {
+    return `${sourceUrl}: pinDigits must be a finite number`;
+  }
+  if (!isPlainObject(data.byPin)) {
+    return `${sourceUrl}: missing byPin`;
+  }
+  for (const [pin, row] of Object.entries(data.byPin)) {
+    if (!isArapahoePinToTagRow(row)) {
+      return `${sourceUrl}: byPin[${pin}] has an invalid shape`;
+    }
+  }
+  return null;
+}
+
+export function getLastArapahoePinToTagFetchFailureDetail(): string | null {
+  return lastPinToTagFetchFailureDetail;
+}
+
+export function getLastArapahoeLevyStacksFetchFailureDetail(): string | null {
+  return lastLevyStacksFetchFailureDetail;
+}
+
+/** Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads. */
+export function fetchArapahoeLevyStacksJson(): Promise<ArapahoeLevyStacksFile | null> {
+  if (!stacksCache) {
+    stacksCache = (async () => {
+      const result = await fetchCountyStaticJson(LEVY_STACKS_URL);
+      if (!result.ok) {
+        lastLevyStacksFetchFailureDetail = result.detail;
+        stacksCache = null;
+        return null;
+      }
+      const invalidDetail = validateArapahoeLevyStacksFile(result.json);
+      if (invalidDetail) {
+        lastLevyStacksFetchFailureDetail = invalidDetail;
+        stacksCache = null;
+        return null;
+      }
+      lastLevyStacksFetchFailureDetail = null;
+      return result.json as ArapahoeLevyStacksFile;
+    })();
+  }
+  return stacksCache;
+}
+
+/** Lazy fetch (~13 MiB) — only when user triggers parcel PIN lookup. */
+export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null> {
+  if (!pinCache) {
+    pinCache = (async () => {
+      const result = await fetchCountyStaticJson(PIN_TO_TAG_URL);
+      if (!result.ok) {
+        lastPinToTagFetchFailureDetail = result.detail;
+        pinCache = null;
+        return null;
+      }
+      const invalidDetail = validateArapahoePinToTagFile(result.json);
+      if (invalidDetail) {
+        lastPinToTagFetchFailureDetail = invalidDetail;
+        pinCache = null;
+        return null;
+      }
+      lastPinToTagFetchFailureDetail = null;
+      return result.json as ArapahoePinToTagFile;
+    })();
+  }
+  return pinCache;
+}
 const parcelRecordShardCache = new Map<
   string,
   Promise<ArapahoeParcelRecordByPinFile | null>
@@ -407,26 +557,6 @@ async function fetchJsonWithTimeout<T>(
   } finally {
     clearTimeout(timeoutId);
   }
-}
-
-/** Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads. */
-export function fetchArapahoeLevyStacksJson(): Promise<ArapahoeLevyStacksFile | null> {
-  if (!stacksCache) {
-    stacksCache = fetch("/data/arapahoe-levy-stacks-by-tag-id.json")
-      .then((r) => (r.ok ? (r.json() as Promise<ArapahoeLevyStacksFile>) : null))
-      .catch(() => null);
-  }
-  return stacksCache;
-}
-
-/** Lazy fetch (~13 MiB) — only when user triggers parcel PIN lookup. */
-export function fetchArapahoePinToTagJson(): Promise<ArapahoePinToTagFile | null> {
-  if (!pinCache) {
-    pinCache = fetch("/data/arapahoe-pin-to-tag.json")
-      .then((r) => (r.ok ? (r.json() as Promise<ArapahoePinToTagFile>) : null))
-      .catch(() => null);
-  }
-  return pinCache;
 }
 
 /**
@@ -498,6 +628,8 @@ export function lookupParcelRecordRow(
 export function clearArapahoeParcelDataCache(): void {
   stacksCache = null;
   pinCache = null;
+  lastPinToTagFetchFailureDetail = null;
+  lastLevyStacksFetchFailureDetail = null;
   parcelRecordShardCache.clear();
   clearArapahoeSitusDataCache();
 }

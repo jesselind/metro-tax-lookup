@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ainLookupCandidates,
+  clearArapahoeParcelDataCache,
+  fetchArapahoeLevyStacksJson,
+  fetchArapahoePinToTagJson,
   getAinToPinIndex,
+  getLastArapahoeLevyStacksFetchFailureDetail,
+  getLastArapahoePinToTagFetchFailureDetail,
   looksLikeAinInput,
   looksLikeParcelIdInput,
   looksLikePinOnlyInput,
@@ -16,6 +21,8 @@ import {
   parcelRecordShardUrl,
   pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
+  validateArapahoeLevyStacksFile,
+  validateArapahoePinToTagFile,
 } from "./arapahoeParcelLevyData";
 import {
   SYNTHETIC_AIN,
@@ -111,5 +118,158 @@ describe("AIN and parcel-id input helpers", () => {
     expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_PIN)).toBe(
       SYNTHETIC_PIN,
     );
+  });
+});
+
+describe("validateArapahoeLevyStacksFile", () => {
+  const validStack = {
+    tagId: "1",
+    levyAspxUrl: "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1",
+    lines: [
+      {
+        code: "0601",
+        authorityName: "SCHOOL",
+        dolaMatch: { method: "none", confidence: "low" },
+      },
+    ],
+  };
+
+  it("accepts a well-formed root and stack entries", () => {
+    expect(
+      validateArapahoeLevyStacksFile({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        stacksByTagId: { "1": validStack },
+      }),
+    ).toBeNull();
+  });
+
+  it("rejects a malformed root", () => {
+    expect(validateArapahoeLevyStacksFile(null)).toMatch(/root must be an object/);
+    expect(
+      validateArapahoeLevyStacksFile({
+        snapshot: { bundledAsOf: "2026-01-01" },
+      }),
+    ).toMatch(/missing stacksByTagId/);
+  });
+
+  it("rejects a malformed stack entry", () => {
+    expect(
+      validateArapahoeLevyStacksFile({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        stacksByTagId: { "1": { tagId: "1", lines: [] } },
+      }),
+    ).toMatch(/stacksByTagId\[1\] has an invalid shape/);
+  });
+});
+
+describe("validateArapahoePinToTagFile", () => {
+  it("accepts a well-formed root and byPin entries", () => {
+    expect(
+      validateArapahoePinToTagFile({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        pinDigits: 9,
+        byPin: {
+          [SYNTHETIC_PIN]: { tagId: "1", tagShortDescr: "0001" },
+        },
+      }),
+    ).toBeNull();
+  });
+
+  it("rejects a malformed root", () => {
+    expect(validateArapahoePinToTagFile([])).toMatch(/root must be an object/);
+    expect(
+      validateArapahoePinToTagFile({
+        snapshot: { bundledAsOf: "2026-01-01" },
+        pinDigits: 9,
+      }),
+    ).toMatch(/missing byPin/);
+  });
+
+  it("rejects a malformed byPin entry", () => {
+    expect(
+      validateArapahoePinToTagFile({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        pinDigits: 9,
+        byPin: { [SYNTHETIC_PIN]: { tagId: "1" } },
+      }),
+    ).toMatch(new RegExp(`byPin\\[${SYNTHETIC_PIN}\\] has an invalid shape`));
+  });
+});
+
+describe("fetchArapahoeLevyStacksJson / fetchArapahoePinToTagJson validation", () => {
+  afterEach(() => {
+    clearArapahoeParcelDataCache();
+    vi.unstubAllGlobals();
+  });
+
+  it("clears cache and records detail for a malformed stacks root", async () => {
+    const validStacks = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      stacksByTagId: {
+        "1": {
+          tagId: "1",
+          levyAspxUrl: "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1",
+          lines: [
+            {
+              code: "0601",
+              authorityName: "SCHOOL",
+              dolaMatch: { method: "none", confidence: "low" },
+            },
+          ],
+        },
+      },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notStacks: true }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => validStacks,
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await fetchArapahoeLevyStacksJson()).toBeNull();
+    expect(getLastArapahoeLevyStacksFetchFailureDetail()).toMatch(
+      /missing stacksByTagId|missing snapshot/,
+    );
+
+    expect(await fetchArapahoeLevyStacksJson()).toEqual(validStacks);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears cache and records detail for a malformed pin-to-tag entry", async () => {
+    const validPinToTag = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_PIN]: { tagId: "1", tagShortDescr: "0001" },
+      },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+          pinDigits: 9,
+          byPin: { [SYNTHETIC_PIN]: { tagId: "1" } },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => validPinToTag,
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await fetchArapahoePinToTagJson()).toBeNull();
+    expect(getLastArapahoePinToTagFetchFailureDetail()).toMatch(
+      /has an invalid shape/,
+    );
+
+    expect(await fetchArapahoePinToTagJson()).toEqual(validPinToTag);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

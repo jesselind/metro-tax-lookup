@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONTACT_EMAIL,
   REPORT_PROBLEM_MAILTO_HREF,
+  buildDataLoadFailureMailtoHref,
   buildMissingParcelDataMailtoHref,
 } from "@/lib/contact";
 import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
@@ -61,5 +62,33 @@ describe("buildMissingParcelDataMailtoHref", () => {
     expect(body).not.toMatch(/\nCc:/);
     expect(body).toContain("PIN: (not available)");
     expect(body).toContain("AIN: (not available)");
+  });
+});
+
+describe("buildDataLoadFailureMailtoHref", () => {
+  it("prefills subject and technical detail for the site contact", () => {
+    const href = buildDataLoadFailureMailtoHref(
+      "/data/arapahoe-situs-to-pins.json: HTTP 503",
+    );
+    expect(href.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true);
+    const query = href.slice(`mailto:${CONTACT_EMAIL}?`.length);
+    const params = new URLSearchParams(query);
+    expect(params.get("subject")).toBe(
+      `${SITE_BRAND_NAME}: lookup data failed to load`,
+    );
+    const body = params.get("body") ?? "";
+    expect(body).toContain("/data/arapahoe-situs-to-pins.json: HTTP 503");
+    expect(body).toContain("Technical detail");
+  });
+
+  it("strips control characters from the technical detail", () => {
+    const href = buildDataLoadFailureMailtoHref(
+      "line1\nCc: attacker@example.com",
+    );
+    const query = href.slice(`mailto:${CONTACT_EMAIL}?`.length);
+    const params = new URLSearchParams(query);
+    const body = params.get("body") ?? "";
+    expect(body).not.toMatch(/\nCc:/);
+    expect(body).toContain("line1 Cc: attacker@example.com");
   });
 });

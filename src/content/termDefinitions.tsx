@@ -281,8 +281,18 @@ export function TermPropertyClassificationAside() {
           /{" "}
           <strong className="font-semibold text-slate-900">PersProp</strong>
           {" "}
-          means personal property (for example business equipment), not a typical house-and-land
-          parcel.
+          is the county&apos;s class word for personal property (business
+          equipment, fixtures, and similar). It is not a house-and-land parcel.
+          The same word often appears on the{" "}
+          <strong className="font-semibold text-slate-900">Tax roll</strong>
+          {" "}
+          field. Residents usually hear{" "}
+          <strong className="font-semibold text-slate-900">
+            business personal property
+          </strong>
+          ; the export still stores the short label{" "}
+          <strong className="font-semibold text-slate-900">Personal</strong>
+          .
         </li>
         <li>
           <strong className="font-semibold text-slate-900">StateAssessed</strong>
@@ -464,24 +474,29 @@ export function TermAssessedValueAside() {
 
 export function TermCompsAside() {
   return (
-    <TermAside id="term-comps" title="Comps" titleId="term-comps-title">
+    <TermAside
+      id="term-comps"
+      title="Comparable properties"
+      titleId="term-comps-title"
+    >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        <dfn className="font-semibold not-italic text-slate-900">Comps</dfn>
+        <dfn className="font-semibold not-italic text-slate-900">
+          Comparable properties
+        </dfn>
         {" "}
-        is short for <strong className="font-semibold text-slate-900">comparables</strong>
-        {": "}
-        similar homes or lots the county sets next to yours so it can land on an{" "}
+        are similar homes or lots the county sets next to yours so it can land on
+        an{" "}
         <strong className="font-semibold text-slate-900">approximate value</strong>
         {" "}
-        for the tax side of the work. Same word sometimes shows up when people buy or sell; here it
-        always means the county&apos;s own comparison list, not a bank appraisal for a loan and not
-        a realtor packet.
+        for the tax side of the work. People often say{" "}
+        <strong className="font-semibold text-slate-900">comps</strong>
+        {" "}
+        (short for comparables). Same word sometimes shows up when people buy or
+        sell; here it always means the county&apos;s own comparison list, not a
+        bank appraisal for a loan and not a realtor packet.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The{" "}
-        <strong className="font-semibold text-slate-900">Comps PDF</strong>
-        {" "}
-        control links to the county comparables file on{" "}
+        The summary control links to the county comparables file on{" "}
         <span className="whitespace-nowrap">
           {COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST}
         </span>
@@ -493,6 +508,42 @@ export function TermCompsAside() {
         ) : (
           COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST
         )}
+      </p>
+    </TermAside>
+  );
+}
+
+export function TermNoticeOfValuationAside() {
+  return (
+    <TermAside
+      id="term-notice-of-valuation"
+      title="Notice of Valuation"
+      titleId="term-notice-of-valuation-title"
+    >
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        A{" "}
+        <dfn className="font-semibold not-italic text-slate-900">
+          Notice of Valuation
+        </dfn>
+        {" "}
+        is the county&apos;s official statement of what it thinks a tax account
+        is worth for that year. For{" "}
+        <strong className="font-semibold text-slate-900">
+          business personal property
+        </strong>
+        {" "}
+        (equipment and similar), Arapahoe posts that notice as a PDF on{" "}
+        <span className="whitespace-nowrap">
+          personalpropertysearch.arapahoegov.com
+        </span>
+        {". "}
+        The file can show prior and current actual value, the personal-property
+        assessment rate, and when you may appeal.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        This is not a comps list. Equipment is valued from reported cost and
+        schedules, not by lining up sales of similar items next door. Real
+        property uses a different county download for comparable properties.
       </p>
     </TermAside>
   );
@@ -875,6 +926,7 @@ export function AllTermDefinitionAsides() {
       <TermLegalDescriptionAside />
       <TermLgIdAside />
       <TermMillLevyAside />
+      <TermNoticeOfValuationAside />
       <TermOwnerListAside />
       <TermParcelAside />
       <TermParcelRecordAside />
