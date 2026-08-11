@@ -18,14 +18,17 @@ import {
  * Run with `npm run test:e2e:live-sources` or the scheduled workflow.
  */
 test.describe("Authority-chain curated source URL health", () => {
-  test(
-    "curated source URLs respond (HEAD / ranged GET)",
-    { tag: "@live-sources" },
-    async ({ request }) => {
-      const hrefs = collectAuthorityChainSourceUrlsForEntries(
-        authorityChainE2eCases().map((c) => c.entry),
-      );
-      await assertAuthorityChainSourceUrlsReachable(request, hrefs);
-    },
+  const hrefs = collectAuthorityChainSourceUrlsForEntries(
+    authorityChainE2eCases().map((c) => c.entry),
   );
+
+  for (const href of hrefs) {
+    test(
+      `curated source URL responds (HEAD / ranged GET): ${href}`,
+      { tag: "@live-sources" },
+      async ({ request }) => {
+        await assertAuthorityChainSourceUrlsReachable(request, [href]);
+      },
+    );
+  }
 });
