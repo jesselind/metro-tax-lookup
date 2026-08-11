@@ -262,7 +262,7 @@ export function SitusMultiAccountChooserList({
               ) : (
                 <button
                   type="button"
-                  className={`${btnOutlinePrimaryMd} w-full shrink-0 cursor-pointer justify-center py-2.5 sm:w-auto sm:px-4`}
+                  className={`${btnOutlinePrimaryMd} w-full shrink-0 cursor-pointer justify-center py-2.5 disabled:cursor-not-allowed sm:w-auto sm:px-4`}
                   disabled={selectDisabled}
                   onClick={() => onSelectPin(pin)}
                 >

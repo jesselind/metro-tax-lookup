@@ -6,7 +6,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Browser e2e.
+ * Default browser e2e (PR / push CI + `npm run test:e2e`).
+ *
+ * Excludes `@live-sources` (third-party URL probes). Those run via
+ * `playwright.live-sources.config.ts` / `npm run test:e2e:live-sources`.
  *
  * Local CLI: reuses this app on :3000 (`localhost`) when already up (`npm run dev`);
  * otherwise starts `next dev`. Playwright IDE: start `npm run dev` yourself first — the
@@ -26,6 +29,8 @@ export default defineConfig({
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
   reporter: isCI ? [["list"], ["html", { open: "never" }]] : "html",
+  /* Do not gate merges on county/district host availability. */
+  grepInvert: /@live-sources/,
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",

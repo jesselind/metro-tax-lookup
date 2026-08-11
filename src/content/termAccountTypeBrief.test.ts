@@ -29,6 +29,7 @@ describe("TermAccountTypeBriefBody", () => {
   it("describes Switch account type as multi-account only", () => {
     const body = briefSource();
     expect(body).toMatch(/Switch account type/);
+    expect(body).toMatch(/identifies the account currently shown on/);
     expect(body).toMatch(/more than one account/);
     expect(body).not.toMatch(/swap arrows/i);
     expect(body).not.toMatch(/appear on this tile/i);

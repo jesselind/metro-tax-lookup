@@ -1,6 +1,7 @@
 # Playwright workflow (conventional filename). Also runs TypeScript typecheck and Vitest
 # before browser e2e so mislabeled "Playwright failed" logs are not build/type errors.
 # Runs on push/PR to main and via workflow_dispatch.
+# Excludes @live-sources (see live-sources.yml) — third-party URL probes do not gate PRs.
 name: Playwright
 on:
   push:

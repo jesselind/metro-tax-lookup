@@ -1869,10 +1869,10 @@ export function HomeParcelAddressLookup({
                 </div>
               </div>
             ) : null}
+            {/* Keep Switch available after levy load failure so another PIN can be tried. */}
             {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            canSwitchSitusAccounts ? (
+            canSwitchSitusAccounts &&
+            (levyReadyForSummary || levyLoadError != null) ? (
               <button
                 type="button"
                 id="home-parcel-account-type"
