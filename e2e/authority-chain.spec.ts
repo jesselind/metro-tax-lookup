@@ -6,9 +6,7 @@
 import { test } from "@playwright/test";
 import {
   assertAuthorityChainPanel,
-  assertAuthorityChainSourceUrlsReachable,
   authorityChainE2eCases,
-  collectAuthorityChainSourceUrlsForEntries,
   openAuthorityChainPanel,
 } from "./helpers/authorityChain";
 
@@ -17,8 +15,9 @@ import {
  * Cases and expected hrefs come from levy-authority-chain-entries.json; the
  * synthetic levy stack only injects the matching AUTH / levy line code.
  *
- * Panel UI and source-URL reachability are separate tests so a flaky county
- * host does not look like a panel regression.
+ * Live curated-source URL probes live in
+ * `authority-chain-live-sources.spec.ts` (@live-sources) — not this file —
+ * so a flaky county host cannot fail PR e2e or look like a panel regression.
  */
 test.describe("Levy authority chain (Who authorized this?)", () => {
   const cases = authorityChainE2eCases();
@@ -31,13 +30,4 @@ test.describe("Levy authority chain (Who authorized this?)", () => {
       await assertAuthorityChainPanel(chain, entry);
     });
   }
-
-  test("curated source URLs respond (HEAD / ranged GET)", async ({
-    request,
-  }) => {
-    const hrefs = collectAuthorityChainSourceUrlsForEntries(
-      cases.map((c) => c.entry),
-    );
-    await assertAuthorityChainSourceUrlsReachable(request, hrefs);
-  });
 });

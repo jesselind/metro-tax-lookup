@@ -14,3 +14,5 @@ PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:
 ```
 
 Same prefix for `npx playwright test ...`. Cursor's sandbox path under `cursor-sandbox-cache` is empty: that is not a missing install. Only suggest `npx playwright install` if failure is against `$HOME/Library/Caches/ms-playwright`. Inspect the first launch failure before cross-browser retries. Run chromium, firefox, and webkit unless the user scoped to one.
+
+Default `test:e2e` excludes `@live-sources` (third-party URL probes). For cite health only: `CI=1 npm run test:e2e:live-sources` (Chromium request-only; no app build required).

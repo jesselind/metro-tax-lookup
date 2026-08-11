@@ -780,9 +780,12 @@ export function TermTaxRollBriefBody() {
 export function TermAccountTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Which kind of tax account this is: the land and buildings, or business
-      equipment at the same address. If more than one account matches the
-      address, swap arrows appear on this tile so you can switch.
+      The Switch account type control identifies the account currently shown on
+      your bill: the land and buildings (real property), or business equipment
+      taxed separately at the same address (business personal property). It
+      appears only when this address has more than one account. Use it to open
+      the list and pick the row that matches the owner or account type on your
+      bill.
     </p>
   );
 }

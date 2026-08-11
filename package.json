@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "4.7.1",
+  "version": "4.7.2",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -17,6 +17,7 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:live-sources": "playwright test -c playwright.live-sources.config.ts",
     "build": "next build",
     "build:arapahoe-index": "python3 tools/build_arapahoe_parcel_levy_index.py",
     "build:district-directory": "python3 tools/build_district_directory_from_lg_export.py",

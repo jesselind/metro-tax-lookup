@@ -39,11 +39,11 @@
         "priorMills": "53.962",
         "currentRateSource": {
           "text": "County rate table for 2025 (PDF)",
-          "url": "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
+          "url": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
         },
         "priorRateSource": {
           "text": "County rate table for 2024 (PDF)",
-          "url": "https://www.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
+          "url": "https://files.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
         }
       },
       "measures": [
@@ -149,11 +149,11 @@
         "priorMills": "64.793",
         "currentRateSource": {
           "text": "County rate table for 2025 (PDF)",
-          "url": "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
+          "url": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
         },
         "priorRateSource": {
           "text": "County rate table for 2024 (PDF)",
-          "url": "https://www.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
+          "url": "https://files.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
         }
       },
       "measures": [
@@ -269,11 +269,11 @@
         ],
         "currentRateSource": {
           "text": "County rate table for 2024 (PDF)",
-          "url": "https://www.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
+          "url": "https://files.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
         },
         "priorRateSource": {
           "text": "County rate table for 2023 (PDF)",
-          "url": "https://www.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/Taxing%20District%20Levy%20Percentage%202023.pdf?t=202402070945160"
+          "url": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/Taxing%20District%20Levy%20Percentage%202023.pdf?t=202402070945160"
         }
       },
       "measures": [

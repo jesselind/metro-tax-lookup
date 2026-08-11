@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.7.2",
+    date: "2026-08-11",
+    title: "In-dashboard multi-account switcher modal",
+    highlights: [
+      "Multi-PIN situs: Switch account type is a salmon dashboard button (multi-account only) that opens a levy-style modal instead of unlocking the post-search chooser.",
+      "Modal rows are full-row hit targets with Currently viewing on the active PIN; Real / business personal property kinds stay prominent with glossary briefs.",
+      "Single-PIN properties omit the control; post-search Matching properties chooser is unchanged.",
+    ],
+  },
+  {
     version: "4.7.1",
     date: "2026-08-09",
     title: "Business personal property dashboard and continuous property details",
