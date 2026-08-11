@@ -207,22 +207,22 @@ export const PARCEL_SUMMARY_TILE_ADDRESS_CLASS =
   "text-base font-semibold leading-snug tracking-tight text-slate-900 sm:text-lg";
 
 /**
- * Account-type summary tile when other PINs share this situs (reopens chooser).
- * Full-tile hit target; glossary label stays above the overlay (same idea as
- * limited comps). Indigo frame only — never the comps red alert border.
+ * Dashboard multi-account switcher: a real control button (not a summary tile).
+ * Soft salmon fill + dark text — AA contrast (≥4.5:1) on default/hover/active.
+ * Do not compose from parcel tile frames (`bg-white` / slate borders fight these colors).
+ * `self-stretch` matches sibling tile height on a shared summary row; alone on a
+ * wrap line (typical mobile) it keeps its content height.
  */
-export const PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0 cursor-pointer border-indigo-300 bg-indigo-50/40 shadow-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50/80`;
+export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS =
+  "inline-flex max-w-full min-h-0 cursor-pointer flex-col items-start justify-center gap-0.5 self-stretch rounded-md border border-[#C56A52] bg-[#E8A090] px-4 py-2.5 text-left shadow-sm transition-colors hover:border-[#B85A45] hover:bg-[#E09A88] active:border-[#A84E3C] active:bg-[#D98978] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A45]/55 focus-visible:ring-offset-2";
 
-/**
- * Invisible full-tile button behind account-type content (glossary label is
- * `relative z-[2] pointer-events-auto` with pointerdown stopPropagation).
- */
-export const PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_OVERLAY_CLASS =
-  "absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent p-0 transition-colors hover:bg-indigo-100/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600";
+/** Primary line inside {@link PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS} (~7.2:1 on fill). Match tile address size (no mobile shrink). */
+export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS =
+  "text-base font-bold leading-snug text-[#3F1A14] sm:text-lg";
 
-/** Decorative swap glyph on the account-type value row (sized to the value line). */
-export const PARCEL_SUMMARY_ACCOUNT_SWITCH_ICON_DECORATIVE_CLASS =
-  "inline-flex shrink-0 self-center text-indigo-700";
+/** Current account kind under the action (~6.8:1 on fill). */
+export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS =
+  "text-sm font-medium leading-snug text-[#451E18] sm:text-base";
 
 /**
  * Metro percent cards: wrap into content-sized columns. Default grid `align-items: stretch`

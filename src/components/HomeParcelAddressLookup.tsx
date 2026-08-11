@@ -42,6 +42,8 @@ import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
+import { SitusMultiAccountChooserList } from "@/components/SitusMultiAccountChooserList";
+import { SitusMultiAccountSwitcherDialog } from "@/components/SitusMultiAccountSwitcherDialog";
 import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
@@ -88,7 +90,7 @@ import {
   trySitusAutofillBlurSplit,
   type SitusStreetSuggestion,
 } from "@/lib/arapahoeSitusLookup";
-import { enrichSitusPinHitsForChooser, situsAccountKindGlossaryTermId } from "@/lib/situsMultiPinChooser";
+import { enrichSitusPinHitsForChooser } from "@/lib/situsMultiPinChooser";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
@@ -125,9 +127,9 @@ import {
   INPUT_CLASS,
   PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS,
   PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS,
-  PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_CLASS,
-  PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_OVERLAY_CLASS,
-  PARCEL_SUMMARY_ACCOUNT_SWITCH_ICON_DECORATIVE_CLASS,
+  PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS,
+  PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS,
+  PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS,
   PARCEL_SUMMARY_ROW_CLASS,
   PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
   PARCEL_SUMMARY_TILE_BODY_CLASS,
@@ -316,11 +318,8 @@ export function HomeParcelAddressLookup({
     string | null
   >(null);
   const prevAddressSearchLockedRef = useRef(false);
-  /**
-   * When reopening the multi-account chooser, skip the Start-over unlock focus
-   * (refine street-number field) and focus the match list at the top instead.
-   */
-  const focusMatchingPropertiesOnUnlockRef = useRef(false);
+  /** Dashboard Account type tile: in-place multi-PIN switcher modal. */
+  const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
   /** Incremented on each levy load/clear so stale PIN lookups cannot apply state. */
   const levyLoadRequestRef = useRef(0);
   /** Incremented with levy loads; pairs with per-call id inside loadParcelRecord. */
@@ -355,7 +354,6 @@ export function HomeParcelAddressLookup({
   /**
    * Lock → property report: jump to top (same-page swap keeps window scroll).
    * Unlock → Start over: return focus to the first visible address field.
-   * Unlock → change account: focus the matching-properties list (not refine fields).
    */
   useEffect(() => {
     const wasLocked = prevAddressSearchLockedRef.current;
@@ -366,14 +364,6 @@ export function HomeParcelAddressLookup({
       return;
     }
     if (!addressSearchLocked && wasLocked) {
-      if (focusMatchingPropertiesOnUnlockRef.current) {
-        focusMatchingPropertiesOnUnlockRef.current = false;
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        document
-          .getElementById(HOME_MATCHING_PROPERTIES_ID)
-          ?.focus({ preventScroll: true });
-        return;
-      }
       document
         .getElementById(
           showAdvancedAddressFields
@@ -626,18 +616,27 @@ export function HomeParcelAddressLookup({
     setHomeLevyWorkbenchOpen(true);
   }
 
-  /** Reopen the multi-account list without clearing the situs hit set. */
-  function reopenMultiAccountChooser() {
+  /** Open the in-dashboard multi-account switcher (does not unlock search). */
+  function openAccountSwitcher() {
     if (hits == null || hits.length < 2) return;
-    clearLevyStackOnly();
+    setAccountSwitcherOpen(true);
+  }
+
+  function closeAccountSwitcher() {
+    setAccountSwitcherOpen(false);
+  }
+
+  /** Switch PIN while staying on the locked dashboard (reload levy stack in place). */
+  function switchDashboardAccount(pin: string) {
+    setAccountSwitcherOpen(false);
+    if (pin === parcelPin.trim()) return;
     setLevyLoadError(null);
     setLevyLoadErrorTechnicalDetail(null);
-    setParcelPin("");
-    focusMatchingPropertiesOnUnlockRef.current = true;
-    setAddressSearchLocked(false);
-    setIsDemoMode(false);
-    setHomeLevyWorkbenchOpen(false);
-    setShowAdvancedAddressFields(true);
+    clearLevyStackOnly();
+    setParcelPin(pin);
+    void loadLevyStack(pin);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.getElementById("page-top")?.focus({ preventScroll: true });
   }
 
   function applySitusBlurSplit(
@@ -658,6 +657,7 @@ export function HomeParcelAddressLookup({
   async function onLookup() {
     if (busy) return;
     setIsDemoMode(false);
+    setAccountSwitcherOpen(false);
     clearAllLevyState();
     setError(null);
     setErrorTechnicalDetail(null);
@@ -867,6 +867,7 @@ export function HomeParcelAddressLookup({
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
     setIsDemoMode(false);
+    setAccountSwitcherOpen(false);
     clearAllLevyState();
   }, [clearAllLevyState]);
 
@@ -1006,7 +1007,26 @@ export function HomeParcelAddressLookup({
     );
   }, [enrichedMultiHits]);
 
-  /** Load pin-to-tag whenever the multi-account chooser is shown. */
+  /** Shared rows for post-search chooser and dashboard account-switcher modal. */
+  const multiAccountChooserItems = useMemo(() => {
+    if (hits == null || hits.length < 2 || enrichedMultiHits == null) {
+      return null;
+    }
+    const enrichmentReady = multiMatchPinToTag != null;
+    return enrichedMultiHits.map((h, hitIndex) => ({
+      pin: h.pin,
+      label: h.label,
+      enriched: enrichmentReady ? h : null,
+      envelope: multiHitEnvelopeRows?.[hitIndex] ?? null,
+    }));
+  }, [
+    hits,
+    enrichedMultiHits,
+    multiMatchPinToTag,
+    multiHitEnvelopeRows,
+  ]);
+
+  /** Load pin-to-tag for multi-match enrichment (post-search chooser + dashboard switcher). */
   useEffect(() => {
     if (hits == null || hits.length < 2) {
       return;
@@ -1399,94 +1419,18 @@ export function HomeParcelAddressLookup({
                 {" "}
                 for equipment accounts.
               </p>
-              <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
-                {(enrichedMultiHits ?? hits).map((h, hitIndex) => {
-                  const envelope = multiHitEnvelopeRows?.[hitIndex];
-                  const enriched =
-                    enrichedMultiHits != null
-                      ? enrichedMultiHits[hitIndex]
-                      : null;
-                  const accountKindTermId =
-                    enriched != null
-                      ? situsAccountKindGlossaryTermId(enriched.accountKind)
-                      : null;
-                  return (
-                    <li
-                      key={h.pin}
-                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                        <div className="min-w-0">
-                          {multiMatchPinToTag != null &&
-                          enriched?.ownerList ? (
-                            <p className="text-base font-semibold leading-snug text-slate-900">
-                              {enriched.ownerList}
-                            </p>
-                          ) : null}
-                          {multiMatchPinToTag != null &&
-                          enriched?.accountKindLabel ? (
-                            <p className="mt-1 text-sm font-medium text-slate-800">
-                              {accountKindTermId != null ? (
-                                <ParcelGlossaryPopoverTrigger
-                                  termId={accountKindTermId}
-                                  textTrigger={enriched.accountKindLabel}
-                                  textTriggerId={`multi-match-account-kind-${h.pin}`}
-                                  variant="parcel-record"
-                                />
-                              ) : (
-                                enriched.accountKindLabel
-                              )}
-                            </p>
-                          ) : null}
-                          <p
-                            className={`text-sm text-slate-600 ${
-                              multiMatchPinToTag != null &&
-                              (enriched?.ownerList || enriched?.accountKindLabel)
-                                ? "mt-1"
-                                : ""
-                            }`}
-                          >
-                            PIN{" "}
-                            <span className="font-mono text-slate-700">
-                              {h.pin}
-                            </span>
-                          </p>
-                          {envelope != null ? (
-                            <SitusEnvelopeAddress
-                              row={envelope}
-                              className="mt-1"
-                            />
-                          ) : (
-                            <span className="mt-1 block text-slate-700">
-                              {h.label}
-                            </span>
-                          )}
-                          {multiMatchPinToTag != null &&
-                          enriched != null &&
-                          enriched.totalActual != null ? (
-                            <p className="mt-1 text-sm text-slate-600">
-                              Actual value:{" "}
-                              {formatUsdWhole(enriched.totalActual)}
-                            </p>
-                          ) : null}
-                        </div>
-                        <button
-                          type="button"
-                          className={`${btnOutlinePrimaryMd} w-full shrink-0 cursor-pointer justify-center py-2.5 sm:w-auto sm:px-4`}
-                          disabled={levyLoadBusy}
-                          onClick={() => {
-                            setAddressSearchLocked(true);
-                            setParcelPin(h.pin);
-                            void loadLevyStack(h.pin);
-                          }}
-                        >
-                          Use this property
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              {multiAccountChooserItems != null ? (
+                <SitusMultiAccountChooserList
+                  items={multiAccountChooserItems}
+                  selectDisabled={levyLoadBusy}
+                  glossaryIdPrefix="multi-match"
+                  onSelectPin={(pin) => {
+                    setAddressSearchLocked(true);
+                    setParcelPin(pin);
+                    void loadLevyStack(pin);
+                  }}
+                />
+              ) : null}
             </div>
           ) : null}
           {streetDidYouMean != null && streetDidYouMean.length > 0 ? (
@@ -1927,85 +1871,24 @@ export function HomeParcelAddressLookup({
             ) : null}
             {!busy &&
             levyReadyForSummary &&
-            levyLoadedMeta ? (
-              <div
-                className={
-                  canSwitchSitusAccounts
-                    ? PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_CLASS
-                    : PARCEL_SUMMARY_TILE_CLASS_POPOVER
-                }
+            levyLoadedMeta &&
+            canSwitchSitusAccounts ? (
+              <button
+                type="button"
                 id="home-parcel-account-type"
+                className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS}
+                onClick={openAccountSwitcher}
+                aria-haspopup="dialog"
+                aria-expanded={accountSwitcherOpen}
+                aria-label={`Switch account type. Currently ${accountKindLabel}.`}
               >
-                <div
-                  className={
-                    canSwitchSitusAccounts
-                      ? `${PARCEL_SUMMARY_TILE_BODY_CLASS} relative`
-                      : PARCEL_SUMMARY_TILE_BODY_CLASS
-                  }
-                >
-                  {canSwitchSitusAccounts ? (
-                    <>
-                      <button
-                        type="button"
-                        className={PARCEL_SUMMARY_ACCOUNT_SWITCH_TILE_OVERLAY_CLASS}
-                        onClick={reopenMultiAccountChooser}
-                        aria-label={`Account type: ${accountKindLabel}. Change account at this address.`}
-                      />
-                      <div
-                        className={`${PARCEL_SUMMARY_TILE_LABEL_CLASS} relative z-[2] pointer-events-auto`}
-                        onPointerDown={(event) => {
-                          event.stopPropagation();
-                        }}
-                      >
-                        <ParcelGlossaryPopoverTrigger
-                          termId="term-account-type"
-                          textTrigger="Account type"
-                          textTriggerId="account-type-term-first"
-                        />
-                      </div>
-                      <div className="pointer-events-none relative z-[1] flex min-w-0 items-center gap-2.5">
-                        <p
-                          className={`${PARCEL_SUMMARY_TILE_ADDRESS_CLASS} min-w-0`}
-                        >
-                          {accountKindLabel}
-                        </p>
-                        <span
-                          className={PARCEL_SUMMARY_ACCOUNT_SWITCH_ICON_DECORATIVE_CLASS}
-                          aria-hidden
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                        <ParcelGlossaryPopoverTrigger
-                          termId="term-account-type"
-                          textTrigger="Account type"
-                          textTriggerId="account-type-term-first"
-                        />
-                      </div>
-                      <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
-                        {accountKindLabel}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
+                <span className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS}>
+                  Switch account type ›
+                </span>
+                <span className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS}>
+                  {accountKindLabel}
+                </span>
+              </button>
             ) : null}
             {!busy &&
             lockedAddressHeadline &&
@@ -2625,6 +2508,18 @@ export function HomeParcelAddressLookup({
             <BackToTopButton />
           </div>
         </>
+      ) : null}
+
+      {accountSwitcherOpen &&
+      multiAccountChooserItems != null &&
+      canSwitchSitusAccounts ? (
+        <SitusMultiAccountSwitcherDialog
+          items={multiAccountChooserItems}
+          currentPin={trimmedParcelPin || null}
+          selectDisabled={levyLoadBusy}
+          onSelectPin={switchDashboardAccount}
+          onClose={closeAccountSwitcher}
+        />
       ) : null}
     </section>
   );

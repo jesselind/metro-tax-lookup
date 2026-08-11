@@ -18,9 +18,10 @@ import {
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 /**
- * Multi-PIN situs chooser (Real + business personal property).
- * Dedicated suite — not home smoke. Unit coverage lives in
- * `situsMultiPinChooser.test.ts` / `arapahoeSitusLookup.test.ts`.
+ * Multi-PIN situs chooser (Real + business personal property) and dashboard
+ * Switch account type modal. Dedicated suite — not home smoke. Unit coverage
+ * lives in `situsMultiPinChooser.test.ts` / `arapahoeSitusLookup.test.ts` /
+ * `termAccountTypeBrief.test.ts`.
  */
 test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   page,
@@ -112,9 +113,12 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     "https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=1000-00-0-00-202",
   );
   await expect(page.locator("#home-parcel-account-type")).toBeVisible();
+  await expect(page.locator("#home-parcel-account-type")).toContainText(
+    "Switch account type",
+  );
   await expect(
     page.getByRole("button", {
-      name: /Account type:.*Change account at this address/i,
+      name: /Switch account type\. Currently Business personal property/i,
     }),
   ).toBeVisible();
   await expect(
@@ -164,16 +168,23 @@ test("business personal property: thin fields, levy stack, notice of valuation",
 
   await page
     .getByRole("button", {
-      name: /Account type:.*Change account at this address/i,
+      name: /Switch account type\. Currently Business personal property/i,
     })
     .click();
-  const switchChooser = page.getByRole("region", { name: "Matching properties" });
-  await expect(switchChooser).toBeVisible();
-  await switchChooser
-    .getByRole("listitem")
-    .filter({ hasText: SYNTHETIC_MULTI_REAL_OWNER })
-    .getByRole("button", { name: "Use this property" })
+  const switchDialog = page.getByRole("dialog", {
+    name: "Other accounts at this address",
+  });
+  await expect(switchDialog).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Matching properties" }),
+  ).toHaveCount(0);
+  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+  await switchDialog
+    .getByRole("button", {
+      name: /Switch to Real property/i,
+    })
     .click();
+  await expect(switchDialog).toHaveCount(0);
   await expect(
     page.getByLabel("Property search result summary").getByText(
       SYNTHETIC_MULTI_REAL_OWNER,
@@ -183,6 +194,116 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     "Real property",
   );
   await expect(
+    page.getByRole("button", {
+      name: /Switch account type\. Currently Real property/i,
+    }),
+  ).toBeVisible();
+  await expect(
     page.getByRole("link", { name: /Open county parcel record/i }),
   ).toBeVisible();
+});
+
+test("dashboard Switch account type: modal stays on report; dismiss and switch", async ({
+  page,
+}) => {
+  await installSyntheticCountyData(page);
+  await page.goto("/");
+
+  await fillStreetAndSubmitSearch(page, SYNTHETIC_MULTI_E2E_ADDRESS);
+  const chooser = page.getByRole("region", { name: "Matching properties" });
+  await expect(chooser).toBeVisible();
+  await chooser
+    .getByRole("listitem")
+    .filter({ hasText: SYNTHETIC_MULTI_REAL_OWNER })
+    .getByRole("button", { name: "Use this property" })
+    .click();
+
+  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+
+  const switchBtn = page.getByRole("button", {
+    name: /Switch account type\. Currently Real property/i,
+  });
+  await expect(switchBtn).toBeVisible();
+  await expect(switchBtn).toHaveAttribute("aria-haspopup", "dialog");
+  await expect(switchBtn).toHaveAttribute("aria-expanded", "false");
+  // Action button (not a tile shell); no decorative SVG.
+  await expect(page.locator("#home-parcel-account-type svg")).toHaveCount(0);
+  await expect(page.locator("#home-parcel-account-type")).toHaveRole("button");
+
+  await switchBtn.click();
+  const switchDialog = page.getByRole("dialog", {
+    name: "Other accounts at this address",
+  });
+  await expect(switchDialog).toBeVisible();
+  await expect(switchBtn).toHaveAttribute("aria-expanded", "true");
+  await expect(
+    switchDialog.getByRole("button", { name: "Use this property" }),
+  ).toHaveCount(0);
+  await expect(
+    switchDialog.getByRole("button", { name: "Real property", exact: true }),
+  ).toBeVisible();
+  await expect(
+    switchDialog.getByRole("button", {
+      name: "Business personal property",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Matching properties" }),
+  ).toHaveCount(0);
+  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+
+  const viewingRow = switchDialog
+    .getByRole("listitem")
+    .filter({ hasText: SYNTHETIC_MULTI_REAL_OWNER });
+  await expect(viewingRow.getByText("Currently viewing")).toBeVisible();
+  await expect(
+    viewingRow.getByRole("button", { name: /Switch to/i }),
+  ).toHaveCount(0);
+
+  const otherRow = switchDialog
+    .getByRole("listitem")
+    .filter({ hasText: SYNTHETIC_MULTI_PERSONAL_OWNER });
+  await expect(
+    otherRow.getByRole("button", {
+      name: /Switch to Business personal property/i,
+    }),
+  ).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(switchDialog).toHaveCount(0);
+  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+  await expect(
+    page.getByLabel("Property search result summary").getByText(
+      SYNTHETIC_MULTI_REAL_OWNER,
+    ),
+  ).toBeVisible();
+  await expect(switchBtn).toHaveAttribute("aria-expanded", "false");
+
+  await switchBtn.click();
+  await expect(switchDialog).toBeVisible();
+  await switchDialog.getByRole("button", { name: "Close" }).click();
+  await expect(switchDialog).toHaveCount(0);
+  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+
+  await switchBtn.click();
+  await switchDialog
+    .getByRole("button", {
+      name: /Switch to Business personal property/i,
+    })
+    .click();
+  await expect(switchDialog).toHaveCount(0);
+  await expect(
+    page.getByLabel("Property search result summary").getByText(
+      SYNTHETIC_MULTI_PERSONAL_OWNER,
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /Switch account type\. Currently Business personal property/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Matching properties" }),
+  ).toHaveCount(0);
 });

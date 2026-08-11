@@ -42,6 +42,8 @@ test("synthetic address loads levy stack and property details", async ({
       .getByText(SYNTHETIC_PIN, { exact: true }),
   ).toBeVisible();
   await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
+  // Single-PIN situs: no account switcher on the dashboard.
+  await expect(page.locator("#home-parcel-account-type")).toHaveCount(0);
   // Synthetic mills × assessed: known fixture contract, not a live county snapshot.
   await expect(page.locator("#home-parcel-property-tax")).toContainText("$68");
 });
