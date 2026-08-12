@@ -439,10 +439,10 @@ export function MetroTaxShareFlow({
       totalDistrictShare > 0
         ? showDebtHeadline
           ? rentMode
-            ? `${debtShareOfTotal.toFixed(1)} percent of your rent is going to pay off ${debtMetroLabel} debt.${totalLine} ${taxRateSplitAnnouncement}`
+            ? `${debtShareOfTotal.toFixed(1)} percent of your estimated monthly property tax is going to pay off ${debtMetroLabel} debt.${totalLine} ${taxRateSplitAnnouncement}`
             : `${debtShareOfTotal.toFixed(1)} percent of your property taxes are paying off ${debtMetroLabel} debt.${totalLine} ${taxRateSplitAnnouncement}`
           : rentMode
-            ? `${totalDistrictShare.toFixed(1)} percent of your rent goes to ${metroLabel}.${totalLine} ${taxRateSplitAnnouncement}`
+            ? `${totalDistrictShare.toFixed(1)} percent of your estimated monthly property tax goes to ${metroLabel}.${totalLine} ${taxRateSplitAnnouncement}`
             : `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${metroLabel}.${totalLine} ${taxRateSplitAnnouncement}`
         : `No metro district mills shown on your property tax bill.${totalLine} ${taxRateSplitAnnouncement}`;
   } else if (totalMills > 0 && activeDistrictIds.length === 0) {
@@ -458,11 +458,11 @@ export function MetroTaxShareFlow({
       const dollarPhrase =
         metroShareDollarsDisplay != null
           ? rentMode
-            ? ` Estimated ${formatUsdWhole(metroShareDollarsDisplay)}/mo from your rent.`
+            ? ` Estimated ${formatUsdWhole(metroShareDollarsDisplay)}/mo of estimated monthly property tax.`
             : ` Estimated annual ${formatUsdWhole(metroShareDollarsDisplay)} from assessed value.`
           : "";
       return rentMode
-        ? `${totalDistrictShare.toFixed(1)} percent of your rent goes to ${scope}.${dollarPhrase} Jump to breakdown below.`
+        ? `${totalDistrictShare.toFixed(1)} percent of your estimated monthly property tax goes to ${scope}.${dollarPhrase} Jump to breakdown below.`
         : `${totalDistrictShare.toFixed(1)} percent of your property taxes go to ${scope}.${dollarPhrase} Jump to breakdown below.`;
     }
     return "No metro district mills on your property tax bill.";
@@ -480,11 +480,11 @@ export function MetroTaxShareFlow({
     const dollarPhrase =
       debtShareDollarsDisplay != null
         ? rentMode
-          ? ` Estimated ${formatUsdWhole(debtShareDollarsDisplay)}/mo from your rent.`
+          ? ` Estimated ${formatUsdWhole(debtShareDollarsDisplay)}/mo of estimated monthly property tax.`
           : ` Estimated annual ${formatUsdWhole(debtShareDollarsDisplay)} from assessed value.`
         : "";
     return rentMode
-      ? `${debtShareOfTotal.toFixed(1)} percent of your rent goes toward paying off ${debtScope}.${dollarPhrase} Jump to breakdown below.`
+      ? `${debtShareOfTotal.toFixed(1)} percent of your estimated monthly property tax goes toward paying off ${debtScope}.${dollarPhrase} Jump to breakdown below.`
       : `${debtShareOfTotal.toFixed(1)} percent of your property taxes pay off ${debtScope}.${dollarPhrase} Jump to breakdown below.`;
   }, [debtShareOfTotal, multiMetroParcel, debtShareDollarsDisplay, rentMode]);
 
@@ -513,8 +513,8 @@ export function MetroTaxShareFlow({
         {totalDistrictShare > 0
           ? rentMode
             ? multiMetroParcel
-              ? "of your rent goes to your metro districts (combined) each month"
-              : "of your rent goes to your metro district each month"
+              ? "of your estimated monthly property tax goes to your metro districts (combined)"
+              : "of your estimated monthly property tax goes to your metro district"
             : multiMetroParcel
               ? "of your property taxes go to your metro districts (combined) each year"
               : "of your property taxes go to your metro district each year"
@@ -541,8 +541,8 @@ export function MetroTaxShareFlow({
       <p className="mt-1.5 break-words text-pretty text-sm font-semibold leading-snug text-white sm:text-base">
         {rentMode
           ? multiMetroParcel
-            ? "of your rent is going to pay off metro district debt (combined) each month"
-            : "of your rent is going to pay off your metro district debt each month"
+            ? "of your estimated monthly property tax is going to pay off metro district debt (combined)"
+            : "of your estimated monthly property tax is going to pay off your metro district debt"
           : multiMetroParcel
             ? "of your property taxes are paying off metro district debt (combined) each year"
             : "of your property taxes are paying off your metro district's debt each year"}

@@ -31,6 +31,11 @@ describe("parseLandLineUbUnits", () => {
     expect(parseLandLineUbUnits("")).toBeNull();
     expect(parseLandLineUbUnits(null)).toBeNull();
   });
+
+  it("rejects fractional UB quantities (no rounding)", () => {
+    expect(parseLandLineUbUnits("1.5 UB")).toBeNull();
+    expect(parseLandLineUbUnits("2.25 UB")).toBeNull();
+  });
 });
 
 describe("sumLandLineUbUnits", () => {
@@ -90,6 +95,23 @@ describe("dwellingCountFromImprovementType", () => {
           buildingNum: "1",
           attributes: [
             { label: "Improvement Type", value: "Apartment Low Rise 1-3" },
+          ],
+        },
+      ]),
+    ).toBeNull();
+  });
+
+  it("returns null when multiple buildings supply dwelling counts", () => {
+    expect(
+      dwellingCountFromImprovementType([
+        {
+          buildingNum: "1",
+          attributes: [{ label: "Improvement Type", value: "Duplex: Two Family" }],
+        },
+        {
+          buildingNum: "2",
+          attributes: [
+            { label: "Improvement Type", value: "Triplex: Three Family" },
           ],
         },
       ]),

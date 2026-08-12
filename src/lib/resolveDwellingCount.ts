@@ -37,7 +37,8 @@ export type EqualSplitEstimate = {
 
 /**
  * Parse a land-line Units cell like `352.0000 UB` → 352.
- * Returns null for blank, non-UB units (`LT` / `AC` / `SF`), or unparseable values.
+ * Returns null for blank, non-UB units (`LT` / `AC` / `SF`), non-integer
+ * quantities, or unparseable values.
  */
 export function parseLandLineUbUnits(units: string | null | undefined): number | null {
   const raw = (units ?? "").trim();
@@ -46,8 +47,9 @@ export function parseLandLineUbUnits(units: string | null | undefined): number |
   const match = /^([0-9]+(?:\.[0-9]+)?)\s*UB\b/i.exec(raw);
   if (!match) return null;
   const n = Number(match[1]);
-  if (!Number.isFinite(n) || n < 1) return null;
-  return Math.round(n);
+  // Whole units only: reject fractional UB (do not round).
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) return null;
+  return n;
 }
 
 /**
@@ -71,34 +73,49 @@ export function sumLandLineUbUnits(
 }
 
 /**
+ * Duplex / triplex / fourplex count from one building's "Improvement Type".
+ * Returns null when that building has no matching type.
+ */
+function dwellingCountFromOneBuilding(
+  building: ParcelRecordBuilding,
+): number | null {
+  for (const attr of building.attributes ?? []) {
+    if ((attr.label ?? "").trim() !== "Improvement Type") continue;
+    const value = (attr.value ?? "").trim().toLowerCase();
+    if (!value) continue;
+    // Order matters: fourplex before plex-ish duplex/triplex substrings.
+    if (
+      /\bfour[\s-]?plex\b/.test(value) ||
+      /\bfour[\s-]?family\b/.test(value)
+    ) {
+      return 4;
+    }
+    if (/\btriplex\b/.test(value) || /\bthree[\s-]?family\b/.test(value)) {
+      return 3;
+    }
+    if (/\bduplex\b/.test(value) || /\btwo[\s-]?family\b/.test(value)) {
+      return 2;
+    }
+  }
+  return null;
+}
+
+/**
  * Duplex / triplex / fourplex from Building "Improvement Type" attribute.
- * Returns null when no matching type is present.
+ * Returns null when no matching type is present, or when more than one building
+ * supplies a dwelling count (ambiguous; do not invent N).
  */
 export function dwellingCountFromImprovementType(
   buildings: ParcelRecordBuilding[] | null | undefined,
 ): number | null {
   if (buildings == null || buildings.length === 0) return null;
+  const counts: number[] = [];
   for (const building of buildings) {
-    for (const attr of building.attributes ?? []) {
-      if ((attr.label ?? "").trim() !== "Improvement Type") continue;
-      const value = (attr.value ?? "").trim().toLowerCase();
-      if (!value) continue;
-      // Order matters: fourplex before plex-ish duplex/triplex substrings.
-      if (
-        /\bfour[\s-]?plex\b/.test(value) ||
-        /\bfour[\s-]?family\b/.test(value)
-      ) {
-        return 4;
-      }
-      if (/\btriplex\b/.test(value) || /\bthree[\s-]?family\b/.test(value)) {
-        return 3;
-      }
-      if (/\bduplex\b/.test(value) || /\btwo[\s-]?family\b/.test(value)) {
-        return 2;
-      }
-    }
+    const n = dwellingCountFromOneBuilding(building);
+    if (n != null) counts.push(n);
   }
-  return null;
+  if (counts.length === 0 || counts.length > 1) return null;
+  return counts[0] ?? null;
 }
 
 /** True when land-use text looks like a multi-unit apartment line without relying on UB. */

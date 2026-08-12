@@ -775,8 +775,9 @@ export default function SourcesPage() {
             Choosing{" "}
             <strong className="text-slate-900">Rent</strong>
             {" "}
-            keeps the same tax account and levy stack. It emphasizes tax pressure
-            for the{" "}
+            keeps the same tax account and property-tax bill breakdown (the same
+            individual bill entries; the on-screen levy stack). It emphasizes tax
+            pressure for the{" "}
             <strong className="text-slate-900">entire</strong>
             {" "}
             property (annual and monthly estimates). When we can resolve a
@@ -788,20 +789,21 @@ export default function SourcesPage() {
             {" "}
             units, or from a duplex / triplex / fourplex building type, or from a
             typical single-dwelling account, we also show a crude equal split
-            (annual ÷ N and that amount ÷ 12), and the levy-tile dollar amounts
-            (and metro estimates when shown) use that same per-unit share, then
-            show as monthly figures labeled /mo so they read like rent. Metro
-            headline wording switches to rent framing in Rent mode. That
-            split is an estimate only: it
-            assumes every unit bears the same share, may attribute some
-            non-residential tax on mixed-use parcels to dwellings, and is not a
-            lease line or proof that rent passes tax through one-for-one. When N
-            is unknown we show whole-property totals only (including levy $, still
-            monthly in Rent). Own mode keeps annual whole-account dollars. Rent mode tones down
-            owner tools (comparable-properties PDF, Notice of Valuation for
-            equipment accounts, owner mailing rows) and tucks dense sale /
-            building / land tables under a disclosure. Renting is not the same
-            as commercial assessment class.
+            (annual ÷ N and that amount ÷ 12), and the dollar amounts on those
+            bill entries (and metro estimates when shown) use that same per-unit
+            share, then show as monthly figures labeled /mo so they read like
+            rent. Metro headline wording in Rent mode frames shares as a percent
+            of estimated monthly property tax (not of rent). That split is an
+            estimate only: it assumes every unit bears the same share, may
+            attribute some non-residential tax on mixed-use parcels to dwellings,
+            and is not a lease line or proof that rent passes tax through
+            one-for-one. When N is unknown we show whole-property totals only
+            (including bill-entry $, still monthly in Rent). Own mode keeps
+            annual whole-account dollars. Rent mode tones down owner tools
+            (comparable-properties PDF, Notice of Valuation for equipment
+            accounts, owner mailing rows) and tucks dense sale / building / land
+            tables under a disclosure. Renting is not the same as commercial
+            assessment class.
           </li>
           <li>
             Value labels use the{" "}

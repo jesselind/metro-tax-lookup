@@ -50,16 +50,21 @@ export function AudienceModeSwitch({
   function onRadioKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     const index = MODE_ORDER.indexOf(value);
     if (index < 0) return;
+    // Home/End always preventDefault so the page does not scroll when already
+    // at the first/last option (APG radiogroup).
+    if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      const next: AudienceMode = event.key === "Home" ? "own" : "rent";
+      if (next === value) return;
+      selectMode(next);
+      return;
+    }
     let next: AudienceMode | null = null;
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
       next = MODE_ORDER[(index + 1) % MODE_ORDER.length] ?? null;
     } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
       next =
         MODE_ORDER[(index - 1 + MODE_ORDER.length) % MODE_ORDER.length] ?? null;
-    } else if (event.key === "Home") {
-      next = "own";
-    } else if (event.key === "End") {
-      next = "rent";
     }
     if (next == null || next === value) return;
     event.preventDefault();

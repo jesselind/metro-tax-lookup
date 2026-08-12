@@ -100,7 +100,7 @@ export function RentTaxPressurePanel({
             >
               <div className={RENT_SUMMARY_TILE_BODY_CLASS}>
                 <p className={RENT_SUMMARY_TILE_LABEL_CLASS}>
-                  {RENT_MONTHLY_TILE_LABEL}
+                  Estimated property tax for this property
                 </p>
                 <p className={RENT_SUMMARY_TILE_VALUE_CLASS}>
                   {formatUsdWhole(estimatedMonthlyDollars)}
