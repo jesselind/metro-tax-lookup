@@ -130,6 +130,8 @@ export const LEVY_STACK_TILE_GRID_CLASS =
 /**
  * Summary tiles wrap into content-sized chips. `items-start` keeps each tile’s
  * own height so a taller neighbor (e.g. comps icon) does not pad siblings.
+ * Same wrap behavior in the lg dashboard column: chips stay max-content wide
+ * and wrap within the column when they no longer fit side by side.
  */
 export const PARCEL_SUMMARY_ROW_CLASS =
   "flex w-full min-w-0 flex-row flex-wrap items-start justify-start gap-3 sm:gap-4";
@@ -210,19 +212,40 @@ export const PARCEL_SUMMARY_TILE_ADDRESS_CLASS =
  * Dashboard multi-account switcher: a real control button (not a summary tile).
  * Soft salmon fill + dark text — AA contrast (≥4.5:1) on default/hover/active.
  * Do not compose from parcel tile frames (`bg-white` / slate borders fight these colors).
- * `self-stretch` matches sibling tile height on a shared summary row; alone on a
- * wrap line (typical mobile) it keeps its content height.
+ * Full width of the summary column (lg 1/3; stacked = full content width).
+ * Readable status at address size; `gap-0` + one-step-tighter vertical pad so intrinsic
+ * height never exceeds Address/Owner-style tiles (action cue is larger than a tile label).
  */
 export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS =
-  "inline-flex max-w-full min-h-0 cursor-pointer flex-col items-start justify-center gap-0.5 self-stretch rounded-md border border-[#C56A52] bg-[#E8A090] px-4 py-2.5 text-left shadow-sm transition-colors hover:border-[#B85A45] hover:bg-[#E09A88] active:border-[#A84E3C] active:bg-[#D98978] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A45]/55 focus-visible:ring-offset-2";
+  `flex w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-0 ${DASHBOARD_TILE_RADIUS_CLASS} border border-[#C56A52] bg-[#E8A090] px-3.5 py-2 text-center shadow-sm transition-colors hover:border-[#B85A45] hover:bg-[#E09A88] active:border-[#A84E3C] active:bg-[#D98978] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A45]/55 focus-visible:ring-offset-2 sm:px-4 sm:py-2.5`;
 
-/** Primary line inside {@link PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS} (~7.2:1 on fill). Match tile address size (no mobile shrink). */
+/**
+ * Action cue inside {@link PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS} (~7.2:1 on fill).
+ * Secondary to the account-kind line; keep readable (not tile-label micro type).
+ */
 export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS =
-  "text-base font-bold leading-snug text-[#3F1A14] sm:text-lg";
+  "text-sm font-semibold leading-tight text-[#3F1A14] sm:text-base";
 
-/** Current account kind under the action (~6.8:1 on fill). */
+/**
+ * Active account kind (~6.8:1 on fill). Primary readable status; same scale as
+ * {@link PARCEL_SUMMARY_TILE_ADDRESS_CLASS}.
+ */
 export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS =
-  "text-sm font-medium leading-snug text-[#451E18] sm:text-base";
+  "text-base font-bold leading-tight tracking-tight text-[#451E18] sm:text-lg";
+
+/**
+ * Narrow jump control in the summary chip row (before comps / Notice of Valuation).
+ * Stacked label beside down arrow; `self-stretch` matches sibling tile height.
+ */
+export const PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS =
+  `inline-flex w-max max-w-full min-h-0 cursor-pointer flex-row items-center justify-center gap-1.5 self-stretch ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-300 bg-white px-2.5 py-2 text-center shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 active:border-slate-500 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
+
+/**
+ * Label inside {@link PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}.
+ * Narrow width wraps "Property details" on two lines (space preserved in text).
+ */
+export const PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS =
+  "w-[4.5rem] text-center text-sm font-semibold leading-tight text-slate-800";
 
 /**
  * Metro percent cards: wrap into content-sized columns. Default grid `align-items: stretch`
@@ -245,11 +268,17 @@ export const TILE_DETAILS_CUE_ON_LIGHT_CLASS =
 
 /**
  * Major section headings on the home metro + levy flow (e.g. levy stack, metro breakdown).
- * Extra top margin so the title reads as a new beat vs. content above; pair the section body with
- * `space-y-*` so spacing below the title stays tighter than the lead-in above.
+ * Typography only — no top margin so a heading can top-align with adjacent tiles.
  */
 export const DASHBOARD_SECTION_HEADING_CLASS =
-  "mt-6 text-xl font-bold leading-tight tracking-tight text-slate-900 sm:mt-8 sm:text-2xl";
+  "text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl";
+
+/**
+ * {@link DASHBOARD_SECTION_HEADING_CLASS} plus lead-in margin when the title follows
+ * other content in a vertical stack (not when top-aligned beside summary tiles).
+ */
+export const DASHBOARD_SECTION_HEADING_SPACED_CLASS =
+  `${DASHBOARD_SECTION_HEADING_CLASS} mt-6 sm:mt-8`;
 
 /** Subline under a dashboard section heading (e.g. export date, short hint). */
 export const DASHBOARD_SECTION_META_CLASS = "text-sm text-slate-600";

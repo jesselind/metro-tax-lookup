@@ -27,7 +27,7 @@ test("non-residential parcel shows proportional assessed split without school ro
   const realRow = chooser
     .getByRole("listitem")
     .filter({ hasText: SYNTHETIC_MULTI_REAL_PIN });
-  await realRow.getByRole("button", { name: "Use this property" }).click();
+  await realRow.getByRole("button", { name: /^Use this property\./ }).click();
 
   await expect(page.locator("#parcel-record-heading")).toBeVisible();
 

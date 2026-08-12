@@ -36,13 +36,13 @@ import {
   type LevyStackVisualizationProps,
 } from "@/components/LevyStackVisualization";
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
-import { ParcelRecordExtendedSection, PARCEL_RECORD_EXTENDED_SECTION_ID, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
+import { ParcelRecordExtendedSection, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
-import { SitusMultiAccountChooserList } from "@/components/SitusMultiAccountChooserList";
+import { SitusMultiAccountChooserList, SitusRealVsBusinessPersonalHelp } from "@/components/SitusMultiAccountChooserList";
 import { SitusMultiAccountSwitcherDialog } from "@/components/SitusMultiAccountSwitcherDialog";
 import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
@@ -122,6 +122,7 @@ import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
   DASHBOARD_SECTION_META_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   INPUT_CLASS,
@@ -130,6 +131,8 @@ import {
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS,
+  PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS,
+  PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS,
   PARCEL_SUMMARY_ROW_CLASS,
   PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
   PARCEL_SUMMARY_TILE_BODY_CLASS,
@@ -204,26 +207,8 @@ const AC_SECTION = "section-arapahoe-situs";
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
 const HOME_LEVY_BREAKDOWN_ARIA_LABEL = "Property tax breakdown";
 
-/** Property details panel (below levy stack on small screens). */
+/** Property details block (full width below the levy stack). */
 const HOME_PROPERTY_DETAILS_ID = "home-property-details";
-
-const PROPERTY_DETAILS_JUMP_CHEVRON = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-    stroke="currentColor"
-    className="size-5 shrink-0"
-    aria-hidden
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-    />
-  </svg>
-);
 
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
 const HOME_ADDRESS_STREET_SUGGESTIONS_ID = "home-address-street-suggestions";
@@ -961,9 +946,16 @@ export function HomeParcelAddressLookup({
     levyLoadError != null ||
     homeLevyWorkbenchOpen;
 
-  /** PIN entry + workbench shortcut stay hidden until address search needs a manual PIN path. */
+  /**
+   * PIN entry + workbench shortcut: unlocked multi-match chooser path, or county
+   * fallback when address search finds nothing. Also when a levy load failed so
+   * retry stays available (including locked single-match). Never on a successful
+   * locked property report (multi-PIN switching is Switch account type only).
+   */
   const showParcelPinSection =
-    showCountyPinFallback || (hits != null && hits.length > 1);
+    levyLoadError != null ||
+    (!addressSearchLocked &&
+      (showCountyPinFallback || (hits != null && hits.length > 1)));
 
   /** Locked vs unlocked levy shells are mutually exclusive; share one ID, never both. */
   const showHomeLevyBreakdownRegion =
@@ -1152,7 +1144,7 @@ export function HomeParcelAddressLookup({
           ? levyLoadedMeta.parcelValues.totalAssessed
           : null
       }
-      sectionLead={showPropertyDetailsColumn ? undefined : levySectionLead}
+      sectionLead={undefined}
     >
       <section
         className="space-y-3"
@@ -1168,7 +1160,6 @@ export function HomeParcelAddressLookup({
       aria-labelledby="home-levy-stack-subheading"
       aria-describedby="home-levy-stack-intro"
     >
-      {!showPropertyDetailsColumn ? levySectionLead : null}
       {levyStackBody}
     </section>
   );
@@ -1178,7 +1169,7 @@ export function HomeParcelAddressLookup({
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <h3
           id="parcel-record-heading"
-          className={DASHBOARD_SECTION_HEADING_CLASS}
+          className={DASHBOARD_SECTION_HEADING_SPACED_CLASS}
         >
           Property details
         </h3>
@@ -1250,15 +1241,14 @@ export function HomeParcelAddressLookup({
       </>
     ) : null;
 
-  const showParcelRecordExtendedJump =
-    !isBusinessPersonalAccount &&
+  const showParcelRecordExtended =
     shouldShowParcelRecordExtendedSection(
       parcelRecordLoading,
       parcelRecordLoadFailed,
       parcelRecord,
     );
 
-  const parcelRecordExtended = (
+  const parcelRecordExtended = showParcelRecordExtended ? (
     <ParcelRecordExtendedSection
       loading={parcelRecordLoading}
       loadFailed={parcelRecordLoadFailed}
@@ -1266,9 +1256,9 @@ export function HomeParcelAddressLookup({
       pin={trimmedParcelPin}
       demoMode={isDemoMode}
       businessPersonal={isBusinessPersonalAccount}
-      omitContinuationHeading={isBusinessPersonalAccount}
+      omitContinuationHeading
     />
-  );
+  ) : null;
 
   const showTaxYearSummaryTile =
     !!levyLoadedMeta &&
@@ -1277,52 +1267,35 @@ export function HomeParcelAddressLookup({
       levyLoadedMeta.parcelAssessmentYear,
     );
 
-  const levyAndPropertyLayout = showPropertyDetailsColumn ? (
+  const propertyDetailsSection = showPropertyDetailsColumn ? (
+    <section
+      id={HOME_PROPERTY_DETAILS_ID}
+      className="scroll-mt-6 space-y-3 sm:scroll-mt-8"
+      aria-labelledby="parcel-record-heading"
+    >
+      <div className="space-y-3">{propertyDetailsHeader}</div>
+      <ParcelRecordPanel
+        loading={parcelRecordLoading}
+        loadFailed={parcelRecordLoadFailed}
+        record={parcelRecord}
+        pin={trimmedParcelPin}
+        demoMode={isDemoMode}
+      />
+      {propertyClassificationLine}
+      {parcelRecordExtended}
+    </section>
+  ) : null;
+
+  /** Unlocked workbench (PIN fallback / Add tile): levy then full-width property details. */
+  const levyAndPropertyLayout = (
     <div className="space-y-3 sm:space-y-5">
-      {/*
-        Levy first in DOM so mobile visual/keyboard match. On lg, grid placement
-        puts property in the left column (sidebar) without CSS order; tab order
-        still follows DOM (levy, then property).
-      */}
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-6 lg:gap-y-3">
-        <div className="space-y-3 lg:col-span-2 lg:col-start-2 lg:row-start-1">
-          {levySectionLead}
-        </div>
-        <div className="lg:col-span-2 lg:col-start-2 lg:row-start-2">
-          {levyBreakdownMain}
-        </div>
-        <section
-          id={HOME_PROPERTY_DETAILS_ID}
-          className="flex flex-col gap-3 scroll-mt-6 sm:scroll-mt-8 lg:col-start-1 lg:row-start-1 lg:row-span-2"
-          aria-labelledby="parcel-record-heading"
-        >
-          <div className="space-y-3">{propertyDetailsHeader}</div>
-          <ParcelRecordPanel
-            loading={parcelRecordLoading}
-            loadFailed={parcelRecordLoadFailed}
-            record={parcelRecord}
-            pin={trimmedParcelPin}
-            demoMode={isDemoMode}
-          />
-          {propertyClassificationLine}
-          {isBusinessPersonalAccount ? parcelRecordExtended : null}
-          {showParcelRecordExtendedJump ? (
-            <a
-              href={`#${PARCEL_RECORD_EXTENDED_SECTION_ID}`}
-              className={`${btnOutlineSecondaryMd} hidden w-full cursor-pointer items-center justify-center gap-2 px-4 py-2.5 text-sm lg:mt-auto lg:inline-flex`}
-              aria-label="Jump to Property details cont."
-            >
-              More property details
-              {PROPERTY_DETAILS_JUMP_CHEVRON}
-            </a>
-          ) : null}
-        </section>
+      <div className="space-y-3">
+        {levySectionLead}
+        {levyBreakdownMain}
       </div>
-      {!isBusinessPersonalAccount ? parcelRecordExtended : null}
+      {propertyDetailsSection}
       {propertyDetailsBelowPanel}
     </div>
-  ) : (
-    levyBreakdownMain
   );
 
   const showMultiHitLevyIntroLead =
@@ -1419,11 +1392,14 @@ export function HomeParcelAddressLookup({
                 {" "}
                 for equipment accounts.
               </p>
+              <div className="mb-3">
+                <SitusRealVsBusinessPersonalHelp idPrefix="multi-match" />
+              </div>
               {multiAccountChooserItems != null ? (
                 <SitusMultiAccountChooserList
                   items={multiAccountChooserItems}
                   selectDisabled={levyLoadBusy}
-                  glossaryIdPrefix="multi-match"
+                  selectMode="choose"
                   onSelectPin={(pin) => {
                     setAddressSearchLocked(true);
                     setParcelPin(pin);
@@ -1853,11 +1829,41 @@ export function HomeParcelAddressLookup({
       ) : (
         <div className="min-w-0 space-y-3">
           {billImpactCalloutBlock}
-          <div
-            className={PARCEL_SUMMARY_ROW_CLASS}
-            role="region"
-            aria-label="Property search result summary"
-          >
+          {error ? (
+            errorTechnicalDetail ? (
+              <DataLoadErrorCallout
+                className="mt-1"
+                liveRegion="polite"
+                message={error}
+                technicalDetail={errorTechnicalDetail}
+              />
+            ) : (
+              <InlineErrorCallout className="mt-1" liveRegion="polite">
+                {error}
+              </InlineErrorCallout>
+            )
+          ) : null}
+          {levyLoadError ? (
+            levyLoadErrorTechnicalDetail ? (
+              <DataLoadErrorCallout
+                className="mt-1"
+                liveRegion="polite"
+                message={levyLoadError}
+                technicalDetail={levyLoadErrorTechnicalDetail}
+              />
+            ) : (
+              <InlineErrorCallout className="mt-1" liveRegion="polite">
+                {levyLoadError}
+              </InlineErrorCallout>
+            )
+          ) : null}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:items-start lg:gap-x-6">
+            <div
+              className="min-w-0"
+              role="region"
+              aria-label="Property search result summary"
+            >
+              <div className={PARCEL_SUMMARY_ROW_CLASS}>
             {busy ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS}
@@ -2036,6 +2042,35 @@ export function HomeParcelAddressLookup({
                     </div>
                   ) : null}
                 </div>
+            ) : null}
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            showPropertyDetailsColumn ? (
+              <a
+                href={`#${HOME_PROPERTY_DETAILS_ID}`}
+                className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}
+                aria-label="Jump to property details"
+              >
+                <span className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS}>
+                  Property details
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="size-4 shrink-0 text-slate-700"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+                  />
+                </svg>
+              </a>
             ) : null}
             {!busy &&
             levyReadyForSummary &&
@@ -2275,39 +2310,22 @@ export function HomeParcelAddressLookup({
                 </div>
               </div>
             ) : null}
-          </div>
-          {!busy &&
-          hits != null &&
-          hits.length > 1 &&
-          trimmedParcelPin.length === 0 ? (
-            <p className="text-sm text-slate-600">
-              Pick the row that matches your property in the list below.
-            </p>
-          ) : null}
-          {error ? (
-            errorTechnicalDetail ? (
-              <DataLoadErrorCallout
-                className="mt-1"
-                liveRegion="polite"
-                message={error}
-                technicalDetail={errorTechnicalDetail}
-              />
-            ) : (
-              <InlineErrorCallout className="mt-1" liveRegion="polite">
-                {error}
-              </InlineErrorCallout>
-            )
-          ) : null}
-          {showHomeLevyBreakdownRegion ? (
-            <div
-              id={HOME_LEVY_BREAKDOWN_ID}
-              className="scroll-mt-6 sm:scroll-mt-8"
-              role="region"
-              aria-label={HOME_LEVY_BREAKDOWN_ARIA_LABEL}
-            >
-              {levyAndPropertyLayout}
+              </div>
             </div>
-          ) : null}
+            {showHomeLevyBreakdownRegion ? (
+              <div
+                id={HOME_LEVY_BREAKDOWN_ID}
+                className="min-w-0 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:col-span-2"
+                role="region"
+                aria-label={HOME_LEVY_BREAKDOWN_ARIA_LABEL}
+              >
+                {levySectionLead}
+                {levyBreakdownMain}
+              </div>
+            ) : null}
+          </div>
+          {propertyDetailsSection}
+          {propertyDetailsBelowPanel}
         </div>
       )}
       {showParcelPinSection ? (
@@ -2407,7 +2425,8 @@ export function HomeParcelAddressLookup({
               </p>
             </div>
           ) : null}
-          {levyLoadError ? (
+          {/* Unlocked path only; locked report shows levyLoadError above the summary grid. */}
+          {!addressSearchLocked && levyLoadError ? (
             levyLoadErrorTechnicalDetail ? (
               <DataLoadErrorCallout
                 liveRegion="polite"

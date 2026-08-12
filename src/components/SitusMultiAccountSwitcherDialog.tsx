@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import { ModalPortal } from "@/components/ModalPortal";
 import {
   SitusMultiAccountChooserList,
+  SitusRealVsBusinessPersonalHelp,
   type SitusMultiAccountChooserItem,
 } from "@/components/SitusMultiAccountChooserList";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
@@ -89,14 +90,16 @@ export function SitusMultiAccountSwitcherDialog({
             >
               Other accounts at this address
             </h3>
+            <div className="mt-2">
+              <SitusRealVsBusinessPersonalHelp idPrefix="dashboard-account-switch" />
+            </div>
             <div className="mt-4">
               <SitusMultiAccountChooserList
                 items={items}
                 currentPin={currentPin}
                 selectDisabled={selectDisabled}
                 onSelectPin={onSelectPin}
-                rowHitTarget
-                glossaryIdPrefix="dashboard-account-switch"
+                selectMode="switch"
               />
             </div>
           </div>

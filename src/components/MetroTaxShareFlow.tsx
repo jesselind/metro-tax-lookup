@@ -29,7 +29,7 @@ import {
 } from "@/lib/arapahoeCountyUrls";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   METRO_PERCENT_TILES_GRID_CLASS,
   TILE_DETAILS_CUE_ON_DARK_CLASS,
@@ -569,7 +569,7 @@ export function MetroTaxShareFlow({
                       <div className="space-y-3">
                         <h3
                           id={`${p}tax-rate-split-heading`}
-                          className={DASHBOARD_SECTION_HEADING_CLASS}
+                          className={DASHBOARD_SECTION_HEADING_SPACED_CLASS}
                         >
                           Metro districts in relation to your bill
                         </h3>

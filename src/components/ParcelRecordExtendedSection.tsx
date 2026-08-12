@@ -18,7 +18,7 @@ import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedM
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
 } from "@/lib/toolFlowStyles";
 
 export const PARCEL_RECORD_EXTENDED_SECTION_ID = "home-parcel-record-extended";
@@ -54,10 +54,10 @@ export type ParcelRecordExtendedSectionProps = {
 
 /**
  * Extended county tables: Values → Sale → Building/Area/Land Line → Permits.
- * Default placement is below the levy + property grid on Real accounts.
- * Business personal property keeps Values (totals only) and can render inline
- * in the property column (`omitContinuationHeading`) so the short field set
- * stays continuous.
+ * Renders inside the full-width Property details block below the levy stack.
+ * Business personal property keeps Values (totals only). When
+ * `omitContinuationHeading` is set (home report), the parent section heading
+ * covers the block — no "Property details cont." label.
  */
 export function ParcelRecordExtendedSection({
   loading,
@@ -99,7 +99,7 @@ export function ParcelRecordExtendedSection({
       {!omitContinuationHeading ? (
         <h3
           id="parcel-record-extended-heading"
-          className={`${DASHBOARD_SECTION_HEADING_CLASS} hidden lg:block`}
+          className={`${DASHBOARD_SECTION_HEADING_SPACED_CLASS} hidden lg:block`}
         >
           Property details cont.
         </h3>

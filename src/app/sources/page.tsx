@@ -678,9 +678,10 @@ export default function SourcesPage() {
             into the address or parcel-id field.{" "}
             <strong className="text-slate-900">Search</strong>{" "}or{" "}
             <strong className="text-slate-900">Enter</strong>{" "}from any field.
-            One address can match many parcels; when several match, choose{" "}
-            <strong className="text-slate-900">Use this property</strong>{" "}on
-            the row you want. Rows show the county situs street line and a second
+            One address can match many parcels; when several match, tap the row
+            you want (whole row is the control). A short glossary line explains
+            real property vs. business personal property once above the list —
+            not on each row. Rows show the county situs street line and a second
             line with city, state, and ZIP from the Main Parcel export (the county
             file with parcel address details).{" "}
             <strong className="text-slate-900">Business personal property</strong>
@@ -702,10 +703,10 @@ export default function SourcesPage() {
             number.
           </li>
           <li>
-            <strong>Property classification:</strong>{" "}Under the first Property
-            details panel, we show the assessor&apos;s class description from the
-            mart export. A paper notice may still say Residential or Commercial
-            for the same parcel;
+            <strong>Property classification:</strong>{" "}In Property details,
+            under the county-record panel, we show the assessor&apos;s
+            property-class description from the county data. A paper notice may
+            still say Residential or Commercial for the same parcel;
             see{" "}
             <Link
               href={glossaryTermHref("term-property-classification")}
