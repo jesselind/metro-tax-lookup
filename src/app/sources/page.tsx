@@ -678,7 +678,15 @@ export default function SourcesPage() {
             into the address or parcel-id field.{" "}
             <strong className="text-slate-900">Search</strong>{" "}or{" "}
             <strong className="text-slate-900">Enter</strong>{" "}from any field.
-            One address can match many parcels; when several match, tap the row
+            Above the form, an{" "}
+            <strong className="text-slate-900">Own</strong>
+            {" "}/{" "}
+            <strong className="text-slate-900">Rent</strong>
+            {" "}
+            switch (default Own) is self-declared: we do not infer tenure from
+            the parcel. The same switch stays on the locked report so you can
+            flip the lens without starting over. One address can match many
+            parcels; when several match, tap the row
             you want (whole row is the control). A short glossary line explains
             real property vs. business personal property once above the list —
             not on each row. Rows show the county situs street line and a second
@@ -762,6 +770,41 @@ export default function SourcesPage() {
           and we do not guess from subdivision name.
         </p>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
+          <li>
+            <strong>Own vs Rent lens:</strong>{" "}
+            Choosing{" "}
+            <strong className="text-slate-900">Rent</strong>
+            {" "}
+            keeps the same tax account and property-tax bill breakdown (the same
+            individual bill entries; the on-screen levy stack). It emphasizes tax
+            pressure for the{" "}
+            <strong className="text-slate-900">entire</strong>
+            {" "}
+            property (annual and monthly estimates). When we can resolve a
+            dwelling count{" "}
+            <strong className="text-slate-900">N</strong>
+            {" "}
+            from county land-line{" "}
+            <strong className="text-slate-900">UB</strong>
+            {" "}
+            units, or from a duplex / triplex / fourplex building type, or from a
+            typical single-dwelling account, we also show a crude equal split
+            (annual ÷ N and that amount ÷ 12), and the dollar amounts on those
+            bill entries (and metro estimates when shown) use that same per-unit
+            share, then show as monthly figures labeled /mo so they read like
+            rent. Metro headline wording in Rent mode frames shares as a percent
+            of estimated monthly property tax (not of rent). That split is an
+            estimate only: it assumes every unit bears the same share, may
+            attribute some non-residential tax on mixed-use parcels to dwellings,
+            and is not a lease line or proof that rent passes tax through
+            one-for-one. When N is unknown we show whole-property totals only
+            (including bill-entry $, still monthly in Rent). Own mode keeps
+            annual whole-account dollars. Rent mode tones down owner tools
+            (comparable-properties PDF, Notice of Valuation for equipment
+            accounts, owner mailing rows) and tucks dense sale / building / land
+            tables under a disclosure. Renting is not the same as commercial
+            assessment class.
+          </li>
           <li>
             Value labels use the{" "}
             <Link

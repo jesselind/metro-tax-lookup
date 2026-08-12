@@ -37,6 +37,8 @@ import {
 } from "@/components/LevyStackVisualization";
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
 import { ParcelRecordExtendedSection, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
+import { AudienceModeSwitch } from "@/components/AudienceModeSwitch";
+import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
@@ -114,6 +116,15 @@ import {
   annualTaxDollarsFromAssessedMills,
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
+import {
+  DEFAULT_AUDIENCE_MODE,
+  type AudienceMode,
+} from "@/lib/audienceMode";
+import {
+  equalSplitFromAnnualTax,
+  monthlyFromAnnualTax,
+  resolveDwellingCount,
+} from "@/lib/resolveDwellingCount";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import {
   parcelTaxAndAssessmentYearsDiffer,
@@ -125,6 +136,7 @@ import {
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
   DASHBOARD_SECTION_META_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
+  HOME_AUDIENCE_STACK_GAP_CLASS,
   INPUT_CLASS,
   PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS,
   PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS,
@@ -217,10 +229,13 @@ const HOME_MATCHING_PROPERTIES_ID = "home-matching-properties";
 export type HomeParcelAddressLookupProps = {
   /** Fires when the header should offer Start over (any active address / result / PIN path). */
   onViewingParcelChange?: (viewingParcel: boolean, reset: () => void) => void;
+  /** Fires when Own | Rent changes (landing intro copy follows the lens). */
+  onAudienceModeChange?: (mode: AudienceMode) => void;
 };
 
 export function HomeParcelAddressLookup({
   onViewingParcelChange,
+  onAudienceModeChange,
 }: HomeParcelAddressLookupProps = {}) {
   const [simpleAddressLine, setSimpleAddressLine] = useState("");
   /** After a first-line search returns no match or many matches, show the four-field form. */
@@ -293,6 +308,13 @@ export function HomeParcelAddressLookup({
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
   /** True after a single PIN match or after the user picks a row from multiple matches. */
   const [addressSearchLocked, setAddressSearchLocked] = useState(false);
+  /**
+   * Self-declared Own / Rent lens (default Own). Not inferred from the parcel.
+   * Start over resets to Own; flip after lock re-curates without re-fetch.
+   */
+  const [audienceMode, setAudienceMode] = useState<AudienceMode>(
+    DEFAULT_AUDIENCE_MODE,
+  );
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [parcelRecord, setParcelRecord] = useState<ArapahoeParcelRecordRow | null>(
     null,
@@ -565,6 +587,33 @@ export function HomeParcelAddressLookup({
     levyLoadedMeta?.parcelValues?.totalAssessed,
     sumMills,
   ]);
+
+  const isRentMode = audienceMode === "rent";
+
+  /** Rent equal-split N from parcel-record land lines / improvement type / single dwelling. */
+  const rentDwellingCount = useMemo(
+    () => (isRentMode ? resolveDwellingCount(parcelRecord) : null),
+    [isRentMode, parcelRecord],
+  );
+
+  const rentEqualSplit = useMemo(() => {
+    if (
+      !isRentMode ||
+      estimatedAnnualPropertyTaxDollars == null ||
+      rentDwellingCount == null
+    ) {
+      return null;
+    }
+    return equalSplitFromAnnualTax(
+      estimatedAnnualPropertyTaxDollars,
+      rentDwellingCount.n,
+    );
+  }, [isRentMode, estimatedAnnualPropertyTaxDollars, rentDwellingCount]);
+
+  const rentWholePropertyMonthly = useMemo(() => {
+    if (!isRentMode || estimatedAnnualPropertyTaxDollars == null) return null;
+    return monthlyFromAnnualTax(estimatedAnnualPropertyTaxDollars);
+  }, [isRentMode, estimatedAnnualPropertyTaxDollars]);
 
   const homeCompsGridPdfHref = useMemo(
     () => safeArapahoeCompsGridPdfUrl(levyLoadedMeta?.ain),
@@ -851,6 +900,7 @@ export function HomeParcelAddressLookup({
     setStreetTypeaheadOpen(false);
     setShowCountyPinFallback(false);
     setAddressSearchLocked(false);
+    setAudienceMode(DEFAULT_AUDIENCE_MODE);
     setIsDemoMode(false);
     setAccountSwitcherOpen(false);
     clearAllLevyState();
@@ -912,6 +962,10 @@ export function HomeParcelAddressLookup({
   useEffect(() => {
     onViewingParcelChange?.(headerOfferStartOver, resetAddressForm);
   }, [headerOfferStartOver, onViewingParcelChange, resetAddressForm]);
+
+  useEffect(() => {
+    onAudienceModeChange?.(audienceMode);
+  }, [audienceMode, onAudienceModeChange]);
 
   const hasLevyContent =
     levyLines.length > 0 ||
@@ -1054,7 +1108,9 @@ export function HomeParcelAddressLookup({
     templateMillsError: levyTemplateMillsError,
     setTemplateMillsError: setLevyTemplateMillsError,
     onClearLoadedStack: clearParcelTemplateExtended,
-    allowLineEdit: true,
+    allowLineEdit: !isRentMode,
+    levyDollarUnitCount: isRentMode ? (rentDwellingCount?.n ?? null) : null,
+    rentMode: isRentMode,
   };
 
   const showPropertyDetailsColumn =
@@ -1093,8 +1149,9 @@ export function HomeParcelAddressLookup({
     ? levyStackRateChangeCalloutSurfaceClasses()
     : null;
 
+  // Rent lens: owner-framed bill-impact banner stays Own-only (tile YoY still available).
   const billImpactCalloutBlock =
-    billImpactCallout && billImpactSurface ? (
+    !isRentMode && billImpactCallout && billImpactSurface ? (
       <div>
         <p className="sr-only" role="status" aria-live="polite">
           {billImpactCallout.message}
@@ -1137,11 +1194,16 @@ export function HomeParcelAddressLookup({
       idPrefix="home-metro"
       prefillTotalMills={metroPrefillTotalMills}
       metroFromLevyStack={homeMetroFromLevyStack}
+      rentMode={isRentMode}
       totalAssessedForEstimate={
         levyLoadedMeta &&
         typeof levyLoadedMeta.parcelValues.totalAssessed === "number" &&
         levyLoadedMeta.parcelValues.totalAssessed > 0
-          ? levyLoadedMeta.parcelValues.totalAssessed
+          ? isRentMode &&
+            rentDwellingCount != null &&
+            rentDwellingCount.n >= 1
+            ? levyLoadedMeta.parcelValues.totalAssessed / rentDwellingCount.n
+            : levyLoadedMeta.parcelValues.totalAssessed
           : null
       }
       sectionLead={undefined}
@@ -1257,6 +1319,7 @@ export function HomeParcelAddressLookup({
       demoMode={isDemoMode}
       businessPersonal={isBusinessPersonalAccount}
       omitContinuationHeading
+      rentMode={isRentMode}
     />
   ) : null;
 
@@ -1280,6 +1343,7 @@ export function HomeParcelAddressLookup({
         record={parcelRecord}
         pin={trimmedParcelPin}
         demoMode={isDemoMode}
+        rentMode={isRentMode}
       />
       {propertyClassificationLine}
       {parcelRecordExtended}
@@ -1320,12 +1384,20 @@ export function HomeParcelAddressLookup({
 
   return (
     <section
-      className="w-full min-w-0 space-y-4 sm:space-y-5"
+      className={`w-full min-w-0 ${HOME_AUDIENCE_STACK_GAP_CLASS}`}
       aria-labelledby="home-tool-heading"
     >
       <h2 id="home-tool-heading" className="sr-only">
         Property tax lookup and breakdown
       </h2>
+      {/* Own | Rent stays mounted across search ↔ locked so the lens flip stays familiar. */}
+      <AudienceModeSwitch
+        value={audienceMode}
+        onChange={setAudienceMode}
+        idPrefix={
+          addressSearchLocked ? "audience-mode-report" : "audience-mode-search"
+        }
+      />
       {addressMatchStatus ? (
         <p className="sr-only" role="status" aria-live="polite">
           {addressMatchStatus}
@@ -1857,7 +1929,24 @@ export function HomeParcelAddressLookup({
               </InlineErrorCallout>
             )
           ) : null}
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:items-start lg:gap-x-6">
+          {isRentMode &&
+          estimatedAnnualPropertyTaxDollars != null &&
+          rentWholePropertyMonthly != null ? (
+            <>
+              <RentTaxPressurePanel
+                estimatedAnnualDollars={estimatedAnnualPropertyTaxDollars}
+                estimatedMonthlyDollars={rentWholePropertyMonthly}
+                dwelling={rentDwellingCount}
+                equalSplit={rentEqualSplit}
+                dwellingPending={parcelRecordLoading}
+              />
+              {/* Separate rent payoff from owner-style summary / levy stack below. */}
+              <div className="py-2 sm:py-3" aria-hidden>
+                <hr className="border-0 border-t border-slate-300" />
+              </div>
+            </>
+          ) : null}
+          <div className="grid grid-cols-1 gap-x-3 gap-y-6 sm:gap-y-8 lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:gap-y-3">
             <div
               className="min-w-0"
               role="region"
@@ -2075,6 +2164,7 @@ export function HomeParcelAddressLookup({
             {!busy &&
             levyReadyForSummary &&
             levyLoadedMeta &&
+            !isRentMode &&
             isBusinessPersonalAccount ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
@@ -2162,6 +2252,7 @@ export function HomeParcelAddressLookup({
             {!busy &&
             levyReadyForSummary &&
             levyLoadedMeta &&
+            !isRentMode &&
             !isBusinessPersonalAccount ? (
               <div
                 className={
@@ -2509,7 +2600,7 @@ export function HomeParcelAddressLookup({
 
       {levyReadyForSummary ? (
         <>
-          {isDemoMode ? (
+          {isDemoMode && !isRentMode ? (
             <NovCompsGridPanel payload={novCompsGridDemoPayload} />
           ) : null}
           {showHomeAccuracyFeedbackAside ? (

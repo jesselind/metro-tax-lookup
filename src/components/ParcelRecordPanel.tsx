@@ -89,6 +89,11 @@ export type ParcelRecordPanelProps = {
   /** Display PIN for missing-data mailto (demo uses the public demo PIN). */
   pin?: string | null;
   demoMode?: boolean;
+  /**
+   * Rent audience lens: hide owner mailing rows (not a renter primary action).
+   * Owner-of-record name stays visible.
+   */
+  rentMode?: boolean;
 };
 
 export function ParcelRecordPanel({
@@ -97,6 +102,7 @@ export function ParcelRecordPanel({
   record,
   pin = null,
   demoMode = false,
+  rentMode = false,
 }: ParcelRecordPanelProps) {
   const [legalExpanded, setLegalExpanded] = useState(false);
 
@@ -215,16 +221,21 @@ export function ParcelRecordPanel({
                 triggerIdSuffix="ownership-type"
               />
             ) : null}
-            <ParcelRecordRow
-              label="Owner Address"
-              value={displayRecord.ownerDeliveryAddress}
-              triggerIdSuffix="owner-address"
-            />
-            <ParcelRecordRow
-              label="City/State/Zip"
-              value={displayRecord.ownerCityStateZip}
-              triggerIdSuffix="owner-city-state-zip"
-            />
+            {/* Rent lens: mailing address is owner-toolkit chrome, not renter payoff. */}
+            {!rentMode ? (
+              <>
+                <ParcelRecordRow
+                  label="Owner Address"
+                  value={displayRecord.ownerDeliveryAddress}
+                  triggerIdSuffix="owner-address"
+                />
+                <ParcelRecordRow
+                  label="City/State/Zip"
+                  value={displayRecord.ownerCityStateZip}
+                  triggerIdSuffix="owner-city-state-zip"
+                />
+              </>
+            ) : null}
             {!isBusinessPersonal ? (
               <>
                 <ParcelRecordRow

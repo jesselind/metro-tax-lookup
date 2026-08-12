@@ -9,6 +9,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { HomeParcelAddressLookup } from "@/components/HomeParcelAddressLookup";
 import { PageHero } from "@/components/PageHero";
 import {
+  DEFAULT_AUDIENCE_MODE,
+  type AudienceMode,
+} from "@/lib/audienceMode";
+import {
   HOME_LANDING_INTRO_CLASS,
   HOME_LANDING_INTRO_LINE1_CLASS,
   HOME_LANDING_INTRO_LINE2_CLASS,
@@ -23,6 +27,9 @@ const START_OVER_ARIA_LABEL =
 
 export function HomePageClient() {
   const [viewingParcel, setViewingParcel] = useState(false);
+  const [audienceMode, setAudienceMode] = useState<AudienceMode>(
+    DEFAULT_AUDIENCE_MODE,
+  );
   const startOverHeaderRef = useRef<HTMLButtonElement>(null);
   const resetRef = useRef<() => void>(() => {});
 
@@ -34,6 +41,10 @@ export function HomePageClient() {
     [],
   );
 
+  const handleAudienceModeChange = useCallback((mode: AudienceMode) => {
+    setAudienceMode(mode);
+  }, []);
+
   const prevViewingParcelRef = useRef(false);
   useEffect(() => {
     if (viewingParcel && !prevViewingParcelRef.current) {
@@ -41,6 +52,11 @@ export function HomePageClient() {
     }
     prevViewingParcelRef.current = viewingParcel;
   }, [viewingParcel]);
+
+  const landingLine2 =
+    audienceMode === "rent"
+      ? "You're still paying property tax if you rent."
+      : "See where your money is actually going.";
 
   return (
     <main
@@ -80,17 +96,26 @@ export function HomePageClient() {
           />
           {!viewingParcel ? (
             <p className={HOME_LANDING_INTRO_CLASS}>
-              <span className={HOME_LANDING_INTRO_LINE1_CLASS}>
-                Get a clear picture of your property tax bill.
-              </span>
-              <span className={HOME_LANDING_INTRO_LINE2_CLASS}>
-                See where your money is actually going.
+              {audienceMode === "own" ? (
+                <span className={HOME_LANDING_INTRO_LINE1_CLASS}>
+                  Get a clear picture of your property tax bill.
+                </span>
+              ) : null}
+              <span
+                className={
+                  audienceMode === "rent"
+                    ? "block text-xl font-bold leading-tight text-indigo-950 sm:text-2xl"
+                    : HOME_LANDING_INTRO_LINE2_CLASS
+                }
+              >
+                {landingLine2}
               </span>
             </p>
           ) : null}
         </div>
         <HomeParcelAddressLookup
           onViewingParcelChange={handleViewingParcelChange}
+          onAudienceModeChange={handleAudienceModeChange}
         />
       </div>
     </main>

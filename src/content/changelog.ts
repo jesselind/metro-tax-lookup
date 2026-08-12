@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.8.0",
+    date: "2026-08-12",
+    title: "Own / Rent audience lens with equal-split tax pressure",
+    highlights: [
+      "Home Own | Rent switch (default Own, aria-only Own or rent): same chrome on search and locked report; Start over resets to Own. Landing intro follows the lens (Own: bill hook; Rent: You're still paying property tax if you rent).",
+      "Rent mode: colored pressure tiles (estimated /mo when N is known, all-tax /yr, unit count) with equal-split caveats; pierce heading on the report. N from land-line UB, duplex/triplex/fourplex, or single dwelling.",
+      "Rent levy and metro dollars use the same per-unit share when N is known, shown as monthly /mo with rent-framed metro copy; Own keeps annual whole-account figures. No Add tile / levy line edit in Rent.",
+      "Rent curation hides comps / BPP NOV / demo comps grid and the bill-impact banner, omits owner mailing rows, and collapses sale/building/land tables under a disclosure.",
+    ],
+  },
+  {
     version: "4.7.3",
     date: "2026-08-12",
     title: "Dashboard tiles beside levies; unified property details; chooser row hits",
