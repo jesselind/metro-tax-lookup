@@ -212,12 +212,12 @@ export const PARCEL_SUMMARY_TILE_ADDRESS_CLASS =
  * Dashboard multi-account switcher: a real control button (not a summary tile).
  * Soft salmon fill + dark text — AA contrast (≥4.5:1) on default/hover/active.
  * Do not compose from parcel tile frames (`bg-white` / slate borders fight these colors).
+ * Full width of the summary column (lg 1/3; stacked = full content width).
  * Readable status at address size; `gap-0` + one-step-tighter vertical pad so intrinsic
  * height never exceeds Address/Owner-style tiles (action cue is larger than a tile label).
- * `self-stretch` only grows when a taller sibling sets the flex line (e.g. comps).
  */
 export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS =
-  `inline-flex max-w-full min-h-0 cursor-pointer flex-col items-start justify-center gap-0 self-stretch ${DASHBOARD_TILE_RADIUS_CLASS} border border-[#C56A52] bg-[#E8A090] px-3.5 py-2 text-left shadow-sm transition-colors hover:border-[#B85A45] hover:bg-[#E09A88] active:border-[#A84E3C] active:bg-[#D98978] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A45]/55 focus-visible:ring-offset-2 sm:px-4 sm:py-2.5`;
+  `flex w-full min-w-0 cursor-pointer flex-col items-center justify-center gap-0 ${DASHBOARD_TILE_RADIUS_CLASS} border border-[#C56A52] bg-[#E8A090] px-3.5 py-2 text-center shadow-sm transition-colors hover:border-[#B85A45] hover:bg-[#E09A88] active:border-[#A84E3C] active:bg-[#D98978] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A45]/55 focus-visible:ring-offset-2 sm:px-4 sm:py-2.5`;
 
 /**
  * Action cue inside {@link PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS} (~7.2:1 on fill).

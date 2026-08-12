@@ -704,10 +704,9 @@ export default function SourcesPage() {
           </li>
           <li>
             <strong>Property classification:</strong>{" "}In Property details,
-            under the scalar county-record panel, we show the assessor&apos;s
-            class description from the
-            mart export. A paper notice may still say Residential or Commercial
-            for the same parcel;
+            under the county-record panel, we show the assessor&apos;s
+            property-class description from the county data. A paper notice may
+            still say Residential or Commercial for the same parcel;
             see{" "}
             <Link
               href={glossaryTermHref("term-property-classification")}

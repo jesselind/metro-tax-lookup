@@ -948,12 +948,14 @@ export function HomeParcelAddressLookup({
 
   /**
    * PIN entry + workbench shortcut: unlocked multi-match chooser path, or county
-   * fallback when address search finds nothing. Never on a locked property report
-   * (multi-PIN switching is Switch account type only).
+   * fallback when address search finds nothing. Also when a levy load failed so
+   * retry stays available (including locked single-match). Never on a successful
+   * locked property report (multi-PIN switching is Switch account type only).
    */
   const showParcelPinSection =
-    !addressSearchLocked &&
-    (showCountyPinFallback || (hits != null && hits.length > 1));
+    levyLoadError != null ||
+    (!addressSearchLocked &&
+      (showCountyPinFallback || (hits != null && hits.length > 1)));
 
   /** Locked vs unlocked levy shells are mutually exclusive; share one ID, never both. */
   const showHomeLevyBreakdownRegion =
@@ -1841,6 +1843,20 @@ export function HomeParcelAddressLookup({
               </InlineErrorCallout>
             )
           ) : null}
+          {levyLoadError ? (
+            levyLoadErrorTechnicalDetail ? (
+              <DataLoadErrorCallout
+                className="mt-1"
+                liveRegion="polite"
+                message={levyLoadError}
+                technicalDetail={levyLoadErrorTechnicalDetail}
+              />
+            ) : (
+              <InlineErrorCallout className="mt-1" liveRegion="polite">
+                {levyLoadError}
+              </InlineErrorCallout>
+            )
+          ) : null}
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:items-start lg:gap-x-6">
             <div
               className="min-w-0"
@@ -2409,7 +2425,8 @@ export function HomeParcelAddressLookup({
               </p>
             </div>
           ) : null}
-          {levyLoadError ? (
+          {/* Unlocked path only; locked report shows levyLoadError above the summary grid. */}
+          {!addressSearchLocked && levyLoadError ? (
             levyLoadErrorTechnicalDetail ? (
               <DataLoadErrorCallout
                 liveRegion="polite"
