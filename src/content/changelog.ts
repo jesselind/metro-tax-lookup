@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.7.3",
+    date: "2026-08-12",
+    title: "Dashboard tiles beside levies; unified property details; chooser row hits",
+    highlights: [
+      "Locked report: summary tiles sit beside the levy stack on large screens (content-sized chips wrap in the left column); a narrow Property details chip (jump control) precedes comps / Notice of Valuation; Property details is one full-width block below for Real and business personal property (no sidebar split).",
+      "Multi-PIN chooser and Switch account type modal: whole-row hit targets; Real vs business personal property glossary once under the heading, not on each row.",
+      "Parcel PIN or AIN panel stays unlocked-search / county-fallback only (never on a locked dashboard).",
+    ],
+  },
+  {
     version: "4.7.2",
     date: "2026-08-11",
     title: "In-dashboard multi-account switcher modal",

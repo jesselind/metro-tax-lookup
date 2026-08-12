@@ -48,10 +48,9 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
     chooser.getByText("2 accounts matched at this address"),
   ).toBeVisible();
   await expect(
-    chooser.getByRole("button", { name: "Real property" }),
-  ).toBeVisible();
-  await expect(
-    chooser.getByRole("button", { name: "Business personal property" }),
+    chooser.getByRole("button", {
+      name: "What is real property vs. business personal property?",
+    }),
   ).toBeVisible();
   await expect(chooser.getByText("80000-1111")).toBeVisible();
   await expect(chooser.getByText("80000-2222")).toBeVisible();
@@ -64,8 +63,19 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   const personalRow = items.nth(1);
   await expect(realRow).toContainText(SYNTHETIC_MULTI_REAL_OWNER);
   await expect(realRow).toContainText(SYNTHETIC_MULTI_REAL_PIN);
+  await expect(realRow.getByText("Real property", { exact: true })).toBeVisible();
   await expect(personalRow).toContainText(SYNTHETIC_MULTI_PERSONAL_OWNER);
   await expect(personalRow).toContainText(SYNTHETIC_MULTI_PERSONAL_PIN);
+  await expect(
+    personalRow.getByText("Business personal property", { exact: true }),
+  ).toBeVisible();
+  // Whole-row hit target (no separate Use this property control).
+  await expect(
+    realRow.getByRole("button", { name: /^Use this property\./ }),
+  ).toBeVisible();
+  await expect(
+    realRow.getByRole("button", { name: "Use this property", exact: true }),
+  ).toHaveCount(0);
 
   await expect(
     chooser.getByRole("link", { name: /county property search/i }),
@@ -93,7 +103,7 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   await chooser
     .getByRole("listitem")
     .filter({ hasText: SYNTHETIC_MULTI_PERSONAL_OWNER })
-    .getByRole("button", { name: "Use this property" })
+    .getByRole("button", { name: /^Use this property\./ })
     .click();
 
   await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
@@ -148,6 +158,12 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     page.getByRole("link", { name: /More property details/i }),
   ).toHaveCount(0);
   await expect(
+    page.getByRole("link", { name: "Jump to property details" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Jump to property details" }),
+  ).toContainText("Property details");
+  await expect(
     page.getByRole("heading", { name: "Property details cont." }),
   ).toHaveCount(0);
   await expect(page.getByText(/2026 Assessed Value \(26%\)/i)).toBeVisible();
@@ -175,6 +191,11 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     name: "Other accounts at this address",
   });
   await expect(switchDialog).toBeVisible();
+  await expect(
+    switchDialog.getByRole("button", {
+      name: "What is real property vs. business personal property?",
+    }),
+  ).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Matching properties" }),
   ).toHaveCount(0);
@@ -215,10 +236,12 @@ test("dashboard Switch account type: modal stays on report; dismiss and switch",
   await chooser
     .getByRole("listitem")
     .filter({ hasText: SYNTHETIC_MULTI_REAL_OWNER })
-    .getByRole("button", { name: "Use this property" })
+    .getByRole("button", { name: /^Use this property\./ })
     .click();
 
   await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+  // Locked report: no Parcel PIN or AIN panel (chooser-only chrome).
+  await expect(page.locator("#home-parcel-pin-heading")).toHaveCount(0);
 
   const switchBtn = page.getByRole("button", {
     name: /Switch account type\. Currently Real property/i,
@@ -237,15 +260,18 @@ test("dashboard Switch account type: modal stays on report; dismiss and switch",
   await expect(switchDialog).toBeVisible();
   await expect(switchBtn).toHaveAttribute("aria-expanded", "true");
   await expect(
-    switchDialog.getByRole("button", { name: "Use this property" }),
+    switchDialog.getByRole("button", { name: "Use this property", exact: true }),
   ).toHaveCount(0);
   await expect(
+    switchDialog.getByRole("button", { name: /^Use this property\./ }),
+  ).toHaveCount(0);
+  // Kind labels on rows are plain text; glossary lives in the shared help line.
+  await expect(
     switchDialog.getByRole("button", { name: "Real property", exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(
     switchDialog.getByRole("button", {
-      name: "Business personal property",
-      exact: true,
+      name: "What is real property vs. business personal property?",
     }),
   ).toBeVisible();
   await expect(

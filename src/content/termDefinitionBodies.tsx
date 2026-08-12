@@ -809,6 +809,28 @@ export function TermBusinessPersonalPropertyBriefBody() {
   );
 }
 
+export function TermRealVsBusinessPersonalBriefBody() {
+  return (
+    <>
+      <p className={BRIEF_P}>
+        <strong className="font-semibold text-slate-900">Real property</strong>
+        {" "}
+        is the land and buildings at an address (a home, store, vacant lot, and
+        similar).
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        <strong className="font-semibold text-slate-900">
+          Business personal property
+        </strong>
+        {" "}
+        is equipment and other business property at that location (machinery,
+        fixtures, and similar), taxed on a separate account from the building
+        and land. One street can have both; pick the row that matches your bill.
+      </p>
+    </>
+  );
+}
+
 export function TermAssessmentYearBriefBody() {
   return (
     <p className={BRIEF_P}>
@@ -959,6 +981,7 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-account-type",
   "term-real-property",
   "term-business-personal-property",
+  "term-real-vs-business-personal",
   "term-assessment-year",
   "term-tax-year",
   "term-appraised-total",
@@ -1064,6 +1087,10 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-business-personal-property": {
     title: "Business personal property",
     Brief: TermBusinessPersonalPropertyBriefBody,
+  },
+  "term-real-vs-business-personal": {
+    title: "Real property vs. business personal property",
+    Brief: TermRealVsBusinessPersonalBriefBody,
   },
   "term-assessment-year": {
     title: "Assessment year",

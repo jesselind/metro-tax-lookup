@@ -7,13 +7,10 @@
 
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
-import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import type { SitusEnvelopeDisplayRow } from "@/lib/addressLabelDifference";
 import { formatUsdWhole } from "@/lib/formatUsd";
-import {
-  situsAccountKindGlossaryTermId,
-  type EnrichedSitusPinHit,
-} from "@/lib/situsMultiPinChooser";
+import type { EnrichedSitusPinHit } from "@/lib/situsMultiPinChooser";
+import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 
 export type SitusMultiAccountChooserItem = {
   pin: string;
@@ -29,27 +26,53 @@ export type SitusMultiAccountChooserListProps = {
   /** When set, that row is marked as the account already on the dashboard. */
   currentPin?: string | null;
   /**
-   * Dashboard switcher modal: whole row is the hit target (no "Use this property"
-   * button). Post-search chooser keeps the explicit button.
+   * Accessible name verb for selectable rows: post-search chooser vs dashboard
+   * switcher (`Use this property` vs `Switch to`).
    */
-  rowHitTarget?: boolean;
-  /** Prefix for glossary text-trigger ids (must be unique per mount surface). */
-  glossaryIdPrefix: string;
+  selectMode?: "choose" | "switch";
 };
 
 /**
- * Accessible name for a full-row switcher control (dashboard modal `rowHitTarget`).
+ * Shared Real vs business personal property glossary control for multi-PIN
+ * chooser and dashboard switcher (one popover; not on each account row).
  */
+export function SitusRealVsBusinessPersonalHelp({
+  idPrefix,
+}: {
+  idPrefix: string;
+}) {
+  return (
+    <p className="text-sm text-slate-700 sm:text-base">
+      <ParcelGlossaryPopoverTrigger
+        termId="term-real-vs-business-personal"
+        textTrigger="What is real property vs. business personal property?"
+        textTriggerId={`${idPrefix}-real-vs-business-personal-help`}
+        variant="parcel-record"
+        textTriggerClassName={TERM_LINK_CLASS}
+      />
+    </p>
+  );
+}
+
+/** Accessible name for a full-row account control. */
 function accountRowSelectLabel(
   pin: string,
   enriched: EnrichedSitusPinHit | null,
+  selectMode: "choose" | "switch",
 ): string {
   const kind = enriched?.accountKindLabel?.trim() || null;
   const owner = enriched?.ownerList?.trim() || null;
-  if (owner && kind) return `Switch to ${kind}, ${owner}. PIN ${pin}.`;
-  if (kind) return `Switch to ${kind}. PIN ${pin}.`;
-  if (owner) return `Switch to ${owner}. PIN ${pin}.`;
-  return `Switch to PIN ${pin}.`;
+  const detail =
+    owner && kind
+      ? `${kind}, ${owner}. PIN ${pin}.`
+      : kind
+        ? `${kind}. PIN ${pin}.`
+        : owner
+          ? `${owner}. PIN ${pin}.`
+          : `PIN ${pin}.`;
+  return selectMode === "switch"
+    ? `Switch to ${detail}`
+    : `Use this property. ${detail}`;
 }
 
 type RowBodyProps = {
@@ -58,14 +81,7 @@ type RowBodyProps = {
   enriched: EnrichedSitusPinHit | null;
   envelope: SitusEnvelopeDisplayRow | null;
   isCurrent: boolean;
-  glossaryIdPrefix: string;
-  allowGlossary: boolean;
   showViewingChip: boolean;
-  /**
-   * When the row uses an invisible full-row button, glossary triggers need
-   * `pointer-events-auto` above that overlay (same idea as summary tiles).
-   */
-  glossaryAboveRowHitTarget?: boolean;
 };
 
 function AccountRowBody({
@@ -74,47 +90,15 @@ function AccountRowBody({
   enriched,
   envelope,
   isCurrent,
-  glossaryIdPrefix,
-  allowGlossary,
   showViewingChip,
-  glossaryAboveRowHitTarget = false,
 }: RowBodyProps) {
-  const accountKindTermId =
-    enriched != null
-      ? situsAccountKindGlossaryTermId(enriched.accountKind)
-      : null;
-
   const kindLabel = enriched?.accountKindLabel ?? null;
-  const kindPopover =
-    allowGlossary && kindLabel != null && accountKindTermId != null ? (
-      <ParcelGlossaryPopoverTrigger
-        termId={accountKindTermId}
-        textTrigger={kindLabel}
-        textTriggerId={`${glossaryIdPrefix}-account-kind-${pin}`}
-        variant="section-title"
-      />
-    ) : kindLabel != null ? (
-      <span className="text-base font-semibold leading-snug text-slate-900 sm:text-lg">
-        {kindLabel}
-      </span>
-    ) : null;
 
   return (
     <div className="min-w-0">
-      {kindPopover != null ? (
+      {kindLabel != null ? (
         <p className="text-base font-semibold leading-snug text-slate-900 sm:text-lg">
-          {glossaryAboveRowHitTarget ? (
-            <span
-              className="relative z-[2] inline-block pointer-events-auto"
-              onPointerDown={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              {kindPopover}
-            </span>
-          ) : (
-            kindPopover
-          )}
+          {kindLabel}
           {showViewingChip && isCurrent ? (
             <span className="ml-2 align-middle text-xs font-semibold uppercase tracking-wide text-indigo-800">
               Viewing
@@ -129,7 +113,7 @@ function AccountRowBody({
       {enriched?.ownerList ? (
         <p
           className={`text-sm font-medium leading-snug text-slate-700 sm:text-base ${
-            kindPopover != null || (showViewingChip && isCurrent) ? "mt-1" : ""
+            kindLabel != null || (showViewingChip && isCurrent) ? "mt-1" : ""
           }`}
         >
           {enriched.ownerList}
@@ -137,7 +121,7 @@ function AccountRowBody({
       ) : null}
       <p
         className={`text-sm text-slate-600 ${
-          kindPopover != null ||
+          kindLabel != null ||
           enriched?.ownerList ||
           (showViewingChip && isCurrent)
             ? "mt-1"
@@ -162,15 +146,15 @@ function AccountRowBody({
 
 /**
  * Shared multi-PIN account rows for the post-search chooser and the dashboard
- * account-switcher modal. Parent owns heading / help copy.
+ * account-switcher modal. Whole row is the hit target. Parent owns heading /
+ * help copy ({@link SitusRealVsBusinessPersonalHelp}).
  */
 export function SitusMultiAccountChooserList({
   items,
   onSelectPin,
   selectDisabled = false,
   currentPin = null,
-  rowHitTarget = false,
-  glossaryIdPrefix,
+  selectMode = "choose",
 }: SitusMultiAccountChooserListProps) {
   return (
     <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
@@ -178,58 +162,26 @@ export function SitusMultiAccountChooserList({
         const { pin, label, enriched, envelope } = item;
         const isCurrent = currentPin != null && currentPin === pin;
 
-        if (rowHitTarget) {
-          if (isCurrent) {
-            return (
-              <li key={pin}>
-                <div
-                  className="rounded-md border border-indigo-300 bg-indigo-50/50 px-3 py-3"
-                  aria-current="true"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <AccountRowBody
-                      pin={pin}
-                      label={label}
-                      enriched={enriched}
-                      envelope={envelope}
-                      isCurrent
-                      glossaryIdPrefix={glossaryIdPrefix}
-                      allowGlossary
-                      showViewingChip={false}
-                    />
-                    <p className="shrink-0 text-base font-semibold text-indigo-900 sm:text-right">
-                      Currently viewing
-                    </p>
-                  </div>
-                </div>
-              </li>
-            );
-          }
-
+        if (isCurrent) {
           return (
-            <li
-              key={pin}
-              className="group relative rounded-md border border-slate-200 bg-white shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50/40"
-            >
-              <button
-                type="button"
-                className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={selectDisabled}
-                aria-label={accountRowSelectLabel(pin, enriched)}
-                onClick={() => onSelectPin(pin)}
-              />
-              <div className="pointer-events-none relative z-[1] px-3 py-3">
-                <AccountRowBody
-                  pin={pin}
-                  label={label}
-                  enriched={enriched}
-                  envelope={envelope}
-                  isCurrent={false}
-                  glossaryIdPrefix={glossaryIdPrefix}
-                  allowGlossary
-                  showViewingChip={false}
-                  glossaryAboveRowHitTarget
-                />
+            <li key={pin}>
+              <div
+                className="rounded-md border border-indigo-300 bg-indigo-50/50 px-3 py-3"
+                aria-current="true"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <AccountRowBody
+                    pin={pin}
+                    label={label}
+                    enriched={enriched}
+                    envelope={envelope}
+                    isCurrent
+                    showViewingChip={false}
+                  />
+                  <p className="shrink-0 text-base font-semibold text-indigo-900 sm:text-right">
+                    Currently viewing
+                  </p>
+                </div>
               </div>
             </li>
           );
@@ -238,37 +190,24 @@ export function SitusMultiAccountChooserList({
         return (
           <li
             key={pin}
-            className={`rounded-md border px-3 py-3 ${
-              isCurrent
-                ? "border-indigo-300 bg-indigo-50/50"
-                : "border-slate-200 bg-white"
-            }`}
+            className="group relative rounded-md border border-slate-200 bg-white shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50/40"
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <button
+              type="button"
+              className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={selectDisabled}
+              aria-label={accountRowSelectLabel(pin, enriched, selectMode)}
+              onClick={() => onSelectPin(pin)}
+            />
+            <div className="pointer-events-none relative z-[1] px-3 py-3">
               <AccountRowBody
                 pin={pin}
                 label={label}
                 enriched={enriched}
                 envelope={envelope}
-                isCurrent={isCurrent}
-                glossaryIdPrefix={glossaryIdPrefix}
-                allowGlossary
-                showViewingChip={isCurrent}
+                isCurrent={false}
+                showViewingChip={false}
               />
-              {isCurrent ? (
-                <p className="shrink-0 text-base font-semibold text-indigo-900 sm:text-right">
-                  Currently viewing
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  className={`${btnOutlinePrimaryMd} w-full shrink-0 cursor-pointer justify-center py-2.5 disabled:cursor-not-allowed sm:w-auto sm:px-4`}
-                  disabled={selectDisabled}
-                  onClick={() => onSelectPin(pin)}
-                >
-                  Use this property
-                </button>
-              )}
             </div>
           </li>
         );
