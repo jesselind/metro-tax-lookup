@@ -56,6 +56,21 @@ test.describe("Metro year-over-year UI", () => {
       }),
     ).toBeVisible();
 
+    // Rent lens hides the owner-framed amber banner; levy tile Changed cues remain.
+    await page.getByRole("radio", { name: "Rent" }).click();
+    await expect(
+      page.getByRole("button", {
+        name: /Your property tax bill changed from last year/i,
+      }),
+    ).toHaveCount(0);
+    await expect(page.getByText("Changed", { exact: true })).toBeVisible();
+    await page.getByRole("radio", { name: "Own" }).click();
+    await expect(
+      page.getByRole("button", {
+        name: /Your property tax bill changed from last year/i,
+      }),
+    ).toBeVisible();
+
     await viewDistrictDetailsButton(page, nonMetroAuthorityLabel).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();

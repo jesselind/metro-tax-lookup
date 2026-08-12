@@ -118,6 +118,12 @@ export const DASHBOARD_PANEL_SHELL_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} borde
 export const PARCEL_RECORD_EXTENDED_SHELL_CLASS = "w-full min-w-0";
 
 /**
+ * Vertical gap under the Own|Rent toggle and between the rent pierce heading and
+ * tiles. Must stay identical in both places or those two gaps drift apart.
+ */
+export const HOME_AUDIENCE_STACK_GAP_CLASS = "space-y-8";
+
+/**
  * Levy stack tiles: `auto-fill` + `minmax(min(100%, …), 1fr)` so columns wrap naturally at any viewport.
  */
 export const LEVY_STACK_TILE_GRID_CLASS =
@@ -207,6 +213,46 @@ export const PARCEL_SUMMARY_TILE_VALUE_CLASS =
 
 export const PARCEL_SUMMARY_TILE_ADDRESS_CLASS =
   "text-base font-semibold leading-snug tracking-tight text-slate-900 sm:text-lg";
+
+/**
+ * Rent-mode summary tiles: levy/metro-scale presence (not tiny dashboard chips).
+ * Different hue set/order than levy tiles so the rows do not compete.
+ *
+ * Do **not** reuse {@link LEVY_STACK_TILE_GRID_CLASS} as-is: its `auto-fill` keeps
+ * empty columns, so 2–3 rent tiles sit as partial-width chips. Mobile is an
+ * explicit single column (`grid-cols-1`) so each tile is 100% of the parent;
+ * `sm+` uses `auto-fit` (empty tracks collapse) with the same 14rem min as levy.
+ */
+export const RENT_SUMMARY_ROW_CLASS =
+  "grid w-full min-w-0 grid-cols-1 justify-items-stretch gap-2 sm:gap-3 sm:[grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr))]";
+
+export const RENT_SUMMARY_TILE_FRAME_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} flex h-full min-h-[5.5rem] w-full min-w-0 flex-col justify-center overflow-hidden border border-white/25 shadow-md sm:min-h-[6.25rem]`;
+
+export const RENT_SUMMARY_TILE_BODY_CLASS =
+  "flex h-full min-h-0 w-full min-w-0 flex-col justify-center gap-2 px-4 py-4 sm:gap-2.5 sm:px-5 sm:py-5";
+
+/** Your estimated property tax (/mo) — rose / pink (not levy indigo). */
+export const RENT_SUMMARY_TILE_TAX_MONTHLY_CLASS = `${RENT_SUMMARY_TILE_FRAME_CLASS} bg-gradient-to-br from-rose-600 via-pink-700 to-fuchsia-950 text-white`;
+
+/** All tax for this property (/yr) — cyan / slate (not levy teal). */
+export const RENT_SUMMARY_TILE_TAX_ANNUAL_CLASS = `${RENT_SUMMARY_TILE_FRAME_CLASS} bg-gradient-to-br from-cyan-600 via-sky-700 to-slate-900 text-white`;
+
+/** Total number of units — lime / forest (not levy amber). */
+export const RENT_SUMMARY_TILE_UNITS_CLASS = `${RENT_SUMMARY_TILE_FRAME_CLASS} bg-gradient-to-br from-lime-600 via-green-700 to-emerald-950 text-white`;
+
+/**
+ * Label = levy authority key size ({@code TILE_DESC_MILLS_CLASS} in LevyStackVisualization).
+ * Value = levy estimated-$ size ({@code LEVY_TILE_USD_CLASS}).
+ */
+export const RENT_SUMMARY_TILE_LABEL_CLASS =
+  "w-full min-w-0 text-lg font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] sm:text-xl";
+
+export const RENT_SUMMARY_TILE_VALUE_CLASS =
+  "min-w-0 max-w-full text-[1.625rem] font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)]";
+
+/** Suffix (/mo, /yr) ≈ levy mills subline scale. */
+export const RENT_SUMMARY_TILE_VALUE_SUFFIX_CLASS =
+  "ml-1.5 text-base font-semibold text-white/90 sm:text-lg";
 
 /**
  * Dashboard multi-account switcher: a real control button (not a summary tile).

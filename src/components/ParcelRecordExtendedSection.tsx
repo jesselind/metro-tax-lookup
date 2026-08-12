@@ -5,6 +5,7 @@
 
 "use client";
 
+import { useId, useState } from "react";
 import {
   ParcelRecordBuildingAndLandTable,
   ParcelRecordPermitTable,
@@ -12,6 +13,7 @@ import {
   ParcelRecordValueSection,
 } from "@/components/ParcelRecordCountyTables";
 import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingValue";
+import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
@@ -19,6 +21,7 @@ import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 
 export const PARCEL_RECORD_EXTENDED_SECTION_ID = "home-parcel-record-extended";
@@ -50,6 +53,11 @@ export type ParcelRecordExtendedSectionProps = {
    * "Property details cont." heading used for the below-grid Real layout.
    */
   omitContinuationHeading?: boolean;
+  /**
+   * Rent audience lens: keep Values; collapse sale / building-land / permits
+   * under a flat disclosure (not a nested card) so dense tables are not the hero.
+   */
+  rentMode?: boolean;
 };
 
 /**
@@ -67,6 +75,7 @@ export function ParcelRecordExtendedSection({
   demoMode = false,
   businessPersonal = false,
   omitContinuationHeading = false,
+  rentMode = false,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
   const isBusinessPersonal =
@@ -76,10 +85,29 @@ export function ParcelRecordExtendedSection({
           propertyClassDescr: displayRecord.propertyClassDescr,
         })
       : businessPersonal;
+  const [showSaleBuildingLand, setShowSaleBuildingLand] = useState(false);
+  const saleBuildingLandToggleId = useId();
+  const saleBuildingLandPanelId = useId();
 
   if (!shouldShowParcelRecordExtendedSection(loading, loadFailed, record)) {
     return null;
   }
+
+  const saleBuildingLandTables =
+    displayRecord != null && !isBusinessPersonal ? (
+      <>
+        <ParcelRecordSaleTable
+          transfers={displayRecord.transfers}
+          ain={displayRecord.ain}
+          linkClerkRecorder={!demoMode}
+        />
+        <ParcelRecordBuildingAndLandTable
+          buildings={displayRecord.buildings}
+          landLines={displayRecord.landLines}
+        />
+        <ParcelRecordPermitTable permits={displayRecord.permits} />
+      </>
+    ) : null;
 
   return (
     <section
@@ -104,47 +132,69 @@ export function ParcelRecordExtendedSection({
           Property details cont.
         </h3>
       ) : null}
-      <div
-        className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
-        aria-live={loading ? "polite" : undefined}
-      >
-        {loading ? (
-          <>
-            <div className={TABLE_SKELETON} />
-            {!isBusinessPersonal ? (
-              <div className={`${TABLE_SKELETON} h-48`} />
-            ) : null}
-          </>
-        ) : loadFailed ? (
-          <p
-            className="text-base leading-relaxed text-slate-700"
-            aria-hidden="true"
+
+      {loading || loadFailed || displayRecord == null ? (
+        <div
+          className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
+          aria-live={loading ? "polite" : undefined}
+        >
+          {loading ? (
+            <>
+              <div className={TABLE_SKELETON} />
+              {!isBusinessPersonal && !rentMode ? (
+                <div className={`${TABLE_SKELETON} h-48`} />
+              ) : null}
+            </>
+          ) : (
+            <p
+              className="text-base leading-relaxed text-slate-700"
+              aria-hidden="true"
+            >
+              {PARCEL_RECORD_LOAD_FAILED_MESSAGE}
+            </p>
+          )}
+        </div>
+      ) : (
+        <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
+          <div
+            className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
           >
-            {PARCEL_RECORD_LOAD_FAILED_MESSAGE}
-          </p>
-        ) : displayRecord ? (
-          <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
             <ParcelRecordValueSection
               record={displayRecord}
               totalOnly={isBusinessPersonal}
             />
-            {!isBusinessPersonal ? (
-              <>
-                <ParcelRecordSaleTable
-                  transfers={displayRecord.transfers}
-                  ain={displayRecord.ain}
-                  linkClerkRecorder={!demoMode}
-                />
-                <ParcelRecordBuildingAndLandTable
-                  buildings={displayRecord.buildings}
-                  landLines={displayRecord.landLines}
-                />
-                <ParcelRecordPermitTable permits={displayRecord.permits} />
-              </>
-            ) : null}
-          </ParcelRecordReportIdsProvider>
-        ) : null}
-      </div>
+            {!isBusinessPersonal && !rentMode ? saleBuildingLandTables : null}
+          </div>
+          {/*
+            Rent: same outlined toggle pattern as metro "Check the math"
+            (not a floating DisclosureSummary, not a nested card).
+          */}
+          {!isBusinessPersonal && rentMode ? (
+            <div className="mt-4 space-y-3 sm:mt-5">
+              <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+                <ToolOutlinedToggleButton
+                  id={saleBuildingLandToggleId}
+                  aria-expanded={showSaleBuildingLand}
+                  aria-controls={saleBuildingLandPanelId}
+                  onClick={() => setShowSaleBuildingLand((v) => !v)}
+                >
+                  {showSaleBuildingLand
+                    ? "Hide sale, building, and land details"
+                    : "Sale, building, and land details"}
+                </ToolOutlinedToggleButton>
+              </div>
+              <div
+                id={saleBuildingLandPanelId}
+                hidden={!showSaleBuildingLand}
+                aria-labelledby={saleBuildingLandToggleId}
+                className="space-y-6 overflow-x-auto border-t border-slate-200 pt-4"
+              >
+                {saleBuildingLandTables}
+              </div>
+            </div>
+          ) : null}
+        </ParcelRecordReportIdsProvider>
+      )}
     </section>
   );
 }

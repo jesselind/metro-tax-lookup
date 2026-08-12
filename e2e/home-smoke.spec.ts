@@ -16,6 +16,12 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Civic Lookup", level: 1 }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("radiogroup", {
+      name: "Own or rent",
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Own" })).toBeChecked();
   await expect(page.getByRole("form", { name: "Address lookup" })).toBeVisible();
   const street = streetAddressField(page);
   await expect(street).toBeVisible();

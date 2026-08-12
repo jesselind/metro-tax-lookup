@@ -278,6 +278,19 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
       neighborhoodCode: null,
       totalActual: 100000,
       totalAssessed: 6800,
+      // Four UB units so Rent equal-split is assertable (68 / 4 = $17/yr, ~$1/mo).
+      landLines: [
+        { units: "4.0000 UB", landUse: "APT Multi-Units (9+)" },
+      ],
+      buildings: [
+        {
+          buildingNum: "1",
+          attributes: [
+            { label: "Improvement Type", value: "Apartment Low Rise 1-3" },
+          ],
+        },
+      ],
+      stateUseCd: "2112",
     },
     [SYNTHETIC_MULTI_REAL_PIN]: {
       ain: "1000-00-0-00-201",

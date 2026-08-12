@@ -50,6 +50,7 @@ import {
   levyLineMillDelta,
   lineIdsWithMillRateChanges,
 } from "@/lib/metroLevyYearOverYear";
+import { levyDisplayDollarsForAudience } from "@/lib/resolveDwellingCount";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
 
@@ -337,6 +338,13 @@ export type LevyStackVisualizationProps = {
   setTemplateMillsError: (e: string | null) => void;
   onClearLoadedStack: () => void;
   allowLineEdit: boolean;
+  /**
+   * Rent lens with known dwelling count N: scale tile/total $ to a per-unit share
+   * ({@link levyDisplayDollarsForAudience}). Own / unknown N: omit (whole-account $).
+   */
+  levyDollarUnitCount?: number | null;
+  /** Rent lens: show monthly whole dollars with /mo (Own stays annual). */
+  rentMode?: boolean;
 };
 
 export function LevyStackVisualization({
@@ -351,6 +359,8 @@ export function LevyStackVisualization({
   setTemplateMillsError,
   onClearLoadedStack,
   allowLineEdit,
+  levyDollarUnitCount = null,
+  rentMode = false,
 }: LevyStackVisualizationProps) {
   const templateErrorId = useId();
   const [showLevyDetails, setShowLevyDetails] = useState(false);
@@ -392,8 +402,24 @@ export function LevyStackVisualization({
 
   const totalLevyDollarsRounded = useMemo(() => {
     if (assessedForLevyDollars == null || sumMills <= 0) return null;
-    return annualTaxDollarsFromAssessedMills(assessedForLevyDollars, sumMills);
-  }, [assessedForLevyDollars, sumMills]);
+    return levyDisplayDollarsForAudience(
+      annualTaxDollarsFromAssessedMills(assessedForLevyDollars, sumMills),
+      levyDollarUnitCount,
+      rentMode,
+    );
+  }, [assessedForLevyDollars, sumMills, levyDollarUnitCount, rentMode]);
+
+  const levyDollarPeriodLabel = rentMode ? "monthly" : "annual";
+  const levyDollarSuffix = rentMode ? "/mo" : null;
+
+  /** Assessed passed into district detail $ math; per-unit when Rent N is known. */
+  const assessedForDetailEstimate = useMemo(() => {
+    if (assessedForLevyDollars == null) return null;
+    if (levyDollarUnitCount == null || levyDollarUnitCount < 1) {
+      return assessedForLevyDollars;
+    }
+    return assessedForLevyDollars / levyDollarUnitCount;
+  }, [assessedForLevyDollars, levyDollarUnitCount]);
 
   const lineIdsWithMillChanges = useMemo(
     () => lineIdsWithMillRateChanges(lines),
@@ -621,9 +647,13 @@ export function LevyStackVisualization({
                   levyTileMillChangeDirectionPhrase(millDelta);
                 const lineDollarsRounded =
                   assessedForLevyDollars != null
-                    ? annualTaxDollarsFromAssessedMills(
-                        assessedForLevyDollars,
-                        item.mills,
+                    ? levyDisplayDollarsForAudience(
+                        annualTaxDollarsFromAssessedMills(
+                          assessedForLevyDollars,
+                          item.mills,
+                        ),
+                        levyDollarUnitCount,
+                        rentMode,
                       )
                     : null;
 
@@ -736,7 +766,7 @@ export function LevyStackVisualization({
                           {...{ [LEVY_TILE_OPEN_BTN_ATTR]: "" }}
                           aria-label={
                             lineDollarsRounded != null
-                              ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated annual tax ${formatUsdWhole(lineDollarsRounded)} from assessed value${
+                              ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated ${levyDollarPeriodLabel} tax ${formatUsdWhole(lineDollarsRounded)}${levyDollarSuffix ?? ""} from assessed value${
                                   millChangeDirectionPhrase ?? ""
                                 }`
                               : `View district details for ${item.authority}, ${formatMills(item.mills)} mills${
@@ -823,9 +853,15 @@ export function LevyStackVisualization({
                                   {lineDollarsRounded != null ? (
                                     <p className={LEVY_TILE_USD_CLASS}>
                                       <span className="sr-only">
-                                        Estimated annual levy from assessed value:{" "}
+                                        Estimated {levyDollarPeriodLabel} levy
+                                        from assessed value:{" "}
                                       </span>
                                       {formatUsdWhole(lineDollarsRounded)}
+                                      {levyDollarSuffix ? (
+                                        <span className="ml-1.5 text-base font-semibold text-white/85 sm:text-lg">
+                                          {levyDollarSuffix}
+                                        </span>
+                                      ) : null}
                                     </p>
                                   ) : null}
                                   <p className={LEVY_TILE_PCT_CLASS}>
@@ -965,11 +1001,40 @@ export function LevyStackVisualization({
                     Dollar amounts in this breakdown (levy tiles, total, and metro
                     summary when shown) are{" "}
                     <strong className="font-semibold text-slate-700">
-                      estimated annual
+                      estimated {levyDollarPeriodLabel}
                     </strong>{" "}
-                    taxes from your assessed value (mills × assessed ÷ 1000,
-                    rounded to the nearest dollar). Your county notice may differ
-                    slightly due to rounding or line-item rules.
+                    taxes from your assessed value (mills × assessed ÷ 1000
+                    {rentMode ? ", then ÷ 12" : ""}, rounded to the nearest
+                    dollar)
+                    {levyDollarUnitCount != null && levyDollarUnitCount > 1 ? (
+                      <>
+                        , shown as an equal split across{" "}
+                        <strong className="font-semibold text-slate-700">
+                          {levyDollarUnitCount} units
+                        </strong>
+                      </>
+                    ) : null}
+                    {rentMode ? (
+                      <>
+                        {" "}
+                        with amounts labeled{" "}
+                        <strong className="font-semibold text-slate-700">
+                          /mo
+                        </strong>
+                      </>
+                    ) : null}
+                    {rentMode ? (
+                      <>
+                        . These are not exact figures for your unit: homes are not
+                        all the same size or rent, and your landlord may not pass
+                        tax through dollar for dollar.
+                      </>
+                    ) : (
+                      <>
+                        . Your county notice may differ slightly due to rounding
+                        or line-item rules.
+                      </>
+                    )}
                   </>
                 ) : null}
                 {allowLineEdit ? (
@@ -998,9 +1063,15 @@ export function LevyStackVisualization({
                 {totalLevyDollarsRounded != null ? (
                   <span className="text-xl font-bold tabular-nums text-white sm:text-2xl">
                     <span className="sr-only">
-                      Estimated total annual levy from assessed value:{" "}
+                      Estimated total {levyDollarPeriodLabel} levy from assessed
+                      value:{" "}
                     </span>
                     {formatUsdWhole(totalLevyDollarsRounded)}
+                    {levyDollarSuffix ? (
+                      <span className="ml-1.5 text-base font-semibold text-white/85 sm:text-lg">
+                        {levyDollarSuffix}
+                      </span>
+                    ) : null}
                   </span>
                 ) : null}
                 <span
@@ -1235,7 +1306,7 @@ export function LevyStackVisualization({
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}
-          totalAssessedForEstimate={assessedForLevyDollars}
+          totalAssessedForEstimate={assessedForDetailEstimate}
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
           snapshot={specialDistrictFile?.snapshot ?? null}
