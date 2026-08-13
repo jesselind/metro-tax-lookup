@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.8.2",
+    date: "2026-08-13",
+    title: "BPP hides Rent; Switch account type is Real+BPP only",
+    highlights: [
+      "Own | Rent and Rent dashboard chrome are hidden on business personal property accounts; switching back to Real restores the prior lens.",
+      "Dashboard Switch account type appears only when the situs mixes business personal property with another account kind (all-Real condo multi uses Matching properties only).",
+      "Rent unknown-N / pending copy and the levy rent footnote say units / per-unit instead of homes; landing Rent invite adds Where's it going?",
+    ],
+  },
+  {
     version: "4.8.1",
     date: "2026-08-12",
     title: "Python tooling docstrings on non-obvious helpers",

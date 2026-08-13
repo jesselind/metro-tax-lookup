@@ -13,6 +13,7 @@ import {
   isBusinessPersonalPropertyAccount,
   pickSitusPlaceSampleLabel,
   situsAccountKindGlossaryTermId,
+  situsShouldOfferAccountTypeSwitch,
 } from "./situsMultiPinChooser";
 import {
   SYNTHETIC_MULTI_LABEL_MAJORITY,
@@ -88,6 +89,52 @@ describe("situsAccountKindGlossaryTermId", () => {
       "term-business-personal-property",
     );
     expect(situsAccountKindGlossaryTermId("other")).toBeNull();
+  });
+});
+
+describe("situsShouldOfferAccountTypeSwitch", () => {
+  it("requires real property plus business personal", () => {
+    expect(
+      situsShouldOfferAccountTypeSwitch([
+        { accountKind: "real_property" },
+        { accountKind: "business_personal" },
+      ]),
+    ).toBe(true);
+    expect(
+      situsShouldOfferAccountTypeSwitch([
+        { accountKind: "other" },
+        { accountKind: "business_personal" },
+      ]),
+    ).toBe(false);
+  });
+
+  it("hides for all-Real / condo-style multi and BPP-only multi", () => {
+    expect(
+      situsShouldOfferAccountTypeSwitch([
+        { accountKind: "real_property" },
+        { accountKind: "real_property" },
+      ]),
+    ).toBe(false);
+    expect(
+      situsShouldOfferAccountTypeSwitch([
+        { accountKind: "other" },
+        { accountKind: "other" },
+      ]),
+    ).toBe(false);
+    expect(
+      situsShouldOfferAccountTypeSwitch([
+        { accountKind: "business_personal" },
+        { accountKind: "business_personal" },
+      ]),
+    ).toBe(false);
+  });
+
+  it("hides for single hit or empty", () => {
+    expect(situsShouldOfferAccountTypeSwitch(null)).toBe(false);
+    expect(situsShouldOfferAccountTypeSwitch([])).toBe(false);
+    expect(
+      situsShouldOfferAccountTypeSwitch([{ accountKind: "real_property" }]),
+    ).toBe(false);
   });
 });
 

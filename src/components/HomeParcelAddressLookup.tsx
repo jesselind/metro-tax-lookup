@@ -92,7 +92,11 @@ import {
   trySitusAutofillBlurSplit,
   type SitusStreetSuggestion,
 } from "@/lib/arapahoeSitusLookup";
-import { enrichSitusPinHitsForChooser } from "@/lib/situsMultiPinChooser";
+import {
+  enrichSitusPinHitsForChooser,
+  isBusinessPersonalPropertyAccount,
+  situsShouldOfferAccountTypeSwitch,
+} from "@/lib/situsMultiPinChooser";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
@@ -129,7 +133,6 @@ import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import {
   parcelTaxAndAssessmentYearsDiffer,
 } from "@/lib/parcelRecordDisplay";
-import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
@@ -588,33 +591,6 @@ export function HomeParcelAddressLookup({
     sumMills,
   ]);
 
-  const isRentMode = audienceMode === "rent";
-
-  /** Rent equal-split N from parcel-record land lines / improvement type / single dwelling. */
-  const rentDwellingCount = useMemo(
-    () => (isRentMode ? resolveDwellingCount(parcelRecord) : null),
-    [isRentMode, parcelRecord],
-  );
-
-  const rentEqualSplit = useMemo(() => {
-    if (
-      !isRentMode ||
-      estimatedAnnualPropertyTaxDollars == null ||
-      rentDwellingCount == null
-    ) {
-      return null;
-    }
-    return equalSplitFromAnnualTax(
-      estimatedAnnualPropertyTaxDollars,
-      rentDwellingCount.n,
-    );
-  }, [isRentMode, estimatedAnnualPropertyTaxDollars, rentDwellingCount]);
-
-  const rentWholePropertyMonthly = useMemo(() => {
-    if (!isRentMode || estimatedAnnualPropertyTaxDollars == null) return null;
-    return monthlyFromAnnualTax(estimatedAnnualPropertyTaxDollars);
-  }, [isRentMode, estimatedAnnualPropertyTaxDollars]);
-
   const homeCompsGridPdfHref = useMemo(
     () => safeArapahoeCompsGridPdfUrl(levyLoadedMeta?.ain),
     [levyLoadedMeta?.ain],
@@ -1045,6 +1021,59 @@ export function HomeParcelAddressLookup({
     return enrichSitusPinHitsForChooser(hits, multiMatchPinToTag);
   }, [hits, multiMatchPinToTag]);
 
+  /** Pin-to-tag class for the locked PIN when multi-account enrichment is ready. */
+  const lockedMultiHitPropertyClass = useMemo(() => {
+    if (!trimmedParcelPin || enrichedMultiHits == null) return null;
+    return (
+      enrichedMultiHits.find((h) => h.pin === trimmedParcelPin)
+        ?.propertyClassDescr ?? null
+    );
+  }, [trimmedParcelPin, enrichedMultiHits]);
+
+  /**
+   * Business personal property (equipment) accounts: Rent lens does not apply.
+   * Prefer parcel-record tax roll; fall back to levy / pin-to-tag class so the
+   * Own|Rent control can hide before the shard arrives.
+   */
+  const isBusinessPersonalAccount = isBusinessPersonalPropertyAccount({
+    taxRollDescr: parcelRecord?.taxRollDescr,
+    propertyClassDescr:
+      parcelRecord?.propertyClassDescr ??
+      levyLoadedMeta?.parcelValues.propertyClassification ??
+      lockedMultiHitPropertyClass,
+  });
+
+  /**
+   * Rent mode is self-declared Own|Rent, but never for BPP: dwelling split and
+   * landlord framing do not fit equipment accounts.
+   */
+  const isRentMode = audienceMode === "rent" && !isBusinessPersonalAccount;
+
+  /** Rent equal-split N from parcel-record land lines / improvement type / single dwelling. */
+  const rentDwellingCount = useMemo(
+    () => (isRentMode ? resolveDwellingCount(parcelRecord) : null),
+    [isRentMode, parcelRecord],
+  );
+
+  const rentEqualSplit = useMemo(() => {
+    if (
+      !isRentMode ||
+      estimatedAnnualPropertyTaxDollars == null ||
+      rentDwellingCount == null
+    ) {
+      return null;
+    }
+    return equalSplitFromAnnualTax(
+      estimatedAnnualPropertyTaxDollars,
+      rentDwellingCount.n,
+    );
+  }, [isRentMode, estimatedAnnualPropertyTaxDollars, rentDwellingCount]);
+
+  const rentWholePropertyMonthly = useMemo(() => {
+    if (!isRentMode || estimatedAnnualPropertyTaxDollars == null) return null;
+    return monthlyFromAnnualTax(estimatedAnnualPropertyTaxDollars);
+  }, [isRentMode, estimatedAnnualPropertyTaxDollars]);
+
   /** Envelope rows for multi-match pick list (street + city, difference marks). */
   const multiHitEnvelopeRows = useMemo(() => {
     if (enrichedMultiHits == null) return null;
@@ -1273,14 +1302,10 @@ export function HomeParcelAddressLookup({
       </p>
     ) : null;
 
-  const isBusinessPersonalAccount = isBusinessPersonalPropertyAccount({
-    taxRollDescr: parcelRecord?.taxRollDescr,
-    propertyClassDescr:
-      parcelRecord?.propertyClassDescr ??
-      levyLoadedMeta?.parcelValues.propertyClassification,
-  });
-
-  const canSwitchSitusAccounts = hits != null && hits.length > 1;
+  /** Real+BPP (or other non-BPP + BPP) only — not all-Real condo multi-unit. */
+  const canSwitchSitusAccounts =
+    multiMatchPinToTag != null &&
+    situsShouldOfferAccountTypeSwitch(enrichedMultiHits);
   const accountKindLabel = isBusinessPersonalAccount
     ? "Business personal property"
     : "Real property";
@@ -1390,14 +1415,16 @@ export function HomeParcelAddressLookup({
       <h2 id="home-tool-heading" className="sr-only">
         Property tax lookup and breakdown
       </h2>
-      {/* Own | Rent stays mounted across search ↔ locked so the lens flip stays familiar. */}
-      <AudienceModeSwitch
-        value={audienceMode}
-        onChange={setAudienceMode}
-        idPrefix={
-          addressSearchLocked ? "audience-mode-report" : "audience-mode-search"
-        }
-      />
+      {/* Own | Rent stays mounted across search ↔ locked Real so the lens flip stays familiar. Hidden on BPP (Rent does not apply). */}
+      {!isBusinessPersonalAccount ? (
+        <AudienceModeSwitch
+          value={audienceMode}
+          onChange={setAudienceMode}
+          idPrefix={
+            addressSearchLocked ? "audience-mode-report" : "audience-mode-search"
+          }
+        />
+      ) : null}
       {addressMatchStatus ? (
         <p className="sr-only" role="status" aria-live="polite">
           {addressMatchStatus}
