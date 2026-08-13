@@ -214,7 +214,7 @@ def _positive_actual(val: float | None) -> float:
 
 
 def round_school_assessed_component(actual: float | None) -> int | None:
-    """Round one actual-value component × Colorado school assessed rate; None if missing."""
+    """Round one actual-value component x Colorado school assessed rate; None if missing."""
     if actual is None or not math.isfinite(actual):
         return None
     return round(actual * COLORADO_SCHOOL_ASSESSED_RATE)
@@ -2034,7 +2034,7 @@ def write_parcel_record_shards(
 
 
 def normalize_bundled_as_of(raw: str) -> str:
-    """Expand ``YYYY-MM-DD`` to noon-UTC ISO; leave other stamps unchanged."""
+    """Trim input; expand date-only ``YYYY-MM-DD`` to noon-UTC ISO; leave other trimmed stamps unchanged."""
     o = raw.strip()
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", o):
         return f"{o}T12:00:00Z"

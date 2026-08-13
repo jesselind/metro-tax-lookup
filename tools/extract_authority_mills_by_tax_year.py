@@ -92,7 +92,7 @@ def _is_header_row(tag: Any, authority: Any, description: Any) -> bool:
 
 
 def _is_total_row(authority: Any, description: Any) -> bool:
-  """True for TAG subtotal rows labeled TOTAL (excluded from per-authority mills)."""
+  """True when authority or description is TOTAL."""
   auth_s = (str(authority).strip() if authority is not None else "").upper()
   desc_s = (str(description).strip() if description is not None else "").upper()
   return desc_s == "TOTAL" or auth_s == "TOTAL"

@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:
-    """CLI: attach county GEOIDs to the lean all-special-districts JSON (optional GIS)."""
+    """CLI: attach county GEOIDs to the lean all-special-districts JSON using GIS input."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--csv",

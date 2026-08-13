@@ -421,7 +421,7 @@ def header_columns_from_line(line: list[dict[str, Any]]) -> list[dict[str, Any]]
 
 
 def compute_column_bounds(columns: list[dict[str, Any]]) -> list[tuple[float, float]]:
-    """Midpoint x bands between adjacent column centers (inclusive left/right edges)."""
+    """Midpoint x bands between adjacent column centers (left inclusive, right exclusive)."""
     centers = [float(c["center_x"]) for c in columns]
     bounds: list[tuple[float, float]] = []
     for i, c in enumerate(centers):
@@ -455,8 +455,10 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
     Uses pdfplumber word positions (not table reconstruction): cluster lines,
     locate the SUBJECT/SALE header, band columns by x, then map left labels to
     ``CANONICAL_ROWS``. Words with ``x0 >= GRID_X_MAX`` are dropped (sidebar /
-    footer prose). When ``include_definitions`` is true, merges the bundled
-    lay/official definitions after a coverage guard.
+    footer prose). When ``include_definitions`` is true, loads the bundled
+    lay/official definitions via ``load_definitions_bundle()``; if that returns
+    None (``DEFINITIONS_PATH`` unavailable), returns the payload without
+    definitions. When a bundle is present, merges it after a coverage guard.
     """
     try:
         import pdfplumber
