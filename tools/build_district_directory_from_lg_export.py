@@ -59,6 +59,12 @@ def normalize_mailing_field(raw: str | None) -> str | None:
 
 
 def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
+    """
+    Normalized LG IDs referenced by ``dolaMatch.lgId`` on bundled levy stack lines.
+
+    Used to filter the statewide LG export down to districts that appear on
+    Arapahoe stacks (and to detect export gaps).
+    """
     data = json.loads(path.read_text(encoding="utf-8"))
     out: set[str] = set()
     stacks = data.get("stacksByTagId") or {}
@@ -146,6 +152,7 @@ def minimal_district_row_from_entity_name(lg_id: str, legal_name: str) -> dict[s
 
 
 def main() -> None:
+    """CLI: filter DOLA LG export to LGIDs on Arapahoe levy stacks; write public directory JSON."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--lg-csv",

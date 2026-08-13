@@ -69,6 +69,7 @@ class AuthorityLevyRow:
 
 
 def _parse_float(value: Any) -> Optional[float]:
+  """Parse a PDF/table numeric cell; commas allowed. None if empty or invalid."""
   if value is None:
     return None
   text = str(value).strip().replace(",", "")
@@ -81,6 +82,7 @@ def _parse_float(value: Any) -> Optional[float]:
 
 
 def _is_header_row(tag: Any, authority: Any, description: Any) -> bool:
+  """True for repeating Levy % table header cells (TAG / AUTHORITY / DESCRIPTION)."""
   tag_s = (str(tag).strip() if tag is not None else "").upper()
   auth_s = (str(authority).strip() if authority is not None else "").upper()
   desc_s = (str(description).strip() if description is not None else "").upper()
@@ -90,6 +92,7 @@ def _is_header_row(tag: Any, authority: Any, description: Any) -> bool:
 
 
 def _is_total_row(authority: Any, description: Any) -> bool:
+  """True for TAG subtotal rows labeled TOTAL (excluded from per-authority mills)."""
   auth_s = (str(authority).strip() if authority is not None else "").upper()
   desc_s = (str(description).strip() if description is not None else "").upper()
   return desc_s == "TOTAL" or auth_s == "TOTAL"

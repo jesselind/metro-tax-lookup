@@ -102,7 +102,7 @@ Do **not** put real county PINs in tests "because they match the county site." A
 | `supporting-data/metro-levies/` | Extract **raw** audit JSON only (`*-raw.json`). Shipping file is written straight to `public/data/`. |
 | `supporting-data/refs/` | Optional statewide GIS / district layer inputs. |
 | `supporting-data/_private/` | PII samples, NOV parser output. |
-| `tools/*.py` | Offline extractors/index builders |
+| `tools/*.py` | Offline extractors/index builders. Prefer short docstrings on non-obvious helpers (contracts, quirks, geometry/header rules); skip noise on trivial one-liners and test methods whose names already state the assert. |
 
 **Policy:** Point people at live county/state sources (`/sources`). Commit transforms under `public/data/` and the mart download stamp under `tools/`. Do not commit government PDF/CSV dumps under `supporting-data/`.
 

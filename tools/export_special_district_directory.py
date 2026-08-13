@@ -33,6 +33,12 @@ from website_normalize import normalize_website  # noqa: E402
 
 
 def read_dbf_schema_and_records(path: Path) -> Tuple[List[Tuple[str, int]], List[dict[str, str]]]:
+    """
+    Minimal dBase III reader for Colorado ``dlall.dbf`` attribute tables.
+
+    Returns ``(fields, records)`` where ``fields`` is ``[(name, width), ...]``
+    and each record is a name→trimmed latin-1 string map. No shapefile geometry.
+    """
     data = path.read_bytes()
     pos = 0
     assert data[pos : pos + 1] == b"\x03"  # dBase III
@@ -72,6 +78,7 @@ def read_dbf_schema_and_records(path: Path) -> Tuple[List[Tuple[str, int]], List
 
 
 def main() -> None:
+    """CLI: dlall.dbf attributes → colorado-special-district-directory.json."""
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--dbf",

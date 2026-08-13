@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.8.1",
+    date: "2026-08-12",
+    title: "Python tooling docstrings on non-obvious helpers",
+    highlights: [
+      "Offline tools: useful module/function docstrings on the NOV comps parser, district directory/import helpers, parcel-index private builders, and related extract utilities (contracts and quirks, not wallpaper on trivial helpers).",
+      "README contributor note: prefer that same bar for future `tools/*.py` changes.",
+    ],
+  },
+  {
     version: "4.8.0",
     date: "2026-08-12",
     title: "Own / Rent audience lens with equal-split tax pressure",
