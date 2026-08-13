@@ -144,7 +144,7 @@ export function RentTaxPressurePanel({
 
         {dwellingPending ? (
           <p className={`mt-4 ${DASHBOARD_SECTION_META_CLASS}`}>
-            Checking how many homes share this tax account…
+            Checking how many units share this tax account…
           </p>
         ) : hasPerHomeSplit ? (
           <p className={`mt-4 ${DASHBOARD_SECTION_META_CLASS}`}>
@@ -154,8 +154,8 @@ export function RentTaxPressurePanel({
           </p>
         ) : (
           <p className={`mt-4 ${DASHBOARD_SECTION_META_CLASS}`}>
-            We do not know how many homes share this tax account, so there is no
-            per-home split. Your landlord may not pass tax through dollar for
+            We do not know how many units share this tax account, so there is no
+            per-unit split. Your landlord may not pass tax through dollar for
             dollar.
           </p>
         )}

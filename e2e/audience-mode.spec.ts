@@ -31,7 +31,9 @@ test.describe("audience mode Own / Rent", () => {
     await rentRadio.click();
     await expect(rentRadio).toBeChecked();
     await expect(
-      page.getByText("You're still paying property tax if you rent."),
+      page.getByText(
+        "You're still paying property tax if you rent. Where's it going?",
+      ),
     ).toBeVisible();
     await expect(
       page.getByText("Get a clear picture of your property tax bill."),

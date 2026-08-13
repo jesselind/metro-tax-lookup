@@ -80,6 +80,31 @@ export function situsAccountKindGlossaryTermId(
   return null;
 }
 
+/**
+ * Dashboard **Switch account type**: true only when the situs has business
+ * personal property plus at least one other account (typically Real /
+ * Improvement). All-Real multi (condo units, etc.) must not get the control.
+ */
+export function situsShouldOfferAccountTypeSwitch(
+  enrichedHits:
+    | ReadonlyArray<{ accountKind: SitusPinAccountKind }>
+    | null
+    | undefined,
+): boolean {
+  if (enrichedHits == null || enrichedHits.length < 2) return false;
+  let hasBusinessPersonal = false;
+  let hasNonBusinessPersonal = false;
+  for (const h of enrichedHits) {
+    if (h.accountKind === "business_personal") {
+      hasBusinessPersonal = true;
+    } else {
+      hasNonBusinessPersonal = true;
+    }
+    if (hasBusinessPersonal && hasNonBusinessPersonal) return true;
+  }
+  return false;
+}
+
 export type EnrichedSitusPinHit = ArapahoeSitusPinHit & {
   accountKind: SitusPinAccountKind;
   accountKindLabel: string;

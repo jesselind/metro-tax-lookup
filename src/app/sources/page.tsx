@@ -695,7 +695,11 @@ export default function SourcesPage() {
             <strong className="text-slate-900">Business personal property</strong>
             {" "}
             accounts can appear in that list when they share a street address with
-            Real property. Those accounts keep owner, situs, values, and the
+            Real property. On the locked report,{" "}
+            <strong className="text-slate-900">Switch account type</strong>
+            {" "}
+            appears only when that mix is present (not for all-Real multi-unit
+            lists such as condo units). Those accounts keep owner, situs, values, and the
             property-tax breakdown for their tax district; building, land, sale,
             permit, and comparable-properties tools stay with Real parcels.
             Equipment accounts can open a county{" "}
@@ -798,12 +802,17 @@ export default function SourcesPage() {
             attribute some non-residential tax on mixed-use parcels to dwellings,
             and is not a lease line or proof that rent passes tax through
             one-for-one. When N is unknown we show whole-property totals only
-            (including bill-entry $, still monthly in Rent). Own mode keeps
-            annual whole-account dollars. Rent mode tones down owner tools
-            (comparable-properties PDF, Notice of Valuation for equipment
-            accounts, owner mailing rows) and tucks dense sale / building / land
-            tables under a disclosure. Renting is not the same as commercial
-            assessment class.
+            (including bill-entry $, still monthly in Rent) and say we do not
+            know how many units share the account (not &quot;homes,&quot; so commercial
+            Real accounts read cleanly). Own mode keeps annual whole-account
+            dollars. Rent mode tones down owner tools (comparable-properties PDF,
+            owner mailing rows) and tucks dense sale / building / land tables
+            under a disclosure. The Own | Rent switch and Rent dashboard are not
+            offered for{" "}
+            <strong className="text-slate-900">business personal property</strong>
+            {" "}
+            accounts (equipment tax is not a renter lens). Renting is not the
+            same as commercial assessment class.
           </li>
           <li>
             Value labels use the{" "}

@@ -55,7 +55,7 @@ export function HomePageClient() {
 
   const landingLine2 =
     audienceMode === "rent"
-      ? "You're still paying property tax if you rent."
+      ? "You're still paying property tax if you rent. Where's it going?"
       : "See where your money is actually going.";
 
   return (

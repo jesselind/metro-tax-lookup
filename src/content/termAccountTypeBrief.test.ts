@@ -26,11 +26,12 @@ describe("TermAccountTypeBriefBody", () => {
     return match![1]!;
   }
 
-  it("describes Switch account type as multi-account only", () => {
+  it("describes Switch account type as Real + business personal only", () => {
     const body = briefSource();
     expect(body).toMatch(/Switch account type/);
     expect(body).toMatch(/identifies the account currently shown on/);
-    expect(body).toMatch(/more than one account/);
+    expect(body).toMatch(/both kinds of account/);
+    expect(body).not.toMatch(/more than one account/);
     expect(body).not.toMatch(/swap arrows/i);
     expect(body).not.toMatch(/appear on this tile/i);
   });

@@ -1025,7 +1025,7 @@ export function LevyStackVisualization({
                     ) : null}
                     {rentMode ? (
                       <>
-                        . These are not exact figures for your unit: homes are not
+                        . These are not exact figures for your unit: units are not
                         all the same size or rent, and your landlord may not pass
                         tax through dollar for dollar.
                       </>

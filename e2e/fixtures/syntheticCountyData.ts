@@ -41,6 +41,17 @@ export const SYNTHETIC_MULTI_PERSONAL_PIN = "010000202";
 export const SYNTHETIC_MULTI_REAL_OWNER = "E2E SYNTHETIC HOSPITAL";
 export const SYNTHETIC_MULTI_PERSONAL_OWNER = "E2E SYNTHETIC EQUIPMENT LLC";
 
+/**
+ * All-Real multi-unit situs (condo-style). Dashboard must omit Switch account type.
+ * Street type "Lane" drops → `7777|SYNTHETIC CONDO|`.
+ */
+export const SYNTHETIC_CONDO_E2E_ADDRESS = "7777 Synthetic Condo Lane";
+export const SYNTHETIC_CONDO_E2E_SITUS_KEY = "7777|SYNTHETIC CONDO|";
+export const SYNTHETIC_CONDO_PIN_A = "010000301";
+export const SYNTHETIC_CONDO_PIN_B = "010000302";
+export const SYNTHETIC_CONDO_OWNER_A = "E2E SYNTHETIC CONDO OWNER A";
+export const SYNTHETIC_CONDO_OWNER_B = "E2E SYNTHETIC CONDO OWNER B";
+
 /** Fake TAG id used only inside e2e mocks (not a real county TAG). */
 export const SYNTHETIC_E2E_TAG_ID = "9090909";
 
@@ -69,7 +80,7 @@ export const SYNTHETIC_SITUS_TO_PINS = {
     taxYear: "2025",
   },
   lookupVersion: 1,
-  entryCount: 2,
+  entryCount: 3,
   byKey: {
     [SYNTHETIC_E2E_SITUS_KEY]: [
       {
@@ -85,6 +96,16 @@ export const SYNTHETIC_SITUS_TO_PINS = {
       {
         pin: SYNTHETIC_MULTI_REAL_PIN,
         label: `${SYNTHETIC_MULTI_E2E_ADDRESS}, E2E CITY, CO 80000-2222`,
+      },
+    ],
+    [SYNTHETIC_CONDO_E2E_SITUS_KEY]: [
+      {
+        pin: SYNTHETIC_CONDO_PIN_A,
+        label: `${SYNTHETIC_CONDO_E2E_ADDRESS} Unit A01, E2E CITY, CO 80000-3333`,
+      },
+      {
+        pin: SYNTHETIC_CONDO_PIN_B,
+        label: `${SYNTHETIC_CONDO_E2E_ADDRESS} Unit A02, E2E CITY, CO 80000-3334`,
       },
     ],
   },
@@ -130,6 +151,28 @@ export const SYNTHETIC_PIN_TO_TAG = {
       propertyClassDescr: "Personal",
       ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER,
       ain: "1000-00-0-00-202",
+    },
+    [SYNTHETIC_CONDO_PIN_A]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: "E2E",
+      totalActual: 350000,
+      totalAssessed: 23800,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Real",
+      ownerList: SYNTHETIC_CONDO_OWNER_A,
+      ain: "1000-00-0-00-301",
+    },
+    [SYNTHETIC_CONDO_PIN_B]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: "E2E",
+      totalActual: 360000,
+      totalAssessed: 24480,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Real",
+      ownerList: SYNTHETIC_CONDO_OWNER_B,
+      ain: "1000-00-0-00-302",
     },
   },
 };
@@ -328,6 +371,34 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
       totalActual: 24_000,
       totalAssessed: 6_240,
       legalDescrDisplay: "2000 Commercial PPA",
+    },
+    [SYNTHETIC_CONDO_PIN_A]: {
+      ain: "1000-00-0-00-301",
+      situsAddress: "7777 SYNTHETIC CONDO LN Unit A01",
+      situsCity: "E2E CITY",
+      ownerList: SYNTHETIC_CONDO_OWNER_A,
+      ownershipType: "Individual",
+      taxRollDescr: "Real",
+      propertyClassDescr: "Real",
+      assessmentYear: "2026",
+      parcelTaxYear: "2025",
+      totalActual: 350_000,
+      totalAssessed: 23_800,
+      stateUseCd: "1212",
+    },
+    [SYNTHETIC_CONDO_PIN_B]: {
+      ain: "1000-00-0-00-302",
+      situsAddress: "7777 SYNTHETIC CONDO LN Unit A02",
+      situsCity: "E2E CITY",
+      ownerList: SYNTHETIC_CONDO_OWNER_B,
+      ownershipType: "Individual",
+      taxRollDescr: "Real",
+      propertyClassDescr: "Real",
+      assessmentYear: "2026",
+      parcelTaxYear: "2025",
+      totalActual: 360_000,
+      totalAssessed: 24_480,
+      stateUseCd: "1212",
     },
   },
 };

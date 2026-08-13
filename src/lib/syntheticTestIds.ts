@@ -54,3 +54,20 @@ export const SYNTHETIC_MULTI_LABEL_MAJORITY =
 /** Minority ZIP+4 label at the same street number. */
 export const SYNTHETIC_MULTI_LABEL_MINORITY =
   "8888 SYNTHETIC HOSPITAL RD, E2E CITY, CO 80000-1111";
+
+/**
+ * All-Real multi-unit situs (condo-style). Same street, different Unit tokens;
+ * dashboard must NOT offer Switch account type.
+ * Street type "Lane" drops → key `7777|SYNTHETIC CONDO|`.
+ */
+export const SYNTHETIC_CONDO_STREET_NUMBER = "7777";
+export const SYNTHETIC_CONDO_STREET_NAME = "Synthetic Condo Lane";
+export const SYNTHETIC_CONDO_SITUS_KEY = "7777|SYNTHETIC CONDO|";
+export const SYNTHETIC_CONDO_PIN_A = "010000301";
+export const SYNTHETIC_CONDO_PIN_B = "010000302";
+export const SYNTHETIC_CONDO_OWNER_A = "E2E SYNTHETIC CONDO OWNER A";
+export const SYNTHETIC_CONDO_OWNER_B = "E2E SYNTHETIC CONDO OWNER B";
+export const SYNTHETIC_CONDO_LABEL_A =
+  "7777 SYNTHETIC CONDO LN Unit A01, E2E CITY, CO 80000-3333";
+export const SYNTHETIC_CONDO_LABEL_B =
+  "7777 SYNTHETIC CONDO LN Unit A02, E2E CITY, CO 80000-3334";

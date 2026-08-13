@@ -5,6 +5,8 @@
 
 import { expect, test } from "@playwright/test";
 import {
+  SYNTHETIC_CONDO_E2E_ADDRESS,
+  SYNTHETIC_CONDO_OWNER_A,
   SYNTHETIC_MULTI_E2E_ADDRESS,
   SYNTHETIC_MULTI_PERSONAL_OWNER,
   SYNTHETIC_MULTI_PERSONAL_PIN,
@@ -114,6 +116,10 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   ).toBeVisible();
   await expect(page.locator("#home-parcel-comps-pdf")).toHaveCount(0);
   await expect(page.locator("#home-parcel-notice-of-valuation")).toBeVisible();
+  // BPP: Own|Rent and rent pressure do not apply (equipment, not a renter lens).
+  await expect(page.getByRole("radio", { name: "Own" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "Rent" })).toHaveCount(0);
+  await expect(page.locator("#home-parcel-rent-tax-pressure")).toHaveCount(0);
   await expect(
     page.getByRole("link", {
       name: /Open county Notice of Valuation PDF for this account/i,
@@ -222,6 +228,26 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   await expect(
     page.getByRole("link", { name: /Open county parcel record/i }),
   ).toBeVisible();
+  // Real again: Own|Rent returns; Rent stays suppressed only while on BPP.
+  const ownRadio = page.getByRole("radio", { name: "Own" });
+  const rentRadio = page.getByRole("radio", { name: "Rent" });
+  await expect(ownRadio).toBeVisible();
+  await rentRadio.click();
+  await expect(page.locator("#home-parcel-rent-tax-pressure")).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: /Switch account type\. Currently Real property/i,
+    })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Other accounts at this address" })
+    .getByRole("button", {
+      name: /Switch to Business personal property/i,
+    })
+    .click();
+  await expect(page.getByRole("radio", { name: "Own" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "Rent" })).toHaveCount(0);
+  await expect(page.locator("#home-parcel-rent-tax-pressure")).toHaveCount(0);
 });
 
 test("dashboard Switch account type: modal stays on report; dismiss and switch", async ({
@@ -332,4 +358,33 @@ test("dashboard Switch account type: modal stays on report; dismiss and switch",
   await expect(
     page.getByRole("region", { name: "Matching properties" }),
   ).toHaveCount(0);
+});
+
+test("all-Real multi-unit situs: chooser works; no Switch account type", async ({
+  page,
+}) => {
+  await installSyntheticCountyData(page);
+  await page.goto("/");
+
+  await fillStreetAndSubmitSearch(page, SYNTHETIC_CONDO_E2E_ADDRESS);
+  const chooser = page.getByRole("region", { name: "Matching properties" });
+  await expect(chooser).toBeVisible();
+  await expect(chooser.getByRole("listitem")).toHaveCount(2);
+
+  await chooser
+    .getByRole("listitem")
+    .filter({ hasText: SYNTHETIC_CONDO_OWNER_A })
+    .getByRole("button", { name: /^Use this property\./ })
+    .click();
+
+  await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+  await expect(
+    page.getByLabel("Property search result summary").getByText(
+      SYNTHETIC_CONDO_OWNER_A,
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Switch account type/i }),
+  ).toHaveCount(0);
+  await expect(page.locator("#home-parcel-account-type")).toHaveCount(0);
 });

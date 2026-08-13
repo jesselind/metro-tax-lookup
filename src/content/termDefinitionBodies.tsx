@@ -783,7 +783,7 @@ export function TermAccountTypeBriefBody() {
       The Switch account type control identifies the account currently shown on
       your bill: the land and buildings (real property), or business equipment
       taxed separately at the same address (business personal property). It
-      appears only when this address has more than one account. Use it to open
+      appears only when this address has both kinds of account. Use it to open
       the list and pick the row that matches the owner or account type on your
       bill.
     </p>
