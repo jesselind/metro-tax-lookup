@@ -93,7 +93,7 @@ describe("situsAccountKindGlossaryTermId", () => {
 });
 
 describe("situsShouldOfferAccountTypeSwitch", () => {
-  it("requires business personal plus another account kind", () => {
+  it("requires real property plus business personal", () => {
     expect(
       situsShouldOfferAccountTypeSwitch([
         { accountKind: "real_property" },
@@ -105,7 +105,7 @@ describe("situsShouldOfferAccountTypeSwitch", () => {
         { accountKind: "other" },
         { accountKind: "business_personal" },
       ]),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("hides for all-Real / condo-style multi and BPP-only multi", () => {

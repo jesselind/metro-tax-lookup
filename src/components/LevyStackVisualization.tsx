@@ -1024,11 +1024,19 @@ export function LevyStackVisualization({
                       </>
                     ) : null}
                     {rentMode ? (
-                      <>
-                        . These are not exact figures for your unit: units are not
-                        all the same size or rent, and your landlord may not pass
-                        tax through dollar for dollar.
-                      </>
+                      levyDollarUnitCount != null ? (
+                        <>
+                          . This equal-split estimate assumes every unit pays the
+                          same share, so it may not match your unit, and your
+                          landlord may not pass tax through dollar for dollar.
+                        </>
+                      ) : (
+                        <>
+                          . These monthly amounts are for the whole property, not
+                          a per-unit share. Your landlord may not pass tax
+                          through dollar for dollar.
+                        </>
+                      )
                     ) : (
                       <>
                         . Your county notice may differ slightly due to rounding
