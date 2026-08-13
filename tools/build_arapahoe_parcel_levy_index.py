@@ -207,12 +207,14 @@ def parcel_row_qualifies_for_school_assessed_splits(row: dict[str, str]) -> bool
 
 
 def _positive_actual(val: float | None) -> float:
+    """Finite positive actual value, else 0.0 (for school assessed math)."""
     if val is None or not math.isfinite(val) or val <= 0:
         return 0.0
     return float(val)
 
 
 def round_school_assessed_component(actual: float | None) -> int | None:
+    """Round one actual-value component x Colorado school assessed rate; None if missing."""
     if actual is None or not math.isfinite(actual):
         return None
     return round(actual * COLORADO_SCHOOL_ASSESSED_RATE)
@@ -526,6 +528,7 @@ def format_situs_label(row: dict[str, str]) -> str:
 
 
 def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
+    """Build one ``arapahoe-parcel-record-by-pin`` entry from a Main Parcel CSV row."""
     legal_full = _optional_str(row, "LegalDescr")
     legal_display = legal_descr_display_tail(legal_full) if legal_full else None
     rec: dict[str, Any] = {
@@ -554,6 +557,11 @@ def _parcel_record_from_row(row: dict[str, str]) -> dict[str, Any]:
 
 
 def _pin_map_first_row(row: dict[str, str]) -> dict[str, Any] | None:
+    """
+    Compact pin→TAG summary for ``arapahoe-pin-to-tag.json`` from the first Main Parcel hit.
+
+    Returns None when ``TAGId`` is blank (row cannot join a levy stack).
+    """
     tag_id = strip_field(row.get("TAGId", ""))
     if not tag_id:
         return None
@@ -581,6 +589,7 @@ def _accumulate_situs_row(
     row: dict[str, str],
     pin: str,
 ) -> None:
+    """Add ``pin`` → postage-style label under the situs lookup key when present."""
     lk = row_situs_lookup_key(row)
     if not lk:
         return
@@ -1312,6 +1321,7 @@ _LEGAL_DESCR_TYPE_RANK = (
 
 
 def _legal_descr_type_rank(descr_type: str) -> int:
+    """Sort key for Mart_DescrHeader types (preferred types sort earlier)."""
     t = strip_field(descr_type)
     try:
         return _LEGAL_DESCR_TYPE_RANK.index(t)
@@ -1448,6 +1458,7 @@ def format_county_count(val: Any) -> str:
 
 
 def format_county_sqft(val: Any) -> str:
+    """Format sqft for parcel JSON: whole numbers without a trailing ``.0``."""
     s = strip_field(str(val)) if val is not None else ""
     if not s:
         return ""
@@ -1947,6 +1958,7 @@ def print_parcel_record_shard_size_stats(shard_dir: Path) -> None:
 
 
 def _optional_str(row: dict[str, str], key: str) -> str | None:
+    """Non-empty stripped field, else None."""
     t = strip_field(row.get(key, ""))
     return t if t else None
 
@@ -2022,6 +2034,7 @@ def write_parcel_record_shards(
 
 
 def normalize_bundled_as_of(raw: str) -> str:
+    """Trim input; expand date-only ``YYYY-MM-DD`` to noon-UTC ISO; leave other trimmed stamps unchanged."""
     o = raw.strip()
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", o):
         return f"{o}T12:00:00Z"

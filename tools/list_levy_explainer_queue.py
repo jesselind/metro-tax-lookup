@@ -23,6 +23,7 @@ from pathlib import Path
 
 
 def main() -> None:
+    """CLI: print unique bundled levy rows for levy-explainer coverage planning."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--json",

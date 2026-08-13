@@ -11,6 +11,13 @@ import re
 
 
 def normalize_website(raw: str) -> str | None:
+    """
+    Normalize a district website cell for JSON tooling.
+
+    Empty / ``NA`` → None. Existing ``http(s)://`` URLs are returned trimmed
+    as-is. Every other non-empty value (including non-host or malformed text)
+    gets an ``https://`` prefix.
+    """
     t = raw.strip()
     if not t or t.upper() == "NA":
         return None

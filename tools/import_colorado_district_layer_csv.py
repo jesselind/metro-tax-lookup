@@ -56,6 +56,7 @@ PRESETS: dict[str, dict[str, str | Path]] = {
 
 
 def clean_str(raw: str | None) -> str | None:
+    """Trim; empty and ``NA`` become None."""
     if raw is None:
         return None
     t = raw.strip()
@@ -65,6 +66,13 @@ def clean_str(raw: str | None) -> str | None:
 
 
 def row_to_district(row: dict[str, str]) -> dict[str, Any] | None:
+    """
+    Map one Colorado district-layer CSV row to the lean district dict.
+
+    Accepts alternate export headers (``abbrevNam`` / ``abbrevName``,
+    ``alrAddress`` / ``altAddress``, ``objectID_1``, etc.). Returns None when
+    both LG ID and name are missing. Ignores WKT geometry columns.
+    """
     lg_id = (row.get("lgid") or row.get("lgId") or "").strip()
     name = (row.get("name") or "").strip()
     if not lg_id and not name:
@@ -91,6 +99,7 @@ def row_to_district(row: dict[str, str]) -> dict[str, Any] | None:
 
 
 def main() -> None:
+    """CLI: CSV preset or paths → lean special-districts JSON (no geometry)."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--preset",

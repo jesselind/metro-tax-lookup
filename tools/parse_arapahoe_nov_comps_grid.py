@@ -49,6 +49,8 @@ LOGICAL_SECTION = "section_marker"
 
 @dataclass(frozen=True)
 class CanonicalRow:
+    """One comps-grid row: PDF left-label, JSON key, and typed parse kind."""
+
     pdf_label: str
     json_key: str
     logical_type: str
@@ -99,6 +101,7 @@ def normalize_space(raw: str) -> str:
 
 
 def is_masked_sentinel(raw: str) -> bool:
+    """True when the cell is only asterisks (county redaction placeholder)."""
     s = normalize_space(raw)
     if not s:
         return False
@@ -106,6 +109,7 @@ def is_masked_sentinel(raw: str) -> bool:
 
 
 def parse_money(raw: str) -> int | None:
+    """Parse whole-dollar money; commas and leading $ allowed. None if invalid."""
     s = normalize_space(raw).replace(",", "").replace("$", "")
     if not s:
         return None
@@ -115,6 +119,7 @@ def parse_money(raw: str) -> int | None:
 
 
 def parse_integer(raw: str) -> int | None:
+    """Parse a signed integer; commas allowed. None if invalid."""
     s = normalize_space(raw).replace(",", "")
     if not s:
         return None
@@ -124,6 +129,7 @@ def parse_integer(raw: str) -> int | None:
 
 
 def parse_number(raw: str) -> float | None:
+    """Parse a decimal number; commas allowed. None if invalid."""
     s = normalize_space(raw).replace(",", "")
     if not s:
         return None
@@ -133,6 +139,7 @@ def parse_number(raw: str) -> float | None:
 
 
 def parse_date(raw: str) -> str | None:
+    """Parse M/D/YYYY into ISO YYYY-MM-DD (UTC calendar date). None if invalid."""
     s = normalize_space(raw)
     m = DATE_RE.fullmatch(s)
     if not m:
@@ -148,6 +155,7 @@ def parse_date(raw: str) -> str | None:
 
 
 def _handle_logical_money(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for money_usd rows."""
     n = parse_money(raw)
     if n is None:
         return {
@@ -160,6 +168,7 @@ def _handle_logical_money(raw: str, _row: CanonicalRow) -> dict[str, Any]:
 
 
 def _handle_logical_int(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for integer rows."""
     n = parse_integer(raw)
     if n is None:
         return {
@@ -172,6 +181,7 @@ def _handle_logical_int(raw: str, _row: CanonicalRow) -> dict[str, Any]:
 
 
 def _handle_logical_float(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for number rows."""
     n = parse_number(raw)
     if n is None:
         return {
@@ -184,6 +194,7 @@ def _handle_logical_float(raw: str, _row: CanonicalRow) -> dict[str, Any]:
 
 
 def _handle_logical_year(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for year rows. Year 0 is missing; range is roughly 1800-2100."""
     n = parse_integer(raw)
     if n is None:
         return {
@@ -210,6 +221,7 @@ def _handle_logical_year(raw: str, _row: CanonicalRow) -> dict[str, Any]:
 
 
 def _handle_logical_date(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for date rows (ISO string when ok)."""
     parsed = parse_date(raw)
     if parsed is None:
         return {
@@ -222,6 +234,7 @@ def _handle_logical_date(raw: str, _row: CanonicalRow) -> dict[str, Any]:
 
 
 def _handle_logical_indicator(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for 0/1 indicator rows."""
     n = parse_integer(raw)
     if n in (0, 1):
         return {"raw_text": raw, "parsed": n, "parse_ok": True}
@@ -234,14 +247,17 @@ def _handle_logical_indicator(raw: str, _row: CanonicalRow) -> dict[str, Any]:
 
 
 def _handle_logical_string(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for free-text rows (parsed mirrors raw)."""
     return {"raw_text": raw, "parsed": raw, "parse_ok": True}
 
 
 def _handle_logical_section(raw: str, _row: CanonicalRow) -> dict[str, Any]:
+    """Cell result for section_marker rows (label chrome, not a value)."""
     return {"raw_text": raw, "parsed": raw, "parse_ok": True}
 
 
 def _handle_logical_unsupported(raw: str, row: CanonicalRow) -> dict[str, Any]:
+    """Fallback when logical_type has no handler."""
     return {
         "raw_text": raw,
         "parsed": None,
@@ -263,6 +279,12 @@ LOGICAL_HANDLERS: dict[str, Callable[[str, CanonicalRow], dict[str, Any]]] = {
 
 
 def parse_cell(raw_text: str, row: CanonicalRow) -> dict[str, Any]:
+    """
+    Type one grid cell for ``row``.
+
+    Always returns ``raw_text``, ``parsed``, ``parse_ok``, and optional ``parse_note``.
+    Blank cells fail; asterisk masks fail except on section markers (ok placeholder).
+    """
     raw = normalize_space(raw_text)
     if not raw:
         return {
@@ -294,6 +316,12 @@ def parse_cell(raw_text: str, row: CanonicalRow) -> dict[str, Any]:
 
 
 def build_row_label_lookup() -> list[tuple[str, CanonicalRow]]:
+    """
+    Lowercased PDF labels → canonical rows for geometry matching.
+
+    Omits ``Time Adj Sale Price``: that label can appear twice on the page; the
+    extractor handles those hits separately after the main pass.
+    """
     out: list[tuple[str, CanonicalRow]] = []
     for row in CANONICAL_ROWS:
         if row.pdf_label == "Time Adj Sale Price":
@@ -303,6 +331,7 @@ def build_row_label_lookup() -> list[tuple[str, CanonicalRow]]:
 
 
 def load_definitions_bundle() -> dict[str, Any] | None:
+    """Load ``nov_comps_grid_definitions.json``, or None when the file is absent."""
     if not DEFINITIONS_PATH.exists():
         return None
     raw = DEFINITIONS_PATH.read_text(encoding="utf-8")
@@ -313,6 +342,7 @@ def load_definitions_bundle() -> dict[str, Any] | None:
 
 
 def merge_definitions_optional(payload: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
+    """Attach ``definitions.columns`` / ``definitions.rows`` onto an extract payload."""
     cols = bundle.get("columns") or {}
     rows = bundle.get("rows") or {}
     enriched: dict[str, Any] = {**payload, "definitions": {"columns": cols, "rows": rows}}
@@ -320,6 +350,7 @@ def merge_definitions_optional(payload: dict[str, Any], bundle: dict[str, Any]) 
 
 
 def definitions_coverage_guard(bundle: dict[str, Any]) -> None:
+    """Fail fast when the definitions bundle omits any canonical ``json_key``."""
     rows = bundle.get("rows") or {}
     missing_rows = [
         row.json_key for row in CANONICAL_ROWS if row.json_key not in rows
@@ -332,6 +363,11 @@ def definitions_coverage_guard(bundle: dict[str, Any]) -> None:
 
 
 def cluster_rows(words: list[dict[str, Any]], y_tolerance: float = ROW_Y_TOLERANCE) -> list[list[dict[str, Any]]]:
+    """
+    Group pdfplumber words into visual lines by ``top`` within ``y_tolerance``.
+
+    Each line is left-to-right by ``x0``. Order of lines follows first-seen tops.
+    """
     lines: list[list[dict[str, Any]]] = []
     for word in sorted(words, key=lambda w: (float(w["top"]), float(w["x0"]))):
         placed = False
@@ -349,6 +385,12 @@ def cluster_rows(words: list[dict[str, Any]], y_tolerance: float = ROW_Y_TOLERAN
 
 
 def header_columns_from_line(line: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Resolve SUBJECT + SALE 1..5 column metadata from the header word line.
+
+    Returns six dicts with ``index``, ``key``, ``label``, and ``center_x`` for
+    mid-point column banding. Raises if the header tokens are incomplete.
+    """
     subject_word = next((w for w in line if normalize_space(w["text"]).upper() == "SUBJECT"), None)
     if subject_word is None:
         raise RuntimeError("Could not find SUBJECT token in page-2 header line")
@@ -379,6 +421,7 @@ def header_columns_from_line(line: list[dict[str, Any]]) -> list[dict[str, Any]]
 
 
 def compute_column_bounds(columns: list[dict[str, Any]]) -> list[tuple[float, float]]:
+    """Midpoint x bands between adjacent column centers (left inclusive, right exclusive)."""
     centers = [float(c["center_x"]) for c in columns]
     bounds: list[tuple[float, float]] = []
     for i, c in enumerate(centers):
@@ -389,6 +432,7 @@ def compute_column_bounds(columns: list[dict[str, Any]]) -> list[tuple[float, fl
 
 
 def find_header_line(lines: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Pick the topmost line that successfully parses as SUBJECT + SALE 1..5."""
     candidates: list[list[dict[str, Any]]] = []
     for line in lines:
         text = " ".join(normalize_space(str(w["text"])) for w in line).upper()
@@ -405,6 +449,17 @@ def find_header_line(lines: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
 
 
 def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[str, Any]:
+    """
+    Extract the page-2 six-column comps grid from an NOV-style PDF.
+
+    Uses pdfplumber word positions (not table reconstruction): cluster lines,
+    locate the SUBJECT/SALE header, band columns by x, then map left labels to
+    ``CANONICAL_ROWS``. Words with ``x0 >= GRID_X_MAX`` are dropped (sidebar /
+    footer prose). When ``include_definitions`` is true, loads the bundled
+    lay/official definitions via ``load_definitions_bundle()``; if that returns
+    None (``DEFINITIONS_PATH`` unavailable), returns the payload without
+    definitions. When a bundle is present, merges it after a coverage guard.
+    """
     try:
         import pdfplumber
     except ImportError:
@@ -555,6 +610,7 @@ def extract_grid(pdf_path: Path, *, include_definitions: bool = True) -> dict[st
 
 
 def main() -> int:
+    """CLI: write comps-grid JSON (may include parcel/address text; treat as sensitive)."""
     parser = argparse.ArgumentParser(
         description=(
             "Extract Arapahoe NOV page-2 comps grid to JSON. "
