@@ -189,6 +189,19 @@ export function TermGeneralOperatingBriefBody() {
   );
 }
 
+export function TermEligibleElectorsBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Eligible electors</strong>
+      {" "}
+      are the people who met the legal rules to vote in that district election.
+      In a new metro district, this can be a small group of property owners and
+      people connected with the district&apos;s early board, not all residents who
+      live there today.
+    </p>
+  );
+}
+
 export function TermBondsBriefBody() {
   return (
     <div className="space-y-2">

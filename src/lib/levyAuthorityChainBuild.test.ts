@@ -227,7 +227,7 @@ describe("levyAuthorityChainBuild", () => {
     const record = {
       id: "metro-pack-smoke",
       family: "metro" as const,
-      match: { levyLineCode: "9999" },
+      match: { levyLineCode: "4571" },
       authority: {
         displayName: "Example Metro District",
         countyListName: "EXAMPLE METRO",
@@ -238,22 +238,12 @@ describe("levyAuthorityChainBuild", () => {
         url: "https://example.arapahoeco.gov/results.pdf",
       },
       summary: {
-        headlineIssues: ["5A", "5B"],
+        headlinePlain: "three district measures",
         headlineElection: "November 2022",
       },
       mills: {
-        currentYear: 2025,
-        currentMills: "50.000",
-        priorYear: 2024,
-        priorMills: "45.000",
-        currentRateSource: {
-          text: "County rate table for 2025 (PDF)",
-          url: "https://example.arapahoeco.gov/2025.pdf",
-        },
-        priorRateSource: {
-          text: "County rate table for 2024 (PDF)",
-          url: "https://example.arapahoeco.gov/2024.pdf",
-        },
+        stepBody: "The latest year-to-year change was small. A much larger earlier move still shapes today's rate.",
+        bodyTerms: [{ termId: "term-mill-levy" as const, match: "rate" }],
       },
       measures: [
         {
@@ -284,6 +274,7 @@ describe("levyAuthorityChainBuild", () => {
           ballotIssue: "5B",
           kind: "bond" as const,
           electionMonthYear: "November 2022",
+          titlePlain: "Borrowing for district projects",
           bodyLead: "also_approved" as const,
           detail: "up to $10 million for streets and parks",
           ballotTextKind: "notice" as const,
@@ -311,8 +302,11 @@ describe("levyAuthorityChainBuild", () => {
     const ops = entry.steps.find((s) => s.id === "ballot-5a-ops");
     const bond = entry.steps.find((s) => s.id === "ballot-5b-debt");
     const tabor = entry.steps.find((s) => s.id === "ballot-5c-tabor");
+    const mills = entry.steps.find((s) => s.id === "certified-mills");
     expect(ops?.title).toBe("Ballot Issue 5A: Operations and maintenance");
+    expect(ops?.body).toContain("Eligible electors approved");
     expect(ops?.body).toContain("up to 10 mills for operations and maintenance");
+    expect(ops?.facts.some((f) => f.label.includes("5A"))).toBe(true);
     expect(bond?.title).toBe(
       "Ballot Issue 5B: Borrowing for district projects",
     );
@@ -323,6 +317,13 @@ describe("levyAuthorityChainBuild", () => {
     expect(tabor?.body).toContain("de-Brucing");
     expect(tabor?.body).toContain("50.000");
     expect(tabor?.body).toContain("the district");
+    expect(
+      entry.steps.find((step) => step.id === "official-authorization-record"),
+    ).toBeUndefined();
+    expect(mills?.facts.map((f) => f.label)).toEqual([
+      "Change from last year",
+      "Most notable change",
+    ]);
 
     expect(() =>
       buildLevyAuthorityChainEntry({
@@ -341,6 +342,77 @@ describe("levyAuthorityChainBuild", () => {
         ],
       }),
     ).toThrow(/tabor_revenue_retention requires maxAuthorizedMills/);
+  });
+
+  it("builds Sky Ranch from AUTH-derived mills and chronological metro steps", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) => candidate.id === "sky-ranch-3-metro-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record);
+    const authorization = entry.steps.find(
+      (step) => step.id === "metro-2020-cabea-authorization",
+    );
+    const pledge = entry.steps.find(
+      (step) => step.id === "metro-2022-capital-pledge",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(record.measures[0]?.votes).toBeUndefined();
+    expect(entry.summary).toContain("eligible electors authorized");
+    expect(entry.summary).not.toContain("Change from last year");
+    expect(entry.summary).not.toContain("Most notable");
+    expect(authorization?.title).toBe(
+      "Authorizing taxes, revenue sharing, and the community authority agreement",
+    );
+    expect(authorization?.body).toContain("Eligible electors");
+    expect(
+      authorization?.facts.some(
+        (fact) =>
+          fact.label === "November 2020 authorization" &&
+          fact.value.includes("November 3, 2020"),
+      ),
+    ).toBe(true);
+    expect(authorization?.facts.map((fact) => fact.label)).toEqual([
+      "November 2020 authorization",
+      "December 2020 county service-plan approval",
+    ]);
+    expect(authorization?.facts[0]?.value).toContain("$312 million");
+    expect(authorization?.facts[0]?.value).not.toContain("$312,000,000");
+    expect(authorization?.facts[1]?.value).toContain(
+      "separate county action after the election",
+    );
+    expect(pledge?.title).toBe("Capital pledge to the community authority board");
+    expect(pledge?.body).toContain("August 2022");
+    expect(pledge?.body).toContain("CAB");
+    expect(pledge?.body).not.toContain("Eligible electors approved");
+    expect(
+      pledge?.facts.some((fact) => fact.label === "Election record"),
+    ).toBe(false);
+    expect(
+      pledge?.facts.some(
+        (fact) => fact.label === "August 2022 Capital Pledge Agreement",
+      ),
+    ).toBe(true);
+    expect(mills?.body).toContain("latest year-to-year change was small");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+      "Most notable change",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("2024:");
+    expect(mills?.facts[0]?.value).toContain("2025:");
+    expect(mills?.facts[1]?.value).toContain("2020:");
+    expect(mills?.facts[1]?.value).toContain("126.336");
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "metro-2020-cabea-authorization",
+      "metro-2022-capital-pledge",
+    ]);
+    expect(entry.steps.some((step) => step.id === "budget-attribution")).toBe(false);
+    expect(entry.steps.some((step) => step.id === "official-authorization-record")).toBe(
+      false,
+    );
   });
 
   it("trimmed summarySource.text matches built summary for link overlay", () => {
@@ -365,7 +437,7 @@ describe("levyAuthorityChainBuild", () => {
     for (const record of LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS) {
       const built = LEVY_AUTHORITY_CHAIN_ENTRIES.find((e) => e.id === record.id);
       expect(built).toBeDefined();
-      expect(built!.steps.length).toBeGreaterThan(4);
+      expect(built!.steps.length).toBeGreaterThanOrEqual(4);
     }
   });
 });

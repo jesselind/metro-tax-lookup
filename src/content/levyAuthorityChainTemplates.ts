@@ -43,6 +43,7 @@ export const METRO_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
 export const STEP_TITLE_WHAT_CHANGED = "What changed?";
 export const STEP_TITLE_HOW_VOTED = "How people voted";
+export const STEP_TITLE_HOW_AUTHORIZED = "How this was authorized";
 
 /** Fact labels shared across families (budget fact label comes from the pack). */
 export const FACT_LABEL_COUNTY_LIST_NAME = "Name on the county tax list";
@@ -55,6 +56,9 @@ export const FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY =
 /** When no stable notice or sample ballot can be linked (next-best: hub). */
 export const FACT_VALUE_BALLOT_TEXT_UNAVAILABLE =
   "Not available in county election files";
+export const FACT_LABEL_METRO_ELECTION_RECORD = "Election record";
+export const FACT_VALUE_METRO_BALLOT_TEXT_UNAVAILABLE =
+  "Public ballot wording not located; official district record linked";
 
 /**
  * Allowed `authority.governingBody` ids in JSON (validation + future trail inject).
@@ -88,6 +92,8 @@ export const OPEN_GAP_BODIES = {
    */
   "ballot-text-spanish-only-ai-translation":
     "For at least one ballot measure in this trail, we could not locate an English Notice of Election or English sample ballot among Arapahoe County's currently published election files. Those files do include a Spanish sample ballot with the measure wording, which we link. That does not mean an English ballot never existed. The English wording in the measure step is an AI translation of that Spanish sample. It is not the legal English ballot text, and it is not an official county English translation.",
+  "metro-election-records-unlocated":
+    "The district's public records describe this authorization, but we could not locate public ballot wording or a certified yes/no tally. We link the official district record we found and do not estimate the missing details.",
 } as const;
 
 /**
@@ -105,12 +111,15 @@ export function temporaryCreditMillSplitOpenGapBody(params: {
   publisherBillName: string;
   currentMills: string;
   currentYear: number;
-  ballotIssue: string;
+  ballotIssue?: string;
   maxAuthorizedMills: number;
 }): string {
   const max = params.maxAuthorizedMills.toFixed(3);
   const publisher = capitalizeResidentPhrase(params.publisherBillName);
-  return `${publisher} publishes one total rate on the bill (${params.currentMills} mills for Tax Year ${params.currentYear}). Ballot Issue ${params.ballotIssue}'s maximum rate of ${max} mills is not that same total, so the ballot cap does not describe every part of today's published county rate. From the rate table alone, we cannot separate how much of the jump came from ending the temporary tax credit versus other small year-to-year changes.`;
+  const authorization = params.ballotIssue
+    ? `Ballot Issue ${params.ballotIssue}'s`
+    : "The authorization's";
+  return `${publisher} publishes one total rate on the bill (${params.currentMills} mills for Tax Year ${params.currentYear}). ${authorization} maximum rate of ${max} mills is not that same total, so the ballot cap does not describe every part of today's published county rate. From the rate table alone, we cannot separate how much of the jump came from ending the temporary tax credit versus other small year-to-year changes.`;
 }
 
 /** All known openGap ids (static + parameterized). */
@@ -121,6 +130,7 @@ export const KNOWN_OPEN_GAP_IDS: ReadonlySet<LevyAuthorityChainOpenGapId> =
   ]);
 
 export const VOTES_STEP_BODY = "County certified totals:";
+export const METRO_AUTHORIZATION_STEP_BODY = "Official district records:";
 
 export type LevyAuthorityChainMeasureKind =
   | "override"
@@ -128,7 +138,14 @@ export type LevyAuthorityChainMeasureKind =
   | "debt_free_mill"
   | "tabor_revenue_retention"
   /** Metro O&M / general mill authorization (bill-first `titlePlain` required). */
-  | "operations_mill";
+  | "operations_mill"
+  /** Metro authorization documented without a public ballot-issue letter. */
+  | "metro_authorization"
+  /**
+   * District financing / pledge action after elector authorization (not a new
+   * elector vote). Body is plain `detail`; do not use eligible-elector lead.
+   */
+  | "metro_commitment";
 
 export type LevyAuthorityChainBodyLead =
   | "approved"
@@ -139,6 +156,12 @@ export const BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
   approved: "Voters approved",
   also_approved: "Voters also approved",
   earlier_approved: "Voters earlier approved",
+};
+
+const METRO_BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
+  approved: "Eligible electors approved",
+  also_approved: "Eligible electors also approved",
+  earlier_approved: "Eligible electors earlier approved",
 };
 
 /**
@@ -230,8 +253,16 @@ export type LevyAuthorityChainFamilyPack = {
   /** Glossary popovers on the default mills body (entry may override via `mills.bodyTerms`). */
   millsBodyTerms: readonly LevyAuthorityChainMillsBodyTerm[];
   measureKinds: ReadonlySet<LevyAuthorityChainMeasureKind>;
+  approvalStepTitle: string;
+  approvalStepBody: string;
+  ballotFactLabel: string;
+  unavailableBallotFactValue: string;
+  unavailableMeasureBody: (
+    ballotIssue: string | undefined,
+    electionMonthYear: string,
+  ) => string;
   ballotStepTitle: (
-    ballotIssue: string,
+    ballotIssue: string | undefined,
     kind: LevyAuthorityChainMeasureKind,
     options?: LevyAuthorityChainBallotTitleOptions,
   ) => string;
@@ -263,6 +294,13 @@ const SCHOOL_PACK: LevyAuthorityChainFamilyPack = {
   millsStepBody: MILLS_STEP_BODY,
   millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
   measureKinds: new Set(["override", "bond", "debt_free_mill"]),
+  approvalStepTitle: STEP_TITLE_HOW_VOTED,
+  approvalStepBody: VOTES_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
+  unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
+  unavailableMeasureBody(ballotIssue, electionMonthYear) {
+    return unavailableBallotMeasureBody(ballotIssue ?? "", electionMonthYear);
+  },
   ballotStepTitle(ballotIssue, kind, options) {
     const yearPart = options?.titleYearSuffix
       ? ` (${options.titleYearSuffix})`
@@ -307,6 +345,13 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
   millsStepBody: MILLS_STEP_BODY,
   millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
   measureKinds: new Set(["tabor_revenue_retention"]),
+  approvalStepTitle: STEP_TITLE_HOW_VOTED,
+  approvalStepBody: VOTES_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
+  unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
+  unavailableMeasureBody(ballotIssue, electionMonthYear) {
+    return unavailableBallotMeasureBody(ballotIssue ?? "", electionMonthYear);
+  },
   ballotStepTitle(ballotIssue, kind, options) {
     switch (kind) {
       case "tabor_revenue_retention": {
@@ -348,7 +393,7 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
 
 function requireTrimmedBallotTitlePlain(
   titlePlain: string | undefined,
-  kind: "operations_mill" | "tabor_revenue_retention",
+  kind: LevyAuthorityChainMeasureKind,
 ): string {
   const trimmed = titlePlain?.trim();
   if (!trimmed) {
@@ -360,43 +405,54 @@ function requireTrimmedBallotTitlePlain(
 }
 
 /**
+ * Default metro "What changed?" chrome. Rate figures themselves are derived
+ * from the AUTH mills series (same source as the history chart), not from this
+ * sentence. Entry `mills.stepBody` may replace this when a short takeaway helps.
+ */
+export const METRO_MILLS_STEP_BODY =
+  "The county publishes one total rate for this authority each year. Change from last year is always shown below. When another year-to-year move was larger, Most notable change is shown too.";
+
+/**
  * Metropolitan / Title-32 special district pack. First consumer: Sky Ranch
  * (`4571`). Kinds cover common metro ballots: debt, O&M mill authorizations,
- * and TABOR retention. Prefer `titlePlain` for bill-first O&M / retention titles.
+ * TABOR retention, documented authorizations without a ballot letter, and
+ * later district commitments (e.g. capital pledge). Prefer `titlePlain` for
+ * bill-first titles.
  */
 const METRO_PACK: LevyAuthorityChainFamilyPack = {
   budgetStepTitle: "What the district's budget says",
   budgetFactLabel: "District budget",
-  millsStepBody: MILLS_STEP_BODY,
+  millsStepBody: METRO_MILLS_STEP_BODY,
   millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
-  measureKinds: new Set(["bond", "operations_mill", "tabor_revenue_retention"]),
+  measureKinds: new Set([
+    "bond",
+    "operations_mill",
+    "tabor_revenue_retention",
+    "metro_authorization",
+    "metro_commitment",
+  ]),
+  approvalStepTitle: STEP_TITLE_HOW_AUTHORIZED,
+  approvalStepBody: METRO_AUTHORIZATION_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_METRO_ELECTION_RECORD,
+  unavailableBallotFactValue: FACT_VALUE_METRO_BALLOT_TEXT_UNAVAILABLE,
+  unavailableMeasureBody(_ballotIssue, electionMonthYear) {
+    return `Eligible electors authorized this in ${electionMonthYear}. We could not locate public ballot wording for the authorization.`;
+  },
   ballotStepTitle(ballotIssue, kind, options) {
-    const yearPart = options?.titleYearSuffix
-      ? ` (${options.titleYearSuffix})`
-      : "";
+    const titlePlain = requireTrimmedBallotTitlePlain(options?.titlePlain, kind);
     switch (kind) {
       case "bond":
-        return `Ballot Issue ${ballotIssue}: Borrowing for district projects${yearPart}`;
-      case "operations_mill": {
-        const titlePlain = requireTrimmedBallotTitlePlain(
-          options?.titlePlain,
-          "operations_mill",
-        );
-        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
-      }
-      case "tabor_revenue_retention": {
-        const titlePlain = requireTrimmedBallotTitlePlain(
-          options?.titlePlain,
-          "tabor_revenue_retention",
-        );
-        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
-      }
+      case "operations_mill":
+      case "tabor_revenue_retention":
+      case "metro_authorization":
+      case "metro_commitment":
+        return ballotIssue ? `Ballot Issue ${ballotIssue}: ${titlePlain}` : titlePlain;
       default:
         throw new Error(`metro pack does not support measure kind: ${kind}`);
     }
   },
   ballotStepBody(kind, detail, bodyLead, options) {
-    const lead = BODY_LEAD_PHRASES[bodyLead];
+    const lead = METRO_BODY_LEAD_PHRASES[bodyLead];
     switch (kind) {
       case "bond":
         return `${lead} borrowing ${detail}. ${METRO_BOND_CEILING_SENTENCE} ${METRO_BOND_REPAYMENT_CHANGE_SENTENCE}`;
@@ -413,6 +469,15 @@ const METRO_PACK: LevyAuthorityChainFamilyPack = {
           METRO_GOVERNMENT_BILL_NAME_DEFAULT;
         const max = options.maxAuthorizedMills.toFixed(3);
         return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+      }
+      case "metro_authorization":
+        return `${lead} ${detail}.`;
+      case "metro_commitment": {
+        const trimmed = detail.trim();
+        if (!trimmed) {
+          throw new Error("metro_commitment requires detail");
+        }
+        return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
       }
       default:
         throw new Error(`metro pack does not support measure kind: ${kind}`);

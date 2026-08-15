@@ -12,6 +12,7 @@ import {
   ParcelTermPopoverPanel,
   TermDebtFreeSchoolsMillLevyBriefBody,
   TermDeBrucingBriefBody,
+  TermEligibleElectorsBriefBody,
   TermLevyBriefBody,
   TermPinBriefBody,
   TermTagBriefBody,
@@ -36,7 +37,8 @@ type ExtraFlowGlossaryTermId =
   | "term-tag"
   | "term-debt-free-schools-mill-levy"
   | "term-de-brucing"
-  | "term-tabor";
+  | "term-tabor"
+  | "term-eligible-electors";
 
 /** Terms with a brief popover on the property/levy flow (not only parcel registry). */
 export type FlowGlossaryTermId =
@@ -60,6 +62,10 @@ const EXTRA_BRIEFS: Record<
     Brief: TermDeBrucingBriefBody,
   },
   "term-tabor": { title: "TABOR", Brief: TermTaborBriefBody },
+  "term-eligible-electors": {
+    title: "Eligible electors",
+    Brief: TermEligibleElectorsBriefBody,
+  },
 };
 
 /** True when {@link GlossaryTermPopover} can resolve a brief for this id. */

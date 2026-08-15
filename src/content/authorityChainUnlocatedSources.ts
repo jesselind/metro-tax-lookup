@@ -67,6 +67,41 @@ export const AUTHORITY_CHAIN_UNLOCATED_SOURCES: readonly AuthorityChainUnlocated
       authorNote:
         "Trail uses ballotTextKind sample_ballot + ballotTextLanguage es + ballotTextEnglishSource ai_translation + openGap ballot-text-spanish-only-ai-translation. County file library lists the SPA PDF twice (identical). Optional later hunt: English Notice/sample via clerk, Wayback, Colorado SOS.",
     },
+    {
+      id: "sky-ranch-4571-2020-ballot-wording",
+      status: "open",
+      notedAsOf: "2026-08",
+      authorityLabel: "Sky Ranch Metropolitan District No. 3",
+      authCode: "4571",
+      measureLabel: "November 2020 district election",
+      sought:
+        "A public ballot issue letter, Notice of Election, or sample ballot with the district authorization wording.",
+      lookedWhere:
+        "Arapahoe County's 2020 election files and the Sky Ranch district website. The district-run election does not appear in the county's 2020 Official Summary.",
+      nextBest: {
+        text: "Sky Ranch Metropolitan District No. 3 2024 audit",
+        url: "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/SRMD3-Final-Audit-FS-Report-2024_0.pdf#page=16",
+      },
+      authorNote:
+        "Do not assign a Ballot Issue letter. The authority-chain entry uses the 2024 audit's November 3, 2020 election narrative.",
+    },
+    {
+      id: "sky-ranch-4571-2020-certified-tally",
+      status: "open",
+      notedAsOf: "2026-08",
+      authorityLabel: "Sky Ranch Metropolitan District No. 3",
+      authCode: "4571",
+      measureLabel: "November 2020 district election",
+      sought: "A public certified yes/no tally for the district authorization.",
+      lookedWhere:
+        "Arapahoe County's 2020 Official Summary and the Sky Ranch district website. No public certified tally was located.",
+      nextBest: {
+        text: "Sky Ranch Metropolitan District No. 3 2024 audit",
+        url: "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/SRMD3-Final-Audit-FS-Report-2024_0.pdf#page=16",
+      },
+      authorNote:
+        "Metro validation accepts a cited official authorization record instead of requiring fabricated vote totals.",
+    },
   ];
 
 /** Open blockers shown on `/sources`. */

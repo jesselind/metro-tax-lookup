@@ -12,6 +12,8 @@ import {
   authorityMillsSeries,
   authorityTotalMillsChanged,
   authorityTotalMillsYoY,
+  levyPercentageResidentLinkForTaxYear,
+  levyPercentageResidentUrlForTaxYear,
 } from "@/lib/authorityMillsHistory";
 import { COUNTY_MILLS_YOY_EPS } from "@/lib/metroLevyYearOverYear";
 
@@ -43,5 +45,14 @@ describe("authorityMillsHistory", () => {
     expect(series.length).toBeGreaterThanOrEqual(AUTHORITY_MILLS_HISTORY_MIN_POINTS);
     expect(series[0]?.taxYear).toBe(2018);
     expect(series[series.length - 1]?.taxYear).toBe(2025);
+  });
+
+  it("bundles resident Levy % PDF urls for every tax year in meta", () => {
+    for (const taxYear of [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]) {
+      expect(levyPercentageResidentUrlForTaxYear(taxYear)).toMatch(/^https:\/\//);
+      expect(levyPercentageResidentLinkForTaxYear(taxYear).text).toContain(
+        String(taxYear),
+      );
+    }
   });
 });
