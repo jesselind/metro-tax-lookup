@@ -118,5 +118,15 @@ describe("authorityMillsChangeBlocks", () => {
         calendarYearSpan: 1,
       }),
     ).toBe("2020: 0.000 mills\n2021: 126.336 mills\nUp 126.336 mills");
+    expect(
+      formatMetroMillsChangeFactValue({
+        fromYear: 2023,
+        toYear: 2024,
+        fromMills: 50,
+        toMills: 50,
+        delta: 0,
+        calendarYearSpan: 1,
+      }),
+    ).toBe("2023: 50.000 mills\n2024: 50.000 mills\nNo change in mills");
   });
 });

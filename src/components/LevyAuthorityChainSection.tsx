@@ -364,9 +364,24 @@ function renderStepBody(entry: LevyAuthorityChainEntry, step: LevyAuthorityChain
 }
 
 /** Yes/No (or other) multi-line fact values as stacked lines; single-line as plain text. */
-function FactValue({ value }: { value: string }) {
+function FactValue({
+  value,
+  terms,
+  idPrefix,
+}: {
+  value: string;
+  terms?: Array<{ termId: string; match: string }>;
+  idPrefix: string;
+}) {
+  const withTerms =
+    terms && terms.length > 0
+      ? renderWithInlineTerms(value, terms, idPrefix)
+      : value;
   if (!value.includes("\n")) {
-    return <>{value}</>;
+    return <>{withTerms}</>;
+  }
+  if (terms && terms.length > 0) {
+    return <div className="whitespace-pre-line">{withTerms}</div>;
   }
   return (
     <div className="space-y-0.5">
@@ -438,7 +453,20 @@ export function LevyAuthorityChainSection({ entry }: Props) {
                         {fact.label}
                       </dt>
                       <dd className="mt-1 text-sm text-slate-700 sm:text-base">
-                        <FactValue value={fact.value} />
+                        <FactValue
+                          value={fact.value}
+                          idPrefix={`levy-authority-chain-${entry.id}-${step.id}-fact`}
+                          terms={
+                            fact.valueTermId && fact.valueTermMatch
+                              ? [
+                                  {
+                                    termId: fact.valueTermId,
+                                    match: fact.valueTermMatch,
+                                  },
+                                ]
+                              : undefined
+                          }
+                        />
                         {fact.sources.length > 0 ? (
                           <SourceLinks sources={fact.sources} />
                         ) : null}

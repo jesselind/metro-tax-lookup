@@ -18,8 +18,8 @@ Public static-data tool for Arapahoe-focused property tax and metro-district con
 
 Educational first: clear explanation, not a government catalog. Apply when **touching** resident-facing text (glossary, popovers, modal briefs, levy explainer JSON, hub strings/hints/errors, resident `aria-label`s). Do not rewrite unrelated open files. Full tone passes only when asked.
 
-- **Bar:** Smart but tech-illiterate resident (may struggle with devices; not unintelligent). One clear takeaway before insider terms. Middle-school readability. Neighbor read-aloud test.
-- **Priorities:** What it means for the bill first. Gloss jargon in place. No em dashes (U+2014) in definition/glossary copy. Popovers define on-screen jargon, not app internals (`/sources` / README).
+- **Bar:** Smart but tech-illiterate resident (may struggle with devices; not unintelligent). One clear takeaway before insider terms (before, never instead of). Middle-school readability. Neighbor read-aloud test.
+- **Priorities:** What it means for the bill first. Gloss jargon in place: keep the real term and define it next to itself. Do **not** paraphrase a term away, especially one the app defines elsewhere (popover brief, `/glossary` aside, or a documented actor like **eligible electors**); a nine-word description mid-sentence reads worse than the term plus a short gloss. No em dashes (U+2014) in definition/glossary copy. Popovers define on-screen jargon for residents; app internals and methodology belong on `/sources` / README, not in a popover. Readability-tool suggestions do not override these rules: apply the intent, not a literal term swap.
 - **"[thing] lines":** Levy and mills are fine. Avoid accountant-style "levy lines" / "district lines" / "mills lines" as the main UI explanation (spirit, not a word ban). Prefer bill entries, breakdown, each metro levy. Do not rename code identifiers. Fix stacked pattern in visible strings when you touch the file.
 
 ### Final checks (user-invoked only)

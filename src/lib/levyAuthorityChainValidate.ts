@@ -47,6 +47,7 @@ const EXTRA_FLOW_BRIEF_TERM_IDS = [
   "term-de-brucing",
   "term-tabor",
   "term-eligible-electors",
+  "term-aggregate-debt",
 ];
 
 const FAMILIES = new Set<LevyAuthorityChainFamily>(["school", "county", "metro"]);
@@ -622,6 +623,14 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       stepIds.add(measure.stepId);
       if (family === "metro") {
         if (
+          measure.kind === "metro_commitment" &&
+          measure.ballotIssue !== undefined
+        ) {
+          fail(
+            `[${id}] measure ${measure.stepId} metro_commitment must not set ballotIssue`,
+          );
+        }
+        if (
           measure.ballotIssue !== undefined &&
           !isNonEmptyString(measure.ballotIssue)
         ) {
@@ -819,11 +828,6 @@ export function validateLevyAuthorityChainData(data: unknown): void {
             `[${id}] measure ${measure.stepId} metro_commitment requires titlePlain`,
           );
         }
-        if (!isNonEmptyString(measure.detail)) {
-          fail(
-            `[${id}] measure ${measure.stepId} metro_commitment requires detail`,
-          );
-        }
       }
       if (family === "metro" && !isNonEmptyString(measure.titlePlain)) {
         fail(`[${id}] metro measure ${measure.stepId} requires titlePlain`);
@@ -887,6 +891,13 @@ export function validateLevyAuthorityChainData(data: unknown): void {
             fact.value,
             `[${id}].measure.${measure.stepId}.supportingFacts[${factIndex}].value`,
           );
+          assertInlineTermOnRecord(
+            fact as unknown as Record<string, unknown>,
+            id,
+            "value",
+            fact.value,
+            allowedTermIds,
+          );
           if (!Array.isArray(fact.sources) || fact.sources.length === 0) {
             fail(
               `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}] needs at least one source`,
@@ -906,9 +917,12 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         const hasVotes = votes !== undefined;
         const hasResultsSource = measure.resultsSource !== undefined;
         const hasApproval = approval !== undefined;
-        if (hasApproval === (hasVotes || hasResultsSource)) {
+        if (
+          (hasApproval && (hasVotes || hasResultsSource)) ||
+          (!hasApproval && !hasVotes && !hasResultsSource)
+        ) {
           fail(
-            `[${id}] metro measure ${measure.stepId} needs either approval or votes + resultsSource`,
+            `[${id}] metro measure ${measure.stepId} must provide either approval or votes with resultsSource, but not both`,
           );
         }
         if (hasVotes !== hasResultsSource) {
@@ -1164,6 +1178,13 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       for (const fact of step.facts) {
         assertNoEmDash(fact.label, `[${id}] built fact label`);
         assertNoEmDash(fact.value, `[${id}] built fact value`);
+        assertInlineTermOnRecord(
+          fact as unknown as Record<string, unknown>,
+          id,
+          "value",
+          fact.value,
+          allowedTermIds,
+        );
       }
     }
     for (const gap of built.openGaps) {

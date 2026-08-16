@@ -13,6 +13,11 @@ import {
   STEP_TITLE_WHO_GETS,
   temporaryCreditMillSplitOpenGapBody,
 } from "@/content/levyAuthorityChainTemplates";
+import {
+  formatMetroMillsChangeFactValue,
+  selectMetroAuthorityMillsChangeBlocks,
+} from "@/lib/authorityMillsChangeBlocks";
+import { authorityMillsSeries } from "@/lib/authorityMillsHistory";
 import { buildLevyAuthorityChainEntry } from "@/lib/levyAuthorityChainBuild";
 import {
   LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS,
@@ -241,10 +246,7 @@ describe("levyAuthorityChainBuild", () => {
         headlinePlain: "three district measures",
         headlineElection: "November 2022",
       },
-      mills: {
-        stepBody: "The latest year-to-year change was small. A much larger earlier move still shapes today's rate.",
-        bodyTerms: [{ termId: "term-mill-levy" as const, match: "rate" }],
-      },
+      mills: {},
       measures: [
         {
           stepId: "ballot-5a-ops",
@@ -382,6 +384,8 @@ describe("levyAuthorityChainBuild", () => {
     expect(authorization?.facts[1]?.value).toContain(
       "separate county action after the election",
     );
+    expect(authorization?.facts[1]?.valueTermId).toBe("term-aggregate-debt");
+    expect(authorization?.facts[1]?.valueTermMatch).toBe("aggregate debt");
     expect(pledge?.title).toBe("Capital pledge to the community authority board");
     expect(pledge?.body).toContain("August 2022");
     expect(pledge?.body).toContain("CAB");
@@ -394,15 +398,26 @@ describe("levyAuthorityChainBuild", () => {
         (fact) => fact.label === "August 2022 Capital Pledge Agreement",
       ),
     ).toBe(true);
-    expect(mills?.body).toContain("latest year-to-year change was small");
+    expect(mills?.body).toBe(
+      "Your bill uses one total mill rate for this district each year.",
+    );
+    expect(mills?.bodyTermId).toBe("term-mill-levy");
+    expect(mills?.bodyTermMatch).toBe("rate");
     expect(mills?.facts.map((fact) => fact.label)).toEqual([
       "Change from last year",
       "Most notable change",
     ]);
-    expect(mills?.facts[0]?.value).toContain("2024:");
-    expect(mills?.facts[0]?.value).toContain("2025:");
-    expect(mills?.facts[1]?.value).toContain("2020:");
-    expect(mills?.facts[1]?.value).toContain("126.336");
+    const series = authorityMillsSeries("4571");
+    const { changeFromLastYear, mostNotableChange } =
+      selectMetroAuthorityMillsChangeBlocks(series);
+    expect(changeFromLastYear).toBeTruthy();
+    expect(mostNotableChange).toBeTruthy();
+    expect(mills?.facts[0]?.value).toBe(
+      formatMetroMillsChangeFactValue(changeFromLastYear!),
+    );
+    expect(mills?.facts[1]?.value).toBe(
+      formatMetroMillsChangeFactValue(mostNotableChange!),
+    );
     expect(entry.steps.map((step) => step.id)).toEqual([
       "who-sets",
       "certified-mills",

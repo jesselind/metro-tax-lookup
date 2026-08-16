@@ -195,9 +195,20 @@ export function TermEligibleElectorsBriefBody() {
       <strong className="font-semibold text-slate-900">Eligible electors</strong>
       {" "}
       are the people who met the legal rules to vote in that district election.
-      In a new metro district, this can be a small group of property owners and
-      people connected with the district&apos;s early board, not all residents who
-      live there today.
+      In a new metro district that group can be small: people who own property
+      inside the district, plus registered voters who live there. Early on, it
+      may not include most of the people living there today.
+    </p>
+  );
+}
+
+export function TermAggregateDebtBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Aggregate debt</strong>
+      {" "}
+      is the combined borrowing ceiling for the districts named in the service
+      plan. It is one shared cap, not a separate max for each district alone.
     </p>
   );
 }

@@ -16,4 +16,10 @@ describe("levyAuthorityChainMeasureOrder", () => {
   it("rejects malformed electionMonthYear strings", () => {
     expect(() => measureElectionChronologyKey("2020")).toThrow(/Month YYYY/);
   });
+
+  it("rejects unrecognized month names in Month YYYY strings", () => {
+    expect(() => measureElectionChronologyKey("Smarch 2020")).toThrow(
+      /month not recognized/i,
+    );
+  });
 });

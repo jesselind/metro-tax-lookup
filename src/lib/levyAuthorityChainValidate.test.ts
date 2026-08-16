@@ -280,7 +280,7 @@ describe("levyAuthorityChainValidate", () => {
     delete measure.approval;
 
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /needs either approval or votes \+ resultsSource/i,
+      /either approval or votes with resultsSource, but not both/i,
     );
   });
 

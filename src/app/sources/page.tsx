@@ -375,10 +375,12 @@ export default function SourcesPage() {
           when we cannot yet split a year-to-year rate change into parts, or
           cannot link ballot wording. Metro district elections can have a
           different public record than county and school elections. When the
-          district publishes an annual report or audit stating what eligible
-          electors authorized but no public ballot wording or certified tally can
-          be found, we link that district record and leave the missing details
-          blank. For metro trails, rate history in{" "}
+          district publishes an annual report or audit saying what eligible
+          electors (the people legally allowed to vote in that district
+          election) authorized, but no public ballot wording or certified vote
+          count can be found, we link that district record and leave the missing
+          details blank. For metro
+          trails, rate history in{" "}
           <strong className="font-semibold text-slate-900">
             What changed?
           </strong>

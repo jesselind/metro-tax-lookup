@@ -408,9 +408,11 @@ function requireTrimmedBallotTitlePlain(
  * Default metro "What changed?" chrome. Rate figures themselves are derived
  * from the AUTH mills series (same source as the history chart), not from this
  * sentence. Entry `mills.stepBody` may replace this when a short takeaway helps.
+ * Do not narrate Change from last year / Most notable selection rules here;
+ * that belongs on `/sources`.
  */
 export const METRO_MILLS_STEP_BODY =
-  "The county publishes one total rate for this authority each year. Change from last year is always shown below. When another year-to-year move was larger, Most notable change is shown too.";
+  "Your bill uses one total mill rate for this district each year.";
 
 /**
  * Metropolitan / Title-32 special district pack. First consumer: Sky Ranch

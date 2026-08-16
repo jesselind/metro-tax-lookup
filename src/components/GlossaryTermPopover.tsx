@@ -13,6 +13,7 @@ import {
   TermDebtFreeSchoolsMillLevyBriefBody,
   TermDeBrucingBriefBody,
   TermEligibleElectorsBriefBody,
+  TermAggregateDebtBriefBody,
   TermLevyBriefBody,
   TermPinBriefBody,
   TermTagBriefBody,
@@ -38,7 +39,8 @@ type ExtraFlowGlossaryTermId =
   | "term-debt-free-schools-mill-levy"
   | "term-de-brucing"
   | "term-tabor"
-  | "term-eligible-electors";
+  | "term-eligible-electors"
+  | "term-aggregate-debt";
 
 /** Terms with a brief popover on the property/levy flow (not only parcel registry). */
 export type FlowGlossaryTermId =
@@ -65,6 +67,10 @@ const EXTRA_BRIEFS: Record<
   "term-eligible-electors": {
     title: "Eligible electors",
     Brief: TermEligibleElectorsBriefBody,
+  },
+  "term-aggregate-debt": {
+    title: "Aggregate debt",
+    Brief: TermAggregateDebtBriefBody,
   },
 };
 

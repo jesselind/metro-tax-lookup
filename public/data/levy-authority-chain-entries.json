@@ -8,7 +8,8 @@
     "term-bonds",
     "term-tabor",
     "term-de-brucing",
-    "term-eligible-electors"
+    "term-eligible-electors",
+    "term-aggregate-debt"
   ],
   "entries": [
     {
@@ -328,7 +329,7 @@
         "displayName": "Sky Ranch Metropolitan District No. 3",
         "countyListName": "SKY RANCH METRO DIST. #3",
         "governingBody": "board",
-        "whoGetsBody": "Sky Ranch Metropolitan District No. 3 transfers its general, debt-service, and regional-improvement property-tax revenue to the Sky Ranch Community Authority Board (CAB).",
+        "whoGetsBody": "This district sends its property-tax revenue to the Sky Ranch Community Authority Board (CAB) for operations, regional improvements, and CAB bond payments.",
         "whoGetsFacts": [
           {
             "label": "Where the district sends the money",
@@ -352,15 +353,7 @@
         "summaryTermId": "term-eligible-electors",
         "summaryTermMatch": "eligible electors"
       },
-      "mills": {
-        "stepBody": "The latest year-to-year change was small. A much larger earlier move still shapes today's rate.",
-        "bodyTerms": [
-          {
-            "termId": "term-mill-levy",
-            "match": "rate"
-          }
-        ]
-      },
+      "mills": {},
       "measures": [
         {
           "stepId": "metro-2020-cabea-authorization",
@@ -376,6 +369,8 @@
             {
               "label": "December 2020 county service-plan approval",
               "value": "Arapahoe County approved the amended service plan on December 8, 2020. This was a separate county action after the election, not approval of the election result. The service plan caps aggregate debt for the applicable districts at $312 million and sets a debt tax-rate limit of 55.664 mills, subject to the plan's adjustment rules.",
+              "valueTermId": "term-aggregate-debt",
+              "valueTermMatch": "aggregate debt",
               "sources": [
                 {
                   "text": "Sky Ranch MD Nos. 3 and 5 official notice",

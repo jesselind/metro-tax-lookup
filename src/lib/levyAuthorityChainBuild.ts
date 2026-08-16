@@ -274,7 +274,13 @@ function buildSummary(
   summaryAttribution: string,
 ): string {
   if (record.family === "metro") {
-    return `${summaryAttribution}, eligible electors authorized ${record.summary.headlinePlain} in ${record.summary.headlineElection}.`;
+    const headlinePlain = record.summary.headlinePlain?.trim();
+    if (!headlinePlain) {
+      throw new Error(
+        `[${record.id}] metro summary.headlinePlain must be non-empty`,
+      );
+    }
+    return `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${record.summary.headlineElection}.`;
   }
   const headline = buildSummaryVoterClause(
     record.summary.headlineIssues ?? [],
@@ -398,9 +404,6 @@ function buildMetroMillsStep(
     );
   }
 
-  const body = millsStepBodyTrim(record, pack.millsStepBody);
-  const terms = record.mills.bodyTerms ?? pack.millsBodyTerms;
-  const [primary, ...rest] = terms;
   const facts: LevyAuthorityChainFact[] = [
     buildMetroMillsChangeFact(
       METRO_MILLS_CHANGE_FROM_LAST_YEAR_LABEL,
@@ -416,20 +419,11 @@ function buildMetroMillsStep(
     );
   }
 
-  const step: LevyAuthorityChainStep = {
-    id: "certified-mills",
-    title: STEP_TITLE_WHAT_CHANGED,
-    body,
+  return millsStepWithTerms({
+    body: millsStepBodyTrim(record, pack.millsStepBody),
+    terms: record.mills.bodyTerms ?? pack.millsBodyTerms,
     facts,
-  };
-  if (primary) {
-    step.bodyTermId = primary.termId;
-    step.bodyTermMatch = primary.match;
-  }
-  if (rest.length > 0) {
-    step.bodyTerms = rest.map((t) => ({ termId: t.termId, match: t.match }));
-  }
-  return step;
+  });
 }
 
 function millsStepBodyTrim(
@@ -439,6 +433,28 @@ function millsStepBodyTrim(
   return record.mills.stepBody?.trim()
     ? record.mills.stepBody.trim()
     : packDefault;
+}
+
+function millsStepWithTerms(args: {
+  body: string;
+  terms: readonly LevyAuthorityChainMillsBodyTerm[];
+  facts: LevyAuthorityChainFact[];
+}): LevyAuthorityChainStep {
+  const [primary, ...rest] = args.terms;
+  const step: LevyAuthorityChainStep = {
+    id: "certified-mills",
+    title: STEP_TITLE_WHAT_CHANGED,
+    body: args.body,
+    facts: args.facts,
+  };
+  if (primary) {
+    step.bodyTermId = primary.termId;
+    step.bodyTermMatch = primary.match;
+  }
+  if (rest.length > 0) {
+    step.bodyTerms = rest.map((t) => ({ termId: t.termId, match: t.match }));
+  }
+  return step;
 }
 
 function buildAuthoredMillsStep(
@@ -458,9 +474,6 @@ function buildAuthoredMillsStep(
       `[${record.id}] school/county mills require current/prior year, mills, and rate sources`,
     );
   }
-  const body = millsStepBodyTrim(record, pack.millsStepBody);
-  const terms = mills.bodyTerms ?? pack.millsBodyTerms;
-  const [primary, ...rest] = terms;
   const facts: LevyAuthorityChainFact[] = [
     {
       label: millsYearLabel(mills.currentYear),
@@ -481,20 +494,11 @@ function buildAuthoredMillsStep(
       sources: [comparison.fromRateSource, comparison.toRateSource],
     });
   }
-  const step: LevyAuthorityChainStep = {
-    id: "certified-mills",
-    title: STEP_TITLE_WHAT_CHANGED,
-    body,
+  return millsStepWithTerms({
+    body: millsStepBodyTrim(record, pack.millsStepBody),
+    terms: mills.bodyTerms ?? pack.millsBodyTerms,
     facts,
-  };
-  if (primary) {
-    step.bodyTermId = primary.termId;
-    step.bodyTermMatch = primary.match;
-  }
-  if (rest.length > 0) {
-    step.bodyTerms = rest.map((t) => ({ termId: t.termId, match: t.match }));
-  }
-  return step;
+  });
 }
 
 function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
@@ -592,10 +596,7 @@ function buildMeasureStep(
   if (family === "metro") {
     if (measure.votes && measure.resultsSource) {
       facts.push({
-        label: voteFactLabel(
-          measure.ballotIssue ?? measure.titlePlain ?? "Authorization",
-          measure.electionMonthYear,
-        ),
+        label: metroVoteFactLabel(measure),
         value: formatVoteTotals(
           measure.votes.yes,
           measure.votes.yesPct,
@@ -634,6 +635,15 @@ function buildMeasureStep(
   };
 }
 
+/** Vote fact label: Ballot Issue prefix only when a letter is published. */
+function metroVoteFactLabel(measure: LevyAuthorityChainMeasureRecord): string {
+  if (measure.ballotIssue) {
+    return voteFactLabel(measure.ballotIssue, measure.electionMonthYear);
+  }
+  const title = measure.titlePlain?.trim() || "Authorization";
+  return `${title} (${measure.electionMonthYear})`;
+}
+
 function buildApprovalStep(
   record: LevyAuthorityChainEntryRecord,
 ): LevyAuthorityChainStep {
@@ -641,10 +651,7 @@ function buildApprovalStep(
   const facts: LevyAuthorityChainFact[] = record.measures.map((measure) => {
     if (measure.votes && measure.resultsSource) {
       return {
-        label: voteFactLabel(
-          measure.ballotIssue ?? measure.titlePlain ?? "Authorization",
-          measure.electionMonthYear,
-        ),
+        label: metroVoteFactLabel(measure),
         value: formatVoteTotals(
           measure.votes.yes,
           measure.votes.yesPct,
