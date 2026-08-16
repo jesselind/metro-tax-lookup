@@ -5,19 +5,15 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { BackToTopButton } from "@/components/BackToTopButton";
 import { PageHero } from "@/components/PageHero";
-import {
-  btnOutlinePrimaryMd,
-  btnOutlineSecondaryMd,
-} from "@/lib/buttonClasses";
+import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import {
   PAGE_HERO_ACTION_BUTTON_CLASS,
   TOOL_PAGE_HERO_INTRO_GROUP_CLASS,
   TOOL_PAGE_INNER_CLASS_HUB,
   TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
 } from "@/lib/toolFlowStyles";
-
-const BACK_LINK_CLASS = btnOutlinePrimaryMd;
 
 export const staticArticleSecondaryLinkClass = btnOutlineSecondaryMd;
 
@@ -26,7 +22,7 @@ type StaticArticleShellProps = {
   /** Plain text or rich content. Omit when the title is enough. */
   intro?: string | ReactNode;
   children: ReactNode;
-  /** If omitted, renders a single &quot;Back to tools&quot; link. */
+  /** If omitted, renders a single &quot;Back to top&quot; button. */
   footer?: ReactNode;
   /** Override inner column (default {@link TOOL_PAGE_INNER_CLASS_HUB}). */
   contentClassName?: string;
@@ -66,16 +62,10 @@ export function StaticArticleShell({
           {children}
 
           <div className="mt-10">
-            {footer ?? (
-              <Link href="/" className={BACK_LINK_CLASS}>
-                Back to tools
-              </Link>
-            )}
+            {footer ?? <BackToTopButton />}
           </div>
         </div>
       </div>
     </main>
   );
 }
-
-export { BACK_LINK_CLASS as staticArticleBackLinkClass };

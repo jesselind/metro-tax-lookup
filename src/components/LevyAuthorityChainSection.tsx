@@ -447,7 +447,7 @@ export function LevyAuthorityChainSection({ entry }: Props) {
               ) : null}
               {step.facts.length > 0 ? (
                 <dl className="mt-3 space-y-3">
-                  {step.facts.map((fact) => (
+                  {step.facts.map((fact, factIndex) => (
                     <div key={`${step.id}-${fact.label}`}>
                       <dt className="text-sm font-semibold text-slate-800 sm:text-base">
                         {fact.label}
@@ -455,7 +455,7 @@ export function LevyAuthorityChainSection({ entry }: Props) {
                       <dd className="mt-1 text-sm text-slate-700 sm:text-base">
                         <FactValue
                           value={fact.value}
-                          idPrefix={`levy-authority-chain-${entry.id}-${step.id}-fact`}
+                          idPrefix={`levy-authority-chain-${entry.id}-${step.id}-fact-${factIndex}`}
                           terms={
                             fact.valueTermId && fact.valueTermMatch
                               ? [
