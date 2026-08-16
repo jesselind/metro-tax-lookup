@@ -19,6 +19,8 @@ export type AuthorityMillsByTaxYearFile = {
       type: string;
       title: string;
       file: string;
+      /** Resident https cite for the Levy % PDF (same source as AUTH mills). */
+      residentUrl: string;
     }>;
   };
   authorities: Record<
@@ -31,6 +33,53 @@ export type AuthorityMillsByTaxYearFile = {
 };
 
 const file = authorityMillsData as AuthorityMillsByTaxYearFile;
+
+const levyPercentageResidentUrlByTaxYear = new Map<number, string>();
+for (const source of file._meta.sources) {
+  const url = source.residentUrl?.trim();
+  if (!url || !url.startsWith("https://")) {
+    throw new Error(
+      `arapahoe-authority-mills-by-tax-year.json: tax year ${source.taxYear} missing https residentUrl`,
+    );
+  }
+  levyPercentageResidentUrlByTaxYear.set(source.taxYear, url);
+}
+for (const taxYear of file._meta.taxYears) {
+  if (!levyPercentageResidentUrlByTaxYear.has(taxYear)) {
+    throw new Error(
+      `arapahoe-authority-mills-by-tax-year.json: tax year ${taxYear} missing _meta.sources residentUrl`,
+    );
+  }
+}
+
+/** Resident link label for a county Levy % PDF cite (year-specific text). */
+export function levyPercentageResidentLinkText(taxYear: number): string {
+  return `County rate table for ${taxYear} (PDF)`;
+}
+
+/**
+ * Official https cite for the county Levy % PDF that published AUTH mills for a
+ * tax year. Same bundle as {@link authorityMillsSeries} (not a second map).
+ */
+export function levyPercentageResidentUrlForTaxYear(taxYear: number): string {
+  const url = levyPercentageResidentUrlByTaxYear.get(taxYear);
+  if (!url) {
+    throw new Error(
+      `No resident Levy % PDF url bundled for tax year ${taxYear}`,
+    );
+  }
+  return url;
+}
+
+export function levyPercentageResidentLinkForTaxYear(taxYear: number): {
+  text: string;
+  url: string;
+} {
+  return {
+    text: levyPercentageResidentLinkText(taxYear),
+    url: levyPercentageResidentUrlForTaxYear(taxYear),
+  };
+}
 
 const sortedTaxYears = [...file._meta.taxYears].sort((a, b) => a - b);
 

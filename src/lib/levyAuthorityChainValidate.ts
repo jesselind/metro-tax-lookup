@@ -27,6 +27,14 @@ import {
   buildLevyAuthorityChainEntry,
   type LevyAuthorityChainEntryRecord,
 } from "@/lib/levyAuthorityChainBuild";
+import {
+  selectMetroAuthorityMillsChangeBlocks,
+} from "@/lib/authorityMillsChangeBlocks";
+import {
+  authorityMillsSeries,
+  levyPercentageResidentUrlForTaxYear,
+} from "@/lib/authorityMillsHistory";
+import { measureElectionChronologyKey } from "@/lib/levyAuthorityChainMeasureOrder";
 import { LEVY_MODAL_TERM_IDS } from "@/lib/levyModalTermIds";
 
 const EM_DASH = /\u2014/;
@@ -38,6 +46,8 @@ const EXTRA_FLOW_BRIEF_TERM_IDS = [
   "term-debt-free-schools-mill-levy",
   "term-de-brucing",
   "term-tabor",
+  "term-eligible-electors",
+  "term-aggregate-debt",
 ];
 
 const FAMILIES = new Set<LevyAuthorityChainFamily>(["school", "county", "metro"]);
@@ -47,6 +57,8 @@ const MEASURE_KINDS = new Set([
   "debt_free_mill",
   "tabor_revenue_retention",
   "operations_mill",
+  "metro_authorization",
+  "metro_commitment",
 ]);
 const BODY_LEADS = new Set(["approved", "also_approved", "earlier_approved"]);
 const BALLOT_TEXT_KINDS = new Set(["notice", "sample_ballot", "unavailable"]);
@@ -58,6 +70,8 @@ const GOVERNING_BODIES = new Set([
 const OPEN_GAP_NO_STABLE_BALLOT_TEXT = "no-stable-ballot-text";
 const OPEN_GAP_BALLOT_TEXT_SPANISH_ONLY_AI =
   "ballot-text-spanish-only-ai-translation";
+const OPEN_GAP_METRO_ELECTION_RECORDS_UNLOCATED =
+  "metro-election-records-unlocated";
 const BALLOT_TEXT_LANGUAGES = new Set(["es"]);
 const BALLOT_TEXT_ENGLISH_SOURCES = new Set(["ai_translation"]);
 
@@ -336,9 +350,41 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         record.authority.governmentBillName,
         `[${id}].authority.governmentBillName`,
       );
-      if (family !== "county") {
+      if (family !== "county" && family !== "metro") {
         fail(
-          `[${id}] authority.governmentBillName only applies to county family entries`,
+          `[${id}] authority.governmentBillName only applies to county or metro family entries`,
+        );
+      }
+    }
+    if (record.authority.whoGetsBody !== undefined) {
+      if (!isNonEmptyString(record.authority.whoGetsBody)) {
+        fail(`[${id}] authority.whoGetsBody must be a non-empty string when set`);
+      }
+      assertNoEmDash(
+        record.authority.whoGetsBody,
+        `[${id}].authority.whoGetsBody`,
+      );
+    }
+    if (record.authority.whoGetsFacts !== undefined) {
+      if (
+        !Array.isArray(record.authority.whoGetsFacts) ||
+        record.authority.whoGetsFacts.length === 0
+      ) {
+        fail(`[${id}] authority.whoGetsFacts must be a non-empty array when set`);
+      }
+      for (const [factIndex, fact] of record.authority.whoGetsFacts.entries()) {
+        assertObject(fact, `[${id}] authority.whoGetsFacts[${factIndex}]`);
+        if (!isNonEmptyString(fact.label) || !isNonEmptyString(fact.value)) {
+          fail(`[${id}] authority.whoGetsFacts[${factIndex}] needs label and value`);
+        }
+        if (!Array.isArray(fact.sources) || fact.sources.length === 0) {
+          fail(`[${id}] authority.whoGetsFacts[${factIndex}] needs a source`);
+        }
+        fact.sources.forEach((source, sourceIndex) =>
+          assertHttpsSource(
+            source,
+            `[${id}] authority.whoGetsFacts[${factIndex}].sources[${sourceIndex}]`,
+          ),
         );
       }
     }
@@ -357,11 +403,23 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
 
     assertObject(record.summary, `[${id}] summary`);
-    if (
-      !Array.isArray(record.summary.headlineIssues) ||
-      record.summary.headlineIssues.length === 0
-    ) {
-      fail(`[${id}] summary.headlineIssues must be a non-empty array`);
+    if (family === "metro") {
+      if (!isNonEmptyString(record.summary.headlinePlain)) {
+        fail(`[${id}] metro summary.headlinePlain required`);
+      }
+      if (record.summary.headlineIssues !== undefined) {
+        fail(`[${id}] metro summary must use headlinePlain, not headlineIssues`);
+      }
+    } else {
+      if (
+        !Array.isArray(record.summary.headlineIssues) ||
+        record.summary.headlineIssues.length === 0
+      ) {
+        fail(`[${id}] summary.headlineIssues must be a non-empty array`);
+      }
+      if (record.summary.headlinePlain !== undefined) {
+        fail(`[${id}] summary.headlinePlain only applies to metro entries`);
+      }
     }
     if (!isNonEmptyString(record.summary.headlineElection)) {
       fail(`[${id}] summary.headlineElection required`);
@@ -391,26 +449,130 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
 
     assertObject(record.mills, `[${id}] mills`);
-    if (typeof record.mills.currentYear !== "number") {
-      fail(`[${id}] mills.currentYear must be a number`);
+    if (family === "metro") {
+      if (!isNonEmptyString(record.match.levyLineCode)) {
+        fail(`[${id}] metro entries require match.levyLineCode for AUTH mills`);
+      }
+      if (record.mills.historicalComparison !== undefined) {
+        fail(
+          `[${id}] metro mills must not set historicalComparison (derived from AUTH series)`,
+        );
+      }
+      for (const authoredKey of [
+        "currentYear",
+        "currentMills",
+        "priorYear",
+        "priorMills",
+        "currentRateSource",
+        "priorRateSource",
+      ] as const) {
+        if (record.mills[authoredKey] !== undefined) {
+          fail(
+            `[${id}] metro mills must not set ${authoredKey} (derive from AUTH series)`,
+          );
+        }
+      }
+      if (
+        (record.mills as { rateSourcesByTaxYear?: unknown }).rateSourcesByTaxYear !==
+        undefined
+      ) {
+        fail(
+          `[${id}] metro mills must not set rateSourcesByTaxYear (Levy % cites come from AUTH mills bundle)`,
+        );
+      }
+      const series = authorityMillsSeries(record.match.levyLineCode);
+      const { changeFromLastYear, mostNotableChange } =
+        selectMetroAuthorityMillsChangeBlocks(series);
+      if (!changeFromLastYear) {
+        fail(
+          `[${id}] AUTH mills series for ${record.match.levyLineCode} needs at least two published years`,
+        );
+      }
+      const yearsNeeded = new Set<number>([
+        changeFromLastYear.fromYear,
+        changeFromLastYear.toYear,
+      ]);
+      if (mostNotableChange) {
+        yearsNeeded.add(mostNotableChange.fromYear);
+        yearsNeeded.add(mostNotableChange.toYear);
+      }
+      for (const year of yearsNeeded) {
+        try {
+          levyPercentageResidentUrlForTaxYear(year);
+        } catch {
+          fail(
+            `[${id}] bundled AUTH mills missing resident Levy % PDF url for tax year ${year}`,
+          );
+        }
+      }
+    } else {
+      if (typeof record.mills.currentYear !== "number") {
+        fail(`[${id}] mills.currentYear must be a number`);
+      }
+      if (typeof record.mills.priorYear !== "number") {
+        fail(`[${id}] mills.priorYear must be a number`);
+      }
+      if (!isNonEmptyString(record.mills.currentMills)) {
+        fail(`[${id}] mills.currentMills required`);
+      }
+      if (!isNonEmptyString(record.mills.priorMills)) {
+        fail(`[${id}] mills.priorMills required`);
+      }
+      assertHttpsSource(
+        record.mills.currentRateSource,
+        `[${id}] mills.currentRateSource`,
+      );
+      assertHttpsSource(
+        record.mills.priorRateSource,
+        `[${id}] mills.priorRateSource`,
+      );
+      if (
+        (record.mills as { rateSourcesByTaxYear?: unknown })
+          .rateSourcesByTaxYear !== undefined
+      ) {
+        fail(
+          `[${id}] mills.rateSourcesByTaxYear was removed; Levy % cites come from arapahoe-authority-mills-by-tax-year.json`,
+        );
+      }
+      if (record.mills.historicalComparison !== undefined) {
+        const comparison = assertObject(
+          record.mills.historicalComparison,
+          `[${id}] mills.historicalComparison`,
+        );
+        if (!isNonEmptyString(comparison.label)) {
+          fail(`[${id}] mills.historicalComparison.label required`);
+        }
+        assertNoEmDash(
+          comparison.label,
+          `[${id}].mills.historicalComparison.label`,
+        );
+        if (
+          typeof comparison.fromYear !== "number" ||
+          typeof comparison.toYear !== "number" ||
+          comparison.fromYear >= comparison.toYear
+        ) {
+          fail(
+            `[${id}] mills.historicalComparison requires fromYear before toYear`,
+          );
+        }
+        if (
+          !isNonEmptyString(comparison.fromMills) ||
+          !isNonEmptyString(comparison.toMills)
+        ) {
+          fail(
+            `[${id}] mills.historicalComparison requires fromMills and toMills`,
+          );
+        }
+        assertHttpsSource(
+          comparison.fromRateSource,
+          `[${id}] mills.historicalComparison.fromRateSource`,
+        );
+        assertHttpsSource(
+          comparison.toRateSource,
+          `[${id}] mills.historicalComparison.toRateSource`,
+        );
+      }
     }
-    if (typeof record.mills.priorYear !== "number") {
-      fail(`[${id}] mills.priorYear must be a number`);
-    }
-    if (!isNonEmptyString(record.mills.currentMills)) {
-      fail(`[${id}] mills.currentMills required`);
-    }
-    if (!isNonEmptyString(record.mills.priorMills)) {
-      fail(`[${id}] mills.priorMills required`);
-    }
-    assertHttpsSource(
-      record.mills.currentRateSource,
-      `[${id}] mills.currentRateSource`,
-    );
-    assertHttpsSource(
-      record.mills.priorRateSource,
-      `[${id}] mills.priorRateSource`,
-    );
     if (record.mills.stepBody !== undefined) {
       if (!isNonEmptyString(record.mills.stepBody)) {
         fail(`[${id}] mills.stepBody must be a non-empty string when set`);
@@ -459,12 +621,29 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         fail(`[${id}] duplicate measure stepId: ${measure.stepId}`);
       }
       stepIds.add(measure.stepId);
-      if (!isNonEmptyString(measure.ballotIssue)) {
+      if (family === "metro") {
+        if (
+          measure.kind === "metro_commitment" &&
+          measure.ballotIssue !== undefined
+        ) {
+          fail(
+            `[${id}] measure ${measure.stepId} metro_commitment must not set ballotIssue`,
+          );
+        }
+        if (
+          measure.ballotIssue !== undefined &&
+          !isNonEmptyString(measure.ballotIssue)
+        ) {
+          fail(
+            `[${id}] metro measure ${measure.stepId} ballotIssue must be non-empty when set`,
+          );
+        }
+      } else if (!isNonEmptyString(measure.ballotIssue)) {
         fail(`[${id}] measure ${measure.stepId} missing ballotIssue`);
       }
       if (!MEASURE_KINDS.has(measure.kind)) {
         fail(
-          `[${id}] measure ${measure.stepId} kind must be override, bond, debt_free_mill, tabor_revenue_retention, or operations_mill`,
+          `[${id}] measure ${measure.stepId} kind is not recognized`,
         );
       }
       if (!familyPack.measureKinds.has(measure.kind)) {
@@ -475,27 +654,37 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       if (!isNonEmptyString(measure.electionMonthYear)) {
         fail(`[${id}] measure ${measure.stepId} missing electionMonthYear`);
       }
-      if (!BALLOT_TEXT_KINDS.has(measure.ballotTextKind)) {
-        fail(
-          `[${id}] measure ${measure.stepId} ballotTextKind must be notice, sample_ballot, or unavailable`,
-        );
-      }
-      // Hard-facts: ballot-framed `detail` only with live Notice / sample ballot.
-      // When unavailable, substance belongs in supportingFacts / budget, not detail.
-      if (measure.ballotTextKind === "unavailable") {
-        hasUnavailableBallotText = true;
-        if (
-          measure.detail !== undefined &&
-          typeof measure.detail === "string" &&
-          measure.detail.trim().length > 0
-        ) {
+      if (measure.kind !== "metro_commitment") {
+        if (!BALLOT_TEXT_KINDS.has(measure.ballotTextKind)) {
           fail(
-            `[${id}] measure ${measure.stepId} must omit detail when ballotTextKind is unavailable (use supportingFacts and/or budget; vote-identity body only)`,
+            `[${id}] measure ${measure.stepId} ballotTextKind must be notice, sample_ballot, or unavailable`,
           );
         }
+        // Hard-facts: ballot-framed `detail` only with live Notice / sample ballot.
+        // When unavailable, substance belongs in supportingFacts / budget, not detail.
+        if (measure.ballotTextKind === "unavailable") {
+          hasUnavailableBallotText = true;
+          if (
+            measure.detail !== undefined &&
+            typeof measure.detail === "string" &&
+            measure.detail.trim().length > 0
+          ) {
+            fail(
+              `[${id}] measure ${measure.stepId} must omit detail when ballotTextKind is unavailable (use supportingFacts and/or budget; vote-identity body only)`,
+            );
+          }
+        } else if (!isNonEmptyString(measure.detail)) {
+          fail(
+            `[${id}] measure ${measure.stepId} missing detail (required when ballotTextKind is notice or sample_ballot)`,
+          );
+        }
+        assertHttpsSource(
+          measure.ballotTextSource,
+          `[${id}] measure ${measure.stepId} ballotTextSource`,
+        );
       } else if (!isNonEmptyString(measure.detail)) {
         fail(
-          `[${id}] measure ${measure.stepId} missing detail (required when ballotTextKind is notice or sample_ballot)`,
+          `[${id}] measure ${measure.stepId} metro_commitment requires detail`,
         );
       }
       if (typeof measure.detail === "string") {
@@ -505,6 +694,11 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         );
       }
       if (measure.ballotTextLanguage !== undefined) {
+        if (family === "metro") {
+          fail(
+            `[${id}] measure ${measure.stepId} Spanish/AI ballot fallback does not apply to metro entries`,
+          );
+        }
         if (!BALLOT_TEXT_LANGUAGES.has(measure.ballotTextLanguage)) {
           fail(
             `[${id}] measure ${measure.stepId} ballotTextLanguage must be es when set`,
@@ -611,13 +805,43 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           `[${id}].measure.${measure.stepId}.titlePlain`,
         );
       }
+      if (measure.kind === "metro_authorization") {
+        if (family !== "metro") {
+          fail(
+            `[${id}] measure ${measure.stepId} metro_authorization only applies to metro entries`,
+          );
+        }
+        if (!isNonEmptyString(measure.titlePlain)) {
+          fail(
+            `[${id}] measure ${measure.stepId} metro_authorization requires titlePlain`,
+          );
+        }
+      }
+      if (measure.kind === "metro_commitment") {
+        if (family !== "metro") {
+          fail(
+            `[${id}] measure ${measure.stepId} metro_commitment only applies to metro entries`,
+          );
+        }
+        if (!isNonEmptyString(measure.titlePlain)) {
+          fail(
+            `[${id}] measure ${measure.stepId} metro_commitment requires titlePlain`,
+          );
+        }
+      }
+      if (family === "metro" && !isNonEmptyString(measure.titlePlain)) {
+        fail(`[${id}] metro measure ${measure.stepId} requires titlePlain`);
+      }
       if (measure.titlePlain !== undefined) {
         if (
           measure.kind !== "tabor_revenue_retention" &&
-          measure.kind !== "operations_mill"
+          measure.kind !== "operations_mill" &&
+          measure.kind !== "metro_authorization" &&
+          measure.kind !== "metro_commitment" &&
+          !(family === "metro" && measure.kind === "bond")
         ) {
           fail(
-            `[${id}] measure ${measure.stepId} titlePlain only on tabor_revenue_retention or operations_mill measures`,
+            `[${id}] measure ${measure.stepId} titlePlain is not valid for this family and kind`,
           );
         }
         if (!isNonEmptyString(measure.titlePlain)) {
@@ -638,10 +862,6 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           );
         }
       }
-      assertHttpsSource(
-        measure.ballotTextSource,
-        `[${id}] measure ${measure.stepId} ballotTextSource`,
-      );
       if (measure.supportingFacts !== undefined) {
         if (!Array.isArray(measure.supportingFacts)) {
           fail(
@@ -671,6 +891,13 @@ export function validateLevyAuthorityChainData(data: unknown): void {
             fact.value,
             `[${id}].measure.${measure.stepId}.supportingFacts[${factIndex}].value`,
           );
+          assertInlineTermOnRecord(
+            fact as unknown as Record<string, unknown>,
+            id,
+            "value",
+            fact.value,
+            allowedTermIds,
+          );
           if (!Array.isArray(fact.sources) || fact.sources.length === 0) {
             fail(
               `[${id}] measure ${measure.stepId} supportingFacts[${factIndex}] needs at least one source`,
@@ -684,20 +911,92 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           });
         });
       }
-      assertObject(measure.votes, `[${id}] measure ${measure.stepId} votes`);
-      for (const key of ["yes", "yesPct", "no", "noPct"] as const) {
-        if (!isNonEmptyString(measure.votes[key])) {
-          fail(`[${id}] measure ${measure.stepId} votes.${key} required`);
+      if (family === "metro") {
+        const votes = measure.votes;
+        const approval = measure.approval;
+        const hasVotes = votes !== undefined;
+        const hasResultsSource = measure.resultsSource !== undefined;
+        const hasApproval = approval !== undefined;
+        if (
+          (hasApproval && (hasVotes || hasResultsSource)) ||
+          (!hasApproval && !hasVotes && !hasResultsSource)
+        ) {
+          fail(
+            `[${id}] metro measure ${measure.stepId} must provide either approval or votes with resultsSource, but not both`,
+          );
         }
+        if (hasVotes !== hasResultsSource) {
+          fail(
+            `[${id}] metro measure ${measure.stepId} votes and resultsSource must appear together`,
+          );
+        }
+        if (approval) {
+          assertObject(
+            approval,
+            `[${id}] measure ${measure.stepId} approval`,
+          );
+          if (
+            !isNonEmptyString(approval.label) ||
+            !isNonEmptyString(approval.value)
+          ) {
+            fail(
+              `[${id}] measure ${measure.stepId} approval needs label and value`,
+            );
+          }
+          assertNoEmDash(
+            approval.value,
+            `[${id}].measure.${measure.stepId}.approval.value`,
+          );
+          assertHttpsSource(
+            approval.source,
+            `[${id}] measure ${measure.stepId} approval.source`,
+          );
+        }
+      } else if (measure.approval !== undefined) {
+        fail(
+          `[${id}] measure ${measure.stepId} approval only applies to metro entries`,
+        );
       }
-      assertHttpsSource(
-        measure.resultsSource,
-        `[${id}] measure ${measure.stepId} resultsSource`,
-      );
+      if (family !== "metro" || measure.votes !== undefined) {
+        const votes = measure.votes;
+        assertObject(votes, `[${id}] measure ${measure.stepId} votes`);
+        for (const key of ["yes", "yesPct", "no", "noPct"] as const) {
+          if (!isNonEmptyString(votes?.[key])) {
+            fail(`[${id}] measure ${measure.stepId} votes.${key} required`);
+          }
+        }
+        assertHttpsSource(
+          measure.resultsSource,
+          `[${id}] measure ${measure.stepId} resultsSource`,
+        );
+      }
       if (measure.bodyTermId === "term-bonds" && measure.kind !== "bond") {
         fail(
           `[${id}] measure ${measure.stepId} term-bonds only on bond measures`,
         );
+      }
+    }
+
+    if (family === "metro") {
+      let priorChronologyKey: number | null = null;
+      for (const measure of record.measures) {
+        let chronologyKey = 0;
+        try {
+          chronologyKey = measureElectionChronologyKey(measure.electionMonthYear);
+        } catch (error) {
+          fail(
+            `[${id}] measure ${measure.stepId} ${(error as Error).message}`,
+          );
+        }
+        if (
+          priorChronologyKey !== null &&
+          chronologyKey < priorChronologyKey
+        ) {
+          fail(
+            `[${id}] metro measures must be in chronological order by electionMonthYear`,
+          );
+        }
+        priorChronologyKey = chronologyKey;
       }
     }
 
@@ -761,10 +1060,20 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
     if (
       hasUnavailableBallotText &&
+      family !== "metro" &&
       !gapIds.has(OPEN_GAP_NO_STABLE_BALLOT_TEXT)
     ) {
       fail(
         `[${id}] openGapIds must include ${OPEN_GAP_NO_STABLE_BALLOT_TEXT} when any measure has ballotTextKind unavailable`,
+      );
+    }
+    if (
+      hasUnavailableBallotText &&
+      family === "metro" &&
+      !gapIds.has(OPEN_GAP_METRO_ELECTION_RECORDS_UNLOCATED)
+    ) {
+      fail(
+        `[${id}] metro openGapIds must include ${OPEN_GAP_METRO_ELECTION_RECORDS_UNLOCATED} when ballot wording is unavailable`,
       );
     }
     if (
@@ -869,6 +1178,13 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       for (const fact of step.facts) {
         assertNoEmDash(fact.label, `[${id}] built fact label`);
         assertNoEmDash(fact.value, `[${id}] built fact value`);
+        assertInlineTermOnRecord(
+          fact as unknown as Record<string, unknown>,
+          id,
+          "value",
+          fact.value,
+          allowedTermIds,
+        );
       }
     }
     for (const gap of built.openGaps) {

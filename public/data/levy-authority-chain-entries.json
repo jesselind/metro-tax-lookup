@@ -7,7 +7,9 @@
     "term-debt-free-schools-mill-levy",
     "term-bonds",
     "term-tabor",
-    "term-de-brucing"
+    "term-de-brucing",
+    "term-eligible-electors",
+    "term-aggregate-debt"
   ],
   "entries": [
     {
@@ -315,6 +317,97 @@
       },
       "openGapIds": [
         "no-temporary-credit-mill-split"
+      ]
+    },
+    {
+      "id": "sky-ranch-3-metro-authority-chain",
+      "family": "metro",
+      "match": {
+        "levyLineCode": "4571"
+      },
+      "authority": {
+        "displayName": "Sky Ranch Metropolitan District No. 3",
+        "countyListName": "SKY RANCH METRO DIST. #3",
+        "governingBody": "board",
+        "whoGetsBody": "This district sends its property-tax revenue to the Sky Ranch Community Authority Board (CAB) for operations, regional improvements, and CAB bond payments.",
+        "whoGetsFacts": [
+          {
+            "label": "Where the district sends the money",
+            "value": "Transfers to CAB for operations, regional improvements, and CAB bond payments",
+            "sources": [
+              {
+                "text": "Sky Ranch Metropolitan District No. 3 2026 budget",
+                "url": "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/00-B1-SRMD3---2026-Final-Budget---REMEDIATED.pdf"
+              }
+            ]
+          }
+        ]
+      },
+      "summarySource": {
+        "text": "According to Sky Ranch Metropolitan District No. 3's 2024 audit",
+        "url": "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/SRMD3-Final-Audit-FS-Report-2024_0.pdf#page=16"
+      },
+      "summary": {
+        "headlinePlain": "property taxes, revenue sharing, and the community authority agreement",
+        "headlineElection": "November 2020",
+        "summaryTermId": "term-eligible-electors",
+        "summaryTermMatch": "eligible electors"
+      },
+      "mills": {},
+      "measures": [
+        {
+          "stepId": "metro-2020-cabea-authorization",
+          "kind": "metro_authorization",
+          "electionMonthYear": "November 2020",
+          "titlePlain": "Authorizing taxes, revenue sharing, and the community authority agreement",
+          "ballotTextKind": "unavailable",
+          "ballotTextSource": {
+            "text": "Sky Ranch Metropolitan District No. 3 annual reports",
+            "url": "https://skyranch.colorado.gov/resource-center/annual-reports"
+          },
+          "supportingFacts": [
+            {
+              "label": "December 2020 county service-plan approval",
+              "value": "Arapahoe County approved the amended service plan on December 8, 2020. This was a separate county action after the election, not approval of the election result. The service plan caps aggregate debt for the applicable districts at $312 million and sets a debt tax-rate limit of 55.664 mills, subject to the plan's adjustment rules.",
+              "valueTermId": "term-aggregate-debt",
+              "valueTermMatch": "aggregate debt",
+              "sources": [
+                {
+                  "text": "Sky Ranch MD Nos. 3 and 5 official notice",
+                  "url": "https://skyranch.colorado.gov/resource-center/hb-25-1219-notices"
+                }
+              ]
+            }
+          ],
+          "approval": {
+            "label": "November 2020 authorization",
+            "value": "The district's 2024 audit says that at an election on November 3, 2020, eligible electors authorized up to $312 million in annual property taxes for each public improvement category, allowed that revenue to be shared through agreements, and approved entering the community authority agreement.",
+            "source": {
+              "text": "2024 audit, November 2020 election (page 16)",
+              "url": "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/SRMD3-Final-Audit-FS-Report-2024_0.pdf#page=16"
+            }
+          },
+          "bodyTermId": "term-eligible-electors",
+          "bodyTermMatch": "Eligible electors"
+        },
+        {
+          "stepId": "metro-2022-capital-pledge",
+          "kind": "metro_commitment",
+          "electionMonthYear": "August 2022",
+          "titlePlain": "Capital pledge to the community authority board",
+          "detail": "In August 2022, the district pledged annual property-tax revenue to the Sky Ranch Community Authority Board (CAB) to help repay CAB bonds, within the service-plan debt mill limit",
+          "approval": {
+            "label": "August 2022 Capital Pledge Agreement",
+            "value": "Pursuant to the 2020 electoral authority, the district entered a Capital Pledge Agreement with the CAB on August 1, 2022, and committed to impose an annual mill levy within service-plan debt limits to repay CAB bonds.",
+            "source": {
+              "text": "2024 audit, Capital Pledge (page 16)",
+              "url": "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/SRMD3-Final-Audit-FS-Report-2024_0.pdf#page=16"
+            }
+          }
+        }
+      ],
+      "openGapIds": [
+        "metro-election-records-unlocated"
       ]
     }
   ]

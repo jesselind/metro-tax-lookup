@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.9.0",
+    date: "2026-08-15",
+    title: "Metro authority chain: AUTH-derived rate changes and chronological trail",
+    highlights: [
+      "Metro Who authorized this? trails derive What changed? from the same county authority mill series as the history chart: always Change from last year, plus a separate Most notable change block when a larger year-to-year move exists (largest absolute adjacent move; more recent wins ties). No hand-authored metro mill numbers.",
+      "Sky Ranch Metro District No. 3 (4571) reads chronologically: November 2020 elector authorization, December 2020 county service-plan support, then the August 2022 capital pledge to the community authority board, with approval evidence on each step instead of a trailing duplicate.",
+      "Levy % PDF cites for those rate blocks come from the bundled AUTH mills data (one source of truth); non-consecutive published years are labeled as such.",
+    ],
+  },
+  {
     version: "4.8.2",
     date: "2026-08-13",
     title: "BPP hides Rent; Switch account type is Real+BPP only",

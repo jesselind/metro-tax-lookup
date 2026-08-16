@@ -173,7 +173,7 @@ describe("levyAuthorityChainValidate", () => {
     (school.authority as Record<string, unknown>).governmentBillName =
       "Cherry Creek School District";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /authority\.governmentBillName only applies to county family entries/i,
+      /authority\.governmentBillName only applies to county or metro family entries/i,
     );
   });
 
@@ -196,7 +196,7 @@ describe("levyAuthorityChainValidate", () => {
     ).find((m) => m.kind === "override")!;
     override.titlePlain = "Not a TABOR vote";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /titlePlain only on tabor_revenue_retention or operations_mill/i,
+      /titlePlain is not valid for this family and kind/i,
     );
   });
 
@@ -221,5 +221,76 @@ describe("levyAuthorityChainValidate", () => {
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
       /no-temporary-credit-mill-split requires exactly one tabor_revenue_retention measure with maxAuthorizedMills/i,
     );
+  });
+
+  it("allows a metro official approval record without vote totals", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const metro = entries.find(
+      (entry) => entry.id === "sky-ranch-3-metro-authority-chain",
+    )!;
+    const measure = (metro.measures as Array<Record<string, unknown>>)[0]!;
+
+    expect(measure.votes).toBeUndefined();
+    expect(measure.resultsSource).toBeUndefined();
+    expect(() => validateLevyAuthorityChainData(data)).not.toThrow();
+  });
+
+  it("rejects authored historicalComparison on metro mills", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const metro = entries.find(
+      (entry) => entry.id === "sky-ranch-3-metro-authority-chain",
+    )!;
+    const mills = metro.mills as Record<string, unknown>;
+    mills.historicalComparison = { label: "x", fromYear: 2020, toYear: 2021 };
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /must not set historicalComparison/i,
+    );
+  });
+
+  it("requires metro measures in chronological order", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const metro = entries.find(
+      (entry) => entry.id === "sky-ranch-3-metro-authority-chain",
+    )!;
+    const measures = metro.measures as Array<Record<string, unknown>>;
+    const pledge = measures.find(
+      (measure) => measure.stepId === "metro-2022-capital-pledge",
+    )!;
+    const authorization = measures.find(
+      (measure) => measure.stepId === "metro-2020-cabea-authorization",
+    )!;
+    metro.measures = [pledge, authorization];
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /chronological order/i,
+    );
+  });
+
+  it("does not allow a metro authorization with no cited approval evidence", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const metro = entries.find(
+      (entry) => entry.id === "sky-ranch-3-metro-authority-chain",
+    )!;
+    const measure = (metro.measures as Array<Record<string, unknown>>)[0]!;
+    delete measure.approval;
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /either approval or votes with resultsSource, but not both/i,
+    );
+  });
+
+  it("still requires certified vote totals for school and county entries", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const school = entries.find((entry) => entry.family === "school")!;
+    const measure = (school.measures as Array<Record<string, unknown>>)[0]!;
+    delete measure.votes;
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(/votes/i);
   });
 });

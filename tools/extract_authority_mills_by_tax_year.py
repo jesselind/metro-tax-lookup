@@ -51,6 +51,19 @@ DEFAULT_PDF_BY_YEAR: Dict[int, Path] = {
   2024: Path("supporting-data/certs/2024 Taxing District Levy Percentages.pdf"),
   2025: Path("supporting-data/certs/2025 Taxing District Levy Percentage.pdf"),
 }
+
+# Resident-facing https deep-links (files.arapahoeco.gov). Keep in sync with
+# `authorityMillsHistory.ts` consumers of `_meta.sources[].residentUrl`.
+RESIDENT_URL_BY_TAX_YEAR: Dict[int, str] = {
+  2018: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2018%20Taxing%20District%20Levy%20Percentages.pdf",
+  2019: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2019%20Taxing%20District%20Levy%20Percentages.pdf",
+  2020: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2020%20Taxing%20District%20Levy%20Percentages.pdf",
+  2021: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2021%20Taxing%20District%20Levy%20Percentages.pdf",
+  2022: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2022%20Taxing%20District%20Levy%20Percentages.pdf",
+  2023: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/Taxing%20District%20Levy%20Percentage%202023.pdf?t=202402070945160",
+  2024: "https://files.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150",
+  2025: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490",
+}
 DEFAULT_OUT = Path("public/data/arapahoe-authority-mills-by-tax-year.json")
 DEFAULT_AUDIT_DIR = Path("supporting-data/authority-mills")
 
@@ -326,12 +339,18 @@ def build_shipping_payload(
 
   sources = []
   for tax_year in tax_years:
+    resident_url = RESIDENT_URL_BY_TAX_YEAR.get(tax_year)
+    if not resident_url:
+      raise ValueError(
+        f"Missing RESIDENT_URL_BY_TAX_YEAR entry for tax year {tax_year}",
+      )
     sources.append(
       {
         "taxYear": tax_year,
         "type": "taxing_district_levy_percentage",
         "title": f"Taxing District Levy Percentage - Tax Year {tax_year}",
         "file": source_files[tax_year],
+        "residentUrl": resident_url,
       }
     )
 

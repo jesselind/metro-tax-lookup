@@ -53,12 +53,14 @@ export const ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB =
 export const ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY =
   "https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php";
 
+import { levyPercentageResidentUrlForTaxYear } from "@/lib/authorityMillsHistory";
+
 /**
- * Direct files.arapahoeco.gov PDF (www.arapahoeco.gov/Assessor/... only 302s here
- * and can 403 datacenter probes). Prefer this host for Assessor file deep-links.
+ * Tax Year 2025 Levy % PDF (files.arapahoeco.gov). Sourced from the AUTH mills
+ * bundle so cites stay aligned with chart and authority-chain mill blocks.
  */
 export const ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF =
-  "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490";
+  levyPercentageResidentUrlForTaxYear(2025);
 
 export const ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF =
   "https://files.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/2025%20Certification%20of%20Levies%20and%20Revenues.pdf?t=202412301249070";

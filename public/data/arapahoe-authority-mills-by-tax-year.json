@@ -19,49 +19,57 @@
         "taxYear": 2018,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2018",
-        "file": "supporting-data/certs/2018 Taxing District Levy Percentages.pdf"
+        "file": "supporting-data/certs/2018 Taxing District Levy Percentages.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2018%20Taxing%20District%20Levy%20Percentages.pdf"
       },
       {
         "taxYear": 2019,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2019",
-        "file": "supporting-data/certs/2019 Taxing District Levy Percentages.pdf"
+        "file": "supporting-data/certs/2019 Taxing District Levy Percentages.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2019%20Taxing%20District%20Levy%20Percentages.pdf"
       },
       {
         "taxYear": 2020,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2020",
-        "file": "supporting-data/certs/2020 Taxing District Levy Percentages.pdf"
+        "file": "supporting-data/certs/2020 Taxing District Levy Percentages.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2020%20Taxing%20District%20Levy%20Percentages.pdf"
       },
       {
         "taxYear": 2021,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2021",
-        "file": "supporting-data/certs/2021 Taxing District Levy Percentages.pdf"
+        "file": "supporting-data/certs/2021 Taxing District Levy Percentages.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2021%20Taxing%20District%20Levy%20Percentages.pdf"
       },
       {
         "taxYear": 2022,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2022",
-        "file": "supporting-data/certs/2022 Taxing District Levy Percentages.pdf"
+        "file": "supporting-data/certs/2022 Taxing District Levy Percentages.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2022%20Taxing%20District%20Levy%20Percentages.pdf"
       },
       {
         "taxYear": 2023,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2023",
-        "file": "supporting-data/certs/2023 Taxing District Levy Percentage.pdf"
+        "file": "supporting-data/certs/2023 Taxing District Levy Percentage.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/Taxing%20District%20Levy%20Percentage%202023.pdf?t=202402070945160"
       },
       {
         "taxYear": 2024,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2024",
-        "file": "supporting-data/certs/2024 Taxing District Levy Percentages.pdf"
+        "file": "supporting-data/certs/2024 Taxing District Levy Percentages.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
       },
       {
         "taxYear": 2025,
         "type": "taxing_district_levy_percentage",
         "title": "Taxing District Levy Percentage - Tax Year 2025",
-        "file": "supporting-data/certs/2025 Taxing District Levy Percentage.pdf"
+        "file": "supporting-data/certs/2025 Taxing District Levy Percentage.pdf",
+        "residentUrl": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
       }
     ],
     "statsByTaxYear": {

@@ -373,13 +373,28 @@ export default function SourcesPage() {
           </strong>
           {" "}
           when we cannot yet split a year-to-year rate change into parts, or
-          cannot link ballot wording. In rare cases the only county sample ballot
-          we can link is in another language; we link that official PDF, say when
+          cannot link ballot wording. Metro district elections can have a
+          different public record than county and school elections. When the
+          district publishes an annual report or audit saying what eligible
+          electors (the people legally allowed to vote in that district
+          election) authorized, but no public ballot wording or certified vote
+          count can be found, we link that district record and leave the missing
+          details blank. For metro
+          trails, rate history in{" "}
+          <strong className="font-semibold text-slate-900">
+            What changed?
+          </strong>
+          {" "}
+          comes from the same county authority mill totals used by the mill-rate
+          history chart: always the change from last year, and a separate Most
+          notable change block when a larger year-to-year move exists. In one
+          county case, the only sample ballot we can link is in
+          another language; we link that official PDF, say when
           we cannot find English among the currently published files, and show
           AI-translated English in a collapsed disclosure labeled as not legal
           ballot text (not an official county translation). That does not mean
-          an English ballot never existed. The same pattern may apply on other
-          trails if a similar gap appears. Data
+          an English ballot never existed. This translation fallback is not a
+          metro district template. Data
           lives in{" "}
           <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
             public/data/levy-authority-chain-entries.json

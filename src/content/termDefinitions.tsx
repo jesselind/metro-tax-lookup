@@ -902,37 +902,35 @@ export function TermTaxEntityAside() {
 }
 
 /**
- * Full glossary list for `/glossary`: JSON, data mart, TIGER, then tool terms A-Z by title
- * (including NOV comps grid row notes). Keep `GLOSSARY_FULL_ENTRY_TERM_IDS` in sync
- * (`src/lib/glossary.fullEntries.test.ts`).
+ * Full glossary list for `/glossary`, A-Z by the title a resident sees (not by component
+ * or `term-*` id), so lookups behave like a glossary. Insert new asides in title order.
+ * Keep `GLOSSARY_FULL_ENTRY_TERM_IDS` in sync (`src/lib/glossary.fullEntries.test.ts`).
  */
 export function AllTermDefinitionAsides() {
   return (
     <>
-      <TermJsonAside />
-      <TermDataMartAside />
-      <TermTigerAside />
       <TermActualValueAside />
       <TermAinAside />
       <TermAssessedValueAside />
       <TermAssessmentYearAside />
       <TermCompsAside />
+      <TermDataMartAside />
       <TermDeBrucingAside />
       <TermDebtFreeSchoolsMillLevyAside />
       <TermNovCompsImprovementStyleAside />
       <TermNovCompsImprovementTypeAside />
+      <TermJsonAside />
       <TermNovCompsLucAside />
-      <TermNovCompsValuationGradeAside />
       <TermLegalDescriptionAside />
       <TermLgIdAside />
       <TermMillLevyAside />
       <TermNoticeOfValuationAside />
       <TermOwnerListAside />
       <TermParcelAside />
-      <TermParcelRecordAside />
       <TermPhotoSketchAside />
       <TermPinAside />
       <TermPropertyClassificationAside />
+      <TermParcelRecordAside />
       <TermSitusAddressAside />
       <TermSpecialDistrictsAside />
       <TermStateUseAside />
@@ -940,6 +938,8 @@ export function AllTermDefinitionAsides() {
       <TermTagAside />
       <TermTaxEntityAside />
       <TermTaxYearAside />
+      <TermTigerAside />
+      <TermNovCompsValuationGradeAside />
     </>
   );
 }

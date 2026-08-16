@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
+import { isFlowGlossaryTermId } from "@/components/GlossaryTermPopover";
 import {
   FACT_LABEL_COUNTY_LIST_NAME,
 } from "@/content/levyAuthorityChainTemplates";
@@ -90,6 +91,14 @@ describe("levyAuthorityChain", () => {
     expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain("term-bonds");
     expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain("term-tabor");
     expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain("term-de-brucing");
+    expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain(
+      "term-eligible-electors",
+    );
+    expect(LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS).toContain(
+      "term-aggregate-debt",
+    );
+    expect(isFlowGlossaryTermId("term-eligible-electors")).toBe(true);
+    expect(isFlowGlossaryTermId("term-aggregate-debt")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-mill-levy")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-mills")).toBe(true);
     expect(
@@ -98,6 +107,8 @@ describe("levyAuthorityChain", () => {
     expect(isLevyAuthorityChainInlineTermId("term-bonds")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-tabor")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-de-brucing")).toBe(true);
+    expect(isLevyAuthorityChainInlineTermId("term-eligible-electors")).toBe(true);
+    expect(isLevyAuthorityChainInlineTermId("term-aggregate-debt")).toBe(true);
     expect(isLevyAuthorityChainInlineTermId("term-lg-id")).toBe(false);
     for (const entry of LEVY_AUTHORITY_CHAIN_ENTRIES) {
       if (entry.summaryTermId) {

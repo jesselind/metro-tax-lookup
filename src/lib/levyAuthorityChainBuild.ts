@@ -25,9 +25,7 @@ import {
   buildSummaryVoterClause,
   COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
   METRO_GOVERNMENT_BILL_NAME_DEFAULT,
-  FACT_LABEL_BALLOT_TEXT,
   FACT_LABEL_COUNTY_LIST_NAME,
-  FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY,
@@ -45,15 +43,22 @@ import {
   type LevyAuthorityChainMeasureKind,
   type LevyAuthorityChainMillsBodyTerm,
   type LevyAuthorityChainOpenGapId,
-  STEP_TITLE_HOW_VOTED,
   STEP_TITLE_WHAT_CHANGED,
   STEP_TITLE_WHO_GETS,
-  unavailableBallotMeasureBody,
-  VOTES_STEP_BODY,
   voteFactLabel,
-  whoGetsBody,
 } from "@/content/levyAuthorityChainTemplates";
 import { AUTHORITY_CHAIN_AI_TRANSLATION_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
+import {
+  formatMetroMillsChangeFactValue,
+  METRO_MILLS_CHANGE_FROM_LAST_YEAR_LABEL,
+  METRO_MILLS_MOST_NOTABLE_CHANGE_LABEL,
+  selectMetroAuthorityMillsChangeBlocks,
+  type AuthorityMillsYoYChange,
+} from "@/lib/authorityMillsChangeBlocks";
+import {
+  authorityMillsSeries,
+  levyPercentageResidentLinkForTaxYear,
+} from "@/lib/authorityMillsHistory";
 import type { LevyEntryMatchKeys } from "@/lib/levyEntryMatch";
 import type {
   LevyAuthorityChainEntry,
@@ -68,7 +73,8 @@ export type LevyAuthorityChainSourceLink = LevyAuthorityChainLink;
 
 export type LevyAuthorityChainMeasureRecord = {
   stepId: string;
-  ballotIssue: string;
+  /** County-style ballot label when one is published. Optional for metro records. */
+  ballotIssue?: string;
   kind: LevyAuthorityChainMeasureKind;
   electionMonthYear: string;
   /**
@@ -121,13 +127,22 @@ export type LevyAuthorityChainMeasureRecord = {
    * Label and value must match what that source says; do not sell as ballot text.
    */
   supportingFacts?: LevyAuthorityChainFact[];
-  votes: {
+  votes?: {
     yes: string;
     yesPct: string;
     no: string;
     noPct: string;
   };
-  resultsSource: LevyAuthorityChainSourceLink;
+  resultsSource?: LevyAuthorityChainSourceLink;
+  /**
+   * Cited authorization record used when public yes/no totals are unavailable.
+   * Metro entries may use this instead of `votes` + `resultsSource`.
+   */
+  approval?: {
+    label: string;
+    value: string;
+    source: LevyAuthorityChainSourceLink;
+  };
   titleTermId?: string;
   titleTermMatch?: string;
   bodyTermId?: string;
@@ -135,7 +150,10 @@ export type LevyAuthorityChainMeasureRecord = {
 };
 
 export type LevyAuthorityChainSummarySpec = {
-  headlineIssues: string[];
+  /** School/county ballot labels. Metro may omit when no letter is public. */
+  headlineIssues?: string[];
+  /** Metro authorization substance, without an invented ballot label. */
+  headlinePlain?: string;
   headlineElection: string;
   headlineNote?: string;
   summaryTermId?: string;
@@ -148,19 +166,37 @@ export type LevyAuthorityChainSummarySpec = {
 };
 
 export type LevyAuthorityChainMillsSpec = {
-  currentYear: number;
-  currentMills: string;
-  priorYear: number;
-  priorMills: string;
-  currentRateSource: LevyAuthorityChainSourceLink;
-  priorRateSource: LevyAuthorityChainSourceLink;
+  /**
+   * School/county: authored current/prior rates with cites.
+   * Metro: omit these; rates are derived from the AUTH mills series
+   * ({@link authorityMillsSeries}) shared with the history chart.
+   */
+  currentYear?: number;
+  currentMills?: string;
+  priorYear?: number;
+  priorMills?: string;
+  currentRateSource?: LevyAuthorityChainSourceLink;
+  priorRateSource?: LevyAuthorityChainSourceLink;
   /**
    * Optional entry-specific "What changed?" takeaway. When omitted, the family
-   * pack default chrome is used (shared school/county rate-table sentence).
+   * pack default chrome is used.
    */
   stepBody?: string;
   /** Glossary popovers for `stepBody` (or pack default when `stepBody` omitted). */
   bodyTerms?: LevyAuthorityChainMillsBodyTerm[];
+  /**
+   * School/county only: optional older comparison fact. Metro must omit this;
+   * most-notable change is derived from the AUTH series instead.
+   */
+  historicalComparison?: {
+    label: string;
+    fromYear: number;
+    fromMills: string;
+    fromRateSource: LevyAuthorityChainSourceLink;
+    toYear: number;
+    toMills: string;
+    toRateSource: LevyAuthorityChainSourceLink;
+  };
 };
 
 export type LevyAuthorityChainBudgetSpec = {
@@ -181,6 +217,9 @@ export type LevyAuthorityChainAuthoritySpec = {
    * Defaults to {@link COUNTY_GOVERNMENT_BILL_NAME_DEFAULT} when omitted.
    */
   governmentBillName?: string;
+  /** Optional entry-specific recipient explanation with cited facts. */
+  whoGetsBody?: string;
+  whoGetsFacts?: LevyAuthorityChainFact[];
 };
 
 /** Structured JSON entry (version 2). No free-form step prose. */
@@ -199,9 +238,11 @@ export type LevyAuthorityChainEntryRecord = {
 };
 
 function ballotTextFactValue(
+  family: LevyAuthorityChainFamily,
   kind: "notice" | "sample_ballot" | "unavailable",
   language?: "es",
 ): string {
+  const pack = getAuthorityChainFamilyPack(family);
   switch (kind) {
     case "notice":
       return FACT_VALUE_COUNTY_ELECTION_NOTICE;
@@ -210,7 +251,7 @@ function ballotTextFactValue(
         ? FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY
         : FACT_VALUE_COUNTY_SAMPLE_BALLOT;
     case "unavailable":
-      return FACT_VALUE_BALLOT_TEXT_UNAVAILABLE;
+      return pack.unavailableBallotFactValue;
   }
 }
 
@@ -232,8 +273,17 @@ function buildSummary(
   record: LevyAuthorityChainEntryRecord,
   summaryAttribution: string,
 ): string {
+  if (record.family === "metro") {
+    const headlinePlain = record.summary.headlinePlain?.trim();
+    if (!headlinePlain) {
+      throw new Error(
+        `[${record.id}] metro summary.headlinePlain must be non-empty`,
+      );
+    }
+    return `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${record.summary.headlineElection}.`;
+  }
   const headline = buildSummaryVoterClause(
-    record.summary.headlineIssues,
+    record.summary.headlineIssues ?? [],
     record.summary.headlineElection,
     record.summary.headlineNote,
   );
@@ -261,7 +311,7 @@ function buildSummaryIssueMarks(
   summary: string,
 ): LevyAuthorityChainSummaryIssueMark[] {
   const issueIds = new Set<string>();
-  for (const id of record.summary.headlineIssues) {
+  for (const id of record.summary.headlineIssues ?? []) {
     issueIds.add(id);
   }
   for (const also of record.summary.also ?? []) {
@@ -278,9 +328,11 @@ function buildSummaryIssueMarks(
     ) {
       continue;
     }
+    const issue = measure.ballotIssue;
+    if (!issue) continue;
     const url = measure.ballotTextSource.url.trim();
-    if (!url || ballotTextUrlByIssue.has(measure.ballotIssue)) continue;
-    ballotTextUrlByIssue.set(measure.ballotIssue, url);
+    if (!url || ballotTextUrlByIssue.has(issue)) continue;
+    ballotTextUrlByIssue.set(issue, url);
   }
 
   const marks: LevyAuthorityChainSummaryIssueMark[] = [];
@@ -298,8 +350,8 @@ function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityC
   return {
     id: "who-sets",
     title: STEP_TITLE_WHO_GETS,
-    body: whoGetsBody(record.authority.displayName),
-    facts: [
+    body: record.authority.whoGetsBody ?? record.authority.displayName,
+    facts: record.authority.whoGetsFacts ?? [
       {
         label: FACT_LABEL_COUNTY_LIST_NAME,
         value: record.authority.countyListName,
@@ -309,28 +361,91 @@ function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityC
   };
 }
 
-function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
-  const pack = getAuthorityChainFamilyPack(record.family);
-  const { mills } = record;
-  const body = mills.stepBody?.trim() ? mills.stepBody.trim() : pack.millsStepBody;
-  const terms = mills.bodyTerms ?? pack.millsBodyTerms;
-  const [primary, ...rest] = terms;
+function levyPercentageSourceForYear(
+  taxYear: number,
+): LevyAuthorityChainSourceLink {
+  return levyPercentageResidentLinkForTaxYear(taxYear);
+}
+
+function buildMetroMillsChangeFact(
+  label: string,
+  change: AuthorityMillsYoYChange,
+): LevyAuthorityChainFact {
+  return {
+    label,
+    value: formatMetroMillsChangeFactValue(change),
+    sources: [
+      levyPercentageSourceForYear(change.fromYear),
+      levyPercentageSourceForYear(change.toYear),
+    ],
+  };
+}
+
+/**
+ * Metro "What changed?": derive Change from last year and optional Most notable
+ * change from the AUTH series (same numbers as the mills history chart).
+ */
+function buildMetroMillsStep(
+  record: LevyAuthorityChainEntryRecord,
+): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack("metro");
+  const code = record.match.levyLineCode?.trim();
+  if (!code) {
+    throw new Error(
+      `[${record.id}] metro mills step requires match.levyLineCode for AUTH series lookup`,
+    );
+  }
+  const series = authorityMillsSeries(code);
+  const { changeFromLastYear, mostNotableChange } =
+    selectMetroAuthorityMillsChangeBlocks(series);
+  if (!changeFromLastYear) {
+    throw new Error(
+      `[${record.id}] AUTH mills series for ${code} needs at least two published years`,
+    );
+  }
+
+  const facts: LevyAuthorityChainFact[] = [
+    buildMetroMillsChangeFact(
+      METRO_MILLS_CHANGE_FROM_LAST_YEAR_LABEL,
+      changeFromLastYear,
+    ),
+  ];
+  if (mostNotableChange) {
+    facts.push(
+      buildMetroMillsChangeFact(
+        METRO_MILLS_MOST_NOTABLE_CHANGE_LABEL,
+        mostNotableChange,
+      ),
+    );
+  }
+
+  return millsStepWithTerms({
+    body: millsStepBodyTrim(record, pack.millsStepBody),
+    terms: record.mills.bodyTerms ?? pack.millsBodyTerms,
+    facts,
+  });
+}
+
+function millsStepBodyTrim(
+  record: LevyAuthorityChainEntryRecord,
+  packDefault: string,
+): string {
+  return record.mills.stepBody?.trim()
+    ? record.mills.stepBody.trim()
+    : packDefault;
+}
+
+function millsStepWithTerms(args: {
+  body: string;
+  terms: readonly LevyAuthorityChainMillsBodyTerm[];
+  facts: LevyAuthorityChainFact[];
+}): LevyAuthorityChainStep {
+  const [primary, ...rest] = args.terms;
   const step: LevyAuthorityChainStep = {
     id: "certified-mills",
     title: STEP_TITLE_WHAT_CHANGED,
-    body,
-    facts: [
-      {
-        label: millsYearLabel(mills.currentYear),
-        value: mills.currentMills,
-        sources: [mills.currentRateSource],
-      },
-      {
-        label: millsYearLabel(mills.priorYear),
-        value: mills.priorMills,
-        sources: [mills.priorRateSource],
-      },
-    ],
+    body: args.body,
+    facts: args.facts,
   };
   if (primary) {
     step.bodyTermId = primary.termId;
@@ -340,6 +455,57 @@ function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityCha
     step.bodyTerms = rest.map((t) => ({ termId: t.termId, match: t.match }));
   }
   return step;
+}
+
+function buildAuthoredMillsStep(
+  record: LevyAuthorityChainEntryRecord,
+): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack(record.family);
+  const { mills } = record;
+  if (
+    typeof mills.currentYear !== "number" ||
+    typeof mills.priorYear !== "number" ||
+    !mills.currentMills?.trim() ||
+    !mills.priorMills?.trim() ||
+    !mills.currentRateSource ||
+    !mills.priorRateSource
+  ) {
+    throw new Error(
+      `[${record.id}] school/county mills require current/prior year, mills, and rate sources`,
+    );
+  }
+  const facts: LevyAuthorityChainFact[] = [
+    {
+      label: millsYearLabel(mills.currentYear),
+      value: mills.currentMills,
+      sources: [mills.currentRateSource],
+    },
+    {
+      label: millsYearLabel(mills.priorYear),
+      value: mills.priorMills,
+      sources: [mills.priorRateSource],
+    },
+  ];
+  if (mills.historicalComparison) {
+    const comparison = mills.historicalComparison;
+    facts.push({
+      label: comparison.label,
+      value: `${comparison.fromYear}: ${comparison.fromMills} mills\n${comparison.toYear}: ${comparison.toMills} mills`,
+      sources: [comparison.fromRateSource, comparison.toRateSource],
+    });
+  }
+  return millsStepWithTerms({
+    body: millsStepBodyTrim(record, pack.millsStepBody),
+    terms: mills.bodyTerms ?? pack.millsBodyTerms,
+    facts,
+  });
+}
+
+function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
+  if (record.family === "metro") {
+    return buildMetroMillsStep(record);
+  }
+  return buildAuthoredMillsStep(record);
 }
 
 function buildMeasureStep(
@@ -356,8 +522,14 @@ function buildMeasureStep(
   let body: string;
   let bodyDisclosure: LevyAuthorityChainStep["bodyDisclosure"];
   let bodyLink: LevyAuthorityChainStep["bodyLink"];
-  if (measure.ballotTextKind === "unavailable") {
-    body = unavailableBallotMeasureBody(
+  if (measure.kind === "metro_commitment") {
+    body = pack.ballotStepBody(measure.kind, measure.detail ?? "", bodyLead, {
+      maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
+      maxAuthorizedMills: measure.maxAuthorizedMills,
+      governmentBillName,
+    });
+  } else if (measure.ballotTextKind === "unavailable") {
+    body = pack.unavailableMeasureBody(
       measure.ballotIssue,
       measure.electionMonthYear,
     );
@@ -369,7 +541,7 @@ function buildMeasureStep(
     // Hard-facts: Spanish sample is official; AI English stays collapsed;
     // English-not-located sentence links the file-library hunt hub.
     body = nonEnglishSampleAiTranslatedMeasureIntro({
-      ballotIssue: measure.ballotIssue,
+      ballotIssue: measure.ballotIssue ?? "",
       electionMonthYear: measure.electionMonthYear,
       languageLabel: "Spanish",
     });
@@ -393,17 +565,59 @@ function buildMeasureStep(
       governmentBillName,
     });
   }
+  const omitDuplicateMetroUnavailableFact =
+    family === "metro" &&
+    measure.ballotTextKind === "unavailable" &&
+    (measure.approval !== undefined ||
+      (measure.votes !== undefined && measure.resultsSource !== undefined));
   const facts: LevyAuthorityChainFact[] = [
-    {
-      label: FACT_LABEL_BALLOT_TEXT,
-      value: ballotTextFactValue(
-        measure.ballotTextKind,
-        measure.ballotTextLanguage,
-      ),
-      sources: [measure.ballotTextSource],
-    },
-    ...(measure.supportingFacts ?? []),
+    ...(measure.kind !== "metro_commitment" &&
+    !omitDuplicateMetroUnavailableFact
+      ? [
+          {
+            label: pack.ballotFactLabel,
+            value: ballotTextFactValue(
+              family,
+              measure.ballotTextKind,
+              measure.ballotTextLanguage,
+            ),
+            sources: [measure.ballotTextSource],
+          },
+        ]
+      : []),
   ];
+  if (family !== "metro") {
+    facts.push(...(measure.supportingFacts ?? []));
+  }
+  // Metro: keep approval/votes on the measure step so chronology stays in-trail
+  // (no separate trailing "How this was authorized" dump of the same cites).
+  // Approval comes before supporting facts so an election is not displayed
+  // after a later county action described by those supporting facts.
+  if (family === "metro") {
+    if (measure.votes && measure.resultsSource) {
+      facts.push({
+        label: metroVoteFactLabel(measure),
+        value: formatVoteTotals(
+          measure.votes.yes,
+          measure.votes.yesPct,
+          measure.votes.no,
+          measure.votes.noPct,
+        ),
+        sources: [measure.resultsSource],
+      });
+    } else if (measure.approval) {
+      facts.push({
+        label: measure.approval.label,
+        value: measure.approval.value,
+        sources: [measure.approval.source],
+      });
+    } else {
+      throw new Error(
+        `[${record.id}] metro measure ${measure.stepId} needs votes + resultsSource or approval`,
+      );
+    }
+    facts.push(...(measure.supportingFacts ?? []));
+  }
   return {
     id: measure.stepId,
     title: pack.ballotStepTitle(measure.ballotIssue, measure.kind, {
@@ -421,21 +635,47 @@ function buildMeasureStep(
   };
 }
 
-function buildVotesStep(measures: LevyAuthorityChainMeasureRecord[]): LevyAuthorityChainStep {
-  const facts: LevyAuthorityChainFact[] = measures.map((m) => ({
-    label: voteFactLabel(m.ballotIssue, m.electionMonthYear),
-    value: formatVoteTotals(
-      m.votes.yes,
-      m.votes.yesPct,
-      m.votes.no,
-      m.votes.noPct,
-    ),
-    sources: [m.resultsSource],
-  }));
+/** Vote fact label: Ballot Issue prefix only when a letter is published. */
+function metroVoteFactLabel(measure: LevyAuthorityChainMeasureRecord): string {
+  if (measure.ballotIssue) {
+    return voteFactLabel(measure.ballotIssue, measure.electionMonthYear);
+  }
+  const title = measure.titlePlain?.trim() || "Authorization";
+  return `${title} (${measure.electionMonthYear})`;
+}
+
+function buildApprovalStep(
+  record: LevyAuthorityChainEntryRecord,
+): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack(record.family);
+  const facts: LevyAuthorityChainFact[] = record.measures.map((measure) => {
+    if (measure.votes && measure.resultsSource) {
+      return {
+        label: metroVoteFactLabel(measure),
+        value: formatVoteTotals(
+          measure.votes.yes,
+          measure.votes.yesPct,
+          measure.votes.no,
+          measure.votes.noPct,
+        ),
+        sources: [measure.resultsSource],
+      };
+    }
+    if (!measure.approval) {
+      throw new Error(
+        `[${record.id}] measure ${measure.stepId} needs votes + resultsSource or approval`,
+      );
+    }
+    return {
+      label: measure.approval.label,
+      value: measure.approval.value,
+      sources: [measure.approval.source],
+    };
+  });
   return {
-    id: "county-reported-results",
-    title: STEP_TITLE_HOW_VOTED,
-    body: VOTES_STEP_BODY,
+    id: record.family === "metro" ? "official-authorization-record" : "county-reported-results",
+    title: pack.approvalStepTitle,
+    body: pack.approvalStepBody,
     facts,
   };
 }
@@ -470,26 +710,34 @@ function buildOpenGaps(
         (m) => m.kind === "tabor_revenue_retention",
       );
       const tabor = taborMeasures[0];
-      if (
-        taborMeasures.length !== 1 ||
-        !tabor ||
-        typeof tabor.maxAuthorizedMills !== "number" ||
-        !Number.isFinite(tabor.maxAuthorizedMills)
-      ) {
-        throw new Error(
-          `[${record.id}] openGap ${OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT} requires exactly one tabor_revenue_retention measure with maxAuthorizedMills`,
-        );
-      }
-      return {
-        id,
-        body: temporaryCreditMillSplitOpenGapBody({
-          publisherBillName: governmentBillNameForRecord(record),
-          currentMills: record.mills.currentMills,
-          currentYear: record.mills.currentYear,
-          ballotIssue: tabor.ballotIssue,
-          maxAuthorizedMills: tabor.maxAuthorizedMills,
-        }),
-      };
+        if (
+          taborMeasures.length !== 1 ||
+          !tabor ||
+          typeof tabor.maxAuthorizedMills !== "number" ||
+          !Number.isFinite(tabor.maxAuthorizedMills)
+        ) {
+          throw new Error(
+            `[${record.id}] openGap ${OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT} requires exactly one tabor_revenue_retention measure with maxAuthorizedMills`,
+          );
+        }
+        if (
+          !record.mills.currentMills?.trim() ||
+          typeof record.mills.currentYear !== "number"
+        ) {
+          throw new Error(
+            `[${record.id}] openGap ${OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT} requires authored mills.currentMills and mills.currentYear`,
+          );
+        }
+        return {
+          id,
+          body: temporaryCreditMillSplitOpenGapBody({
+            publisherBillName: governmentBillNameForRecord(record),
+            currentMills: record.mills.currentMills,
+            currentYear: record.mills.currentYear,
+            ballotIssue: tabor.ballotIssue,
+            maxAuthorizedMills: tabor.maxAuthorizedMills,
+          }),
+        };
     }
     return {
       id,
@@ -534,8 +782,12 @@ export function buildLevyAuthorityChainEntry(
     buildWhoSetsStep(record),
     buildMillsStep(record),
     ...record.measures.map((m) => buildMeasureStep(record, m)),
-    buildVotesStep(record.measures),
   ];
+  // School/county: separate certified-results step. Metro folds approval onto
+  // each measure so the trail stays chronological.
+  if (record.family !== "metro") {
+    steps.push(buildApprovalStep(record));
+  }
 
   if (record.budget) {
     steps.push(buildBudgetStep(record.family, record.budget));
