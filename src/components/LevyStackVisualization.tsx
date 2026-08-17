@@ -1310,6 +1310,7 @@ export function LevyStackVisualization({
           authorityLabel={detailContext.authority}
           levyLineCode={detailContext.line.levyLineCode}
           sourceTagId={detailContext.line.sourceTagId}
+          taxAreaShortCode={loadedParcelMeta?.tagShortDescr}
           millsLabel={formatMills(detailContext.line.mills)}
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}

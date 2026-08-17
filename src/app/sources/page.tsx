@@ -267,6 +267,14 @@ export default function SourcesPage() {
           vs{" "}
           <strong className="font-semibold text-slate-900">Tax Year 2024</strong>
           {", joined by the authority code on each stack row. "}
+          When you open one of those rate-table sources from{" "}
+          <strong className="font-semibold text-slate-900">
+            Who authorized this?
+          </strong>
+          , the app uses the open property&apos;s tax area and the authority code
+          to send you to the exact PDF page when that historical combination is
+          in the county table. If it is not, the link opens the correct year&apos;s
+          PDF at the start of the file rather than guessing a page.{" "}
           When any authority&apos;s rate changed, the app shows a{" "}
           <strong className="font-semibold text-slate-900">Changed</strong>
           {" "}
@@ -337,6 +345,10 @@ export default function SourcesPage() {
           <strong className="font-semibold text-slate-900">0601</strong>
           ; Arapahoe County, AUTH{" "}
           <strong className="font-semibold text-slate-900">2998</strong>
+          ; Sky Ranch Metropolitan District No. 3, AUTH{" "}
+          <strong className="font-semibold text-slate-900">4571</strong>
+          ; South Metro Fire Rescue, AUTH{" "}
+          <strong className="font-semibold text-slate-900">4100</strong>
           ), tile details can show a plain-language trail from voters and the
           governing body to the published rate, with{" "}
           <strong className="font-semibold text-slate-900">See each step</strong>
@@ -379,7 +391,7 @@ export default function SourcesPage() {
           electors (the people legally allowed to vote in that district
           election) authorized, but no public ballot wording or certified vote
           count can be found, we link that district record and leave the missing
-          details blank. For metro
+          details blank. For metro and fire
           trails, rate history in{" "}
           <strong className="font-semibold text-slate-900">
             What changed?
@@ -387,7 +399,11 @@ export default function SourcesPage() {
           {" "}
           comes from the same county authority mill totals used by the mill-rate
           history chart: always the change from last year, and a separate Most
-          notable change block when a larger year-to-year move exists. In one
+          notable change block when a larger year-to-year move exists. Fire
+          protection district trails (such as South Metro Fire Rescue Ballot
+          Issue 7A) still use county Ballot Issue letters and certified vote
+          totals when those exist; when the district covers more than one
+          county, Arapahoe vote totals are labeled as Arapahoe-only. In one
           county case, the only sample ballot we can link is in
           another language; we link that official PDF, say when
           we cannot find English among the currently published files, and show

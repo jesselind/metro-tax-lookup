@@ -8,12 +8,15 @@ import {
   AUTHORITY_MILLS_CURRENT_TAX_YEAR,
   AUTHORITY_MILLS_HISTORY_MIN_POINTS,
   AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+  authorityRateTablePageForParcel,
   authorityMillsForTaxYear,
   authorityMillsSeries,
   authorityTotalMillsChanged,
   authorityTotalMillsYoY,
+  deepLinkLevyPercentageUrlForParcel,
   levyPercentageResidentLinkForTaxYear,
   levyPercentageResidentUrlForTaxYear,
+  normalizeLevyPercentagePdfTag,
 } from "@/lib/authorityMillsHistory";
 import { COUNTY_MILLS_YOY_EPS } from "@/lib/metroLevyYearOverYear";
 
@@ -54,5 +57,33 @@ describe("authorityMillsHistory", () => {
         String(taxYear),
       );
     }
+  });
+
+  it("normalizes parcel tax-area codes to four-digit PDF TAGs", () => {
+    expect(normalizeLevyPercentagePdfTag("747")).toBe("0747");
+    expect(normalizeLevyPercentagePdfTag("0747")).toBe("0747");
+    expect(normalizeLevyPercentagePdfTag("E2E")).toBeNull();
+  });
+
+  it("maps one parcel TAG to the authority-specific page", () => {
+    expect(authorityRateTablePageForParcel(2024, "0601", "747")).toBe(95);
+    expect(authorityRateTablePageForParcel(2024, "4100", "747")).toBe(96);
+  });
+
+  it("deep-links known rate-table sources and preserves honest fallbacks", () => {
+    const rateTable2024 = levyPercentageResidentUrlForTaxYear(2024);
+    expect(
+      deepLinkLevyPercentageUrlForParcel(rateTable2024, "0601", "747"),
+    ).toBe(`${rateTable2024}#page=95`);
+    expect(
+      deepLinkLevyPercentageUrlForParcel(rateTable2024, "0601", "E2E"),
+    ).toBe(rateTable2024);
+    expect(
+      deepLinkLevyPercentageUrlForParcel(
+        "https://example.gov/not-a-rate-table.pdf",
+        "0601",
+        "747",
+      ),
+    ).toBe("https://example.gov/not-a-rate-table.pdf");
   });
 });

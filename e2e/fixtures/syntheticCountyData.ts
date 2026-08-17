@@ -54,6 +54,8 @@ export const SYNTHETIC_CONDO_OWNER_B = "E2E SYNTHETIC CONDO OWNER B";
 
 /** Fake TAG id used only inside e2e mocks (not a real county TAG). */
 export const SYNTHETIC_E2E_TAG_ID = "9090909";
+/** Real PDF TAG shape so authority-chain e2e can assert page deep-links. */
+export const SYNTHETIC_E2E_TAG_SHORT_DESCR = "747";
 
 /** Levy authority name asserted in the stack UI after mocked PIN load. */
 export const SYNTHETIC_E2E_AUTHORITY = "SYNTHETIC E2E TEST DISTRICT";
@@ -121,7 +123,7 @@ export const SYNTHETIC_PIN_TO_TAG = {
   byPin: {
     [SYNTHETIC_PIN]: {
       tagId: SYNTHETIC_E2E_TAG_ID,
-      tagShortDescr: "E2E",
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
       totalActual: 100000,
       totalAssessed: 6800,
       parcelTaxYear: "2025",
@@ -132,7 +134,7 @@ export const SYNTHETIC_PIN_TO_TAG = {
     },
     [SYNTHETIC_MULTI_REAL_PIN]: {
       tagId: SYNTHETIC_E2E_TAG_ID,
-      tagShortDescr: "E2E",
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
       totalActual: 50000000,
       totalAssessed: 12500000,
       parcelTaxYear: "2025",
@@ -143,7 +145,7 @@ export const SYNTHETIC_PIN_TO_TAG = {
     },
     [SYNTHETIC_MULTI_PERSONAL_PIN]: {
       tagId: SYNTHETIC_E2E_TAG_ID,
-      tagShortDescr: "E2E",
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
       totalActual: 24000,
       totalAssessed: 6240,
       parcelTaxYear: "2025",
@@ -154,7 +156,7 @@ export const SYNTHETIC_PIN_TO_TAG = {
     },
     [SYNTHETIC_CONDO_PIN_A]: {
       tagId: SYNTHETIC_E2E_TAG_ID,
-      tagShortDescr: "E2E",
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
       totalActual: 350000,
       totalAssessed: 23800,
       parcelTaxYear: "2025",
@@ -165,7 +167,7 @@ export const SYNTHETIC_PIN_TO_TAG = {
     },
     [SYNTHETIC_CONDO_PIN_B]: {
       tagId: SYNTHETIC_E2E_TAG_ID,
-      tagShortDescr: "E2E",
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
       totalActual: 360000,
       totalAssessed: 24480,
       parcelTaxYear: "2025",

@@ -9,6 +9,7 @@
  */
 
 import authorityMillsData from "@/data/authorityMillsByTaxYear";
+import authorityRateTablePagesData from "@/data/authorityRateTablePages";
 
 export type AuthorityMillsByTaxYearFile = {
   _meta: {
@@ -32,7 +33,20 @@ export type AuthorityMillsByTaxYearFile = {
   >;
 };
 
+type AuthorityRateTablePagesFile = {
+  _meta: {
+    bundledAsOf: string;
+    taxYears: number[];
+    authorityCodes: string[];
+  };
+  pagesByAuthority: Record<
+    string,
+    Record<string, Record<string, number>>
+  >;
+};
+
 const file = authorityMillsData as AuthorityMillsByTaxYearFile;
+const pageFile = authorityRateTablePagesData as AuthorityRateTablePagesFile;
 
 const levyPercentageResidentUrlByTaxYear = new Map<number, string>();
 for (const source of file._meta.sources) {
@@ -69,6 +83,60 @@ export function levyPercentageResidentUrlForTaxYear(taxYear: number): string {
     );
   }
   return url;
+}
+
+/**
+ * County parcel `tagShortDescr` uses the Levy % PDF TAG code without guaranteed
+ * leading zeros (e.g. `747` -> PDF TAG `0747`). Levy.aspx `tagId` is unrelated.
+ */
+export function normalizeLevyPercentagePdfTag(
+  taxAreaShortCode: string | null | undefined,
+): string | null {
+  const raw = taxAreaShortCode?.trim();
+  if (!raw || !/^\d{1,4}$/.test(raw)) return null;
+  return raw.padStart(4, "0");
+}
+
+/**
+ * Exact PDF viewer page for one tax year + AUTH + parcel tax area.
+ *
+ * TAG groups may cross page boundaries, so TAG alone is insufficient. Missing
+ * historical combinations return null and callers keep the year PDF fallback.
+ */
+export function authorityRateTablePageForParcel(
+  taxYear: number,
+  authorityCode: string | null | undefined,
+  taxAreaShortCode: string | null | undefined,
+): number | null {
+  const authority = authorityCode?.trim();
+  const pdfTag = normalizeLevyPercentagePdfTag(taxAreaShortCode);
+  if (!authority || !pdfTag) return null;
+  const page =
+    pageFile.pagesByAuthority[authority]?.[String(taxYear)]?.[pdfTag];
+  return Number.isInteger(page) && page > 0 ? page : null;
+}
+
+/**
+ * Add a parcel-specific page fragment only when `rawUrl` is one of the bundled
+ * county Levy % PDFs and that year's TAG + AUTH page is known. Otherwise leave
+ * the URL unchanged (no fragment → viewer opens at page 1; never invent a page).
+ */
+export function deepLinkLevyPercentageUrlForParcel(
+  rawUrl: string,
+  authorityCode: string | null | undefined,
+  taxAreaShortCode: string | null | undefined,
+): string {
+  const withoutHash = rawUrl.split("#", 1)[0] ?? rawUrl;
+  for (const [taxYear, residentUrl] of levyPercentageResidentUrlByTaxYear) {
+    if (withoutHash !== residentUrl) continue;
+    const page = authorityRateTablePageForParcel(
+      taxYear,
+      authorityCode,
+      taxAreaShortCode,
+    );
+    return page ? `${withoutHash}#page=${page}` : rawUrl;
+  }
+  return rawUrl;
 }
 
 export function levyPercentageResidentLinkForTaxYear(taxYear: number): {

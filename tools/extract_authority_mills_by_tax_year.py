@@ -24,6 +24,11 @@ Optional raw audit rows write under supporting-data/authority-mills/.
 Join key for the app: stack line `code` (AUTH). Prefer AUTH -> taxYear -> mills
 when rates are uniform across PDF TAG groups. TAG+AUTH exceptions use the
 Levy % PDF TAG code (not Levy.aspx tagId); see payload `_meta`.
+
+The companion rate-table page map is filtered to AUTH codes in the curated
+authority-chain JSON. At runtime, the open parcel's short tax-area code is
+zero-padded to the PDF TAG width and joined with tax year + AUTH so links can
+open the exact row page instead of page 1.
 """
 
 from __future__ import annotations
@@ -39,8 +44,8 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import pdfplumber
 
-# PDF TAG column is a short tax-area code (e.g. "0002"). Stack JSON uses
-# Levy.aspx TAGId (e.g. "1243330"). Do not treat them as interchangeable.
+# PDF TAG column is the zero-padded parcel `tagShortDescr` tax-area code
+# (e.g. "747" -> "0747"). Levy.aspx TAGId (e.g. "1243330") is unrelated.
 DEFAULT_PDF_BY_YEAR: Dict[int, Path] = {
   2018: Path("supporting-data/certs/2018 Taxing District Levy Percentages.pdf"),
   2019: Path("supporting-data/certs/2019 Taxing District Levy Percentages.pdf"),
@@ -65,6 +70,12 @@ RESIDENT_URL_BY_TAX_YEAR: Dict[int, str] = {
   2025: "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490",
 }
 DEFAULT_OUT = Path("public/data/arapahoe-authority-mills-by-tax-year.json")
+DEFAULT_PAGE_OUT = Path(
+  "public/data/arapahoe-authority-rate-table-pages.json"
+)
+DEFAULT_AUTHORITY_CHAIN = Path(
+  "public/data/levy-authority-chain-entries.json"
+)
 DEFAULT_AUDIT_DIR = Path("supporting-data/authority-mills")
 
 
@@ -366,9 +377,9 @@ def build_shipping_payload(
         "Stack line `code` (AUTH). Look up authorities[code].millsByTaxYear."
       ),
       "pdfTagNote": (
-        "Levy % PDF TAG is a short tax-area code. It is not the same as "
-        "Levy.aspx tagId in arapahoe-levy-stacks-by-tag-id.json. Exception "
-        "maps use PDF TAG keys for audit; app YoY joins AUTH totals."
+        "Levy % PDF TAG is parcel tagShortDescr zero-padded to four digits. "
+        "It is not Levy.aspx tagId in arapahoe-levy-stacks-by-tag-id.json. "
+        "Exception maps use PDF TAG keys for audit; app YoY joins AUTH totals."
       ),
       "yearSemantics": (
         "Numbers are Tax Year mills from the county Levy % PDFs. "
@@ -379,6 +390,71 @@ def build_shipping_payload(
     },
     "authorities": dict(sorted(authorities.items())),
     "exceptionsByTaxYear": exceptions_by_tax_year,
+  }
+
+
+def authority_codes_from_chain_file(path: Path) -> List[str]:
+  """Return unique AUTH codes used by curated authority-chain entries."""
+  payload = json.loads(path.read_text(encoding="utf-8"))
+  codes = {
+    str(entry.get("match", {}).get("levyLineCode", "")).strip()
+    for entry in payload.get("entries", [])
+  }
+  return sorted(code for code in codes if code)
+
+
+def build_rate_table_page_payload(
+  raw_by_year: Dict[int, Sequence[AuthorityLevyRow]],
+  authority_codes: Sequence[str],
+  *,
+  bundled_as_of: Optional[str] = None,
+) -> Dict[str, Any]:
+  """
+  Build compact tax year + AUTH + PDF TAG -> viewer page lookup.
+
+  One PDF TAG group can cross a page boundary, so TAG alone is not enough.
+  A TAG + AUTH pair must resolve to exactly one page within a tax year.
+  """
+  wanted = {code.strip() for code in authority_codes if code.strip()}
+  pages: Dict[str, Dict[str, Dict[str, int]]] = {}
+
+  for tax_year, rows in sorted(raw_by_year.items()):
+    year_key = str(tax_year)
+    for row in rows:
+      if row.authority not in wanted:
+        continue
+      authority_pages = pages.setdefault(row.authority, {})
+      year_pages = authority_pages.setdefault(year_key, {})
+      existing = year_pages.get(row.pdfTag)
+      if existing is not None and existing != row.pageNumber:
+        raise ValueError(
+          "Levy % PDF TAG + AUTH spans multiple viewer pages: "
+          f"Tax Year {tax_year}, TAG {row.pdfTag}, AUTH {row.authority}, "
+          f"pages {existing} and {row.pageNumber}"
+        )
+      year_pages[row.pdfTag] = row.pageNumber
+
+  return {
+    "_meta": {
+      "bundledAsOf": bundled_as_of or date.today().isoformat(),
+      "taxYears": sorted(raw_by_year.keys()),
+      "authorityCodes": sorted(wanted),
+      "joinKey": (
+        "Tax year + stack line code (AUTH) + zero-padded parcel "
+        "tagShortDescr (PDF TAG)."
+      ),
+      "fallback": (
+        "When a historical TAG + AUTH pair is absent, keep the year PDF "
+        "without a page fragment (viewer opens at page 1; do not invent a page)."
+      ),
+    },
+    "pagesByAuthority": {
+      authority: {
+        tax_year: dict(sorted(tag_pages.items()))
+        for tax_year, tag_pages in sorted(year_pages.items())
+      }
+      for authority, year_pages in sorted(pages.items())
+    },
   }
 
 
@@ -449,6 +525,18 @@ def main() -> None:
     help="Path to write shipping JSON under public/data/.",
   )
   parser.add_argument(
+    "--page-out",
+    type=Path,
+    default=DEFAULT_PAGE_OUT,
+    help="Path to write curated AUTH rate-table page lookup JSON.",
+  )
+  parser.add_argument(
+    "--authority-chain",
+    type=Path,
+    default=DEFAULT_AUTHORITY_CHAIN,
+    help="Curated authority-chain JSON whose AUTH codes need page lookups.",
+  )
+  parser.add_argument(
     "--no-audit",
     action="store_true",
     help="Skip writing raw-row audit JSON under supporting-data/.",
@@ -484,7 +572,18 @@ def main() -> None:
       f"from {pdf_path}"
     )
 
-  payload = build_shipping_payload(year_results, source_files=source_files)
+  bundled_as_of = date.today().isoformat()
+  payload = build_shipping_payload(
+    year_results,
+    source_files=source_files,
+    bundled_as_of=bundled_as_of,
+  )
+  authority_codes = authority_codes_from_chain_file(args.authority_chain)
+  page_payload = build_rate_table_page_payload(
+    raw_by_year,
+    authority_codes,
+    bundled_as_of=bundled_as_of,
+  )
   write_outputs(
     args.out,
     payload,
@@ -493,6 +592,15 @@ def main() -> None:
   )
   print(
     f"Wrote {len(payload['authorities'])} authorities to {args.out}"
+  )
+  args.page_out.parent.mkdir(parents=True, exist_ok=True)
+  args.page_out.write_text(
+    json.dumps(page_payload, indent=2) + "\n",
+    encoding="utf-8",
+  )
+  print(
+    f"Wrote rate-table pages for "
+    f"{len(page_payload['pagesByAuthority'])} authorities to {args.page_out}"
   )
 
 

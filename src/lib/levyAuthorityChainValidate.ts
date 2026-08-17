@@ -20,6 +20,7 @@ import {
   getAuthorityChainFamilyPack,
   KNOWN_OPEN_GAP_IDS,
   OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
+  usesAuthDerivedMills,
   type LevyAuthorityChainFamily,
   type LevyAuthorityChainOpenGapId,
 } from "@/content/levyAuthorityChainTemplates";
@@ -50,7 +51,12 @@ const EXTRA_FLOW_BRIEF_TERM_IDS = [
   "term-aggregate-debt",
 ];
 
-const FAMILIES = new Set<LevyAuthorityChainFamily>(["school", "county", "metro"]);
+const FAMILIES = new Set<LevyAuthorityChainFamily>([
+  "school",
+  "county",
+  "metro",
+  "fire",
+]);
 const MEASURE_KINDS = new Set([
   "override",
   "bond",
@@ -254,7 +260,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     byEntryId.set(id, true);
 
     if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
-      fail(`[${id}] family must be school, county, or metro`);
+      fail(`[${id}] family must be school, county, metro, or fire`);
     }
     const family = record.family as LevyAuthorityChainFamily;
     const familyPack = getAuthorityChainFamilyPack(family);
@@ -350,9 +356,9 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         record.authority.governmentBillName,
         `[${id}].authority.governmentBillName`,
       );
-      if (family !== "county" && family !== "metro") {
+      if (family !== "county" && family !== "metro" && family !== "fire") {
         fail(
-          `[${id}] authority.governmentBillName only applies to county or metro family entries`,
+          `[${id}] authority.governmentBillName only applies to county, metro, or fire family entries`,
         );
       }
     }
@@ -430,6 +436,20 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         `[${id}].summary.headlineNote`,
       );
     }
+    if (record.summary.summaryClosingNote !== undefined) {
+      if (!isNonEmptyString(record.summary.summaryClosingNote)) {
+        fail(`[${id}] summary.summaryClosingNote must be a non-empty string`);
+      }
+      assertNoEmDash(
+        record.summary.summaryClosingNote,
+        `[${id}].summary.summaryClosingNote`,
+      );
+      if (/^NOTE:\s*/i.test(record.summary.summaryClosingNote.trim())) {
+        fail(
+          `[${id}] summary.summaryClosingNote must omit the NOTE: prefix (build adds it)`,
+        );
+      }
+    }
     if (record.summary.also !== undefined) {
       if (!Array.isArray(record.summary.also)) {
         fail(`[${id}] summary.also must be an array`);
@@ -449,13 +469,15 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
 
     assertObject(record.mills, `[${id}] mills`);
-    if (family === "metro") {
+    if (usesAuthDerivedMills(family)) {
       if (!isNonEmptyString(record.match.levyLineCode)) {
-        fail(`[${id}] metro entries require match.levyLineCode for AUTH mills`);
+        fail(
+          `[${id}] ${family} entries require match.levyLineCode for AUTH mills`,
+        );
       }
       if (record.mills.historicalComparison !== undefined) {
         fail(
-          `[${id}] metro mills must not set historicalComparison (derived from AUTH series)`,
+          `[${id}] ${family} mills must not set historicalComparison (derived from AUTH series)`,
         );
       }
       for (const authoredKey of [
@@ -468,7 +490,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       ] as const) {
         if (record.mills[authoredKey] !== undefined) {
           fail(
-            `[${id}] metro mills must not set ${authoredKey} (derive from AUTH series)`,
+            `[${id}] ${family} mills must not set ${authoredKey} (derive from AUTH series)`,
           );
         }
       }
@@ -477,7 +499,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         undefined
       ) {
         fail(
-          `[${id}] metro mills must not set rateSourcesByTaxYear (Levy % cites come from AUTH mills bundle)`,
+          `[${id}] ${family} mills must not set rateSourcesByTaxYear (Levy % cites come from AUTH mills bundle)`,
         );
       }
       const series = authorityMillsSeries(record.match.levyLineCode);
@@ -829,8 +851,13 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           );
         }
       }
-      if (family === "metro" && !isNonEmptyString(measure.titlePlain)) {
-        fail(`[${id}] metro measure ${measure.stepId} requires titlePlain`);
+      if (
+        (family === "metro" || family === "fire") &&
+        !isNonEmptyString(measure.titlePlain)
+      ) {
+        fail(
+          `[${id}] ${family} measure ${measure.stepId} requires titlePlain`,
+        );
       }
       if (measure.titlePlain !== undefined) {
         if (
@@ -838,7 +865,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           measure.kind !== "operations_mill" &&
           measure.kind !== "metro_authorization" &&
           measure.kind !== "metro_commitment" &&
-          !(family === "metro" && measure.kind === "bond")
+          !(family === "metro" && measure.kind === "bond") &&
+          !(family === "fire" && measure.kind === "bond")
         ) {
           fail(
             `[${id}] measure ${measure.stepId} titlePlain is not valid for this family and kind`,

@@ -8,7 +8,7 @@
  * JSON supplies facts only; wording lives here (KISS / DRY).
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
- * `metro`) inject nouns, measure kinds, budget labels, and mills takeaways.
+ * `metro`, `fire`) inject nouns, measure kinds, budget labels, and mills takeaways.
  *
  * Ideology (also in `docs/levy-explainer-authoring.md`): always show the
  * next-best official source. Prefer the exact document; when it is missing,
@@ -38,6 +38,9 @@ export const COUNTY_GOVERNMENT_BILL_NAME_DEFAULT = "the county";
 
 /** Default bill wording for metro-family entries when JSON omits `governmentBillName`. */
 export const METRO_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
+
+/** Default bill wording for fire-family entries when JSON omits `governmentBillName`. */
+export const FIRE_GOVERNMENT_BILL_NAME_DEFAULT = "the fire district";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -73,7 +76,11 @@ export const GOVERNING_BODY_IDS = [
 export type LevyAuthorityChainGoverningBody =
   (typeof GOVERNING_BODY_IDS)[number];
 
-export type LevyAuthorityChainFamily = "school" | "county" | "metro";
+export type LevyAuthorityChainFamily =
+  | "school"
+  | "county"
+  | "metro"
+  | "fire";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -94,6 +101,11 @@ export const OPEN_GAP_BODIES = {
     "For at least one ballot measure in this trail, we could not locate an English Notice of Election or English sample ballot among Arapahoe County's currently published election files. Those files do include a Spanish sample ballot with the measure wording, which we link. That does not mean an English ballot never existed. The English wording in the measure step is an AI translation of that Spanish sample. It is not the legal English ballot text, and it is not an official county English translation.",
   "metro-election-records-unlocated":
     "The district's public records describe this authorization, but we could not locate public ballot wording or a certified yes/no tally. We link the official district record we found and do not estimate the missing details.",
+  /**
+   * Fire (and similar) multi-county districts when vote facts are Arapahoe-only.
+   */
+  "multi-county-arapahoe-votes-only":
+    "This district covers parts of more than one county. The yes and no totals here are Arapahoe County's certified counts only, not the full district-wide total across every county.",
 } as const;
 
 /**
@@ -223,6 +235,12 @@ const METRO_BOND_REPAYMENT_CHANGE_SENTENCE =
   "Bonds may be sold over time, so the repayment part of your metro district tax can change.";
 
 const METRO_BOND_CEILING_SENTENCE =
+  "That vote set ceilings. It did not lock in one fixed share of today's total rate.";
+
+const FIRE_BOND_REPAYMENT_CHANGE_SENTENCE =
+  "Bonds may be sold over time, so the repayment part of your fire district tax can change.";
+
+const FIRE_BOND_CEILING_SENTENCE =
   "That vote set ceilings. It did not lock in one fixed share of today's total rate.";
 
 const SCHOOL_DEBT_FREE_MILL_CLOSING = "That is a mill levy, not a bond.";
@@ -490,6 +508,74 @@ const METRO_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Default fire "What changed?" chrome. Rate figures are AUTH-derived (same
+ * helper as metro). Entry `mills.stepBody` may replace this takeaway.
+ */
+export const FIRE_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this fire district each year.";
+
+/**
+ * Fire protection district pack. First consumer: South Metro Fire (`4100`).
+ * Coordinated Ballot Issue + county certified votes (school-like trail), with
+ * AUTH-derived What changed? (metro-like mills). Actor language: Voters.
+ */
+const FIRE_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: "What the district's budget says",
+  budgetFactLabel: "District budget",
+  millsStepBody: FIRE_MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set([
+    "bond",
+    "operations_mill",
+    "tabor_revenue_retention",
+  ]),
+  approvalStepTitle: STEP_TITLE_HOW_VOTED,
+  approvalStepBody: VOTES_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
+  unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
+  unavailableMeasureBody(ballotIssue, electionMonthYear) {
+    return unavailableBallotMeasureBody(ballotIssue ?? "", electionMonthYear);
+  },
+  ballotStepTitle(ballotIssue, kind, options) {
+    const titlePlain = requireTrimmedBallotTitlePlain(options?.titlePlain, kind);
+    switch (kind) {
+      case "bond":
+      case "operations_mill":
+      case "tabor_revenue_retention":
+        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
+      default:
+        throw new Error(`fire pack does not support measure kind: ${kind}`);
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead, options) {
+    const lead = BODY_LEAD_PHRASES[bodyLead];
+    switch (kind) {
+      case "bond":
+        return `${lead} borrowing ${detail}. ${FIRE_BOND_CEILING_SENTENCE} ${FIRE_BOND_REPAYMENT_CHANGE_SENTENCE}`;
+      case "operations_mill":
+        return `${lead} ${detail}.`;
+      case "tabor_revenue_retention": {
+        if (options?.maxAuthorizedMills == null) {
+          throw new Error(
+            "tabor_revenue_retention requires maxAuthorizedMills",
+          );
+        }
+        const governmentBillName =
+          options?.governmentBillName?.trim() ||
+          FIRE_GOVERNMENT_BILL_NAME_DEFAULT;
+        const max = options.maxAuthorizedMills.toFixed(3);
+        return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+      }
+      default:
+        throw new Error(`fire pack does not support measure kind: ${kind}`);
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
@@ -497,12 +583,23 @@ const FAMILY_PACKS: Record<
   school: SCHOOL_PACK,
   county: COUNTY_PACK,
   metro: METRO_PACK,
+  fire: FIRE_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
   family: LevyAuthorityChainFamily,
 ): LevyAuthorityChainFamilyPack {
   return FAMILY_PACKS[family];
+}
+
+/**
+ * Metro and fire: What changed? mill figures come from the AUTH series (not
+ * hand-authored current/prior fields). School and county still author mills.
+ */
+export function usesAuthDerivedMills(
+  family: LevyAuthorityChainFamily,
+): boolean {
+  return family === "metro" || family === "fire";
 }
 
 export function capitalizeResidentPhrase(phrase: string): string {

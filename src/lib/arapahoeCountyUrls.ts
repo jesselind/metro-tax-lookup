@@ -35,9 +35,12 @@ export const ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH =
 export const ARAPAHOE_ASSESSOR_DATA_MART_EXPORT =
   "https://gis.arapahoegov.com/assessordataexport/";
 
-/** Assessor Maps/GIS downloads (e.g. AssessorParcels_WGS.gdb file geodatabase). */
+/**
+ * Assessor Open GIS Data download (Parcels layer → e.g. Assessor_Parcels_SP.gdb).
+ * Portal also offers Stateplane / UTM / WGS84 projections of the same layer.
+ */
 export const ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE =
-  "https://www.arapahoeco.gov/your_county/county_departments/assessor/arapahoe_maps_gis/gis_data_download.php";
+  "https://gis.arapahoegov.com/datadownload/";
 
 export const ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF =
   "https://files.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/Mill%20Levy%20Public%20Information%20Form.pdf";

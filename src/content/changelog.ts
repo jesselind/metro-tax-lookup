@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.9.1",
+    date: "2026-08-16",
+    title: "Fire authority chain, SMFR 7A trail, and property-specific rate-table PDF pages",
+    highlights: [
+      "New fire family for Who authorized this? (Voters + Ballot Issue + Arapahoe certified tallies; AUTH-derived What changed?). First entry: South Metro Fire Rescue AUTH 4100, Ballot Issue 7A (November 2025), with a closed-summary NOTE when the Arapahoe Notice PDF is not currently available and Douglas County's Notice carries the same 7A wording.",
+      "County Levy % source links deep-link to the parcel tax-area page via arapahoe-authority-rate-table-pages.json (tax year + AUTH + TAG). Missing historical combinations open the year PDF at page 1 rather than inventing a page.",
+      "Verified #page= fragments on remaining single-document cites (county 2025 budget, Sky Ranch 2026 budget whoGets, LPS 2020 Spanish sample 4C). Own-mode landing intro tightened to one line.",
+    ],
+  },
+  {
     version: "4.9.0",
     date: "2026-08-15",
     title: "Metro authority chain: AUTH-derived rate changes and chronological trail",
