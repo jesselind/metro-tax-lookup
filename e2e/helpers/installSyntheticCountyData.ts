@@ -59,7 +59,7 @@ export async function installSyntheticCountyData(
   );
   await fulfillJson(
     page,
-    `**/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json`,
+    `**/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json*`,
     SYNTHETIC_PARCEL_RECORD_SHARD,
   );
 }

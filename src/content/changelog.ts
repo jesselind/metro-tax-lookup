@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.9.2",
+    date: "2026-08-16",
+    title: "Per-parcel neighborhood from Assessor Open GIS Parcels",
+    highlights: [
+      "Property details Neighborhood and Neighborhood Code now fill from the Assessor Open GIS Parcels layer (PIN join; code and name only into public JSON). Main Parcel CSV still has no NBHD column, and neighborhood is never inferred from subdivision name. PINs with no code, or with conflicting code/name rows in the export, keep the No data found empty state.",
+      "build_arapahoe_parcel_levy_index.py reads the GDB via --gis-parcels-gdb and treats a missing GDB or zero-row join as a build error; --skip-neighborhood is the explicit opt-out. The download stamp comes from data-as-of.txt next to the GDB actually used and ships as snapshot.gisParcelsAsOf.",
+      "Parcel-record shard requests carry ARAPAHOE_PARCEL_RECORD_CACHE_BUST so browsers do not serve a pre-neighborhood copy from the /data max-age cache. Try demo and synthetic e2e fixtures include fictional neighborhood name/code so Property details asserts the filled rows.",
+    ],
+  },
+  {
     version: "4.9.1",
     date: "2026-08-16",
     title: "Fire authority chain, SMFR 7A trail, and property-specific rate-table PDF pages",

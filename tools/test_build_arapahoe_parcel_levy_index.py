@@ -12,19 +12,25 @@ run these after changing assessed-rate or ownership heuristics.
 
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
 from build_arapahoe_parcel_levy_index import (
     attach_computed_assessed_values,
+    attach_neighborhood_from_gis,
+    format_neighborhood_code,
     format_situs_label,
     format_situs_locality,
     is_residential_state_use_code,
     local_assessed_split_fields,
+    neighborhood_by_pin_from_rows,
     non_residential_assessed_split_fields,
     normalize_integerish_code,
     ownership_type_label_from_owner_lp_types,
     parcel_row_qualifies_for_dual_assessed_splits,
     parcel_row_qualifies_for_school_assessed_splits,
+    read_gis_parcels_data_as_of,
     school_assessed_fields_from_actuals,
 )
 
@@ -280,6 +286,78 @@ class FormatSitusLabelTests(unittest.TestCase):
             label,
             "6420 S DAYTON ST Unit J01, ENGLEWOOD, CO 80111-5541",
         )
+
+
+class NeighborhoodGisJoinTests(unittest.TestCase):
+    def test_format_neighborhood_code_strips_whole_float(self) -> None:
+        self.assertEqual(format_neighborhood_code(2044.0), "2044")
+        self.assertEqual(format_neighborhood_code("2044.0"), "2044")
+        self.assertEqual(format_neighborhood_code(0), "")
+        self.assertEqual(format_neighborhood_code(None), "")
+
+    def test_neighborhood_by_pin_from_rows_keeps_consistent_dupes(self) -> None:
+        out, conflicts = neighborhood_by_pin_from_rows(
+            [
+                ("000000001", 100.0, "ALPHA PLACE"),
+                ("000000001", 100, "ALPHA PLACE"),
+                ("000000002", 0, "SKIP ME"),
+            ]
+        )
+        self.assertEqual(conflicts, 0)
+        self.assertEqual(
+            out["000000001"],
+            {"neighborhood": "ALPHA PLACE", "neighborhoodCode": "100"},
+        )
+        self.assertNotIn("000000002", out)
+
+    def test_neighborhood_by_pin_from_rows_omits_conflicts(self) -> None:
+        out, conflicts = neighborhood_by_pin_from_rows(
+            [
+                ("000000003", 10, "ONE"),
+                ("000000003", 20, "TWO"),
+            ]
+        )
+        self.assertEqual(conflicts, 1)
+        self.assertEqual(out, {})
+
+    def test_data_as_of_read_from_sibling_of_given_gdb(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            export_dir = Path(tmp) / "other-export"
+            export_dir.mkdir()
+            (export_dir / "data-as-of.txt").write_text("2026-08-16\n")
+            self.assertEqual(
+                read_gis_parcels_data_as_of(export_dir / "Parcels.gdb"),
+                "2026-08-16",
+            )
+
+    def test_data_as_of_none_when_missing_or_malformed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            export_dir = Path(tmp)
+            gdb = export_dir / "Parcels.gdb"
+            self.assertIsNone(read_gis_parcels_data_as_of(gdb))
+            (export_dir / "data-as-of.txt").write_text("last tuesday\n")
+            self.assertIsNone(read_gis_parcels_data_as_of(gdb))
+            (export_dir / "data-as-of.txt").write_text("2026-13-45\n")
+            self.assertIsNone(read_gis_parcels_data_as_of(gdb))
+
+    def test_attach_neighborhood_from_gis(self) -> None:
+        records = {
+            "000000001": {"ain": "1"},
+            "000000009": {"ain": "9"},
+        }
+        n = attach_neighborhood_from_gis(
+            records,
+            {
+                "000000001": {
+                    "neighborhood": "ALPHA PLACE",
+                    "neighborhoodCode": "100",
+                }
+            },
+        )
+        self.assertEqual(n, 1)
+        self.assertEqual(records["000000001"]["neighborhood"], "ALPHA PLACE")
+        self.assertEqual(records["000000001"]["neighborhoodCode"], "100")
+        self.assertNotIn("neighborhood", records["000000009"])
 
 
 if __name__ == "__main__":

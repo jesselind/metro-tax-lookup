@@ -7,6 +7,8 @@ import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
 import {
   SYNTHETIC_E2E_AUTHORITY,
+  SYNTHETIC_E2E_NEIGHBORHOOD,
+  SYNTHETIC_E2E_NEIGHBORHOOD_CODE,
   SYNTHETIC_E2E_OWNER,
   SYNTHETIC_E2E_SITUS_LINE,
   SYNTHETIC_PIN,
@@ -33,6 +35,12 @@ test("synthetic address loads levy stack and property details", async ({
   await expect(details.getByText(SYNTHETIC_E2E_OWNER, { exact: true })).toBeVisible();
   await expect(
     details.getByText(SYNTHETIC_E2E_SITUS_LINE, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    details.getByText(SYNTHETIC_E2E_NEIGHBORHOOD, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    details.getByText(SYNTHETIC_E2E_NEIGHBORHOOD_CODE, { exact: true }),
   ).toBeVisible();
   // Matched PIN lives in the county-compare strip (below the details column), not
   // inside #home-property-details.
