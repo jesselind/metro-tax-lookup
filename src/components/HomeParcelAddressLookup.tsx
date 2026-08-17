@@ -16,6 +16,9 @@ import {
   CampaignSiteLink,
   hasCampaignSiteLink,
 } from "@/components/CampaignSiteLink";
+import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
+import { CountyServiceGapHeader } from "@/components/CountyServiceGapHeader";
+import { CountyDataMartRefreshAttemptNote } from "@/content/countyDataMartRefreshNote";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
@@ -141,8 +144,10 @@ import {
   DASHBOARD_TILE_RADIUS_CLASS,
   HOME_AUDIENCE_STACK_GAP_CLASS,
   INPUT_CLASS,
-  PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS,
-  PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS,
+  COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS,
+  COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS,
+  COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
+  COUNTY_SERVICE_GAP_TILE_STATUS_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS,
@@ -1274,12 +1279,18 @@ export function HomeParcelAddressLookup({
         />
       </div>
       {propertyDetailsBundledLabel && parcelRecordBundledAsOf ? (
-        <p className={DASHBOARD_SECTION_META_CLASS}>
-          County data current as of{" "}
-          <time dateTime={parcelRecordBundledAsOf.slice(0, 10)}>
-            {propertyDetailsBundledLabel}
-          </time>
-        </p>
+        <>
+          <p className={DASHBOARD_SECTION_META_CLASS}>
+            County data current as of{" "}
+            <time dateTime={parcelRecordBundledAsOf.slice(0, 10)}>
+              {propertyDetailsBundledLabel}
+            </time>
+            .
+          </p>
+          <CountyServiceGapCallout density="compact" className="mt-1">
+            <CountyDataMartRefreshAttemptNote />
+          </CountyServiceGapCallout>
+        </>
       ) : null}
   </>
   );
@@ -2285,7 +2296,7 @@ export function HomeParcelAddressLookup({
                 className={
                   homeCompsGridPdfHref &&
                   ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
-                    ? PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS
+                    ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
                     : homeCompsGridPdfHref
                       ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
                       : PARCEL_SUMMARY_TILE_CLASS_POPOVER
@@ -2296,7 +2307,7 @@ export function HomeParcelAddressLookup({
                   className={
                     homeCompsGridPdfHref &&
                     ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
-                      ? `${PARCEL_SUMMARY_TILE_BODY_CLASS} relative`
+                      ? `${COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS} relative`
                       : PARCEL_SUMMARY_TILE_BODY_CLASS
                   }
                 >
@@ -2308,6 +2319,8 @@ export function HomeParcelAddressLookup({
                       icon={compsIcon}
                       tileTrigger={{
                         labelClassName: PARCEL_SUMMARY_TILE_LABEL_CLASS,
+                        statusRowClassName:
+                          COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
                         label: (
                           <ParcelGlossaryPopoverTrigger
                             termId="term-comps"
@@ -2317,9 +2330,12 @@ export function HomeParcelAddressLookup({
                           />
                         ),
                         status: (
-                          <p className={PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS}>
-                            {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
-                          </p>
+                          <div className="flex min-w-0 flex-1 flex-col gap-1">
+                            <CountyServiceGapHeader density="compact" />
+                            <p className={COUNTY_SERVICE_GAP_TILE_STATUS_CLASS}>
+                              {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
+                            </p>
+                          </div>
                         ),
                       }}
                     >

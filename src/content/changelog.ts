@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.9.3",
+    date: "2026-08-17",
+    title: "County service gap callouts (COUNTY DATA GAP)",
+    highlights: [
+      "Shared county-gap chrome: CountyServiceGapCallout, CountyServiceGapHeader, and toolFlowStyles summary-tile classes. Distinct from InlineErrorCallout (county export/hosting limits, role=note, not app errors).",
+      "Home dashboard: compact Data Mart refresh note under County data current as of; Comparable properties summary tile uses COUNTY DATA GAP framing when ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE is true.",
+      "/sources: standalone When county data fails hub (jump-link index) plus matching contextual COUNTY DATA GAP boxes in Your property tax bill (comps PDF, Aug 17 Data Mart attempt, prior-year assessed limit). Your property tax bill section precedes Metro district tax share.",
+      "Maintainer guide docs/county-service-gap-callouts.md and base-rule pointer: user-visible gaps ship dashboard + /sources (1:1 hub list to contextual red box). Demo bundledAsOf aligned to tools/county-mart-data-as-of.txt (2026-07-15).",
+    ],
+  },
+  {
     version: "4.9.2",
     date: "2026-08-16",
     title: "Per-parcel neighborhood from Assessor Open GIS Parcels",

@@ -10,7 +10,7 @@ Public static-data tool for Arapahoe-focused property tax and metro-district con
 
 **UI (this product):** Mobile-first, single high-contrast light theme. Primary payoff first; supporting detail below. Clickable controls: `cursor-pointer` on the hit target; disabled: `cursor-not-allowed`; leave text inputs alone.
 
-**Docs:** Behavior/data/build/interpretation changes → `README.md` (technical) and/or `src/app/sources/page.tsx` (narrative). Cross-link; keep long methodology out of README. Levy explainer JSON: `docs/levy-explainer-authoring.md`.
+**Docs:** Behavior/data/build/interpretation changes → `README.md` (technical) and/or `src/app/sources/page.tsx` (narrative). Cross-link; keep long methodology out of README. Levy explainer JSON: `docs/levy-explainer-authoring.md`. **County data gaps:** user-visible limits need **dashboard + `/sources`** (hub list + contextual red box); see `docs/county-service-gap-callouts.md`.
 
 **Also:** `.cursor/rules/jsx-whitespace.mdc` (TSX/JSX), `.cursor/rules/playwright-macos-sandbox.mdc` (e2e).
 
