@@ -273,6 +273,8 @@ type Props = {
   levyLineCode?: string;
   /** County TAG / source tag when known. */
   sourceTagId?: string;
+  /** Parcel tax-area short code used as the Levy % PDF TAG after zero-padding. */
+  taxAreaShortCode?: string;
   millsLabel: string;
   pctLabel: string;
   /** Null while JSON is still fetching from `/public/data/`. */
@@ -303,6 +305,7 @@ export function LevyLineDistrictDetailDialog({
   authorityLabel,
   levyLineCode,
   sourceTagId,
+  taxAreaShortCode,
   millsLabel,
   pctLabel,
   match,
@@ -802,7 +805,10 @@ export function LevyLineDistrictDetailDialog({
 
             {levyAuthorityChainEntry ? (
               <div className="mt-3">
-                <LevyAuthorityChainSection entry={levyAuthorityChainEntry} />
+                <LevyAuthorityChainSection
+                  entry={levyAuthorityChainEntry}
+                  taxAreaShortCode={taxAreaShortCode}
+                />
               </div>
             ) : null}
 

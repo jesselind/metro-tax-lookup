@@ -14,8 +14,7 @@ import {
 } from "@/lib/audienceMode";
 import {
   HOME_LANDING_INTRO_CLASS,
-  HOME_LANDING_INTRO_LINE1_CLASS,
-  HOME_LANDING_INTRO_LINE2_CLASS,
+  HOME_LANDING_INTRO_LINE_CLASS,
   HOME_PAGE_HERO_INTRO_GROUP_CLASS,
   PAGE_HERO_ACTION_BUTTON_CLASS,
   TOOL_PAGE_INNER_CLASS_HUB,
@@ -53,10 +52,10 @@ export function HomePageClient() {
     prevViewingParcelRef.current = viewingParcel;
   }, [viewingParcel]);
 
-  const landingLine2 =
+  const landingLine =
     audienceMode === "rent"
       ? "You're still paying property tax if you rent. Where's it going?"
-      : "See where your money is actually going.";
+      : "See where your property tax is actually going.";
 
   return (
     <main
@@ -96,20 +95,7 @@ export function HomePageClient() {
           />
           {!viewingParcel ? (
             <p className={HOME_LANDING_INTRO_CLASS}>
-              {audienceMode === "own" ? (
-                <span className={HOME_LANDING_INTRO_LINE1_CLASS}>
-                  Get a clear picture of your property tax bill.
-                </span>
-              ) : null}
-              <span
-                className={
-                  audienceMode === "rent"
-                    ? "block text-xl font-bold leading-tight text-indigo-950 sm:text-2xl"
-                    : HOME_LANDING_INTRO_LINE2_CLASS
-                }
-              >
-                {landingLine2}
-              </span>
+              <span className={HOME_LANDING_INTRO_LINE_CLASS}>{landingLine}</span>
             </p>
           ) : null}
         </div>

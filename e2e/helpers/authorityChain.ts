@@ -13,8 +13,12 @@ import {
   LEVY_AUTHORITY_CHAIN_ENTRIES,
   type LevyAuthorityChainEntry,
 } from "../../src/lib/levyAuthorityChain";
+import { deepLinkLevyPercentageUrlForParcel } from "../../src/lib/authorityMillsHistory";
 import { safeHttpOrHttpsUrl } from "../../src/lib/safeExternalHref";
-import { SYNTHETIC_E2E_AUTHORITY } from "../fixtures/syntheticCountyData";
+import {
+  SYNTHETIC_E2E_AUTHORITY,
+  SYNTHETIC_E2E_TAG_SHORT_DESCR,
+} from "../fixtures/syntheticCountyData";
 import {
   searchSyntheticAddress,
   viewDistrictDetailsButton,
@@ -130,17 +134,11 @@ export async function assertAuthorityChainPanel(
     ).toBeVisible();
   }
 
-  // Ballot Issue highlights must work before "See each step" (collapsed trail).
-  // UI bold/links every occurrence of mark.match in the summary.
+  // Ballot Issue highlight must work before "See each step" (collapsed trail).
+  // Only the first occurrence links; a closing source NOTE may mention the
+  // issue again while referring to that link and must remain plain text.
   for (const mark of entry.summaryIssueMarks ?? []) {
-    let expectedCount = 0;
-    let searchFrom = 0;
-    while (searchFrom < entry.summary.length) {
-      const at = entry.summary.indexOf(mark.match, searchFrom);
-      if (at < 0) break;
-      expectedCount += 1;
-      searchFrom = at + mark.match.length;
-    }
+    const expectedCount = entry.summary.includes(mark.match) ? 1 : 0;
     if (mark.url) {
       const href = safeHttpOrHttpsUrl(mark.url);
       expect(href, `summary issue link for ${mark.match}`).toBeTruthy();
@@ -201,8 +199,13 @@ export async function assertAuthorityChainPanel(
   }
 
   for (const href of collectAuthorityChainSourceUrls(entry)) {
+    const expectedHref = deepLinkLevyPercentageUrlForParcel(
+      href,
+      entry.match.levyLineCode,
+      SYNTHETIC_E2E_TAG_SHORT_DESCR,
+    );
     await expect(
-      chain.locator(`a[href="${cssEscapeAttr(href)}"]`).first(),
+      chain.locator(`a[href="${cssEscapeAttr(expectedHref)}"]`).first(),
     ).toBeVisible();
   }
 

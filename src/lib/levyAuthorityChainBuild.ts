@@ -24,6 +24,7 @@ import {
   buildSummaryAlsoClause,
   buildSummaryVoterClause,
   COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
+  FIRE_GOVERNMENT_BILL_NAME_DEFAULT,
   METRO_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
@@ -37,6 +38,7 @@ import {
   OPEN_GAP_BODIES,
   OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
   temporaryCreditMillSplitOpenGapBody,
+  usesAuthDerivedMills,
   type LevyAuthorityChainBodyLead,
   type LevyAuthorityChainFamily,
   type LevyAuthorityChainGoverningBody,
@@ -156,6 +158,11 @@ export type LevyAuthorityChainSummarySpec = {
   headlinePlain?: string;
   headlineElection: string;
   headlineNote?: string;
+  /**
+   * Optional always-visible follow-on after the approval sentence. Rendered on
+   * its own line as `NOTE: …` (do not include the `NOTE:` prefix in the value).
+   */
+  summaryClosingNote?: string;
   summaryTermId?: string;
   summaryTermMatch?: string;
   also?: Array<{
@@ -266,7 +273,19 @@ function governmentBillNameForRecord(
   if (record.family === "metro") {
     return METRO_GOVERNMENT_BILL_NAME_DEFAULT;
   }
+  if (record.family === "fire") {
+    return FIRE_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
   return "";
+}
+
+function appendSummaryClosingNote(
+  summary: string,
+  closingNote: string | undefined,
+): string {
+  const trimmed = closingNote?.trim();
+  if (!trimmed) return summary;
+  return `${summary}\nNOTE: ${trimmed}`;
 }
 
 function buildSummary(
@@ -280,7 +299,10 @@ function buildSummary(
         `[${record.id}] metro summary.headlinePlain must be non-empty`,
       );
     }
-    return `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${record.summary.headlineElection}.`;
+    return appendSummaryClosingNote(
+      `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${record.summary.headlineElection}.`,
+      record.summary.summaryClosingNote,
+    );
   }
   const headline = buildSummaryVoterClause(
     record.summary.headlineIssues ?? [],
@@ -293,10 +315,11 @@ function buildSummary(
     ) ?? [];
   const voterParts = [headline, ...alsoClauses];
   const first = `${summaryAttribution}, ${voterParts[0]}.`;
-  if (voterParts.length === 1) {
-    return first;
-  }
-  return `${first} ${voterParts.slice(1).join(". ")}.`;
+  const body =
+    voterParts.length === 1
+      ? first
+      : `${first} ${voterParts.slice(1).join(". ")}.`;
+  return appendSummaryClosingNote(body, record.summary.summaryClosingNote);
 }
 
 /**
@@ -382,17 +405,18 @@ function buildMetroMillsChangeFact(
 }
 
 /**
- * Metro "What changed?": derive Change from last year and optional Most notable
+ * AUTH-derived "What changed?": Change from last year and optional Most notable
  * change from the AUTH series (same numbers as the mills history chart).
+ * Used by metro and fire (`usesAuthDerivedMills`).
  */
-function buildMetroMillsStep(
+function buildAuthDerivedMillsStep(
   record: LevyAuthorityChainEntryRecord,
 ): LevyAuthorityChainStep {
-  const pack = getAuthorityChainFamilyPack("metro");
+  const pack = getAuthorityChainFamilyPack(record.family);
   const code = record.match.levyLineCode?.trim();
   if (!code) {
     throw new Error(
-      `[${record.id}] metro mills step requires match.levyLineCode for AUTH series lookup`,
+      `[${record.id}] AUTH-derived mills step requires match.levyLineCode for AUTH series lookup`,
     );
   }
   const series = authorityMillsSeries(code);
@@ -502,8 +526,8 @@ function buildAuthoredMillsStep(
 }
 
 function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
-  if (record.family === "metro") {
-    return buildMetroMillsStep(record);
+  if (usesAuthDerivedMills(record.family)) {
+    return buildAuthDerivedMillsStep(record);
   }
   return buildAuthoredMillsStep(record);
 }

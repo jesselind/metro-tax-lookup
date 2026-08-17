@@ -28,6 +28,16 @@ function assertFactSources(fact: LevyAuthorityChainFact): void {
 }
 
 describe("levyAuthorityChain", () => {
+  it("matches South Metro Fire AUTH 4100 fire entry", () => {
+    const entry = findLevyAuthorityChainEntry("SMFR FIRE PROTECTION DISTRICT", {
+      levyLineCode: "4100",
+    });
+    expect(entry?.id).toBe("south-metro-fire-authority-chain");
+    expect(entry?.summary).toContain("Ballot Issue 7A");
+    expect(entry?.summary).toContain("November 2025");
+    expect(entry?.summary).not.toContain("eligible electors");
+  });
+
   it("matches Cherry Creek AUTH 0501 prototype entry", () => {
     const entry = findLevyAuthorityChainEntry("CHERRY CRK SCHOOL DIST 5", {
       levyLineCode: "0501",

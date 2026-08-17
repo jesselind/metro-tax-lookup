@@ -144,6 +144,20 @@ describe("levyAuthorityChainValidate", () => {
     );
   });
 
+  it("rejects summaryClosingNote that already includes the NOTE: prefix", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const smfr = entries.find(
+      (e) => e.id === "south-metro-fire-authority-chain",
+    )!;
+    const summary = smfr.summary as Record<string, unknown>;
+    summary.summaryClosingNote =
+      "NOTE: The Arapahoe County Notice of Election PDF is not currently available.";
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /omit the NOTE: prefix/i,
+    );
+  });
+
   it("rejects summarySource.text with leading or trailing whitespace", () => {
     const data = cloneShipped();
     const entries = data.entries as Array<Record<string, unknown>>;
@@ -173,7 +187,7 @@ describe("levyAuthorityChainValidate", () => {
     (school.authority as Record<string, unknown>).governmentBillName =
       "Cherry Creek School District";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /authority\.governmentBillName only applies to county or metro family entries/i,
+      /authority\.governmentBillName only applies to county, metro, or fire family entries/i,
     );
   });
 

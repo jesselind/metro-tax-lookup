@@ -57,17 +57,13 @@ export const TOOL_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-3";
 /** Home hub only: a bit more air between the slate bar and the landing intro. */
 export const HOME_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-4 sm:gap-5";
 
-/** Home landing intro wrapper: width and tight leading; lines use {@link HOME_LANDING_INTRO_LINE1_CLASS} / {@link HOME_LANDING_INTRO_LINE2_CLASS}. */
+/** Home landing intro wrapper: width and tight leading; line uses {@link HOME_LANDING_INTRO_LINE_CLASS}. */
 export const HOME_LANDING_INTRO_CLASS =
   "max-w-2xl leading-snug tracking-tight";
 
-/** First beat: setup — smaller scale and softer ink so line 2 clearly owns the hook. */
-export const HOME_LANDING_INTRO_LINE1_CLASS =
-  "block text-lg font-semibold text-slate-800 sm:text-xl";
-
-/** Second beat: hook — one size step above line 1; bold + indigo carry the emphasis. */
-export const HOME_LANDING_INTRO_LINE2_CLASS =
-  "mt-2 block text-xl font-bold leading-tight text-indigo-950 sm:mt-3 sm:text-2xl";
+/** Single landing hook (Own and Rent): bold + indigo. */
+export const HOME_LANDING_INTRO_LINE_CLASS =
+  "block text-xl font-bold leading-tight text-indigo-950 sm:text-2xl";
 
 /** Lead paragraph directly under PageHero (uses main column width; see {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
 export const TOOL_PAGE_INTRO_PARAGRAPH_CLASS =

@@ -346,6 +346,46 @@ describe("levyAuthorityChainBuild", () => {
     ).toThrow(/tabor_revenue_retention requires maxAuthorizedMills/);
   });
 
+  it("builds South Metro Fire from AUTH-derived mills and Ballot Issue 7A votes", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) => candidate.id === "south-metro-fire-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record);
+    const measure = entry.steps.find(
+      (step) => step.id === "ballot-7a-operations-mill",
+    );
+    const votes = entry.steps.find(
+      (step) => step.id === "county-reported-results",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(entry.summary).toContain("voters approved Ballot Issue 7A");
+    expect(entry.summary).toMatch(
+      /[^\n]\nNOTE: The Arapahoe County Notice of Election PDF for this measure is not currently available/,
+    );
+    expect(entry.summary).not.toContain("\n\nNOTE:");
+    expect(entry.summary).toContain(
+      "Douglas County's Notice for the same wording",
+    );
+    expect(entry.summary).not.toContain("eligible electors");
+    expect(entry.summary).not.toMatch(/NOTE:\s*NOTE:/);
+    expect(measure?.title).toBe("Ballot Issue 7A: 3 more mills for fire and EMS");
+    expect(measure?.body).toContain("Voters approved");
+    expect(measure?.body).toContain("12.25 mills");
+    expect(measure?.bodyTermId).toBe("term-tabor");
+    expect(votes?.title).toBe("How people voted");
+    expect(votes?.facts.some((fact) => fact.value.includes("49,583"))).toBe(
+      true,
+    );
+    expect(mills?.body).toContain("Ballot Issue 7A raised the district mill rate");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(entry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only")).toBe(
+      true,
+    );
+  });
+
   it("builds Sky Ranch from AUTH-derived mills and chronological metro steps", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "sky-ranch-3-metro-authority-chain",

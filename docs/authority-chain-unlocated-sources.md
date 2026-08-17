@@ -17,6 +17,9 @@ Do **not** put missing-file hunts only in ephemeral working docs.
 
 | Id | AUTH | Measure | Noted | Next-best |
 |----|------|---------|-------|-----------|
-| `littleton-0601-4c-2020-ballot-text` | `0601` | Ballot Issue 4C (November 2020) | 2026-08 | [2020 County sample ballot (Spanish)](https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Sample%20Ballot%20SPA.pdf) |
+| `littleton-0601-4c-2020-ballot-text` | `0601` | Ballot Issue 4C (November 2020) | 2026-08 | [2020 County sample ballot (Spanish)](https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Sample%20Ballot%20SPA.pdf#page=3) |
+| `sky-ranch-4571-2020-ballot-wording` | `4571` | November 2020 district election | 2026-08 | Sky Ranch 2024 audit (see TS) |
+| `sky-ranch-4571-2020-certified-tally` | `4571` | November 2020 district election | 2026-08 | Sky Ranch 2024 audit (see TS) |
+| `smfr-4100-7a-2025-arapahoe-ballot-notice` | `4100` | Ballot Issue 7A (November 2025) | 2026-08 | [Douglas County Ballot Issue Notice (7A)](https://www.douglasco.gov/documents/2025-coordinated-election-ballot-issue-notices-tabor-book.pdf#page=11) |
 
-Sought: English Notice / English sample with 4C wording. Spanish sample with Asunto 4C is posted and linked in the trail (AI English translation disclosed). English official text still missing.
+Edit the TypeScript file for full sought / looked-where text. This table is a quick mirror only.

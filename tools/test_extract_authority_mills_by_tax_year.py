@@ -16,6 +16,7 @@ import unittest
 from extract_authority_mills_by_tax_year import (
     AuthorityLevyRow,
     build_authority_mills_for_year,
+    build_rate_table_page_payload,
     build_shipping_payload,
     parse_levy_percentage_table_rows,
     resolve_pdf_by_year,
@@ -135,6 +136,52 @@ class BuildShippingPayloadTests(unittest.TestCase):
         )
         self.assertEqual(payload["_meta"]["taxYears"], [2024, 2025])
         self.assertEqual(payload["_meta"]["bundledAsOf"], "2026-07-20")
+
+
+class BuildRateTablePagePayloadTests(unittest.TestCase):
+    def test_maps_tax_year_auth_and_pdf_tag_to_one_viewer_page(self) -> None:
+        payload = build_rate_table_page_payload(
+            {
+                2024: [
+                    AuthorityLevyRow(
+                        2024, "0747", "0601", "LITTLETON SCHOOL", 64.793, 63.36, 95
+                    ),
+                    AuthorityLevyRow(
+                        2024, "0747", "4100", "SMFR", 9.29, 9.09, 96
+                    ),
+                    AuthorityLevyRow(
+                        2024, "0747", "9999", "NOT CURATED", 1.0, 1.0, 96
+                    ),
+                ]
+            },
+            ["0601", "4100"],
+            bundled_as_of="2026-08-16",
+        )
+        self.assertEqual(
+            payload["pagesByAuthority"]["0601"]["2024"]["0747"],
+            95,
+        )
+        self.assertEqual(
+            payload["pagesByAuthority"]["4100"]["2024"]["0747"],
+            96,
+        )
+        self.assertNotIn("9999", payload["pagesByAuthority"])
+
+    def test_rejects_one_tag_auth_pair_on_multiple_pages(self) -> None:
+        with self.assertRaisesRegex(ValueError, "spans multiple viewer pages"):
+            build_rate_table_page_payload(
+                {
+                    2024: [
+                        AuthorityLevyRow(
+                            2024, "0747", "0601", "LITTLETON", 64.793, 63.36, 95
+                        ),
+                        AuthorityLevyRow(
+                            2024, "0747", "0601", "LITTLETON", 64.793, 63.36, 96
+                        ),
+                    ]
+                },
+                ["0601"],
+            )
 
 
 class ResolvePdfByYearTests(unittest.TestCase):

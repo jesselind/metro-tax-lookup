@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -170,7 +170,7 @@
           "detail": "Ballot Issue 4C\n\nFor the purpose of making additional General Fund revenue available for the purposes described below, shall taxes be increased for Arapahoe County School District Number Six (Littleton Public Schools) by $12,000,000 in 2020 for collection in 2021 and by whatever amounts are raised each year thereafter through an increased mill levy, provided that the mill levy for the first year shall not exceed 6 mills and that no year-to-year increase in the mill levy thereafter shall exceed 1 mill in any given year, and further that said mill levy may be increased annually so that the amount of revenue produced by said mill levy reflects the percentage increase in inflation, with the effect that more General Fund revenue will be available for purposes such as:\ncontinuing to attract and retain quality teachers;\nmaintaining school counseling for mental health and suicide prevention;\nproviding classes in career orientation, technology, and specialized trades that offer students real-world job skills, such as health care, specialized trades, and computer sciences;\n\nShall those additional revenues from this tax increase, applied in accordance with Section 22-54-108.7, C.R.S., be deposited in the Supplemental Capital Construction, Technology, and Maintenance Fund and be used for ongoing cash funding for capital construction, new educational technology, modernization of existing technologies, and the district's maintenance needs?;\n\nAnd shall the district be authorized to increase said mill levy beginning with tax collections for the year 2022 and annually thereafter in order to offset property tax refunds or mitigations or reductions in the percentage of actual valuation used to determine valuation?",
           "ballotTextSource": {
             "text": "2020 County sample ballot (Spanish)",
-            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Sample%20Ballot%20SPA.pdf"
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Sample%20Ballot%20SPA.pdf#page=3"
           },
           "ballotTextEnglishHuntSource": {
             "text": "2020 Past Elections File Library (General)",
@@ -312,7 +312,7 @@
         "factValue": "2025 Arapahoe County Adopted Budget",
         "source": {
           "text": "2025 Arapahoe County Adopted Budget",
-          "url": "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf"
+          "url": "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf#page=75"
         }
       },
       "openGapIds": [
@@ -337,7 +337,7 @@
             "sources": [
               {
                 "text": "Sky Ranch Metropolitan District No. 3 2026 budget",
-                "url": "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/00-B1-SRMD3---2026-Final-Budget---REMEDIATED.pdf"
+                "url": "https://skyranch.colorado.gov/sites/g/files/lrnvjt826/files/00-B1-SRMD3---2026-Final-Budget---REMEDIATED.pdf#page=9"
               }
             ]
           }
@@ -408,6 +408,63 @@
       ],
       "openGapIds": [
         "metro-election-records-unlocated"
+      ]
+    },
+    {
+      "id": "south-metro-fire-authority-chain",
+      "family": "fire",
+      "match": {
+        "levyLineCode": "4100"
+      },
+      "authority": {
+        "displayName": "South Metro Fire Rescue Fire Protection District",
+        "countyListName": "SMFR FIRE PROTECTION DISTRICT",
+        "governingBody": "board",
+        "whoGetsBody": "This district's property-tax revenue pays for fire protection, ambulance, emergency medical response, rescue, and related safety services in its service area."
+      },
+      "summarySource": {
+        "text": "According to Arapahoe County's certified election results",
+        "url": "https://files.arapahoeco.gov/Clerk%20and%20Recorder/ArapahoeVotes/Documents-Articles/Canvass%20Docs/2025%20Coordinated%20Election%20Summary%20Report_11.25.2025.pdf#page=13"
+      },
+      "summary": {
+        "headlineIssues": [
+          "7A"
+        ],
+        "headlineElection": "November 2025",
+        "summaryClosingNote": "The Arapahoe County Notice of Election PDF for this measure is not currently available, so the Ballot Issue 7A link uses Douglas County's Notice for the same wording, since 7A went to voters in all three counties this fire district covers."
+      },
+      "mills": {
+        "stepBody": "Ballot Issue 7A raised the district mill rate by 3 mills. The county's published rate for this authority shows that jump between Tax Year 2024 and Tax Year 2025."
+      },
+      "measures": [
+        {
+          "stepId": "ballot-7a-operations-mill",
+          "ballotIssue": "7A",
+          "kind": "operations_mill",
+          "electionMonthYear": "November 2025",
+          "titlePlain": "3 more mills for fire and EMS",
+          "detail": "raising South Metro Fire Rescue's total mill rate by 3 mills to 12.25 mills for fire protection, ambulance, emergency medical response, rescue, and safety services, and letting the district keep and spend that revenue without TABOR refund limits",
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "Douglas County Ballot Issue Notice (Ballot Issue 7A)",
+            "url": "https://www.douglasco.gov/documents/2025-coordinated-election-ballot-issue-notices-tabor-book.pdf#page=11"
+          },
+          "bodyTermId": "term-tabor",
+          "bodyTermMatch": "TABOR",
+          "votes": {
+            "yes": "49,583",
+            "yesPct": "58.47%",
+            "no": "35,213",
+            "noPct": "41.53%"
+          },
+          "resultsSource": {
+            "text": "2025 Official Summary Report",
+            "url": "https://files.arapahoeco.gov/Clerk%20and%20Recorder/ArapahoeVotes/Documents-Articles/Canvass%20Docs/2025%20Coordinated%20Election%20Summary%20Report_11.25.2025.pdf#page=13"
+          }
+        }
+      ],
+      "openGapIds": [
+        "multi-county-arapahoe-votes-only"
       ]
     }
   ]

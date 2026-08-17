@@ -12,7 +12,7 @@
       2025
     ],
     "joinKey": "Stack line `code` (AUTH). Look up authorities[code].millsByTaxYear.",
-    "pdfTagNote": "Levy % PDF TAG is a short tax-area code. It is not the same as Levy.aspx tagId in arapahoe-levy-stacks-by-tag-id.json. Exception maps use PDF TAG keys for audit; app YoY joins AUTH totals.",
+    "pdfTagNote": "Levy % PDF TAG is parcel tagShortDescr zero-padded to four digits. It is not Levy.aspx tagId in arapahoe-levy-stacks-by-tag-id.json. Exception maps use PDF TAG keys for audit; app YoY joins AUTH totals.",
     "yearSemantics": "Numbers are Tax Year mills from the county Levy % PDFs. Do not relabel Tax Year 2025 as budget year 2026.",
     "sources": [
       {

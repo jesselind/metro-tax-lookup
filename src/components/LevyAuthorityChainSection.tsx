@@ -36,6 +36,7 @@ import {
   type LevyAuthorityChainEntry,
   type LevyAuthorityChainStep,
 } from "@/lib/levyAuthorityChain";
+import { deepLinkLevyPercentageUrlForParcel } from "@/lib/authorityMillsHistory";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import {
   TERM_LINK_CLASS,
@@ -45,6 +46,8 @@ import type { ReactNode } from "react";
 
 type Props = {
   entry: LevyAuthorityChainEntry;
+  /** Open parcel's short tax-area code (PDF TAG after zero-padding). */
+  taxAreaShortCode?: string;
 };
 
 /**
@@ -107,13 +110,22 @@ function renderWithInlineTerms(
 /** Official source links under a fact (labels name the document, not a page #). */
 function SourceLinks({
   sources,
+  authorityCode,
+  taxAreaShortCode,
 }: {
   sources: { text: string; url: string }[];
+  authorityCode?: string;
+  taxAreaShortCode?: string;
 }) {
   return (
     <ul className="mt-1 space-y-1">
       {sources.map((src, i) => {
-        const safeHref = safeHttpOrHttpsUrl(src.url);
+        const parcelSpecificUrl = deepLinkLevyPercentageUrlForParcel(
+          src.url,
+          authorityCode,
+          taxAreaShortCode,
+        );
+        const safeHref = safeHttpOrHttpsUrl(parcelSpecificUrl);
         return (
           <li key={`${src.text}-${i}`}>
             {safeHref ? (
@@ -174,20 +186,18 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
     }
   }
   for (const issue of entry.summaryIssueMarks ?? []) {
-    let from = 0;
-    while (from < entry.summary.length) {
-      const at = entry.summary.indexOf(issue.match, from);
-      if (at < 0) break;
-      const end = at + issue.match.length;
-      const issueUrl = issue.url ? safeHttpOrHttpsUrl(issue.url) ?? undefined : undefined;
-      marks.push({
-        start: at,
-        end,
-        kind: "issue",
-        issueUrl: issueUrl || undefined,
-      });
-      from = end;
-    }
+    // Mark only the first occurrence so a later mention (for example inside a
+    // closing NOTE that references "the Ballot Issue 7A link") is not re-linked.
+    const at = entry.summary.indexOf(issue.match);
+    if (at < 0) continue;
+    const end = at + issue.match.length;
+    const issueUrl = issue.url ? safeHttpOrHttpsUrl(issue.url) ?? undefined : undefined;
+    marks.push({
+      start: at,
+      end,
+      kind: "issue",
+      issueUrl: issueUrl || undefined,
+    });
   }
   marks.sort((a, b) => a.start - b.start);
 
@@ -396,7 +406,10 @@ function FactValue({
   );
 }
 
-export function LevyAuthorityChainSection({ entry }: Props) {
+export function LevyAuthorityChainSection({
+  entry,
+  taxAreaShortCode,
+}: Props) {
   const headingId = `levy-authority-chain-${entry.id}-heading`;
 
   return (
@@ -411,7 +424,7 @@ export function LevyAuthorityChainSection({ entry }: Props) {
       >
         {entry.heading}
       </h4>
-      <p className="mt-2 text-base leading-relaxed text-slate-800 sm:text-lg">
+      <p className="mt-2 whitespace-pre-line text-base leading-relaxed text-slate-800 sm:text-lg">
         {renderSummary(entry)}
       </p>
 
@@ -468,7 +481,11 @@ export function LevyAuthorityChainSection({ entry }: Props) {
                           }
                         />
                         {fact.sources.length > 0 ? (
-                          <SourceLinks sources={fact.sources} />
+                          <SourceLinks
+                            sources={fact.sources}
+                            authorityCode={entry.match.levyLineCode}
+                            taxAreaShortCode={taxAreaShortCode}
+                          />
                         ) : null}
                       </dd>
                     </div>
