@@ -75,6 +75,10 @@ export const SYNTHETIC_E2E_OWNER = "E2E Synthetic Owner";
 /** Situs line asserted from the mocked shard (not a real street). */
 export const SYNTHETIC_E2E_SITUS_LINE = "9999 SYNTHETIC TEST RD";
 
+/** Fictional neighborhood name/code on the primary synthetic Real shard. */
+export const SYNTHETIC_E2E_NEIGHBORHOOD = "SYNTHETIC E2E NEIGHBORHOOD";
+export const SYNTHETIC_E2E_NEIGHBORHOOD_CODE = "9001";
+
 export const SYNTHETIC_SITUS_TO_PINS = {
   snapshot: {
     bundledAsOf: "2026-01-01T00:00:00Z",
@@ -319,8 +323,8 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
       situsCity: "E2E CITY",
       ownerList: SYNTHETIC_E2E_OWNER,
       ownershipType: "Individual",
-      neighborhood: null,
-      neighborhoodCode: null,
+      neighborhood: SYNTHETIC_E2E_NEIGHBORHOOD,
+      neighborhoodCode: SYNTHETIC_E2E_NEIGHBORHOOD_CODE,
       totalActual: 100000,
       totalAssessed: 6800,
       // Four UB units so Rent equal-split is assertable (68 / 4 = $17/yr, ~$1/mo).

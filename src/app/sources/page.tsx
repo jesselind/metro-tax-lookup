@@ -15,6 +15,7 @@ import {
 } from "@/lib/toolFlowStyles";
 import {
   ARAPAHOE_ASSESSOR_DATA_MART_EXPORT,
+  ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE,
   ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB,
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
@@ -795,13 +796,23 @@ export default function SourcesPage() {
           After a PIN load, Property details show county-record fields joined
           from the Assessor Data Mart (legal, ownership, land, buildings, sales,
           permits when present), including state use, subdivision, and tax roll
-          when the export has them. Empty cells use{" "}
+          when the export has them. Neighborhood name and code come from the
+          Assessor{" "}
+          <a
+            href={ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Open GIS Parcels
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          layer (PIN join; code and name only), not from the Main Parcel CSV,
+          which has no neighborhood column. We do not guess neighborhood from
+          subdivision name. Empty cells use{" "}
           <strong className="font-semibold text-slate-900">No data found</strong>
           {" "}
-          with a short report link. Neighborhood name and code stay empty until
-          a citable <strong className="font-semibold text-slate-900">per-parcel</strong>{" "}
-          neighborhood code ships — a code-to-name lookup alone is not enough,
-          and we do not guess from subdivision name.
+          with a short report link.
         </p>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
           <li>
@@ -988,7 +999,19 @@ export default function SourcesPage() {
           </code>
           {" "}
           as CSV from that portal and join them offline when refreshing bundled
-          data; looking up a PIN does not call a live Data Mart API. DOLA{" "}
+          data; looking up a PIN does not call a live Data Mart API. Neighborhood
+          name and code on Property details also join from the Assessor{" "}
+          <a
+            href={ARAPAHOE_ASSESSOR_GIS_DATA_DOWNLOAD_PAGE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Open GIS Data
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          Parcels download (local FileGDB; PIN + neighborhood fields only into
+          public JSON). DOLA{" "}
           <a
             href={DOLA_LGIS_PROPERTY_TAX_ENTITIES}
             target="_blank"

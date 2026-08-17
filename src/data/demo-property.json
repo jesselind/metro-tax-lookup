@@ -318,7 +318,7 @@
       }
     ],
     "stateUseLabel": "Single Family Residential",
-    "neighborhood": null,
-    "neighborhoodCode": null
+    "neighborhood": "EXAMPLE NEIGHBORHOOD",
+    "neighborhoodCode": "9999"
   }
 }

@@ -166,12 +166,12 @@ export type ArapahoeParcelRecordRow = {
   ownerDeliveryAddress?: string | null;
   ownerCityStateZip?: string | null;
   /**
-   * County neighborhood name. Not in Main Parcel CSV today; reserved when a
-   * reliable per-parcel neighborhood-code source lands (local NBHD xlsx is
-   * code→name lookup only — not joined). UI shows a plain label; empty → No data found.
+   * County neighborhood name from Assessor Open GIS Parcels (PIN join).
+   * Main Parcel CSV has no NBHD column; NBHD xlsx is code→name only.
+   * UI shows a plain label; empty → No data found.
    */
   neighborhood?: string | null;
-  /** County neighborhood code. Same availability note as neighborhood. */
+  /** County neighborhood code from the same Open GIS PIN join. */
   neighborhoodCode?: string | null;
   legalDescrFull?: string | null;
   legalDescrDisplay?: string | null;
@@ -221,6 +221,8 @@ export type ArapahoeParcelRecordByPinFile = {
     bundledAsOf: string;
     source: string;
     taxYear?: string | null;
+    /** Local Open GIS Parcels download stamp when neighborhood was joined. */
+    gisParcelsAsOf?: string | null;
   };
   pinDigits: number;
   /** Present on per-prefix shard files from the build script. */
@@ -535,10 +537,16 @@ export function parcelRecordShardPrefixes(pinInput: string): string[] {
   return prefixes;
 }
 
+/**
+ * Bump when regenerating parcel-record shards with a field/schema change so
+ * browsers do not keep a stale copy under /data max-age caching.
+ */
+export const ARAPAHOE_PARCEL_RECORD_CACHE_BUST = "20260816nbhd";
+
 /** Safe static path for one parcel-record shard (digits only — no user-controlled path segments). */
 export function parcelRecordShardUrl(prefix: string): string | null {
   if (!isParcelRecordShardPrefix(prefix)) return null;
-  return `/data/arapahoe-parcel-record-by-pin/${prefix}.json`;
+  return `/data/arapahoe-parcel-record-by-pin/${prefix}.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`;
 }
 
 /** Lazy fetch with timeout; parcel-record shards only (levy bundles use uncached fetch helpers below). */

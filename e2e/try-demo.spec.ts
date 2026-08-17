@@ -26,11 +26,17 @@ test.describe("Try demo property", () => {
       page.getByRole("region", { name: "Property tax breakdown" }),
     ).toBeVisible();
     await expect(page.locator("#parcel-record-heading")).toBeVisible();
+    const details = page.locator("#home-property-details");
     await expect(
-      page.locator("#home-property-details").getByText(DEMO_OWNER_LIST, {
+      details.getByText(DEMO_OWNER_LIST, {
         exact: true,
       }),
     ).toBeVisible();
+    // Fictional neighborhood from src/data/demo-property.json (not a GIS join).
+    await expect(
+      details.getByText("EXAMPLE NEIGHBORHOOD", { exact: true }),
+    ).toBeVisible();
+    await expect(details.getByText("9999", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Open county parcel record" }),
     ).toBeDisabled();
@@ -43,10 +49,11 @@ test.describe("Try demo property", () => {
     await page.getByRole("button", { name: "Try demo property" }).click();
     await expect(page.locator("#parcel-record-heading")).toBeVisible();
 
+    // Subdivision Code stays empty in the demo fixture; Neighborhood is filled.
     await page
       .locator("#home-property-details")
       .getByRole("button", {
-        name: `${PARCEL_RECORD_NO_DATA} for Neighborhood. Open for details and how to report it.`,
+        name: `${PARCEL_RECORD_NO_DATA} for Subdivision Code. Open for details and how to report it.`,
       })
       .click();
 
@@ -55,7 +62,7 @@ test.describe("Try demo property", () => {
     ).toHaveAttribute(
       "href",
       buildMissingParcelDataMailtoHref({
-        fieldLabel: "Neighborhood",
+        fieldLabel: "Subdivision Code",
         pin: DEMO_DISPLAY_PIN,
         ain: DEMO_AIN,
       }),

@@ -6,6 +6,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ainLookupCandidates,
+  ARAPAHOE_PARCEL_RECORD_CACHE_BUST,
   clearArapahoeParcelDataCache,
   fetchArapahoeLevyStacksJson,
   fetchArapahoePinToTagJson,
@@ -61,9 +62,9 @@ describe("parcelRecordShardPrefixes", () => {
 });
 
 describe("parcelRecordShardUrl", () => {
-  it("builds a static shard path for valid prefixes", () => {
+  it("builds a static shard path with the cache-bust version", () => {
     expect(parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)).toBe(
-      `/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json`,
+      `/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`,
     );
   });
 

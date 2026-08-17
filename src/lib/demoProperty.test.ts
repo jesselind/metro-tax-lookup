@@ -20,6 +20,8 @@ describe("loadDemoProperty", () => {
     expect(demo.levy.lines.length).toBeGreaterThan(0);
     expect(demo.parcelRecord.ownerList).toBe(DEMO_OWNER_LIST);
     expect(demo.parcelRecord.situsAddress).toBe(DEMO_SITUS_ADDRESS);
+    expect(demo.parcelRecord.neighborhood).toBe("EXAMPLE NEIGHBORHOOD");
+    expect(demo.parcelRecord.neighborhoodCode).toBe("9999");
     // Guard: do not reintroduce the real source PIN into the fixture.
     expect(JSON.stringify(demo)).not.toMatch(/035457397/);
   });

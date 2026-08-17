@@ -18,8 +18,15 @@ Outputs (default: metro-tax-lookup/public/data/):
 Parcel-record sibling inputs (optional; skipped if missing):
   Mart_DescrHeader, Mart_LegalParty, Mart_RDE_LndAll, Mart_RDE_BLD, Mart_RDE_Xfob,
   Mart_Transfers (Sale rows with Book+Page), Mart_RDE_Permit,
-  State Class Codes xlsx → stateUseLabel, NBHD codes xlsx (loaded only; not joined until Main Parcel
-  exposes a neighborhood code).
+  State Class Codes xlsx → stateUseLabel,
+  NBHD codes xlsx remains a code→name backup; not joined (Main Parcel has no NBHD column).
+
+Neighborhood (required unless --skip-neighborhood):
+  Open GIS Assessor Parcels FileGDB → neighborhood + neighborhoodCode (PIN join;
+  code/name only into public JSON). Default path supporting-data/county-gis/
+  Assessor_Parcels_SP.gdb (--gis-parcels-gdb). Missing GDB or a zero-row join is a
+  build error so a routine rebuild cannot silently strip neighborhood from every
+  shard. Optional data-as-of.txt next to that GDB (YYYY-MM-DD) → snapshot.gisParcelsAsOf.
 
 Mart_TA_TAG: supporting-data/county-mart/.../Tax Authority Groups and Tax Authorities.csv
 Main parcel: supporting-data/county-mart/.../Main Parcel Table.csv
@@ -41,6 +48,8 @@ Maintainer notes:
     that row so the list matches the table users copy from.
   - UI Book Page links use Clerk & Recorder public search (Book+Page concatenated); build stores
     display bookPage only (no URL in JSON).
+  - After regenerating parcel-record shards with a field/schema change, bump
+    ARAPAHOE_PARCEL_RECORD_CACHE_BUST in src/lib/arapahoeParcelLevyData.ts.
 """
 
 from __future__ import annotations
@@ -121,6 +130,13 @@ DEFAULT_NBHD_XLSX = (
 DEFAULT_STATE_CLASS_XLSX = (
     COUNTY_MART / "Main Parcel Table (CSV)" / "State Class Codes 3 30 2015.xlsx"
 )
+# Official Assessor Open GIS Parcels (Stateplane). Local download; see /sources.
+DEFAULT_GIS_PARCELS_GDB = (
+    SUPPORTING_DATA / "county-gis" / "Assessor_Parcels_SP.gdb"
+)
+DEFAULT_GIS_PARCELS_LAYER = "Assessor_Parcels"
+# One line YYYY-MM-DD next to the GDB: date you downloaded that GIS export.
+GIS_PARCELS_DATA_AS_OF_FILENAME = "data-as-of.txt"
 DEFAULT_DOLA_CSV = DOLA_DIR / "property-tax-entities-export.csv"
 DEFAULT_DOLA_XLSX = DOLA_DIR / "property-tax-entities-export.xlsx"
 
@@ -1826,6 +1842,155 @@ def read_state_class_description_by_code(path: Path) -> dict[str, str]:
     return read_xlsx_code_description_map(path, code_col=0, desc_col=2)
 
 
+def format_neighborhood_code(raw: Any) -> str:
+    """GIS ``Neighborhood_Code`` → display string (whole numbers without a ``.0`` suffix)."""
+    if raw is None:
+        return ""
+    if isinstance(raw, bool):
+        return ""
+    if isinstance(raw, int):
+        return str(raw) if raw > 0 else ""
+    if isinstance(raw, float):
+        if math.isnan(raw) or raw <= 0:
+            return ""
+        if raw == int(raw):
+            return str(int(raw))
+        return strip_field(str(raw))
+    s = strip_field(str(raw))
+    if not s:
+        return ""
+    try:
+        val = float(s)
+    except ValueError:
+        return s
+    if math.isnan(val) or val <= 0:
+        return ""
+    if val == int(val):
+        return str(int(val))
+    return s
+
+
+def neighborhood_by_pin_from_rows(
+    rows: list[tuple[Any, Any, Any]],
+) -> tuple[dict[str, dict[str, str]], int]:
+    """
+    Build PIN → ``{neighborhood, neighborhoodCode}`` from ``(pin, code, name)`` rows.
+
+    Blank PIN, code ≤ 0, or blank name are skipped. When the same PIN maps to more
+    than one distinct code/name pair, that PIN is omitted (safer than guessing).
+
+    Returns ``(map, conflict_pin_count)``.
+    """
+    provisional: dict[str, tuple[str, str]] = {}
+    conflicts: set[str] = set()
+    for pin_raw, code_raw, name_raw in rows:
+        pin = normalize_pin(str(pin_raw) if pin_raw is not None else "")
+        if not pin or pin in conflicts:
+            continue
+        code = format_neighborhood_code(code_raw)
+        if not code:
+            continue
+        name = strip_field(str(name_raw) if name_raw is not None else "")
+        if not name:
+            continue
+        tup = (code, name)
+        prev = provisional.get(pin)
+        if prev is None:
+            provisional[pin] = tup
+        elif prev != tup:
+            conflicts.add(pin)
+            del provisional[pin]
+    out = {
+        pin: {"neighborhood": name, "neighborhoodCode": code}
+        for pin, (code, name) in provisional.items()
+    }
+    return out, len(conflicts)
+
+
+def read_neighborhood_by_pin(
+    gdb_path: Path,
+    *,
+    layer: str = DEFAULT_GIS_PARCELS_LAYER,
+) -> dict[str, dict[str, str]]:
+    """
+    Open GIS Assessor Parcels GDB → per-PIN neighborhood name + code.
+
+    Reads only PIN / Neighborhood_Code / Neighborhood (no owner or geometry into
+    the public JSON path). Requires pyogrio (see tools/requirements.txt).
+    """
+    try:
+        import pyogrio
+    except ImportError:
+        raise SystemExit(
+            f"Open GIS Parcels GDB present ({gdb_path}) but pyogrio is not installed. "
+            "Run: pip install -r tools/requirements.txt"
+        )
+
+    df = pyogrio.read_dataframe(
+        gdb_path,
+        layer=layer,
+        columns=["PIN", "Neighborhood_Code", "Neighborhood"],
+        read_geometry=False,
+    )
+    rows: list[tuple[Any, Any, Any]] = list(
+        zip(
+            df["PIN"].tolist(),
+            df["Neighborhood_Code"].tolist(),
+            df["Neighborhood"].tolist(),
+        )
+    )
+    out, n_conflict = neighborhood_by_pin_from_rows(rows)
+    if n_conflict:
+        print(
+            f"Open GIS Parcels: omitted {n_conflict} PIN(s) with conflicting "
+            "neighborhood code/name rows",
+            file=sys.stderr,
+        )
+    return out
+
+
+def attach_neighborhood_from_gis(
+    parcel_record_map: dict[str, dict[str, Any]],
+    neighborhood_by_pin: dict[str, dict[str, str]],
+) -> int:
+    """Set ``neighborhood`` + ``neighborhoodCode`` from the GIS PIN map. Returns attach count."""
+    n = 0
+    for pin, rec in parcel_record_map.items():
+        nb = neighborhood_by_pin.get(pin)
+        if not nb:
+            continue
+        rec["neighborhood"] = nb["neighborhood"]
+        rec["neighborhoodCode"] = nb["neighborhoodCode"]
+        n += 1
+    return n
+
+
+def read_gis_parcels_data_as_of(gdb_path: Path) -> str | None:
+    """
+    Download stamp from ``data-as-of.txt`` next to ``gdb_path`` (optional).
+
+    Reads the stamp beside the GDB actually used so a ``--gis-parcels-gdb``
+    override cannot inherit another export's date. Returns None when the file is
+    absent, empty, or not a single valid ``YYYY-MM-DD`` line.
+    """
+    path = gdb_path.parent / GIS_PARCELS_DATA_AS_OF_FILENAME
+    if not path.is_file():
+        return None
+    text = path.read_text(encoding="utf-8", errors="replace")
+    first = strip_field(text.splitlines()[0] if text.splitlines() else "")
+    if not first:
+        return None
+    try:
+        datetime.strptime(first, "%Y-%m-%d")
+    except ValueError:
+        print(
+            f"Ignoring {path}: expected one YYYY-MM-DD line, got {first!r}",
+            file=sys.stderr,
+        )
+        return None
+    return first
+
+
 def attach_state_use_label(
     rec: dict[str, Any],
     state_class_by_code: dict[str, str],
@@ -1856,8 +2021,15 @@ def enrich_parcel_record_from_sibling_marts(
     permits_path: Path | None = None,
     state_class_xlsx_path: Path | None = None,
     nbhd_xlsx_path: Path | None = None,
+    gis_parcels_gdb_path: Path | None = None,
 ) -> dict[str, int]:
-    """Merge Phase 2–4 sibling mart tables / lookup workbooks into parcel-record rows."""
+    """
+    Merge Phase 2–4 sibling mart tables / lookup workbooks into parcel-record rows.
+
+    When ``gis_parcels_gdb_path`` exists, also joins Open GIS neighborhood
+    name/code by PIN. Callers that require neighborhood must treat a zero
+    ``counts["neighborhood"]`` as an error (see ``main`` / ``--skip-neighborhood``).
+    """
     legal_by_pin = (
         read_legal_description_display_by_pin(legal_descriptions_path)
         if legal_descriptions_path and legal_descriptions_path.is_file()
@@ -1883,15 +2055,21 @@ def enrich_parcel_record_from_sibling_marts(
         if state_class_xlsx_path
         else {}
     )
-    # NBHD xlsx is loaded for readiness / future join only: Main Parcel has no
-    # neighborhood-code column, and SubdivisionName→NBHD guesses disagree with
-    # live PPINum (do not infer neighborhood from subdivision).
-    if nbhd_xlsx_path and nbhd_xlsx_path.is_file():
+    neighborhood_by_pin: dict[str, dict[str, str]] = {}
+    if gis_parcels_gdb_path and gis_parcels_gdb_path.exists():
+        neighborhood_by_pin = read_neighborhood_by_pin(gis_parcels_gdb_path)
+        print(
+            f"Open GIS Parcels neighborhood map: {len(neighborhood_by_pin)} PINs",
+            file=sys.stderr,
+        )
+    elif nbhd_xlsx_path and nbhd_xlsx_path.is_file():
+        # Backup lookup only — Main Parcel has no neighborhood-code column, and
+        # SubdivisionName→NBHD guesses disagree with live PPINum (do not infer).
         nbhd_count = len(read_nbhd_description_by_code(nbhd_xlsx_path))
         if nbhd_count:
             print(
                 f"NBHD lookup loaded ({nbhd_count} codes); not joined - "
-                "no neighborhood code on Main Parcel CSV",
+                "place Assessor_Parcels Open GIS GDB under supporting-data/county-gis/",
                 file=sys.stderr,
             )
 
@@ -1903,6 +2081,7 @@ def enrich_parcel_record_from_sibling_marts(
         "transfers": 0,
         "permits": 0,
         "stateUseLabel": 0,
+        "neighborhood": 0,
     }
     for pin, rec in parcel_record_map.items():
         mart_legal = legal_by_pin.get(pin)
@@ -1934,6 +2113,10 @@ def enrich_parcel_record_from_sibling_marts(
             counts["permits"] += 1
         if state_class_by_code and attach_state_use_label(rec, state_class_by_code):
             counts["stateUseLabel"] += 1
+    if neighborhood_by_pin:
+        counts["neighborhood"] = attach_neighborhood_from_gis(
+            parcel_record_map, neighborhood_by_pin
+        )
     return counts
 
 
@@ -2120,7 +2303,28 @@ def main() -> None:
         "--nbhd-xlsx",
         type=Path,
         default=DEFAULT_NBHD_XLSX,
-        help="NBHD codes xlsx (lookup only today — Main Parcel has no neighborhood code column).",
+        help=(
+            "NBHD codes xlsx (code→name backup only). Per-parcel neighborhood comes "
+            "from --gis-parcels-gdb when present."
+        ),
+    )
+    ap.add_argument(
+        "--gis-parcels-gdb",
+        type=Path,
+        default=DEFAULT_GIS_PARCELS_GDB,
+        help=(
+            "Assessor Open GIS Parcels FileGDB (PIN → neighborhood code/name). "
+            f"Default: {DEFAULT_GIS_PARCELS_GDB.relative_to(REPO_ROOT)}"
+        ),
+    )
+    ap.add_argument(
+        "--skip-neighborhood",
+        action="store_true",
+        help=(
+            "Build parcel-record shards without neighborhood fields. Without this, "
+            "a missing or empty Open GIS Parcels GDB is a build error so a routine "
+            "rebuild cannot silently drop neighborhood from every shard."
+        ),
     )
     ap.add_argument(
         "--dola-export",
@@ -2240,6 +2444,13 @@ def main() -> None:
         )
         return
 
+    if not args.skip_neighborhood and not args.gis_parcels_gdb.exists():
+        raise SystemExit(
+            f"Missing Open GIS Parcels GDB: {args.gis_parcels_gdb}\n"
+            "Download the Parcels layer from https://gis.arapahoegov.com/datadownload/, "
+            "or pass --skip-neighborhood to build shards without neighborhood fields."
+        )
+
     pin_map, situs_map, parcel_record_map = read_main_parcel_maps(args.main_parcel)
     join_counts = enrich_parcel_record_from_sibling_marts(
         parcel_record_map,
@@ -2252,7 +2463,14 @@ def main() -> None:
         permits_path=args.permits,
         state_class_xlsx_path=args.state_class_xlsx,
         nbhd_xlsx_path=args.nbhd_xlsx,
+        gis_parcels_gdb_path=None if args.skip_neighborhood else args.gis_parcels_gdb,
     )
+    if not args.skip_neighborhood and not join_counts.get("neighborhood"):
+        raise SystemExit(
+            f"Open GIS Parcels GDB joined 0 neighborhoods: {args.gis_parcels_gdb}\n"
+            "Check the layer name and PIN / Neighborhood_Code columns, "
+            "or pass --skip-neighborhood to build shards without neighborhood fields."
+        )
     if any(join_counts.values()):
         print(
             "Parcel record sibling joins: "
@@ -2310,16 +2528,27 @@ def main() -> None:
         file=sys.stderr,
     )
 
-    parcel_snapshot = {
+    parcel_source = (
+        "Arapahoe County datamart: Main Parcel + Mart_DescrHeader + Mart_LegalParty "
+        "+ Mart_RDE_LndAll + Mart_RDE_BLD + Mart_RDE_Xfob + Mart_Transfers + Mart_RDE_Permit "
+        "+ State Class Codes xlsx"
+    )
+    if join_counts.get("neighborhood"):
+        parcel_source += (
+            " + Open GIS Assessor Parcels (neighborhood code/name only)"
+        )
+    parcel_source += (
+        f" (lazy load after levy; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
+    )
+    parcel_snapshot: dict[str, Any] = {
         "bundledAsOf": bundled_as_of,
-        "source": (
-            "Arapahoe County datamart: Main Parcel + Mart_DescrHeader + Mart_LegalParty "
-            "+ Mart_RDE_LndAll + Mart_RDE_BLD + Mart_RDE_Xfob + Mart_Transfers + Mart_RDE_Permit "
-            "+ State Class Codes xlsx "
-            f"(lazy load after levy; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
-        ),
+        "source": parcel_source,
         "taxYear": tax_year or None,
     }
+    if join_counts.get("neighborhood"):
+        gis_as_of = read_gis_parcels_data_as_of(args.gis_parcels_gdb)
+        if gis_as_of:
+            parcel_snapshot["gisParcelsAsOf"] = gis_as_of
     write_parcel_record_shards(
         args.out_dir,
         parcel_record_map,
