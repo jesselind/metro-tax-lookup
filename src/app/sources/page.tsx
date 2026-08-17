@@ -271,10 +271,9 @@ export default function SourcesPage() {
           <strong className="font-semibold text-slate-900">
             Who authorized this?
           </strong>
-          , the app uses the open property&apos;s tax area and the authority code
-          to send you to the exact PDF page when that historical combination is
-          in the county table. If it is not, the link opens the correct year&apos;s
-          PDF at the start of the file rather than guessing a page.{" "}
+          {", the app uses the open property and that bill entry to send you to the exact PDF page, locating it with the property's tax area and the authority code when that historical combination is in the county table. "}
+          If it is not, the link opens the correct year&apos;s PDF at the start of
+          the file rather than guessing a page.{" "}
           When any authority&apos;s rate changed, the app shows a{" "}
           <strong className="font-semibold text-slate-900">Changed</strong>
           {" "}
