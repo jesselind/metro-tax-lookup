@@ -1288,7 +1288,9 @@ export function HomeParcelAddressLookup({
             .
           </p>
           <CountyServiceGapCallout density="compact" className="mt-1">
-            <CountyDataMartRefreshAttemptNote />
+            <CountyDataMartRefreshAttemptNote
+              bundledAsOfIso={parcelRecordBundledAsOf}
+            />
           </CountyServiceGapCallout>
         </>
       ) : null}

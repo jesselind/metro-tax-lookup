@@ -1,17 +1,17 @@
+"use client";
+
 // Metro Tax Lookup - Arapahoe County
 // Copyright (C) 2026 Jesse Lind
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import {
   CountyServiceGapHeader,
   type CountyServiceGapHeaderDensity,
 } from "@/components/CountyServiceGapHeader";
 import { COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS } from "@/lib/toolFlowStyles";
-
-const TITLE_ID = "county-service-gap-callout-title";
 
 const BODY_DENSITY = {
   default: {
@@ -45,7 +45,8 @@ export function CountyServiceGapCallout({
   density = "default",
 }: CountyServiceGapCalloutProps) {
   const d = BODY_DENSITY[density];
-  const titleId = id ? `${id}-title` : TITLE_ID;
+  const fallbackTitleId = useId();
+  const titleId = id ? `${id}-title` : fallbackTitleId;
   return (
     <div
       id={id}

@@ -508,7 +508,8 @@ export default function SourcesPage() {
             <strong>Comparable properties</strong>{" "}
             (often called comps) uses the parcel&apos;s AIN when available.{" "}
             When county hosting is limited, the home summary tile shows{" "}
-            <strong className="text-slate-900">COUNTY DATA GAP</strong> with a
+            <strong className="text-slate-900">COUNTY DATA GAP</strong>{" "}
+            with a
             short status; the whole tile opens the full explanation (the PDF
             icon is a visual cue), and includes a link to try the county
             download if your value changed.
