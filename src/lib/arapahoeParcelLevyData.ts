@@ -106,6 +106,10 @@ export type ArapahoePinToTagFile = {
     dolaCertifyingCounty?: string | null;
     dolaLevyColumn?: string | null;
   };
+  /**
+   * Account-id digit length for this bundle. Arapahoe ships 9. This is county
+   * config (Phase 2), not a Colorado-wide standard.
+   */
   pinDigits: number;
   byPin: Record<string, ArapahoePinToTagRow>;
 };

@@ -151,6 +151,12 @@ describe("validateArapahoeLevyStacksFile", () => {
         snapshot: { bundledAsOf: "2026-01-01" },
       }),
     ).toMatch(/missing stacksByTagId/);
+    expect(
+      validateArapahoeLevyStacksFile({
+        snapshot: { source: "test" },
+        stacksByTagId: {},
+      }),
+    ).toMatch(/snapshot\.bundledAsOf required/);
   });
 
   it("rejects a malformed stack entry", () => {
@@ -184,6 +190,13 @@ describe("validateArapahoePinToTagFile", () => {
         pinDigits: 9,
       }),
     ).toMatch(/missing byPin/);
+    expect(
+      validateArapahoePinToTagFile({
+        snapshot: { source: "test" },
+        pinDigits: 9,
+        byPin: {},
+      }),
+    ).toMatch(/snapshot\.bundledAsOf required/);
   });
 
   it("rejects a malformed byPin entry", () => {

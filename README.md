@@ -43,7 +43,7 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run typecheck`** (`next typegen` then `tsc --noEmit`) is the TypeScript gate for all `**/*.ts` and `**/*.tsx`, including `*.test.ts`. Vitest does **not** typecheck — a green `npm run test:unit` does not prove CI/Vercel will pass. **`npm run ci:typecheck`** is the CI alias. **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run test:authority-mills-extract`** runs synthetic unit tests for `tools/extract_authority_mills_by_tax_year.py` (Levy % table parsing; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`** plus levy explainer validation only; no Python) before the Next.js production build (bundle + another TypeScript pass). Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run typecheck`** (`next typegen` then `tsc --noEmit`) is the TypeScript gate for all `**/*.ts` and `**/*.tsx`, including `*.test.ts`. Vitest does **not** typecheck — a green `npm run test:unit` does not prove CI/Vercel will pass. **`npm run ci:typecheck`** is the CI alias. **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run test:authority-mills-extract`** runs synthetic unit tests for `tools/extract_authority_mills_by_tax_year.py` (Levy % table parsing; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`**, levy explainer validation, authority-chain validation, and app JSON root-key validation; no Python) before the Next.js production build (bundle + another TypeScript pass). Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
 
 ### Tests, fixtures, and PII
 
@@ -106,6 +106,36 @@ Do **not** put real county PINs in tests "because they match the county site." A
 | `tools/*.py` | Offline extractors/index builders. Prefer short docstrings on non-obvious helpers (contracts, quirks, geometry/header rules); skip noise on trivial one-liners and test methods whose names already state the assert. |
 
 **Policy:** Point people at live county/state sources (`/sources`). Commit transforms under `public/data/` and the mart download stamp under `tools/`. Do not commit government PDF/CSV dumps under `supporting-data/`.
+
+### What JSON the app needs
+
+Ingest (once it exists under `tools/ingest/`) may start from any county file type. It must end here. Today's shipping filenames still use the `arapahoe-*` prefix; that rename waits until a second county works.
+
+**Required for account-load** (bill breakdown, PIN/AIN lookup, actual/assessed):
+
+| File | Unlocks |
+| --- | --- |
+| `public/data/arapahoe-levy-stacks-by-tag-id.json` | Levy stack by tax area |
+| `public/data/arapahoe-pin-to-tag.json` | Account → tax area + values |
+
+Each required file must have `snapshot.bundledAsOf`. Stacks need `stacksByTagId`; the account map needs `byPin`. Identifier length is **`pinDigits` on the account map** (Arapahoe ships `9`). That is county config, not a Colorado standard.
+
+**Optional** (absent is allowed; if present, shape must be valid):
+
+| File | Unlocks if present |
+| --- | --- |
+| `public/data/arapahoe-situs-to-pins.json` | Address search. Without it, id-only lookup. |
+| `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` | Property details (per-field optional) |
+| `public/data/colorado-special-district-directory.json` | Registry contact vs bill LG ID |
+| `public/data/metro-levies-YYYY.json` | Purpose rows + purpose YoY. Empty `districts` is allowed. |
+| `public/data/arapahoe-authority-mills-by-tax-year.json` | Tile YoY, mill history chart |
+| `public/data/arapahoe-authority-rate-table-pages.json` | Deep-link a Levy % PDF |
+| `public/data/levy-explainer-entries.json` | Modal briefs (hand-written) |
+| `public/data/levy-authority-chain-entries.json` | Who authorized this? (hand-written) |
+
+Minimum fields: each levy stack line needs a stable tax-area key, authority code, display name, and mills for the current roll (optional DOLA `lgId`). Each account row needs lookup id, tax-area key, actual value, assessed value, tax year / assessment year if published, and property class (Real vs business personal property); optional public parcel id for county URLs; optional owner-of-record list. Situs, if present: normalized lookup key, postage-style label, one or more account ids.
+
+If a county enables a comps PDF flag, account rows must include an AIN-like field. `npm run validate:app-json` (also in `prebuild`) checks that required shipping files exist and have those root keys. Vitest in `src/lib/appJsonValidate.test.ts` covers accept/reject on invented ids.
 
 ### Levy detail modal (`levy-explainer-entries.json`)
 

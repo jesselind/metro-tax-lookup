@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.10.0",
+    date: "2026-08-18",
+    title: "App JSON contract for the new ingest",
+    highlights: [
+      "App JSON contract: required levy stacks + account map, optional situs and metro purpose files, and compsPdf flag consistency (AIN-like field). Vitest uses invented ids. npm run validate:app-json (also in prebuild) checks shipping files exist and have the required root keys. pinDigits is county-specific (Arapahoe ships 9), not a Colorado standard.",
+      "New ingest will live under tools/ingest/ and write to a comparison directory; production npm run build:arapahoe-index and public/data/arapahoe-*.json stay as they are until that comparison matches. Arapahoe is the first county the new ingest must reproduce.",
+    ],
+  },
+  {
     version: "4.9.4",
     date: "2026-08-18",
     title: "Mill levy tile and prior-year values gap",
