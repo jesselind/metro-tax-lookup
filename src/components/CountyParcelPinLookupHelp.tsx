@@ -43,10 +43,8 @@ export function CountyParcelPinLookupHelp({
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          property search
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          property search<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
       <p className="text-base text-slate-800 sm:text-lg">
         Type your address. Open your property when it comes up. You should see a

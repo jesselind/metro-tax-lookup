@@ -141,8 +141,7 @@ export default function RootLayout({
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
                 >
-                  Arapahoe County property search
-                  <span className="sr-only"> (opens in a new tab)</span>
+                  Arapahoe County property search<span className="sr-only"> (opens in a new tab)</span>
                 </a>{" "}
                 to double-check a record or legal description.
               </p>

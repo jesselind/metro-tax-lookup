@@ -889,16 +889,14 @@ export function MetroTaxShareFlow({
                                 County file for{" "}
                                 <span className="font-medium text-slate-900">
                                   {perDistrictBundles[0]?.name}
-                                </span>
-                                . Metro debt mills here match the{" "}
+                                </span>. Metro debt mills here match the{" "}
                                 <strong>debt mills</strong> value for this
                                 district in the bundled county file (to three decimals:{" "}
                                 <span className="font-mono">
                                   {perDistrictBundles[0]?.metroDebtMills.toFixed(
                                     3,
                                   )}
-                                </span>
-                                ). Official PDF and related county links are at
+                                </span>). Official PDF and related county links are at
                                 the bottom of this section.
                               </>
                             )}
@@ -1096,11 +1094,7 @@ export function MetroTaxShareFlow({
                           rel="noopener noreferrer"
                           className={COUNTY_EXTERNAL_LINK_CLASS}
                         >
-                          Mill Levy Public Information Form
-                          <span className="sr-only">
-                            {" "}
-                            (opens in a new tab)
-                          </span>
+                          Mill Levy Public Information Form<span className="sr-only"> (opens in a new tab)</span>
                         </a>{" "}
                         (PDF) for budget year {levyJson.year}
                         {bundledAsOfLabel && bundledAsOfIso ? (
@@ -1122,13 +1116,8 @@ export function MetroTaxShareFlow({
                           rel="noopener noreferrer"
                           className={COUNTY_EXTERNAL_LINK_CLASS}
                         >
-                          Assessor Mill Levies and Tax Districts
-                          <span className="sr-only">
-                            {" "}
-                            (opens in a new tab)
-                          </span>
-                        </a>
-                        .
+                          Assessor Mill Levies and Tax Districts<span className="sr-only"> (opens in a new tab)</span>
+                        </a>.
                       </p>
                     </div>
     ) : null;

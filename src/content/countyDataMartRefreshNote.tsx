@@ -40,8 +40,7 @@ export function CountyDataMartRefreshAttemptNote({
         rel="noopener noreferrer"
         className={linkClassName}
       >
-        Assessor Data Mart download
-        <span className="sr-only"> (opens in a new tab)</span>
+        Assessor Data Mart download<span className="sr-only"> (opens in a new tab)</span>
       </a>{" "}
       on {attemptLabel}. Required tables in that export were incomplete or
       empty, so this app still uses the {extractLabel} extract.

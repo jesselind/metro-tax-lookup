@@ -118,8 +118,7 @@ function ReadmeDataPipelineLink({ children }: { children: ReactNode }) {
       rel="noopener noreferrer"
       className={TERM_LINK_CLASS}
     >
-      {children}
-      <span className="sr-only"> (opens in a new tab)</span>
+      {children}<span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }
@@ -233,8 +232,7 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Search Residential, Commercial, Ag and Vacant
-              <span className="sr-only"> (opens in a new tab)</span>
+              Search Residential, Commercial, Ag and Vacant<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             (or the peer links on the home card) and note the{" "}
             <strong className="text-slate-900">PIN</strong>{" "}on the parcel
@@ -341,8 +339,7 @@ export default function SourcesPage() {
             that explanation. See{" "}
             <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
               LG ID
-            </Link>
-            .
+            </Link>.
           </li>
           <li>
             <strong>Assessor fee:</strong>{" "}Some mart exports include an assessor
@@ -371,8 +368,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Open GIS Parcels
-            <span className="sr-only"> (opens in a new tab)</span>
+            Open GIS Parcels<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           layer (PIN join; code and name only), not from the Main Parcel CSV,
           which has no neighborhood column. We do not guess neighborhood from
@@ -523,8 +519,7 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Comp Sheet Layout and Time Adjusted Sales Prices
-              <span className="sr-only"> (opens in a new tab)</span>
+              Comp Sheet Layout and Time Adjusted Sales Prices<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             explainer.
             {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
@@ -543,14 +538,12 @@ export default function SourcesPage() {
               personalpropertysearch.arapahoegov.com
             </span>
             {" "}
-            (<span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>
-            ). That PDF is the county notice for the equipment account, not a
+            (<span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>). That PDF is the county notice for the equipment account, not a
             comps grid. Real-property{" "}
             <span className="whitespace-nowrap">parcelsearch</span>{" "}
             FileDownload does not serve these notices. The county compare card
             also links the account details page (
-            <span className="whitespace-nowrap">Details.aspx?AIN=…</span>
-            ) on that same host. On the home dashboard, business personal
+            <span className="whitespace-nowrap">Details.aspx?AIN=…</span>) on that same host. On the home dashboard, business personal
             property keeps the short property panel and totals-only values table
             together in the property column; Real accounts still place the longer
             values / sale / building / permit tables below the levy grid.
@@ -573,8 +566,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Data Mart
-            <span className="sr-only"> (opens in a new tab)</span>
+            Data Mart<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           extract (often updated about weekly), not from the last time the
           offline rebuild scripts ran. Maintainers download tables such as{" "}
@@ -596,8 +588,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Open GIS Data
-            <span className="sr-only"> (opens in a new tab)</span>
+            Open GIS Data<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           Parcels download (local FileGDB; PIN + neighborhood fields only into
           public JSON). DOLA{" "}
@@ -607,8 +598,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Property Tax Entities
-            <span className="sr-only"> (opens in a new tab)</span>
+            Property Tax Entities<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           and the{" "}
           <a
@@ -617,8 +607,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Special District Mapping Project
-            <span className="sr-only"> (opens in a new tab)</span>
+            Special District Mapping Project<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           feed tax-entity and contact matching when mills or IDs change.
           Metro rates follow the annual mill levy form, not the weekly mart
@@ -731,18 +720,15 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Mill Levies and Tax Districts (Assessor hub)
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . That page lists the{" "}
+              Mill Levies and Tax Districts (Assessor hub)<span className="sr-only"> (opens in a new tab)</span>
+            </a>. That page lists the{" "}
             <a
               href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
               target="_blank"
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Mill Levy Public Information
-              <span className="sr-only"> (opens in a new tab)</span>
+              Mill Levy Public Information<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             PDF and related documents. Find your metropolitan district by{" "}
             <strong className="text-slate-900">name or LGID</strong>
@@ -797,8 +783,7 @@ export default function SourcesPage() {
           example{" "}
           <strong className="font-semibold text-slate-900">
             2.0% higher than last year
-          </strong>
-          ). Tap anywhere on that colored summary box to open the year-by-year
+          </strong>). Tap anywhere on that colored summary box to open the year-by-year
           breakdown; the underlined{" "}
           <strong className="font-semibold text-slate-900">
             Details ›
@@ -865,8 +850,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Past Elections File Library
-            <span className="sr-only"> (opens in a new tab)</span>
+            Past Elections File Library<span className="sr-only"> (opens in a new tab)</span>
           </a>
           {" "}
           section) so you can see where we looked and why the ideal PDF is not
@@ -877,8 +861,7 @@ export default function SourcesPage() {
           latest year-over-year pair alone. Some jargon (for example{" "}
           <strong className="font-semibold text-slate-900">
             debt-free schools mill levy
-          </strong>
-          , bonds, or{" "}
+          </strong>, bonds, or{" "}
           <strong className="font-semibold text-slate-900">de-Brucing</strong>
           {" "}
           for a TABOR revenue vote) has a brief in-place definition. The panel
@@ -917,8 +900,7 @@ export default function SourcesPage() {
           lives in{" "}
           <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
             public/data/levy-authority-chain-entries.json
-          </code>
-          .
+          </code>.
         </p>
         {unlocatedAuthorityChainSources.length > 0 ? (
           <details
@@ -983,8 +965,7 @@ export default function SourcesPage() {
                             rel="noopener noreferrer"
                             className={TERM_LINK_CLASS}
                           >
-                            {row.nextBest.text}
-                            <span className="sr-only"> (opens in a new tab)</span>
+                            {row.nextBest.text}<span className="sr-only"> (opens in a new tab)</span>
                           </a>
                         ) : (
                           row.nextBest.text
@@ -1020,10 +1001,8 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . District names, levy purposes, previous-year mill rates, and
+              Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))<span className="sr-only"> (opens in a new tab)</span>
+            </a>. District names, levy purposes, previous-year mill rates, and
             aggregated debt service and total mills are extracted offline into
             the app. Tile details for matched metros prefer this purpose-level
             compare when it reconciles to Levy Percentage authority totals;
@@ -1047,10 +1026,8 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Mill Levies and Tax Districts (Assessor hub)
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . Related county PDFs are listed next (Levy Percentage feeds
+              Mill Levies and Tax Districts (Assessor hub)<span className="sr-only"> (opens in a new tab)</span>
+            </a>. Related county PDFs are listed next (Levy Percentage feeds
             all-authority year-over-year; Certification is context only).
           </li>
         </ul>
@@ -1072,10 +1049,8 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Mill Levies and Tax Districts (Assessor hub)
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-          .
+            Mill Levies and Tax Districts (Assessor hub)<span className="sr-only"> (opens in a new tab)</span>
+          </a>.
         </p>
         <ul className="mt-4 space-y-4">
           <li className="rounded-lg border border-slate-200 p-4">
@@ -1093,8 +1068,7 @@ export default function SourcesPage() {
                 rel="noopener noreferrer"
                 className={TERM_LINK_CLASS}
               >
-                Open PDF (2025)
-                <span className="sr-only"> (opens in a new tab)</span>
+                Open PDF (2025)<span className="sr-only"> (opens in a new tab)</span>
               </a>
             </p>
           </li>
@@ -1120,8 +1094,7 @@ export default function SourcesPage() {
                 rel="noopener noreferrer"
                 className={TERM_LINK_CLASS}
               >
-                Open PDF (Tax Year 2025)
-                <span className="sr-only"> (opens in a new tab)</span>
+                Open PDF (Tax Year 2025)<span className="sr-only"> (opens in a new tab)</span>
               </a>
             </p>
           </li>
@@ -1142,10 +1115,8 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              GitHub
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . The{" "}
+              GitHub<span className="sr-only"> (opens in a new tab)</span>
+            </a>. The{" "}
             <ReadmeDataPipelineLink>README</ReadmeDataPipelineLink>{" "}
             covers setup, data paths, tests, and regenerating bundled files.
           </p>
@@ -1155,8 +1126,7 @@ export default function SourcesPage() {
             configuration. If this persists, please contact{" "}
             <a href={SOURCES_BROKEN_GITHUB_MAILTO_HREF} className={TERM_LINK_CLASS}>
               {CONTACT_EMAIL}
-            </a>
-            .
+            </a>.
           </p>
         )}
       </section>

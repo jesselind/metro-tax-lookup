@@ -7,8 +7,9 @@ alwaysApply: false
 # JSX inline-tag spacing
 
 JSX line breaks around inline tags are not reliable spaces (`greenside`, `them).The`).
+ESLint `local/jsx-inline-prose-spacing` is the gate (`npm run lint`).
 
-Between preceding text and a following inline tag (`<strong>`, `<dfn>`, `<em>`, `<b>`, `<span>`, `<code>`, etc.), use `{" "}` so the space is not lost across a line break (e.g. `The{" "}<strong>`). Same after a period/paren before a following tag. After a closing inline tag, if more text follows, use `{" "}` as well.
+Between preceding text and a following inline tag (`<strong>`, `<dfn>`, `<em>`, `<b>`, `<span>`, `<code>`, `<Link>`, etc.), use `{" "}` so the space is not lost across a line break (e.g. `The{" "}<strong>`). Same after a period/paren before a following tag. After a closing inline tag, if more text follows, use `{" "}` as well. Keep following punctuation on the same line as the closing tag (`</a>.` not `</a>` then `.` on the next line).
 
 ```tsx
 The{" "}

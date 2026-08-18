@@ -50,8 +50,7 @@ export function CountyAssessorMillLevyFigures() {
                   className="w-full rounded-md border border-slate-400"
                   width={800}
                   height={500}
-                />
-                <span className="sr-only"> (opens in a new tab)</span>
+                /><span className="sr-only"> (opens in a new tab)</span>
               </a>
               <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">
                 Tap image to open full size.
@@ -86,8 +85,7 @@ export function CountyAssessorMillLevyFigures() {
                   className="w-full rounded-md border border-slate-400"
                   width={800}
                   height={500}
-                />
-                <span className="sr-only"> (opens in a new tab)</span>
+                /><span className="sr-only"> (opens in a new tab)</span>
               </a>
               <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">
                 Tap image to open full size.

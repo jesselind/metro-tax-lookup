@@ -1,5 +1,6 @@
-# Playwright workflow (conventional filename). Also runs TypeScript typecheck and Vitest
-# before browser e2e so mislabeled "Playwright failed" logs are not build/type errors.
+# Playwright workflow (conventional filename). Also runs TypeScript typecheck, ESLint,
+# and Vitest before browser e2e so mislabeled "Playwright failed" logs are not
+# build/type/lint errors.
 # Runs on push/PR to main and via workflow_dispatch.
 # Excludes @live-sources (see live-sources.yml) — third-party URL probes do not gate PRs.
 name: Playwright
@@ -28,6 +29,24 @@ jobs:
       - name: Typecheck (next typegen + tsc; includes *.test.ts)
         run: npm run typecheck
 
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+
   unit:
     name: Unit tests (Vitest)
     runs-on: ubuntu-latest
@@ -48,7 +67,7 @@ jobs:
 
   e2e:
     name: Browser e2e (Playwright)
-    needs: [typecheck, unit]
+    needs: [typecheck, lint, unit]
     timeout-minutes: 60
     runs-on: ubuntu-latest
     permissions:

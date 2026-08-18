@@ -135,8 +135,7 @@ function SourceLinks({
                 rel="noopener noreferrer"
                 className={`${TERM_LINK_CLASS} text-sm`}
               >
-                {src.text}
-                <span className="sr-only"> (opens in a new tab)</span>
+                {src.text}<span className="sr-only"> (opens in a new tab)</span>
               </a>
             ) : (
               <span className="text-sm font-medium text-slate-800">{src.text}</span>
@@ -224,8 +223,7 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
           rel="noopener noreferrer"
           className={`${TERM_LINK_CLASS} text-inherit`}
         >
-          {slice}
-          <span className="sr-only"> (opens in a new tab)</span>
+          {slice}<span className="sr-only"> (opens in a new tab)</span>
         </a>,
       );
     } else if (mark.kind === "term" && summaryTermId) {
@@ -247,8 +245,7 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
             rel="noopener noreferrer"
             className={`${TERM_LINK_CLASS} font-semibold text-inherit`}
           >
-            {slice}
-            <span className="sr-only"> (opens in a new tab)</span>
+            {slice}<span className="sr-only"> (opens in a new tab)</span>
           </a>,
         );
       } else {
@@ -349,8 +346,7 @@ function renderStepBody(entry: LevyAuthorityChainEntry, step: LevyAuthorityChain
           rel="noopener noreferrer"
           className={`${TERM_LINK_CLASS} text-inherit`}
         >
-          {slice}
-          <span className="sr-only"> (opens in a new tab)</span>
+          {slice}<span className="sr-only"> (opens in a new tab)</span>
         </a>,
       );
     } else if (mark.kind === "term" && mark.termId && isFlowGlossaryTermId(mark.termId)) {

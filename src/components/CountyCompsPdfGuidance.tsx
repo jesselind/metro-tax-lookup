@@ -56,8 +56,7 @@ export function CountyCompsPdfUnavailablePopoverBody({
             rel="noopener noreferrer"
             className={COUNTY_EXTERNAL_LINK_CLASS}
           >
-            {COUNTY_COMPS_PDF_TRY_LINK_LABEL}
-            <span className="sr-only"> (opens in a new tab)</span>
+            {COUNTY_COMPS_PDF_TRY_LINK_LABEL}<span className="sr-only"> (opens in a new tab)</span>
           </a>
           {" "}
           {COUNTY_COMPS_PDF_TRY_IF_VALUE_CHANGED}
@@ -67,8 +66,7 @@ export function CountyCompsPdfUnavailablePopoverBody({
         {COUNTY_COMPS_PDF_POPOVER_OTHERWISE_UNAVAILABLE}{" "}
         <strong className={EMPHASIS_CLASS}>
           {COUNTY_COMPS_PDF_NO_FILE_FOUND}
-        </strong>
-        .
+        </strong>.
       </p>
       <p className="mt-2">
         <CountyCompsPdfAssessorAvailabilityCopy />

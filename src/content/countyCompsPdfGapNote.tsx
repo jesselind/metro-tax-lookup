@@ -29,8 +29,7 @@ export function CountyCompsPdfGapNote({
         rel="noopener noreferrer"
         className={linkClassName}
       >
-        comparable properties PDF
-        <span className="sr-only"> (opens in a new tab)</span>
+        comparable properties PDF<span className="sr-only"> (opens in a new tab)</span>
       </a>{" "}
       (FileDownload.ashx on the parcel record site) often returns{" "}
       <strong className="font-semibold text-red-950">

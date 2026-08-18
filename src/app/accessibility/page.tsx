@@ -32,8 +32,7 @@ export default function AccessibilityPage() {
             className={TERM_LINK_CLASS}
           >
             {CONTACT_EMAIL}
-          </a>
-          . If you can, include:
+          </a>. If you can, include:
         </p>
         <ul className="list-disc space-y-1 pl-5">
           <li>The page you were on</li>

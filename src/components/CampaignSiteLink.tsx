@@ -42,8 +42,7 @@ export function CampaignSiteLink({
       rel="noopener noreferrer"
       className={className ? `${base} ${className}` : base}
     >
-      {children ?? SITE_CONFIG.campaignSiteLabel}
-      <span className="sr-only"> (opens in a new tab)</span>
+      {children ?? SITE_CONFIG.campaignSiteLabel}<span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }

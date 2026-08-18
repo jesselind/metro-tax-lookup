@@ -25,8 +25,7 @@ export function CountyPriorYearValuesGapNote({
         rel="noopener noreferrer"
         className={linkClassName}
       >
-        Main Parcel Table
-        <span className="sr-only"> (opens in a new tab)</span>
+        Main Parcel Table<span className="sr-only"> (opens in a new tab)</span>
       </a>{" "}
       we bundle includes this assessment year&apos;s actual and assessed figures
       only, not prior years. This app cannot show why the assessor&apos;s value

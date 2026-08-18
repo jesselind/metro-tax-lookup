@@ -80,8 +80,7 @@ export function ParcelRecordMissingValue({
         Think this looks wrong?{" "}
         <a href={mailtoHref} className={COUNTY_EXTERNAL_LINK_CLASS}>
           Email us about this missing field
-        </a>
-        .
+        </a>.
       </p>
     </InfoHintPopover>
   );
