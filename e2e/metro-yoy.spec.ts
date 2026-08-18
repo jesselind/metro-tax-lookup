@@ -3,9 +3,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
 import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "../src/content/levyYoYCopy";
+import { MILL_LEVY_CHANGED_LABEL, MILL_LEVY_TILE_ID } from "../src/content/millLevySummaryCopy";
+import { PARCEL_RECORD_SALE_HISTORY_ID } from "../src/components/ParcelRecordCountyTables";
+import {
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
+  COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL,
+  COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
+  COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
+} from "../src/content/countyPriorYearValuesGapNote";
+import { COUNTY_SERVICE_GAP_CALLOUT_TITLE } from "../src/content/countyServiceGapGuidance";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_METRO_AUTHORITY,
@@ -19,8 +28,12 @@ import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData
 const nonMetroAuthorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
 const metroAuthorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_METRO_AUTHORITY);
 
+function millLevyTile(page: Page) {
+  return page.locator(`#${MILL_LEVY_TILE_ID}`);
+}
+
 test.describe("Metro year-over-year UI", () => {
-  test("non-metro synthetic parcel has no Changed badge or bill-impact callout", async ({
+  test("non-metro synthetic parcel has no Changed badge; mill levy tile is a white chip", async ({
     page,
   }) => {
     await installSyntheticCountyData(page);
@@ -30,18 +43,47 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText(nonMetroAuthorityLabel)).toBeVisible();
     await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await expect(
-      page.getByRole("status").filter({
-        hasText: /Your property tax bill changed from last year/i,
-      }),
+      page.getByText("Your property tax bill changed from last year."),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("button", {
-        name: /Your property tax bill changed from last year/i,
-      }),
+      page.getByRole("button", { name: /^Property tax change/ }),
     ).toHaveCount(0);
+    const tile = millLevyTile(page);
+    await expect(tile).toBeVisible();
+    await expect(tile).not.toContainText(MILL_LEVY_CHANGED_LABEL);
+    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
+      MILL_LEVY_CHANGED_LABEL,
+    );
+    const priorYearTrigger = page.getByRole("button", {
+      name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
+    });
+    await expect(priorYearTrigger).toBeVisible();
+    await expect(priorYearTrigger).not.toContainText(
+      COUNTY_SERVICE_GAP_CALLOUT_TITLE,
+    );
+    await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeVisible();
+
+    await priorYearTrigger.click();
+    const priorYearGap = page.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
+    });
+    await expect(priorYearGap).toBeVisible();
+    await expect(priorYearGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(
+      priorYearGap.getByRole("link", {
+        name: COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
+      }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", {
+        name: COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL,
+      })
+      .click();
+    await expect(priorYearGap).toHaveCount(0);
+    await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeFocused();
   });
 
-  test("AUTH history change shows Changed badge and bill-impact callout", async ({
+  test("AUTH history change shows Changed on mill levy and levy tiles", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { includeAuthYoY: true });
@@ -49,27 +91,23 @@ test.describe("Metro year-over-year UI", () => {
     await searchSyntheticAddress(page);
 
     await expect(page.getByText(nonMetroAuthorityLabel)).toBeVisible();
-    await expect(page.getByText("Changed", { exact: true })).toBeVisible();
+    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
+    const tile = millLevyTile(page);
+    await expect(tile).toBeVisible();
+    await expect(tile).toContainText(MILL_LEVY_CHANGED_LABEL);
+    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
+      MILL_LEVY_CHANGED_LABEL,
+    );
     await expect(
-      page.getByRole("status").filter({
-        hasText: /Your property tax bill changed from last year/i,
-      }),
-    ).toBeVisible();
-
-    // Rent lens hides the owner-framed amber banner; levy tile Changed cues remain.
-    await page.getByRole("radio", { name: "Rent" }).click();
-    await expect(
-      page.getByRole("button", {
-        name: /Your property tax bill changed from last year/i,
-      }),
+      page.getByText("Your property tax bill changed from last year."),
     ).toHaveCount(0);
-    await expect(page.getByText("Changed", { exact: true })).toBeVisible();
+
+    // Rent keeps mill levy and levy Changed cues (not an owner-only control).
+    await page.getByRole("radio", { name: "Rent" }).click();
+    await expect(millLevyTile(page)).toBeVisible();
+    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
     await page.getByRole("radio", { name: "Own" }).click();
-    await expect(
-      page.getByRole("button", {
-        name: /Your property tax bill changed from last year/i,
-      }),
-    ).toBeVisible();
+    await expect(millLevyTile(page)).toBeVisible();
 
     await viewDistrictDetailsButton(page, nonMetroAuthorityLabel).click();
     const dialog = page.getByRole("dialog");
@@ -120,23 +158,19 @@ test.describe("Metro year-over-year UI", () => {
     await searchSyntheticAddress(page);
 
     await expect(page.getByText(metroAuthorityLabel)).toBeVisible();
-    await expect(page.getByText("Changed", { exact: true })).toBeVisible();
+    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
     await expect(
-      page.getByRole("status").filter({
-        hasText: /Your property tax bill changed from last year/i,
-      }),
-    ).toBeVisible();
+      page.getByText("Your property tax bill changed from last year."),
+    ).toHaveCount(0);
 
-    const scrollBtn = page.getByRole("button", {
-      name: /Your property tax bill changed from last year/i,
-    });
-    await expect(scrollBtn).toBeVisible();
-    await scrollBtn.click();
+    const tile = millLevyTile(page);
+    await expect(tile).toBeVisible();
+    await expect(tile).toContainText(MILL_LEVY_CHANGED_LABEL);
+    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
+      MILL_LEVY_CHANGED_LABEL,
+    );
     const firstChangedTile = page.locator("#levy-tile-first-rate-change");
     await expect(firstChangedTile).toBeVisible();
-    await expect(
-      viewDistrictDetailsButton(firstChangedTile, metroAuthorityLabel),
-    ).toBeFocused();
 
     await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
     await expect(page.locator("#home-parcel-property-tax")).toBeVisible();
@@ -194,5 +228,22 @@ test.describe("Metro year-over-year UI", () => {
     await expect(
       dialog.getByRole("heading", { name: "General operating" }),
     ).toHaveCount(0);
+  });
+
+  test("mill levy chip jumps to mill levy tiles and marks the tile grid", async ({
+    page,
+  }) => {
+    await installSyntheticCountyData(page);
+    await page.goto("/");
+    await searchSyntheticAddress(page);
+
+    const jump = page.getByRole("button", { name: /Jump to mill levy tiles/i });
+    await expect(jump).toBeVisible();
+    await jump.click();
+    await expect(page.locator("#home-levy-stack-subheading")).toBeFocused();
+    await expect(page.locator("#home-levy-stack-tiles")).toHaveAttribute(
+      "data-arrive",
+      "",
+    );
   });
 });

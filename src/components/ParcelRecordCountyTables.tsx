@@ -22,7 +22,10 @@ import {
   safeArapahoeClerkRecorderSearchUrl,
   safeArapahoeParcelRecordUrl,
 } from "@/lib/safeExternalHref";
-import { COUNTY_EXTERNAL_LINK_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_EXTERNAL_LINK_CLASS,
+  DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const TABLE_CLASS =
   "w-full max-w-full table-auto border-collapse text-sm leading-snug text-slate-900 sm:text-base";
@@ -646,6 +649,9 @@ function textOrMissing(
   return parcelRecordCellText(trimmed);
 }
 
+/** Focus target for dashboard jumps to this table (Assessed value gap popover). */
+export const PARCEL_RECORD_SALE_HISTORY_ID = "home-parcel-sale-history";
+
 /** County-style Sale history (Book Page / Date / Price / Type). */
 export function ParcelRecordSaleTable({
   transfers,
@@ -665,7 +671,11 @@ export function ParcelRecordSaleTable({
   const countyParcelRecordUrl = safeArapahoeParcelRecordUrl(ain);
 
   return (
-    <div className="space-y-2">
+    <div
+      id={PARCEL_RECORD_SALE_HISTORY_ID}
+      tabIndex={-1}
+      className={`scroll-mt-6 space-y-2 sm:scroll-mt-8 ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS}`}
+    >
       <table className={TABLE_CLASS}>
         <caption className="sr-only">
           Sale history from county transfer records

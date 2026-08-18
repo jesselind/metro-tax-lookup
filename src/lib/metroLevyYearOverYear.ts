@@ -64,13 +64,13 @@ export type MetroBillImpactCallout = {
   direction: MetroYoYDirection;
 };
 
-/** Scroll target for the bill-impact callout (first Changed levy tile). */
+/** First levy tile whose mill rate changed; used as a scroll target in the stack. */
 export const FIRST_CHANGED_LEVY_TILE_DOM_ID = "levy-tile-first-rate-change";
 
 /**
  * Marker on each levy tile open button in `LevyStackVisualization`.
- * Bill-impact focus-after-scroll queries this (via
- * {@link LEVY_TILE_OPEN_BTN_SELECTOR}), not aria-label copy.
+ * Scroll-to-first-Changed queries this (via {@link LEVY_TILE_OPEN_BTN_SELECTOR}),
+ * not aria-label copy.
  */
 export const LEVY_TILE_OPEN_BTN_ATTR = "data-levy-tile-open";
 
@@ -78,17 +78,6 @@ export const LEVY_TILE_OPEN_BTN_ATTR = "data-levy-tile-open";
 export const LEVY_TILE_OPEN_BTN_SELECTOR = `button[${LEVY_TILE_OPEN_BTN_ATTR}]`;
 
 export { STACK_RATE_CHANGE_CALLOUT_MESSAGE } from "@/content/levyYoYCopy";
-
-/** Amber stack callout when mill rates changed (neutral on bill direction). */
-export function levyStackRateChangeCalloutSurfaceClasses(): {
-  box: string;
-  headline: string;
-} {
-  return {
-    box: "border-amber-600 bg-amber-50",
-    headline: "text-amber-950",
-  };
-}
 
 /**
  * Shared red / green / slate surfaces for YoY callout and tile-detail chrome.
@@ -415,6 +404,40 @@ export function levyLineHasMillRateChange(
   eps: number = METRO_LEVY_RATE_YOY_EPS,
 ): boolean {
   return levyLineMillDelta(line, eps) != null;
+}
+
+/**
+ * Net published mill delta across the stack (county mills). Null when no line
+ * has a published prior-year change. Lines that cancel can sum near zero.
+ */
+export function levyStackTotalMillsDelta(
+  lines: CommittedLevyLine[],
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): number | null {
+  let sum = 0;
+  let anyPublished = false;
+  for (const line of lines) {
+    const delta = levyLineMillDelta(line, eps);
+    if (delta == null) continue;
+    anyPublished = true;
+    sum += delta;
+  }
+  if (!anyPublished) return null;
+  return sum;
+}
+
+/**
+ * True when the stack's total mill levy moved (sum of published line deltas).
+ * Individual levy tiles can still say Changed when lines move and the total
+ * does not.
+ */
+export function levyStackTotalMillsChanged(
+  lines: CommittedLevyLine[],
+  eps: number = METRO_LEVY_RATE_YOY_EPS,
+): boolean {
+  const delta = levyStackTotalMillsDelta(lines, eps);
+  if (delta == null) return false;
+  return Math.abs(delta) > COUNTY_MILLS_YOY_EPS;
 }
 
 /**

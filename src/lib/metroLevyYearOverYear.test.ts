@@ -10,6 +10,7 @@ import {
   buildLevyLineYoYViewModel,
   levyLineHasMillRateChange,
   levyLineMillDelta,
+  levyStackTotalMillsChanged,
   levyPurposeRateChanged,
   listMetroLevyPurposeChanges,
   metroBillImpactCalloutForDistrictIds,
@@ -585,6 +586,28 @@ describe("levyLineHasMillRateChange / billImpactCalloutForLevyLines", () => {
       direction: "neutral",
       message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
     });
+  });
+});
+
+describe("levyStackTotalMillsChanged", () => {
+  it("is true when published AUTH mill deltas move the stack total", () => {
+    const line: CommittedLevyLine = {
+      id: "auth-line",
+      authority: "Englewood School",
+      mills: 51.071,
+      levyLineCode: "0101",
+    };
+    expect(levyStackTotalMillsChanged([line])).toBe(true);
+  });
+
+  it("is false when no line has a published mill change", () => {
+    const line: CommittedLevyLine = {
+      id: "unknown",
+      authority: "Synthetic",
+      mills: 10,
+      levyLineCode: "9999",
+    };
+    expect(levyStackTotalMillsChanged([line])).toBe(false);
   });
 });
 

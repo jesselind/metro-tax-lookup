@@ -28,7 +28,7 @@ export const COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE = "When county data fails"
  * about county motives or IT causes.
  */
 export const COUNTY_SERVICE_GAP_SOURCES_EXPLAINER =
-  "Notes titled COUNTY DATA GAP (red border) mean a county-published export or hosted file did not arrive complete or is unavailable. That can block fresh bulk downloads, comparable-properties PDFs, and other official sources this app relies on, not only one line on your levy breakdown. We state what we tried, what was missing, and which dated extract or workaround we still use. That is missing county data, not an error in your property search.";
+  "Notes titled COUNTY DATA GAP (red border) mean we tried to get a county-published export or hosted file and it did not arrive complete, or it is unavailable. That can include bulk downloads, comparable-properties PDFs, and other official county files, not only one line on your levy breakdown. We state what we tried, what was missing, and which dated extract we still have. That is missing county data, not an error in your property search.";
 
 /** Intro before the /sources index of in-context gap callouts. */
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD =

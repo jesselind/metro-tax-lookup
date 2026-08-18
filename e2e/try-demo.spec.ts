@@ -11,6 +11,8 @@ import {
   DEMO_OWNER_LIST,
 } from "../src/lib/demoProperty";
 import { PARCEL_RECORD_NO_DATA } from "../src/lib/parcelRecordNoData";
+import { MILL_LEVY_TILE_ID } from "../src/content/millLevySummaryCopy";
+import { COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS } from "../src/content/countyPriorYearValuesGapNote";
 
 /**
  * Try demo: PIN-less fixture → levy stack + property details + missing-data mailto.
@@ -22,6 +24,21 @@ test.describe("Try demo property", () => {
     await page.getByRole("button", { name: "Try demo property" }).click();
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+    await expect(page.locator(`#${MILL_LEVY_TILE_ID}`)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS }),
+    ).toBeVisible();
+    await page.locator("#summary-mill-levy-term-first").click();
+    await expect(
+      page.getByText(/For example, your total mill levy of/),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: /Jump to mill levy tiles/i }).click();
+    await expect(page.locator("#home-levy-stack-subheading")).toBeFocused();
+    await expect(page.locator("#home-levy-stack-tiles")).toHaveAttribute(
+      "data-arrive",
+      "",
+    );
     await expect(
       page.getByRole("region", { name: "Property tax breakdown" }),
     ).toBeVisible();

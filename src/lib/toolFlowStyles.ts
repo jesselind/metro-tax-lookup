@@ -98,11 +98,18 @@ export const COUNTY_EXTERNAL_LINK_CLASS =
   `cursor-pointer font-medium ${TOOL_LINK_TRIGGER_AFFORDANCE_CLASS} focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1`;
 
 /**
- * County systems gap callout (missing exports, broken downloads, unavailable official
- * artifacts). Thin red border + light red fill; not for app or user input errors
- * ({@link InlineErrorCallout}).
+ * Thin red border + light red fill for COUNTY DATA GAP surfaces (in-flow callouts
+ * and {@link InfoHintPopover} `variant="county-data-gap"`). Not for app or user
+ * input errors ({@link InlineErrorCallout}).
  */
-export const COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS = `${RADIUS_SURFACE_CLASS} border border-red-300 bg-red-50 text-red-950 shadow-sm`;
+export const COUNTY_SERVICE_GAP_SURFACE_TONE_CLASS =
+  "border border-red-300 bg-red-50 text-red-950";
+
+/**
+ * In-flow county systems gap callout (missing exports, broken downloads,
+ * unavailable official artifacts).
+ */
+export const COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS = `${RADIUS_SURFACE_CLASS} ${COUNTY_SERVICE_GAP_SURFACE_TONE_CLASS} shadow-sm`;
 
 /** In-flow links inside {@link COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS}. */
 export const COUNTY_SERVICE_GAP_LINK_CLASS =
@@ -126,9 +133,10 @@ export const PARCEL_RECORD_EXTENDED_SHELL_CLASS = "w-full min-w-0";
 
 /**
  * Vertical gap under the Own|Rent toggle and between the rent pierce heading and
- * tiles. Must stay identical in both places or those two gaps drift apart.
+ * tiles. Same step as {@link PARCEL_SUMMARY_ROW_CLASS} (`gap-3 sm:gap-4`). Must
+ * stay identical in both Own|Rent and rent-pierce call sites or those gaps drift.
  */
-export const HOME_AUDIENCE_STACK_GAP_CLASS = "space-y-8";
+export const HOME_AUDIENCE_STACK_GAP_CLASS = "space-y-3 sm:space-y-4";
 
 /**
  * Levy stack tiles: `auto-fill` + `minmax(min(100%, …), 1fr)` so columns wrap naturally at any viewport.
@@ -137,17 +145,14 @@ export const LEVY_STACK_TILE_GRID_CLASS =
   "grid w-full min-w-0 gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr))]";
 
 /**
- * Parcel summary row (home): wrapping flex row; tiles use {@link PARCEL_SUMMARY_TILE_CLASS} (max-content
- * width, capped by max-w-full).
- */
-/**
- * Summary tiles wrap into content-sized chips. `items-start` keeps each tile’s
- * own height so a taller neighbor (e.g. comps icon) does not pad siblings.
- * Same wrap behavior in the lg dashboard column: chips stay max-content wide
- * and wrap within the column when they no longer fit side by side.
+ * Summary tiles wrap into content-sized chips. `items-stretch` makes every chip
+ * on a wrap line as tall as the tallest chip on that line (top and bottom edges
+ * line up). Same wrap behavior in the lg dashboard column: chips stay max-content
+ * wide and wrap within the column when they no longer fit side by side.
+ * `gap-3 sm:gap-4` matches {@link HOME_AUDIENCE_STACK_GAP_CLASS}.
  */
 export const PARCEL_SUMMARY_ROW_CLASS =
-  "flex w-full min-w-0 flex-row flex-wrap items-start justify-start gap-3 sm:gap-4";
+  "flex w-full min-w-0 flex-row flex-wrap items-stretch justify-start gap-3 sm:gap-4";
 
 
 /** Value tiles join the parent summary row at all breakpoints (no full-width wrapper). */
@@ -181,28 +186,52 @@ export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIP
 /** Value tile variant for label popovers (see {@link PARCEL_SUMMARY_TILE_CLASS_POPOVER}). */
 export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0`;
 
-/** County service gap summary tile body: tighter bottom; gap handled on the status row. */
+/** Space from the COUNTY DATA GAP header to the incident copy below it. */
+export const COUNTY_SERVICE_GAP_HEADER_TO_BODY_GAP_CLASS = "gap-1.5";
+
+/** Header + body column: same header-to-copy gap on tiles and CountyServiceGapCallout. */
+export const COUNTY_SERVICE_GAP_STACK_CLASS = `flex flex-col ${COUNTY_SERVICE_GAP_HEADER_TO_BODY_GAP_CLASS}`;
+
+/** Same inner layout as {@link PARCEL_SUMMARY_TILE_BODY_CLASS} (label-to-content gap). */
 export const COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS =
-  "flex min-h-0 min-w-0 flex-col justify-start gap-0 px-3.5 pt-2.5 pb-2 sm:px-4 sm:pt-3 sm:pb-2";
+  PARCEL_SUMMARY_TILE_BODY_CLASS;
 
 /** Status row inside a county-gap summary tile (below the tile label). */
 export const COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS =
-  "pointer-events-none relative z-[1] mt-2.5 flex min-w-0 items-start gap-2 sm:mt-3";
+  "pointer-events-none relative z-[1] flex min-w-0 items-start gap-2";
 
-/** County service gap summary tile (e.g. unavailable comps PDF). Same surface as {@link COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS}. */
-export const COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS = `${COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS} flex min-h-0 min-w-0 w-max max-w-full flex-col overflow-visible shadow-sm`;
+/** County service gap summary tile (e.g. unavailable comps PDF). Same surface as {@link COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS}. Full width of the summary row. */
+export const COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS = `${COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS} flex min-h-0 min-w-0 w-full flex-col overflow-visible shadow-sm`;
 
 /** Incident-specific status under {@link CountyServiceGapHeader} inside a gap summary tile. */
 export const COUNTY_SERVICE_GAP_TILE_STATUS_CLASS =
   "min-w-0 flex-1 text-sm font-normal leading-snug text-red-950 sm:text-[0.9375rem] sm:leading-snug";
 
 /**
+ * Compact status badge on summary tiles (Changed, county-gap). Pair with a tone
+ * class. Same shape as levy-tile Changed: thick border, uppercase, extrabold.
+ */
+export const SUMMARY_TILE_STATUS_BADGE_BASE_CLASS =
+  "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 px-2 py-1 text-xs font-extrabold uppercase leading-none tracking-wide shadow-[0_1px_0_rgba(0,0,0,0.25)]";
+
+/** Amber Changed badge (levy tiles, Mill levy chip). */
+export const LEVY_CHANGED_BADGE_TONE_CLASS =
+  "border-amber-950 bg-amber-300 text-amber-950";
+
+/** Red county-gap badge (e.g. Prior years missing on Assessed value). Light fill + dark text, same recipe as Changed. */
+export const COUNTY_SERVICE_GAP_BADGE_TONE_CLASS =
+  "border-red-950 bg-red-200 text-red-950";
+
+/**
  * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale;
- * inherit the parent label's color/weight/size; the indigo underline is the affordance.
- * `uppercase` is explicit so `<button>` triggers stay all-caps like plain label text.
+ * inherit the parent label's color/weight/size. Flex row keeps the hint icon on the same
+ * line as the label. Underline the words only ({@link PARCEL_SUMMARY_TILE_GLOSSARY_TEXT_CLASS}).
  */
 export const PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS =
-  `uppercase text-inherit ${TOOL_LINK_UNDERLINE_CLASS} focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
+  "inline-flex items-center gap-1 whitespace-nowrap uppercase text-inherit focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2";
+
+/** Indigo underline on the label words, not the trailing hint icon. */
+export const PARCEL_SUMMARY_TILE_GLOSSARY_TEXT_CLASS = TOOL_LINK_UNDERLINE_CLASS;
 
 /**
  * Glossary popover trigger on property details rows (sentence case, not tile uppercase).
@@ -221,7 +250,7 @@ export const PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS =
   `inline font-medium text-inherit ${TOOL_LINK_UNDERLINE_CLASS}`;
 
 export const PARCEL_SUMMARY_TILE_LABEL_CLASS =
-  "text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs";
+  "text-xs font-semibold uppercase tracking-[0.14em] text-slate-500";
 
 export const PARCEL_SUMMARY_TILE_VALUE_CLASS =
   "text-xl font-semibold tabular-nums leading-tight tracking-tight text-slate-900 sm:text-2xl";
@@ -295,18 +324,18 @@ export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS =
   "text-base font-bold leading-tight tracking-tight text-[#451E18] sm:text-lg";
 
 /**
- * Narrow jump control in the summary chip row (before comps / Notice of Valuation).
- * Stacked label beside down arrow; `self-stretch` matches sibling tile height.
+ * Last jump control in the summary chip row (after comps / Notice of Valuation).
+ * Full width of the summary column at every viewport. `min-h-11` is a 44px tap
+ * target (same floor as `btn-primary--md`); width stays full column.
  */
 export const PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS =
-  `inline-flex w-max max-w-full min-h-0 cursor-pointer flex-row items-center justify-center gap-1.5 self-stretch ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-300 bg-white px-2.5 py-2 text-center shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 active:border-slate-500 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
+  `flex w-full min-h-11 cursor-pointer flex-row items-center justify-center gap-1.5 ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-300 bg-white px-2.5 py-2.5 text-center shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 active:border-slate-500 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
 
 /**
  * Label inside {@link PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}.
- * Narrow width wraps "Property details" on two lines (space preserved in text).
  */
 export const PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS =
-  "w-[4.5rem] text-center text-sm font-semibold leading-tight text-slate-800";
+  "text-center text-sm font-semibold leading-tight text-slate-800";
 
 /**
  * Metro percent cards: wrap into content-sized columns. Default grid `align-items: stretch`
@@ -333,6 +362,13 @@ export const TILE_DETAILS_CUE_ON_LIGHT_CLASS =
  */
 export const DASHBOARD_SECTION_HEADING_CLASS =
   "text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl";
+
+/**
+ * Short local ring when {@code focusNearestDashboardSection} sets {@code data-arrive}.
+ * Put this on the visual target (e.g. mill levy tile grid), not the focus heading.
+ */
+export const DASHBOARD_SECTION_ARRIVE_TARGET_CLASS =
+  "data-[arrive]:rounded-lg data-[arrive]:ring-2 data-[arrive]:ring-indigo-600 data-[arrive]:ring-offset-2";
 
 /**
  * {@link DASHBOARD_SECTION_HEADING_CLASS} plus lead-in margin when the title follows

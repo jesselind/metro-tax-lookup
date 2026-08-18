@@ -11,15 +11,18 @@ import {
   CountyServiceGapHeader,
   type CountyServiceGapHeaderDensity,
 } from "@/components/CountyServiceGapHeader";
-import { COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS,
+  COUNTY_SERVICE_GAP_STACK_CLASS,
+} from "@/lib/toolFlowStyles";
 
 const BODY_DENSITY = {
   default: {
-    inner: "gap-2 p-4 sm:gap-2.5 sm:p-5",
+    inner: `${COUNTY_SERVICE_GAP_STACK_CLASS} p-4 sm:p-5`,
     body: "text-base font-normal leading-relaxed text-red-950 sm:text-lg sm:leading-relaxed",
   },
   compact: {
-    inner: "gap-1.5 p-3 sm:gap-2 sm:p-3.5",
+    inner: `${COUNTY_SERVICE_GAP_STACK_CLASS} p-3 sm:p-3.5`,
     body: "text-sm font-normal leading-relaxed text-red-950 sm:text-base sm:leading-relaxed",
   },
 } as const;

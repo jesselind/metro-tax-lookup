@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-/** Neutral stack-level callout when any authority rate changed year over year. */
+/** Message when any authority rate changed year over year (helper payload; not a dashboard banner). */
 export const STACK_RATE_CHANGE_CALLOUT_MESSAGE =
   "Your property tax bill changed from last year.";
 
 /** Popover body for hypothetical dollar amounts in levy YoY details. */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
-  "We don't currently have your assessed value from last year. These dollar amounts are based on your assessed value this year.";
+  "We tried to get last year's assessed value from the county and were unable to. These dollar amounts use this year's assessed value for both years.";
 
 /** Modal mill-rate history chart heading (Levy % AUTH totals). */
 export const AUTHORITY_MILLS_HISTORY_CHART_HEADING =

@@ -7,6 +7,7 @@
 
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
+import { QuestionMarkCircleIcon } from "@/components/QuestionMarkCircleIcon";
 import {
   PARCEL_GLOSSARY_POPOVER_PANEL_CLASS,
   ParcelTermPopoverPanel,
@@ -27,6 +28,7 @@ import { hasGlossaryFullEntry } from "@/lib/glossary";
 import {
   PARCEL_RECORD_GLOSSARY_LINK_CLASS,
   PARCEL_SUMMARY_TILE_GLOSSARY_LINK_CLASS,
+  PARCEL_SUMMARY_TILE_GLOSSARY_TEXT_CLASS,
   TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
 import type { FC, ReactNode } from "react";
@@ -110,6 +112,8 @@ type GlossaryTermPopoverProps = {
   disabled?: boolean;
   /** When true, use summary-tile / parcel-record underline classes. */
   variant?: "inline" | "summary-tile" | "parcel-record";
+  /** Extra brief copy after the registry body (e.g. this property's mill example). */
+  afterBrief?: ReactNode;
 };
 
 /**
@@ -124,6 +128,7 @@ export function GlossaryTermPopover({
   panelClassName,
   disabled,
   variant = "inline",
+  afterBrief,
 }: GlossaryTermPopoverProps) {
   const { title, Brief } = resolveBrief(termId);
   const defaultTriggerClass =
@@ -141,24 +146,56 @@ export function GlossaryTermPopover({
   }
 
   const showGlossaryLink = hasGlossaryFullEntry(termId);
+  const triggerClass = textTriggerClassName ?? defaultTriggerClass;
+  const isSummaryTile = variant === "summary-tile";
+
+  const panel = (
+    <div className={showGlossaryLink || afterBrief ? "space-y-3" : undefined}>
+      {body}
+      {afterBrief}
+      {showGlossaryLink ? (
+        <p className="border-t border-slate-200 pt-2 text-sm leading-snug">
+          <GlossaryFullDefinitionLink termId={termId} />
+        </p>
+      ) : null}
+    </div>
+  );
+
+  if (isSummaryTile) {
+    return (
+      <InfoHintPopover
+        customTrigger={
+          <>
+            <span className={PARCEL_SUMMARY_TILE_GLOSSARY_TEXT_CLASS}>
+              {textTrigger}
+            </span>
+            <span className="inline-flex size-[1lh] shrink-0">
+              <QuestionMarkCircleIcon />
+            </span>
+          </>
+        }
+        textTriggerAriaLabel={textTrigger}
+        textTriggerId={textTriggerId}
+        textTriggerClassName={triggerClass}
+        ariaLabel={ariaLabel ?? `Brief definition of ${title}.`}
+        panelClassName={panelClassName ?? PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
+        disabled={disabled}
+      >
+        {panel}
+      </InfoHintPopover>
+    );
+  }
 
   return (
     <InfoHintPopover
       textTrigger={textTrigger}
       textTriggerId={textTriggerId}
-      textTriggerClassName={textTriggerClassName ?? defaultTriggerClass}
+      textTriggerClassName={triggerClass}
       ariaLabel={ariaLabel ?? `Brief definition of ${title}.`}
       panelClassName={panelClassName ?? PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
       disabled={disabled}
     >
-      <div className={showGlossaryLink ? "space-y-3" : undefined}>
-        {body}
-        {showGlossaryLink ? (
-          <p className="border-t border-slate-200 pt-2 text-sm leading-snug">
-            <GlossaryFullDefinitionLink termId={termId} />
-          </p>
-        ) : null}
-      </div>
+      {panel}
     </InfoHintPopover>
   );
 }

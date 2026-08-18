@@ -1,0 +1,29 @@
+---
+description: Use literal technical names; do not invent nicknames or metaphors for architecture.
+alwaysApply: true
+---
+
+# Literal technical terms
+
+When naming code, data, plans, or steps, use words that say what the thing is. Do not coin nicknames, metaphors, or "product-y" labels. The reader should not have to translate.
+
+This applies to chat, working docs, README, comments, and new identifiers. Prefer names already in the repo (PIN, TAG, Data Mart, mill levy). If a short name is required, define it once as the literal object, then reuse that definition.
+
+## Do not
+
+- Metaphor or pattern slogans used as names: kit, strangler, sidecar, pipeline-as-poetry, north star, golden path, plug (as a noun for JSON).
+- Cute or compressed coinages for ordinary objects (`countyKit`, `ingestAdvisor` as a personality, `parity` as a product).
+- Sounding human via colorful English. Direct and literal is enough.
+
+## Do
+
+- JSON the app loads
+- mapping file (column names → field names the app uses)
+- current Arapahoe build script
+- new ingest directory
+- comparison output directory (not shipped)
+- file-type reader (CSV, PDF, GIS)
+- ingest classifier (inspects files; reports what is missing)
+- switch production rebuild; then delete the old scripts
+
+If unsure, write the sentence with a file path, field name, or command instead of a label.

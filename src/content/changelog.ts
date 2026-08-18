@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.9.4",
+    date: "2026-08-18",
+    title: "Mill levy tile and prior-year values gap",
+    highlights: [
+      "Removed the amber Your property tax bill changed from last year banner and the Property tax change teaching chip/modal. Summary row adds a Mill levy chip (total mill levy, same wrap as Property tax) with a Changed badge only when that total moved. The chip jumps to mill levy tiles (nearest scroll + heading focus; short data-arrive ring on the mill levy tile grid; glossary popover stays on the label only). Face is mills plus Changed; no extra jump chevron next to mills. Property tax stays this year's dollar with no Changed badge. Actual value / Assessed value will get Changed when prior-year figures exist. Property details jump is full width at every viewport (min-h-11 tap floor). Summary chips on one wrap line stretch to the tallest (PARCEL_SUMMARY_ROW_CLASS items-stretch). Summary tile labels are text-xs at every viewport.",
+      "Prior-year COUNTY DATA GAP sits as a red Prior years missing badge on Assessed value (white chip; CountyServiceGapBadge, same shape as Changed, light red fill and dark text, not red fill on the tile). The popover is the same InfoHintPopover as tile glossary briefs (width/scroll), with variant county-data-gap so the panel uses the COUNTY DATA GAP surface (thin red border + light red fill). COUNTY DATA GAP header and copy sit inside that panel: we tried to get prior-year values from the county and were unable to, an in-sentence Sale history jump to the parcel sale table, and an in-sentence Sources link. /sources states we searched published county and state sources, including the mart Main Parcel Table (current-year figures only). Header-to-copy gap is shared with the comps gap tile and other COUNTY DATA GAP callouts. County gap notes name the county file attempt, not this app's inability. Rent still shows Mill levy and levy tile Changed badges. Mill levy Changed uses the same levy-stack badge, including the up/down arrow for how the total moved. Own | Rent to content below uses the same vertical step as summary-tile wrap (HOME_AUDIENCE_STACK_GAP_CLASS). Dashboard tile glossary labels keep a question-mark-circle icon on the same line as the term, stretched to that label's line box. Levy stack intro: Select a mill levy tile for more details. Mill levy brief: one mill is $1 of tax per $1,000 of assessed value; the summary-chip popover adds a this-property example. Mill levy jump uses start scroll when the tile grid sits low in the viewport (stacked), nearest when tiles are already on screen.",
+    ],
+  },
+  {
     version: "4.9.3",
     date: "2026-08-17",
     title: "County service gap callouts (COUNTY DATA GAP)",

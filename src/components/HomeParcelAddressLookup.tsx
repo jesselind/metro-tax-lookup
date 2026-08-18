@@ -44,15 +44,18 @@ import { AudienceModeSwitch } from "@/components/AudienceModeSwitch";
 import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
+import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
 import { SitusMultiAccountChooserList, SitusRealVsBusinessPersonalHelp } from "@/components/SitusMultiAccountChooserList";
 import { SitusMultiAccountSwitcherDialog } from "@/components/SitusMultiAccountSwitcherDialog";
+import { MillLevySummaryTile } from "@/components/MillLevySummaryTile";
 import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
 } from "@/content/countyCompsPdfGuidance";
+import { MILL_LEVY_STACK_HEADING_ID } from "@/content/millLevySummaryCopy";
 import {
   btnOutlinePrimaryMd,
   btnOutlineSecondaryMd,
@@ -102,10 +105,8 @@ import {
 } from "@/lib/situsMultiPinChooser";
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import {
-  FIRST_CHANGED_LEVY_TILE_DOM_ID,
-  LEVY_TILE_OPEN_BTN_SELECTOR,
-  billImpactCalloutForLevyLines,
-  levyStackRateChangeCalloutSurfaceClasses,
+  COUNTY_MILLS_YOY_EPS,
+  levyStackTotalMillsDelta,
 } from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
 import {
@@ -144,6 +145,7 @@ import {
   DASHBOARD_TILE_RADIUS_CLASS,
   HOME_AUDIENCE_STACK_GAP_CLASS,
   INPUT_CLASS,
+  COUNTY_SERVICE_GAP_STACK_CLASS,
   COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS,
   COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS,
   COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
@@ -163,7 +165,6 @@ import {
   PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
   PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
   TERM_LINK_CLASS,
-  TILE_DETAILS_CUE_ON_LIGHT_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
   TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -618,11 +619,11 @@ export function HomeParcelAddressLookup({
   );
   const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
 
-  /** Rate-change callout when any stack authority changed (metro or AUTH). */
-  const billImpactCallout = useMemo(
-    () => billImpactCalloutForLevyLines(levyLines),
-    [levyLines],
-  );
+  const millLevyTotalDelta = useMemo(() => {
+    const delta = levyStackTotalMillsDelta(levyLines);
+    if (delta == null || Math.abs(delta) <= COUNTY_MILLS_YOY_EPS) return null;
+    return delta;
+  }, [levyLines]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -1157,65 +1158,18 @@ export function HomeParcelAddressLookup({
 
   const levyStackIntro = (
     <p id="home-levy-stack-intro" className={DASHBOARD_SECTION_META_CLASS}>
-      Select a tile for more details.
+      Select a mill levy tile for more details.
     </p>
   );
 
   const levyStackBody = <LevyStackVisualization {...homeLevyStackProps} />;
 
-  function scrollToFirstChangedLevyTile() {
-    const tile = document.getElementById(FIRST_CHANGED_LEVY_TILE_DOM_ID);
-    if (!tile) return;
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    tile.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
-    const openBtn = tile.querySelector<HTMLButtonElement>(
-      LEVY_TILE_OPEN_BTN_SELECTOR,
-    );
-    openBtn?.focus({ preventScroll: true });
-  }
-
-  const billImpactSurface = billImpactCallout
-    ? levyStackRateChangeCalloutSurfaceClasses()
-    : null;
-
-  // Rent lens: owner-framed bill-impact banner stays Own-only (tile YoY still available).
-  const billImpactCalloutBlock =
-    !isRentMode && billImpactCallout && billImpactSurface ? (
-      <div>
-        <p className="sr-only" role="status" aria-live="polite">
-          {billImpactCallout.message}
-        </p>
-        <button
-          type="button"
-          onClick={scrollToFirstChangedLevyTile}
-          className={`group w-full cursor-pointer rounded-lg border-2 ${billImpactSurface.box} px-3 py-3 text-left ${billImpactSurface.headline} sm:px-4 sm:py-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2`}
-          aria-label={`${billImpactCallout.message} Details. Scroll to what changed on your bill.`}
-        >
-          <span
-            aria-hidden
-            className="text-base font-bold leading-snug tracking-tight text-balance sm:text-lg"
-          >
-            {billImpactCallout.message}
-            <span
-              className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} ml-3 whitespace-nowrap sm:ml-4`}
-            >
-              Details ›
-            </span>
-          </span>
-        </button>
-      </div>
-    ) : null;
-
   const levySectionLead = (
     <div className="space-y-3">
       <h3
-        id="home-levy-stack-subheading"
-        className={DASHBOARD_SECTION_HEADING_CLASS}
+        id={MILL_LEVY_STACK_HEADING_ID}
+        tabIndex={-1}
+        className={`${DASHBOARD_SECTION_HEADING_CLASS} scroll-mt-6 outline-none sm:scroll-mt-8`}
       >
         Where is your money going?
       </h3>
@@ -1244,7 +1198,7 @@ export function HomeParcelAddressLookup({
     >
       <section
         className="space-y-3"
-        aria-labelledby="home-levy-stack-subheading"
+        aria-labelledby={MILL_LEVY_STACK_HEADING_ID}
         aria-describedby="home-levy-stack-intro"
       >
         {levyStackBody}
@@ -1253,7 +1207,7 @@ export function HomeParcelAddressLookup({
   ) : (
     <section
       className="space-y-3"
-      aria-labelledby="home-levy-stack-subheading"
+      aria-labelledby={MILL_LEVY_STACK_HEADING_ID}
       aria-describedby="home-levy-stack-intro"
     >
       {levyStackBody}
@@ -1938,7 +1892,6 @@ export function HomeParcelAddressLookup({
         </div>
       ) : (
         <div className="min-w-0 space-y-3">
-          {billImpactCalloutBlock}
           {error ? (
             errorTechnicalDetail ? (
               <DataLoadErrorCallout
@@ -2115,7 +2068,8 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             (levyLoadedMeta.parcelValues.totalActual != null ||
               levyLoadedMeta.parcelValues.totalAssessed != null ||
-              estimatedAnnualPropertyTaxDollars != null) ? (
+              estimatedAnnualPropertyTaxDollars != null ||
+              sumMills > 0) ? (
                 <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
                   {levyLoadedMeta.parcelValues.totalActual != null ? (
                     <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}>
@@ -2146,6 +2100,11 @@ export function HomeParcelAddressLookup({
                         <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                           {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
                         </p>
+                        <CountyPriorYearValuesGapPopover
+                          hasSaleHistory={
+                            !isBusinessPersonalAccount && parcelRecord != null
+                          }
+                        />
                       </div>
                     </div>
                   ) : null}
@@ -2168,36 +2127,14 @@ export function HomeParcelAddressLookup({
                       </div>
                     </div>
                   ) : null}
+                  {sumMills > 0 ? (
+                    <MillLevySummaryTile
+                      mills={sumMills}
+                      millsDelta={millLevyTotalDelta}
+                      assessed={levyLoadedMeta.parcelValues.totalAssessed}
+                    />
+                  ) : null}
                 </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            showPropertyDetailsColumn ? (
-              <a
-                href={`#${HOME_PROPERTY_DETAILS_ID}`}
-                className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}
-                aria-label="Jump to property details"
-              >
-                <span className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS}>
-                  Property details
-                </span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="size-4 shrink-0 text-slate-700"
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-                  />
-                </svg>
-              </a>
             ) : null}
             {!busy &&
             levyReadyForSummary &&
@@ -2325,7 +2262,7 @@ export function HomeParcelAddressLookup({
                           />
                         ),
                         status: (
-                          <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <div className={`${COUNTY_SERVICE_GAP_STACK_CLASS} min-w-0 flex-1`}>
                             <CountyServiceGapHeader density="compact" />
                             <p className={COUNTY_SERVICE_GAP_TILE_STATUS_CLASS}>
                               {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
@@ -2433,6 +2370,35 @@ export function HomeParcelAddressLookup({
                   )}
                 </div>
               </div>
+            ) : null}
+            {!busy &&
+            levyReadyForSummary &&
+            levyLoadedMeta &&
+            showPropertyDetailsColumn ? (
+              <a
+                href={`#${HOME_PROPERTY_DETAILS_ID}`}
+                className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}
+                aria-label="Jump to property details"
+              >
+                <span className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS}>
+                  Property details
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="size-4 shrink-0 text-slate-700"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
+                  />
+                </svg>
+              </a>
             ) : null}
               </div>
             </div>
