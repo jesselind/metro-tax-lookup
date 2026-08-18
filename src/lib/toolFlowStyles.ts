@@ -97,6 +97,17 @@ export const TERM_LINK_CLASS =
 export const COUNTY_EXTERNAL_LINK_CLASS =
   `cursor-pointer font-medium ${TOOL_LINK_TRIGGER_AFFORDANCE_CLASS} focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1`;
 
+/**
+ * County systems gap callout (missing exports, broken downloads, unavailable official
+ * artifacts). Thin red border + light red fill; not for app or user input errors
+ * ({@link InlineErrorCallout}).
+ */
+export const COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS = `${RADIUS_SURFACE_CLASS} border border-red-300 bg-red-50 text-red-950 shadow-sm`;
+
+/** In-flow links inside {@link COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS}. */
+export const COUNTY_SERVICE_GAP_LINK_CLASS =
+  "cursor-pointer font-medium text-red-900 underline decoration-red-700 decoration-2 underline-offset-2 leading-snug hover:text-red-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600/40 focus-visible:ring-offset-2";
+
 /** Glossary asides on `/glossary`. */
 export const TERM_ASIDE_BASE =
   `mt-5 w-full scroll-mt-24 ${RADIUS_SURFACE_CLASS} border border-slate-200 bg-slate-50 p-4 sm:p-5`;
@@ -170,12 +181,20 @@ export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIP
 /** Value tile variant for label popovers (see {@link PARCEL_SUMMARY_TILE_CLASS_POPOVER}). */
 export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0`;
 
-/** Comps PDF tile when county comparables are limited (no default slate border; stark alert frame). */
-export const PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} flex min-h-0 min-w-0 w-max max-w-full cursor-pointer flex-col overflow-visible border-[3px] border-red-600 bg-white shadow-sm`;
+/** County service gap summary tile body: tighter bottom; gap handled on the status row. */
+export const COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS =
+  "flex min-h-0 min-w-0 flex-col justify-start gap-0 px-3.5 pt-2.5 pb-2 sm:px-4 sm:pt-3 sm:pb-2";
 
-/** Status line inside the limited Comps PDF summary tile. */
-export const PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS =
-  "min-w-0 flex-1 text-[0.9375rem] font-semibold leading-snug text-slate-900 sm:text-base";
+/** Status row inside a county-gap summary tile (below the tile label). */
+export const COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS =
+  "pointer-events-none relative z-[1] mt-2.5 flex min-w-0 items-start gap-2 sm:mt-3";
+
+/** County service gap summary tile (e.g. unavailable comps PDF). Same surface as {@link COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS}. */
+export const COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS = `${COUNTY_SERVICE_GAP_CALLOUT_SURFACE_CLASS} flex min-h-0 min-w-0 w-max max-w-full flex-col overflow-visible shadow-sm`;
+
+/** Incident-specific status under {@link CountyServiceGapHeader} inside a gap summary tile. */
+export const COUNTY_SERVICE_GAP_TILE_STATUS_CLASS =
+  "min-w-0 flex-1 text-sm font-normal leading-snug text-red-950 sm:text-[0.9375rem] sm:leading-snug";
 
 /**
  * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale;

@@ -73,8 +73,7 @@ export function TermMillLevyFullBody() {
         <dfn className="font-semibold not-italic text-slate-900">levy</dfn>
         {": "}
         that district&apos;s tax rate for the year, usually written in{" "}
-        <strong className="font-semibold text-slate-900">mills</strong>
-        .
+        <strong className="font-semibold text-slate-900">mills</strong>.
       </p>
       <p className={FULL_P}>
         One mill is exactly $1 of tax per $1,000 of taxable (assessed) value for that row. The{" "}
@@ -125,8 +124,7 @@ export function TermSpecialDistrictsFullBody() {
           rel="noopener noreferrer"
         >
           Colorado Revised Statutes, Title 32
-        </a>
-        .
+        </a>.
       </p>
       <p className={FULL_P}>
         The name on your bill may not say &quot;special district.&quot; A fire, library, metro, or
@@ -264,8 +262,7 @@ export function TermDebtFreeSchoolsMillLevyBriefBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          LPS 2025-2026 Adopted Budget glossary
-          <span className="sr-only"> (opens in a new tab)</span>
+          LPS 2025-2026 Adopted Budget glossary<span className="sr-only"> (opens in a new tab)</span>
         </a>
       </p>
     </div>
@@ -320,10 +317,8 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          2025-2026 Adopted Budget glossary
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        . The Colorado General Assembly&apos;s
+          2025-2026 Adopted Budget glossary<span className="sr-only"> (opens in a new tab)</span>
+        </a>. The Colorado General Assembly&apos;s
         {" "}
         <a
           href="https://leg.colorado.gov/bills/hb16-1354"
@@ -331,8 +326,7 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Debt-free Schools Act (HB16-1354)
-          <span className="sr-only"> (opens in a new tab)</span>
+          Debt-free Schools Act (HB16-1354)<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         is the statute that created this kind of mill levy. Arapahoe County&apos;s
@@ -343,8 +337,7 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          2020 Official Summary Report
-          <span className="sr-only"> (opens in a new tab)</span>
+          2020 Official Summary Report<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         records the Ballot Issue 4C result.
@@ -407,8 +400,7 @@ export function TermDeBrucingFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Colorado Department of Revenue (TABOR)
-          <span className="sr-only"> (opens in a new tab)</span>
+          Colorado Department of Revenue (TABOR)<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         and the{" "}
@@ -418,10 +410,8 @@ export function TermDeBrucingFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Colorado General Assembly TABOR page
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          Colorado General Assembly TABOR page<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
     </>
   );
@@ -451,8 +441,7 @@ export function TermTaborBriefBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Colorado Department of Revenue (TABOR)
-          <span className="sr-only"> (opens in a new tab)</span>
+          Colorado Department of Revenue (TABOR)<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         and{" "}
@@ -462,10 +451,8 @@ export function TermTaborBriefBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Colorado General Assembly (TABOR)
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          Colorado General Assembly (TABOR)<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
     </div>
   );
@@ -503,8 +490,7 @@ export function TermTaborFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Colorado Department of Revenue (TABOR)
-          <span className="sr-only"> (opens in a new tab)</span>
+          Colorado Department of Revenue (TABOR)<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         and the{" "}
@@ -514,10 +500,8 @@ export function TermTaborFullBody() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Colorado General Assembly TABOR page
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          Colorado General Assembly TABOR page<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
     </>
   );
@@ -572,8 +556,7 @@ export function TermActualValueBriefBody() {
       applies an assessment rate (a percentage that shrinks the number used for billing). Close to
       &quot;what it might sell for,&quot; but not a sale price or bank appraisal. The county often
       calls this{" "}
-      <strong className="font-semibold text-slate-900">Appraised</strong>
-      .
+      <strong className="font-semibold text-slate-900">Appraised</strong>.
     </p>
   );
 }
@@ -591,10 +574,8 @@ export function TermAssessedValueBriefBody() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value
-        <span className="sr-only"> (opens in a new tab)</span>
-      </a>
-      .
+        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value<span className="sr-only"> (opens in a new tab)</span>
+      </a>.
     </p>
   );
 }
@@ -631,8 +612,7 @@ export function TermAinBriefBody() {
       {" "}
       (Assessor Identification Number) is Arapahoe&apos;s written form of your property ID, often
       with dashes. Same place as the{" "}
-      <strong className="font-semibold text-slate-900">PIN</strong>
-      , just written differently.
+      <strong className="font-semibold text-slate-900">PIN</strong>, just written differently.
     </p>
   );
 }
@@ -672,8 +652,7 @@ export function TermParcelValueBuildingBriefBody() {
     <p className={BRIEF_P}>
       The part of the value that is the house and other buildings, not the bare land. The county
       often calls buildings{" "}
-      <strong className="font-semibold text-slate-900">improvements</strong>
-      .
+      <strong className="font-semibold text-slate-900">improvements</strong>.
     </p>
   );
 }
@@ -718,11 +697,7 @@ export function TermSitusCityBriefBody() {
 export function TermOwnershipTypeBriefBody() {
   return (
     <p className={BRIEF_P}>
-      How the county describes the ownership, for example one person (
-      <strong className="font-semibold text-slate-900">individual</strong>
-      ) or two people sharing ownership (
-      <strong className="font-semibold text-slate-900">joint tenancy</strong>
-      ). For legal certainty, trust the county record and recorded deeds.
+      How the county describes the ownership, for example one person (<strong className="font-semibold text-slate-900">individual</strong>) or two people sharing ownership (<strong className="font-semibold text-slate-900">joint tenancy</strong>). For legal certainty, trust the county record and recorded deeds.
     </p>
   );
 }
@@ -897,10 +872,8 @@ export function TermAssessedSchoolValueBriefBody() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value
-        <span className="sr-only"> (opens in a new tab)</span>
-      </a>
-      .
+        DPT (Colorado&apos;s Division of Property Taxation): Assessed Value<span className="sr-only"> (opens in a new tab)</span>
+      </a>.
     </p>
   );
 }

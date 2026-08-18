@@ -37,8 +37,7 @@ export function LevyExplainerCitationBlocks({
                     rel="noopener noreferrer"
                     className={COUNTY_EXTERNAL_LINK_CLASS}
                   >
-                    {link.text}
-                    <span className="sr-only"> (opens in a new tab)</span>
+                    {link.text}<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : (
                   <span className="font-medium text-slate-800">{link.text}</span>

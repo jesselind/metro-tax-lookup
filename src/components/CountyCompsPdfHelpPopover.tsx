@@ -15,14 +15,16 @@ export const COMPS_PDF_ICON_CONTROL_CLASS =
 const PANEL_CLASS =
   "z-50 max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white p-3 text-left text-sm leading-relaxed text-slate-800 shadow-lg";
 
-/** Full-tile hit target behind visible comps status (glossary label stays above in z-order). */
+/** Full-tile hit target behind visible county-gap tile content (glossary label stays above in z-order). */
 const COMPS_PDF_TILE_OVERLAY_TRIGGER_CLASS =
-  "absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent p-0 transition-colors hover:bg-slate-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-600";
+  "absolute inset-0 z-0 cursor-pointer rounded-[inherit] border-0 bg-transparent p-0 transition-colors hover:bg-red-100/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-600/50";
 
 type CountyCompsPdfTileTrigger = {
   label: ReactNode;
   labelClassName: string;
   status: ReactNode;
+  /** County-gap tiles: pass `COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS` from toolFlowStyles. */
+  statusRowClassName?: string;
 };
 
 type CountyCompsPdfHelpPopoverProps = {
@@ -83,9 +85,14 @@ export function CountyCompsPdfHelpPopover({
         >
           {tileTrigger.label}
         </div>
-        <div className="pointer-events-none relative z-[1] flex min-w-0 items-center gap-2.5">
+        <div
+          className={
+            tileTrigger.statusRowClassName ??
+            "pointer-events-none relative z-[1] flex min-w-0 items-center gap-2.5"
+          }
+        >
           {tileTrigger.status}
-          <span className="inline-flex shrink-0 text-slate-600" aria-hidden>
+          <span className="inline-flex shrink-0 text-red-700" aria-hidden>
             {icon}
           </span>
         </div>

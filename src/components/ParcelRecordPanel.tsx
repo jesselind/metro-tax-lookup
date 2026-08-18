@@ -194,8 +194,7 @@ export function ParcelRecordPanel({
                       rel="noopener noreferrer"
                       className={COUNTY_EXTERNAL_LINK_CLASS}
                     >
-                      View on county site
-                      <span className="sr-only"> (opens in a new tab)</span>
+                      View on county site<span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   ) : (
                     <ParcelRecordMissingValue

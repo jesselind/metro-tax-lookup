@@ -158,14 +158,10 @@ export function TermAinAside() {
         <dfn className="font-semibold not-italic text-slate-900">AIN</dfn>
         {" "}
         means{" "}
-        <strong className="font-semibold text-slate-900">assessor identification number</strong>
-        . It is the county&apos;s formatted parcel id on the online parcel record (
-        <span className="whitespace-nowrap">PPINum.aspx</span>
-        ), often shown with dashes. It identifies the same property as your{" "}
+        <strong className="font-semibold text-slate-900">assessor identification number</strong>. It is the county&apos;s formatted parcel id on the online parcel record (<span className="whitespace-nowrap">PPINum.aspx</span>), often shown with dashes. It identifies the same property as your{" "}
         <Link href={glossaryTermHref("term-pin")} className={TERM_LINK_CLASS}>
           PIN
-        </Link>
-        , but the formats differ.
+        </Link>, but the formats differ.
       </p>
     </TermAside>
   );
@@ -238,8 +234,7 @@ export function TermParcelRecordAside() {
         {": "}
         the public page for one property: owners, values, and related details on the assessor
         site (
-        <span className="whitespace-nowrap">PPINum.aspx</span>
-        ).
+        <span className="whitespace-nowrap">PPINum.aspx</span>).
       </p>
     </TermAside>
   );
@@ -291,8 +286,7 @@ export function TermPropertyClassificationAside() {
             business personal property
           </strong>
           ; the export still stores the short label{" "}
-          <strong className="font-semibold text-slate-900">Personal</strong>
-          .
+          <strong className="font-semibold text-slate-900">Personal</strong>.
         </li>
         <li>
           <strong className="font-semibold text-slate-900">StateAssessed</strong>
@@ -313,16 +307,14 @@ export function TermPropertyClassificationAside() {
         <strong className="font-semibold text-slate-900">Commercial</strong>
         {" "}
         while the county record says{" "}
-        <strong className="font-semibold text-slate-900">Improvement</strong>
-        . Same parcel, two naming systems, not a sign something is wrong.
+        <strong className="font-semibold text-slate-900">Improvement</strong>. Same parcel, two naming systems, not a sign something is wrong.
       </p>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         <strong className="font-semibold text-slate-900">Tax roll</strong>
         {" "}
         is a different field from property classification. It names which tax
         roll the parcel sits on (often{" "}
-        <strong className="font-semibold text-slate-900">Real</strong>
-        ). Classification describes what is being assessed; Tax roll identifies
+        <strong className="font-semibold text-slate-900">Real</strong>). Classification describes what is being assessed; Tax roll identifies
         the parcel&apos;s tax-roll category. Seeing{" "}
         <strong className="font-semibold text-slate-900">Real</strong>
         {" "}
@@ -449,8 +441,7 @@ export function TermAssessedValueAside() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Understanding Property Taxes in Colorado
-          <span className="sr-only"> (opens in a new tab)</span>
+          Understanding Property Taxes in Colorado<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         guide and the{" "}
@@ -460,8 +451,7 @@ export function TermAssessedValueAside() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Assessed Value
-          <span className="sr-only"> (opens in a new tab)</span>
+          Assessed Value<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         section. Current figures used in this area are also summarized on{" "}
@@ -577,10 +567,8 @@ export function TermNovCompsImprovementTypeAside() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          parcel record
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          parcel record<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
     </TermAside>
   );
@@ -634,8 +622,7 @@ export function TermNovCompsLucAside() {
         <dfn className="font-semibold not-italic text-slate-900">LUC</dfn>
         {" "}
         is the assessor&apos;s{" "}
-        <strong className="font-semibold text-slate-900">land use code</strong>
-        . It captures how the property is classed for assessment (mostly residential subclasses on
+        <strong className="font-semibold text-slate-900">land use code</strong>. It captures how the property is classed for assessment (mostly residential subclasses on
         this worksheet). It is{" "}
         <strong className="font-semibold text-slate-900">not</strong>
         {" "}
@@ -655,35 +642,29 @@ export function TermNovCompsLucAside() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Assessors&apos; Library, Chapter 6: Property Classification
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          Assessors&apos; Library, Chapter 6: Property Classification<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
       <ul className="mt-2 list-disc space-y-2 pl-5 text-base leading-relaxed text-slate-700 sm:text-lg">
         <li>
           <strong className="font-semibold text-slate-900">Single-family</strong>
           {": "}
-          land <code className={CODE_INLINE_CLASS}>1112</code>
-          , improvement <code className={CODE_INLINE_CLASS}>1212</code>
+          land <code className={CODE_INLINE_CLASS}>1112</code>, improvement <code className={CODE_INLINE_CLASS}>1212</code>
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Duplex or triplex</strong>
           {": "}
-          land <code className={CODE_INLINE_CLASS}>1115</code>
-          , improvement <code className={CODE_INLINE_CLASS}>1215</code>
+          land <code className={CODE_INLINE_CLASS}>1115</code>, improvement <code className={CODE_INLINE_CLASS}>1215</code>
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Multi-family, 4 to 8 units</strong>
           {": "}
-          land <code className={CODE_INLINE_CLASS}>1120</code>
-          , improvement <code className={CODE_INLINE_CLASS}>1220</code>
+          land <code className={CODE_INLINE_CLASS}>1120</code>, improvement <code className={CODE_INLINE_CLASS}>1220</code>
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Multi-family, 9 units and up</strong>
           {": "}
-          land <code className={CODE_INLINE_CLASS}>1125</code>
-          , improvement <code className={CODE_INLINE_CLASS}>1225</code>
+          land <code className={CODE_INLINE_CLASS}>1125</code>, improvement <code className={CODE_INLINE_CLASS}>1225</code>
         </li>
         <li>
           <strong className="font-semibold text-slate-900">Residential condominium (improvement)</strong>
@@ -693,8 +674,7 @@ export function TermNovCompsLucAside() {
         <li>
           <strong className="font-semibold text-slate-900">Manufactured home (example pairing)</strong>
           {": "}
-          land <code className={CODE_INLINE_CLASS}>1135</code>
-          , improvement <code className={CODE_INLINE_CLASS}>1235</code>
+          land <code className={CODE_INLINE_CLASS}>1135</code>, improvement <code className={CODE_INLINE_CLASS}>1235</code>
         </li>
       </ul>
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
@@ -708,10 +688,8 @@ export function TermNovCompsLucAside() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          property search
-          <span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        .
+          property search<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
       </p>
     </TermAside>
   );
@@ -763,8 +741,7 @@ export function TermNovCompsValuationGradeAside() {
           rel="noopener noreferrer"
           className={COUNTY_EXTERNAL_LINK_CLASS}
         >
-          Chapter 8: Assessment Planning
-          <span className="sr-only"> (opens in a new tab)</span>
+          Chapter 8: Assessment Planning<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
         discusses computer-assisted mass appraisal and model-based work without replacing your
@@ -779,8 +756,7 @@ export function TermParcelAside() {
     <TermAside id="term-parcel" title="Parcel" titleId="term-parcel-title">
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         When the county says{" "}
-        <dfn className="font-semibold not-italic text-slate-900">parcel</dfn>
-        , they mean one place they count on its own: a stretch of land, a house and yard, a town
+        <dfn className="font-semibold not-italic text-slate-900">parcel</dfn>, they mean one place they count on its own: a stretch of land, a house and yard, a town
         lot, a farmstead, whatever they tied to one address or one legal description. Taxes and
         values for that spot stay bundled together under that name.
       </p>
@@ -882,8 +858,7 @@ export function TermTagAside() {
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
         <dfn className="font-semibold not-italic text-slate-900">TAG</dfn>
         {" "}
-        stands for <strong className="font-semibold text-slate-900">tax authority group</strong>
-        . That is the county name for one shared list of district levies that many properties follow
+        stands for <strong className="font-semibold text-slate-900">tax authority group</strong>. That is the county name for one shared list of district levies that many properties follow
         together. <strong className="font-semibold text-slate-900">TAG ID</strong>
         {" "}
         is the number for that list. It is not your PIN; many places can share one TAG ID while each

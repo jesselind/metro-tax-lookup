@@ -748,10 +748,8 @@ export function ParcelRecordSaleTable({
             rel="noopener noreferrer"
             className={COUNTY_EXTERNAL_LINK_CLASS}
           >
-            official county parcel record
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-          .
+            official county parcel record<span className="sr-only"> (opens in a new tab)</span>
+          </a>.
         </p>
       ) : null}
     </div>

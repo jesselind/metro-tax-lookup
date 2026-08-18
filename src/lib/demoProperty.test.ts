@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   DEMO_AIN,
@@ -24,5 +26,12 @@ describe("loadDemoProperty", () => {
     expect(demo.parcelRecord.neighborhoodCode).toBe("9999");
     // Guard: do not reintroduce the real source PIN into the fixture.
     expect(JSON.stringify(demo)).not.toMatch(/035457397/);
+    const countyMartAsOf = readFileSync(
+      join(process.cwd(), "tools/county-mart-data-as-of.txt"),
+      "utf8",
+    )
+      .trim()
+      .slice(0, 10);
+    expect(demo.parcelRecordBundledAsOf.slice(0, 10)).toBe(countyMartAsOf);
   });
 });

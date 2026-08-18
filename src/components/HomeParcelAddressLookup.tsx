@@ -16,6 +16,9 @@ import {
   CampaignSiteLink,
   hasCampaignSiteLink,
 } from "@/components/CampaignSiteLink";
+import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
+import { CountyServiceGapHeader } from "@/components/CountyServiceGapHeader";
+import { CountyDataMartRefreshAttemptNote } from "@/content/countyDataMartRefreshNote";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
@@ -141,8 +144,10 @@ import {
   DASHBOARD_TILE_RADIUS_CLASS,
   HOME_AUDIENCE_STACK_GAP_CLASS,
   INPUT_CLASS,
-  PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS,
-  PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS,
+  COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS,
+  COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS,
+  COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
+  COUNTY_SERVICE_GAP_TILE_STATUS_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS,
@@ -1274,12 +1279,20 @@ export function HomeParcelAddressLookup({
         />
       </div>
       {propertyDetailsBundledLabel && parcelRecordBundledAsOf ? (
-        <p className={DASHBOARD_SECTION_META_CLASS}>
-          County data current as of{" "}
-          <time dateTime={parcelRecordBundledAsOf.slice(0, 10)}>
-            {propertyDetailsBundledLabel}
-          </time>
-        </p>
+        <>
+          <p className={DASHBOARD_SECTION_META_CLASS}>
+            County data current as of{" "}
+            <time dateTime={parcelRecordBundledAsOf.slice(0, 10)}>
+              {propertyDetailsBundledLabel}
+            </time>
+            .
+          </p>
+          <CountyServiceGapCallout density="compact" className="mt-1">
+            <CountyDataMartRefreshAttemptNote
+              bundledAsOfIso={parcelRecordBundledAsOf}
+            />
+          </CountyServiceGapCallout>
+        </>
       ) : null}
   </>
   );
@@ -1474,8 +1487,7 @@ export function HomeParcelAddressLookup({
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
                 >
-                  county property search
-                  <span className="sr-only"> (opens in a new tab)</span>
+                  county property search<span className="sr-only"> (opens in a new tab)</span>
                 </a>
                 {" "}
                 for buildings and land, or the{" "}
@@ -1485,8 +1497,7 @@ export function HomeParcelAddressLookup({
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
                 >
-                  county business personal property search
-                  <span className="sr-only"> (opens in a new tab)</span>
+                  county business personal property search<span className="sr-only"> (opens in a new tab)</span>
                 </a>
                 {" "}
                 for equipment accounts.
@@ -2237,8 +2248,7 @@ export function HomeParcelAddressLookup({
                               the bundled{" "}
                               <span className="font-mono text-xs sm:text-sm">
                                 arapahoe-pin-to-tag.json
-                              </span>
-                              . If that field is empty, we cannot form{" "}
+                              </span>. If that field is empty, we cannot form{" "}
                               <span className="whitespace-nowrap">
                                 FileDownload.ashx?AIN=…
                               </span>{" "}
@@ -2254,11 +2264,7 @@ export function HomeParcelAddressLookup({
                                 rel="noopener noreferrer"
                                 className={COUNTY_EXTERNAL_LINK_CLASS}
                               >
-                                Arapahoe business personal property search
-                                <span className="sr-only">
-                                  {" "}
-                                  (opens in a new tab)
-                                </span>
+                                Arapahoe business personal property search<span className="sr-only"> (opens in a new tab)</span>
                               </a>
                               {" "}
                               to reach your account from the county. For how the
@@ -2285,7 +2291,7 @@ export function HomeParcelAddressLookup({
                 className={
                   homeCompsGridPdfHref &&
                   ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
-                    ? PARCEL_SUMMARY_COMPS_UNAVAILABLE_TILE_CLASS
+                    ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
                     : homeCompsGridPdfHref
                       ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
                       : PARCEL_SUMMARY_TILE_CLASS_POPOVER
@@ -2296,7 +2302,7 @@ export function HomeParcelAddressLookup({
                   className={
                     homeCompsGridPdfHref &&
                     ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
-                      ? `${PARCEL_SUMMARY_TILE_BODY_CLASS} relative`
+                      ? `${COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS} relative`
                       : PARCEL_SUMMARY_TILE_BODY_CLASS
                   }
                 >
@@ -2308,6 +2314,8 @@ export function HomeParcelAddressLookup({
                       icon={compsIcon}
                       tileTrigger={{
                         labelClassName: PARCEL_SUMMARY_TILE_LABEL_CLASS,
+                        statusRowClassName:
+                          COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
                         label: (
                           <ParcelGlossaryPopoverTrigger
                             termId="term-comps"
@@ -2317,9 +2325,12 @@ export function HomeParcelAddressLookup({
                           />
                         ),
                         status: (
-                          <p className={PARCEL_SUMMARY_COMPS_UNAVAILABLE_STATUS_CLASS}>
-                            {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
-                          </p>
+                          <div className="flex min-w-0 flex-1 flex-col gap-1">
+                            <CountyServiceGapHeader density="compact" />
+                            <p className={COUNTY_SERVICE_GAP_TILE_STATUS_CLASS}>
+                              {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
+                            </p>
+                          </div>
                         ),
                       }}
                     >
@@ -2387,8 +2398,7 @@ export function HomeParcelAddressLookup({
                                   the bundled{" "}
                                   <span className="font-mono text-xs sm:text-sm">
                                     arapahoe-pin-to-tag.json
-                                  </span>
-                                  . If that field is empty, we
+                                  </span>. If that field is empty, we
                                   cannot form{" "}
                                   <span className="whitespace-nowrap">
                                     FileDownload.ashx?AIN=…
@@ -2403,11 +2413,7 @@ export function HomeParcelAddressLookup({
                                     rel="noopener noreferrer"
                                     className={COUNTY_EXTERNAL_LINK_CLASS}
                                   >
-                                    Arapahoe property search
-                                    <span className="sr-only">
-                                      {" "}
-                                      (opens in a new tab)
-                                    </span>
+                                    Arapahoe property search<span className="sr-only"> (opens in a new tab)</span>
                                   </a>
                                   {" "}
                                   to reach your parcel and comparable properties
@@ -2516,8 +2522,7 @@ export function HomeParcelAddressLookup({
                   in the levy section with rows from{" "}
                   <strong className="font-semibold text-slate-800">
                     Tax District Levies
-                  </strong>
-                  .
+                  </strong>.
                 </span>
               </p>
             </div>
@@ -2600,10 +2605,8 @@ export function HomeParcelAddressLookup({
                     rel="noopener noreferrer"
                     className={COUNTY_EXTERNAL_LINK_CLASS}
                   >
-                    county property search
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                  . On the parcel record, use{" "}
+                    county property search<span className="sr-only"> (opens in a new tab)</span>
+                  </a>. On the parcel record, use{" "}
                   <strong className="font-semibold text-slate-800">
                     Tax District Levies
                   </strong>{" "}

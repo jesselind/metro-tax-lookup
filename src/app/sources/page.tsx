@@ -5,7 +5,19 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CountyCompsPdfSourcesAvailabilityNote } from "@/components/CountyCompsPdfGuidance";
+import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
+import { CountyCompsPdfGapNote } from "@/content/countyCompsPdfGapNote";
+import { CountyDataMartRefreshAttemptNote } from "@/content/countyDataMartRefreshNote";
+import { CountyPriorYearValuesGapNote } from "@/content/countyPriorYearValuesGapNote";
+import {
+  COUNTY_SERVICE_GAP_SOURCES_ANCHOR,
+  COUNTY_SERVICE_GAP_SOURCES_EXPLAINER,
+  COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL,
+  COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL,
+  COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD,
+  COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL,
+  COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE,
+} from "@/content/countyServiceGapGuidance";
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import {
   SOURCES_PAGE_INNER_CLASS,
@@ -40,7 +52,10 @@ import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { OpenDetailsOnHash } from "@/components/OpenDetailsOnHash";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import { glossaryTermHref } from "@/lib/glossary";
-import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
+import {
+  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE,
+  safeHttpOrHttpsUrl,
+} from "@/lib/safeExternalHref";
 import { AUTHORITY_CHAIN_GAPS_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
 import {
   AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE,
@@ -103,8 +118,7 @@ function ReadmeDataPipelineLink({ children }: { children: ReactNode }) {
       rel="noopener noreferrer"
       className={TERM_LINK_CLASS}
     >
-      {children}
-      <span className="sr-only"> (opens in a new tab)</span>
+      {children}<span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }
@@ -152,13 +166,21 @@ export default function SourcesPage() {
         </p>
         <ul className="mt-3 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
           <li className="flex min-h-0">
-            <a href="#metro-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Metro district tax share
+            <a href="#levy-breakdown-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
+              Your property tax bill
             </a>
           </li>
           <li className="flex min-h-0">
-            <a href="#levy-breakdown-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Your property tax bill
+            <a
+              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.section}`}
+              className={SOURCES_ON_PAGE_NAV_LINK_CLASS}
+            >
+              When county data fails
+            </a>
+          </li>
+          <li className="flex min-h-0">
+            <a href="#metro-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
+              Metro district tax share
             </a>
           </li>
           <li className="flex min-h-0">
@@ -168,462 +190,6 @@ export default function SourcesPage() {
           </li>
         </ul>
       </nav>
-
-      <section
-        id="metro-tool"
-        className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
-      >
-        <h2 className={SECTION_H2}>Metro district tax share</h2>
-        <p className="text-slate-700">
-          <Link href="/" className={TERM_LINK_CLASS}>
-            Metro district tax share
-          </Link>{" "}
-          on the home page compares your <strong>total</strong>{" "}mill rate to metro
-          district rates from the county mill schedule. After a PIN load, the metro
-          card uses the same total mills as your levy stack and detects metro
-          districts when a stack row&apos;s{" "}
-          <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
-            LG ID
-          </Link>
-          {" "}
-          matches a metro district in the bundled mill schedule. There is no
-          manual district picker. The metro card shows{" "}
-          <strong>one</strong>{" "}headline tile: debt-service share when those mills
-          appear on your stack, otherwise total metro share. When more than one
-          metro appears, that headline uses <strong>combined</strong>{" "}certified
-          metro mills in county stack order. The breakdown below still lists each
-          metro part. Use{" "}
-          <strong className="text-slate-900">Start over</strong>{" "}in the address
-          card to reset the home page flow.
-        </p>
-
-        <h3 className={`${SECTION_H3} !mt-6`}>
-          Check the numbers yourself (no code)
-        </h3>
-        <p className="text-slate-700">
-          Use your tax bill or the county website; match mills and authority
-          names to the same documents we cite in this section.
-        </p>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
-          <li>
-            From your{" "}
-            <strong className="text-slate-900">paper bill</strong>{" "}or the
-            county site, identify your{" "}
-            <strong className="text-slate-900">total mill levy</strong>{" "}and the
-            metro-related parts of your rate (for example{" "}
-            <strong className="text-slate-900">debt service</strong>{" "}and{" "}
-            <strong className="text-slate-900">operations</strong>
-            {"), using the "}
-            county&apos;s labels — wording varies. For a quick manual check, total
-            mills and metro debt are usually the easiest figures to compare first.
-            In the app, the metro card always uses your{" "}
-            <strong>full stack total</strong>{" "}as the denominator and picks up{" "}
-            <strong>every</strong>{" "}metro that matches an LG ID on your stack.
-          </li>
-          <li>
-            Open the county&apos;s{" "}
-            <a
-              href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={TERM_LINK_CLASS}
-            >
-              Mill Levies and Tax Districts (Assessor hub)
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . That page lists the{" "}
-            <a
-              href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={TERM_LINK_CLASS}
-            >
-              Mill Levy Public Information
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>{" "}
-            PDF and related documents. Find your metropolitan district by{" "}
-            <strong className="text-slate-900">name or LGID</strong>
-            {". "}That schedule shows{" "}
-            <strong className="text-slate-900">operations vs debt service</strong>{" "}
-            mills — the same split the app uses when it shows metro debt share
-            (when applicable).
-          </li>
-          <li>
-            If the in-app snapshot date is older than the county&apos;s current
-            PDF, treat the{" "}
-            <strong className="text-slate-900">current county PDF</strong>{" "}as
-            authoritative for disputes.
-          </li>
-        </ol>
-
-        <h3 className={`${SECTION_H3} !mt-8`}>In the app</h3>
-        <p className="text-slate-700">
-          Mill rates come from two county extracts. Metro districts can show
-          purpose-level change from the Mill Levy Public Information Form when
-          that form matches your stack. Every other taxing authority on your
-          stack (and metros without a purpose match) can show total-mill change
-          from the Taxing District Levy Percentage PDFs for{" "}
-          <strong className="font-semibold text-slate-900">Tax Year 2025</strong>
-          {" "}
-          vs{" "}
-          <strong className="font-semibold text-slate-900">Tax Year 2024</strong>
-          {", joined by the authority code on each stack row. "}
-          When you open one of those rate-table sources from{" "}
-          <strong className="font-semibold text-slate-900">
-            Who authorized this?
-          </strong>
-          {", the app uses the open property and that bill entry to send you to the exact PDF page, locating it with the property's tax area and the authority code when that historical combination is in the county table. "}
-          If it is not, the link opens the correct year&apos;s PDF at the start of
-          the file rather than guessing a page.{" "}
-          When any authority&apos;s rate changed, the app shows a{" "}
-          <strong className="font-semibold text-slate-900">Changed</strong>
-          {" "}
-          cue on that tile. Near the top of your results, an amber attention note
-          appears when any taxing authority on your breakdown published a rate
-          change, for example{" "}
-          <strong className="font-semibold text-slate-900">
-            Your property tax bill changed from last year.
-          </strong>
-          {" "}
-          That means at least one county-published rate on your bill is different
-          from Tax Year 2024. It does not say whether you owe more or less overall.
-          This tool does not compare your prior-year treasurer bill total, and it
-          does not have your prior-year assessed value. Clicking that note scrolls
-          to the first Changed tile. In tile details, a short
-          percent summary appears when we know last year&apos;s mill rate (for
-          example{" "}
-          <strong className="font-semibold text-slate-900">
-            2.0% higher than last year
-          </strong>
-          ). Tap anywhere on that colored summary box to open the year-by-year
-          breakdown; the underlined{" "}
-          <strong className="font-semibold text-slate-900">
-            Details ›
-          </strong>
-          {" "}
-          cue on the same line as the percent headline signals that more is
-          available. Each tax year shows
-          county mills first, then{" "}
-          <strong className="font-semibold text-slate-900">About $X</strong>
-          {" "}
-          with an asterisk for hypothetical annual tax at your{" "}
-          <strong className="font-semibold text-slate-900">current</strong>
-          {" "}
-          assessed value. A single footnote at the bottom of the breakdown
-          explains that we do not have your assessed value from last year and
-          that these dollar amounts use this year&apos;s assessed value (link on
-          &quot;today&apos;s assessed value&quot; in the footnote). The
-          difference row shows mills and dollars together. For metros only, a
-          {" "}
-          <strong className="font-semibold text-slate-900">Total</strong>
-          {" "}
-          label appears when several purpose rows (operations, debt, and
-          similar) are listed below; school districts and other authorities
-          omit that label. Purpose-level detail appears only when purpose rows
-          sum to the same totals as the Levy Percentage PDFs; otherwise the app
-          uses authority totals only. Metro purpose comparisons never add a
-          summary Total together with the part purposes that make it up.
-          {" "}
-          Below that box, tile details include a simple{" "}
-          <strong className="font-semibold text-slate-900">
-            Total mills from county property tax tables
-          </strong>
-          {" "}
-          chart when we have at least three tax years of Levy Percentage data
-          for that authority (currently Tax Years 2018 through 2025). It shows
-          total mills only, not dollars on your bill. Tap a year on the chart
-          to see that year&apos;s mills.
-        </p>
-        <p className="mt-3 text-slate-700">
-          <strong className="font-semibold text-slate-900">
-            Who authorized this?:
-          </strong>{" "}
-          For selected rows on your property-tax breakdown (Cherry Creek,
-          authority code (AUTH){" "}
-          <strong className="font-semibold text-slate-900">0501</strong>
-          ; Littleton Public Schools, AUTH{" "}
-          <strong className="font-semibold text-slate-900">0601</strong>
-          ; Arapahoe County, AUTH{" "}
-          <strong className="font-semibold text-slate-900">2998</strong>
-          ; Sky Ranch Metropolitan District No. 3, AUTH{" "}
-          <strong className="font-semibold text-slate-900">4571</strong>
-          ; South Metro Fire Rescue, AUTH{" "}
-          <strong className="font-semibold text-slate-900">4100</strong>
-          ), tile details can show a plain-language trail from voters and the
-          governing body to the published rate, with{" "}
-          <strong className="font-semibold text-slate-900">See each step</strong>
-          {" "}
-          for the full trail. Prefer the best official document we can verify;
-          when that file is missing, the trail still links the next-best official
-          place (often that year&apos;s{" "}
-          <a
-            href={ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={TERM_LINK_CLASS}
-          >
-            Past Elections File Library
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-          {" "}
-          section) so you can see where we looked and why the ideal PDF is not
-          linked. Typical deep-links include county rate tables, election
-          notices, Official Summary reports, and budget PDFs when published. For
-          Arapahoe County Ballot Issue 1A, the mills step pairs Tax Years 2023
-          and 2024 (temporary tax credit ended; maximum rate unchanged), not the
-          latest year-over-year pair alone. Some jargon (for example{" "}
-          <strong className="font-semibold text-slate-900">
-            debt-free schools mill levy
-          </strong>
-          , bonds, or{" "}
-          <strong className="font-semibold text-slate-900">de-Brucing</strong>
-          {" "}
-          for a TABOR revenue vote) has a brief in-place definition. The panel
-          also notes{" "}
-          <strong className="font-semibold text-slate-900">
-            {AUTHORITY_CHAIN_GAPS_DISCLOSURE}
-          </strong>
-          {" "}
-          when we cannot yet split a year-to-year rate change into parts, or
-          cannot link ballot wording. Metro district elections can have a
-          different public record than county and school elections. When the
-          district publishes an annual report or audit saying what eligible
-          electors (the people legally allowed to vote in that district
-          election) authorized, but no public ballot wording or certified vote
-          count can be found, we link that district record and leave the missing
-          details blank. For metro and fire
-          trails, rate history in{" "}
-          <strong className="font-semibold text-slate-900">
-            What changed?
-          </strong>
-          {" "}
-          comes from the same county authority mill totals used by the mill-rate
-          history chart: always the change from last year, and a separate Most
-          notable change block when a larger year-to-year move exists. Fire
-          protection district trails (such as South Metro Fire Rescue Ballot
-          Issue 7A) still use county Ballot Issue letters and certified vote
-          totals when those exist; when the district covers more than one
-          county, Arapahoe vote totals are labeled as Arapahoe-only. In one
-          county case, the only sample ballot we can link is in
-          another language; we link that official PDF, say when
-          we cannot find English among the currently published files, and show
-          AI-translated English in a collapsed disclosure labeled as not legal
-          ballot text (not an official county translation). That does not mean
-          an English ballot never existed. This translation fallback is not a
-          metro district template. Data
-          lives in{" "}
-          <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
-            public/data/levy-authority-chain-entries.json
-          </code>
-          .
-        </p>
-        {unlocatedAuthorityChainSources.length > 0 ? (
-          <details
-            id="authority-chain-unlocated-sources"
-            className="group mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 sm:px-4"
-          >
-            <DisclosureSummary
-              label={AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE}
-            />
-            <div className="mt-3 space-y-4 border-t border-slate-200 pt-3 text-slate-700">
-              <p>
-                Sometimes the public record we want is not posted (or not in a
-                form we can honestly link). Below are those gaps for the{" "}
-                <strong className="font-semibold text-slate-900">
-                  Who authorized this?
-                </strong>
-                {" "}
-                trails. Vote totals may still come from the Official Summary. We
-                link the next-best official place so you can see where we looked.
-              </p>
-              <ul className="list-none space-y-4 p-0">
-                {unlocatedAuthorityChainSources.map((row) => {
-                  const nextBestHref = safeHttpOrHttpsUrl(row.nextBest.url);
-                  return (
-                    <li
-                      key={row.id}
-                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
-                    >
-                      <p className="font-semibold text-slate-900">
-                        {row.authorityLabel}
-                        {" "}
-                        (AUTH{" "}
-                        <strong className="font-semibold text-slate-900">
-                          {row.authCode}
-                        </strong>
-                        ):{" "}
-                        {row.measureLabel}
-                      </p>
-                      <p className="mt-2">
-                        <strong className="font-semibold text-slate-900">
-                          What we looked for:
-                        </strong>
-                        {" "}
-                        {row.sought}
-                      </p>
-                      <p className="mt-2">
-                        <strong className="font-semibold text-slate-900">
-                          Where we looked:
-                        </strong>
-                        {" "}
-                        {row.lookedWhere}
-                      </p>
-                      <p className="mt-2">
-                        <strong className="font-semibold text-slate-900">
-                          What we link instead:
-                        </strong>
-                        {" "}
-                        {nextBestHref ? (
-                          <a
-                            href={nextBestHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={TERM_LINK_CLASS}
-                          >
-                            {row.nextBest.text}
-                            <span className="sr-only"> (opens in a new tab)</span>
-                          </a>
-                        ) : (
-                          row.nextBest.text
-                        )}
-                      </p>
-                      <p className="mt-2 text-sm text-slate-600">
-                        Noted {formatLevyBundledAsOf(row.notedAsOf)}.
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </details>
-        ) : null}
-        {bundledLabel && bundledIso ? (
-          <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
-            <span className="font-semibold text-slate-900">Data snapshot:</span>{" "}Metro levy rates in this tool were last bundled on{" "}
-            <time dateTime={bundledIso}>{bundledLabel}</time>
-            {" "}(when our copy of the county PDF was processed). That date is
-            not necessarily when the county last amended the form. The
-            authoritative schedule is the county&apos;s current PDF.
-          </p>
-        ) : null}
-
-        <h3 className={`${SECTION_H3} !mt-8`}>Official sources</h3>
-        <ul className="list-disc space-y-2 pl-5 text-slate-700">
-          <li>
-            <strong>Authoritative PDF:</strong>{" "}
-            <a
-              href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={TERM_LINK_CLASS}
-            >
-              Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . District names, levy purposes, previous-year mill rates, and
-            aggregated debt service and total mills are extracted offline into
-            the app. Tile details for matched metros prefer this purpose-level
-            compare when it reconciles to Levy Percentage authority totals;
-            otherwise the app uses authority totals from the Levy Percentage
-            PDFs. Years are labeled as tax years (Tax Year 2025 vs Tax Year
-            2024), not budget-year shorthand
-            {bundledLabel && bundledIso ? (
-              <>
-                {" "}
-                (metro form snapshot{" "}
-                <time dateTime={bundledIso}>{bundledLabel}</time>)
-              </>
-            ) : null}
-            .
-          </li>
-          <li>
-            <strong>Assessor hub:</strong>{" "}
-            <a
-              href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={TERM_LINK_CLASS}
-            >
-              Mill Levies and Tax Districts (Assessor hub)
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . Related county PDFs are listed next (Levy Percentage feeds
-            all-authority year-over-year; Certification is context only).
-          </li>
-        </ul>
-
-        <h3
-          id="reference-pdfs"
-          className={`${SECTION_H3} !mt-8 scroll-mt-8`}
-        >
-          Related county PDFs
-        </h3>
-        <p className="text-slate-700">
-          Official Arapahoe publications. Certification is useful for context and
-          is not imported into the metro schedule. Taxing District Levy
-          Percentage PDFs feed the all-authority mill history used for
-          year-over-year change on every levy tile. Browse years from the{" "}
-          <a
-            href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={TERM_LINK_CLASS}
-          >
-            Mill Levies and Tax Districts (Assessor hub)
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-          .
-        </p>
-        <ul className="mt-4 space-y-4">
-          <li className="rounded-lg border border-slate-200 p-4">
-            <p className="font-semibold text-slate-900">
-              Certification of Levies and Revenues (example: 2025)
-            </p>
-            <p className="mt-2 text-slate-700">
-              County certification document; useful for cross-checking totals.
-              Not imported into the app&apos;s metro schedule.
-            </p>
-            <p className="mt-2 break-words">
-              <a
-                href={ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={TERM_LINK_CLASS}
-              >
-                Open PDF (2025)
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            </p>
-          </li>
-          <li className="rounded-lg border border-slate-200 p-4">
-            <p className="font-semibold text-slate-900">
-              Taxing District Levy Percentage (Tax Years 2018 through 2025)
-            </p>
-            <p className="mt-2 text-slate-700">
-              Authority total mills by tax area. The app stores AUTH totals by
-              tax year (separate from the parcel levy stack file) and joins them
-              to each stack row by authority code. Year-over-year cues compare
-              Tax Years 2024 and 2025; the modal history chart uses every
-              bundled year when at least three are published for that authority.
-              Optional dollar lines in tile details multiply mills by your
-              current assessed value only. We do not bundle prior-year assessed
-              value, so those dollars use this year&apos;s assessed value for
-              both tax years in the comparison.
-            </p>
-            <p className="mt-2 break-words">
-              <a
-                href={ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={TERM_LINK_CLASS}
-              >
-                Open PDF (Tax Year 2025)
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            </p>
-          </li>
-        </ul>
-      </section>
 
       <section
         id="levy-breakdown-tool"
@@ -666,8 +232,7 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Search Residential, Commercial, Ag and Vacant
-              <span className="sr-only"> (opens in a new tab)</span>
+              Search Residential, Commercial, Ag and Vacant<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             (or the peer links on the home card) and note the{" "}
             <strong className="text-slate-900">PIN</strong>{" "}on the parcel
@@ -774,8 +339,7 @@ export default function SourcesPage() {
             that explanation. See{" "}
             <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
               LG ID
-            </Link>
-            .
+            </Link>.
           </li>
           <li>
             <strong>Assessor fee:</strong>{" "}Some mart exports include an assessor
@@ -804,8 +368,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Open GIS Parcels
-            <span className="sr-only"> (opens in a new tab)</span>
+            Open GIS Parcels<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           layer (PIN join; code and name only), not from the Main Parcel CSV,
           which has no neighborhood column. We do not guess neighborhood from
@@ -914,6 +477,17 @@ export default function SourcesPage() {
             script (bundled shards).
           </li>
           <li>
+            <strong>Prior-year assessed value:</strong>{" "}
+            Property details and the values table use the mart for this
+            assessment year&apos;s actual and assessed figures.
+            <CountyServiceGapCallout
+              id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues}
+              className="mt-3 scroll-mt-8"
+            >
+              <CountyPriorYearValuesGapNote />
+            </CountyServiceGapCallout>
+          </li>
+          <li>
             <strong>Ownership type</strong>{" "}uses legal-party owner rows: one
             owner keeps that row&apos;s type; when every owner is Individual, we
             show Joint Tenancy to match the usual county parcel-page label for
@@ -929,10 +503,13 @@ export default function SourcesPage() {
           <li>
             <strong>Comparable properties</strong>{" "}
             (often called comps) uses the parcel&apos;s AIN when available.{" "}
-            When county hosting is limited, the home summary tile uses a red
-            alert border with a short status; the whole tile opens the full explanation
-            (the PDF icon is a visual cue), and includes a link to try the county download if your value changed.{" "}
-            <CountyCompsPdfSourcesAvailabilityNote /> The in-page comps grid is
+            When county hosting is limited, the home summary tile shows{" "}
+            <strong className="text-slate-900">COUNTY DATA GAP</strong>{" "}
+            with a
+            short status; the whole tile opens the full explanation (the PDF
+            icon is a visual cue), and includes a link to try the county
+            download if your value changed.
+            The in-page comps grid is
             demo-only today (
             <strong className="text-slate-900">Try demo property</strong>
             ); row help is grounded in the county{" "}
@@ -942,10 +519,17 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              Comp Sheet Layout and Time Adjusted Sales Prices
-              <span className="sr-only"> (opens in a new tab)</span>
+              Comp Sheet Layout and Time Adjusted Sales Prices<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             explainer.
+            {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+              <CountyServiceGapCallout
+                id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf}
+                className="mt-3 scroll-mt-8"
+              >
+                <CountyCompsPdfGapNote />
+              </CountyServiceGapCallout>
+            ) : null}
           </li>
           <li>
             <strong>Notice of Valuation</strong>{" "}
@@ -954,14 +538,12 @@ export default function SourcesPage() {
               personalpropertysearch.arapahoegov.com
             </span>
             {" "}
-            (<span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>
-            ). That PDF is the county notice for the equipment account, not a
+            (<span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>). That PDF is the county notice for the equipment account, not a
             comps grid. Real-property{" "}
             <span className="whitespace-nowrap">parcelsearch</span>{" "}
             FileDownload does not serve these notices. The county compare card
             also links the account details page (
-            <span className="whitespace-nowrap">Details.aspx?AIN=…</span>
-            ) on that same host. On the home dashboard, business personal
+            <span className="whitespace-nowrap">Details.aspx?AIN=…</span>) on that same host. On the home dashboard, business personal
             property keeps the short property panel and totals-only values table
             together in the property column; Real accounts still place the longer
             values / sale / building / permit tables below the levy grid.
@@ -984,8 +566,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Data Mart
-            <span className="sr-only"> (opens in a new tab)</span>
+            Data Mart<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           extract (often updated about weekly), not from the last time the
           offline rebuild scripts ran. Maintainers download tables such as{" "}
@@ -1007,8 +588,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Open GIS Data
-            <span className="sr-only"> (opens in a new tab)</span>
+            Open GIS Data<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           Parcels download (local FileGDB; PIN + neighborhood fields only into
           public JSON). DOLA{" "}
@@ -1018,8 +598,7 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Property Tax Entities
-            <span className="sr-only"> (opens in a new tab)</span>
+            Property Tax Entities<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           and the{" "}
           <a
@@ -1028,14 +607,498 @@ export default function SourcesPage() {
             rel="noopener noreferrer"
             className={TERM_LINK_CLASS}
           >
-            Special District Mapping Project
-            <span className="sr-only"> (opens in a new tab)</span>
+            Special District Mapping Project<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           feed tax-entity and contact matching when mills or IDs change.
           Metro rates follow the annual mill levy form, not the weekly mart
           cadence. How maintainers download, stage, and rebuild:{" "}
           <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>.
         </p>
+        <CountyServiceGapCallout
+          id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart}
+          className="mt-3 scroll-mt-8"
+        >
+          <CountyDataMartRefreshAttemptNote />
+        </CountyServiceGapCallout>
+      </section>
+
+      <section
+        id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.section}
+        className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
+      >
+        <h2 className={SECTION_H2}>
+          {COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE}
+        </h2>
+        <p className="text-slate-700">{COUNTY_SERVICE_GAP_SOURCES_EXPLAINER}</p>
+        <p className="mt-2 text-slate-700">{COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD}</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
+          {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+            <li>
+              <a
+                href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf}`}
+                className={TERM_LINK_CLASS}
+              >
+                {COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL}
+              </a>
+            </li>
+          ) : null}
+          <li>
+            <a
+              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart}`}
+              className={TERM_LINK_CLASS}
+            >
+              {COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL}
+            </a>
+          </li>
+          <li>
+            <a
+              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues}`}
+              className={TERM_LINK_CLASS}
+            >
+              {COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL}
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section
+        id="metro-tool"
+        className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
+      >
+        <h2 className={SECTION_H2}>Metro district tax share</h2>
+        <p className="text-slate-700">
+          <Link href="/" className={TERM_LINK_CLASS}>
+            Metro district tax share
+          </Link>{" "}
+          on the home page compares your <strong>total</strong>{" "}mill rate to metro
+          district rates from the county mill schedule. After a PIN load, the metro
+          card uses the same total mills as your levy stack and detects metro
+          districts when a stack row&apos;s{" "}
+          <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
+            LG ID
+          </Link>
+          {" "}
+          matches a metro district in the bundled mill schedule. There is no
+          manual district picker. The metro card shows{" "}
+          <strong>one</strong>{" "}headline tile: debt-service share when those mills
+          appear on your stack, otherwise total metro share. When more than one
+          metro appears, that headline uses <strong>combined</strong>{" "}certified
+          metro mills in county stack order. The breakdown below still lists each
+          metro part. Use{" "}
+          <strong className="text-slate-900">Start over</strong>{" "}in the address
+          card to reset the home page flow.
+        </p>
+
+        <h3 className={`${SECTION_H3} !mt-6`}>
+          Check the numbers yourself (no code)
+        </h3>
+        <p className="text-slate-700">
+          Use your tax bill or the county website; match mills and authority
+          names to the same documents we cite in this section.
+        </p>
+        <ol className="mt-3 list-decimal space-y-2 pl-5 text-slate-700">
+          <li>
+            From your{" "}
+            <strong className="text-slate-900">paper bill</strong>{" "}or the
+            county site, identify your{" "}
+            <strong className="text-slate-900">total mill levy</strong>{" "}and the
+            metro-related parts of your rate (for example{" "}
+            <strong className="text-slate-900">debt service</strong>{" "}and{" "}
+            <strong className="text-slate-900">operations</strong>
+            {"), using the "}
+            county&apos;s labels — wording varies. For a quick manual check, total
+            mills and metro debt are usually the easiest figures to compare first.
+            In the app, the metro card always uses your{" "}
+            <strong>full stack total</strong>{" "}as the denominator and picks up{" "}
+            <strong>every</strong>{" "}metro that matches an LG ID on your stack.
+          </li>
+          <li>
+            Open the county&apos;s{" "}
+            <a
+              href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={TERM_LINK_CLASS}
+            >
+              Mill Levies and Tax Districts (Assessor hub)<span className="sr-only"> (opens in a new tab)</span>
+            </a>. That page lists the{" "}
+            <a
+              href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={TERM_LINK_CLASS}
+            >
+              Mill Levy Public Information<span className="sr-only"> (opens in a new tab)</span>
+            </a>{" "}
+            PDF and related documents. Find your metropolitan district by{" "}
+            <strong className="text-slate-900">name or LGID</strong>
+            {". "}That schedule shows{" "}
+            <strong className="text-slate-900">operations vs debt service</strong>{" "}
+            mills — the same split the app uses when it shows metro debt share
+            (when applicable).
+          </li>
+          <li>
+            If the in-app snapshot date is older than the county&apos;s current
+            PDF, treat the{" "}
+            <strong className="text-slate-900">current county PDF</strong>{" "}as
+            authoritative for disputes.
+          </li>
+        </ol>
+
+        <h3 className={`${SECTION_H3} !mt-8`}>In the app</h3>
+        <p className="text-slate-700">
+          Mill rates come from two county extracts. Metro districts can show
+          purpose-level change from the Mill Levy Public Information Form when
+          that form matches your stack. Every other taxing authority on your
+          stack (and metros without a purpose match) can show total-mill change
+          from the Taxing District Levy Percentage PDFs for{" "}
+          <strong className="font-semibold text-slate-900">Tax Year 2025</strong>
+          {" "}
+          vs{" "}
+          <strong className="font-semibold text-slate-900">Tax Year 2024</strong>
+          {", joined by the authority code on each stack row. "}
+          When you open one of those rate-table sources from{" "}
+          <strong className="font-semibold text-slate-900">
+            Who authorized this?
+          </strong>
+          {", the app uses the open property and that bill entry to send you to the exact PDF page, locating it with the property's tax area and the authority code when that historical combination is in the county table. "}
+          If it is not, the link opens the correct year&apos;s PDF at the start of
+          the file rather than guessing a page.{" "}
+          When any authority&apos;s rate changed, the app shows a{" "}
+          <strong className="font-semibold text-slate-900">Changed</strong>
+          {" "}
+          cue on that tile. Near the top of your results, an amber attention note
+          appears when any taxing authority on your breakdown published a rate
+          change, for example{" "}
+          <strong className="font-semibold text-slate-900">
+            Your property tax bill changed from last year.
+          </strong>
+          {" "}
+          That means at least one county-published rate on your bill is different
+          from Tax Year 2024. It does not say whether you owe more or less overall.
+          This tool does not compare your prior-year treasurer bill total, and it
+          does not have your prior-year assessed value. Clicking that note scrolls
+          to the first Changed tile. In tile details, a short
+          percent summary appears when we know last year&apos;s mill rate (for
+          example{" "}
+          <strong className="font-semibold text-slate-900">
+            2.0% higher than last year
+          </strong>). Tap anywhere on that colored summary box to open the year-by-year
+          breakdown; the underlined{" "}
+          <strong className="font-semibold text-slate-900">
+            Details ›
+          </strong>
+          {" "}
+          cue on the same line as the percent headline signals that more is
+          available. Each tax year shows
+          county mills first, then{" "}
+          <strong className="font-semibold text-slate-900">About $X</strong>
+          {" "}
+          with an asterisk for hypothetical annual tax at your{" "}
+          <strong className="font-semibold text-slate-900">current</strong>
+          {" "}
+          assessed value. A single footnote at the bottom of the breakdown
+          explains that we do not have your assessed value from last year and
+          that these dollar amounts use this year&apos;s assessed value (link on
+          &quot;today&apos;s assessed value&quot; in the footnote). The
+          difference row shows mills and dollars together. For metros only, a
+          {" "}
+          <strong className="font-semibold text-slate-900">Total</strong>
+          {" "}
+          label appears when several purpose rows (operations, debt, and
+          similar) are listed below; school districts and other authorities
+          omit that label. Purpose-level detail appears only when purpose rows
+          sum to the same totals as the Levy Percentage PDFs; otherwise the app
+          uses authority totals only. Metro purpose comparisons never add a
+          summary Total together with the part purposes that make it up.
+          {" "}
+          Below that box, tile details include a simple{" "}
+          <strong className="font-semibold text-slate-900">
+            Total mills from county property tax tables
+          </strong>
+          {" "}
+          chart when we have at least three tax years of Levy Percentage data
+          for that authority (currently Tax Years 2018 through 2025). It shows
+          total mills only, not dollars on your bill. Tap a year on the chart
+          to see that year&apos;s mills.
+        </p>
+        <p className="mt-3 text-slate-700">
+          <strong className="font-semibold text-slate-900">
+            Who authorized this?:
+          </strong>{" "}
+          For selected rows on your property-tax breakdown (Cherry Creek,
+          authority code (AUTH){" "}
+          <strong className="font-semibold text-slate-900">0501</strong>
+          ; Littleton Public Schools, AUTH{" "}
+          <strong className="font-semibold text-slate-900">0601</strong>
+          ; Arapahoe County, AUTH{" "}
+          <strong className="font-semibold text-slate-900">2998</strong>
+          ; Sky Ranch Metropolitan District No. 3, AUTH{" "}
+          <strong className="font-semibold text-slate-900">4571</strong>
+          ; South Metro Fire Rescue, AUTH{" "}
+          <strong className="font-semibold text-slate-900">4100</strong>
+          ), tile details can show a plain-language trail from voters and the
+          governing body to the published rate, with{" "}
+          <strong className="font-semibold text-slate-900">See each step</strong>
+          {" "}
+          for the full trail. Prefer the best official document we can verify;
+          when that file is missing, the trail still links the next-best official
+          place (often that year&apos;s{" "}
+          <a
+            href={ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Past Elections File Library<span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          {" "}
+          section) so you can see where we looked and why the ideal PDF is not
+          linked. Typical deep-links include county rate tables, election
+          notices, Official Summary reports, and budget PDFs when published. For
+          Arapahoe County Ballot Issue 1A, the mills step pairs Tax Years 2023
+          and 2024 (temporary tax credit ended; maximum rate unchanged), not the
+          latest year-over-year pair alone. Some jargon (for example{" "}
+          <strong className="font-semibold text-slate-900">
+            debt-free schools mill levy
+          </strong>, bonds, or{" "}
+          <strong className="font-semibold text-slate-900">de-Brucing</strong>
+          {" "}
+          for a TABOR revenue vote) has a brief in-place definition. The panel
+          also notes{" "}
+          <strong className="font-semibold text-slate-900">
+            {AUTHORITY_CHAIN_GAPS_DISCLOSURE}
+          </strong>
+          {" "}
+          when we cannot yet split a year-to-year rate change into parts, or
+          cannot link ballot wording. Metro district elections can have a
+          different public record than county and school elections. When the
+          district publishes an annual report or audit saying what eligible
+          electors (the people legally allowed to vote in that district
+          election) authorized, but no public ballot wording or certified vote
+          count can be found, we link that district record and leave the missing
+          details blank. For metro and fire
+          trails, rate history in{" "}
+          <strong className="font-semibold text-slate-900">
+            What changed?
+          </strong>
+          {" "}
+          comes from the same county authority mill totals used by the mill-rate
+          history chart: always the change from last year, and a separate Most
+          notable change block when a larger year-to-year move exists. Fire
+          protection district trails (such as South Metro Fire Rescue Ballot
+          Issue 7A) still use county Ballot Issue letters and certified vote
+          totals when those exist; when the district covers more than one
+          county, Arapahoe vote totals are labeled as Arapahoe-only. In one
+          county case, the only sample ballot we can link is in
+          another language; we link that official PDF, say when
+          we cannot find English among the currently published files, and show
+          AI-translated English in a collapsed disclosure labeled as not legal
+          ballot text (not an official county translation). That does not mean
+          an English ballot never existed. This translation fallback is not a
+          metro district template. Data
+          lives in{" "}
+          <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
+            public/data/levy-authority-chain-entries.json
+          </code>.
+        </p>
+        {unlocatedAuthorityChainSources.length > 0 ? (
+          <details
+            id="authority-chain-unlocated-sources"
+            className="group mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 sm:px-4"
+          >
+            <DisclosureSummary
+              label={AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE}
+            />
+            <div className="mt-3 space-y-4 border-t border-slate-200 pt-3 text-slate-700">
+              <p>
+                Sometimes the public record we want is not posted (or not in a
+                form we can honestly link). Below are those gaps for the{" "}
+                <strong className="font-semibold text-slate-900">
+                  Who authorized this?
+                </strong>
+                {" "}
+                trails. Vote totals may still come from the Official Summary. We
+                link the next-best official place so you can see where we looked.
+              </p>
+              <ul className="list-none space-y-4 p-0">
+                {unlocatedAuthorityChainSources.map((row) => {
+                  const nextBestHref = safeHttpOrHttpsUrl(row.nextBest.url);
+                  return (
+                    <li
+                      key={row.id}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {row.authorityLabel}
+                        {" "}
+                        (AUTH{" "}
+                        <strong className="font-semibold text-slate-900">
+                          {row.authCode}
+                        </strong>
+                        ):{" "}
+                        {row.measureLabel}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          What we looked for:
+                        </strong>
+                        {" "}
+                        {row.sought}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          Where we looked:
+                        </strong>
+                        {" "}
+                        {row.lookedWhere}
+                      </p>
+                      <p className="mt-2">
+                        <strong className="font-semibold text-slate-900">
+                          What we link instead:
+                        </strong>
+                        {" "}
+                        {nextBestHref ? (
+                          <a
+                            href={nextBestHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={TERM_LINK_CLASS}
+                          >
+                            {row.nextBest.text}<span className="sr-only"> (opens in a new tab)</span>
+                          </a>
+                        ) : (
+                          row.nextBest.text
+                        )}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600">
+                        Noted {formatLevyBundledAsOf(row.notedAsOf)}.
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </details>
+        ) : null}
+        {bundledLabel && bundledIso ? (
+          <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
+            <span className="font-semibold text-slate-900">Data snapshot:</span>{" "}Metro levy rates in this tool were last bundled on{" "}
+            <time dateTime={bundledIso}>{bundledLabel}</time>
+            {" "}(when our copy of the county PDF was processed). That date is
+            not necessarily when the county last amended the form. The
+            authoritative schedule is the county&apos;s current PDF.
+          </p>
+        ) : null}
+
+        <h3 className={`${SECTION_H3} !mt-8`}>Official sources</h3>
+        <ul className="list-disc space-y-2 pl-5 text-slate-700">
+          <li>
+            <strong>Authoritative PDF:</strong>{" "}
+            <a
+              href={ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={TERM_LINK_CLASS}
+            >
+              Mill Levy Public Information Form (C.R.S. 39-1-125(1)(c))<span className="sr-only"> (opens in a new tab)</span>
+            </a>. District names, levy purposes, previous-year mill rates, and
+            aggregated debt service and total mills are extracted offline into
+            the app. Tile details for matched metros prefer this purpose-level
+            compare when it reconciles to Levy Percentage authority totals;
+            otherwise the app uses authority totals from the Levy Percentage
+            PDFs. Years are labeled as tax years (Tax Year 2025 vs Tax Year
+            2024), not budget-year shorthand
+            {bundledLabel && bundledIso ? (
+              <>
+                {" "}
+                (metro form snapshot{" "}
+                <time dateTime={bundledIso}>{bundledLabel}</time>)
+              </>
+            ) : null}
+            .
+          </li>
+          <li>
+            <strong>Assessor hub:</strong>{" "}
+            <a
+              href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={TERM_LINK_CLASS}
+            >
+              Mill Levies and Tax Districts (Assessor hub)<span className="sr-only"> (opens in a new tab)</span>
+            </a>. Related county PDFs are listed next (Levy Percentage feeds
+            all-authority year-over-year; Certification is context only).
+          </li>
+        </ul>
+
+        <h3
+          id="reference-pdfs"
+          className={`${SECTION_H3} !mt-8 scroll-mt-8`}
+        >
+          Related county PDFs
+        </h3>
+        <p className="text-slate-700">
+          Official Arapahoe publications. Certification is useful for context and
+          is not imported into the metro schedule. Taxing District Levy
+          Percentage PDFs feed the all-authority mill history used for
+          year-over-year change on every levy tile. Browse years from the{" "}
+          <a
+            href={ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Mill Levies and Tax Districts (Assessor hub)<span className="sr-only"> (opens in a new tab)</span>
+          </a>.
+        </p>
+        <ul className="mt-4 space-y-4">
+          <li className="rounded-lg border border-slate-200 p-4">
+            <p className="font-semibold text-slate-900">
+              Certification of Levies and Revenues (example: 2025)
+            </p>
+            <p className="mt-2 text-slate-700">
+              County certification document; useful for cross-checking totals.
+              Not imported into the app&apos;s metro schedule.
+            </p>
+            <p className="mt-2 break-words">
+              <a
+                href={ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={TERM_LINK_CLASS}
+              >
+                Open PDF (2025)<span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            </p>
+          </li>
+          <li className="rounded-lg border border-slate-200 p-4">
+            <p className="font-semibold text-slate-900">
+              Taxing District Levy Percentage (Tax Years 2018 through 2025)
+            </p>
+            <p className="mt-2 text-slate-700">
+              Authority total mills by tax area. The app stores AUTH totals by
+              tax year (separate from the parcel levy stack file) and joins them
+              to each stack row by authority code. Year-over-year cues compare
+              Tax Years 2024 and 2025; the modal history chart uses every
+              bundled year when at least three are published for that authority.
+              Optional dollar lines in tile details multiply mills by your
+              current assessed value only. We do not bundle prior-year assessed
+              value, so those dollars use this year&apos;s assessed value for
+              both tax years in the comparison.
+            </p>
+            <p className="mt-2 break-words">
+              <a
+                href={ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={TERM_LINK_CLASS}
+              >
+                Open PDF (Tax Year 2025)<span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            </p>
+          </li>
+        </ul>
       </section>
 
       <section
@@ -1052,10 +1115,8 @@ export default function SourcesPage() {
               rel="noopener noreferrer"
               className={TERM_LINK_CLASS}
             >
-              GitHub
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            . The{" "}
+              GitHub<span className="sr-only"> (opens in a new tab)</span>
+            </a>. The{" "}
             <ReadmeDataPipelineLink>README</ReadmeDataPipelineLink>{" "}
             covers setup, data paths, tests, and regenerating bundled files.
           </p>
@@ -1065,8 +1126,7 @@ export default function SourcesPage() {
             configuration. If this persists, please contact{" "}
             <a href={SOURCES_BROKEN_GITHUB_MAILTO_HREF} className={TERM_LINK_CLASS}>
               {CONTACT_EMAIL}
-            </a>
-            .
+            </a>.
           </p>
         )}
       </section>

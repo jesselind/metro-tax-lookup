@@ -1102,8 +1102,7 @@ export function LevyLineDistrictDetailDialog({
                         Rate note: county table differs from some state figures (other records showed{" "}
                         <span className="font-mono tabular-nums">
                           {formatCountyLevyMillsDisplay(dolaMatch.dolaMills)}
-                        </span>
-                        ). Use your bill or county property tax page if unsure.
+                        </span>). Use your bill or county property tax page if unsure.
                       </p>
                     )}
                   {dolaMatch?.millsReason === "bond_purpose_mismatch" && (
@@ -1122,8 +1121,7 @@ export function LevyLineDistrictDetailDialog({
                             rel="noopener noreferrer"
                             className={COUNTY_EXTERNAL_LINK_CLASS}
                           >
-                            Website
-                            <span className="sr-only"> (opens in a new tab)</span>
+                            Website<span className="sr-only"> (opens in a new tab)</span>
                           </a>
                         </p>
                       ) : null}

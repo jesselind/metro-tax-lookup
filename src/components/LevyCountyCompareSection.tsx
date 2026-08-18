@@ -142,8 +142,7 @@ export function LevyCountyCompareSection({
             rel="noopener noreferrer"
             className={COUNTY_ACTION_CLASS}
           >
-            {accountRecordLabel}
-            <span className="sr-only"> (opens in a new tab)</span>
+            {accountRecordLabel}<span className="sr-only"> (opens in a new tab)</span>
           </a>
         ) : null}
         {safeLevyTableHref ? (
@@ -153,8 +152,7 @@ export function LevyCountyCompareSection({
             rel="noopener noreferrer"
             className={COUNTY_ACTION_CLASS}
           >
-            Open county levy table
-            <span className="sr-only"> (opens in a new tab)</span>
+            Open county levy table<span className="sr-only"> (opens in a new tab)</span>
           </a>
         ) : null}
         <a
@@ -163,8 +161,7 @@ export function LevyCountyCompareSection({
           rel="noopener noreferrer"
           className={COUNTY_ACTION_CLASS}
         >
-          {propertySearchLabel}
-          <span className="sr-only"> (opens in a new tab)</span>
+          {propertySearchLabel}<span className="sr-only"> (opens in a new tab)</span>
         </a>
       </div>
     </section>

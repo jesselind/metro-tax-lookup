@@ -28,8 +28,7 @@ export function GitHubRepoButton() {
         className={GITHUB_REPO_BTN_CLASS}
       >
         <GitHubMarkIcon className="size-5 shrink-0" />
-        View project on GitHub
-        <span className="sr-only"> (opens in a new tab)</span>
+        View project on GitHub<span className="sr-only"> (opens in a new tab)</span>
       </a>
     </div>
   );
