@@ -21,6 +21,7 @@ export const DASHBOARD_SECTION_ARRIVE_ATTR = "data-arrive";
 export const HIGHLIGHT_START_SCROLL_TOP_RATIO = 0.4;
 
 let arriveTimer: number | undefined;
+let arriveEl: HTMLElement | undefined;
 
 export type FocusNearestDashboardSectionOptions = {
   /** Programmatic focus target (`tabIndex={-1}` heading). */
@@ -76,9 +77,14 @@ export function focusNearestDashboardSection({
 
   const ringEl = highlightEl ?? focusEl;
   if (arriveTimer != null) window.clearTimeout(arriveTimer);
+  if (arriveEl != null && arriveEl !== ringEl) {
+    arriveEl.removeAttribute(DASHBOARD_SECTION_ARRIVE_ATTR);
+  }
   ringEl.setAttribute(DASHBOARD_SECTION_ARRIVE_ATTR, "");
+  arriveEl = ringEl;
   arriveTimer = window.setTimeout(() => {
     ringEl.removeAttribute(DASHBOARD_SECTION_ARRIVE_ATTR);
     arriveTimer = undefined;
+    arriveEl = undefined;
   }, DASHBOARD_SECTION_ARRIVE_MS);
 }

@@ -108,6 +108,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
     await page.getByRole("radio", { name: "Own" }).click();
     await expect(millLevyTile(page)).toBeVisible();
+    await expect(millLevyTile(page)).toContainText(MILL_LEVY_CHANGED_LABEL);
 
     await viewDistrictDetailsButton(page, nonMetroAuthorityLabel).click();
     const dialog = page.getByRole("dialog");

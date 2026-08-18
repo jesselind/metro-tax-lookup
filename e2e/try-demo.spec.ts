@@ -33,6 +33,9 @@ test.describe("Try demo property", () => {
       page.getByText(/For example, your total mill levy of/),
     ).toBeVisible();
     await page.keyboard.press("Escape");
+    await expect(
+      page.getByText(/For example, your total mill levy of/),
+    ).toHaveCount(0);
     await page.getByRole("button", { name: /Jump to mill levy tiles/i }).click();
     await expect(page.locator("#home-levy-stack-subheading")).toBeFocused();
     await expect(page.locator("#home-levy-stack-tiles")).toHaveAttribute(
