@@ -33,7 +33,7 @@ export function CountyDataMartRefreshAttemptNote({
   const extractLabel = formatLevyBundledAsOf(bundledAsOfIso.slice(0, 10));
   return (
     <>
-      Maintainers attempted a fresh{" "}
+      We tried a fresh{" "}
       <a
         href={ARAPAHOE_ASSESSOR_DATA_MART_EXPORT}
         target="_blank"
@@ -42,8 +42,8 @@ export function CountyDataMartRefreshAttemptNote({
       >
         Assessor Data Mart download<span className="sr-only"> (opens in a new tab)</span>
       </a>{" "}
-      on {attemptLabel}. Required tables in that export were incomplete or
-      empty, so this app still uses the {extractLabel} extract.
+      on {attemptLabel}. Required tables in that county export were incomplete or
+      empty. We still have the {extractLabel} extract.
     </>
   );
 }

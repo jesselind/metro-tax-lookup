@@ -20,6 +20,7 @@ import {
   COUNTY_EXTERNAL_LINK_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import { millLevyAssessedExampleText } from "@/content/millLevySummaryCopy";
 
 const BRIEF_P =
   "text-sm leading-relaxed text-slate-800 sm:text-base";
@@ -31,11 +32,22 @@ export function TermLevyBriefBody() {
     <p className={BRIEF_P}>
       A <strong className="font-semibold text-slate-900">mill levy</strong>
       {" "}
-      is the tax rate for one district on your bill (school, county, fire, and so on). One mill means
-      exactly $1 of tax for every $1,000 of the taxable value the state allows. Your bill usually has
-      one row per district.
+      is the tax rate for one district on your bill (school, county, fire, and so on). One mill is
+      $1 of tax for every $1,000 of your assessed value.
     </p>
   );
+}
+
+export function TermLevyPropertyExampleBody({
+  mills,
+  assessed,
+}: {
+  mills: number;
+  assessed: number;
+}) {
+  const text = millLevyAssessedExampleText(mills, assessed);
+  if (text == null) return null;
+  return <p className={BRIEF_P}>{text}</p>;
 }
 
 export function TermPinBriefBody() {
@@ -76,7 +88,7 @@ export function TermMillLevyFullBody() {
         <strong className="font-semibold text-slate-900">mills</strong>.
       </p>
       <p className={FULL_P}>
-        One mill is exactly $1 of tax per $1,000 of taxable (assessed) value for that row. The{" "}
+        One mill is $1 of tax per $1,000 of assessed value for that row. The{" "}
         <strong className="font-semibold text-slate-900">mill levy</strong>
         {" "}
         total is every district that taxes your place, added together.

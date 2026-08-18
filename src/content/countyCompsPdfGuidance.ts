@@ -22,7 +22,7 @@ export const COUNTY_COMPS_PDF_ASSESSOR_NOTE_EMPHASIS =
 
 /** Tail after the emphasized sentence (Assessor note). */
 export const COUNTY_COMPS_PDF_ASSESSOR_NOTE_TAIL =
-  "Those prior comps still apply, but this download does not provide them.";
+  "Those prior comps still apply, but the county download does not provide them.";
 
 /** 2027 return timing (Assessor's office, per county guidance). */
 export const COUNTY_COMPS_PDF_ASSESSOR_2027_NOTE =
@@ -38,7 +38,7 @@ export const COUNTY_COMPS_PDF_TRY_IF_VALUE_CHANGED =
 
 /** Second line in the unavailable Comps PDF popover (after the try-link sentence). */
 export const COUNTY_COMPS_PDF_POPOVER_OTHERWISE_UNAVAILABLE =
-  "Otherwise, your comps grid PDF is no longer available. The county link will return";
+  "Otherwise, the county is no longer providing your comps grid PDF. The county link will return";
 
 /** Short status on the home summary Comps PDF tile when county hosting is limited. */
 export const COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS =

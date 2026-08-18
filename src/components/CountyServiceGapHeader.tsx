@@ -7,14 +7,14 @@ import { COUNTY_SERVICE_GAP_CALLOUT_TITLE } from "@/content/countyServiceGapGuid
 
 export const COUNTY_SERVICE_GAP_HEADER_DENSITY = {
   default: {
-    row: "flex items-center gap-2.5",
+    row: "flex min-w-0 items-center gap-2.5",
     icon: "h-6 w-6 shrink-0 text-red-700",
-    title: "text-base font-bold leading-snug text-red-700 sm:text-lg",
+    title: "min-w-0 text-base font-bold leading-snug text-red-700 sm:text-lg",
   },
   compact: {
-    row: "flex items-center gap-2",
+    row: "flex min-w-0 items-center gap-2",
     icon: "h-5 w-5 shrink-0 text-red-700",
-    title: "text-sm font-bold leading-snug text-red-700 sm:text-base",
+    title: "min-w-0 text-sm font-bold leading-snug text-red-700 sm:text-base",
   },
 } as const;
 

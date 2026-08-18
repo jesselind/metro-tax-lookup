@@ -7,6 +7,8 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
+import { LevyChangedBadge } from "@/components/LevyChangedBadge";
+import { MILL_LEVY_TILES_ID } from "@/content/millLevySummaryCopy";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
@@ -15,6 +17,7 @@ import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
+  DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   INPUT_CLASS,
   LEVY_STACK_TILE_GRID_CLASS,
@@ -107,15 +110,6 @@ const TILE_MILLS_SUBTLE_CLASS =
 const LEVY_TILE_USD_CLASS =
   "font-bold tabular-nums leading-none tracking-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] text-[1.625rem]";
 
-/**
- * YoY cue on dark levy tiles: full-width strip above Details › / $.
- * Anchored with the bottom block so side-by-side badges share one baseline
- * (title wrap no longer shifts the badge). Title keeps menu clearance (pr-11);
- * badge / Details › do not share that pad.
- */
-const METRO_CHANGED_BADGE_CLASS =
-  "inline-flex w-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-2 border-amber-950 bg-amber-300 px-2 py-1 text-xs font-extrabold uppercase leading-none tracking-wide text-amber-950 shadow-[0_1px_0_rgba(0,0,0,0.25)] ring-1 ring-white/50 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[0.7rem]";
-
 function formatPct(p: number): string {
   if (!Number.isFinite(p)) return "0.0";
   if (p >= 10) return p.toFixed(1);
@@ -138,75 +132,6 @@ function EllipsisVerticalIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
-      />
-    </svg>
-  );
-}
-
-/** Fixed box so long arrows cannot grow the badge or shift content below. */
-const LEVY_CHANGED_BADGE_LEAD_SLOT_CLASS =
-  "inline-flex size-4 shrink-0 items-center justify-center sm:size-3.5";
-const LEVY_CHANGED_BADGE_ARROW_SLOT_CLASS =
-  "inline-flex size-3 shrink-0 items-center justify-center overflow-visible sm:size-2.5";
-/** Scale inside the fixed slot so layout box stays the same. */
-const LEVY_CHANGED_BADGE_ARROW_SVG_CLASS =
-  "block size-full origin-center scale-110";
-
-function ExclamationTriangleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className={className}
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-      />
-    </svg>
-  );
-}
-
-function ArrowUpIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={3}
-      stroke="currentColor"
-      className={className}
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
-      />
-    </svg>
-  );
-}
-
-function ArrowDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={3}
-      stroke="currentColor"
-      className={className}
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
       />
     </svg>
   );
@@ -633,7 +558,10 @@ export function LevyStackVisualization({
     <div className="space-y-5">
       {showLevyGrid && (
         <div className="space-y-3 sm:space-y-4">
-            <div className={LEVY_STACK_TILE_GRID_CLASS}>
+            <div
+              id={MILL_LEVY_TILES_ID}
+              className={`${LEVY_STACK_TILE_GRID_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS}`}
+            >
               {tilesSorted.map((item, index) => {
                 const grad = TILE_GRADIENTS[index % TILE_GRADIENTS.length];
                 const pctLabel = formatPct(item.pct);
@@ -811,34 +739,7 @@ export function LevyStackVisualization({
                             </div>
                             <div className="flex w-full min-w-0 flex-col gap-2 self-end sm:gap-3">
                               {millRateChanged ? (
-                                <span className={METRO_CHANGED_BADGE_CLASS}>
-                                  <span
-                                    className={LEVY_CHANGED_BADGE_LEAD_SLOT_CLASS}
-                                    aria-hidden
-                                  >
-                                    <ExclamationTriangleIcon className="block size-full" />
-                                  </span>
-                                  Changed
-                                  {millDelta != null && millDelta > 0 ? (
-                                    <span
-                                      className={LEVY_CHANGED_BADGE_ARROW_SLOT_CLASS}
-                                      aria-hidden
-                                    >
-                                      <ArrowUpIcon
-                                        className={LEVY_CHANGED_BADGE_ARROW_SVG_CLASS}
-                                      />
-                                    </span>
-                                  ) : millDelta != null && millDelta < 0 ? (
-                                    <span
-                                      className={LEVY_CHANGED_BADGE_ARROW_SLOT_CLASS}
-                                      aria-hidden
-                                    >
-                                      <ArrowDownIcon
-                                        className={LEVY_CHANGED_BADGE_ARROW_SVG_CLASS}
-                                      />
-                                    </span>
-                                  ) : null}
-                                </span>
+                                <LevyChangedBadge millsDelta={millDelta} />
                               ) : null}
                               <div className="flex w-full min-w-0 items-end justify-between gap-3">
                                 <div className="flex min-w-0 flex-col items-start gap-1 self-end">

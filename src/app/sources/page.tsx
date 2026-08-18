@@ -767,18 +767,29 @@ export default function SourcesPage() {
           When any authority&apos;s rate changed, the app shows a{" "}
           <strong className="font-semibold text-slate-900">Changed</strong>
           {" "}
-          cue on that tile. Near the top of your results, an amber attention note
-          appears when any taxing authority on your breakdown published a rate
-          change, for example{" "}
+          cue on that tile. A summary tile{" "}
           <strong className="font-semibold text-slate-900">
-            Your property tax bill changed from last year.
+            Mill levy
           </strong>
           {" "}
-          That means at least one county-published rate on your bill is different
-          from Tax Year 2024. It does not say whether you owe more or less overall.
-          This tool does not compare your prior-year treasurer bill total, and it
-          does not have your prior-year assessed value. Clicking that note scrolls
-          to the first Changed tile. In tile details, a short
+          sits with actual value, assessed value, and property tax. It shows
+          this bill&apos;s total mill levy (same total as the levy stack).{" "}
+          <strong className="font-semibold text-slate-900">Changed</strong>
+          {" "}
+          on that chip means the total moved, not that the property-tax dollar
+          moved; the badge matches the levy tiles (including the up or down
+          arrow). Tap the Mill levy chip to jump to those tiles. Property tax
+          stays this year&apos;s estimated dollar with no Changed badge. Assessed
+          value carries a red{" "}
+          <strong className="font-semibold text-slate-900">
+            Prior years missing
+          </strong>
+          {" "}
+          badge that opens a COUNTY DATA GAP note in place (not red chrome on
+          that chip). How we searched for those figures is on this page. This
+          tool does not
+          compare your prior-year treasurer bill total, and it does not claim
+          the bill went up or down overall. In tile details, a short
           percent summary appears when we know last year&apos;s mill rate (for
           example{" "}
           <strong className="font-semibold text-slate-900">
@@ -798,8 +809,9 @@ export default function SourcesPage() {
           <strong className="font-semibold text-slate-900">current</strong>
           {" "}
           assessed value. A single footnote at the bottom of the breakdown
-          explains that we do not have your assessed value from last year and
-          that these dollar amounts use this year&apos;s assessed value (link on
+          explains that we tried to get last year&apos;s assessed value from the
+          county and were unable to, so these dollar amounts use this
+          year&apos;s assessed value (link on
           &quot;today&apos;s assessed value&quot; in the footnote). The
           difference row shows mills and dollars together. For metros only, a
           {" "}
@@ -1083,9 +1095,9 @@ export default function SourcesPage() {
               Tax Years 2024 and 2025; the modal history chart uses every
               bundled year when at least three are published for that authority.
               Optional dollar lines in tile details multiply mills by your
-              current assessed value only. We do not bundle prior-year assessed
-              value, so those dollars use this year&apos;s assessed value for
-              both tax years in the comparison.
+              current assessed value only. The county bulk table does not include
+              prior-year assessed value, so those dollars use this year&apos;s
+              assessed value for both tax years in the comparison.
             </p>
             <p className="mt-2 break-words">
               <a
