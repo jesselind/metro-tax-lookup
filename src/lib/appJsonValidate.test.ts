@@ -139,6 +139,33 @@ describe("validateRequiredAccountMapJson", () => {
       }),
     ).toMatch(/invalid shape/);
   });
+
+  it("rejects non-positive pinDigits", () => {
+    expect(
+      validateRequiredAccountMapJson({ ...validAccountMap, pinDigits: 0 }),
+    ).toMatch(/pinDigits must be a positive integer/);
+    expect(
+      validateRequiredAccountMapJson({ ...validAccountMap, pinDigits: -1 }),
+    ).toMatch(/pinDigits must be a positive integer/);
+  });
+
+  it("rejects fractional pinDigits", () => {
+    expect(
+      validateRequiredAccountMapJson({ ...validAccountMap, pinDigits: 9.5 }),
+    ).toMatch(/pinDigits must be a positive integer/);
+  });
+
+  it("rejects byPin keys whose length does not match pinDigits", () => {
+    expect(
+      validateRequiredAccountMapJson({
+        ...validAccountMap,
+        pinDigits: 9,
+        byPin: {
+          "01000000": { tagId: "1", tagShortDescr: "0001" },
+        },
+      }),
+    ).toMatch(/length must equal pinDigits/);
+  });
 });
 
 describe("validateOptionalSitusJson", () => {

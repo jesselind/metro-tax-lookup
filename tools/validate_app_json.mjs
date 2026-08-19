@@ -69,11 +69,22 @@ if (!isPlainObject(accountMap.snapshot)) {
 if (!isNonEmptyString(accountMap.snapshot.bundledAsOf)) {
   fail(`${REQUIRED.accountMap}: snapshot.bundledAsOf required`);
 }
-if (typeof accountMap.pinDigits !== "number" || !Number.isFinite(accountMap.pinDigits)) {
-  fail(`${REQUIRED.accountMap}: pinDigits must be a finite number`);
+if (
+  typeof accountMap.pinDigits !== "number" ||
+  !Number.isInteger(accountMap.pinDigits) ||
+  accountMap.pinDigits < 1
+) {
+  fail(`${REQUIRED.accountMap}: pinDigits must be a positive integer`);
 }
 if (!isPlainObject(accountMap.byPin)) {
   fail(`${REQUIRED.accountMap}: missing byPin`);
+}
+for (const pin of Object.keys(accountMap.byPin)) {
+  if (pin.length !== accountMap.pinDigits) {
+    fail(
+      `${REQUIRED.accountMap}: byPin[${pin}] length must equal pinDigits (${accountMap.pinDigits})`,
+    );
+  }
 }
 
 for (const relPath of Object.values(OPTIONAL)) {
