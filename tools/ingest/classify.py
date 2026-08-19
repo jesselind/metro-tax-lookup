@@ -4,7 +4,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-"""Inspect a county drop folder. Report coverage for app JSON. Do not write JSON.
+"""Inspect a county drop folder. Report coverage for app JSON.
+
+Does not write application JSON or any other file under public/. --json-out
+writes a classifier report only, and is refused if that path is under public/.
 
 Usage:
   python3 tools/ingest/classify.py supporting-data
@@ -12,9 +15,8 @@ Usage:
   python3 tools/ingest/classify.py /path/to/drop --json-out /tmp/classify-report.json
 
 Coverage statuses: ready, mapping-needed, new-reader, will-be-off.
-Missing a levy-stack source is a hard fail (exit 1). This command never writes
-under public/. Arapahoe header names are known-drop signatures until mapping
-files exist (Phase 4).
+Missing a levy-stack source is a hard fail (exit 1). Arapahoe header names are
+known-drop signatures until mapping files exist (Phase 4).
 """
 
 from __future__ import annotations
@@ -50,6 +52,10 @@ ARAPAHOE_MAIN_PARCEL = frozenset({"pin", "tagid", "totalactual", "totalassessed"
 ARAPAHOE_TAG_FIELDS = frozenset(
     {"field1", "field2", "field3", "field4", "field5", "field6"}
 )
+# Excel-default Field1-Field6 are not enough; path must look like the Data Mart
+# Tax Authority Groups export (or Mart_TA_TAG). Named TAGId + AuthorityName is
+# the other accepted cue.
+ARAPAHOE_TAG_PATH_CUES = ("taxauthoritygroup", "marttatag")
 ARAPAHOE_TAG_NAMED = frozenset({"tagid", "authorityname"})
 DOLA_PROPERTY_TAX_ENTITIES = frozenset(
     {"certifyingcounty", "taxentityid", "dolataxentityname"}
@@ -213,7 +219,9 @@ def iter_drop_paths(drop: Path) -> Iterable[Path]:
         dirnames[:] = [
             d
             for d in dirnames
-            if d not in SKIP_DIR_NAMES and not d.startswith(".")
+            if d not in SKIP_DIR_NAMES
+            and not d.startswith(".")
+            and not (here / d).is_symlink()
         ]
         gdb_dirs = [d for d in dirnames if d.lower().endswith(".gdb")]
         dirnames[:] = [d for d in dirnames if not d.lower().endswith(".gdb")]
@@ -222,12 +230,15 @@ def iter_drop_paths(drop: Path) -> Iterable[Path]:
         for name in filenames:
             if name.startswith(".") or name.startswith("~$"):
                 continue
-            yield here / name
+            child = here / name
+            if child.is_symlink():
+                continue
+            yield child
 
 
-def read_csv_headers(path: Path) -> list[str]:
+def read_csv_headers(path: Path, *, delimiter: str = ",") -> list[str]:
     with path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
-        reader = csv.reader(f)
+        reader = csv.reader(f, delimiter=delimiter)
         for row in reader:
             headers = [normalize_header(c) for c in row if normalize_header(c)]
             if headers:
@@ -313,13 +324,22 @@ def pdf_signature(path: Path) -> str:
     return "unknown-pdf"
 
 
-def match_tabular_signature(headers: Sequence[str]) -> str:
+def _is_arapahoe_tag_path(rel_path: str) -> bool:
+    compact = "".join(c for c in rel_path.lower() if c.isalnum())
+    return any(cue in compact for cue in ARAPAHOE_TAG_PATH_CUES)
+
+
+def match_tabular_signature(
+    headers: Sequence[str], *, rel_path: str = ""
+) -> str:
     compacted = compact_header_set(headers)
     if not compacted:
         return "unknown-csv"
     if DOLA_PROPERTY_TAX_ENTITIES <= compacted:
         return "dola-property-tax-entities"
-    if ARAPAHOE_TAG_FIELDS <= compacted or ARAPAHOE_TAG_NAMED <= compacted:
+    if ARAPAHOE_TAG_NAMED <= compacted:
+        return "arapahoe-tax-authority-groups"
+    if ARAPAHOE_TAG_FIELDS <= compacted and _is_arapahoe_tag_path(rel_path):
         return "arapahoe-tax-authority-groups"
     if ARAPAHOE_MAIN_PARCEL <= compacted:
         return "arapahoe-main-parcel"
@@ -345,22 +365,28 @@ def inspect_path(path: Path, drop: Path) -> FileRecord | None:
         if inspected is None:
             return FileRecord(rel, "gdb", (), "gdb-install-pyogrio-to-inspect")
         _layers, fields = inspected
-        sig = match_tabular_signature(fields)
+        sig = match_tabular_signature(fields, rel_path=rel)
         if sig == "unknown-csv":
             sig = "unknown-gdb"
         return FileRecord(rel, "gdb", tuple(fields), sig)
 
     suffix = path.suffix.lower()
     if suffix in {".csv", ".tsv"}:
-        headers = read_csv_headers(path)
+        delimiter = "\t" if suffix == ".tsv" else ","
+        headers = read_csv_headers(path, delimiter=delimiter)
         kind = "csv" if suffix == ".csv" else "tsv"
-        return FileRecord(rel, kind, tuple(headers), match_tabular_signature(headers))
+        return FileRecord(
+            rel, kind, tuple(headers), match_tabular_signature(headers, rel_path=rel)
+        )
 
-    if suffix in {".xlsx", ".xls"}:
+    if suffix == ".xls":
+        return FileRecord(rel, "xls", (), "unsupported-xls")
+
+    if suffix == ".xlsx":
         headers = read_xlsx_headers(path)
         if headers is None:
             return FileRecord(rel, "xlsx", (), "xlsx-install-openpyxl-to-inspect")
-        sig = match_tabular_signature(headers)
+        sig = match_tabular_signature(headers, rel_path=rel)
         if sig == "unknown-csv":
             sig = "unknown-xlsx"
         return FileRecord(rel, "xlsx", tuple(headers), sig)
@@ -374,7 +400,10 @@ def inspect_path(path: Path, drop: Path) -> FileRecord | None:
         except (json.JSONDecodeError, OSError, UnicodeError):
             return FileRecord(rel, "geojson", (), "unknown-csv")
         return FileRecord(
-            rel, "geojson", tuple(headers), match_tabular_signature(headers)
+            rel,
+            "geojson",
+            tuple(headers),
+            match_tabular_signature(headers, rel_path=rel),
         )
 
     if suffix == ".json":
@@ -385,7 +414,10 @@ def inspect_path(path: Path, drop: Path) -> FileRecord | None:
         if not headers:
             return None
         return FileRecord(
-            rel, "geojson", tuple(headers), match_tabular_signature(headers)
+            rel,
+            "geojson",
+            tuple(headers),
+            match_tabular_signature(headers, rel_path=rel),
         )
 
     return None

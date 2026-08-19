@@ -147,7 +147,7 @@ If a county enables a comps PDF flag, account rows must include an AIN-like fiel
 
 ### Ingest classifier
 
-`python3 tools/ingest/classify.py <drop-dir>` (or `npm run classify:ingest -- <drop-dir>`) inspects CSV/XLSX headers, a PDF text sample when pdfplumber is installed, and GeoJSON/GDB field names. It prints a human summary; `--json` prints the same report as JSON. `--json-out` is refused under `public/`. Walks skip `public/` and `_private/`.
+`python3 tools/ingest/classify.py <drop-dir>` (or `npm run classify:ingest -- <drop-dir>`) inspects CSV/TSV/XLSX headers, a PDF text sample when pdfplumber is installed, and GeoJSON/GDB field names. It prints a human summary; `--json` prints the same report as JSON. `--json-out` writes that classifier report only (never application JSON) and is refused under `public/`. Walks skip `public/`, `_private/`, and symlinks. `.tsv` is tab-delimited. `.xls` is `unsupported-xls` (use `.xlsx`). Generic `Field1`-`Field6` headers count as Tax Authority Groups only when the path looks like that Data Mart export (or the file uses `TAGId` + `AuthorityName`).
 
 Coverage per app JSON product: `ready` (known Arapahoe-shaped sources), `mapping-needed` (looks usable after a mapping file), `new-reader` (unknown layout), `will-be-off` (optional product, no source). Missing a levy-stack source is a hard fail (exit 1). Missing a comps PDF is not: the report recommends `compsPdf` off. Header names only; no row values. Tests: `npm run test:ingest`.
 
