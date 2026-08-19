@@ -106,6 +106,10 @@ export type ArapahoePinToTagFile = {
     dolaCertifyingCounty?: string | null;
     dolaLevyColumn?: string | null;
   };
+  /**
+   * Account-id digit length for this bundle. Arapahoe ships 9. This is county
+   * config (Phase 2), not a Colorado-wide standard.
+   */
   pinDigits: number;
   byPin: Record<string, ArapahoePinToTagRow>;
 };
@@ -450,13 +454,21 @@ export function validateArapahoePinToTagFile(
   if (!isNonEmptyString(data.snapshot.bundledAsOf)) {
     return `${sourceUrl}: snapshot.bundledAsOf required`;
   }
-  if (typeof data.pinDigits !== "number" || !Number.isFinite(data.pinDigits)) {
-    return `${sourceUrl}: pinDigits must be a finite number`;
+  if (
+    typeof data.pinDigits !== "number" ||
+    !Number.isInteger(data.pinDigits) ||
+    data.pinDigits < 1
+  ) {
+    return `${sourceUrl}: pinDigits must be a positive integer`;
   }
   if (!isPlainObject(data.byPin)) {
     return `${sourceUrl}: missing byPin`;
   }
+  const pinDigits = data.pinDigits;
   for (const [pin, row] of Object.entries(data.byPin)) {
+    if (pin.length !== pinDigits) {
+      return `${sourceUrl}: byPin[${pin}] length must equal pinDigits (${pinDigits})`;
+    }
     if (!isArapahoePinToTagRow(row)) {
       return `${sourceUrl}: byPin[${pin}] has an invalid shape`;
     }
