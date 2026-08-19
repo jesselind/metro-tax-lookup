@@ -43,7 +43,7 @@ Open `http://localhost:3000`.
 
 - **Parser output path:** **`supporting-data/_private/nov-grid-out.json`** is a conventional gitignored parser output / sanity-check file; write extracts there to diff or hand off. The app bundle never imports it. **`tools/ensure_nov_grid_for_build.mjs`** copies **`src/data/nov-comps-grid-fallback.json`** to that path only when the file is missing (minimal placeholder for optional local tooling).
 
-- **Tests and dev/build:** **`npm run typecheck`** (`next typegen` then `tsc --noEmit`) is the TypeScript gate for all `**/*.ts` and `**/*.tsx`, including `*.test.ts`. Vitest does **not** typecheck — a green `npm run test:unit` does not prove CI/Vercel will pass. **`npm run ci:typecheck`** is the CI alias. **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run test:authority-mills-extract`** runs synthetic unit tests for `tools/extract_authority_mills_by_tax_year.py` (Levy % table parsing; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`**, levy explainer validation, authority-chain validation, and app JSON root-key validation; no Python) before the Next.js production build (bundle + another TypeScript pass). Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
+- **Tests and dev/build:** **`npm run typecheck`** (`next typegen` then `tsc --noEmit`) is the TypeScript gate for all `**/*.ts` and `**/*.tsx`, including `*.test.ts`. Vitest does **not** typecheck — a green `npm run test:unit` does not prove CI/Vercel will pass. **`npm run ci:typecheck`** is the CI alias. **`npm run test:unit`** runs Vitest unit tests for TypeScript helpers (for example county URL builders in `src/lib/safeExternalHref.test.ts`). **`npm run ci:test:unit`** is the same command for CI. **`npm run test:nov-comps-parser`** runs the Python parser unit tests (they do not require `nov-grid-out.json`). **`npm run test:parcel-index`** runs synthetic unit tests for ownership-type and assessed-value helpers in `tools/build_arapahoe_parcel_levy_index.py` (no mart CSVs or real PINs). **`npm run test:ingest`** runs synthetic drop-folder tests for `tools/ingest/classify.py` (invented headers only; no mart CSVs). **`npm run test:metro-extract`** runs synthetic unit tests for `tools/extract_metro_levies_2026.py` (PDF line parsing and classification only; no PDF required). **`npm run test:authority-mills-extract`** runs synthetic unit tests for `tools/extract_authority_mills_by_tax_year.py` (Levy % table parsing; no PDF required). **`npm run ci:test:nov-comps-parser`** / **`npm run ci:test:parcel-index`** / **`npm run ci:test:ingest`** are the CI aliases. **`npm run dev`** runs `predev`, which executes **`ensure_nov_grid_for_build.mjs`**. **`npm run build`** runs `prebuild` (**`ensure_nov_grid_for_build.mjs`**, levy explainer validation, authority-chain validation, and app JSON root-key validation; no Python) before the Next.js production build (bundle + another TypeScript pass). Refresh the committed Try-demo JSON when you re-parse the sample PDF; do not edit `nov-grid-out.json` for the demo UI.
 
 ### Tests, fixtures, and PII
 
@@ -57,9 +57,10 @@ This is a **public** repo. Automated tests must not spotlight a real parcel (PIN
 | TypeScript unit tests | `src/lib/syntheticTestIds.ts` | Shared fake PIN/AIN constants |
 | App JSON contract | `src/lib/appJsonValidate.test.ts` | Required vs optional shipping files; invented ids |
 | County config | `src/lib/countyConfig.test.ts` | Identifier digits, URL templates, host allowlist, feature flags. Separate from the current Arapahoe rebuild tests (`test_build_arapahoe_parcel_levy_index.py`). |
-| Python unit tests | `tools/synthetic_test_ids.py` + `tools/test_*.py` | Same IDs for parser tests; parcel-index builder tests use invented Main Parcel rows (no real PIN) |
+| Python unit tests | `tools/synthetic_test_ids.py` + `tools/test_*.py` | Same IDs for parser tests; parcel-index builder tests use invented Main Parcel rows (no real PIN); ingest classifier tests use synthetic drop folders |
 | NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
+| Ingest classifier | `npm run test:ingest` (`test_ingest_classify.py`) | Synthetic drop folders: Arapahoe-shaped headers → `ready`; schedule-style headers → `mapping-needed`; missing levy-stack source → hard fail. No mart CSVs in CI. |
 | Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
 | Authority mills extract | `npm run test:authority-mills-extract` (`test_extract_authority_mills_by_tax_year.py`) | Levy % table parsing and AUTH collapse on synthetic rows (forkers: run after changing the authority-mills extractor) |
 | Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Shared helpers in `e2e/helpers/addressLookup.ts` (street combobox, fill+search, district-details button). Synthetic fixtures via route fulfill — not live county parcels. Authority-chain panel UI asserts curated `href`s in the DOM; live URL reachability is `@live-sources` / `npm run test:e2e:live-sources` (scheduled, not PR CI). Assert UI contracts; dollar checks use known synthetic mills × assessed only |
@@ -106,12 +107,13 @@ Do **not** put real county PINs in tests "because they match the county site." A
 | `supporting-data/refs/` | Optional statewide GIS / district layer inputs. |
 | `supporting-data/_private/` | PII samples, NOV parser output. |
 | `tools/*.py` | Offline extractors/index builders. Prefer short docstrings on non-obvious helpers (contracts, quirks, geometry/header rules); skip noise on trivial one-liners and test methods whose names already state the assert. |
+| `tools/ingest/` | Classifier (`classify.py`). Later: file-type readers, writer, compare. Does not write `public/data/` until the production rebuild switches. |
 
 **Policy:** Point people at live county/state sources (`/sources`). Commit transforms under `public/data/` and the mart download stamp under `tools/`. Do not commit government PDF/CSV dumps under `supporting-data/`.
 
 ### What JSON the app needs
 
-Ingest (once it exists under `tools/ingest/`) may start from any county file type. It must end here. Today's shipping filenames still use the `arapahoe-*` prefix; that rename waits until a second county works.
+Ingest may start from any county file type. It must end here. Today's shipping filenames still use the `arapahoe-*` prefix; that rename waits until a second county works. The classifier under `tools/ingest/` inspects a drop folder; it does not produce this JSON yet. Production rebuild remains `npm run build:arapahoe-index`.
 
 **Required for account-load** (bill breakdown, PIN/AIN lookup, actual/assessed):
 
@@ -142,6 +144,14 @@ If a county enables a comps PDF flag, account rows must include an AIN-like fiel
 ### County config
 
 `src/lib/countyConfig.ts` is the shipping county: display name, identifier digit rules (`identifierDigits` must match account-map `pinDigits`), URL templates and host allowlist, feature-available flags (situs, comps PDF, BPP, mills history, metro purposes), DOLA certifying-county filter, and known county-data failures. Campaign site / paid-for-by stays in `siteConfig.ts`. A county that never had a source omits that control; a known hosting failure still uses COUNTY DATA GAP. Address search stays visible when situs is off (id-only lookup).
+
+### Ingest classifier
+
+`python3 tools/ingest/classify.py <drop-dir>` (or `npm run classify:ingest -- <drop-dir>`) inspects CSV/TSV/XLSX headers, a PDF text sample when pdfplumber is installed, and GeoJSON/GDB field names. It prints a human summary; `--json` prints the same report as JSON. `--json-out` writes that classifier report only (never application JSON) and is refused under `public/`. Walks skip `public/`, `_private/`, and symlinks. `.tsv` is tab-delimited. `.xls` is `unsupported-xls` (use `.xlsx`). Generic `Field1`-`Field6` headers count as Tax Authority Groups only when the path looks like that Data Mart export (or the file uses `TAGId` + `AuthorityName`).
+
+Coverage per app JSON product: `ready` (known Arapahoe-shaped sources), `mapping-needed` (looks usable after a mapping file), `new-reader` (unknown layout), `will-be-off` (optional product, no source). Missing a levy-stack source is a hard fail (exit 1). Missing a comps PDF is not: the report recommends `compsPdf` off. Header names only; no row values. Tests: `npm run test:ingest`.
+
+This is not a rebuild. Do not point `npm run build:arapahoe-index` at it. Mapping files and JSON output wait until the comparison ingest exists.
 
 ### Levy detail modal (`levy-explainer-entries.json`)
 

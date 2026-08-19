@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.12.0",
+    date: "2026-08-18",
+    title: "Ingest classifier for county drop folders",
+    highlights: [
+      "tools/ingest/classify.py inspects CSV/XLSX headers, PDF text samples, and GeoJSON/GDB field names. It prints a human report (or --json) with coverage ready / mapping-needed / new-reader / will-be-off. Missing a levy-stack source is a hard fail. Missing a comps PDF is optional (recommended compsPdf flag off). The classifier does not write app JSON or anything under public/.",
+      "npm run test:ingest uses synthetic drop folders and invented headers (including a 10-digit schedule, not Pin/TAGId). Arapahoe-shaped mart + DOLA headers print ready for levy stacks, account map, situs, and shards. Production rebuild stays npm run build:arapahoe-index.",
+    ],
+  },
+  {
     version: "4.11.0",
     date: "2026-08-18",
     title: "County config and feature-available flags",

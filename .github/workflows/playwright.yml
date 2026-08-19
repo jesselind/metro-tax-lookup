@@ -65,9 +65,28 @@ jobs:
       - name: Run Vitest
         run: npm run ci:test:unit
 
+  python:
+    name: Python unit tests (ingest + parcel-index)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python test deps
+        run: python3 -m pip install rapidfuzz
+      - name: Ingest classifier tests
+        run: python3 -m unittest discover -s tools -p 'test_ingest_*.py' -q
+      - name: Parcel index tests
+        run: python3 -m unittest discover -s tools -p test_build_arapahoe_parcel_levy_index.py -q
+
   e2e:
     name: Browser e2e (Playwright)
-    needs: [typecheck, lint, unit]
+    needs: [typecheck, lint, unit, python]
     timeout-minutes: 60
     runs-on: ubuntu-latest
     permissions:

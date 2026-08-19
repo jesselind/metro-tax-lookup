@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "4.11.0",
+  "version": "4.12.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -12,6 +12,7 @@
     "prebuild": "node tools/ensure_nov_grid_for_build.mjs && npm run validate:levy-explainer && npm run validate:levy-authority-chain && npm run validate:app-json",
     "ci:test:nov-comps-parser": "npm run test:nov-comps-parser",
     "ci:test:parcel-index": "npm run test:parcel-index",
+    "ci:test:ingest": "npm run test:ingest",
     "ci:test:unit": "npm run test:unit",
     "ci:typecheck": "npm run typecheck",
     "typecheck": "next typegen && tsc --noEmit",
@@ -24,6 +25,8 @@
     "build:district-directory": "python3 tools/build_district_directory_from_lg_export.py",
     "test:nov-comps-parser": "python3 -m unittest discover -s tools -p test_parse_arapahoe_nov_comps_grid.py -q",
     "test:parcel-index": "python3 -m unittest discover -s tools -p test_build_arapahoe_parcel_levy_index.py -q",
+    "test:ingest": "python3 -m unittest discover -s tools -p \"test_ingest_*.py\" -q",
+    "classify:ingest": "python3 tools/ingest/classify.py",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
     "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q",
     "start": "next start",
