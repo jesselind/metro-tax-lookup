@@ -32,7 +32,7 @@ import {
   COLORADO_DPT_PROPERTY_TAX_GUIDE_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { glossaryTermHref } from "@/lib/glossary";
-import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
+import { countyFeaturePresentation } from "@/lib/countyConfig";
 import {
   CODE_INLINE_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -490,7 +490,7 @@ export function TermCompsAside() {
         <span className="whitespace-nowrap">
           {COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST}
         </span>
-        {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+        {countyFeaturePresentation("compsPdf") === "gap" ? (
           <>
             {COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST}
             <CountyCompsPdfAssessorAvailabilityCopy />

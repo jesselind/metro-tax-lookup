@@ -109,15 +109,15 @@ import {
   levyStackTotalMillsDelta,
 } from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
-import {
-  ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH,
-  ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
-} from "@/lib/arapahoeCountyUrls";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import {
-  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE,
-  safeArapahoeBppNoticeOfValuationPdfUrl,
-  safeArapahoeCompsGridPdfUrl,
+  COUNTY_CONFIG,
+  countyFeatureAvailable,
+  countyFeaturePresentation,
+} from "@/lib/countyConfig";
+import {
+  safeCountyBppNoticeOfValuationPdfUrl,
+  safeCountyCompsGridPdfUrl,
 } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
@@ -223,6 +223,11 @@ const ADDRESS_LOOKUP_PANEL_CLASS = `${ADDRESS_TILE_SURFACE_CLASS} p-3 sm:p-4`;
 
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
+
+const SITUS_SEARCH_ON = countyFeatureAvailable("situs");
+const BPP_ON = countyFeatureAvailable("bpp");
+const COMPS_PRESENTATION = countyFeaturePresentation("compsPdf");
+const COMPS_GAP = COMPS_PRESENTATION === "gap";
 
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
@@ -505,7 +510,7 @@ export function HomeParcelAddressLookup({
       namePartial: string,
       open: boolean,
     ) => {
-      if (!num.trim() || !/\d/.test(num)) {
+      if (!num.trim() || !/\d/.test(num) || !SITUS_SEARCH_ON) {
         setStreetTypeahead([]);
         setStreetTypeaheadOpen(false);
         return;
@@ -598,12 +603,16 @@ export function HomeParcelAddressLookup({
   ]);
 
   const homeCompsGridPdfHref = useMemo(
-    () => safeArapahoeCompsGridPdfUrl(levyLoadedMeta?.ain),
+    () =>
+      COMPS_PRESENTATION === "omit"
+        ? null
+        : safeCountyCompsGridPdfUrl(levyLoadedMeta?.ain),
     [levyLoadedMeta?.ain],
   );
 
   const homeBppNovPdfHref = useMemo(
-    () => safeArapahoeBppNoticeOfValuationPdfUrl(levyLoadedMeta?.ain),
+    () =>
+      BPP_ON ? safeCountyBppNoticeOfValuationPdfUrl(levyLoadedMeta?.ain) : null,
     [levyLoadedMeta?.ain],
   );
 
@@ -708,6 +717,12 @@ export function HomeParcelAddressLookup({
         }
         return;
       }
+    }
+
+    if (!SITUS_SEARCH_ON) {
+      setShowCountyPinFallback(true);
+      setError(COUNTY_CONFIG.situsSearchOffMessage);
+      return;
     }
 
     let resolvedBlock: ReturnType<typeof resolveSitusFieldsForLookup>;
@@ -1436,7 +1451,7 @@ export function HomeParcelAddressLookup({
                 plus business personal property). Not sure which PIN is yours?
                 Compare the PIN, owner, or legal description on the{" "}
                 <a
-                  href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                  href={COUNTY_CONFIG.residentLinks.propertySearch}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -1446,7 +1461,10 @@ export function HomeParcelAddressLookup({
                 {" "}
                 for buildings and land, or the{" "}
                 <a
-                  href={ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH}
+                  href={
+                    COUNTY_CONFIG.residentLinks.bppSearch ??
+                    COUNTY_CONFIG.residentLinks.propertySearch
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -1584,7 +1602,9 @@ export function HomeParcelAddressLookup({
                       setStreetDidYouMean(null);
                     }}
                     onFocus={() => {
-                      void fetchArapahoeSitusToPinsJson();
+                      if (SITUS_SEARCH_ON) {
+                        void fetchArapahoeSitusToPinsJson();
+                      }
                     }}
                     onBlur={(e) => {
                       // Scroll / iOS Done: relatedTarget is null — keep list open.
@@ -1865,7 +1885,7 @@ export function HomeParcelAddressLookup({
                 <span className="mt-0.5">
                   <InfoIcon />
                 </span>
-                <p>Arapahoe County only.</p>
+                <p>{COUNTY_CONFIG.countyScopeNote}</p>
               </div>
               <button
                 type="button"
@@ -2140,7 +2160,8 @@ export function HomeParcelAddressLookup({
             levyReadyForSummary &&
             levyLoadedMeta &&
             !isRentMode &&
-            isBusinessPersonalAccount ? (
+            isBusinessPersonalAccount &&
+            BPP_ON ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-notice-of-valuation"
@@ -2195,7 +2216,8 @@ export function HomeParcelAddressLookup({
                               Open{" "}
                               <a
                                 href={
-                                  ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH
+                                  COUNTY_CONFIG.residentLinks.bppSearch ??
+                                  COUNTY_CONFIG.residentLinks.propertySearch
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -2223,11 +2245,12 @@ export function HomeParcelAddressLookup({
             levyReadyForSummary &&
             levyLoadedMeta &&
             !isRentMode &&
-            !isBusinessPersonalAccount ? (
+            !isBusinessPersonalAccount &&
+            COMPS_PRESENTATION !== "omit" ? (
               <div
                 className={
                   homeCompsGridPdfHref &&
-                  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
+                  COMPS_GAP
                     ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
                     : homeCompsGridPdfHref
                       ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
@@ -2238,14 +2261,14 @@ export function HomeParcelAddressLookup({
                 <div
                   className={
                     homeCompsGridPdfHref &&
-                    ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE
+                    COMPS_GAP
                       ? `${COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS} relative`
                       : PARCEL_SUMMARY_TILE_BODY_CLASS
                   }
                 >
                   {homeCompsGridPdfHref &&
-                  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
-                    // TODO(comps-pdf-hosted-unavailable): Remove unavailable branch and set ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
+                  COMPS_GAP ? (
+                    // TODO(comps-pdf-hosted-unavailable): Flip COUNTY_CONFIG.knownFailures.compsPdfHostedFiles to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
                     <CountyCompsPdfHelpPopover
                       ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}
                       icon={compsIcon}
@@ -2345,7 +2368,7 @@ export function HomeParcelAddressLookup({
                                 <p className="mt-3 text-sm leading-relaxed text-slate-800">
                                   Open{" "}
                                   <a
-                                    href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                                    href={COUNTY_CONFIG.residentLinks.propertySearch}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -2457,7 +2480,7 @@ export function HomeParcelAddressLookup({
                     onChange={(e) => setParcelPin(e.target.value)}
                     onFocus={() => prefetchParcelLevyJsonBundle()}
                     disabled={levyLoadBusy}
-                    placeholder="9-digit PIN or AIN from county record"
+                    placeholder={COUNTY_CONFIG.identifierPlaceholder}
                     aria-describedby="home-parcel-pin-hint"
                   />
                 </div>
@@ -2566,7 +2589,7 @@ export function HomeParcelAddressLookup({
                 <p className="mb-3 text-sm text-slate-700 sm:text-base">
                   Open your parcel from the{" "}
                   <a
-                    href={ARAPAHOE_ASSESSOR_PROPERTY_SEARCH}
+                    href={COUNTY_CONFIG.residentLinks.propertySearch}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={COUNTY_EXTERNAL_LINK_CLASS}

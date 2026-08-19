@@ -2,13 +2,13 @@
 
 Ephemeral doc for multi-agent handoff. Do not treat as product copy or `/sources` methodology.
 
-**Shipped app (2026-05):** The live UI adds an external **Comps PDF** link when the bundled parcel row includes an **AIN** (`safeArapahoeCompsGridPdfUrl`). After a levy load, **Try demo property** loads an in-page **Comps grid** (`NovCompsGridPanel`) from committed **`src/data/nov-comps-grid-try-demo-property.json`** (parser-shape demo; redacted sample copy). **`supporting-data/_private/nov-grid-out.json`** is **not imported by Next.js**. It holds **local parser output**: if missing before `npm run dev` / `npm run build`, `tools/ensure_nov_grid_for_build.mjs` seeds it from **`src/data/nov-comps-grid-fallback.json`** only so scripts and tooling can keep writing the same predictable path on disk (see README and `src/lib/novCompsGridSamplePayload.ts`).
+**Shipped app (2026-05):** The live UI adds an external **Comps PDF** link when the bundled parcel row includes an **AIN** (`safeCountyCompsGridPdfUrl`, templates in `src/lib/countyConfig.ts`). After a levy load, **Try demo property** loads an in-page **Comps grid** (`NovCompsGridPanel`) from committed **`src/data/nov-comps-grid-try-demo-property.json`** (parser-shape demo; redacted sample copy). **`supporting-data/_private/nov-grid-out.json`** is **not imported by Next.js**. It holds **local parser output**: if missing before `npm run dev` / `npm run build`, `tools/ensure_nov_grid_for_build.mjs` seeds it from **`src/data/nov-comps-grid-fallback.json`** only so scripts and tooling can keep writing the same predictable path on disk (see README and `src/lib/novCompsGridSamplePayload.ts`).
 
 ## Goal (original thread)
 
 Prototype extraction around **Arapahoe county-provided comps** context. The app today links the **comps grid PDF** via AIN:
 
-- URL builder: `safeArapahoeCompsGridPdfUrl()` in `src/lib/safeExternalHref.ts`
+- URL builder: `safeCountyCompsGridPdfUrl()` in `src/lib/safeExternalHref.ts` (host/path from `COUNTY_CONFIG.urls.compsPdf`)
 - Pattern: `https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=<ain>`
 - AIN source: `ain` on each PIN row from `tools/build_arapahoe_parcel_levy_index.py` into `public/data/arapahoe-pin-to-tag.json`
 

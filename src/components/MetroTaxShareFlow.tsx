@@ -21,6 +21,7 @@ import {
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { monthlyFromAnnualTax } from "@/lib/resolveDwellingCount";
 import levyData from "@/data/metroLevies";
+import { countyFeatureAvailable } from "@/lib/countyConfig";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
@@ -229,7 +230,9 @@ export function MetroTaxShareFlow({
       const fullDistrict = levyJson.districts.find(
         (d) => d.districtId === districtId,
       );
-      const metroLevies = fullDistrict?.levies ?? [];
+      const metroLevies = countyFeatureAvailable("metroPurposes")
+        ? (fullDistrict?.levies ?? [])
+        : [];
       const metroDebtLevies = metroLevies.filter(
         (l) => l.purposeCategory === "debt_service",
       );

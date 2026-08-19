@@ -52,10 +52,8 @@ import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { OpenDetailsOnHash } from "@/components/OpenDetailsOnHash";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import { glossaryTermHref } from "@/lib/glossary";
-import {
-  ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE,
-  safeHttpOrHttpsUrl,
-} from "@/lib/safeExternalHref";
+import { countyFeaturePresentation } from "@/lib/countyConfig";
+import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { AUTHORITY_CHAIN_GAPS_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
 import {
   AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE,
@@ -522,7 +520,7 @@ export default function SourcesPage() {
               Comp Sheet Layout and Time Adjusted Sales Prices<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             explainer.
-            {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+            {countyFeaturePresentation("compsPdf") === "gap" ? (
               <CountyServiceGapCallout
                 id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf}
                 className="mt-3 scroll-mt-8"
@@ -632,7 +630,7 @@ export default function SourcesPage() {
         <p className="text-slate-700">{COUNTY_SERVICE_GAP_SOURCES_EXPLAINER}</p>
         <p className="mt-2 text-slate-700">{COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD}</p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
-          {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
+          {countyFeaturePresentation("compsPdf") === "gap" ? (
             <li>
               <a
                 href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf}`}

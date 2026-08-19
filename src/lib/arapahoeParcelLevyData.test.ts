@@ -3,6 +3,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+/**
+ * Arapahoe shipping JSON: shard paths, fetch-time validators, PIN/AIN paste
+ * against the 9-digit default. Config-driven digit length and a 10-digit
+ * schedule fixture live in `countyConfig.test.ts`.
+ */
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ainLookupCandidates,

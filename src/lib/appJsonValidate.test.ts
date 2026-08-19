@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+/**
+ * App JSON contract (required vs optional files, compsPdf flag consistency).
+ * County config (digits, URL templates, feature flags) is `countyConfig.test.ts`.
+ */
+
 import { describe, expect, it } from "vitest";
 import {
   APP_JSON_OPTIONAL_RELATIVE_PATHS,

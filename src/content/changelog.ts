@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.11.0",
+    date: "2026-08-18",
+    title: "County config and feature-available flags",
+    highlights: [
+      "County config (src/lib/countyConfig.ts) holds identifier digit rules, URL templates, host allowlist, feature-available flags (situs, comps PDF, BPP, mills history, metro purposes), DOLA certifying-county filter, and known county-data failures. Arapahoe is the first county file. Campaign chrome stays in siteConfig.ts.",
+      "URL builders read templates and the host allowlist from that config. Features a county never had are omitted; a known hosting failure still uses COUNTY DATA GAP (Arapahoe comps PDFs). Address search stays on screen when situs is off (id-only lookup). Vitest covers Arapahoe 9-digit PIN and a 10-digit schedule fixture with invented ids.",
+    ],
+  },
+  {
     version: "4.10.0",
     date: "2026-08-18",
     title: "App JSON contract for the new ingest",

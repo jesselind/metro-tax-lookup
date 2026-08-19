@@ -17,7 +17,7 @@ import {
   committedLevyLinesFromStackLines,
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
-import { safeArapahoeLevyAspxUrl } from "@/lib/safeExternalHref";
+import { safeCountyLevyAspxUrl } from "@/lib/safeExternalHref";
 import demoPropertyData from "../data/demo-property.json";
 
 type DemoPropertyFixture = {
@@ -81,8 +81,8 @@ function assertDemoPropertyFixture(data: unknown): DemoPropertyFixture {
   if (!Array.isArray(levy.lines) || levy.lines.length === 0) {
     throw new Error("demo-property.json: non-empty levy.lines required");
   }
-  if (typeof levy.levyAspxUrl !== "string" || !safeArapahoeLevyAspxUrl(levy.levyAspxUrl)) {
-    throw new Error("demo-property.json: levy.levyAspxUrl must be a safe Arapahoe Levy.aspx URL");
+  if (typeof levy.levyAspxUrl !== "string" || !safeCountyLevyAspxUrl(levy.levyAspxUrl)) {
+    throw new Error("demo-property.json: levy.levyAspxUrl must be a safe county levy table URL");
   }
   for (let i = 0; i < levy.lines.length; i++) {
     const entry = levy.lines[i];
@@ -237,7 +237,7 @@ export function loadDemoProperty(): DemoPropertyLoad {
       matchedPin: DEMO_DISPLAY_PIN,
       tagId: fixture.levy.tagId,
       tagShortDescr: fixture.levy.tagShortDescr,
-      // Validated at module load via safeArapahoeLevyAspxUrl.
+      // Validated at module load via safeCountyLevyAspxUrl.
       levyAspxUrl: fixture.levy.levyAspxUrl,
       awaitingTemplateMills: built.awaitingTemplateMills,
       templateMillDrafts: built.templateMillDrafts,

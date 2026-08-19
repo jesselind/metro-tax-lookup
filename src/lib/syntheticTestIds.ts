@@ -34,6 +34,12 @@ export const SYNTHETIC_PIN_NOISY = "123010000001999";
 export const SYNTHETIC_AIN = "1000-00-0-00-001";
 
 /**
+ * Invented 10-digit schedule-style account id for county-config tests.
+ * Not a real El Paso schedule number.
+ */
+export const SYNTHETIC_SCHEDULE_10 = "0100000001";
+
+/**
  * Multi-account synthetic situs (Real + business personal), aligned with e2e
  * `SYNTHETIC_MULTI_*` in `e2e/fixtures/syntheticCountyData.ts`.
  * Street type "Road" drops → key `8888|SYNTHETIC HOSPITAL|`.

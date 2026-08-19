@@ -9,7 +9,7 @@
  * arapahoeParcelLevyData.ts / arapahoeSitusLookup.ts (Arapahoe* type names).
  *
  * Identifier length (Arapahoe pinDigits: 9) is county config, not a Colorado
- * standard. Phase 2 will read it from countyConfig; do not hard-code 9 here.
+ * standard. Read it from countyConfig; do not hard-code 9 here.
  */
 
 import {
