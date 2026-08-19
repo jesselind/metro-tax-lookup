@@ -126,6 +126,30 @@ describe("AIN and parcel-id input helpers", () => {
       SYNTHETIC_PIN,
     );
   });
+
+  it("prefers an exact AIN match over a PIN-sized AIN suffix already in byPin", () => {
+    const ainDigits = SYNTHETIC_AIN.replace(/\D/g, "");
+    const collidingPin = ainDigits.slice(-9);
+    expect(collidingPin).not.toBe(SYNTHETIC_PIN);
+    const file = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_PIN]: {
+          tagId: "1",
+          tagShortDescr: "0001",
+          ain: SYNTHETIC_AIN,
+        },
+        [collidingPin]: { tagId: "2", tagShortDescr: "0002" },
+      },
+    };
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN)).toBe(
+      SYNTHETIC_PIN,
+    );
+    expect(resolvePinKeyFromParcelIdInput(file, collidingPin)).toBe(
+      collidingPin,
+    );
+  });
 });
 
 describe("validateArapahoeLevyStacksFile", () => {

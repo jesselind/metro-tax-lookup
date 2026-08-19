@@ -282,6 +282,15 @@ export function validateCountyConfig(config: CountyConfig): string | null {
   if (!isNonEmptyString(config.identifierPlaceholder)) {
     return "county config: identifierPlaceholder required";
   }
+  if (!isNonEmptyString(config.residentLinks.propertySearch)) {
+    return "county config: residentLinks.propertySearch required";
+  }
+  if (!isNonEmptyString(config.emptyIdentifierMessage)) {
+    return "county config: emptyIdentifierMessage required";
+  }
+  if (!isNonEmptyString(config.situsSearchOffMessage)) {
+    return "county config: situsSearchOffMessage required";
+  }
   if (!config.identifierNotFoundTemplate.includes("{tried}")) {
     return "county config: identifierNotFoundTemplate must include {tried}";
   }

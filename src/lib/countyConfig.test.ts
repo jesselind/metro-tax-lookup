@@ -229,3 +229,35 @@ describe("feature-available flags", () => {
     ).toBeNull();
   });
 });
+
+describe("validateCountyConfig resident-facing required fields", () => {
+  it("rejects blank propertySearch", () => {
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        residentLinks: {
+          ...ARAPAHOE_COUNTY_CONFIG.residentLinks,
+          propertySearch: "   ",
+        },
+      }),
+    ).toMatch(/propertySearch required/);
+  });
+
+  it("rejects blank emptyIdentifierMessage", () => {
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        emptyIdentifierMessage: "",
+      }),
+    ).toMatch(/emptyIdentifierMessage required/);
+  });
+
+  it("rejects blank situsSearchOffMessage", () => {
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        situsSearchOffMessage: "  ",
+      }),
+    ).toMatch(/situsSearchOffMessage required/);
+  });
+});

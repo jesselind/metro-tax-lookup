@@ -360,15 +360,16 @@ export function resolvePinKeyFromParcelIdInput(
   file: ArapahoePinToTagFile,
   raw: string,
 ): string | null {
+  const ainCands = ainLookupCandidates(raw);
+  if (ainCands.length > 0) {
+    const ainIndex = getAinToPinIndex(file);
+    for (const ain of ainCands) {
+      const pin = ainIndex.get(ain);
+      if (pin && file.byPin[pin]) return pin;
+    }
+  }
   for (const k of pinLookupCandidates(raw, file.pinDigits)) {
     if (file.byPin[k]) return k;
-  }
-  const ainCands = ainLookupCandidates(raw);
-  if (ainCands.length === 0) return null;
-  const ainIndex = getAinToPinIndex(file);
-  for (const ain of ainCands) {
-    const pin = ainIndex.get(ain);
-    if (pin && file.byPin[pin]) return pin;
   }
   return null;
 }
