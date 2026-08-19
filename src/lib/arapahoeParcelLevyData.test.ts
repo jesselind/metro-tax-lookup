@@ -3,6 +3,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+/**
+ * Arapahoe shipping JSON: shard paths, fetch-time validators, PIN/AIN paste
+ * against the 9-digit default. Config-driven digit length and a 10-digit
+ * schedule fixture live in `countyConfig.test.ts`.
+ */
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ainLookupCandidates,
@@ -118,6 +124,30 @@ describe("AIN and parcel-id input helpers", () => {
     );
     expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_PIN)).toBe(
       SYNTHETIC_PIN,
+    );
+  });
+
+  it("prefers an exact AIN match over a PIN-sized AIN suffix already in byPin", () => {
+    const ainDigits = SYNTHETIC_AIN.replace(/\D/g, "");
+    const collidingPin = ainDigits.slice(-9);
+    expect(collidingPin).not.toBe(SYNTHETIC_PIN);
+    const file = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_PIN]: {
+          tagId: "1",
+          tagShortDescr: "0001",
+          ain: SYNTHETIC_AIN,
+        },
+        [collidingPin]: { tagId: "2", tagShortDescr: "0002" },
+      },
+    };
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN)).toBe(
+      SYNTHETIC_PIN,
+    );
+    expect(resolvePinKeyFromParcelIdInput(file, collidingPin)).toBe(
+      collidingPin,
     );
   });
 });

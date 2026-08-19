@@ -23,6 +23,7 @@ import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSectio
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
+import { countyFeatureAvailable } from "@/lib/countyConfig";
 import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -333,6 +334,7 @@ export function LevyLineDistrictDetailDialog({
   );
   /** Levy % AUTH timeline (2018–2025 when bundled); separate from YoY headline box. */
   const showMillsHistoryChart =
+    countyFeatureAvailable("millsHistory") &&
     millsHistory.length >= AUTHORITY_MILLS_HISTORY_MIN_POINTS;
   const metroYoySurface = levyYoYSurfaceClasses(
     yoy?.summary.direction ?? "neutral",

@@ -31,7 +31,7 @@ import {
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 import {
-  safeArapahoeLevyAspxUrl,
+  safeCountyLevyAspxUrl,
 } from "@/lib/safeExternalHref";
 import {
   applyParcelTemplateMills,
@@ -308,7 +308,7 @@ export function LevyStackVisualization({
   const safeLevyTableHref = useMemo(
     () =>
       loadedParcelMeta
-        ? safeArapahoeLevyAspxUrl(loadedParcelMeta.levyAspxUrl)
+        ? safeCountyLevyAspxUrl(loadedParcelMeta.levyAspxUrl)
         : null,
     [loadedParcelMeta],
   );

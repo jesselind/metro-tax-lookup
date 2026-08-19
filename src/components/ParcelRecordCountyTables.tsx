@@ -19,8 +19,8 @@ import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
-  safeArapahoeClerkRecorderSearchUrl,
-  safeArapahoeParcelRecordUrl,
+  safeCountyClerkRecorderSearchUrl,
+  safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -668,7 +668,7 @@ export function ParcelRecordSaleTable({
   linkClerkRecorder?: boolean;
 }) {
   const rows = transfers ?? [];
-  const countyParcelRecordUrl = safeArapahoeParcelRecordUrl(ain);
+  const countyParcelRecordUrl = safeCountyParcelRecordUrl(ain);
 
   return (
     <div
@@ -701,7 +701,7 @@ export function ParcelRecordSaleTable({
               const bookPage = (sale.bookPage ?? "").trim();
               const clerkHref =
                 linkClerkRecorder && bookPage
-                  ? safeArapahoeClerkRecorderSearchUrl(bookPage)
+                  ? safeCountyClerkRecorderSearchUrl(bookPage)
                   : null;
               return (
                 <tr key={`sale-${sale.bookPage}-${sale.date ?? ""}-${index}`}>

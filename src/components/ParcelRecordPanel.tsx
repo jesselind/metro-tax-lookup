@@ -19,7 +19,7 @@ import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedM
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { formatMartIntegerCodeDisplay } from "@/lib/parcelRecordDisplay";
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
-import { safeArapahoeParcelRecordUrl } from "@/lib/safeExternalHref";
+import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_PANEL_SHELL_CLASS,
@@ -108,7 +108,7 @@ export function ParcelRecordPanel({
 
   const displayRecord = useDisplayParcelRecord(record, demoMode);
 
-  const parcelRecordHref = safeArapahoeParcelRecordUrl(displayRecord?.ain);
+  const parcelRecordHref = safeCountyParcelRecordUrl(displayRecord?.ain);
   const isBusinessPersonal =
     displayRecord != null &&
     isBusinessPersonalPropertyAccount({

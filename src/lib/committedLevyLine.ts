@@ -25,6 +25,10 @@ import {
   pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
 } from "@/lib/arapahoeParcelLevyData";
+import {
+  COUNTY_CONFIG,
+  formatIdentifierNotFoundMessage,
+} from "@/lib/countyConfig";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 
 export type CommittedLevyLine = {
@@ -217,19 +221,18 @@ export async function loadLevyStackFromPin(
   }
   const matchedPinKey = resolvePinKeyFromParcelIdInput(pins, pinInput);
   if (!matchedPinKey) {
-    const pinCands = pinLookupCandidates(pinInput);
+    const pinCands = pinLookupCandidates(pinInput, pins.pinDigits);
     const ainCands = ainLookupCandidates(pinInput);
     if (pinCands.length === 0 && ainCands.length === 0) {
       return {
         ok: false,
-        error:
-          "Enter your parcel PIN or AIN (digits from the county record).",
+        error: COUNTY_CONFIG.emptyIdentifierMessage,
       };
     }
     const tried = [...pinCands, ...ainCands].join(" / ");
     return {
       ok: false,
-      error: `No parcel found for ${tried}. Copy the 9-digit PIN or the assessor AIN from your Arapahoe property record (dashes and spaces are OK).`,
+      error: formatIdentifierNotFoundMessage(tried),
     };
   }
   const row = pins.byPin[matchedPinKey]!;

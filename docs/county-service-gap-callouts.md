@@ -53,6 +53,8 @@ Use **`InlineErrorCallout`** (same family of red chrome, `role="alert"`) for **t
 
 County gap = external failure, informational (`role="note"`). App error = our failure, interrupt when appropriate.
 
+**Omit vs gap:** `countyFeaturePresentation` in `src/lib/countyConfig.ts`. No source (`features.*` false) → omit the control. Source exists but county hosting failed (`knownFailures`, e.g. comps PDFs) → COUNTY DATA GAP on both dashboard and `/sources`.
+
 ## UI pattern (locked)
 
 | Piece | Location |
@@ -96,7 +98,7 @@ Tone aligns with `.cursor/rules/base-rule.mdc` (educational, bill-centered, midd
 | Incident | Copy module | Dashboard | `/sources` hub link → contextual red box |
 | --- | --- | --- | --- |
 | Aug 17 2026 Data Mart download incomplete | `countyDataMartRefreshNote.tsx` | Property details (compact, after "County data current as of …") | #county-data-mart-gap → under **How current is the data?** |
-| County comps PDF hosting limited | `countyCompsPdfGapNote.tsx`, `countyCompsPdfGuidance.ts` | **Comparable properties** summary tile + popover (`#home-parcel-comps-pdf`); flag in `safeExternalHref.ts` | #county-comps-pdf-gap → under **Comparable properties** |
+| County comps PDF hosting limited | `countyCompsPdfGapNote.tsx`, `countyCompsPdfGuidance.ts` | **Comparable properties** summary tile + popover (`#home-parcel-comps-pdf`); `COUNTY_CONFIG.knownFailures.compsPdfHostedFiles` in `src/lib/countyConfig.ts`. If `features.compsPdf` is false, omit the tile (no gap). | #county-comps-pdf-gap → under **Comparable properties** |
 | No official bulk prior-year assessed | `countyPriorYearValuesGapNote.tsx` | Red **Prior years missing** badge (`CountyServiceGapBadge`) on the **Assessed value** summary chip (white chip; not COUNTY DATA GAP chrome on the tile). Popover is `InfoHintPopover` `variant="county-data-gap"` (same width/scroll as tile glossary briefs; thin red border + light red fill on the panel), with COUNTY DATA GAP header + copy inside (`CountyPriorYearValuesGapPopover`); **Sale history** jumps to `#home-parcel-sale-history`. `/sources` note: searched published county and state sources; Main Parcel is current-year only. | #county-prior-year-values-gap → **Property details methodology** (prior-year values) |
 
 Comps uses the **summary tile variant** (same header + surface, tile popover interaction). Do not use `CountyServiceGapCallout` inside the tile grid cell. Gap summary tiles (`COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS`) are full width of the summary column at every viewport.

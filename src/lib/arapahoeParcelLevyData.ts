@@ -9,6 +9,10 @@
  */
 
 import { clearArapahoeSitusDataCache } from "@/lib/arapahoeSitusLookup";
+import {
+  COUNTY_CONFIG,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
 
 export type ArapahoeDolaMatch = {
@@ -108,7 +112,7 @@ export type ArapahoePinToTagFile = {
   };
   /**
    * Account-id digit length for this bundle. Arapahoe ships 9. This is county
-   * config (Phase 2), not a Colorado-wide standard.
+   * config, not a Colorado-wide standard.
    */
   pinDigits: number;
   byPin: Record<string, ArapahoePinToTagRow>;
@@ -252,56 +256,78 @@ function isParcelRecordShardPrefix(prefix: string): boolean {
 }
 
 /**
- * PINs may be pasted with dashes, spaces, or extra digits. Returns 9-digit keys to
- * try against `byPin` in order: padded when length ≤ 9, else first nine digits,
- * then last nine when length > 9 (covers prefix/suffix noise).
+ * Account ids may be pasted with dashes, spaces, or extra digits. Returns keys
+ * of `pinDigits` length to try against `byPin`: padded when shorter, else first
+ * window, then last window when longer (covers prefix/suffix noise).
  */
-export function pinLookupCandidates(raw: string): string[] {
+export function pinLookupCandidates(
+  raw: string,
+  pinDigits: number = COUNTY_CONFIG.identifierDigits,
+): string[] {
   const digits = raw.replace(/\D/g, "");
   if (!digits) return [];
-  const key = (nine: string) =>
-    nine.length <= 9 ? nine.padStart(9, "0") : nine.slice(0, 9);
-  if (digits.length <= 9) {
+  const n = pinDigits;
+  const key = (slice: string) =>
+    slice.length <= n ? slice.padStart(n, "0") : slice.slice(0, n);
+  if (digits.length <= n) {
     return [key(digits)];
   }
-  const first = key(digits.slice(0, 9));
-  const last = key(digits.slice(-9));
+  const first = key(digits.slice(0, n));
+  const last = key(digits.slice(-n));
   return first === last ? [first] : [first, last];
 }
 
 /**
- * Assessor AIN is typically ####-##-#-##-### (12 digits). Returns digit-only keys
- * for reverse lookup against the pin map.
+ * Public parcel id (Arapahoe AIN is typically ####-##-#-##-###). Returns
+ * digit-only keys for reverse lookup against the pin map.
  */
-export function ainLookupCandidates(raw: string): string[] {
+export function ainLookupCandidates(
+  raw: string,
+  config: CountyConfig = COUNTY_CONFIG,
+): string[] {
+  if (!config.publicParcelId) return [];
   const digits = raw.replace(/\D/g, "");
-  if (digits.length === 12) return [digits];
+  if (digits.length === config.publicParcelId.digits) return [digits];
   return [];
 }
 
-/** True when the string looks like a county AIN (formatted or 12 digits), not a street. */
-export function looksLikeAinInput(raw: string): boolean {
+/** True when the string looks like a county public parcel id, not a street. */
+export function looksLikeAinInput(
+  raw: string,
+  config: CountyConfig = COUNTY_CONFIG,
+): boolean {
+  if (!config.publicParcelId) return false;
   const t = raw.trim();
   if (!t || /[A-Za-z]/.test(t)) return false;
-  if (/^\d{4}-\d{2}-\d-\d{2}-\d{3}$/.test(t)) return true;
-  return ainLookupCandidates(t).length > 0;
+  if (config.publicParcelId.dashedPattern.test(t)) return true;
+  return ainLookupCandidates(t, config).length > 0;
 }
 
 /**
- * True when the string looks like a parcel PIN only (7–9 digits, optional
- * dashes/spaces) — safe to treat as an id rather than a street address.
+ * True when the string looks like an account id only (config digit range,
+ * optional dashes/spaces) — safe to treat as an id rather than a street address.
+ * Digit min/max come from county config, not a fixed 7–9.
  */
-export function looksLikePinOnlyInput(raw: string): boolean {
+export function looksLikePinOnlyInput(
+  raw: string,
+  config: CountyConfig = COUNTY_CONFIG,
+): boolean {
   const t = raw.trim();
   if (!t || /[A-Za-z]/.test(t)) return false;
   if (!/^[\d\s-]+$/.test(t)) return false;
   const digits = t.replace(/\D/g, "");
-  return digits.length >= 7 && digits.length <= 9;
+  return (
+    digits.length >= config.identifierPasteMinDigits &&
+    digits.length <= config.identifierDigits
+  );
 }
 
-/** PIN or AIN paste into the address or parcel-id field. */
-export function looksLikeParcelIdInput(raw: string): boolean {
-  return looksLikeAinInput(raw) || looksLikePinOnlyInput(raw);
+/** PIN/schedule or public parcel id paste into the address or parcel-id field. */
+export function looksLikeParcelIdInput(
+  raw: string,
+  config: CountyConfig = COUNTY_CONFIG,
+): boolean {
+  return looksLikeAinInput(raw, config) || looksLikePinOnlyInput(raw, config);
 }
 
 const ainToPinIndexCache = new WeakMap<ArapahoePinToTagFile, Map<string, string>>();
@@ -319,7 +345,8 @@ export function getAinToPinIndex(file: ArapahoePinToTagFile): Map<string, string
     const ain = typeof row?.ain === "string" ? row.ain.trim() : "";
     if (!ain) continue;
     const dig = ain.replace(/\D/g, "");
-    if (dig.length !== 12) continue;
+    const publicDigits = COUNTY_CONFIG.publicParcelId?.digits;
+    if (publicDigits == null || dig.length !== publicDigits) continue;
     if (!idx.has(dig)) idx.set(dig, pin);
   }
   ainToPinIndexCache.set(file, idx);
@@ -327,21 +354,22 @@ export function getAinToPinIndex(file: ArapahoePinToTagFile): Map<string, string
 }
 
 /**
- * Resolve a user PIN or AIN paste to a 9-digit pin map key, or null.
+ * Resolve a user PIN/schedule or public parcel id paste to a pin map key, or null.
  */
 export function resolvePinKeyFromParcelIdInput(
   file: ArapahoePinToTagFile,
   raw: string,
 ): string | null {
-  for (const k of pinLookupCandidates(raw)) {
-    if (file.byPin[k]) return k;
-  }
   const ainCands = ainLookupCandidates(raw);
-  if (ainCands.length === 0) return null;
-  const ainIndex = getAinToPinIndex(file);
-  for (const ain of ainCands) {
-    const pin = ainIndex.get(ain);
-    if (pin && file.byPin[pin]) return pin;
+  if (ainCands.length > 0) {
+    const ainIndex = getAinToPinIndex(file);
+    for (const ain of ainCands) {
+      const pin = ainIndex.get(ain);
+      if (pin && file.byPin[pin]) return pin;
+    }
+  }
+  for (const k of pinLookupCandidates(raw, file.pinDigits)) {
+    if (file.byPin[k]) return k;
   }
   return null;
 }
@@ -632,12 +660,12 @@ export async function fetchArapahoeParcelRecordForPin(
   return null;
 }
 
-/** Resolve one parcel record row from a loaded file (9-digit PIN candidates). */
+/** Resolve one parcel record row from a loaded file (pinDigits candidates). */
 export function lookupParcelRecordRow(
   pinInput: string,
   file: ArapahoeParcelRecordByPinFile,
 ): ArapahoeParcelRecordRow | null {
-  const candidates = pinLookupCandidates(pinInput);
+  const candidates = pinLookupCandidates(pinInput, file.pinDigits);
   for (const k of candidates) {
     const hit = file.byPin[k];
     if (hit) return hit;

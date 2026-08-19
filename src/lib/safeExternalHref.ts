@@ -6,6 +6,18 @@
 /**
  * Validate URLs from bundled JSON before using them in <a href>.
  * Blocks javascript:, data:, and other non-http(s) schemes.
+ * Hosted county URLs use countyConfig templates + hostAllowlist.
+ */
+
+import {
+  COUNTY_CONFIG,
+  isCountyHostAllowed,
+  type CountyConfig,
+  type CountyHostedQueryTemplate,
+} from "@/lib/countyConfig";
+
+/**
+ * Blocks javascript:, data:, and other non-http(s) schemes before <a href>.
  */
 export function safeHttpOrHttpsUrl(
   raw: string | null | undefined
@@ -22,28 +34,26 @@ export function safeHttpOrHttpsUrl(
   }
 }
 
-const ARAPAHOE_PARCEL_LEVY_HOST = "parcelsearch.arapahoegov.com";
-const ARAPAHOE_CLERK_RECORDER_SEARCH_HOST = "arapahoe.co.publicsearch.us";
-const ARAPAHOE_BPP_SEARCH_HOST = "personalpropertysearch.arapahoegov.com";
-
 /**
- * Build a same-origin Arapahoe https URL with one query param from a raw value.
+ * Build a same-origin https URL with one query param from a raw value.
  * Trims empty values to null; rejects hostname drift after construction.
  */
-function safeArapahoeHostedQueryUrl(
-  host: string,
-  path: string,
-  queryParam: string,
+export function safeCountyHostedQueryUrl(
+  template: CountyHostedQueryTemplate | undefined,
   rawValue: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
 ): string | null {
+  if (!template) return null;
+  if (!isCountyHostAllowed(template.host, config)) return null;
   const value = String(rawValue ?? "").trim();
   if (!value) return null;
   try {
-    const url = new URL(`https://${host}${path}`);
-    url.searchParams.set(queryParam, value);
-    if (url.hostname.toLowerCase() !== host.toLowerCase()) {
+    const url = new URL(`https://${template.host}${template.path}`);
+    url.searchParams.set(template.queryParam, value);
+    if (url.hostname.toLowerCase() !== template.host.toLowerCase()) {
       return null;
     }
+    if (!isCountyHostAllowed(url.hostname, config)) return null;
     return url.href;
   } catch {
     return null;
@@ -51,11 +61,12 @@ function safeArapahoeHostedQueryUrl(
 }
 
 /**
- * County online levy table for a taxing authority (TAGId in query).
- * Build script emits https://parcelsearch.arapahoegov.com/Levy.aspx?id=…
+ * County online levy table for a taxing authority (id in query).
+ * Arapahoe build script emits https://parcelsearch.arapahoegov.com/Levy.aspx?id=…
  */
-export function safeArapahoeLevyAspxUrl(
-  raw: string | null | undefined
+export function safeCountyLevyAspxUrl(
+  raw: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
 ): string | null {
   if (raw == null) return null;
   const t = String(raw).trim();
@@ -63,49 +74,65 @@ export function safeArapahoeLevyAspxUrl(
   try {
     const url = new URL(t);
     if (url.protocol !== "https:") return null;
-    if (url.hostname.toLowerCase() !== ARAPAHOE_PARCEL_LEVY_HOST) return null;
-    if (!url.pathname.toLowerCase().endsWith("/levy.aspx")) return null;
+    if (!isCountyHostAllowed(url.hostname, config)) return null;
+    if (url.hostname.toLowerCase() !== config.urls.levyAspx.host.toLowerCase()) {
+      return null;
+    }
+    if (
+      !url.pathname.toLowerCase().endsWith(config.urls.levyAspx.pathSuffix.toLowerCase())
+    ) {
+      return null;
+    }
     return url.href;
   } catch {
     return null;
   }
 }
 
-/**
- * When true, the home "Comparable properties" control explains county
- * FileDownload.ashx availability per the Assessor's office (see
- * countyCompsPdfGuidance.ts). Flip to false once downloads work reliably again.
- */
-export const ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE = true;
-
-/**
- * County business personal property account details page (AIN from pin map).
- * https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=…
- * Real-property PPINum.aspx does not serve these accounts.
- */
-export function safeArapahoeBppAccountDetailsUrl(
-  ainRaw: string | null | undefined,
+/** County parcel record page for one property (public parcel id / AIN). */
+export function safeCountyParcelRecordUrl(
+  publicParcelIdRaw: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
 ): string | null {
-  return safeArapahoeHostedQueryUrl(
-    ARAPAHOE_BPP_SEARCH_HOST,
-    "/Details.aspx",
-    "AIN",
-    ainRaw,
+  return safeCountyHostedQueryUrl(
+    config.urls.parcelRecord,
+    publicParcelIdRaw,
+    config,
   );
 }
 
-/**
- * County parcel record page for one property (AIN from Main Parcel export).
- * https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=…
- */
-export function safeArapahoeParcelRecordUrl(
-  ainRaw: string | null | undefined,
+/** County comps grid PDF download (AIN-like field). */
+export function safeCountyCompsGridPdfUrl(
+  publicParcelIdRaw: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
 ): string | null {
-  return safeArapahoeHostedQueryUrl(
-    ARAPAHOE_PARCEL_LEVY_HOST,
-    "/PPINum.aspx",
-    "PPINum",
-    ainRaw,
+  if (!config.features.compsPdf) return null;
+  return safeCountyHostedQueryUrl(config.urls.compsPdf, publicParcelIdRaw, config);
+}
+
+/** County business personal property account details page. */
+export function safeCountyBppAccountDetailsUrl(
+  publicParcelIdRaw: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
+): string | null {
+  if (!config.features.bpp) return null;
+  return safeCountyHostedQueryUrl(
+    config.urls.bppAccountDetails,
+    publicParcelIdRaw,
+    config,
+  );
+}
+
+/** County business personal property Notice of Valuation PDF. */
+export function safeCountyBppNoticeOfValuationPdfUrl(
+  publicParcelIdRaw: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
+): string | null {
+  if (!config.features.bpp) return null;
+  return safeCountyHostedQueryUrl(
+    config.urls.bppNoticeOfValuationPdf,
+    publicParcelIdRaw,
+    config,
   );
 }
 
@@ -113,7 +140,7 @@ export function safeArapahoeParcelRecordUrl(
  * Compact Book+Page token for Clerk & Recorder quick search (spaces removed).
  * Matches PPINum.aspx sale links (e.g. "D411 5095" → "D4115095").
  */
-export function arapahoeClerkRecorderSearchValueFromBookPage(
+export function clerkRecorderSearchValueFromBookPage(
   bookPageRaw: string | null | undefined,
 ): string | null {
   const compact = String(bookPageRaw ?? "").replace(/\s+/g, "").trim();
@@ -121,56 +148,28 @@ export function arapahoeClerkRecorderSearchValueFromBookPage(
   return compact;
 }
 
-/**
- * Arapahoe Clerk & Recorder public search for one Book+Page (real property).
- * https://arapahoe.co.publicsearch.us/results?department=RP&searchType=quickSearch&searchValue=…
- */
-export function safeArapahoeClerkRecorderSearchUrl(
+/** Clerk & Recorder public search for one Book+Page (real property). */
+export function safeCountyClerkRecorderSearchUrl(
   bookPageRaw: string | null | undefined,
+  config: CountyConfig = COUNTY_CONFIG,
 ): string | null {
-  const searchValue = arapahoeClerkRecorderSearchValueFromBookPage(bookPageRaw);
+  const template = config.urls.clerkRecorderSearch;
+  if (!template) return null;
+  if (!isCountyHostAllowed(template.host, config)) return null;
+  const searchValue = clerkRecorderSearchValueFromBookPage(bookPageRaw);
   if (!searchValue) return null;
   try {
-    const url = new URL("https://arapahoe.co.publicsearch.us/results");
-    if (url.hostname.toLowerCase() !== ARAPAHOE_CLERK_RECORDER_SEARCH_HOST) {
+    const url = new URL(`https://${template.host}${template.path}`);
+    if (url.hostname.toLowerCase() !== template.host.toLowerCase()) {
       return null;
     }
-    url.searchParams.set("department", "RP");
-    url.searchParams.set("searchType", "quickSearch");
-    url.searchParams.set("searchValue", searchValue);
+    if (!isCountyHostAllowed(url.hostname, config)) return null;
+    for (const [key, value] of Object.entries(template.extraQuery)) {
+      url.searchParams.set(key, value);
+    }
+    url.searchParams.set(template.searchValueParam, searchValue);
     return url.href;
   } catch {
     return null;
   }
-}
-
-/**
- * County comps grid PDF download (AIN from Main Parcel export).
- * https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=…
- */
-export function safeArapahoeCompsGridPdfUrl(
-  ainRaw: string | null | undefined,
-): string | null {
-  return safeArapahoeHostedQueryUrl(
-    ARAPAHOE_PARCEL_LEVY_HOST,
-    "/FileDownload.ashx",
-    "AIN",
-    ainRaw,
-  );
-}
-
-/**
- * County business personal property Notice of Valuation PDF (AIN from pin map).
- * https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=…
- * Real-property parcelsearch FileDownload does not serve these notices.
- */
-export function safeArapahoeBppNoticeOfValuationPdfUrl(
-  ainRaw: string | null | undefined,
-): string | null {
-  return safeArapahoeHostedQueryUrl(
-    ARAPAHOE_BPP_SEARCH_HOST,
-    "/FileDownload.ashx",
-    "AIN",
-    ainRaw,
-  );
 }

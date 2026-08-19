@@ -9,14 +9,14 @@ import { useMemo } from "react";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import {
-  ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH,
-  ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
-} from "@/lib/arapahoeCountyUrls";
+  COUNTY_CONFIG,
+  countyFeatureAvailable,
+} from "@/lib/countyConfig";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
-  safeArapahoeBppAccountDetailsUrl,
-  safeArapahoeLevyAspxUrl,
-  safeArapahoeParcelRecordUrl,
+  safeCountyBppAccountDetailsUrl,
+  safeCountyLevyAspxUrl,
+  safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
 
 const COUNTY_ACTION_CLASS = `${btnOutlineSecondaryMd} w-full justify-center sm:w-auto`;
@@ -45,34 +45,37 @@ export function LevyCountyCompareSection({
   demoMode = false,
   businessPersonal = false,
 }: LevyCountyCompareSectionProps) {
+  const bppOn = countyFeatureAvailable("bpp");
+  const useBppLinks = businessPersonal && bppOn;
   const safeLevyTableHref = useMemo(
-    () => safeArapahoeLevyAspxUrl(levyAspxUrl),
+    () => safeCountyLevyAspxUrl(levyAspxUrl),
     [levyAspxUrl],
   );
 
   const safeParcelRecordHref = useMemo(
-    () => safeArapahoeParcelRecordUrl(ain),
+    () => safeCountyParcelRecordUrl(ain),
     [ain],
   );
 
   const safeBppDetailsHref = useMemo(
-    () => safeArapahoeBppAccountDetailsUrl(ain),
-    [ain],
+    () => (bppOn ? safeCountyBppAccountDetailsUrl(ain) : null),
+    [ain, bppOn],
   );
 
-  const accountRecordHref = businessPersonal
+  const accountRecordHref = useBppLinks
     ? safeBppDetailsHref
     : safeParcelRecordHref;
-  const accountRecordLabel = businessPersonal
+  const accountRecordLabel = useBppLinks
     ? "Open county business personal property record"
     : "Open county parcel record";
 
   const showAccountRecordLink = !demoMode && accountRecordHref != null;
   const showAccountRecordDemoControl = demoMode;
-  const propertySearchHref = businessPersonal
-    ? ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH
-    : ARAPAHOE_ASSESSOR_PROPERTY_SEARCH;
-  const propertySearchLabel = businessPersonal
+  const propertySearchHref = useBppLinks
+    ? (COUNTY_CONFIG.residentLinks.bppSearch ??
+      COUNTY_CONFIG.residentLinks.propertySearch)
+    : COUNTY_CONFIG.residentLinks.propertySearch;
+  const propertySearchLabel = useBppLinks
     ? "County business personal property search"
     : "County property search";
 

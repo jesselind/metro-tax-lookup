@@ -32,7 +32,7 @@ import {
   COLORADO_DPT_PROPERTY_TAX_GUIDE_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { glossaryTermHref } from "@/lib/glossary";
-import { ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE } from "@/lib/safeExternalHref";
+import { countyFeaturePresentation } from "@/lib/countyConfig";
 import {
   CODE_INLINE_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -463,6 +463,7 @@ export function TermAssessedValueAside() {
 }
 
 export function TermCompsAside() {
+  const compsPdfPresentation = countyFeaturePresentation("compsPdf");
   return (
     <TermAside
       id="term-comps"
@@ -485,20 +486,22 @@ export function TermCompsAside() {
         sell; here it always means the county&apos;s own comparison list, not a
         bank appraisal for a loan and not a realtor packet.
       </p>
-      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The summary control links to the county comparables file on{" "}
-        <span className="whitespace-nowrap">
-          {COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST}
-        </span>
-        {ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE ? (
-          <>
-            {COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST}
-            <CountyCompsPdfAssessorAvailabilityCopy />
-          </>
-        ) : (
-          COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST
-        )}
-      </p>
+      {compsPdfPresentation === "omit" ? null : (
+        <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+          The summary control links to the county comparables file on{" "}
+          <span className="whitespace-nowrap">
+            {COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST}
+          </span>
+          {compsPdfPresentation === "gap" ? (
+            <>
+              {COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST}
+              <CountyCompsPdfAssessorAvailabilityCopy />
+            </>
+          ) : (
+            COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST
+          )}
+        </p>
+      )}
     </TermAside>
   );
 }
