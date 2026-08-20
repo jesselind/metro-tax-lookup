@@ -1,0 +1,51 @@
+{
+  "_comment": "Arapahoe County: Assessor Data Mart column names → shared ingest field names. Do not put these column names in shared reader/writer code.",
+  "county": "arapahoe",
+  "identifierDigits": 9,
+  "levyAspxTemplate": "https://parcelsearch.arapahoegov.com/Levy.aspx?id={taxAreaId}",
+  "levyStack": {
+    "file": "tag",
+    "taxAreaId": "tag_id",
+    "lineCode": "line_code",
+    "authorityName": "authority_name",
+    "taxYear": "tax_year",
+    "effectiveYear": "effective_year",
+    "status": "status"
+  },
+  "accountMap": {
+    "file": "parcel",
+    "accountId": "pin",
+    "taxAreaId": "tag_id",
+    "tagShortDescr": "tag_short_descr",
+    "totalActual": "total_actual",
+    "totalAssessed": "total_assessed",
+    "parcelTaxYear": "parcel_tax_year",
+    "assessmentYear": "assessment_year",
+    "propertyClassDescr": "property_class_descr",
+    "ownerList": "owner_list",
+    "ain": "ain"
+  },
+  "columnAliases": {
+    "_comment": "Each logical field name lists the Arapahoe CSV headers that can carry that value (in preference order). Field1-Field6 export and named export are both accepted.",
+    "tag": {
+      "tag_id": ["TAGId", "TagId", "Field2"],
+      "tax_year": ["TaxYear", "Field3"],
+      "line_code": ["LevyLineCode", "Field5"],
+      "authority_name": ["AuthorityName", "Field6"],
+      "effective_year": ["EffectiveYear", "Field7"],
+      "status": ["Status", "Field8"]
+    },
+    "parcel": {
+      "pin": ["Pin"],
+      "tag_id": ["TAGId"],
+      "tag_short_descr": ["TAGShortDescr"],
+      "total_actual": ["TotalActual"],
+      "total_assessed": ["TotalAssessed"],
+      "parcel_tax_year": ["TaxYear"],
+      "assessment_year": ["AssessmentYear"],
+      "property_class_descr": ["PropertyClassDescr"],
+      "owner_list": ["OwnerList"],
+      "ain": ["AIN"]
+    }
+  }
+}
