@@ -16,7 +16,9 @@ Usage:
 
 Coverage statuses: ready, mapping-needed, new-reader, will-be-off.
 Missing a levy-stack source is a hard fail (exit 1). Arapahoe header names are
-known-drop signatures until mapping files exist (Phase 4).
+known-drop signatures for classification. Rebuild column mapping lives in
+tools/ingest/mappings/arapahoe.json (Phase 4); the classifier does not read that
+file yet.
 """
 
 from __future__ import annotations
@@ -46,8 +48,8 @@ SKIP_DIR_NAMES = {
     "test-results",
 }
 
-# Header sets are compacted (alnum, lower). Arapahoe column names live here
-# until tools/ingest/mappings/arapahoe.json exists.
+# Header sets are compacted (alnum, lower). Arapahoe signatures for drop-folder
+# coverage only; rebuild aliases are in tools/ingest/mappings/arapahoe.json.
 ARAPAHOE_MAIN_PARCEL = frozenset({"pin", "tagid", "totalactual", "totalassessed"})
 ARAPAHOE_TAG_FIELDS = frozenset(
     {"field1", "field2", "field3", "field4", "field5", "field6"}
@@ -597,13 +599,19 @@ def classify_drop(drop_dir: Path) -> ClassifyReport:
     )
 
 
-def json_out_is_forbidden(path: Path) -> bool:
+def path_is_under_public(path: Path) -> bool:
+    """True when path resolves inside the repo public/ tree (app shipping files)."""
     resolved = path.expanduser().resolve()
     try:
         resolved.relative_to(PUBLIC_DIR.resolve())
         return True
     except ValueError:
         return False
+
+
+def json_out_is_forbidden(path: Path) -> bool:
+    """Classifier --json-out must not land under public/."""
+    return path_is_under_public(path)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

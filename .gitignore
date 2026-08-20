@@ -51,9 +51,13 @@ public/data/arapahoe-parcel-record-by-pin.json.gz
 # Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
 docs/_working/
 
-# Offline regeneration workspace (government dumps, extract scratch). Not committed.
-# County mart download stamp lives at tools/county-mart-data-as-of.txt (tracked).
-supporting-data/
+# Offline regeneration workspace (government dumps, extract scratch). Not committed
+# in bulk (mart, GIS, certs, LG directory). Exception: small irreplaceable build
+# inputs with no verified re-download — currently the DOLA Property Tax Entities
+# CSV used for PIN-load mills / TE IDs (~46 KiB). See README Data layout.
+supporting-data/**
+!supporting-data/dola/
+!supporting-data/dola/property-tax-entities-export.csv
 
 # Spreadsheets (e.g. DOLA xlsx); prefer CSV exports under supporting-data/ locally
 *.xlsx

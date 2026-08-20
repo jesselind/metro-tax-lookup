@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.13.0",
+    date: "2026-08-18",
+    title: "New ingest beside current Arapahoe rebuild (mapping file, reader, writer, compare)",
+    highlights: [
+      "tools/ingest/mappings/arapahoe.json maps Arapahoe Data Mart column names (TAGId, Pin, TotalActual, ...) to shared field names (taxAreaId, accountId, totalActual, ...). Shared reader and writer code has no Arapahoe column names.",
+      "tools/ingest/reader.py reads a levy stack CSV and a parcel CSV through the mapping file and returns intermediate records. tools/ingest/writer.py converts those records to the app JSON shapes (levy stacks + account map) and writes them to a comparison directory; never writes to public/data/.",
+      "tools/ingest/compare.py diffs two JSON directories (e.g. public/data vs supporting-data/_ingest-out). Excludes snapshot metadata (bundledAsOf, source) and dolaMatch from the diff so transient and phase-gated fields do not count as differences.",
+      "npm run build:ingest (tools/ingest/build.py) runs the new ingest CLI. npm run diff:ingest (tools/ingest/compare.py) compares directories. Production rebuild stays npm run build:arapahoe-index. New ingest writes to supporting-data/_ingest-out/ (gitignored). Python tests: npm run test:ingest-reader (test_ingest_reader.py).",
+    ],
+  },
+  {
     version: "4.12.0",
     date: "2026-08-18",
     title: "Ingest classifier for county drop folders",
