@@ -30,7 +30,11 @@ from ingest.writer import (
     write_comparison_dir,
 )
 from ingest.compare import compare_dirs, DiffResult
-from synthetic_test_ids import SYNTHETIC_PIN, SYNTHETIC_SCHEDULE_10
+from synthetic_test_ids import (
+    SYNTHETIC_PIN,
+    SYNTHETIC_PIN_NO_LEADING_ZERO,
+    SYNTHETIC_SCHEDULE_10,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +173,32 @@ class LoadMappingTests(unittest.TestCase):
         try:
             with self.assertRaises(MappingError):
                 load_mapping(path)
+        finally:
+            path.unlink(missing_ok=True)
+
+    def test_levy_stack_non_object_raises_mapping_error(self) -> None:
+        bad = _arapahoe_mapping()
+        bad["levyStack"] = ["not", "an", "object"]
+        with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as f:
+            json.dump(bad, f)
+            path = Path(f.name)
+        try:
+            with self.assertRaises(MappingError) as ctx:
+                load_mapping(path)
+            self.assertIn("levyStack must be an object", str(ctx.exception))
+        finally:
+            path.unlink(missing_ok=True)
+
+    def test_account_map_non_object_raises_mapping_error(self) -> None:
+        bad = _arapahoe_mapping()
+        bad["accountMap"] = "not-an-object"
+        with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as f:
+            json.dump(bad, f)
+            path = Path(f.name)
+        try:
+            with self.assertRaises(MappingError) as ctx:
+                load_mapping(path)
+            self.assertIn("accountMap must be an object", str(ctx.exception))
         finally:
             path.unlink(missing_ok=True)
 
@@ -505,7 +535,7 @@ class BuildLevyStacksJsonTests(unittest.TestCase):
         self.assertIsInstance(result.get("snapshot"), dict)
         self.assertTrue(result["snapshot"].get("bundledAsOf"))
         self.assertIsInstance(result.get("stacksByTagId"), dict)
-        for tag_id, stack in result["stacksByTagId"].items():
+        for _tag_id, stack in result["stacksByTagId"].items():
             self.assertTrue(stack.get("tagId"))
             self.assertTrue(stack.get("levyAspxUrl"))
             for line in stack.get("lines", []):
@@ -570,6 +600,45 @@ class BuildAccountMapJsonTests(unittest.TestCase):
         row = result["byPin"][SYNTHETIC_PIN]
         self.assertEqual(row["tagId"], "1")
         self.assertEqual(row["tagShortDescr"], "0001")
+
+    def test_zero_pads_digit_only_account_id_missing_leading_zeros(self) -> None:
+        mapping = _arapahoe_mapping()
+        rows = [
+            {
+                "accountId": SYNTHETIC_PIN_NO_LEADING_ZERO,
+                "taxAreaId": "1",
+                "tagShortDescr": "0001",
+            }
+        ]
+        result = build_account_map_json(rows, mapping, bundled_as_of="2026-07-15")
+        self.assertIn(SYNTHETIC_PIN, result["byPin"])
+        self.assertNotIn(SYNTHETIC_PIN_NO_LEADING_ZERO, result["byPin"])
+
+    def test_strips_excel_trailing_dot_zero_on_account_id(self) -> None:
+        mapping = _arapahoe_mapping()
+        rows = [
+            {
+                "accountId": f"{SYNTHETIC_PIN}.0",
+                "taxAreaId": "1",
+                "tagShortDescr": "0001",
+            }
+        ]
+        result = build_account_map_json(rows, mapping, bundled_as_of="2026-07-15")
+        self.assertIn(SYNTHETIC_PIN, result["byPin"])
+        self.assertNotIn(f"{SYNTHETIC_PIN}.0", result["byPin"])
+
+    def test_rejects_digit_account_id_longer_than_identifier_digits(self) -> None:
+        mapping = _arapahoe_mapping()
+        rows = [
+            {
+                "accountId": "1234567890",  # 10 digits; Arapahoe expects 9
+                "taxAreaId": "1",
+                "tagShortDescr": "0001",
+            }
+        ]
+        with self.assertRaises(ValueError) as ctx:
+            build_account_map_json(rows, mapping, bundled_as_of="2026-07-15")
+        self.assertIn("expected at most 9", str(ctx.exception))
 
     def test_output_passes_phase1_validator_shape(self) -> None:
         mapping = _arapahoe_mapping()
@@ -750,6 +819,12 @@ class CompareDirsTests(unittest.TestCase):
             result = compare_dirs(a, b)
         self.assertTrue(result.identical, result.format_human())
         self.assertEqual(len(result.differences), 0)
+        # Two files each skip one snapshot node; stacks also skip one dolaMatch.
+        self.assertEqual(result.skipped_snapshot, 2)
+        self.assertEqual(result.skipped_dola_match, 1)
+        human = result.format_human()
+        self.assertIn("dolaMatch=1", human)
+        self.assertIn("snapshot=2", human)
 
     def test_changed_field_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
@@ -825,6 +900,7 @@ class CompareDirsTests(unittest.TestCase):
             result = compare_dirs(a, b)
         # snapshot-only differences should not fail the compare
         self.assertTrue(result.identical, result.format_human())
+        self.assertGreater(result.skipped_snapshot, 0)
 
     def test_dolamatch_excluded_from_diff(self) -> None:
         """Phase 4 ingest leaves dolaMatch method=none; production may have mills. Not structural."""
@@ -848,6 +924,28 @@ class CompareDirsTests(unittest.TestCase):
                 )
                 (d / "arapahoe-pin-to-tag.json").write_text(
                     json.dumps(self._make_account()), encoding="utf-8"
+                )
+            result = compare_dirs(a, b)
+        self.assertTrue(result.identical, result.format_human())
+        self.assertGreater(result.skipped_dola_match, 0)
+
+    def test_int_and_float_same_value_are_equal(self) -> None:
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            acct_a = self._make_account()
+            acct_b = self._make_account()
+            acct_a["byPin"][SYNTHETIC_PIN]["totalActual"] = 500000
+            acct_b["byPin"][SYNTHETIC_PIN]["totalActual"] = 500000.0
+            for d, stacks, acct in (
+                (a, self._make_stacks(), acct_a),
+                (b, self._make_stacks(), acct_b),
+            ):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    json.dumps(stacks), encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(acct), encoding="utf-8"
                 )
             result = compare_dirs(a, b)
         self.assertTrue(result.identical, result.format_human())

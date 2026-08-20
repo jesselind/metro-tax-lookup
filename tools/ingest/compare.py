@@ -33,17 +33,6 @@ from pathlib import Path
 from typing import Any, Sequence
 
 
-# Fields excluded from structural diff
-_SNAPSHOT_SKIP_KEYS = frozenset({
-    "bundledAsOf",
-    "source",
-    "dolaSource",
-    "dolaRowCount",
-    "dolaCertifyingCounty",
-    "dolaLevyColumn",
-    "gisParcelsAsOf",
-})
-
 # Required Phase 4 outputs. Always compared (missing on one side is a difference).
 _COMPARE_FILES_REQUIRED = (
     "arapahoe-levy-stacks-by-tag-id.json",
@@ -79,10 +68,18 @@ class Difference:
 
 
 @dataclass
+class _SkipCounts:
+    dola_match: int = 0
+    snapshot: int = 0
+
+
+@dataclass
 class DiffResult:
     dir_a: str
     dir_b: str
     differences: list[Difference] = field(default_factory=list)
+    skipped_dola_match: int = 0
+    skipped_snapshot: int = 0
 
     @property
     def identical(self) -> bool:
@@ -94,6 +91,8 @@ class DiffResult:
             "dirB": self.dir_b,
             "identical": self.identical,
             "differenceCount": len(self.differences),
+            "skippedDolaMatch": self.skipped_dola_match,
+            "skippedSnapshot": self.skipped_snapshot,
             "differences": [d.to_dict() for d in self.differences],
         }
 
@@ -103,6 +102,7 @@ class DiffResult:
             f"  A: {self.dir_a}",
             f"  B: {self.dir_b}",
             f"  Result: {'IDENTICAL' if self.identical else 'DIFFERENCES'}",
+            f"  Skipped: dolaMatch={self.skipped_dola_match}, snapshot={self.skipped_snapshot}",
         ]
         if not self.identical:
             lines.append(f"  Differences: {len(self.differences)}")
@@ -125,19 +125,27 @@ def _path_str(parts: Sequence[str | int]) -> str:
     return result or "(root)"
 
 
+def _numbers_equal(a: Any, b: Any) -> bool:
+    """True when int/float values match numerically (bool is not a number here)."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return False
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return a == b
+    return False
+
+
 def _diff_values(
     a: Any,
     b: Any,
     path: list[str | int],
     filename: str,
     diffs: list[Difference],
+    skips: _SkipCounts,
     *,
-    skip_keys: frozenset[str] = frozenset(),
     skip_dola_match: bool = False,
 ) -> None:
     if type(a) != type(b):
-        # Allow None vs absent (both treated as absent)
-        if a is None and b is None:
+        if _numbers_equal(a, b):
             return
         diffs.append(Difference(filename, _path_str(path), a, b))
         return
@@ -145,14 +153,14 @@ def _diff_values(
     if isinstance(a, dict):
         all_keys = set(a.keys()) | set(b.keys())
         for key in sorted(all_keys):
-            if key in skip_keys:
-                continue
             if skip_dola_match and key == "dolaMatch":
+                skips.dola_match += 1
                 continue
             # Skip the snapshot subtree entirely: it contains only metadata
             # (bundledAsOf, source, dolaSource, ...) that differs between the old
             # rebuild and the new ingest by design.
             if key == "snapshot":
+                skips.snapshot += 1
                 continue
             a_val = a.get(key)
             b_val = b.get(key)
@@ -162,7 +170,7 @@ def _diff_values(
                 path + [key],
                 filename,
                 diffs,
-                skip_keys=frozenset(),
+                skips,
                 skip_dola_match=skip_dola_match,
             )
     elif isinstance(a, list):
@@ -176,7 +184,7 @@ def _diff_values(
                     path + [i],
                     filename,
                     diffs,
-                    skip_keys=frozenset(),
+                    skips,
                     skip_dola_match=skip_dola_match,
                 )
     else:
@@ -189,6 +197,7 @@ def _diff_file(
     a: dict[str, Any] | None,
     b: dict[str, Any] | None,
     diffs: list[Difference],
+    skips: _SkipCounts,
 ) -> None:
     if a is None and b is None:
         return
@@ -207,9 +216,22 @@ def _diff_file(
         [],
         filename,
         diffs,
-        skip_keys=_SNAPSHOT_SKIP_KEYS,
+        skips,
         skip_dola_match=True,
     )
+
+
+def _load_json_object(path: Path) -> dict[str, Any] | str | None:
+    """Load a JSON object from path. None if missing; str error if unreadable/invalid."""
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return f"(unreadable: {exc})"
+    if not isinstance(data, dict):
+        return "(root is not a JSON object)"
+    return data
 
 
 # -----------------------------------------------------------------------
@@ -219,6 +241,7 @@ def _diff_file(
 def compare_dirs(dir_a: Path, dir_b: Path) -> DiffResult:
     """Compare two JSON directories. Returns a DiffResult."""
     result = DiffResult(dir_a=str(dir_a), dir_b=str(dir_b))
+    skips = _SkipCounts()
 
     all_files: set[str] = set(_COMPARE_FILES_REQUIRED)
     for filename in _COMPARE_FILES_IF_BOTH:
@@ -229,19 +252,8 @@ def compare_dirs(dir_a: Path, dir_b: Path) -> DiffResult:
         path_a = dir_a / filename
         path_b = dir_b / filename
 
-        def _load(path: Path) -> dict[str, Any] | None | str:
-            if not path.is_file():
-                return None
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError) as exc:
-                return f"(unreadable: {exc})"
-            if not isinstance(data, dict):
-                return "(root is not a JSON object)"
-            return data
-
-        a_data = _load(path_a)
-        b_data = _load(path_b)
+        a_data = _load_json_object(path_a)
+        b_data = _load_json_object(path_b)
         if isinstance(a_data, str) or isinstance(b_data, str):
             result.differences.append(
                 Difference(
@@ -252,8 +264,10 @@ def compare_dirs(dir_a: Path, dir_b: Path) -> DiffResult:
                 )
             )
             continue
-        _diff_file(filename, a_data, b_data, result.differences)
+        _diff_file(filename, a_data, b_data, result.differences, skips)
 
+    result.skipped_dola_match = skips.dola_match
+    result.skipped_snapshot = skips.snapshot
     return result
 
 

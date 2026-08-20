@@ -51,12 +51,18 @@ def load_mapping(path: Path) -> dict[str, Any]:
         raise MappingError(
             f"mapping file {path} missing required top-level keys: {sorted(missing)}"
         )
-    levy_missing = _REQUIRED_LEVY_KEYS - set(data["levyStack"].keys())
+    levy_stack = data["levyStack"]
+    if not isinstance(levy_stack, dict):
+        raise MappingError(f"mapping file {path} levyStack must be an object")
+    levy_missing = _REQUIRED_LEVY_KEYS - set(levy_stack.keys())
     if levy_missing:
         raise MappingError(
             f"mapping file {path} levyStack missing keys: {sorted(levy_missing)}"
         )
-    account_missing = _REQUIRED_ACCOUNT_KEYS - set(data["accountMap"].keys())
+    account_map = data["accountMap"]
+    if not isinstance(account_map, dict):
+        raise MappingError(f"mapping file {path} accountMap must be an object")
+    account_missing = _REQUIRED_ACCOUNT_KEYS - set(account_map.keys())
     if account_missing:
         raise MappingError(
             f"mapping file {path} accountMap missing keys: {sorted(account_missing)}"
@@ -70,7 +76,6 @@ def load_mapping(path: Path) -> dict[str, Any]:
 
 def _resolve_column(
     headers: Sequence[str],
-    logical_name: str,
     aliases: list[str],
 ) -> str | None:
     """Return the first alias present in headers (case-sensitive match), or None."""
@@ -98,7 +103,7 @@ def _build_column_map(
     result: dict[str, str] = {}
     for alias_key in schema.values():
         col_aliases = file_aliases.get(alias_key, [])
-        found = _resolve_column(headers, alias_key, col_aliases)
+        found = _resolve_column(headers, col_aliases)
         if found is not None:
             result[alias_key] = found
     return result

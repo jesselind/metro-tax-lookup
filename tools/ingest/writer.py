@@ -35,6 +35,29 @@ def _strip(val: Any) -> str:
     return str(val).strip()
 
 
+def _normalize_account_id(raw: Any, pin_digits: int) -> str:
+    """
+    Strip, drop a trailing Excel-style ``.0``, and zero-pad digit-only ids.
+
+    Digit-only values must land at exactly ``pin_digits`` width after padding.
+    Non-digit ids are returned stripped (no length check).
+    Raises ValueError when a digit-only id is longer than ``pin_digits``.
+    """
+    s = _strip(raw)
+    if not s:
+        return ""
+    m = re.fullmatch(r"(-?\d+)\.0+", s)
+    if m:
+        s = m.group(1)
+    if s.isdigit():
+        if len(s) > pin_digits:
+            raise ValueError(
+                f"accountId {s!r} has {len(s)} digits; expected at most {pin_digits}"
+            )
+        return s.zfill(pin_digits)
+    return s
+
+
 def _normalize_bundled_as_of(raw: str) -> str:
     """Expand YYYY-MM-DD to noon-UTC ISO; leave other stamps unchanged."""
     o = raw.strip()
@@ -190,7 +213,7 @@ def build_account_map_json(
 
     by_pin: dict[str, dict[str, Any]] = {}
     for row in rows:
-        account_id = _strip(row.get("accountId", ""))
+        account_id = _normalize_account_id(row.get("accountId", ""), pin_digits)
         if not account_id:
             continue
         if account_id in by_pin:
