@@ -113,6 +113,41 @@ def _schema_without_file(cfg: dict[str, Any]) -> dict[str, str]:
     return {k: v for k, v in cfg.items() if k != "file" and isinstance(v, str)}
 
 
+def resolve_role_column_map(
+    headers: Sequence[str],
+    mapping: dict[str, Any],
+    file_role: str,
+) -> dict[str, str]:
+    """
+    Map every known logical field for ``file_role`` to a CSV header present in ``headers``.
+
+    Uses ``columnAliases[file_role]`` only (no Arapahoe header names in callers).
+    Returns logical_field -> csv_column_name for columns found.
+    """
+    file_aliases: dict[str, list[str]] = mapping.get("columnAliases", {}).get(file_role, {})
+    result: dict[str, str] = {}
+    for logical, aliases in file_aliases.items():
+        if logical.startswith("_"):
+            continue
+        if not isinstance(aliases, list):
+            continue
+        found = _resolve_column(headers, aliases)
+        if found is not None:
+            result[logical] = found
+    return result
+
+
+def logical_row_from_csv(
+    raw_row: dict[str, str | None],
+    col_map: dict[str, str],
+) -> dict[str, str]:
+    """Project a CSV DictReader row onto logical field names (stripped strings)."""
+    out: dict[str, str] = {}
+    for logical, csv_col in col_map.items():
+        out[logical] = _strip(raw_row.get(csv_col, ""))
+    return out
+
+
 # -----------------------------------------------------------------------
 # Field parsing helpers
 # -----------------------------------------------------------------------

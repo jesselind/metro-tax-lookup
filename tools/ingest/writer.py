@@ -18,11 +18,20 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
 from ingest.classify import path_is_under_public
+from ingest.dola_match import DolaJoinContext
+from ingest.parcel_record import (
+    PARCEL_RECORD_SHARD_PREFIX_LEN,
+    enrich_parcel_record_from_sibling_marts,
+    read_gis_parcels_data_as_of,
+    write_parcel_record_shards,
+)
+from ingest.situs import build_situs_json
 
 
 # -----------------------------------------------------------------------
@@ -139,6 +148,7 @@ def build_levy_stacks_json(
     *,
     bundled_as_of: str,
     tax_year: str | None = None,
+    dola_join: DolaJoinContext | None = None,
 ) -> dict[str, Any]:
     """
     Convert levy stack intermediate records to the app JSON shape.
@@ -146,9 +156,8 @@ def build_levy_stacks_json(
     Output matches arapahoe-levy-stacks-by-tag-id.json:
       { snapshot: {...}, stacksByTagId: { tagId: { tagId, taxYear, levyAspxUrl, lines: [...] } } }
 
-    dolaMatch is always method=none/confidence=low (Phase 4 does not run DOLA matching;
-    that is acceptable for the comparison since the old script's dolaMatch is a non-structural
-    enrichment and will be the subject of a noted difference).
+    When dola_join is provided, each line gets a full dolaMatch (mills when safe).
+    Without it, dolaMatch is method=none (unit tests / structural-only runs).
     """
     template: str = mapping["levyAspxTemplate"]
 
@@ -169,12 +178,18 @@ def build_levy_stacks_json(
         )
         built_lines = []
         for ln in lines_sorted:
+            code = _strip(ln.get("lineCode", ""))
+            authority = _strip(ln.get("authorityName", ""))
+            if dola_join is not None:
+                dola_match = dola_join.match_line(code, authority)
+            else:
+                dola_match = {"method": "none", "confidence": "low"}
             built_lines.append({
-                "code": _strip(ln.get("lineCode", "")),
-                "authorityName": _strip(ln.get("authorityName", "")),
+                "code": code,
+                "authorityName": authority,
                 "effectiveYear": _strip(ln.get("effectiveYear", "")) or None,
                 "status": _strip(ln.get("status", "")) or None,
-                "dolaMatch": {"method": "none", "confidence": "low"},
+                "dolaMatch": dola_match,
             })
         levy_url = template.replace("{taxAreaId}", tag_id)
         stacks[tag_id] = {
@@ -189,6 +204,8 @@ def build_levy_stacks_json(
         "source": f"new ingest (mapping: {mapping.get('county', 'unknown')})",
         "taxYear": resolved_tax_year,
     }
+    if dola_join is not None:
+        snapshot.update(dola_join.snapshot_fields())
     return {"snapshot": snapshot, "stacksByTagId": stacks}
 
 
@@ -263,7 +280,7 @@ def build_account_map_json(
 def _refuse_public(out_dir: Path) -> None:
     if path_is_under_public(out_dir):
         raise ValueError(
-            f"Refusing to write to {out_dir} — path is inside public/. "
+            f"Refusing to write to {out_dir} - path is inside public/. "
             "Use a comparison directory (e.g. supporting-data/_ingest-out/)."
         )
 
@@ -276,21 +293,34 @@ def write_comparison_dir(
     mapping: dict[str, Any],
     bundled_as_of: str,
     tax_year: str | None = None,
+    dola_join: DolaJoinContext | None = None,
+    situs_map: dict[str, list[dict[str, str]]] | None = None,
+    parcel_record_map: dict[str, dict[str, Any]] | None = None,
+    sibling_paths: dict[str, Path | None] | None = None,
+    skip_neighborhood: bool = False,
+    gis_parcels_gdb: Path | None = None,
+    skip_situs_shards: bool = False,
 ) -> None:
     """
-    Write levy stacks + account map JSON to out_dir (comparison only; never public/).
+    Write levy stacks + account map (+ optional situs/shards) to out_dir.
 
-    The filenames intentionally match the shipping filenames so a diff tool can
-    compare this directory directly to public/data/.
+    Comparison only; never public/. Filenames match shipping so compare.py can
+    diff against public/data/.
     """
     _refuse_public(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sep = (",", ":")
+    pin_digits = int(mapping.get("identifierDigits", 9))
+    bundled_norm = _normalize_bundled_as_of(bundled_as_of)
 
     resolved_tax_year = tax_year or _tax_year_from_rows(stack_rows)
     stacks = build_levy_stacks_json(
-        stack_rows, mapping, bundled_as_of=bundled_as_of, tax_year=resolved_tax_year
+        stack_rows,
+        mapping,
+        bundled_as_of=bundled_as_of,
+        tax_year=resolved_tax_year,
+        dola_join=dola_join,
     )
     used_tax_area_ids = {
         _strip(row.get("taxAreaId", ""))
@@ -310,3 +340,80 @@ def write_comparison_dir(
     )
     account_path = out_dir / "arapahoe-pin-to-tag.json"
     account_path.write_text(json.dumps(account_map, separators=sep), encoding="utf-8")
+
+    if skip_situs_shards:
+        return
+
+    if situs_map is not None:
+        situs_payload = build_situs_json(
+            situs_map,
+            bundled_as_of=bundled_norm,
+            tax_year=resolved_tax_year,
+            source=f"new ingest (mapping: {mapping.get('county', 'unknown')}; Main Parcel situs)",
+        )
+        situs_path = out_dir / "arapahoe-situs-to-pins.json"
+        situs_path.write_text(json.dumps(situs_payload, separators=sep), encoding="utf-8")
+
+    if parcel_record_map is None:
+        return
+
+    paths = sibling_paths or {}
+    gdb = None if skip_neighborhood else gis_parcels_gdb
+    if not skip_neighborhood and gdb is not None and not gdb.exists():
+        raise ValueError(
+            f"Missing Open GIS Parcels GDB: {gdb}\n"
+            "Download the Parcels layer from https://gis.arapahoegov.com/datadownload/, "
+            "or pass --skip-neighborhood to build shards without neighborhood fields."
+        )
+
+    join_counts = enrich_parcel_record_from_sibling_marts(
+        parcel_record_map,
+        mapping,
+        legal_descriptions_path=paths.get("legalDescriptions"),
+        legal_parties_path=paths.get("legalParties"),
+        land_path=paths.get("land"),
+        building_path=paths.get("building"),
+        building_xfob_path=paths.get("buildingXfob"),
+        transfers_path=paths.get("transfers"),
+        permits_path=paths.get("permits"),
+        state_class_xlsx_path=paths.get("stateClassXlsx"),
+        nbhd_xlsx_path=paths.get("nbhdXlsx"),
+        gis_parcels_gdb_path=gdb,
+    )
+    if not skip_neighborhood and not join_counts.get("neighborhood"):
+        raise ValueError(
+            f"Open GIS Parcels GDB joined 0 neighborhoods: {gdb}\n"
+            "Check the layer name and PIN / Neighborhood_Code columns, "
+            "or pass --skip-neighborhood to build shards without neighborhood fields."
+        )
+    if any(join_counts.values()):
+        print(
+            "Parcel record sibling joins: "
+            + ", ".join(f"{k}={v}" for k, v in join_counts.items() if v),
+            file=sys.stderr,
+        )
+
+    parcel_source = (
+        f"new ingest (mapping: {mapping.get('county', 'unknown')}; "
+        "Main Parcel + sibling mart tables"
+    )
+    if join_counts.get("neighborhood"):
+        parcel_source += " + Open GIS Assessor Parcels (neighborhood)"
+    parcel_source += f"; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
+    parcel_snapshot: dict[str, Any] = {
+        "bundledAsOf": bundled_norm,
+        "source": parcel_source,
+        "taxYear": resolved_tax_year,
+    }
+    if join_counts.get("neighborhood") and gdb is not None:
+        gis_as_of = read_gis_parcels_data_as_of(gdb)
+        if gis_as_of:
+            parcel_snapshot["gisParcelsAsOf"] = gis_as_of
+
+    write_parcel_record_shards(
+        out_dir,
+        parcel_record_map,
+        parcel_snapshot,
+        pin_digits=pin_digits,
+        separators=sep,
+    )

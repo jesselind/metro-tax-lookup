@@ -7,14 +7,13 @@
 """Compare two JSON output directories (old rebuild vs new ingest).
 
 snapshot fields (bundledAsOf, source, dolaSource, dolaRowCount,
-dolaCertifyingCounty, dolaLevyColumn) are excluded from the diff because they
-describe the tool that produced the file, not the data. dolaMatch on levy lines
-is also excluded: the old script runs DOLA matching; the new ingest starts with
-method=none and will add matching in a later phase.
+dolaCertifyingCounty, dolaLevyColumn, lookupNote, gisParcelsAsOf) are excluded
+from the diff because they describe the tool that produced the file, not the data.
 
-Compares levy stacks and the account map. Situs is compared only when both
-directories have that file. Other shipping JSON (metro levies, directory,
-explainers) is ignored.
+dolaMatch on levy lines is compared (Phase 5 mill join). Stacks and account map
+are always compared. Situs and parcel-record shards are compared when either
+side has them (missing on one side is a difference). Other shipping JSON
+(metro levies, directory, explainers) is ignored.
 
 Usage:
   python3 tools/ingest/compare.py <dir-a> <dir-b>
@@ -33,15 +32,19 @@ from pathlib import Path
 from typing import Any, Sequence
 
 
-# Required Phase 4 outputs. Always compared (missing on one side is a difference).
+# Required outputs. Always compared (missing on one side is a difference).
 _COMPARE_FILES_REQUIRED = (
     "arapahoe-levy-stacks-by-tag-id.json",
     "arapahoe-pin-to-tag.json",
 )
-# Optional later outputs. Compared only when both directories have the file.
-_COMPARE_FILES_IF_BOTH = (
+# Optional outputs. Compared when either side has the file (missing on one side
+# is a difference). Do not use "both must exist" - that hides a skipped situs build.
+_COMPARE_FILES_IF_EITHER = (
     "arapahoe-situs-to-pins.json",
 )
+_SHARD_DIR = "arapahoe-parcel-record-by-pin"
+# Cap human output so a bad shard run cannot dump thousands of lines.
+_HUMAN_DIFF_LIMIT = 40
 
 
 @dataclass
@@ -69,7 +72,6 @@ class Difference:
 
 @dataclass
 class _SkipCounts:
-    dola_match: int = 0
     snapshot: int = 0
 
 
@@ -78,7 +80,6 @@ class DiffResult:
     dir_a: str
     dir_b: str
     differences: list[Difference] = field(default_factory=list)
-    skipped_dola_match: int = 0
     skipped_snapshot: int = 0
 
     @property
@@ -91,7 +92,6 @@ class DiffResult:
             "dirB": self.dir_b,
             "identical": self.identical,
             "differenceCount": len(self.differences),
-            "skippedDolaMatch": self.skipped_dola_match,
             "skippedSnapshot": self.skipped_snapshot,
             "differences": [d.to_dict() for d in self.differences],
         }
@@ -102,12 +102,16 @@ class DiffResult:
             f"  A: {self.dir_a}",
             f"  B: {self.dir_b}",
             f"  Result: {'IDENTICAL' if self.identical else 'DIFFERENCES'}",
-            f"  Skipped: dolaMatch={self.skipped_dola_match}, snapshot={self.skipped_snapshot}",
+            f"  Skipped: snapshot={self.skipped_snapshot}",
         ]
         if not self.identical:
             lines.append(f"  Differences: {len(self.differences)}")
-            for diff in self.differences:
+            shown = self.differences[:_HUMAN_DIFF_LIMIT]
+            for diff in shown:
                 lines.append(diff.format_human())
+            omitted = len(self.differences) - len(shown)
+            if omitted > 0:
+                lines.append(f"  ... and {omitted} more (use --json for full report)")
         return "\n".join(lines) + "\n"
 
 
@@ -141,8 +145,6 @@ def _diff_values(
     filename: str,
     diffs: list[Difference],
     skips: _SkipCounts,
-    *,
-    skip_dola_match: bool = False,
 ) -> None:
     if type(a) != type(b):
         if _numbers_equal(a, b):
@@ -153,9 +155,6 @@ def _diff_values(
     if isinstance(a, dict):
         all_keys = set(a.keys()) | set(b.keys())
         for key in sorted(all_keys):
-            if skip_dola_match and key == "dolaMatch":
-                skips.dola_match += 1
-                continue
             # Skip the snapshot subtree entirely: it contains only metadata
             # (bundledAsOf, source, dolaSource, ...) that differs between the old
             # rebuild and the new ingest by design.
@@ -171,7 +170,6 @@ def _diff_values(
                 filename,
                 diffs,
                 skips,
-                skip_dola_match=skip_dola_match,
             )
     elif isinstance(a, list):
         if len(a) != len(b):
@@ -185,7 +183,6 @@ def _diff_values(
                     filename,
                     diffs,
                     skips,
-                    skip_dola_match=skip_dola_match,
                 )
     else:
         if a != b:
@@ -208,8 +205,7 @@ def _diff_file(
         diffs.append(Difference(filename, "(file)", "(present in a)", None))
         return
 
-    # Skip snapshot metadata; skip dolaMatch since old script has DOLA results
-    # and the new ingest starts with method=none.
+    # Skip snapshot metadata only; dolaMatch is part of parity.
     _diff_values(
         a,
         b,
@@ -217,7 +213,6 @@ def _diff_file(
         filename,
         diffs,
         skips,
-        skip_dola_match=True,
     )
 
 
@@ -244,8 +239,8 @@ def compare_dirs(dir_a: Path, dir_b: Path) -> DiffResult:
     skips = _SkipCounts()
 
     all_files: set[str] = set(_COMPARE_FILES_REQUIRED)
-    for filename in _COMPARE_FILES_IF_BOTH:
-        if (dir_a / filename).is_file() and (dir_b / filename).is_file():
+    for filename in _COMPARE_FILES_IF_EITHER:
+        if (dir_a / filename).is_file() or (dir_b / filename).is_file():
             all_files.add(filename)
 
     for filename in sorted(all_files):
@@ -266,9 +261,64 @@ def compare_dirs(dir_a: Path, dir_b: Path) -> DiffResult:
             continue
         _diff_file(filename, a_data, b_data, result.differences, skips)
 
-    result.skipped_dola_match = skips.dola_match
+    _compare_shard_dirs(dir_a, dir_b, result.differences, skips)
+
     result.skipped_snapshot = skips.snapshot
     return result
+
+
+def _compare_shard_dirs(
+    dir_a: Path,
+    dir_b: Path,
+    diffs: list[Difference],
+    skips: _SkipCounts,
+) -> None:
+    """Compare arapahoe-parcel-record-by-pin/ when either side has the directory.
+
+    Missing on one side only is a difference. When both exist, compare the same
+    shard prefixes and byPin content (snapshot still skipped).
+    """
+    shard_a = dir_a / _SHARD_DIR
+    shard_b = dir_b / _SHARD_DIR
+    a_exists = shard_a.is_dir()
+    b_exists = shard_b.is_dir()
+    if not a_exists and not b_exists:
+        return
+    if a_exists != b_exists:
+        diffs.append(
+            Difference(
+                _SHARD_DIR,
+                "(directory)",
+                "(present)" if a_exists else None,
+                "(present)" if b_exists else None,
+            )
+        )
+        return
+
+    files_a = {p.name for p in shard_a.glob("*.json")}
+    files_b = {p.name for p in shard_b.glob("*.json")}
+    all_names = files_a | files_b
+    for name in sorted(all_names):
+        filename = f"{_SHARD_DIR}/{name}"
+        if name not in files_a:
+            diffs.append(Difference(filename, "(file)", None, "(present in b)"))
+            continue
+        if name not in files_b:
+            diffs.append(Difference(filename, "(file)", "(present in a)", None))
+            continue
+        a_data = _load_json_object(shard_a / name)
+        b_data = _load_json_object(shard_b / name)
+        if isinstance(a_data, str) or isinstance(b_data, str):
+            diffs.append(
+                Difference(
+                    filename,
+                    "(file)",
+                    a_data if isinstance(a_data, str) else ("(present)" if a_data is not None else None),
+                    b_data if isinstance(b_data, str) else ("(present)" if b_data is not None else None),
+                )
+            )
+            continue
+        _diff_file(filename, a_data, b_data, diffs, skips)
 
 
 # -----------------------------------------------------------------------
@@ -279,7 +329,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Compare two JSON output directories (old rebuild vs new ingest). "
-            "Excludes snapshot metadata and dolaMatch fields from the diff."
+            "Excludes snapshot metadata from the diff; includes dolaMatch."
         )
     )
     parser.add_argument("dir_a", type=Path, help="Directory A (e.g. public/data)")

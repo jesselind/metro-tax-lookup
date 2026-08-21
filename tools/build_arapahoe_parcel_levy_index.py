@@ -73,6 +73,11 @@ except ImportError:
     raise
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+_TOOLS_DIR = Path(__file__).resolve().parent
+if str(_TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_TOOLS_DIR))
+from situs_lookup_contract import SITUS_LOOKUP_VERSION  # noqa: E402
+
 SUPPORTING_DATA = REPO_ROOT / "supporting-data"
 COUNTY_MART = SUPPORTING_DATA / "county-mart"
 # One line YYYY-MM-DD: date you downloaded / refreshed the mart batch (not rebuild time).
@@ -2514,7 +2519,7 @@ def main() -> None:
         json.dumps(
             {
                 "snapshot": situs_snapshot,
-                "lookupVersion": 1,
+                "lookupVersion": SITUS_LOOKUP_VERSION,
                 "entryCount": len(situs_map),
                 "byKey": situs_map,
             },
