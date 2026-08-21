@@ -39,7 +39,6 @@ from ingest.writer import write_comparison_dir  # noqa: E402
 from ingest.classify import path_is_under_public  # noqa: E402
 from ingest.dola_match import (  # noqa: E402
     DEFAULT_OVERRIDES,
-    default_dola_export_path,
     load_dola_join_context,
 )
 from ingest.parcel_record import read_main_parcel_bundle  # noqa: E402
@@ -261,15 +260,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     dola_join = None
     if not args.skip_dola_join:
-        dola_path = (
-            args.dola_export if args.dola_export is not None else default_dola_export_path()
-        )
-        ovr_path = (
-            args.dola_overrides if args.dola_overrides is not None else DEFAULT_OVERRIDES
-        )
         dola_join = load_dola_join_context(
-            dola_export=dola_path,
-            overrides_path=ovr_path,
+            dola_export=args.dola_export,
+            overrides_path=args.dola_overrides,
             certifying_county=args.dola_certifying_county,
         )
 

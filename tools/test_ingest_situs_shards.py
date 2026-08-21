@@ -254,6 +254,8 @@ class TestSitusShardsEndToEnd(unittest.TestCase):
             self.assertTrue(shard.is_file())
 
     def test_compare_shards_when_both_present(self) -> None:
+        # compare_dirs ignores snapshot metadata (including shard snapshots), so
+        # differing snapshot.source alone must not fail the compare.
         payload = {
             "snapshot": {"source": "a"},
             "pinDigits": 9,

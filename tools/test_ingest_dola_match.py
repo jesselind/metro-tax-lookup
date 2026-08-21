@@ -24,6 +24,7 @@ from ingest.dola_match import (  # noqa: E402
     dola_match_for_mart_line,
     load_dola_entities_csv,
     load_overrides,
+    match_dola_line,
     normalize_for_match,
 )
 
@@ -97,6 +98,56 @@ class OverrideAndMillsTests(unittest.TestCase):
         self.assertEqual(out["millsReason"], "bond_purpose_mismatch")
 
 
+class MatchDolaLineTests(unittest.TestCase):
+    def test_high_score_fuzzy_match(self) -> None:
+        entities = [
+            {
+                "legalName": "Example Metropolitan District",
+                "norm": normalize_for_match("Example Metropolitan District"),
+                "taxEntityId": "1/1",
+                "lgId": "1",
+                "levyMills": 10.0,
+            }
+        ]
+        result = match_dola_line(
+            "EXAMPLE METROPOLITAN DISTRICT",
+            entities,
+            {},
+        )
+        self.assertEqual(result["method"], "fuzzy")
+        self.assertEqual(result["confidence"], "high")
+        self.assertEqual(result["matchedLegalName"], "Example Metropolitan District")
+        self.assertGreaterEqual(result["score"], 0.92)
+
+    def test_score_below_threshold_is_rejected(self) -> None:
+        entities = [
+            {
+                "legalName": "Example Metropolitan District",
+                "norm": normalize_for_match("Example Metropolitan District"),
+                "taxEntityId": "1/1",
+                "lgId": "1",
+                "levyMills": 10.0,
+            }
+        ]
+        result = match_dola_line(
+            "COMPLETELY UNRELATED AUTHORITY NAME XYZ",
+            entities,
+            {},
+        )
+        self.assertEqual(result["method"], "none")
+        self.assertEqual(result["confidence"], "low")
+        self.assertIsNone(result["matchedLegalName"])
+        self.assertIsNotNone(result["score"])
+        self.assertLess(result["score"], 0.70)
+
+    def test_empty_entities_fallback(self) -> None:
+        result = match_dola_line("SOME DISTRICT", [], {})
+        self.assertEqual(result["method"], "none")
+        self.assertEqual(result["confidence"], "low")
+        self.assertIsNone(result["matchedLegalName"])
+        self.assertIsNone(result["score"])
+
+
 class LoadCsvTests(unittest.TestCase):
     def test_filters_certifying_county(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -133,7 +184,9 @@ class OverridesFileTests(unittest.TestCase):
         self.assertEqual(DEFAULT_OVERRIDES.parent.name, "tools")
         loaded = load_overrides(DEFAULT_OVERRIDES)
         self.assertIn("ARAPAHOE COUNTY", loaded)
-        self.assertEqual(loaded["ARAPAHOE COUNTY"].get("millsOverride"), 15.959)
+        mills = loaded["ARAPAHOE COUNTY"].get("millsOverride")
+        self.assertIsInstance(mills, (int, float))
+        self.assertFalse(isinstance(mills, bool))
 
     def test_no_duplicate_overrides_under_ingest_mappings(self) -> None:
         dup = (

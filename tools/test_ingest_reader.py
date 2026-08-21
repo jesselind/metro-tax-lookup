@@ -926,6 +926,10 @@ class CompareDirsTests(unittest.TestCase):
             result = compare_dirs(a, b)
         self.assertFalse(result.identical)
         self.assertGreater(len(result.differences), 0)
+        self.assertTrue(
+            any("dolaMatch" in d.path for d in result.differences),
+            result.format_human(),
+        )
 
     def test_int_and_float_same_value_are_equal(self) -> None:
         with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:

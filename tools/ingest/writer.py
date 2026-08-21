@@ -359,9 +359,10 @@ def write_comparison_dir(
 
     paths = sibling_paths or {}
     gdb = None if skip_neighborhood else gis_parcels_gdb
-    if not skip_neighborhood and gdb is not None and not gdb.exists():
+    if not skip_neighborhood and (gdb is None or not gdb.exists()):
+        missing = "not configured (mapping defaultPaths.gisParcelsGdb / --gis-parcels-gdb)" if gdb is None else str(gdb)
         raise ValueError(
-            f"Missing Open GIS Parcels GDB: {gdb}\n"
+            f"Missing Open GIS Parcels GDB: {missing}\n"
             "Download the Parcels layer from https://gis.arapahoegov.com/datadownload/, "
             "or pass --skip-neighborhood to build shards without neighborhood fields."
         )

@@ -40,6 +40,18 @@ class SitusLookupContractTests(unittest.TestCase):
         from ingest import situs as ingest_situs
 
         self.assertEqual(ingest_situs.SITUS_LOOKUP_VERSION, SITUS_LOOKUP_VERSION)
+        situs_path = _TOOLS / "ingest" / "situs.py"
+        text = situs_path.read_text(encoding="utf-8")
+        self.assertIn(
+            "from situs_lookup_contract import SITUS_LOOKUP_VERSION",
+            text,
+        )
+        self.assertIn('"lookupVersion": SITUS_LOOKUP_VERSION', text)
+        self.assertNotRegex(
+            text,
+            r'"lookupVersion":\s*\d+',
+            "New ingest must not hardcode lookupVersion; use SITUS_LOOKUP_VERSION.",
+        )
 
     def test_old_rebuild_imports_shared_constant(self) -> None:
         build_path = _TOOLS / "build_arapahoe_parcel_levy_index.py"

@@ -85,6 +85,21 @@ def _strip(val: Any) -> str:
     return str(val).strip()
 
 
+def _sequence_sort_key(raw: Any) -> tuple[int, float | str]:
+    """Sort land/building sequence numbers without raising on odd CSV cells.
+
+    Numeric values (including "1.0") sort together. Non-numeric (e.g. "1A")
+    sort after numbers by string. Empty sorts as 0.
+    """
+    s = _strip(raw)
+    if not s:
+        return (0, 0.0)
+    try:
+        return (0, float(s))
+    except ValueError:
+        return (1, s)
+
+
 def _optional_str(val: Any) -> str | None:
     s = _strip(val)
     return s if s else None
@@ -517,7 +532,7 @@ def read_land_fields_by_pin(
     for pin, rows in by_pin.items():
         rows_sorted = sorted(
             rows,
-            key=lambda r: int(_strip(r.get("num", "")) or "0"),
+            key=lambda r: _sequence_sort_key(r.get("num", "")),
         )
         land_lines = [
             line
@@ -620,7 +635,7 @@ def read_building_fields_by_pin(
     for pin, rows in bld_by_pin.items():
         bld_rows = sorted(
             rows,
-            key=lambda r: int(_strip(r.get("num", "")) or "0"),
+            key=lambda r: _sequence_sort_key(r.get("num", "")),
         )
         buildings = [
             bld for bld in (building_record_from_logical(r) for r in bld_rows) if bld
@@ -892,11 +907,11 @@ def read_neighborhood_by_pin(
 ) -> dict[str, dict[str, str]]:
     try:
         import pyogrio
-    except ImportError:
+    except ImportError as exc:
         raise RuntimeError(
             f"Open GIS Parcels GDB present ({gdb_path}) but pyogrio is not installed. "
             "Run: pip install -r tools/requirements.txt"
-        )
+        ) from exc
 
     layer, pin_col, code_col, name_col = _gis_parcels_config(mapping)
     df = pyogrio.read_dataframe(
@@ -910,6 +925,7 @@ def read_neighborhood_by_pin(
             df[pin_col].tolist(),
             df[code_col].tolist(),
             df[name_col].tolist(),
+            strict=True,
         )
     )
     out, n_conflict = neighborhood_by_pin_from_rows(rows, pin_digits=pin_digits)
