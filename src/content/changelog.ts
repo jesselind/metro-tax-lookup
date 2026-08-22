@@ -27,6 +27,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.14.0",
+    date: "2026-08-22",
+    title: "Two-engine ingest architecture proved; shipping rebuild unchanged",
+    highlights: [
+      "Locked model: the shipping Arapahoe rebuild (npm run build:arapahoe-index to public/data/) and the new ingest engine (tools/ingest/, npm run build:ingest to supporting-data/_ingest-out/) stay separate. No cross-imports, no retargeting the old script, no deleting v1. Writing shipping JSON from ingest is an explicit later cutover, not this release.",
+      "Arapahoe backend prove-out (Phase 6): the same supporting-data mart/GIS/DOLA inputs through engine v2 reproduce committed public/data/ (levy stacks, account map, situs, parcel-record shards, dolaMatch). npm run diff:ingest -- public/data supporting-data/_ingest-out must exit IDENTICAL. Green CI does not substitute; parity is a local gate (CI has no mart CSVs).",
+      "Engine v2 now emits situs, parcel-record shards, and DOLA mill join (dola_match.py; shared tools/arapahoe_dola_authority_overrides.json). compare.py includes dolaMatch; snapshot metadata remains the only documented compare skip.",
+      "Prove-out safeguards: npm run validate:app-json -- --data-dir supporting-data/_ingest-out validates candidate output; --data-dir resolves with realpathSync and must stay inside the repo. Build and compare CLI tests refuse public/ out dirs. CI runs ci:test:ingest (classifier, reader/writer/compare, situs contract).",
+      "Maintainer docs: docs/README.md (index) and docs/county-ingest.md (control vs candidate paths, compare semantics, prove-out procedure). Root README links there instead of inlining the ritual.",
+      "Residents and forks: committed public/data/ and the live site behavior are unchanged until a future ship-from-new decision. npm install + npm run dev still use the same bundled JSON.",
+    ],
+  },
+  {
     version: "4.13.0",
     date: "2026-08-18",
     title: "New ingest beside current Arapahoe rebuild (mapping file, reader, writer, compare)",

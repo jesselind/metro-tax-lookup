@@ -5,14 +5,14 @@
  *
  * Default: validate committed shipping JSON under public/data/.
  * Prove-out: pass --data-dir supporting-data/_ingest-out to validate engine v2
- * candidate output without touching public/data/.
+ * candidate output without touching public/data/. See docs/county-ingest.md.
  *
  * Usage:
  *   node tools/validate_app_json.mjs
  *   node tools/validate_app_json.mjs --data-dir supporting-data/_ingest-out
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -31,7 +31,6 @@ const { values } = parseArgs({
 });
 
 const dataDir = values["data-dir"].replace(/\/+$/, "") || "public/data";
-const dataRoot = resolve(repoRoot, dataDir);
 
 function displayPath(absPath) {
   return relative(root, absPath) || absPath;
@@ -42,7 +41,21 @@ function fail(msg) {
   process.exit(1);
 }
 
-if (dataRoot !== repoRoot && !dataRoot.startsWith(`${repoRoot}${sep}`)) {
+function canonicalPath(absPath, label) {
+  try {
+    return realpathSync(absPath);
+  } catch (e) {
+    fail(`${label}: cannot resolve ${displayPath(absPath)} (${e.message})`);
+  }
+}
+
+const repoRootCanonical = canonicalPath(repoRoot, "repository root");
+const dataRoot = canonicalPath(resolve(repoRoot, dataDir), "--data-dir");
+
+if (
+  dataRoot !== repoRootCanonical &&
+  !dataRoot.startsWith(`${repoRootCanonical}${sep}`)
+) {
   fail(`--data-dir must resolve inside the repository: ${dataDir}`);
 }
 

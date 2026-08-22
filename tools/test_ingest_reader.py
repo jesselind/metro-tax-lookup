@@ -12,7 +12,9 @@ Tests must pass without any files in supporting-data/.
 
 from __future__ import annotations
 
+import contextlib
 import csv
+import io
 import json
 import tempfile
 import unittest
@@ -1032,21 +1034,24 @@ class BuildCliTests(unittest.TestCase):
         from ingest.build import main
         from ingest.classify import PUBLIC_DIR
 
-        code = main(
-            [
-                "--mapping",
-                "tools/ingest/mappings/arapahoe.json",
-                "--tag-file",
-                "nonexistent-tag.csv",
-                "--parcel-file",
-                "nonexistent-parcel.csv",
-                "--out-dir",
-                str(PUBLIC_DIR / "data"),
-                "--bundled-as-of",
-                "2026-07-15",
-            ]
-        )
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            code = main(
+                [
+                    "--mapping",
+                    "tools/ingest/mappings/arapahoe.json",
+                    "--tag-file",
+                    "nonexistent-tag.csv",
+                    "--parcel-file",
+                    "nonexistent-parcel.csv",
+                    "--out-dir",
+                    str(PUBLIC_DIR / "data"),
+                    "--bundled-as-of",
+                    "2026-07-15",
+                ]
+            )
         self.assertEqual(code, 2)
+        self.assertIn("inside public/", stderr.getvalue())
 
 
 class CompareCliTests(unittest.TestCase):
