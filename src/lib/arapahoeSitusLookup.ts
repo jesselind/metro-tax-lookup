@@ -25,6 +25,7 @@ export type ArapahoeSitusToPinsFile = {
     taxYear?: string | null;
     lookupNote?: string;
   };
+  /** Schema stamp for key/label rules (see tools/situs_lookup_contract.py). Not an engine id. */
   lookupVersion: number;
   entryCount: number;
   byKey: Record<string, ArapahoeSitusPinHit[]>;

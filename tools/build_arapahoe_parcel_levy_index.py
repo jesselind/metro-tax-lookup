@@ -73,6 +73,11 @@ except ImportError:
     raise
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+_TOOLS_DIR = Path(__file__).resolve().parent
+if str(_TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_TOOLS_DIR))
+from situs_lookup_contract import SITUS_LOOKUP_VERSION  # noqa: E402
+
 SUPPORTING_DATA = REPO_ROOT / "supporting-data"
 COUNTY_MART = SUPPORTING_DATA / "county-mart"
 # One line YYYY-MM-DD: date you downloaded / refreshed the mart batch (not rebuild time).
@@ -157,6 +162,20 @@ def strip_field(s: str | None) -> str:
     if s is None:
         return ""
     return str(s).strip()
+
+
+def _sequence_sort_key(raw: Any) -> tuple[int, float | str]:
+    """Sort land/building sequence numbers without raising on odd CSV cells.
+
+    Same rule as ingest.parcel_record._sequence_sort_key (numeric first, then string).
+    """
+    s = strip_field(str(raw) if raw is not None else "")
+    if not s:
+        return (0, 0.0)
+    try:
+        return (0, float(s))
+    except ValueError:
+        return (1, s)
 
 
 def parse_parcel_value_cell(val: Any) -> float | None:
@@ -1577,7 +1596,7 @@ def read_land_fields_by_pin(path: Path) -> dict[str, dict[str, Any]]:
     for pin, rows in by_pin.items():
         rows_sorted = sorted(
             rows,
-            key=lambda r: int(strip_field(r.get("Num", "")) or "0"),
+            key=lambda r: _sequence_sort_key(r.get("Num", "")),
         )
         land_lines = [
             line
@@ -1618,7 +1637,7 @@ def read_building_fields_by_pin(
     for pin, rows in bld_by_pin.items():
         bld_rows = sorted(
             rows,
-            key=lambda r: int(strip_field(r.get("num", "")) or "0"),
+            key=lambda r: _sequence_sort_key(r.get("num", "")),
         )
         buildings = [
             bld
@@ -2514,7 +2533,7 @@ def main() -> None:
         json.dumps(
             {
                 "snapshot": situs_snapshot,
-                "lookupVersion": 1,
+                "lookupVersion": SITUS_LOOKUP_VERSION,
                 "entryCount": len(situs_map),
                 "byKey": situs_map,
             },

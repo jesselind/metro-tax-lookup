@@ -819,11 +819,9 @@ class CompareDirsTests(unittest.TestCase):
             result = compare_dirs(a, b)
         self.assertTrue(result.identical, result.format_human())
         self.assertEqual(len(result.differences), 0)
-        # Two files each skip one snapshot node; stacks also skip one dolaMatch.
+        # Two files each skip one snapshot node.
         self.assertEqual(result.skipped_snapshot, 2)
-        self.assertEqual(result.skipped_dola_match, 1)
         human = result.format_human()
-        self.assertIn("dolaMatch=1", human)
         self.assertIn("snapshot=2", human)
 
     def test_changed_field_is_reported(self) -> None:
@@ -902,15 +900,15 @@ class CompareDirsTests(unittest.TestCase):
         self.assertTrue(result.identical, result.format_human())
         self.assertGreater(result.skipped_snapshot, 0)
 
-    def test_dolamatch_excluded_from_diff(self) -> None:
-        """Phase 4 ingest leaves dolaMatch method=none; production may have mills. Not structural."""
+    def test_dolamatch_included_in_diff(self) -> None:
+        """Phase 5 mill join: dolaMatch differences count toward parity."""
         with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
             a = Path(a_tmp)
             b = Path(b_tmp)
             stacks_a = self._make_stacks()
             stacks_b = self._make_stacks()
             stacks_a["stacksByTagId"]["1"]["lines"][0]["dolaMatch"] = {
-                "method": "exact",
+                "method": "fuzzy",
                 "confidence": "high",
                 "mills": 12.345,
             }
@@ -926,8 +924,12 @@ class CompareDirsTests(unittest.TestCase):
                     json.dumps(self._make_account()), encoding="utf-8"
                 )
             result = compare_dirs(a, b)
-        self.assertTrue(result.identical, result.format_human())
-        self.assertGreater(result.skipped_dola_match, 0)
+        self.assertFalse(result.identical)
+        self.assertGreater(len(result.differences), 0)
+        self.assertTrue(
+            any("dolaMatch" in d.path for d in result.differences),
+            result.format_human(),
+        )
 
     def test_int_and_float_same_value_are_equal(self) -> None:
         with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
@@ -985,9 +987,40 @@ class CompareDirsTests(unittest.TestCase):
                     payload_acct, encoding="utf-8"
                 )
             (a / "metro-levies-2026.json").write_text("{}", encoding="utf-8")
-            (a / "arapahoe-situs-to-pins.json").write_text("{}", encoding="utf-8")
             result = compare_dirs(a, b)
         self.assertTrue(result.identical, result.format_human())
+
+    def test_situs_only_on_one_side_is_a_difference(self) -> None:
+        """Parity hole guard: missing situs must not silently pass."""
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            payload_stacks = json.dumps(self._make_stacks())
+            payload_acct = json.dumps(self._make_account())
+            for d in (a, b):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    payload_stacks, encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    payload_acct, encoding="utf-8"
+                )
+            (a / "arapahoe-situs-to-pins.json").write_text(
+                json.dumps(
+                    {
+                        "snapshot": {"bundledAsOf": "2026-07-15"},
+                        "lookupVersion": 2,
+                        "entryCount": 0,
+                        "byKey": {},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = compare_dirs(a, b)
+        self.assertFalse(result.identical)
+        self.assertTrue(
+            any(d.filename == "arapahoe-situs-to-pins.json" for d in result.differences),
+            result.format_human(),
+        )
 
 
 if __name__ == "__main__":
