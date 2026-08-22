@@ -925,7 +925,6 @@ def read_neighborhood_by_pin(
             df[pin_col].tolist(),
             df[code_col].tolist(),
             df[name_col].tolist(),
-            strict=True,
         )
     )
     out, n_conflict = neighborhood_by_pin_from_rows(rows, pin_digits=pin_digits)
