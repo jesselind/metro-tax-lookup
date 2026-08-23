@@ -1,0 +1,24 @@
+# Maintainer documentation
+
+Tracked guides for fork/contributors. Setup, npm scripts, data layout, and security notes stay in the root **[README.md](../README.md)**. Resident-facing methodology stays on in-app **`/sources`**.
+
+Ephemeral checklists and multi-session handoff notes go in **`docs/_working/`** (gitignored). Delete those when the work ships.
+
+## Tracked guides
+
+| Document | Use when |
+| --- | --- |
+| [county-ingest.md](./county-ingest.md) | Two rebuild engines, comparison output, prove-out vs committed shipping JSON |
+| [levy-explainer-authoring.md](./levy-explainer-authoring.md) | Levy detail modal and authority-chain JSON authoring |
+| [county-service-gap-callouts.md](./county-service-gap-callouts.md) | COUNTY DATA GAP dashboard + `/sources` pairing |
+| [authority-chain-unlocated-sources.md](./authority-chain-unlocated-sources.md) | Official documents missing from authority-chain trails |
+
+## Ephemeral (tracked for now)
+
+| Document | Notes |
+| --- | --- |
+| [_working-comps-pdf-and-nov-sample.md](./_working-comps-pdf-and-nov-sample.md) | NOV parser / comps grid prototyping; delete when shipped or superseded |
+
+## Not in git
+
+`docs/_working/` — phase checklists, agent resume prompts, scratch research.

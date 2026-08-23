@@ -16,7 +16,7 @@ This file is for **repository visitors and contributors**: setup, app/architectu
 
 The in-app **`/sources`** page is for **taxpayers and auditors**: verify-without-code steps, official citations, and plain-language methodology (matching, assessed splits, district contact vs tax IDs). Do **not** duplicate long pipeline or path dump on `/sources` — link here instead. Do **not** paste long resident methodology into this README — link `/sources`.
 
-**Multi-session / agent handoff:** Ephemeral task notes go in **`docs/_working/`** (gitignored). Add markdown files there (e.g. `parcel-record-dashboard.md`); start a chat with *Read `docs/_working/<task>.md` and continue.* Update status at end of session; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`.
+**Maintainer guides (tracked):** **[docs/README.md](docs/README.md)** — index of in-repo docs (ingest, levy explainers, county gap callouts, etc.). Ephemeral phase checklists go in **`docs/_working/`** (gitignored). Start a chat with *Read `docs/_working/<task>.md` and continue* when using scratch notes; delete when shipped. Older comps notes: `docs/_working-comps-pdf-and-nov-sample.md`.
 
 ## Quick start
 
@@ -61,7 +61,8 @@ This is a **public** repo. Automated tests must not spotlight a real parcel (PIN
 | NOV comps parser | Sample PDF / fixture paths used by `test_parse_arapahoe_nov_comps_grid.py` | Exercise parsing, not a live county parcel lookup |
 | Parcel index builder | `npm run test:parcel-index` (`test_build_arapahoe_parcel_levy_index.py`) | Ownership-type heuristic + DPT assessed/school split math on synthetic rows (forkers: run after changing those helpers) |
 | Ingest classifier | `npm run test:ingest` (`test_ingest_classify.py`) | Synthetic drop folders: Arapahoe-shaped headers → `ready`; schedule-style headers → `mapping-needed`; missing levy-stack source → hard fail. No mart CSVs in CI. |
-| Ingest reader, writer, compare | `npm run test:ingest-reader` (`test_ingest_reader.py`) | Synthetic two-CSV county (invented Arapahoe headers and El Paso-like 10-digit schedule headers). Mapping file load, intermediate records, writer → JSON, compare diff. No mart CSVs. |
+| Ingest reader, writer, compare | `npm run test:ingest-reader` (`test_ingest_reader.py`) | Synthetic two-CSV county (invented Arapahoe headers and El Paso-like 10-digit schedule headers). Mapping file load, intermediate records, writer → JSON, compare diff, `build:ingest` / `compare.py` CLI guards (refuse `public/`, exit codes). No mart CSVs. |
+| Situs lookup contract | `npm run test:ingest` / `test:parcel-index` (`test_situs_lookup_contract.py`) | Shipping `arapahoe-situs-to-pins.json` `lookupVersion` matches `tools/situs_lookup_contract.py`; ingest imports the same constant. CI via `ci:test:ingest`. |
 | Metro levy extract | `npm run test:metro-extract` (`test_extract_metro_levies_2026.py`) | PDF text-line parsing, purpose classification, and aggregate math on synthetic lines (forkers: run after changing the 2026 extractor) |
 | Authority mills extract | `npm run test:authority-mills-extract` (`test_extract_authority_mills_by_tax_year.py`) | Levy % table parsing and AUTH collapse on synthetic rows (forkers: run after changing the authority-mills extractor) |
 | Browser e2e | `e2e/` + `npm run test:e2e` (Playwright) | Smoke + critical flows on Chromium, Firefox, and WebKit. Shared helpers in `e2e/helpers/addressLookup.ts` (street combobox, fill+search, district-details button). Synthetic fixtures via route fulfill — not live county parcels. Authority-chain panel UI asserts curated `href`s in the DOM; live URL reachability is `@live-sources` / `npm run test:e2e:live-sources` (scheduled, not PR CI). Assert UI contracts; dollar checks use known synthetic mills × assessed only |
@@ -110,7 +111,7 @@ Do **not** put real county PINs in tests "because they match the county site." A
 | `supporting-data/_private/` | PII samples, NOV parser output. |
 | `supporting-data/_ingest-out/` | New-ingest comparison JSON only (gitignored). |
 | `tools/*.py` | Offline extractors/index builders. Prefer short docstrings on non-obvious helpers (contracts, quirks, geometry/header rules); skip noise on trivial one-liners and test methods whose names already state the assert. |
-| `tools/ingest/` | **New** ingest engine: classifier, reader, writer, compare, build CLI. Writes comparison JSON under `supporting-data/_ingest-out/` only (not `public/data/`). Shipping Arapahoe rebuild remains `npm run build:arapahoe-index`. |
+| `tools/ingest/` | **New** ingest engine: classifier, reader, writer, compare, build CLI. Writes comparison JSON under `supporting-data/_ingest-out/` only (not `public/data/`). See **`docs/county-ingest.md`**. Shipping Arapahoe rebuild remains `npm run build:arapahoe-index`. |
 | `tools/ingest/mappings/` | County mapping files (`arapahoe.json`). Column names → shared field names. |
 | `tools/arapahoe_dola_authority_overrides.json` | **Tracked.** Shared curated mill-join input (mart label ↔ DOLA name/TE id; rare Levy.aspx mill overrides). Read by both engines. Not generated by either rebuild. One copy only. |
 | `tools/situs_lookup_contract.py` | **Tracked.** Shared `lookupVersion` constant for situs JSON (schema stamp, not engine id). Both engines import it. |
@@ -145,44 +146,22 @@ Each required file must have `snapshot.bundledAsOf`. Stacks need `stacksByTagId`
 
 Minimum fields: each levy stack line needs a stable tax-area key, authority code, display name, and mills for the current roll (optional DOLA `lgId`). Each account row needs lookup id, tax-area key, actual value, assessed value, tax year / assessment year if published, and property class (Real vs business personal property); optional public parcel id for county URLs; optional owner-of-record list. Situs, if present: normalized lookup key, postage-style label, one or more account ids.
 
-If a county enables a comps PDF flag, account rows must include an AIN-like field. `npm run validate:app-json` (also in `prebuild`) checks that required shipping files exist and have those root keys. Vitest in `src/lib/appJsonValidate.test.ts` covers accept/reject on invented ids.
+If a county enables a comps PDF flag, account rows must include an AIN-like field. **`npm run validate:app-json`** (also in `prebuild`) checks that required shipping files under `public/data/` exist and have those root keys. Vitest in `src/lib/appJsonValidate.test.ts` covers accept/reject on invented ids. For engine v2 candidate output, pass **`--data-dir`** (see **`docs/county-ingest.md`**).
 
 ### County config
 
 `src/lib/countyConfig.ts` is the shipping county: display name, identifier digit rules (`identifierDigits` must match account-map `pinDigits`), URL templates and host allowlist, feature-available flags (situs, comps PDF, BPP, mills history, metro purposes), DOLA certifying-county filter, and known county-data failures. Campaign site / paid-for-by stays in `siteConfig.ts`. A county that never had a source omits that control; a known hosting failure still uses COUNTY DATA GAP. Address search stays visible when situs is off (id-only lookup).
 
-### Ingest classifier
+### County ingest (comparison engine)
 
-`python3 tools/ingest/classify.py <drop-dir>` (or `npm run classify:ingest -- <drop-dir>`) inspects CSV/TSV/XLSX headers, a PDF text sample when pdfplumber is installed, and GeoJSON/GDB field names. It prints a human summary; `--json` prints the same report as JSON. `--json-out` writes that classifier report only (never application JSON) and is refused under `public/`. Walks skip `public/`, `_private/`, and symlinks. `.tsv` is tab-delimited. `.xls` is `unsupported-xls` (use `.xlsx`). Generic `Field1`-`Field6` headers count as Tax Authority Groups only when the path looks like that Data Mart export (or the file uses `TAGId` + `AuthorityName`).
+Two rebuild engines stay separate during migration. Engine v2 (`tools/ingest/`) writes only to **`supporting-data/_ingest-out/`**; the shipping rebuild stays **`npm run build:arapahoe-index`** → `public/data/`. Do not import across engines or retarget the old script at ingest.
 
-Coverage per app JSON product: `ready` (known Arapahoe-shaped sources), `mapping-needed` (looks usable after a mapping file), `new-reader` (unknown layout), `will-be-off` (optional product, no source). Missing a levy-stack source is a hard fail (exit 1). Missing a comps PDF is not: the report recommends `compsPdf` off. Header names only; no row values. Tests: `npm run test:ingest`.
+| Engine | npm | Output |
+| --- | --- | --- |
+| Old (shipping) | `build:arapahoe-index`, `test:parcel-index` | `public/data/arapahoe-*.json` |
+| New (ingest) | `build:ingest`, `diff:ingest`, `classify:ingest`, `test:ingest` | `supporting-data/_ingest-out/` only |
 
-This is not a rebuild. Do not point `npm run build:arapahoe-index` at it. Do not import classifier code into the old rebuild (or the reverse).
-
-### New ingest (comparison engine)
-
-Two engines stay separate:
-
-| Engine | Code | npm | Output during prove-out |
-| --- | --- | --- | --- |
-| **Old** (shipping Arapahoe rebuild) | `tools/build_arapahoe_parcel_levy_index.py` | `build:arapahoe-index`, `test:parcel-index` | `public/data/arapahoe-*.json` |
-| **New** (ingest) | `tools/ingest/` | `build:ingest`, `diff:ingest`, `classify:ingest`, `test:ingest` | `supporting-data/_ingest-out/` only |
-
-Do not import across them. Do not retarget `build:arapahoe-index` at ingest. Do not delete the old rebuild as part of Arapahoe parity prove-out. Writing shipping JSON from the new engine is a later explicit cutover.
-
-`tools/ingest/mappings/arapahoe.json` maps Arapahoe Data Mart column names (`TAGId`, `Pin`, `SA*`, …) to shared field names. Shared ingest modules have no Arapahoe column names; the mapping file is the only place they appear.
-
-**Shared mill-join input (not engine output):** `tools/arapahoe_dola_authority_overrides.json` is a small curated file both engines read. It reconciles mart authority labels with DOLA legal names / Tax Entity IDs, and (rarely) prefers county Levy.aspx mills when they disagree with the DOLA export total. It is not generated by `build:ingest` or `build:arapahoe-index`. Keep **one** copy; do not duplicate under `tools/ingest/mappings/`.
-
-**Read:** `tools/ingest/reader.py` — levy stack and account rows via the mapping file.
-
-**Write:** `tools/ingest/writer.py` / `parcel_record.py` / `situs.py` / `dola_match.py` — levy stacks (with DOLA mill join), account map, situs index, and parcel-record shards under the comparison directory only. Refuses paths under `public/`.
-
-**Compare:** `tools/ingest/compare.py` — `npm run diff:ingest -- public/data supporting-data/_ingest-out` diffs stacks, account map, situs (when either side has it), and `arapahoe-parcel-record-by-pin/` shards (when either side has that directory). Missing situs/shards on one side is a difference. Includes `dolaMatch`. Excludes `snapshot` metadata (tool provenance). Other shipping JSON (directory, explainers, metro levies) is ignored.
-
-**Run new ingest:** `npm run build:ingest -- --mapping tools/ingest/mappings/arapahoe.json --tag-file <TAG CSV> --parcel-file <MAIN PARCEL CSV> --out-dir supporting-data/_ingest-out --bundled-as-of YYYY-MM-DD`. Sibling mart CSVs and Open GIS GDB default from the Arapahoe mapping `defaultPaths` (or pass CLI path flags). Shipping rebuild stays `npm run build:arapahoe-index`.
-
-**Tests:** `npm run test:ingest` (classifier + reader/writer/compare + mill join + situs/shards). Old-engine tests stay on `npm run test:parcel-index`. No mart CSVs in CI.
+Architecture, compare semantics, prove-out procedure, mapping file, and safeguards: **`docs/county-ingest.md`**.
 
 ### Levy detail modal (`levy-explainer-entries.json`)
 

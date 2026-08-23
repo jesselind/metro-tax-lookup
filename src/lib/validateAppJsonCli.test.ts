@@ -1,0 +1,46 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, relative } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+
+const repoRoot = join(__dirname, "../..");
+const scriptPath = join(repoRoot, "tools/validate_app_json.mjs");
+
+const cleanupPaths: string[] = [];
+
+afterEach(() => {
+  while (cleanupPaths.length > 0) {
+    const path = cleanupPaths.pop();
+    if (path) rmSync(path, { recursive: true, force: true });
+  }
+});
+
+describe("validate_app_json.mjs CLI", () => {
+  it("rejects --data-dir when an in-repo symlink resolves outside the repository", () => {
+    const outsideDir = mkdtempSync(join(tmpdir(), "validate-app-json-outside-"));
+    cleanupPaths.push(outsideDir);
+
+    const linkParent = mkdtempSync(
+      join(repoRoot, "supporting-data", "validate-app-json-test-"),
+    );
+    cleanupPaths.push(linkParent);
+
+    const linkPath = join(linkParent, "outside-link");
+    symlinkSync(outsideDir, linkPath);
+
+    const dataDirArg = relative(repoRoot, linkPath);
+    const result = spawnSync(process.execPath, [scriptPath, "--data-dir", dataDirArg], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/must resolve inside the repository/);
+  });
+});

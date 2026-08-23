@@ -74,15 +74,21 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install dependencies
+        run: npm ci
       - name: Install Python test deps
         run: python3 -m pip install rapidfuzz
-      - name: Ingest classifier tests
-        run: python3 -m unittest discover -s tools -p 'test_ingest_*.py' -q
+      - name: Ingest tests (classifier, reader, compare, situs contract)
+        run: npm run ci:test:ingest
       - name: Parcel index tests
-        run: python3 -m unittest discover -s tools -p test_build_arapahoe_parcel_levy_index.py -q
+        run: npm run ci:test:parcel-index
 
   e2e:
     name: Browser e2e (Playwright)

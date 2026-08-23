@@ -12,7 +12,9 @@ Tests must pass without any files in supporting-data/.
 
 from __future__ import annotations
 
+import contextlib
 import csv
+import io
 import json
 import tempfile
 import unittest
@@ -1021,6 +1023,110 @@ class CompareDirsTests(unittest.TestCase):
             any(d.filename == "arapahoe-situs-to-pins.json" for d in result.differences),
             result.format_human(),
         )
+
+
+# ---------------------------------------------------------------------------
+# build.py / compare.py CLI guards
+# ---------------------------------------------------------------------------
+
+class BuildCliTests(unittest.TestCase):
+    def test_refuses_out_dir_under_public_before_reading_inputs(self) -> None:
+        from ingest.build import main
+        from ingest.classify import PUBLIC_DIR
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            code = main(
+                [
+                    "--mapping",
+                    "tools/ingest/mappings/arapahoe.json",
+                    "--tag-file",
+                    "nonexistent-tag.csv",
+                    "--parcel-file",
+                    "nonexistent-parcel.csv",
+                    "--out-dir",
+                    str(PUBLIC_DIR / "data"),
+                    "--bundled-as-of",
+                    "2026-07-15",
+                ]
+            )
+        self.assertEqual(code, 2)
+        self.assertIn("inside public/", stderr.getvalue())
+
+
+class CompareCliTests(unittest.TestCase):
+    def test_cli_exit_zero_when_identical(self) -> None:
+        from ingest.compare import main
+
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            payload = json.dumps(
+                {
+                    "snapshot": {"bundledAsOf": "2026-07-15"},
+                    "stacksByTagId": {},
+                }
+            )
+            acct = json.dumps(
+                {
+                    "snapshot": {"bundledAsOf": "2026-07-15"},
+                    "pinDigits": 9,
+                    "byPin": {},
+                }
+            )
+            for d in (a, b):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(payload, encoding="utf-8")
+                (d / "arapahoe-pin-to-tag.json").write_text(acct, encoding="utf-8")
+            code = main([str(a), str(b)])
+        self.assertEqual(code, 0)
+
+    def test_cli_exit_one_when_different(self) -> None:
+        from ingest.compare import main
+
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            stacks_a = {
+                "snapshot": {"bundledAsOf": "2026-07-15"},
+                "stacksByTagId": {
+                    "1": {
+                        "tagId": "1",
+                        "taxYear": "2025",
+                        "levyAspxUrl": "https://example.test/levy?id=1",
+                        "lines": [],
+                    }
+                },
+            }
+            stacks_b = {
+                "snapshot": {"bundledAsOf": "2026-07-15"},
+                "stacksByTagId": {
+                    "1": {
+                        "tagId": "1",
+                        "taxYear": "2024",
+                        "levyAspxUrl": "https://example.test/levy?id=1",
+                        "lines": [],
+                    }
+                },
+            }
+            (a / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                json.dumps(stacks_a), encoding="utf-8"
+            )
+            (b / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                json.dumps(stacks_b), encoding="utf-8"
+            )
+            for d in (a, b):
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(
+                        {
+                            "snapshot": {"bundledAsOf": "2026-07-15"},
+                            "pinDigits": 9,
+                            "byPin": {},
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+            code = main([str(a), str(b)])
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":
