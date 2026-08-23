@@ -17,16 +17,21 @@ import {
   validateArapahoePinToTagFile,
 } from "@/lib/arapahoeParcelLevyData";
 import { validateArapahoeSitusToPinsPayload } from "@/lib/arapahoeSitusLookup";
+import {
+  countyAccountMapFsRelative,
+  countyLevyStacksFsRelative,
+  countySitusToPinsFsRelative,
+} from "@/lib/countyDataPaths";
 
-/** Required for account-load. Paths are today's Arapahoe filenames until Phase 7. */
+/** Required for account-load. Paths from county id + shipping data root. */
 export const APP_JSON_REQUIRED_RELATIVE_PATHS = {
-  levyStacks: "public/data/arapahoe-levy-stacks-by-tag-id.json",
-  accountMap: "public/data/arapahoe-pin-to-tag.json",
+  levyStacks: countyLevyStacksFsRelative(),
+  accountMap: countyAccountMapFsRelative(),
 } as const;
 
 /** Absent is allowed. If present, the matching validator must pass. */
 export const APP_JSON_OPTIONAL_RELATIVE_PATHS = {
-  situs: "public/data/arapahoe-situs-to-pins.json",
+  situs: countySitusToPinsFsRelative(),
   metroPurposes2026: "public/data/metro-levies-2026.json",
   metroPurposes2025: "public/data/metro-levies-2025.json",
 } as const;

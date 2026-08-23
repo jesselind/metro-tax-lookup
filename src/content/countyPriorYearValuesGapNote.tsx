@@ -12,7 +12,7 @@ import { COUNTY_SERVICE_GAP_LINK_CLASS } from "@/lib/toolFlowStyles";
 export const COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS = "Prior years missing";
 
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD =
-  "We tried to get prior-year values from the county and were unable to.";
+  "County-published sources do not include prior-year assessed values. Per the assessor's office, there is no historical information available on the public website.";
 
 export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_LABEL = "Sale history";
 
@@ -92,10 +92,13 @@ export function CountyPriorYearValuesGapNote({
         Main Parcel Table<span className="sr-only"> (opens in a new tab)</span>
       </a>. That table has this assessment year&apos;s figures only. None of
       those sources include prior-year assessed history in a bulk table we can
-      obtain. Without those figures, there is no valuation trend to show.
-      Subject sale history on the parcel record still comes from Parcel Transfer
-      Information. Mill-rate year-over-year dollar lines still use today&apos;s
-      assessed value for both years when last year&apos;s mills are known.
+      obtain. Per the assessor&apos;s office, there is no historical information
+      available on the public website. Individual prior-year figures may be
+      available only by contacting the assessor&apos;s office directly. Without
+      those figures, there is no valuation trend to show. Subject sale history on
+      the parcel record still comes from Parcel Transfer Information. Mill-rate
+      year-over-year dollar lines still use today&apos;s assessed value for both
+      years when last year&apos;s mills are known.
     </>
   );
 }

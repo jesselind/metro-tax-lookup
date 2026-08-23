@@ -23,6 +23,10 @@ The **new ingest engine** (`tools/ingest/`) builds the same Arapahoe JSON produc
 
 Committed `public/data/` is the **control** (trusted reference). Engine v2 output is the **candidate** (comparison only).
 
+## Frontend paths
+
+Loaders resolve `{dataRoot}/{countyId}-*` via `src/lib/countyDataPaths.ts` (`COUNTY_CONFIG.id`). Shipping uses `/data/`. Parity vs candidate JSON remains on disk (`npm run diff:ingest -- public/data supporting-data/_ingest-out`). Do not write candidate output under `public/data/` without an explicit ship-from-new decision.
+
 ## Mapping and shared mill-join input
 
 - **`tools/ingest/mappings/arapahoe.json`** — Data Mart column names (`TAGId`, `Pin`, `SA*`, …) → shared field names. Shared ingest modules have no Arapahoe column names; the mapping file is the only place they appear.
@@ -105,6 +109,19 @@ Run before county 2, after material engine v2 changes, and before any ship-from-
 6. **Tests:** `npm run test:ingest` and `npm run test:parcel-index`.
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
+
+## Local UI check (engine v2)
+
+After `npm run build:ingest` writes candidate JSON to `supporting-data/_ingest-out/`:
+
+1. Symlink so Next can serve it (from repo root): `ln -sfn ../supporting-data/_ingest-out public/data-engine-v2`
+2. Flip **`COUNTY_DATA_ENGINE_SETTING`** in `src/lib/countyDataEngine.ts` to `'v2'`, **or** set `NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2` in `.env.local` (restart `next dev`).
+3. Load addresses/PINs in the UI — fetches go to `/data-engine-v2/arapahoe-*` instead of `/data/arapahoe-*`.
+4. Revert to `'v1'` before commit. Unit test asserts the committed file default stays `v1`.
+
+**Do not commit v2:** `COUNTY_DATA_ENGINE_SETTING = 'v2'` in `countyDataEngine.ts`, or `NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2` in any **tracked** env file, points builds at candidate JSON — that is **ship-from-new**, not a local sanity check. Use `.env.local` only for env override; run `npm run test:unit -- src/lib/countyDataEngine.test.ts` before PR.
+
+Disk parity remains `npm run diff:ingest`; this switch is for eyes-on UI sanity checks only (Phase 6.5 sign-off).
 
 ### Safeguards
 

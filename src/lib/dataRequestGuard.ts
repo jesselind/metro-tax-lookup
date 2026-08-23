@@ -10,14 +10,15 @@
  * per {@link DATA_RATE_WINDOW_MS} (shared NAT / venue WiFi counts as one IP).
  */
 
+import { countyHeavyDataPathnames } from "@/lib/countyDataPaths";
+
 export const DATA_RATE_WINDOW_MS = 60_000;
 
-/** Large county index bundles (~MB each). Normal UI needs ~1 of each per session. */
-export const HEAVY_DATA_PATHS = new Set([
-  "/data/arapahoe-pin-to-tag.json",
-  "/data/arapahoe-situs-to-pins.json",
-  "/data/arapahoe-levy-stacks-by-tag-id.json",
-]);
+/**
+ * Large county index bundles (~MB each). Normal UI needs ~1 of each per session.
+ * Includes `/data-engine-v2/` counterparts if that root is served locally.
+ */
+export const HEAVY_DATA_PATHS = new Set(countyHeavyDataPathnames());
 
 /**
  * Requests per IP per window for heavy bundles.

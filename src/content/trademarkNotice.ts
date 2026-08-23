@@ -6,6 +6,9 @@
 /** Visible brand name (metadata titles omit the trademark symbol). */
 export const SITE_BRAND_NAME = "Civic Lookup";
 
+/** Tagline under the brand name in the site header (home PageHero). */
+export const SITE_BRAND_TAGLINE = "FOR THE PEOPLE";
+
 /** Brand with trademark symbol for on-page / notice copy. */
 export const SITE_BRAND_MARK = `${SITE_BRAND_NAME}\u2122`;
 

@@ -51,6 +51,9 @@ public/data/arapahoe-parcel-record-by-pin.json.gz
 # Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
 docs/_working/
 
+# Localhost symlink for engine-v2 compare (Phase 6.5): points at supporting-data/_ingest-out
+public/data-engine-v2
+
 # Offline regeneration workspace (government dumps, extract scratch). Not committed
 # in bulk (mart, GIS, certs, LG directory). Exception: small irreplaceable build
 # inputs with no verified re-download — currently the DOLA Property Tax Entities

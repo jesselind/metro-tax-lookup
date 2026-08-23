@@ -807,8 +807,11 @@ export default function SourcesPage() {
           <strong className="font-semibold text-slate-900">current</strong>
           {" "}
           assessed value. A single footnote at the bottom of the breakdown
-          explains that we tried to get last year&apos;s assessed value from the
-          county and were unable to, so these dollar amounts use this
+          explains that county-published sources do not include prior-year
+          assessed values; per the assessor&apos;s office, there is no
+          historical information available on the public website; and
+          individual prior-year figures may be available only by contacting
+          the assessor&apos;s office directly. Those dollar amounts use this
           year&apos;s assessed value (link on
           &quot;today&apos;s assessed value&quot; in the footnote). The
           difference row shows mills and dollars together. For metros only, a

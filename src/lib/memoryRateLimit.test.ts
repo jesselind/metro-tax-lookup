@@ -37,6 +37,9 @@ describe("dataRequestGuard", () => {
     expect(HEAVY_DATA_PATHS.has("/data/arapahoe-situs-to-pins.json")).toBe(
       true,
     );
+    expect(
+      HEAVY_DATA_PATHS.has("/data-engine-v2/arapahoe-pin-to-tag.json"),
+    ).toBe(true);
   });
 });
 
