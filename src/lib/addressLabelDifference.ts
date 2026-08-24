@@ -70,6 +70,29 @@ export function situsLabelForTypeaheadDisplay(label: string): string {
   return label.replace(/(\d{5})-\d{4}\b/g, "$1");
 }
 
+/**
+ * Strip a trailing unit fragment (Apt 2, Unit 3B, #4, Ste 100) from one address
+ * line. Same narrow tokens as simple-line parse — not a free-form suite regex.
+ * Used for resident input parse and as the secondary typeahead place-sample
+ * failsafe when street lines differ only by that suffix.
+ */
+export function stripTrailingUnitFragmentFromAddressLine(raw: string): {
+  line: string;
+  unit: string;
+} {
+  const trimmed = raw.trim();
+  if (!trimmed) return { line: "", unit: "" };
+  // Named designators need a space before APT/UNIT/etc.; bare # may sit flush
+  // against the street token (e.g. ST#4).
+  const re =
+    /^(.*?)(?:\s+(?:(?:APT|APARTMENT|UNIT|STE|SUITE)\s*[#.]?\s*)|\s*#)\s*([A-Za-z0-9/-]+)\s*$/i;
+  const m = trimmed.match(re);
+  if (!m || !m[1] || m[1].trim().length < 1) {
+    return { line: trimmed, unit: "" };
+  }
+  return { line: m[1].trim(), unit: m[2].trim() };
+}
+
 function normalizeAddressLabelToken(token: string): string {
   return token.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "").toUpperCase();
 }

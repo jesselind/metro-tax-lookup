@@ -7,6 +7,7 @@ import { expect, test } from "@playwright/test";
 import {
   SYNTHETIC_CONDO_E2E_ADDRESS,
   SYNTHETIC_CONDO_OWNER_A,
+  SYNTHETIC_CONDO_OWNER_B,
   SYNTHETIC_MULTI_E2E_ADDRESS,
   SYNTHETIC_MULTI_PERSONAL_OWNER,
   SYNTHETIC_MULTI_PERSONAL_PIN,
@@ -366,10 +367,26 @@ test("all-Real multi-unit situs: chooser works; no Switch account type", async (
   await installSyntheticCountyData(page);
   await page.goto("/");
 
-  await fillStreetAndSubmitSearch(page, SYNTHETIC_CONDO_E2E_ADDRESS);
+  const street = streetAddressField(page);
+  await street.fill(SYNTHETIC_CONDO_E2E_ADDRESS);
+  const list = page.getByRole("listbox", { name: "Address suggestions" });
+  await expect(list).toBeVisible();
+  await expect(list.getByRole("option")).toHaveCount(1);
+  await expect(list.getByText(/Unit A0/i)).toHaveCount(0);
+  await expect(list.getByText(/Synthetic Condo/i)).toBeVisible();
+  await street.press("Escape");
+  await page.getByRole("button", { name: "Search" }).click();
+
   const chooser = page.getByRole("region", { name: "Matching properties" });
   await expect(chooser).toBeVisible();
   await expect(chooser.getByRole("listitem")).toHaveCount(2);
+  // All-Real: label order (Unit A01 before A02), not actual-value order (B is higher).
+  await expect(chooser.getByRole("listitem").nth(0)).toContainText(
+    SYNTHETIC_CONDO_OWNER_A,
+  );
+  await expect(chooser.getByRole("listitem").nth(1)).toContainText(
+    SYNTHETIC_CONDO_OWNER_B,
+  );
 
   await chooser
     .getByRole("listitem")

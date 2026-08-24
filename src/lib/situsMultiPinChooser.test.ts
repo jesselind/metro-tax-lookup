@@ -12,10 +12,16 @@ import {
   formatSitusPinAccountKindLabel,
   isBusinessPersonalPropertyAccount,
   pickSitusPlaceSampleLabel,
+  pickSitusPlaceSampleLabelForTypeahead,
   situsAccountKindGlossaryTermId,
+  situsPlaceHasRealAndBusinessPersonal,
   situsShouldOfferAccountTypeSwitch,
 } from "./situsMultiPinChooser";
 import {
+  SYNTHETIC_CONDO_LABEL_A,
+  SYNTHETIC_CONDO_LABEL_B,
+  SYNTHETIC_CONDO_PIN_A,
+  SYNTHETIC_CONDO_PIN_B,
   SYNTHETIC_MULTI_LABEL_MAJORITY,
   SYNTHETIC_MULTI_LABEL_MINORITY,
   SYNTHETIC_MULTI_PERSONAL_OWNER,
@@ -25,6 +31,64 @@ import {
   SYNTHETIC_MULTI_REAL_OWNER,
   SYNTHETIC_MULTI_REAL_PIN,
 } from "./syntheticTestIds";
+
+function multiRealBppPinToTag(): ArapahoePinToTagFile {
+  return {
+    snapshot: { bundledAsOf: "t", source: "test" },
+    pinDigits: 9,
+    byPin: {
+      [SYNTHETIC_MULTI_PERSONAL_PIN]: {
+        tagId: "1",
+        tagShortDescr: "x",
+        propertyClassDescr: "Personal",
+        ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER,
+        totalActual: 24289,
+        totalAssessed: 6316,
+      },
+      [SYNTHETIC_MULTI_REAL_PIN]: {
+        tagId: "2",
+        tagShortDescr: "x",
+        propertyClassDescr: "Improvement",
+        ownerList: SYNTHETIC_MULTI_REAL_OWNER,
+        totalActual: 50_000_000,
+        totalAssessed: 12_500_000,
+      },
+      [SYNTHETIC_MULTI_PERSONAL_PIN_B]: {
+        tagId: "3",
+        tagShortDescr: "x",
+        propertyClassDescr: "Personal",
+        ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER_B,
+        totalActual: 0,
+        totalAssessed: 0,
+      },
+    },
+  };
+}
+
+function condoAllRealPinToTag(): ArapahoePinToTagFile {
+  return {
+    snapshot: { bundledAsOf: "t", source: "test" },
+    pinDigits: 9,
+    byPin: {
+      [SYNTHETIC_CONDO_PIN_A]: {
+        tagId: "1",
+        tagShortDescr: "x",
+        propertyClassDescr: "Real",
+        ownerList: "A",
+        totalActual: 100,
+        totalAssessed: 7,
+      },
+      [SYNTHETIC_CONDO_PIN_B]: {
+        tagId: "2",
+        tagShortDescr: "x",
+        propertyClassDescr: "Real",
+        ownerList: "B",
+        totalActual: 110,
+        totalAssessed: 8,
+      },
+    },
+  };
+}
 
 describe("classifySitusPinAccountKind", () => {
   it("maps Personal to business personal property", () => {
@@ -138,6 +202,51 @@ describe("situsShouldOfferAccountTypeSwitch", () => {
   });
 });
 
+describe("situsPlaceHasRealAndBusinessPersonal (shared gate)", () => {
+  const broadwayHits: ArapahoeSitusPinHit[] = [
+    {
+      pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+      label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+    },
+    {
+      pin: SYNTHETIC_MULTI_REAL_PIN,
+      label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+    },
+  ];
+
+  const condoHits: ArapahoeSitusPinHit[] = [
+    { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
+    { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
+  ];
+
+  it("matches chooser switch for the same hits + pin-to-tag", () => {
+    const pinToTag = multiRealBppPinToTag();
+    const enriched = enrichSitusPinHitsForChooser(broadwayHits, pinToTag);
+    expect(situsPlaceHasRealAndBusinessPersonal(broadwayHits, pinToTag)).toBe(
+      true,
+    );
+    expect(situsShouldOfferAccountTypeSwitch(enriched)).toBe(true);
+  });
+
+  it("is false for all-Real condo multi (same as chooser switch)", () => {
+    const pinToTag = condoAllRealPinToTag();
+    const enriched = enrichSitusPinHitsForChooser(condoHits, pinToTag);
+    expect(situsPlaceHasRealAndBusinessPersonal(condoHits, pinToTag)).toBe(
+      false,
+    );
+    expect(situsShouldOfferAccountTypeSwitch(enriched)).toBe(false);
+  });
+
+  it("is false without pin-to-tag (cannot confirm Real+BPP)", () => {
+    expect(situsPlaceHasRealAndBusinessPersonal(broadwayHits, null)).toBe(
+      false,
+    );
+    expect(situsPlaceHasRealAndBusinessPersonal(broadwayHits, undefined)).toBe(
+      false,
+    );
+  });
+});
+
 describe("pickSitusPlaceSampleLabel", () => {
   it("prefers the most common shared label (ZIP+4 majority)", () => {
     const hits: ArapahoeSitusPinHit[] = [
@@ -147,6 +256,86 @@ describe("pickSitusPlaceSampleLabel", () => {
       { pin: "4", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
     ];
     expect(pickSitusPlaceSampleLabel(hits)).toBe(SYNTHETIC_MULTI_LABEL_MAJORITY);
+  });
+});
+
+describe("pickSitusPlaceSampleLabelForTypeahead", () => {
+  it("strips differing units for all-Real condo places", () => {
+    const hits: ArapahoeSitusPinHit[] = [
+      { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
+      { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
+    ];
+    const sample = pickSitusPlaceSampleLabelForTypeahead(
+      hits,
+      condoAllRealPinToTag(),
+    );
+    expect(sample).not.toMatch(/\bUnit\b/i);
+    expect(sample).toContain("7777 SYNTHETIC CONDO LN");
+    expect(sample).toContain("E2E CITY");
+    expect(pickSitusPlaceSampleLabel(hits)).toMatch(/Unit A01/);
+  });
+
+  it("keeps Broadway Real+BPP sample unchanged (primary gate)", () => {
+    const hits: ArapahoeSitusPinHit[] = [
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
+        label: SYNTHETIC_MULTI_LABEL_MINORITY,
+      },
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+      },
+      {
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+      },
+    ];
+    expect(
+      pickSitusPlaceSampleLabelForTypeahead(hits, multiRealBppPinToTag()),
+    ).toBe(SYNTHETIC_MULTI_LABEL_MAJORITY);
+    expect(
+      pickSitusPlaceSampleLabelForTypeahead(hits, multiRealBppPinToTag()),
+    ).toBe(pickSitusPlaceSampleLabel(hits));
+  });
+
+  it("does not strip Real+BPP even when labels differ only by a unit suffix", () => {
+    const hits: ArapahoeSitusPinHit[] = [
+      {
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: "7700 S BROADWAY Unit X1, E2E CITY, CO 80000-1111",
+      },
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: "7700 S BROADWAY Unit X2, E2E CITY, CO 80000-2222",
+      },
+    ];
+    const sample = pickSitusPlaceSampleLabelForTypeahead(
+      hits,
+      multiRealBppPinToTag(),
+    );
+    expect(sample).toMatch(/\bUnit\b/i);
+    expect(sample).toBe(pickSitusPlaceSampleLabel(hits));
+  });
+
+  it("strips condo units even when pin-to-tag is missing (street lines differ)", () => {
+    const hits: ArapahoeSitusPinHit[] = [
+      { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
+      { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
+    ];
+    const sample = pickSitusPlaceSampleLabelForTypeahead(hits, null);
+    expect(sample).not.toMatch(/\bUnit\b/i);
+    expect(sample).toContain("7777 SYNTHETIC CONDO LN");
+  });
+
+  it("leaves identical street lines alone without pin-to-tag (Broadway-safe)", () => {
+    const hits: ArapahoeSitusPinHit[] = [
+      { pin: "1", label: SYNTHETIC_MULTI_LABEL_MINORITY },
+      { pin: "2", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
+      { pin: "3", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
+    ];
+    expect(pickSitusPlaceSampleLabelForTypeahead(hits, null)).toBe(
+      SYNTHETIC_MULTI_LABEL_MAJORITY,
+    );
   });
 });
 
@@ -166,38 +355,8 @@ describe("enrichSitusPinHitsForChooser", () => {
         label: SYNTHETIC_MULTI_LABEL_MINORITY,
       },
     ];
-    const pinToTag: ArapahoePinToTagFile = {
-      snapshot: { bundledAsOf: "t", source: "test" },
-      pinDigits: 9,
-      byPin: {
-        [SYNTHETIC_MULTI_PERSONAL_PIN]: {
-          tagId: "1",
-          tagShortDescr: "x",
-          propertyClassDescr: "Personal",
-          ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER,
-          totalActual: 24289,
-          totalAssessed: 6316,
-        },
-        [SYNTHETIC_MULTI_REAL_PIN]: {
-          tagId: "2",
-          tagShortDescr: "x",
-          propertyClassDescr: "Improvement",
-          ownerList: SYNTHETIC_MULTI_REAL_OWNER,
-          totalActual: 50_000_000,
-          totalAssessed: 12_500_000,
-        },
-        [SYNTHETIC_MULTI_PERSONAL_PIN_B]: {
-          tagId: "3",
-          tagShortDescr: "x",
-          propertyClassDescr: "Personal",
-          ownerList: SYNTHETIC_MULTI_PERSONAL_OWNER_B,
-          totalActual: 0,
-          totalAssessed: 0,
-        },
-      },
-    };
 
-    const rows = enrichSitusPinHitsForChooser(hits, pinToTag);
+    const rows = enrichSitusPinHitsForChooser(hits, multiRealBppPinToTag());
     expect(rows.map((r) => r.pin)).toEqual([
       SYNTHETIC_MULTI_REAL_PIN,
       SYNTHETIC_MULTI_PERSONAL_PIN,
@@ -207,5 +366,24 @@ describe("enrichSitusPinHitsForChooser", () => {
     expect(rows[0]?.ownerList).toContain("HOSPITAL");
     expect(rows[1]?.accountKindLabel).toBe("Business personal property");
     expect(rows[2]?.accountKindLabel).toBe("Business personal property");
+  });
+
+  it("sorts all-Real condo units by address label, not by actual value", () => {
+    const hits: ArapahoeSitusPinHit[] = [
+      { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
+      { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
+    ];
+    const pinToTag = condoAllRealPinToTag();
+    // Higher value on B would win under Real+BPP value sort; condo must use label.
+    pinToTag.byPin[SYNTHETIC_CONDO_PIN_B]!.totalActual = 999_999;
+    pinToTag.byPin[SYNTHETIC_CONDO_PIN_A]!.totalActual = 1;
+
+    const rows = enrichSitusPinHitsForChooser(hits, pinToTag);
+    expect(rows.map((r) => r.pin)).toEqual([
+      SYNTHETIC_CONDO_PIN_A,
+      SYNTHETIC_CONDO_PIN_B,
+    ]);
+    expect(rows[0]?.label).toContain("Unit A01");
+    expect(rows[1]?.label).toContain("Unit A02");
   });
 });

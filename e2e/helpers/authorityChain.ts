@@ -242,7 +242,7 @@ export function collectAuthorityChainSourceUrlsForEntries(
  * Only requests URLs from our own JSON (not page-scraped).
  * Uses HEAD, then a tiny ranged GET, so multi-MB PDFs do not download in full.
  *
- * Used by `@live-sources` (`npm run test:e2e:live-sources` / scheduled workflow),
+ * Used by `@live-sources` (`npm run test:e2e:live-sources` / manual workflow),
  * not default PR e2e — third-party hosts must not gate merges or look like a
  * panel regression.
  */

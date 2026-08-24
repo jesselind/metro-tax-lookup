@@ -10,6 +10,10 @@
  */
 
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
+import {
+  splitSitusLabelEnvelopeLines,
+  stripTrailingUnitFragmentFromAddressLine,
+} from "@/lib/addressLabelDifference";
 import type { ArapahoePinToTagFile } from "@/lib/arapahoeParcelLevyData";
 import type { ArapahoeSitusPinHit } from "@/lib/arapahoeSitusLookup";
 
@@ -115,9 +119,13 @@ export type EnrichedSitusPinHit = ArapahoeSitusPinHit & {
 };
 
 /**
- * Join situs hits to pin-to-tag for the multi-match list. Sorts real property
- * before business personal property, then by actual value descending so the
- * primary building (e.g. hospital) is not buried under equipment accounts.
+ * Join situs hits to pin-to-tag for the multi-match list.
+ *
+ * Sort: account kind (Real, other, BPP). Then:
+ * - Real+BPP places: actual value descending (primary building above equipment),
+ *   then PIN — same product rule as before.
+ * - Otherwise (e.g. all-Real condo units): label ascending, then PIN, so units
+ *   read in address order instead of by market value.
  */
 export function enrichSitusPinHitsForChooser(
   hits: ArapahoeSitusPinHit[],
@@ -155,16 +163,39 @@ export function enrichSitusPinHitsForChooser(
     return 2;
   };
 
+  /** Same Real+BPP truth as `situsPlaceHasRealAndBusinessPersonal` / account switch. */
+  const sortByValue = situsShouldOfferAccountTypeSwitch(enriched);
+
   enriched.sort((a, b) => {
     const kr = kindRank(a.accountKind) - kindRank(b.accountKind);
     if (kr !== 0) return kr;
-    const av = a.totalActual ?? -1;
-    const bv = b.totalActual ?? -1;
-    if (bv !== av) return bv - av;
+    if (sortByValue) {
+      const av = a.totalActual ?? -1;
+      const bv = b.totalActual ?? -1;
+      if (bv !== av) return bv - av;
+    } else {
+      const lr = a.label.localeCompare(b.label);
+      if (lr !== 0) return lr;
+    }
     return a.pin.localeCompare(b.pin);
   });
 
   return enriched;
+}
+
+/**
+ * Shared Real+BPP gate for chooser chrome and typeahead place samples.
+ * Same truth as `situsShouldOfferAccountTypeSwitch` after pin-to-tag enrich.
+ * False when pin-to-tag is missing (cannot confirm) or hits are not Real+BPP.
+ */
+export function situsPlaceHasRealAndBusinessPersonal(
+  hits: ReadonlyArray<ArapahoeSitusPinHit>,
+  pinToTag: ArapahoePinToTagFile | null | undefined,
+): boolean {
+  if (hits.length < 2 || pinToTag == null) return false;
+  return situsShouldOfferAccountTypeSwitch(
+    enrichSitusPinHitsForChooser([...hits], pinToTag),
+  );
 }
 
 /**
@@ -206,4 +237,47 @@ export function pickSitusPlaceSampleLabel(
     }
   }
   return best.label;
+}
+
+/**
+ * Typeahead / did-you-mean place caption.
+ *
+ * Primary: Real+BPP (shared with chooser) → never strip units; use
+ * `pickSitusPlaceSampleLabel`.
+ * Secondary: when street lines differ only by a trailing unit fragment, show the
+ * agreed street-only line (plus locality from the baseline sample). Broadway
+ * look-alikes keep identical street lines so this path no-ops without pin-to-tag.
+ */
+export function pickSitusPlaceSampleLabelForTypeahead(
+  hits: ArapahoeSitusPinHit[],
+  pinToTag?: ArapahoePinToTagFile | null,
+): string {
+  const baseline = pickSitusPlaceSampleLabel(hits);
+  if (hits.length < 2) return baseline;
+
+  if (situsPlaceHasRealAndBusinessPersonal(hits, pinToTag)) {
+    return baseline;
+  }
+
+  const streetLines = hits.map(
+    (h) => splitSitusLabelEnvelopeLines(h.label).streetLine,
+  );
+  const uniqueStreets = new Set(streetLines.filter(Boolean));
+  if (uniqueStreets.size <= 1) {
+    return baseline;
+  }
+
+  const strippedStreets = streetLines.map(
+    (street) => stripTrailingUnitFragmentFromAddressLine(street).line,
+  );
+  const agreed = strippedStreets[0] ?? "";
+  if (!agreed || !strippedStreets.every((s) => s === agreed)) {
+    return baseline;
+  }
+
+  const { localityLine } = splitSitusLabelEnvelopeLines(baseline);
+  if (localityLine) {
+    return `${agreed}, ${localityLine}`;
+  }
+  return agreed;
 }

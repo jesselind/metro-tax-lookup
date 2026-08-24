@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.15.1",
+    date: "2026-08-24",
+    title: "Typeahead place caption omits condo unit; Real+BPP gate shared with chooser",
+    highlights: [
+      "Multi-PIN place suggestions no longer show a single condo unit (e.g. Unit J01) when the tap still opens Matching properties for every account at that street.",
+      "Shared Real+BPP helper (same pin-to-tag enrich as the chooser) locks Broadway-style Real + business personal property places so typeahead sample labels stay unchanged; unit-suffix strip is secondary for all-Real multi only.",
+      "Matching properties: Real+BPP places still sort by actual value within kind; all-Real multi (condo units) sort by address label so units read in order.",
+      "Typeahead and Search reuse the existing pin-to-tag fetch cache (prefetch with situs); no ingest or county-engine v2 changes.",
+    ],
+  },
+  {
     version: "4.15.0",
     date: "2026-08-23",
     title: "County-agnostic static data paths for shipping JSON",
