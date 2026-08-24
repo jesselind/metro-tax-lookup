@@ -27,6 +27,13 @@ describe("stripTrailingUnitFragmentFromAddressLine", () => {
     });
   });
 
+  it("strips a hash-only unit with no space before #", () => {
+    expect(stripTrailingUnitFragmentFromAddressLine("100 MAIN ST#4")).toEqual({
+      line: "100 MAIN ST",
+      unit: "4",
+    });
+  });
+
   it("leaves lines without a trailing unit fragment unchanged", () => {
     expect(
       stripTrailingUnitFragmentFromAddressLine("7700 S BROADWAY"),

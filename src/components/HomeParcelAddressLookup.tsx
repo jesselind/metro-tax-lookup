@@ -860,6 +860,7 @@ export function HomeParcelAddressLookup({
         }
       }
       const list = result.hits;
+      setMultiMatchPinToTag(pinToTag);
       setHits(list);
       if (list.length === 1) {
         setAddressSearchLocked(true);

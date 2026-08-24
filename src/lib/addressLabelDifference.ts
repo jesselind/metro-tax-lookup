@@ -82,8 +82,10 @@ export function stripTrailingUnitFragmentFromAddressLine(raw: string): {
 } {
   const trimmed = raw.trim();
   if (!trimmed) return { line: "", unit: "" };
+  // Named designators need a space before APT/UNIT/etc.; bare # may sit flush
+  // against the street token (e.g. ST#4).
   const re =
-    /^(.*?)\s+(?:(?:APT|APARTMENT|UNIT|STE|SUITE)\s*[#.]?\s*|#)\s*([A-Za-z0-9/-]+)\s*$/i;
+    /^(.*?)(?:\s+(?:(?:APT|APARTMENT|UNIT|STE|SUITE)\s*[#.]?\s*)|\s*#)\s*([A-Za-z0-9/-]+)\s*$/i;
   const m = trimmed.match(re);
   if (!m || !m[1] || m[1].trim().length < 1) {
     return { line: trimmed, unit: "" };
