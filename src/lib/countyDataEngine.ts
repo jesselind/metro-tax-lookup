@@ -7,7 +7,7 @@
  * Which county JSON tree the UI loads (v1 shipping vs v2 ingest candidate).
  *
  * Flip `COUNTY_DATA_ENGINE_SETTING` locally for UI sanity checks against engine
- * v2 output. Keep `'v1'` in commits. Optional override:
+ * v2 output. Keep `'v1'` in commits. Optional override in non-production only:
  * `NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2` in `.env.local` (gitignored).
  *
  * v2 requires a symlink so Next can serve candidate JSON:
@@ -37,8 +37,11 @@ function parseEngine(value: string | undefined): CountyDataEngine | null {
   return null;
 }
 
-/** Resolved engine: env override wins, then `COUNTY_DATA_ENGINE_SETTING`. */
+/** Resolved engine: env override in non-production, then `COUNTY_DATA_ENGINE_SETTING`. */
 export function activeCountyDataEngine(): CountyDataEngine {
+  if (process.env.NODE_ENV === "production") {
+    return COUNTY_DATA_ENGINE_SETTING;
+  }
   return (
     parseEngine(process.env.NEXT_PUBLIC_COUNTY_DATA_ENGINE) ??
     COUNTY_DATA_ENGINE_SETTING

@@ -97,7 +97,7 @@ export function CountyPriorYearValuesGapNote({
       available only by contacting the assessor&apos;s office directly. Without
       those figures, there is no valuation trend to show. Subject sale history on
       the parcel record still comes from Parcel Transfer Information. Mill-rate
-      year-over-year dollar lines still use today&apos;s assessed value for both
+      year-over-year dollar lines still use this year&apos;s assessed value for both
       years when last year&apos;s mills are known.
     </>
   );

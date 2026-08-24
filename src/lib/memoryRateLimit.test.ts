@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
+import { COUNTY_CONFIG } from "./countyConfig";
 import {
   DATA_RATE_WINDOW_MS,
   HEAVY_DATA_LIMIT,
@@ -23,22 +24,23 @@ describe("dataRequestGuard", () => {
   });
 
   it("tiers heavy index paths tighter than shards", () => {
-    const heavy = dataRateTierForPath("/data/arapahoe-pin-to-tag.json");
+    const countyId = COUNTY_CONFIG.id;
+    const heavy = dataRateTierForPath(`/data/${countyId}-pin-to-tag.json`);
     expect(heavy.bucket).toBe("heavy");
     expect(heavy.limit).toBe(HEAVY_DATA_LIMIT);
     expect(heavy.windowMs).toBe(DATA_RATE_WINDOW_MS);
 
     const shard = dataRateTierForPath(
-      "/data/arapahoe-parcel-record-by-pin/035662.json",
+      `/data/${countyId}-parcel-record-by-pin/035662.json`,
     );
     expect(shard.bucket).toBe("other");
     expect(shard.limit).toBe(OTHER_DATA_LIMIT);
 
-    expect(HEAVY_DATA_PATHS.has("/data/arapahoe-situs-to-pins.json")).toBe(
+    expect(HEAVY_DATA_PATHS.has(`/data/${countyId}-situs-to-pins.json`)).toBe(
       true,
     );
     expect(
-      HEAVY_DATA_PATHS.has("/data-engine-v2/arapahoe-pin-to-tag.json"),
+      HEAVY_DATA_PATHS.has(`/data-engine-v2/${countyId}-pin-to-tag.json`),
     ).toBe(true);
   });
 });

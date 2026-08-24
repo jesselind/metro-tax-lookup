@@ -1090,6 +1090,64 @@ class CompareDirsTests(unittest.TestCase):
             self.assertEqual(tax_year["v1_engine_value"], "2025")
             self.assertEqual(tax_year["v2_engine_value"], "2024")
 
+    def test_side_by_side_csv_matches_compare_dirs_for_int_float(self) -> None:
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "side-by-side.csv"
+            acct_a = self._make_account()
+            acct_b = self._make_account()
+            acct_a["byPin"][SYNTHETIC_PIN]["totalActual"] = 500000
+            acct_b["byPin"][SYNTHETIC_PIN]["totalActual"] = 500000.0
+            for d, stacks, acct in (
+                (a, self._make_stacks(), acct_a),
+                (b, self._make_stacks(), acct_b),
+            ):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    json.dumps(stacks), encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(acct), encoding="utf-8"
+                )
+            diff = compare_dirs(a, b)
+            meta = write_side_by_side_csv(a, b, out_csv)
+            self.assertTrue(diff.identical, diff.format_human())
+            self.assertTrue(meta["identical"])
+            self.assertEqual(meta["mismatchCount"], 0)
+
+    def test_side_by_side_csv_matches_compare_dirs_for_null_vs_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "side-by-side.csv"
+            acct_a = self._make_account()
+            acct_b = self._make_account()
+            acct_a["byPin"][SYNTHETIC_PIN]["ownerList"] = None
+            acct_b["byPin"][SYNTHETIC_PIN]["ownerList"] = ""
+            for d, stacks, acct in (
+                (a, self._make_stacks(), acct_a),
+                (b, self._make_stacks(), acct_b),
+            ):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    json.dumps(stacks), encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(acct), encoding="utf-8"
+                )
+            diff = compare_dirs(a, b)
+            meta = write_side_by_side_csv(a, b, out_csv)
+            self.assertFalse(diff.identical, diff.format_human())
+            self.assertFalse(meta["identical"])
+            self.assertGreater(meta["mismatchCount"], 0)
+            with out_csv.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            owner_rows = [
+                r for r in rows if r["key"].endswith(f"byPin.{SYNTHETIC_PIN}.ownerList")
+            ]
+            self.assertEqual(len(owner_rows), 1)
+            self.assertEqual(owner_rows[0]["v1_engine_value"], "(absent)")
+            self.assertEqual(owner_rows[0]["v2_engine_value"], "")
+
 
 # ---------------------------------------------------------------------------
 # build.py / compare.py CLI guards
@@ -1226,7 +1284,7 @@ class CompareCliTests(unittest.TestCase):
             self.assertTrue(out_csv.is_file())
             meta = json.loads(stdout.getvalue())
             self.assertTrue(meta["identical"])
-            self.assertGreaterEqual(meta["rowCount"], 0)
+            self.assertEqual(meta["rowCount"], 1)
 
     def test_cli_side_by_side_csv_exit_one_when_different(self) -> None:
         from ingest.compare import main

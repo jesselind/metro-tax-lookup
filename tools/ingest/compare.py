@@ -141,6 +141,16 @@ def _numbers_equal(a: Any, b: Any) -> bool:
     return False
 
 
+def _leaf_values_equal(a: object, b: object) -> bool:
+    """Leaf equality for side-by-side mismatch counts (matches _diff_values rules)."""
+    if type(a) != type(b):
+        return _numbers_equal(a, b)
+    return a == b
+
+
+_CELL_ABSENT = "(absent)"
+
+
 def _diff_values(
     a: Any,
     b: Any,
@@ -221,9 +231,13 @@ def _diff_file(
 
 def _cell_value(value: object) -> str:
     if value is None:
-        return ""
-    if isinstance(value, (str, int, float, bool)):
-        return str(value) if not isinstance(value, bool) else json.dumps(value)
+        return _CELL_ABSENT
+    if isinstance(value, bool):
+        return json.dumps(value)
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (int, float)):
+        return str(value)
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -236,9 +250,6 @@ def _side_by_side_values(
     skips: _SkipCounts,
 ) -> None:
     if type(a) != type(b):
-        if _numbers_equal(a, b):
-            emit(_path_str(path), a, b)
-            return
         emit(_path_str(path), a, b)
         return
 
@@ -261,7 +272,9 @@ def _side_by_side_values(
     elif isinstance(a, list):
         if len(a) != len(b):
             emit(_path_str(path) + ".length", len(a), len(b))
-        for i, (av, bv) in enumerate(zip(a, b)):
+        for i in range(max(len(a), len(b))):
+            av = a[i] if i < len(a) else None
+            bv = b[i] if i < len(b) else None
             _side_by_side_values(
                 av,
                 bv,
@@ -326,7 +339,7 @@ def write_side_by_side_csv(dir_a: Path, dir_b: Path, out_path: Path) -> dict[str
                 }
             )
             row_count += 1
-            if v1 != v2:
+            if not _leaf_values_equal(a_val, b_val):
                 mismatch_count += 1
 
         all_files: set[str] = set(_COMPARE_FILES_REQUIRED)
