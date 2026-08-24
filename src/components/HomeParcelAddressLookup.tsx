@@ -83,6 +83,7 @@ import {
   type ArapahoeParcelRecordRow,
   type ArapahoePinToTagFile,
 } from "@/lib/arapahoeParcelLevyData";
+import { countySitusToPinsUrl } from "@/lib/countyDataPaths";
 import {
   fetchArapahoeSitusToPinsJson,
   getLastArapahoeSitusFetchFailureDetail,
@@ -802,7 +803,7 @@ export function HomeParcelAddressLookup({
       if (!data?.byKey) {
         const detail =
           getLastArapahoeSitusFetchFailureDetail() ??
-          "/data/arapahoe-situs-to-pins.json: missing or invalid";
+          countySitusToPinsUrl() + ": missing or invalid";
         console.error("[civic-lookup]", detail);
         setError(
           "We could not load address lookup data. Please try searching again in a moment.",

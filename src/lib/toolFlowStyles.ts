@@ -21,11 +21,22 @@ export const PAGE_HERO_OUTER_CLASS =
 export const PAGE_HERO_SLATE_BAR_CLASS =
   "flex w-full items-center bg-slate-700";
 
-/** Constrained inner column + symmetric vertical padding (aligns with {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
-export const PAGE_HERO_INNER_CLASS = `mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-5 sm:px-5`;
+/** Constrained inner column; fixed min-height matches one-line title bar, content vertically centered. */
+export const PAGE_HERO_INNER_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} items-center px-4 sm:px-5 min-h-[calc(2.5rem+1.875rem)] sm:min-h-[calc(2.5rem+2.34375rem)]`;
 
 export const PAGE_HERO_TITLE_CLASS =
-  "text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl";
+  "text-2xl font-bold leading-none tracking-tight text-white sm:text-3xl";
+
+/** Brand name + tagline stack inside PageHero h1 (see {@link PAGE_HERO_TITLE_CLASS}). */
+export const PAGE_HERO_BRAND_STACK_CLASS = "flex flex-col gap-0.5 sm:gap-1";
+
+export const PAGE_HERO_BRAND_LINE_CLASS = "leading-none";
+
+export const PAGE_HERO_BRAND_TM_CLASS =
+  "ms-0.5 align-super text-[0.55em] font-semibold tracking-normal";
+
+export const PAGE_HERO_BRAND_TAGLINE_CLASS =
+  "text-[0.62em] font-extralight leading-none tracking-[0.15em] sm:text-[0.58em]";
 
 /** Slate hero secondary control (e.g. Start over). Smaller on mobile; larger from md up (same chrome). */
 export const PAGE_HERO_ACTION_BUTTON_CLASS =

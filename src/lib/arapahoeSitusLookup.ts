@@ -5,11 +5,17 @@
 
 /**
  * Offline situs -> PIN lookup built by tools/build_arapahoe_parcel_levy_index.py
- * (public/data/arapahoe-situs-to-pins.json).
+ * (public/data/{countyId}-situs-to-pins.json).
  *
  * Normalization must stay in sync with _STREET_* helpers in that script.
  */
 
+import { COUNTY_CONFIG } from "@/lib/countyConfig";
+import { activeCountyDataRoot } from "@/lib/countyDataEngine";
+import {
+  SHIPPING_DATA_ROOT,
+  countySitusToPinsUrl,
+} from "@/lib/countyDataPaths";
 import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
 import { pickSitusPlaceSampleLabel } from "@/lib/situsMultiPinChooser";
 
@@ -578,7 +584,10 @@ export function buildSitusLookupKey(
   return `${num}|${name}|${u}`;
 }
 
-let situsCache: Promise<ArapahoeSitusToPinsFile | null> | null = null;
+const situsCacheByRoot = new Map<
+  string,
+  Promise<ArapahoeSitusToPinsFile | null>
+>();
 
 /**
  * Bump when regenerating situs JSON with a label/schema change so browsers do
@@ -586,41 +595,55 @@ let situsCache: Promise<ArapahoeSitusToPinsFile | null> | null = null;
  */
 export const ARAPAHOE_SITUS_TO_PINS_CACHE_BUST = "20260727zip";
 
-const SITUS_TO_PINS_URL = `/data/arapahoe-situs-to-pins.json?v=${ARAPAHOE_SITUS_TO_PINS_CACHE_BUST}`;
-
 /** Last situs fetch failure detail (for resident mailto); cleared on success. */
 let lastSitusFetchFailureDetail: string | null = null;
+
+function normalizeSitusDataRoot(dataRoot?: string): string {
+  const trimmed = (dataRoot ?? activeCountyDataRoot()).trim();
+  if (!trimmed) return SHIPPING_DATA_ROOT;
+  return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+}
 
 export function getLastArapahoeSitusFetchFailureDetail(): string | null {
   return lastSitusFetchFailureDetail;
 }
 
-export function fetchArapahoeSitusToPinsJson(): Promise<ArapahoeSitusToPinsFile | null> {
-  if (!situsCache) {
-    situsCache = (async () => {
-      const result = await fetchCountyStaticJson(SITUS_TO_PINS_URL, {
-        credentials: "same-origin",
-      });
-      if (!result.ok) {
-        lastSitusFetchFailureDetail = result.detail;
-        situsCache = null;
-        return null;
-      }
-      const validated = validateArapahoeSitusToPinsPayload(result.json);
-      if (!validated) {
-        lastSitusFetchFailureDetail = `${SITUS_TO_PINS_URL}: JSON failed schema validation`;
-        situsCache = null;
-        return null;
-      }
-      lastSitusFetchFailureDetail = null;
-      return validated;
-    })();
-  }
-  return situsCache;
+export function fetchArapahoeSitusToPinsJson(
+  dataRoot?: string,
+): Promise<ArapahoeSitusToPinsFile | null> {
+  const root = normalizeSitusDataRoot(dataRoot);
+  const cached = situsCacheByRoot.get(root);
+  if (cached) return cached;
+
+  const url = countySitusToPinsUrl(
+    root,
+    COUNTY_CONFIG.id,
+    ARAPAHOE_SITUS_TO_PINS_CACHE_BUST,
+  );
+  const pending = (async () => {
+    const result = await fetchCountyStaticJson(url, {
+      credentials: "same-origin",
+    });
+    if (!result.ok) {
+      lastSitusFetchFailureDetail = result.detail;
+      situsCacheByRoot.delete(root);
+      return null;
+    }
+    const validated = validateArapahoeSitusToPinsPayload(result.json);
+    if (!validated) {
+      lastSitusFetchFailureDetail = `${url}: JSON failed schema validation`;
+      situsCacheByRoot.delete(root);
+      return null;
+    }
+    lastSitusFetchFailureDetail = null;
+    return validated;
+  })();
+  situsCacheByRoot.set(root, pending);
+  return pending;
 }
 
 export function clearArapahoeSitusDataCache(): void {
-  situsCache = null;
+  situsCacheByRoot.clear();
   lastSitusFetchFailureDetail = null;
 }
 

@@ -161,6 +161,8 @@ Two rebuild engines stay separate during migration. Engine v2 (`tools/ingest/`) 
 | Old (shipping) | `build:arapahoe-index`, `test:parcel-index` | `public/data/arapahoe-*.json` |
 | New (ingest) | `build:ingest`, `diff:ingest`, `classify:ingest`, `test:ingest` | `supporting-data/_ingest-out/` only |
 
+County JSON fetch URLs use `src/lib/countyDataPaths.ts` (`{dataRoot}/{countyId}-*`). Shipping UI loads `/data/`. Candidate output stays under `supporting-data/_ingest-out/`; compare with `npm run diff:ingest`. Do not write ingest output into `public/data/` without an explicit ship-from-new decision.
+
 Architecture, compare semantics, prove-out procedure, mapping file, and safeguards: **`docs/county-ingest.md`**.
 
 ### Levy detail modal (`levy-explainer-entries.json`)

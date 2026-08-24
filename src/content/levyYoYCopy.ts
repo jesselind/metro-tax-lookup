@@ -9,7 +9,7 @@ export const STACK_RATE_CHANGE_CALLOUT_MESSAGE =
 
 /** Popover body for hypothetical dollar amounts in levy YoY details. */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
-  "We tried to get last year's assessed value from the county and were unable to. These dollar amounts use this year's assessed value for both years.";
+  "County-published sources do not include prior-year assessed values. Per the assessor's office, there is no historical information available on the public website. These dollar amounts use this year's assessed value for both years.";
 
 /** Modal mill-rate history chart heading (Levy % AUTH totals). */
 export const AUTHORITY_MILLS_HISTORY_CHART_HEADING =

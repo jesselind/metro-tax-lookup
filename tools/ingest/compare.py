@@ -18,18 +18,21 @@ side has them (missing on one side is a difference). Other shipping JSON
 Usage:
   python3 tools/ingest/compare.py <dir-a> <dir-b>
   python3 tools/ingest/compare.py <dir-a> <dir-b> --json
+  python3 tools/ingest/compare.py <dir-a> <dir-b> --side-by-side-csv PATH
 
 The tool exits 0 when identical, 1 when differences exist.
+--side-by-side-csv writes every compared leaf (key, v1, v2), not only mismatches.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 
 
 # Required outputs. Always compared (missing on one side is a difference).
@@ -138,6 +141,18 @@ def _numbers_equal(a: Any, b: Any) -> bool:
     return False
 
 
+def _leaf_values_equal(a: object, b: object) -> bool:
+    """Leaf equality for side-by-side mismatch counts (matches _diff_values rules)."""
+    if type(a) is not type(b):
+        return _numbers_equal(a, b)
+    return a == b
+
+
+_CELL_ABSENT = "(absent)"
+# Spreadsheet formula injection: Excel/Sheets treat these cell prefixes as formulas.
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
+
+
 def _diff_values(
     a: Any,
     b: Any,
@@ -146,7 +161,7 @@ def _diff_values(
     diffs: list[Difference],
     skips: _SkipCounts,
 ) -> None:
-    if type(a) != type(b):
+    if type(a) is not type(b):
         if _numbers_equal(a, b):
             return
         diffs.append(Difference(filename, _path_str(path), a, b))
@@ -214,6 +229,201 @@ def _diff_file(
         diffs,
         skips,
     )
+
+
+def _cell_value(value: object) -> str:
+    if value is None:
+        return _CELL_ABSENT
+    if isinstance(value, bool):
+        return json.dumps(value)
+    if isinstance(value, str):
+        if value.startswith(_CSV_FORMULA_PREFIXES):
+            return "'" + value
+        return value
+    if isinstance(value, (int, float)):
+        return str(value)
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+
+
+def _side_by_side_values(
+    a: Any,
+    b: Any,
+    path: list[str | int],
+    filename: str,
+    emit: Callable[[str, object, object], None],
+    skips: _SkipCounts,
+) -> None:
+    if type(a) is not type(b):
+        emit(_path_str(path), a, b)
+        return
+
+    if isinstance(a, dict):
+        all_keys = set(a.keys()) | set(b.keys())
+        for key in sorted(all_keys):
+            if key == "snapshot":
+                skips.snapshot += 1
+                continue
+            a_val = a.get(key)
+            b_val = b.get(key)
+            _side_by_side_values(
+                a_val,
+                b_val,
+                path + [key],
+                filename,
+                emit,
+                skips,
+            )
+    elif isinstance(a, list):
+        if len(a) != len(b):
+            emit(_path_str(path) + ".length", len(a), len(b))
+        for i in range(max(len(a), len(b))):
+            av = a[i] if i < len(a) else None
+            bv = b[i] if i < len(b) else None
+            _side_by_side_values(
+                av,
+                bv,
+                path + [i],
+                filename,
+                emit,
+                skips,
+            )
+    else:
+        emit(_path_str(path), a, b)
+
+
+def _side_by_side_file(
+    filename: str,
+    a: dict[str, Any] | None,
+    b: dict[str, Any] | None,
+    emit: Callable[[str, str, object, object], None],
+    skips: _SkipCounts,
+) -> None:
+    if a is None and b is None:
+        return
+    if a is None:
+        emit(filename, "(file)", None, "(present in v2)")
+        return
+    if b is None:
+        emit(filename, "(file)", "(present in v1)", None)
+        return
+    _side_by_side_values(
+        a,
+        b,
+        [],
+        filename,
+        lambda path, av, bv: emit(filename, path, av, bv),
+        skips,
+    )
+
+
+def write_side_by_side_csv(dir_a: Path, dir_b: Path, out_path: Path) -> dict[str, object]:
+    """Write key / v1 / v2 for every compared leaf. Streams to disk."""
+    skips = _SkipCounts()
+    row_count = 0
+    mismatch_count = 0
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with out_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["key", "v1_engine_value", "v2_engine_value"],
+            extrasaction="ignore",
+        )
+        writer.writeheader()
+
+        def write_row(filename: str, path: str, a_val: object, b_val: object) -> None:
+            nonlocal row_count, mismatch_count
+            v1 = _cell_value(a_val)
+            v2 = _cell_value(b_val)
+            writer.writerow(
+                {
+                    "key": f"{filename} | {path}",
+                    "v1_engine_value": v1,
+                    "v2_engine_value": v2,
+                }
+            )
+            row_count += 1
+            if not _leaf_values_equal(a_val, b_val):
+                mismatch_count += 1
+
+        all_files: set[str] = set(_COMPARE_FILES_REQUIRED)
+        for filename in _COMPARE_FILES_IF_EITHER:
+            if (dir_a / filename).is_file() or (dir_b / filename).is_file():
+                all_files.add(filename)
+
+        for filename in sorted(all_files):
+            a_data = _load_json_object(dir_a / filename)
+            b_data = _load_json_object(dir_b / filename)
+            if isinstance(a_data, str) or isinstance(b_data, str):
+                write_row(
+                    filename,
+                    "(file)",
+                    a_data if isinstance(a_data, str) else ("(present)" if a_data is not None else None),
+                    b_data if isinstance(b_data, str) else ("(present)" if b_data is not None else None),
+                )
+                continue
+            _side_by_side_file(filename, a_data, b_data, write_row, skips)
+
+        _write_side_by_side_shards(dir_a, dir_b, write_row, skips)
+
+    return {
+        "csv": str(out_path),
+        "rowCount": row_count,
+        "identical": mismatch_count == 0,
+        "mismatchCount": mismatch_count,
+        "skippedSnapshot": skips.snapshot,
+        "v1Dir": str(dir_a),
+        "v2Dir": str(dir_b),
+        "note": (
+            "Full side-by-side of every compared leaf. snapshot subtree omitted "
+            "(tool metadata, not resident bill data). Rows include matches and mismatches."
+        ),
+    }
+
+
+def _write_side_by_side_shards(
+    dir_a: Path,
+    dir_b: Path,
+    write_row: Callable[[str, str, object, object], None],
+    skips: _SkipCounts,
+) -> None:
+    shard_a = dir_a / _SHARD_DIR
+    shard_b = dir_b / _SHARD_DIR
+    a_exists = shard_a.is_dir()
+    b_exists = shard_b.is_dir()
+    if not a_exists and not b_exists:
+        return
+    if a_exists != b_exists:
+        write_row(
+            _SHARD_DIR,
+            "(directory)",
+            "(present)" if a_exists else None,
+            "(present)" if b_exists else None,
+        )
+        return
+
+    files_a = {p.name for p in shard_a.glob("*.json")}
+    files_b = {p.name for p in shard_b.glob("*.json")}
+    all_names = files_a | files_b
+    for name in sorted(all_names):
+        filename = f"{_SHARD_DIR}/{name}"
+        if name not in files_a:
+            write_row(filename, "(file)", None, "(present in v2)")
+            continue
+        if name not in files_b:
+            write_row(filename, "(file)", "(present in v1)", None)
+            continue
+        a_data = _load_json_object(shard_a / name)
+        b_data = _load_json_object(shard_b / name)
+        if isinstance(a_data, str) or isinstance(b_data, str):
+            write_row(
+                filename,
+                "(file)",
+                a_data if isinstance(a_data, str) else ("(present)" if a_data is not None else None),
+                b_data if isinstance(b_data, str) else ("(present)" if b_data is not None else None),
+            )
+            continue
+        _side_by_side_file(filename, a_data, b_data, write_row, skips)
 
 
 def _load_json_object(path: Path) -> dict[str, Any] | str | None:
@@ -335,12 +545,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("dir_a", type=Path, help="Directory A (e.g. public/data)")
     parser.add_argument("dir_b", type=Path, help="Directory B (e.g. supporting-data/_ingest-out)")
     parser.add_argument("--json", action="store_true", help="Print JSON report to stdout")
+    parser.add_argument(
+        "--side-by-side-csv",
+        type=Path,
+        metavar="PATH",
+        help="Write full side-by-side CSV (key, v1, v2) for every compared leaf",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     for d in (args.dir_a, args.dir_b):
         if not d.is_dir():
             print(f"Directory not found: {d}", file=sys.stderr)
             return 2
+
+    if args.side_by_side_csv is not None:
+        meta = write_side_by_side_csv(args.dir_a, args.dir_b, args.side_by_side_csv)
+        sys.stdout.write(json.dumps(meta, indent=2) + "\n")
+        return 0 if meta["identical"] else 1
 
     result = compare_dirs(args.dir_a, args.dir_b)
 

@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "4.15.0",
+    date: "2026-08-23",
+    title: "County-agnostic static data paths for shipping JSON",
+    highlights: [
+      "Static county JSON URLs resolve from COUNTY_CONFIG.id via src/lib/countyDataPaths.ts (`{dataRoot}/{countyId}-*`). Shipping stays `/data/`; loaders accept an optional dataRoot and cache per root.",
+      "Local v2 UI sanity check: flip COUNTY_DATA_ENGINE_SETTING in src/lib/countyDataEngine.ts (or NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2 in .env.local) and symlink public/data-engine-v2 to supporting-data/_ingest-out. Disk parity remains npm run diff:ingest.",
+      "Validator APP_JSON_* paths and rate-limit HEAVY_DATA_PATHS derive from the same helpers. Engines stay separate: no write to public/data/ from ingest; no ship-from-new in this release.",
+    ],
+  },
+  {
     version: "4.14.0",
     date: "2026-08-22",
     title: "Two-engine ingest architecture proved; shipping rebuild unchanged",

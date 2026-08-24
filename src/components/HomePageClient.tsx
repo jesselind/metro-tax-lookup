@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HomeParcelAddressLookup } from "@/components/HomeParcelAddressLookup";
 import { PageHero } from "@/components/PageHero";
+import { SiteBrandHeroTitle } from "@/components/SiteBrandHeroTitle";
 import {
   DEFAULT_AUDIENCE_MODE,
   type AudienceMode,
@@ -19,7 +20,6 @@ import {
   PAGE_HERO_ACTION_BUTTON_CLASS,
   TOOL_PAGE_INNER_CLASS_HUB,
 } from "@/lib/toolFlowStyles";
-import { SITE_BRAND_NAME } from "@/content/trademarkNotice";
 
 const START_OVER_ARIA_LABEL =
   "Reset address lookup, parcel PIN, search results, and levy and metro sections on this page";
@@ -66,17 +66,7 @@ export function HomePageClient() {
       <div className={TOOL_PAGE_INNER_CLASS_HUB}>
         <div className={HOME_PAGE_HERO_INTRO_GROUP_CLASS}>
           <PageHero
-            title={
-              <>
-                {SITE_BRAND_NAME}
-                <span
-                  className="ms-0.5 align-super text-[0.55em] font-semibold tracking-normal"
-                  aria-hidden="true"
-                >
-                  ™
-                </span>
-              </>
-            }
+            title={<SiteBrandHeroTitle />}
             actions={
               viewingParcel ? (
                 <button

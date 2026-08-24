@@ -31,7 +31,12 @@ from ingest.writer import (
     build_account_map_json,
     write_comparison_dir,
 )
-from ingest.compare import compare_dirs, DiffResult
+from ingest.compare import (
+    _cell_value,
+    compare_dirs,
+    DiffResult,
+    write_side_by_side_csv,
+)
 from synthetic_test_ids import (
     SYNTHETIC_PIN,
     SYNTHETIC_PIN_NO_LEADING_ZERO,
@@ -1024,6 +1029,139 @@ class CompareDirsTests(unittest.TestCase):
             result.format_human(),
         )
 
+    def test_side_by_side_csv_identical_includes_matching_rows(self) -> None:
+        """Full side-by-side lists every leaf, including matches (not mismatch-only)."""
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "side-by-side.csv"
+            for d in (a, b):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    json.dumps(self._make_stacks()), encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(self._make_account()), encoding="utf-8"
+                )
+            meta = write_side_by_side_csv(a, b, out_csv)
+            self.assertTrue(meta["identical"])
+            self.assertEqual(meta["mismatchCount"], 0)
+            self.assertGreater(meta["rowCount"], 0)
+            self.assertTrue(out_csv.is_file())
+            with out_csv.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(len(rows), meta["rowCount"])
+            self.assertEqual(
+                list(rows[0].keys()),
+                ["key", "v1_engine_value", "v2_engine_value"],
+            )
+            # Matching leaf present with identical columns.
+            tax_year_rows = [
+                r for r in rows if r["key"].endswith("stacksByTagId.1.taxYear")
+            ]
+            self.assertEqual(len(tax_year_rows), 1)
+            self.assertEqual(tax_year_rows[0]["v1_engine_value"], "2025")
+            self.assertEqual(tax_year_rows[0]["v2_engine_value"], "2025")
+            # Snapshot metadata omitted from rows.
+            self.assertFalse(any("snapshot" in r["key"] for r in rows))
+            self.assertGreater(meta["skippedSnapshot"], 0)
+
+    def test_side_by_side_csv_reports_mismatch_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "side-by-side.csv"
+            (a / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                json.dumps(self._make_stacks("2025")), encoding="utf-8"
+            )
+            (b / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                json.dumps(self._make_stacks("2024")), encoding="utf-8"
+            )
+            for d in (a, b):
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(self._make_account()), encoding="utf-8"
+                )
+            meta = write_side_by_side_csv(a, b, out_csv)
+            self.assertFalse(meta["identical"])
+            self.assertGreaterEqual(meta["mismatchCount"], 1)
+            with out_csv.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            mismatches = [
+                r for r in rows if r["v1_engine_value"] != r["v2_engine_value"]
+            ]
+            self.assertEqual(len(mismatches), meta["mismatchCount"])
+            tax_year = next(
+                r for r in mismatches if r["key"].endswith("stacksByTagId.1.taxYear")
+            )
+            self.assertEqual(tax_year["v1_engine_value"], "2025")
+            self.assertEqual(tax_year["v2_engine_value"], "2024")
+
+    def test_side_by_side_csv_matches_compare_dirs_for_int_float(self) -> None:
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "side-by-side.csv"
+            acct_a = self._make_account()
+            acct_b = self._make_account()
+            acct_a["byPin"][SYNTHETIC_PIN]["totalActual"] = 500000
+            acct_b["byPin"][SYNTHETIC_PIN]["totalActual"] = 500000.0
+            for d, stacks, acct in (
+                (a, self._make_stacks(), acct_a),
+                (b, self._make_stacks(), acct_b),
+            ):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    json.dumps(stacks), encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(acct), encoding="utf-8"
+                )
+            diff = compare_dirs(a, b)
+            meta = write_side_by_side_csv(a, b, out_csv)
+            self.assertTrue(diff.identical, diff.format_human())
+            self.assertTrue(meta["identical"])
+            self.assertEqual(meta["mismatchCount"], 0)
+
+    def test_side_by_side_csv_matches_compare_dirs_for_null_vs_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "side-by-side.csv"
+            acct_a = self._make_account()
+            acct_b = self._make_account()
+            acct_a["byPin"][SYNTHETIC_PIN]["ownerList"] = None
+            acct_b["byPin"][SYNTHETIC_PIN]["ownerList"] = ""
+            for d, stacks, acct in (
+                (a, self._make_stacks(), acct_a),
+                (b, self._make_stacks(), acct_b),
+            ):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                    json.dumps(stacks), encoding="utf-8"
+                )
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(acct), encoding="utf-8"
+                )
+            diff = compare_dirs(a, b)
+            meta = write_side_by_side_csv(a, b, out_csv)
+            self.assertFalse(diff.identical, diff.format_human())
+            self.assertFalse(meta["identical"])
+            self.assertGreater(meta["mismatchCount"], 0)
+            with out_csv.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            owner_rows = [
+                r for r in rows if r["key"].endswith(f"byPin.{SYNTHETIC_PIN}.ownerList")
+            ]
+            self.assertEqual(len(owner_rows), 1)
+            self.assertEqual(owner_rows[0]["v1_engine_value"], "(absent)")
+            self.assertEqual(owner_rows[0]["v2_engine_value"], "")
+
+    def test_cell_value_prefixes_formula_like_strings(self) -> None:
+        """CSV cells that begin with = + - @ are prefixed so spreadsheets do not treat them as formulas."""
+        for raw in ("=1+1", "+123", "-SUM(A1)", "@cmd"):
+            self.assertEqual(_cell_value(raw), "'" + raw)
+        self.assertEqual(_cell_value("plain"), "plain")
+        self.assertEqual(_cell_value(""), "")
+        self.assertEqual(_cell_value(None), "(absent)")
+        self.assertEqual(_cell_value(42), "42")
+
 
 # ---------------------------------------------------------------------------
 # build.py / compare.py CLI guards
@@ -1127,6 +1265,104 @@ class CompareCliTests(unittest.TestCase):
                 )
             code = main([str(a), str(b)])
         self.assertEqual(code, 1)
+
+    def test_cli_side_by_side_csv_exit_zero_when_identical(self) -> None:
+        from ingest.compare import main
+
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "out.csv"
+            payload = json.dumps(
+                {
+                    "snapshot": {"bundledAsOf": "2026-07-15"},
+                    "stacksByTagId": {},
+                }
+            )
+            acct = json.dumps(
+                {
+                    "snapshot": {"bundledAsOf": "2026-07-15"},
+                    "pinDigits": 9,
+                    "byPin": {},
+                }
+            )
+            for d in (a, b):
+                (d / "arapahoe-levy-stacks-by-tag-id.json").write_text(payload, encoding="utf-8")
+                (d / "arapahoe-pin-to-tag.json").write_text(acct, encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(
+                    [str(a), str(b), "--side-by-side-csv", str(out_csv)]
+                )
+            self.assertEqual(code, 0)
+            self.assertTrue(out_csv.is_file())
+            meta = json.loads(stdout.getvalue())
+            self.assertTrue(meta["identical"])
+            self.assertEqual(meta["rowCount"], 1)
+
+    def test_cli_side_by_side_csv_exit_one_when_different(self) -> None:
+        from ingest.compare import main
+
+        with tempfile.TemporaryDirectory() as a_tmp, tempfile.TemporaryDirectory() as b_tmp, tempfile.TemporaryDirectory() as out_tmp:
+            a = Path(a_tmp)
+            b = Path(b_tmp)
+            out_csv = Path(out_tmp) / "out.csv"
+            stacks_a = {
+                "snapshot": {"bundledAsOf": "2026-07-15"},
+                "stacksByTagId": {
+                    "1": {
+                        "tagId": "1",
+                        "taxYear": "2025",
+                        "levyAspxUrl": "https://example.test/levy?id=1",
+                        "lines": [],
+                    }
+                },
+            }
+            stacks_b = {
+                "snapshot": {"bundledAsOf": "2026-07-15"},
+                "stacksByTagId": {
+                    "1": {
+                        "tagId": "1",
+                        "taxYear": "2024",
+                        "levyAspxUrl": "https://example.test/levy?id=1",
+                        "lines": [],
+                    }
+                },
+            }
+            (a / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                json.dumps(stacks_a), encoding="utf-8"
+            )
+            (b / "arapahoe-levy-stacks-by-tag-id.json").write_text(
+                json.dumps(stacks_b), encoding="utf-8"
+            )
+            for d in (a, b):
+                (d / "arapahoe-pin-to-tag.json").write_text(
+                    json.dumps(
+                        {
+                            "snapshot": {"bundledAsOf": "2026-07-15"},
+                            "pinDigits": 9,
+                            "byPin": {},
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(
+                    [str(a), str(b), "--side-by-side-csv", str(out_csv)]
+                )
+            self.assertEqual(code, 1)
+            meta = json.loads(stdout.getvalue())
+            self.assertFalse(meta["identical"])
+            self.assertGreaterEqual(meta["mismatchCount"], 1)
+            with out_csv.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertTrue(
+                any(
+                    r["v1_engine_value"] == "2025" and r["v2_engine_value"] == "2024"
+                    for r in rows
+                )
+            )
 
 
 if __name__ == "__main__":
