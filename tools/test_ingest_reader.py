@@ -31,7 +31,12 @@ from ingest.writer import (
     build_account_map_json,
     write_comparison_dir,
 )
-from ingest.compare import compare_dirs, DiffResult, write_side_by_side_csv
+from ingest.compare import (
+    _cell_value,
+    compare_dirs,
+    DiffResult,
+    write_side_by_side_csv,
+)
 from synthetic_test_ids import (
     SYNTHETIC_PIN,
     SYNTHETIC_PIN_NO_LEADING_ZERO,
@@ -1147,6 +1152,15 @@ class CompareDirsTests(unittest.TestCase):
             self.assertEqual(len(owner_rows), 1)
             self.assertEqual(owner_rows[0]["v1_engine_value"], "(absent)")
             self.assertEqual(owner_rows[0]["v2_engine_value"], "")
+
+    def test_cell_value_prefixes_formula_like_strings(self) -> None:
+        """CSV cells that begin with = + - @ are prefixed so spreadsheets do not treat them as formulas."""
+        for raw in ("=1+1", "+123", "-SUM(A1)", "@cmd"):
+            self.assertEqual(_cell_value(raw), "'" + raw)
+        self.assertEqual(_cell_value("plain"), "plain")
+        self.assertEqual(_cell_value(""), "")
+        self.assertEqual(_cell_value(None), "(absent)")
+        self.assertEqual(_cell_value(42), "42")
 
 
 # ---------------------------------------------------------------------------

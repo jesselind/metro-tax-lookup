@@ -19,7 +19,6 @@ describe("countyDataEngine", () => {
   const envKey = "NEXT_PUBLIC_COUNTY_DATA_ENGINE";
 
   afterEach(() => {
-    delete process.env[envKey];
     vi.unstubAllEnvs();
   });
 
@@ -28,25 +27,25 @@ describe("countyDataEngine", () => {
   });
 
   it("defaults to shipping /data when env is unset", () => {
-    delete process.env[envKey];
+    vi.stubEnv(envKey, undefined);
     expect(activeCountyDataEngine()).toBe("v1");
     expect(activeCountyDataRoot()).toBe(SHIPPING_DATA_ROOT);
   });
 
   it("loads v2 root when env is v2", () => {
-    process.env[envKey] = "v2";
+    vi.stubEnv(envKey, "v2");
     expect(activeCountyDataEngine()).toBe("v2");
     expect(activeCountyDataRoot()).toBe(ENGINE_V2_DATA_ROOT);
   });
 
   it("ignores invalid env values", () => {
-    process.env[envKey] = "candidate";
+    vi.stubEnv(envKey, "candidate");
     expect(activeCountyDataEngine()).toBe(COUNTY_DATA_ENGINE_SETTING);
   });
 
   it("ignores env override in production", () => {
     vi.stubEnv("NODE_ENV", "production");
-    process.env[envKey] = "v2";
+    vi.stubEnv(envKey, "v2");
     expect(activeCountyDataEngine()).toBe("v1");
     expect(activeCountyDataRoot()).toBe(SHIPPING_DATA_ROOT);
   });

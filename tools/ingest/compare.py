@@ -143,12 +143,14 @@ def _numbers_equal(a: Any, b: Any) -> bool:
 
 def _leaf_values_equal(a: object, b: object) -> bool:
     """Leaf equality for side-by-side mismatch counts (matches _diff_values rules)."""
-    if type(a) != type(b):
+    if type(a) is not type(b):
         return _numbers_equal(a, b)
     return a == b
 
 
 _CELL_ABSENT = "(absent)"
+# Spreadsheet formula injection: Excel/Sheets treat these cell prefixes as formulas.
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
 
 
 def _diff_values(
@@ -159,7 +161,7 @@ def _diff_values(
     diffs: list[Difference],
     skips: _SkipCounts,
 ) -> None:
-    if type(a) != type(b):
+    if type(a) is not type(b):
         if _numbers_equal(a, b):
             return
         diffs.append(Difference(filename, _path_str(path), a, b))
@@ -235,6 +237,8 @@ def _cell_value(value: object) -> str:
     if isinstance(value, bool):
         return json.dumps(value)
     if isinstance(value, str):
+        if value.startswith(_CSV_FORMULA_PREFIXES):
+            return "'" + value
         return value
     if isinstance(value, (int, float)):
         return str(value)
@@ -249,7 +253,7 @@ def _side_by_side_values(
     emit: Callable[[str, object, object], None],
     skips: _SkipCounts,
 ) -> None:
-    if type(a) != type(b):
+    if type(a) is not type(b):
         emit(_path_str(path), a, b)
         return
 
