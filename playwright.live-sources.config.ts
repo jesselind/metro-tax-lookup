@@ -9,8 +9,9 @@ import { defineConfig, devices } from "@playwright/test";
  * External curated-source URL health (request-only).
  *
  * Not part of the default PR e2e suite: third-party hosts are flaky and must
- * not gate merges. Run via `npm run test:e2e:live-sources` or the scheduled
- * GitHub workflow. No app server — probes use Playwright's APIRequestContext.
+ * not gate merges. Run via `npm run test:e2e:live-sources` or the manual
+ * GitHub workflow (`workflow_dispatch`). No app server — probes use
+ * Playwright's APIRequestContext.
  */
 const isCI = !!process.env.CI;
 

@@ -517,7 +517,11 @@ export function HomeParcelAddressLookup({
         return;
       }
       const requestId = ++streetTypeaheadRequestRef.current;
-      const data = await fetchArapahoeSitusToPinsJson();
+      prefetchParcelLevyJsonBundle();
+      const [data, pinToTag] = await Promise.all([
+        fetchArapahoeSitusToPinsJson(),
+        fetchArapahoePinToTagJson(),
+      ]);
       if (requestId !== streetTypeaheadRequestRef.current) return;
       if (!data?.byKey) {
         setStreetTypeahead([]);
@@ -528,6 +532,7 @@ export function HomeParcelAddressLookup({
         num,
         suffix,
         namePartial,
+        { pinToTag },
       );
       if (requestId !== streetTypeaheadRequestRef.current) return;
       setStreetTypeahead(list);
@@ -799,7 +804,10 @@ export function HomeParcelAddressLookup({
     setBusy(true);
     try {
       prefetchParcelLevyJsonBundle();
-      const data = await fetchArapahoeSitusToPinsJson();
+      const [data, pinToTag] = await Promise.all([
+        fetchArapahoeSitusToPinsJson(),
+        fetchArapahoePinToTagJson(),
+      ]);
       if (!data?.byKey) {
         const detail =
           getLastArapahoeSitusFetchFailureDetail() ??
@@ -817,6 +825,7 @@ export function HomeParcelAddressLookup({
         suffix,
         nameRaw,
         unitTrim,
+        pinToTag,
       );
       if (result.kind === "none") {
         if (!useAdvanced) {
@@ -1514,7 +1523,7 @@ export function HomeParcelAddressLookup({
                     >
                       <span className="font-semibold">{s.streetNameKey}</span>
                       <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
-                        {s.sampleLabel}
+                        {situsLabelForTypeaheadDisplay(s.sampleLabel)}
                       </span>
                     </button>
                   </li>

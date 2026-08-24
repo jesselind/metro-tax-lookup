@@ -17,7 +17,9 @@ import {
   countySitusToPinsUrl,
 } from "@/lib/countyDataPaths";
 import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
-import { pickSitusPlaceSampleLabel } from "@/lib/situsMultiPinChooser";
+import { stripTrailingUnitFragmentFromAddressLine } from "@/lib/addressLabelDifference";
+import type { ArapahoePinToTagFile } from "@/lib/arapahoeParcelLevyData";
+import { pickSitusPlaceSampleLabelForTypeahead } from "@/lib/situsMultiPinChooser";
 
 export type ArapahoeSitusPinHit = {
   pin: string;
@@ -84,22 +86,6 @@ export function trySplitSitusAutofillLine(raw: string): {
   };
 }
 
-/**
- * Strip a trailing unit fragment (Apt 2, Unit 3B, #4, Ste 100) from one address line.
- * Best-effort for single-field entry; does not handle every format.
- */
-function stripTrailingUnitFromAddressLine(raw: string): { line: string; unit: string } {
-  const trimmed = raw.trim();
-  if (!trimmed) return { line: "", unit: "" };
-  const re =
-    /^(.*?)\s+(?:(?:APT|APARTMENT|UNIT|STE|SUITE)\s*[#.]?\s*|#)\s*([A-Za-z0-9/-]+)\s*$/i;
-  const m = trimmed.match(re);
-  if (!m || !m[1] || m[1].trim().length < 1) {
-    return { line: trimmed, unit: "" };
-  }
-  return { line: m[1].trim(), unit: m[2].trim() };
-}
-
 export const SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN = 200;
 
 /**
@@ -115,7 +101,7 @@ export function parseSimpleAddressLineForSitusLookup(raw: string): {
   const trimmed = raw.trim();
   if (!trimmed) return null;
   if (trimmed.length > SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN + 64) return null;
-  const { line, unit } = stripTrailingUnitFromAddressLine(trimmed);
+  const { line, unit } = stripTrailingUnitFragmentFromAddressLine(trimmed);
   const split = trySplitSitusAutofillLine(line);
   if (split) {
     return {
@@ -872,7 +858,10 @@ function collectScoredStreetsForNumber(
   numKey: string,
   query: string,
   unit: string,
-  options?: { allowSubstring?: boolean },
+  options?: {
+    allowSubstring?: boolean;
+    pinToTag?: ArapahoePinToTagFile | null;
+  },
 ): SitusStreetSuggestion[] {
   const byName = getStreetsByNameForNumber(file, numKey);
   if (byName.size === 0 || !query) return [];
@@ -893,7 +882,9 @@ function collectScoredStreetsForNumber(
     if (hits.length === 0) continue;
     scored.push({
       streetNameKey: candName,
-      sampleLabel: pickSitusPlaceSampleLabel(hits) || candName,
+      sampleLabel:
+        pickSitusPlaceSampleLabelForTypeahead(hits, options?.pinToTag) ||
+        candName,
       hits,
       score,
     });
@@ -914,6 +905,7 @@ export function lookupPinsBySitusFuzzy(
   numberSuffix: string,
   streetName: string,
   unit: string,
+  pinToTag?: ArapahoePinToTagFile | null,
 ): SitusFuzzyLookupResult {
   const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
   if (!numKey) return { kind: "none" };
@@ -937,8 +929,9 @@ export function lookupPinsBySitusFuzzy(
   const scored = collectScoredStreetsForNumber(
     file,
     numKey,
-    variants[0]!,
+    normalizeStreetNameKeySoft(streetName) || normalizeStreetNameKey(streetName),
     unit,
+    { pinToTag },
   );
   if (scored.length === 0) return { kind: "none" };
 
@@ -970,14 +963,20 @@ export function lookupPinsBySitusFuzzy(
  * situs (condo units, Real + business personal property), all PINs stay on
  * `hits` and the UI shows the multi-match chooser after pick — typeahead must
  * not list duplicate address lines per PIN (Porter/Radiology crack).
+ *
+ * Pass pin-to-tag when available so Real+BPP places keep today's sample label;
+ * all-Real multi-unit places get a street-only caption when units differ.
  */
 export function suggestSitusStreetsForNumber(
   file: ArapahoeSitusToPinsFile,
   streetNumber: string,
   numberSuffix: string,
   streetNamePartial: string,
-  streetLimit: number = SITUS_SUGGESTION_LIMIT,
-  addressLimit: number = SITUS_TYPEAHEAD_ADDRESS_LIMIT,
+  options?: {
+    streetLimit?: number;
+    addressLimit?: number;
+    pinToTag?: ArapahoePinToTagFile | null;
+  },
 ): SitusStreetSuggestion[] {
   const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
   if (!numKey) return [];
@@ -985,11 +984,14 @@ export function suggestSitusStreetsForNumber(
     normalizeStreetNameKeySoft(streetNamePartial) ||
     normalizeStreetNameKey(streetNamePartial);
   if (!query) return [];
+  const streetLimit = options?.streetLimit ?? SITUS_SUGGESTION_LIMIT;
+  const addressLimit = options?.addressLimit ?? SITUS_TYPEAHEAD_ADDRESS_LIMIT;
   const placeCap = Math.min(
     Math.max(1, streetLimit),
     Math.max(1, addressLimit),
   );
   return collectScoredStreetsForNumber(file, numKey, query, "", {
     allowSubstring: true,
+    pinToTag: options?.pinToTag,
   }).slice(0, placeCap);
 }

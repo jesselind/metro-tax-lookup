@@ -15,7 +15,7 @@ import {
  *
  * Tagged `@live-sources`: excluded from default `npm run test:e2e` / PR CI
  * (Playwright best practice: do not depend on third parties for merge green).
- * Run with `npm run test:e2e:live-sources` or the scheduled workflow.
+ * Run with `npm run test:e2e:live-sources` or the manual GitHub workflow.
  */
 test.describe("Authority-chain curated source URL health", () => {
   const hrefs = collectAuthorityChainSourceUrlsForEntries(

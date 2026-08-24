@@ -9,8 +9,30 @@ import {
   segmentAddressLabelsByDifference,
   situsLabelForTypeaheadDisplay,
   splitSitusLabelEnvelopeLines,
+  stripTrailingUnitFragmentFromAddressLine,
 } from "./addressLabelDifference";
 import { SYNTHETIC_MULTI_LABEL_MAJORITY } from "./syntheticTestIds";
+
+describe("stripTrailingUnitFragmentFromAddressLine", () => {
+  it("strips Unit / Apt / Ste / # suffixes", () => {
+    expect(
+      stripTrailingUnitFragmentFromAddressLine("6420 S DAYTON ST Unit J01"),
+    ).toEqual({ line: "6420 S DAYTON ST", unit: "J01" });
+    expect(
+      stripTrailingUnitFragmentFromAddressLine("100 MAIN ST Apt 2"),
+    ).toEqual({ line: "100 MAIN ST", unit: "2" });
+    expect(stripTrailingUnitFragmentFromAddressLine("100 MAIN ST #4")).toEqual({
+      line: "100 MAIN ST",
+      unit: "4",
+    });
+  });
+
+  it("leaves lines without a trailing unit fragment unchanged", () => {
+    expect(
+      stripTrailingUnitFragmentFromAddressLine("7700 S BROADWAY"),
+    ).toEqual({ line: "7700 S BROADWAY", unit: "" });
+  });
+});
 
 describe("splitSitusLabelEnvelopeLines", () => {
   it("splits street and city on the first comma", () => {

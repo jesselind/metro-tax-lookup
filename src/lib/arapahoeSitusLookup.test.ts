@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
+import type { ArapahoePinToTagFile } from "./arapahoeParcelLevyData";
 import {
   lookupPinsBySitusFuzzy,
   normalizeStreetNameKey,
@@ -207,6 +208,8 @@ describe("suggestSitusStreetsForNumber", () => {
       "010000102",
       "010000103",
     ]);
+    expect(list[0]?.sampleLabel).not.toMatch(/\bUnit\b/i);
+    expect(list[0]?.sampleLabel).toContain("6420 S DAYTON ST");
   });
 
   it("collapses shared-situs Real + personal accounts to one typeahead place", () => {
@@ -231,11 +234,42 @@ describe("suggestSitusStreetsForNumber", () => {
         ],
       },
     };
+    const pinToTag: ArapahoePinToTagFile = {
+      snapshot: { bundledAsOf: "t", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_MULTI_PERSONAL_PIN]: {
+          tagId: "1",
+          tagShortDescr: "x",
+          propertyClassDescr: "Personal",
+          ownerList: "p",
+          totalActual: 1,
+          totalAssessed: 1,
+        },
+        [SYNTHETIC_MULTI_REAL_PIN]: {
+          tagId: "2",
+          tagShortDescr: "x",
+          propertyClassDescr: "Real",
+          ownerList: "r",
+          totalActual: 2,
+          totalAssessed: 2,
+        },
+        [SYNTHETIC_MULTI_PERSONAL_PIN_B]: {
+          tagId: "3",
+          tagShortDescr: "x",
+          propertyClassDescr: "Personal",
+          ownerList: "p2",
+          totalActual: 0,
+          totalAssessed: 0,
+        },
+      },
+    };
     const list = suggestSitusStreetsForNumber(
       file,
       SYNTHETIC_MULTI_STREET_NUMBER,
       "",
       SYNTHETIC_MULTI_STREET_NAME,
+      { pinToTag },
     );
     expect(list).toHaveLength(1);
     expect(list[0]?.hits).toHaveLength(3);

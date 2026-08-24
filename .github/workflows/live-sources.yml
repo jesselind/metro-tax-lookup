@@ -1,11 +1,9 @@
 # Optional health check: curated authority-chain https sources (county/district PDFs).
 # Not part of PR/push Playwright CI — third-party hosts must not gate merges.
-# Weekly schedule + manual workflow_dispatch. Chromium request-only (no app build).
+# Manual workflow_dispatch only (no schedule: some hosts 403 bot/datacenter probes).
+# Chromium request-only (no app build).
 name: Live source URL health
 on:
-  schedule:
-    # Mondays 14:00 UTC
-    - cron: "0 14 * * 1"
   workflow_dispatch:
 
 jobs:
