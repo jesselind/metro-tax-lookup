@@ -40,15 +40,34 @@ class ShipLandError(ValueError):
     """Refused or failed atomic land into public/data/."""
 
 
+def unresolved_ship_staging(repo_root: Path | None = None) -> Path:
+    """Repo-relative ship staging path without resolving symlinks."""
+    root = repo_root or REPO_ROOT
+    return root / SHIP_STAGING_REL
+
+
 def ship_staging_dir(repo_root: Path | None = None) -> Path:
     """Resolved path to the ship staging directory."""
-    root = repo_root or REPO_ROOT
-    return (root / SHIP_STAGING_REL).resolve()
+    raw = unresolved_ship_staging(repo_root)
+    _reject_symlink_staging(raw)
+    return raw.resolve()
+
+
+def _reject_symlink_staging(raw: Path) -> None:
+    """Refuse staging delete/create when the staging entry itself is a symlink."""
+    if raw.is_symlink():
+        raise ShipLandError(
+            "Ship staging path is a symlink; refusing delete or reset: "
+            f"{raw}"
+        )
 
 
 def reset_ship_staging(repo_root: Path | None = None) -> Path:
     """Remove any prior staging tree and create an empty staging directory."""
-    staging = ship_staging_dir(repo_root)
+    root = repo_root or REPO_ROOT
+    raw = unresolved_ship_staging(root)
+    _reject_symlink_staging(raw)
+    staging = raw.resolve()
     if staging.exists():
         shutil.rmtree(staging)
     staging.mkdir(parents=True, exist_ok=True)
@@ -57,7 +76,10 @@ def reset_ship_staging(repo_root: Path | None = None) -> Path:
 
 def cleanup_ship_staging(repo_root: Path | None = None) -> None:
     """Delete the ship staging directory after a successful land."""
-    staging = ship_staging_dir(repo_root)
+    root = repo_root or REPO_ROOT
+    raw = unresolved_ship_staging(root)
+    _reject_symlink_staging(raw)
+    staging = raw.resolve()
     if staging.exists():
         shutil.rmtree(staging)
 
@@ -90,38 +112,21 @@ def assert_identical_for_ship(live: Path, staging: Path, *, label: str) -> None:
     )
 
 
-def _replace_file(src: Path, dst: Path) -> None:
-    """Copy src over dst via a same-directory temp name, then os.replace."""
-    tmp = dst.with_name(dst.name + ".ship-tmp")
-    if tmp.exists():
-        tmp.unlink()
-    shutil.copy2(src, tmp)
-    tmp.replace(dst)
+def _remove_path(path: Path) -> None:
+    if not path.exists() and not path.is_symlink():
+        return
+    if path.is_dir() and not path.is_symlink():
+        shutil.rmtree(path)
+    else:
+        path.unlink()
 
 
-def _replace_shard_dir(src_dir: Path, dst_dir: Path) -> None:
-    """Replace shard directory with a rename swap; roll back on failure."""
-    parent = dst_dir.parent
-    new_dir = parent / f"{dst_dir.name}.ship-new"
-    old_dir = parent / f"{dst_dir.name}.ship-old"
-    if new_dir.exists():
-        shutil.rmtree(new_dir)
-    if old_dir.exists():
-        shutil.rmtree(old_dir)
-
-    shutil.copytree(src_dir, new_dir)
-    try:
-        if dst_dir.exists():
-            dst_dir.rename(old_dir)
-        new_dir.rename(dst_dir)
-    except Exception:
-        if not dst_dir.exists() and old_dir.exists():
-            old_dir.rename(dst_dir)
-        if new_dir.exists():
-            shutil.rmtree(new_dir)
-        raise
-    if old_dir.exists():
-        shutil.rmtree(old_dir)
+def _restore_backups(backups: list[tuple[Path, Path]]) -> None:
+    """Restore live targets from .ship-old backups (reverse commit order)."""
+    for backup, dst in reversed(backups):
+        _remove_path(dst)
+        if backup.exists() or backup.is_symlink():
+            backup.rename(dst)
 
 
 def land_arapahoe_shipping(
@@ -132,8 +137,11 @@ def land_arapahoe_shipping(
 ) -> None:
     """Gate on IDENTICAL, then replace Arapahoe shipping targets from staging.
 
-    Live shipping is unchanged until the pre-swap gate passes. After replace,
-    compare again. Does not delete staging (caller cleans up on success).
+    Live shipping is unchanged until the pre-swap gate passes. Prepare all
+    side copies first, then commit the full top-level + shard set; on any
+    failure restore prior targets. Kill during the rename window can still
+    leave temps; backup + git remain the safety net. Does not delete staging
+    (caller cleans up on success).
     """
     staging = staging.resolve()
     shipping = shipping.resolve()
@@ -146,14 +154,53 @@ def land_arapahoe_shipping(
     if not skip_pre_swap_identical:
         assert_identical_for_ship(shipping, staging, label="Pre-swap")
 
-    for name in ARAPAHOE_TOP_LEVEL_FILES:
-        src = staging / name
-        if not src.is_file():
-            continue
-        _replace_file(src, shipping / name)
+    prepared: list[tuple[Path, Path]] = []  # (ship-new path, live dst)
+    shard_new: Path | None = None
+    shard_dst = shipping / ARAPAHOE_SHARD_DIR
+    backups: list[tuple[Path, Path]] = []  # (ship-old path, live dst)
 
-    shard_src = staging / ARAPAHOE_SHARD_DIR
-    if shard_src.is_dir():
-        _replace_shard_dir(shard_src, shipping / ARAPAHOE_SHARD_DIR)
+    try:
+        for name in ARAPAHOE_TOP_LEVEL_FILES:
+            src = staging / name
+            if not src.is_file():
+                continue
+            dst = shipping / name
+            new_tmp = dst.with_name(dst.name + ".ship-new")
+            _remove_path(new_tmp)
+            shutil.copy2(src, new_tmp)
+            prepared.append((new_tmp, dst))
 
-    assert_identical_for_ship(shipping, staging, label="Post-land")
+        shard_src = staging / ARAPAHOE_SHARD_DIR
+        if shard_src.is_dir():
+            shard_new = shipping / f"{ARAPAHOE_SHARD_DIR}.ship-new"
+            _remove_path(shard_new)
+            shutil.copytree(shard_src, shard_new)
+
+        for new_tmp, dst in prepared:
+            if dst.exists() or dst.is_symlink():
+                old = dst.with_name(dst.name + ".ship-old")
+                _remove_path(old)
+                dst.rename(old)
+                backups.append((old, dst))
+            new_tmp.rename(dst)
+
+        if shard_new is not None:
+            shard_old = shipping / f"{ARAPAHOE_SHARD_DIR}.ship-old"
+            _remove_path(shard_old)
+            if shard_dst.exists() or shard_dst.is_symlink():
+                shard_dst.rename(shard_old)
+                backups.append((shard_old, shard_dst))
+            shard_new.rename(shard_dst)
+            shard_new = None
+
+        assert_identical_for_ship(shipping, staging, label="Post-land")
+    except Exception:
+        _restore_backups(backups)
+        for new_tmp, _dst in prepared:
+            _remove_path(new_tmp)
+        if shard_new is not None:
+            _remove_path(shard_new)
+        raise
+    else:
+        for backup, _dst in backups:
+            _remove_path(backup)

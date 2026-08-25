@@ -55,6 +55,29 @@ from ingest.dola_match import (  # noqa: E402
 from ingest.parcel_record import read_main_parcel_bundle  # noqa: E402
 
 
+def land_ship_from_staging(
+    *,
+    bundled_as_of: str,
+    staging: Path,
+    shipping: Path,
+    ship_allow_diff: bool,
+    repo_root: Path | None = None,
+) -> None:
+    """Re-run ship_preflight, then land Arapahoe targets from staging.
+
+    Called after the staging build finishes so mart stamp / clean public/data/
+    are checked against current disk state, not only the start-of-run check.
+    Preserves --ship-allow-diff (skips pre-swap IDENTICAL only).
+    """
+    root = repo_root if repo_root is not None else _REPO
+    ship_preflight(bundled_as_of, repo_root=root)
+    land_arapahoe_shipping(
+        staging=staging,
+        shipping=shipping,
+        skip_pre_swap_identical=ship_allow_diff,
+    )
+
+
 def _default_path_from_mapping(mapping: dict[str, Any], key: str) -> Path | None:
     defaults = mapping.get("defaultPaths") or {}
     rel = defaults.get(key)
@@ -376,13 +399,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.ship:
         assert shipping_dir is not None
         try:
+            print("SHIP: re-check preflight before land...", file=sys.stderr)
             print("SHIP: pre-swap IDENTICAL gate...", file=sys.stderr)
-            land_arapahoe_shipping(
+            land_ship_from_staging(
+                bundled_as_of=args.bundled_as_of,
                 staging=write_dir,
                 shipping=shipping_dir,
-                skip_pre_swap_identical=args.ship_allow_diff,
+                ship_allow_diff=args.ship_allow_diff,
+                repo_root=_REPO,
             )
-        except ShipLandError as exc:
+        except (OutDirPolicyError, ShipLandError) as exc:
             print(f"Error: {exc}", file=sys.stderr)
             print(
                 "SHIP aborted: live public/data/ Arapahoe files were not replaced. "

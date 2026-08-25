@@ -133,12 +133,13 @@ Equivalent to `npm run build:ingest -- ... --out-dir public/data --ship --bundle
 **What `--ship` does:**
 
 1. Preflight (mart stamp + clean `git status public/data/`).
-2. Full v2 build from raw mart/GIS/DOLA inputs into **`supporting-data/_ingest-ship-staging/`** (gitignored via `supporting-data/**`).
-3. **Pre-swap gate:** `compare_dirs` staging vs live `public/data/` must be **IDENTICAL** (snapshot subtree excluded). Fail → live Arapahoe files untouched; staging left for inspection.
-4. **Atomic land:** replace only `arapahoe-levy-stacks-by-tag-id.json`, `arapahoe-pin-to-tag.json`, `arapahoe-situs-to-pins.json`, and `arapahoe-parcel-record-by-pin/`. Metro-levies / directory / explainers / authority mills untouched.
-5. **Post-land gate:** staging vs live IDENTICAL again; then delete staging.
+2. Full v2 build from raw mart/GIS/DOLA inputs into **`supporting-data/_ingest-ship-staging/`** (gitignored via `supporting-data/**`). Staging path must be a real directory, not a symlink (reset/cleanup refuse symlink entries before delete).
+3. **Re-preflight** immediately before land (same mart stamp + clean `public/data/` checks against current disk state).
+4. **Pre-swap gate:** `compare_dirs` staging vs live `public/data/` must be **IDENTICAL** (snapshot subtree excluded). Fail → live Arapahoe files untouched; staging left for inspection.
+5. **Atomic land:** prepare all Arapahoe side copies, then commit `arapahoe-levy-stacks-by-tag-id.json`, `arapahoe-pin-to-tag.json`, `arapahoe-situs-to-pins.json`, and `arapahoe-parcel-record-by-pin/` together; on any failure restore prior targets. Metro-levies / directory / explainers / authority mills untouched. Kill mid-rename can still leave temps; local backup + git remain the safety net.
+6. **Post-land gate:** staging vs live IDENTICAL again; then delete staging.
 
-**Mart refresh after cutover** (intentional bill-data diffs): pass **`--ship-allow-diff`** with `--ship` (skips pre-swap IDENTICAL only; still staging + atomic land). Cutover must omit that flag.
+**Mart refresh after cutover** (intentional bill-data diffs): pass **`--ship-allow-diff`** with `--ship` (skips pre-swap IDENTICAL only; still staging + atomic land + re-preflight). Cutover must omit that flag.
 
 **`--ship` guardrails (code):**
 
@@ -147,10 +148,12 @@ Equivalent to `npm run build:ingest -- ... --out-dir public/data --ship --bundle
 | `--out-dir` must be exactly `public/data/` (land target) | `out_dir_policy.validate_out_dir` |
 | No `--ship` without `public/data/` | same |
 | No other path under `public/` as land target | same |
-| `--bundled-as-of` matches `tools/county-mart-data-as-of.txt` | `ship_preflight` |
-| `git status public/data/` clean | `ship_preflight` |
+| `--bundled-as-of` matches `tools/county-mart-data-as-of.txt` | `ship_preflight` (start + before land) |
+| `git status public/data/` clean | `ship_preflight` (start + before land) |
 | Build writes staging only; never mid-run live files | `build.py` + `writer.py` |
+| Staging path is not a symlink | `ship_land.reset_ship_staging` / `cleanup_ship_staging` |
 | Pre-swap IDENTICAL (unless `--ship-allow-diff`) | `ship_land.land_arapahoe_shipping` |
+| Multi-target land restores on failure | same |
 | Post-land IDENTICAL vs staging | same |
 | Arapahoe-only file set on land | `ship_land.py` |
 
@@ -177,7 +180,7 @@ Disk parity remains `npm run diff:ingest`; this switch is for eyes-on UI sanity 
 | Safeguard | Where enforced |
 | --- | --- |
 | Engine v2 never mid-run writes live `public/data/` | `writer.py` / `parcel_record.py` refuse `public/`; `--ship` builds staging then `ship_land.py`; tests in `test_ingest_ship_land.py`, `test_ingest_out_dir_policy.py`, `test_ingest_reader.py` |
-| `--ship` requires clean `git status public/data/` and matching mart stamp; pre-swap IDENTICAL unless `--ship-allow-diff` | `ship_preflight`; `land_arapahoe_shipping` |
+| `--ship` requires clean `git status public/data/` and matching mart stamp (start + before land); pre-swap IDENTICAL unless `--ship-allow-diff` | `ship_preflight`; `land_ship_from_staging`; `land_arapahoe_shipping` |
 | Control not overwritten during prove-out | Procedure: clean `git status public/data/`; no `build:arapahoe-index` |
 | Candidate builds default to `_ingest-out/` | Default `--out-dir`; gitignored path |
 | Parity gate | `compare.py` exit 0 = IDENTICAL |
