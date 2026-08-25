@@ -39,7 +39,13 @@ _REPO = _TOOLS.parent
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
-from ingest.reader import load_mapping, read_levy_stack_rows  # noqa: E402
+from ingest.reader import (  # noqa: E402
+    load_mapping,
+    read_levy_stack_rows,
+    read_account_rows,
+    read_account_rows_with_values,
+    read_location_situs_map,
+)
 from ingest.writer import write_comparison_dir  # noqa: E402
 from ingest.out_dir_policy import OutDirPolicyError, ship_preflight, validate_out_dir  # noqa: E402
 from ingest.ship_land import (  # noqa: E402
@@ -105,7 +111,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         required=True,
         dest="tag_file",
-        help="Path to the levy stack CSV (e.g. Tax Authority Groups and Tax Authorities.csv)",
+        help="Path to the levy stack CSV or tax-district mill PDF",
     )
     parser.add_argument(
         "--parcel-file",
@@ -113,6 +119,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         required=True,
         dest="parcel_file",
         help="Path to the account/parcel CSV (e.g. Main Parcel Table.csv)",
+    )
+    parser.add_argument(
+        "--values-file",
+        type=Path,
+        default=None,
+        dest="values_file",
+        help=(
+            "Optional values CSV/TXT when accountMap.valuesFile is set "
+            "(default: mapping defaultPaths.values)."
+        ),
     )
     parser.add_argument(
         "--out-dir",
@@ -322,17 +338,59 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print(f"Levy stack rows: {len(stack_rows)}", file=sys.stderr)
 
+    values_path = args.values_file
+    if values_path is None:
+        values_path = _default_path_from_mapping(mapping, "values")
+    values_role = (mapping.get("accountMap") or {}).get("valuesFile")
+
     try:
-        account_rows, situs_map, parcel_record_map = read_main_parcel_bundle(
-            args.parcel_file, mapping
-        )
+        if args.skip_situs_shards:
+            # Account map only (early county loads without situs / shards).
+            if values_role:
+                if values_path is None or not values_path.is_file():
+                    print(
+                        "Error: accountMap.valuesFile is set but values file is missing "
+                        f"(pass --values-file or mapping defaultPaths.values). "
+                        f"Looked for: {values_path}",
+                        file=sys.stderr,
+                    )
+                    return 2
+                account_rows = read_account_rows_with_values(
+                    args.parcel_file, values_path, mapping
+                )
+            else:
+                account_rows = read_account_rows(args.parcel_file, mapping)
+            situs_map: dict[str, list[dict[str, str]]] = {}
+            parcel_record_map: dict[str, dict[str, Any]] | None = {}
+        elif values_role:
+            # Location + values counties (Douglas): account map + situs, no parcel shards.
+            if values_path is None or not values_path.is_file():
+                print(
+                    "Error: accountMap.valuesFile is set but values file is missing "
+                    f"(pass --values-file or mapping defaultPaths.values). "
+                    f"Looked for: {values_path}",
+                    file=sys.stderr,
+                )
+                return 2
+            account_rows = read_account_rows_with_values(
+                args.parcel_file, values_path, mapping
+            )
+            situs_map = read_location_situs_map(args.parcel_file, mapping)
+            parcel_record_map = None
+        else:
+            account_rows, situs_map, parcel_record_map = read_main_parcel_bundle(
+                args.parcel_file, mapping
+            )
     except Exception as exc:
         print(f"Error reading parcel file: {exc}", file=sys.stderr)
         return 1
 
+    parcel_record_count = (
+        len(parcel_record_map) if parcel_record_map is not None else 0
+    )
     print(
         f"Account rows: {len(account_rows)}; situs keys: {len(situs_map)}; "
-        f"parcel records: {len(parcel_record_map)}",
+        f"parcel records: {parcel_record_count}",
         file=sys.stderr,
     )
 

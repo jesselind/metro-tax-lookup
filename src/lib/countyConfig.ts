@@ -72,6 +72,11 @@ export type CountyConfig = {
   identifierDigits: number;
   /** Short pastes still treated as an account id (Arapahoe PIN without leading zeros). */
   identifierPasteMinDigits: number;
+  /**
+   * When true, account ids may include letters (Douglas `C0123456` style).
+   * Lookup normalizes to uppercase; digit-only padding rules do not apply.
+   */
+  identifierAllowsLetters?: boolean;
   publicParcelId: CountyPublicParcelId | null;
   /** Hosts allowed in constructed or validated county hrefs. */
   hostAllowlist: readonly string[];
@@ -179,7 +184,62 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     "Address search is not available. Enter your PIN or AIN from the county record.",
 };
 
-/** Shipping county for this deploy. */
+/** Douglas County (county 2). Mills from published tax-district PDF; no Levy.aspx. */
+export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
+  id: "douglas",
+  displayName: "Douglas County",
+  dolaCertifyingCounty: "Douglas",
+  identifierDigits: 8,
+  identifierPasteMinDigits: 8,
+  identifierAllowsLetters: true,
+  publicParcelId: null,
+  hostAllowlist: ["apps.douglas.co.us", "www.douglasco.gov"],
+  urls: {
+    levyAspx: {
+      host: "www.douglasco.gov",
+      pathSuffix: "/assessor/taxing-authorities/",
+    },
+    parcelRecord: {
+      host: "apps.douglas.co.us",
+      path: "/assessor/web/",
+      queryParam: "account",
+    },
+  },
+  residentLinks: {
+    propertySearch: "https://apps.douglas.co.us/assessor/web/",
+  },
+  features: {
+    situs: true,
+    compsPdf: false,
+    bpp: false,
+    millsHistory: false,
+    metroPurposes: false,
+  },
+  knownFailures: {
+    compsPdfHostedFiles: false,
+  },
+  countyScopeNote: "Douglas County only.",
+  identifierPlaceholder: "8-character account number from county record",
+  emptyIdentifierMessage:
+    "Enter your account number from your Douglas County property record.",
+  identifierNotFoundTemplate:
+    "No parcel found for {tried}. Copy the 8-character account number from your Douglas property record (letters and digits, as shown on the county site).",
+  situsSearchOffMessage:
+    "Address search is not available. Enter your account number from the county record.",
+};
+
+/** Wired counties keyed by id. Lookup resolves config + `{countyId}-*` JSON at runtime. */
+export const COUNTY_CONFIG_BY_ID: Readonly<Record<string, CountyConfig>> = {
+  arapahoe: ARAPAHOE_COUNTY_CONFIG,
+  douglas: DOUGLAS_COUNTY_CONFIG,
+};
+
+export function countyConfigById(countyId: string): CountyConfig | null {
+  const id = countyId.trim().toLowerCase();
+  return COUNTY_CONFIG_BY_ID[id] ?? null;
+}
+
+/** Default county config until lookup resolves a county (Arapahoe-first UI paths). */
 export const COUNTY_CONFIG: CountyConfig = ARAPAHOE_COUNTY_CONFIG;
 
 function isNonEmptyString(value: unknown): value is string {
@@ -331,4 +391,9 @@ export function formatIdentifierNotFoundMessage(
 const shippingCountyConfigError = validateCountyConfig(ARAPAHOE_COUNTY_CONFIG);
 if (shippingCountyConfigError) {
   throw new Error(shippingCountyConfigError);
+}
+
+const douglasCountyConfigError = validateCountyConfig(DOUGLAS_COUNTY_CONFIG);
+if (douglasCountyConfigError) {
+  throw new Error(douglasCountyConfigError);
 }

@@ -22,6 +22,37 @@ afterEach(() => {
 });
 
 describe("validate_app_json.mjs CLI", () => {
+  it("validates committed Arapahoe shipping JSON by default", () => {
+    const result = spawnSync(process.execPath, [scriptPath], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/app JSON validation: ok/);
+    expect(result.stdout).toMatch(/county=arapahoe/);
+  });
+
+  it("validates Douglas prove-out JSON with --county and --data-dir", () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        scriptPath,
+        "--data-dir",
+        "supporting-data/_ingest-out/douglas",
+        "--county",
+        "douglas",
+      ],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+      },
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/county=douglas/);
+  });
+
   it("rejects --data-dir when an in-repo symlink resolves outside the repository", () => {
     const outsideDir = mkdtempSync(join(tmpdir(), "validate-app-json-outside-"));
     cleanupPaths.push(outsideDir);

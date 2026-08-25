@@ -10,10 +10,16 @@ import { CountyCompsPdfGapNote } from "@/content/countyCompsPdfGapNote";
 import { CountyDataMartRefreshAttemptNote } from "@/content/countyDataMartRefreshNote";
 import { CountyPriorYearValuesGapNote } from "@/content/countyPriorYearValuesGapNote";
 import {
+  DouglasMillPdfTaxDistrictGapNote,
+  DouglasParcelRecordGapNote,
+} from "@/content/douglasCountyDataGapNote";
+import {
   COUNTY_SERVICE_GAP_SOURCES_ANCHOR,
   COUNTY_SERVICE_GAP_SOURCES_EXPLAINER,
   COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL,
   COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL,
+  COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL,
+  COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_PARCEL_RECORD_LABEL,
   COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD,
   COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL,
   COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE,
@@ -36,6 +42,11 @@ import {
   ARAPAHOE_COMP_SHEET_PDF_URL,
   ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY,
 } from "@/lib/arapahoeCountyUrls";
+import { DOUGLAS_COUNTY_CONFIG } from "@/lib/countyConfig";
+import {
+  DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
+  DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
+} from "@/content/douglasCountyDataGapNote";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import type { LevyDataFile } from "@/lib/levyTypes";
 import {
@@ -63,7 +74,7 @@ import {
 export const metadata = {
   title: "Sources",
   description:
-    "How to verify numbers against Arapahoe County and Colorado sources, plus plain-language methodology for how this site matches parcels, levies, and district contact.",
+    "How to verify numbers against Arapahoe County, Douglas County, and Colorado sources, plus plain-language methodology for how this site matches parcels, levies, and district contact.",
 };
 
 const SECTION_H2 = "text-lg font-semibold text-slate-900 sm:text-xl";
@@ -132,8 +143,8 @@ export default function SourcesPage() {
       title="Sources"
       intro={
         <p className={TOOL_PAGE_INTRO_PARAGRAPH_CLASS}>
-          These tools use public Arapahoe County and Colorado records bundled as
-          static <JsonFirstMention />
+          These tools use public Arapahoe County, Douglas County, and Colorado
+          records bundled as static <JsonFirstMention />
           {" "}
           in this project. The app does not scrape county sites when you click
           buttons. Use this page to{" "}
@@ -166,6 +177,11 @@ export default function SourcesPage() {
           <li className="flex min-h-0">
             <a href="#levy-breakdown-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
               Your property tax bill
+            </a>
+          </li>
+          <li className="flex min-h-0">
+            <a href="#douglas-levy-breakdown" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
+              Douglas account lookup
             </a>
           </li>
           <li className="flex min-h-0">
@@ -621,6 +637,114 @@ export default function SourcesPage() {
       </section>
 
       <section
+        id="douglas-levy-breakdown"
+        className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
+      >
+        <h2 className={SECTION_H2}>Douglas account lookup</h2>
+        <p className="text-slate-700">
+          On the{" "}
+          <Link href="/" className={TERM_LINK_CLASS}>
+            home page
+          </Link>
+          {", enter an "}
+          <strong className="font-semibold text-slate-900">8-character account number</strong>
+          {" "}
+          from the Douglas Assessor record (letters and digits), or enter a
+          street address. The app probes Arapahoe and Douglas situs indexes and
+          picks the county from the match. No live county API calls. Account
+          numbers still work when you paste them directly.
+        </p>
+        <p className="text-slate-700">
+          Douglas stacks come from{" "}
+          <code className={CODE_INLINE_CLASS}>Property_Location.txt</code>
+          {" "}
+          joined with{" "}
+          <code className={CODE_INLINE_CLASS}>Property_Values.txt</code>
+          {" "}
+          (summed actual and assessed per account) and the published tax-district
+          mill levy PDF. Open the{" "}
+          <a
+            href={DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Assessor data downloads<span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          and{" "}
+          <a
+            href={DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            taxing authorities<span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          pages to verify against county files.
+        </p>
+
+        <h3 className={`${SECTION_H3} !mt-6`}>Property details</h3>
+        <p className="text-slate-700">
+          Summary appraised and assessed values and property class come from the
+          account map. Douglas situs for address search comes from the same
+          location file (street parts only — not owner mail). Extended Property
+          details (owner, sales, and similar mart-style fields) are not in the
+          Douglas bundle yet.
+        </p>
+        <CountyServiceGapCallout
+          id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasParcelRecord}
+          className="mt-3 scroll-mt-8"
+        >
+          <DouglasParcelRecordGapNote linkClassName={TERM_LINK_CLASS} />
+        </CountyServiceGapCallout>
+
+        <h3 className={`${SECTION_H3} !mt-8`}>Levy stacks and mill PDF</h3>
+        <p className="text-slate-700">
+          Each account&apos;s tax district number must appear in the bundled mill
+          PDF for a stack to load. Compare authority names and mills to the
+          county PDF after you load an account.
+        </p>
+        <CountyServiceGapCallout
+          id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict}
+          className="mt-3 scroll-mt-8"
+        >
+          <DouglasMillPdfTaxDistrictGapNote linkClassName={TERM_LINK_CLASS} />
+        </CountyServiceGapCallout>
+
+        <h3
+          id="douglas-cross-county-authority"
+          className={`${SECTION_H3} !mt-8 scroll-mt-8`}
+        >
+          Cross-county districts (product limit)
+        </h3>
+        <p className="text-slate-700">
+          <strong className="font-semibold text-slate-900">Who authorized this?</strong>{" "}
+          and mills-over-time charts match curated entries by county levy line
+          code (AUTH). The same district can use different codes in different
+          counties (for example South Metro Fire Rescue is AUTH{" "}
+          <strong className="font-semibold text-slate-900">4100</strong> on
+          Arapahoe stacks and AUTH{" "}
+          <strong className="font-semibold text-slate-900">4014</strong> on
+          Douglas stacks). Cross-county authority identity is planned
+          follow-on work; we are not adding one-off code aliases per county.
+          Compare names on your stack to the county levy PDF when a tile has no
+          authorization panel.
+        </p>
+        <p className="text-slate-700">
+          Open your account on the{" "}
+          <a
+            href={DOUGLAS_COUNTY_CONFIG.residentLinks.propertySearch}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Douglas County property search<span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          to verify fields we do not bundle yet.
+        </p>
+      </section>
+
+      <section
         id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.section}
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
       >
@@ -654,6 +778,22 @@ export default function SourcesPage() {
               className={TERM_LINK_CLASS}
             >
               {COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL}
+            </a>
+          </li>
+          <li>
+            <a
+              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasParcelRecord}`}
+              className={TERM_LINK_CLASS}
+            >
+              {COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_PARCEL_RECORD_LABEL}
+            </a>
+          </li>
+          <li>
+            <a
+              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict}`}
+              className={TERM_LINK_CLASS}
+            >
+              {COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL}
             </a>
           </li>
         </ul>

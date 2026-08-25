@@ -67,16 +67,27 @@ SITUS_STREET_PARTS = frozenset({"saaddrnumber", "sastreetname"})
 SITUS_FREEFORM = frozenset({"safreeformaddr"})
 
 ACCOUNT_HINTS = frozenset(
-    {"schedule", "schedulenumber", "account", "accountid", "parcelid", "pin"}
+    {
+        "schedule",
+        "schedulenumber",
+        "account",
+        "accountid",
+        "accountno",
+        "accountnumber",
+        "parcelid",
+        "pin",
+    }
 )
 VALUE_HINTS = frozenset(
     {
         "actual",
         "actualvalue",
         "totalactual",
+        "totalactualvalue",
         "assessed",
         "assessedvalue",
         "totalassessed",
+        "totalassessedvalue",
         "marketvalue",
     }
 )
@@ -89,6 +100,10 @@ SITUS_HINTS = frozenset(
         "situs",
         "situsaddress",
         "address",
+        "addressno",
+        "addressnumber",
+        "locationaddress",
+        "streetname",
         "safreeformaddr",
         "sastreetname",
         "saaddrnumber",
@@ -248,6 +263,48 @@ def read_csv_headers(path: Path, *, delimiter: str = ",") -> list[str]:
     return []
 
 
+
+
+def first_row_looks_like_headers(cells: Sequence[str]) -> bool:
+    """Heuristic: True when the first CSV row looks like column names, not data.
+
+    Used for headerless Assessor text dumps (.txt / CSV without a header row).
+    County-specific column names live in the mapping file; the classifier only
+    needs to know the file is tabular-but-headerless.
+    """
+    nonempty = [normalize_header(c) for c in cells if normalize_header(c)]
+    if not nonempty:
+        return False
+    # Assessor dumps often put an account id in column 0 (letter + digits).
+    first = nonempty[0]
+    if len(first) >= 6 and first[0].isalpha() and first[1:].replace(" ", "").isdigit():
+        return False
+    headerish = 0
+    dataish = 0
+    for cell in nonempty:
+        if len(cell) >= 6 and cell[0].isalpha() and cell[1:].replace(" ", "").isdigit():
+            dataish += 1
+            continue
+        cleaned = cell.replace(",", "").replace(".", "")
+        if cleaned.isdigit() or (cleaned.startswith("-") and cleaned[1:].isdigit()):
+            dataish += 1
+            continue
+        if any(ch.isalpha() for ch in cell):
+            headerish += 1
+    if dataish > headerish:
+        return False
+    return headerish >= max(1, (len(nonempty) + 1) // 2)
+
+
+def read_csv_first_row(path: Path, *, delimiter: str = ",") -> list[str]:
+    """Return the first non-empty CSV row as raw cells (not treated as headers)."""
+    with path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
+        reader = csv.reader(f, delimiter=delimiter)
+        for row in reader:
+            if any(normalize_header(c) for c in row):
+                return [c if c is not None else "" for c in row]
+    return []
+
 def read_xlsx_headers(path: Path) -> list[str] | None:
     try:
         import openpyxl
@@ -373,10 +430,14 @@ def inspect_path(path: Path, drop: Path) -> FileRecord | None:
         return FileRecord(rel, "gdb", tuple(fields), sig)
 
     suffix = path.suffix.lower()
-    if suffix in {".csv", ".tsv"}:
+    if suffix in {".csv", ".tsv", ".txt"}:
         delimiter = "\t" if suffix == ".tsv" else ","
-        headers = read_csv_headers(path, delimiter=delimiter)
-        kind = "csv" if suffix == ".csv" else "tsv"
+        first_row = read_csv_first_row(path, delimiter=delimiter)
+        kind = "tsv" if suffix == ".tsv" else ("txt" if suffix == ".txt" else "csv")
+        if first_row and not first_row_looks_like_headers(first_row):
+            # Headerless quoted CSV/TXT (common Assessor bulk dump shape).
+            return FileRecord(rel, kind, (), "headerless-csv")
+        headers = [normalize_header(c) for c in first_row if normalize_header(c)]
         return FileRecord(
             rel, kind, tuple(headers), match_tabular_signature(headers, rel_path=rel)
         )
@@ -461,7 +522,7 @@ def coverage_from_files(
     unknown_tables = tuple(
         f
         for f in files
-        if f.signature in {"unknown-csv", "unknown-xlsx"}
+        if f.signature in {"unknown-csv", "unknown-xlsx", "headerless-csv"}
     )
 
     coverage: dict[str, CoverageItem] = {}

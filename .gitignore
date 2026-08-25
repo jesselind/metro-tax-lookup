@@ -47,6 +47,10 @@ next-env.d.ts
 # Legacy monolithic parcel-record bundles (build output only); commit plain JSON shards under arapahoe-parcel-record-by-pin/.
 public/data/arapahoe-parcel-record-by-pin.json
 public/data/arapahoe-parcel-record-by-pin.json.gz
+# Douglas shipping JSON under public/data/ until intentional ship-to-git
+# (same layout as Arapahoe: real files, not symlinks). Keep ignored so
+# Phase 9/9b code commits stay small; remove this ignore when shipping.
+public/data/douglas-*.json
 
 # Ephemeral multi-agent / multi-session handoff notes (gitignored; see repo README)
 docs/_working/

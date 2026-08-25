@@ -3,13 +3,13 @@
  * Build-time check that required app JSON files exist and have the root keys
  * the UI loaders require. Row-shape tests live in Vitest (invented ids).
  *
- * Default: validate committed shipping JSON under public/data/.
- * Prove-out: pass --data-dir supporting-data/_ingest-out to validate engine v2
- * candidate output without touching public/data/. See docs/county-ingest.md.
+ * Default: validate committed shipping JSON under public/data/ for Arapahoe.
+ * Prove-out: pass --data-dir and --county to validate engine v2 candidate output
+ * without touching public/data/. See docs/county-ingest.md.
  *
  * Usage:
  *   node tools/validate_app_json.mjs
- *   node tools/validate_app_json.mjs --data-dir supporting-data/_ingest-out
+ *   node tools/validate_app_json.mjs --data-dir supporting-data/_ingest-out/douglas --county douglas
  */
 
 import { existsSync, readFileSync, realpathSync } from "node:fs";
@@ -27,10 +27,23 @@ const { values } = parseArgs({
       type: "string",
       default: "public/data",
     },
+    county: {
+      type: "string",
+      default: "arapahoe",
+    },
   },
 });
 
 const dataDir = values["data-dir"].replace(/\/+$/, "") || "public/data";
+const countyId = (values.county || "arapahoe").trim().toLowerCase();
+
+if (!/^[a-z][a-z0-9-]*$/.test(countyId)) {
+  fail(`--county must be a lowercase id (got ${JSON.stringify(values.county)})`);
+}
+
+function countyDataBasename(leaf) {
+  return `${countyId}-${leaf}`;
+}
 
 function displayPath(absPath) {
   return relative(root, absPath) || absPath;
@@ -60,12 +73,12 @@ if (
 }
 
 const REQUIRED_FILES = {
-  levyStacks: "arapahoe-levy-stacks-by-tag-id.json",
-  accountMap: "arapahoe-pin-to-tag.json",
+  levyStacks: countyDataBasename("levy-stacks-by-tag-id.json"),
+  accountMap: countyDataBasename("pin-to-tag.json"),
 };
 
 const OPTIONAL_FILES = {
-  situs: "arapahoe-situs-to-pins.json",
+  situs: countyDataBasename("situs-to-pins.json"),
   metro2026: "metro-levies-2026.json",
   metro2025: "metro-levies-2025.json",
 };
@@ -157,4 +170,6 @@ for (const filename of Object.values(OPTIONAL_FILES)) {
   }
 }
 
-console.log(`app JSON validation: ok (${displayPath(dataRoot)})`);
+console.log(
+  `app JSON validation: ok (${displayPath(dataRoot)}, county=${countyId})`,
+);

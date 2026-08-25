@@ -39,6 +39,13 @@ from ingest.situs import build_situs_json
 # Helpers
 # -----------------------------------------------------------------------
 
+
+
+def county_data_basename(mapping: dict[str, Any], leaf: str) -> str:
+    """Return ``{countyId}-{leaf}`` for app JSON filenames (pin-to-tag, etc.)."""
+    county = _strip(mapping.get("county", "")) or "county"
+    return f"{county}-{leaf}"
+
 def _strip(val: Any) -> str:
     if val is None:
         return ""
@@ -185,6 +192,19 @@ def build_levy_stacks_json(
                 dola_match = dola_join.match_line(code, authority)
             else:
                 dola_match = {"method": "none", "confidence": "low"}
+            mill_raw = ln.get("millLevy")
+            if mill_raw is not None and mill_raw != "":
+                try:
+                    mill_val = float(mill_raw)
+                except (TypeError, ValueError):
+                    mill_val = None
+                if mill_val is not None:
+                    dola_match = dict(dola_match)
+                    dola_match["mills"] = mill_val
+                    if dola_match.get("method") == "none" and not dola_match.get(
+                        "millsReason"
+                    ):
+                        dola_match["millsReason"] = "published_mill_levy_table"
             built_lines.append({
                 "code": code,
                 "authorityName": authority,
@@ -326,13 +346,13 @@ def write_comparison_dir(
             k: v for k, v in stacks["stacksByTagId"].items() if k in used_tax_area_ids
         }
 
-    stacks_path = out_dir / "arapahoe-levy-stacks-by-tag-id.json"
+    stacks_path = out_dir / county_data_basename(mapping, "levy-stacks-by-tag-id.json")
     stacks_path.write_text(json.dumps(stacks, separators=sep), encoding="utf-8")
 
     account_map = build_account_map_json(
         account_rows, mapping, bundled_as_of=bundled_as_of, tax_year=resolved_tax_year
     )
-    account_path = out_dir / "arapahoe-pin-to-tag.json"
+    account_path = out_dir / county_data_basename(mapping, "pin-to-tag.json")
     account_path.write_text(json.dumps(account_map, separators=sep), encoding="utf-8")
 
     if skip_situs_shards:
@@ -345,7 +365,7 @@ def write_comparison_dir(
             tax_year=resolved_tax_year,
             source=f"new ingest (mapping: {mapping.get('county', 'unknown')}; Main Parcel situs)",
         )
-        situs_path = out_dir / "arapahoe-situs-to-pins.json"
+        situs_path = out_dir / county_data_basename(mapping, "situs-to-pins.json")
         situs_path.write_text(json.dumps(situs_payload, separators=sep), encoding="utf-8")
 
     if parcel_record_map is None:

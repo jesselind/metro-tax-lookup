@@ -73,6 +73,21 @@ describe("validateRequiredLevyStacksJson", () => {
     ).toBeNull();
   });
 
+  it("accepts empty levyAspxUrl when the county has no Levy.aspx table", () => {
+    expect(
+      validateRequiredLevyStacksJson({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        stacksByTagId: {
+          "0035": {
+            tagId: "0035",
+            levyAspxUrl: "",
+            lines: validStack.lines,
+          },
+        },
+      }),
+    ).toBeNull();
+  });
+
   it("rejects missing snapshot.bundledAsOf", () => {
     expect(
       validateRequiredLevyStacksJson({

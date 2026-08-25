@@ -173,6 +173,14 @@ def format_situs_locality(city: str, state: str, postal: str) -> str:
     return " ".join(x for x in (state_s, postal_s) if x)
 
 
+def _normalize_postal_for_label(postal: str) -> str:
+    """Nine-digit Assessor ZIP+4 blobs (e.g. 801200000) → five-digit ZIP in labels."""
+    s = _strip(postal)
+    if len(s) == 9 and s.isdigit():
+        return s[:5]
+    return s
+
+
 def format_situs_label(row: dict[str, str]) -> str:
     """Human-readable situs line for UI labels (falls back to PIN)."""
     n = _strip(row.get("sa_addr_number", ""))
@@ -187,7 +195,7 @@ def format_situs_label(row: dict[str, str]) -> str:
     locality = format_situs_locality(
         row.get("sa_city", ""),
         row.get("sa_state", ""),
-        row.get("sa_postal_cd", ""),
+        _normalize_postal_for_label(row.get("sa_postal_cd", "")),
     )
     if locality:
         return f"{line1}, {locality}".strip() if line1 else locality

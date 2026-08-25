@@ -1389,5 +1389,187 @@ class CompareCliTests(unittest.TestCase):
             )
 
 
+
+
+class HeaderlessTabularReaderTests(unittest.TestCase):
+    def test_headerless_tabular_injects_headers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = root / "accounts.txt"
+            _write_csv(
+                path,
+                [],  # will write rows only below
+                [],
+            )
+            # overwrite as headerless quoted CSV
+            path.write_text(
+                '"A1000001","0035","100","10"\n"A1000002","0043","200","20"\n',
+                encoding="utf-8",
+            )
+            mapping = _arapahoe_mapping()
+            mapping["county"] = "synthetic"
+            mapping["identifierDigits"] = 8
+            mapping["accountMap"] = {
+                "file": "location",
+                "accountId": "account_no",
+                "taxAreaId": "tax_district_no",
+                "totalActual": "actual_value",
+                "totalAssessed": "assessed_value",
+            }
+            mapping["columnAliases"]["location"] = {
+                "account_no": ["Account_No"],
+                "tax_district_no": ["Tax_District_No"],
+                "actual_value": ["Actual_Value"],
+                "assessed_value": ["Assessed_Value"],
+            }
+            mapping["tabular"] = {
+                "location": {
+                    "hasHeaderRow": False,
+                    "encoding": "utf-8",
+                    "headers": [
+                        "Account_No",
+                        "Tax_District_No",
+                        "Actual_Value",
+                        "Assessed_Value",
+                    ],
+                }
+            }
+            rows = read_account_rows(path, mapping)
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0]["accountId"], "A1000001")
+            self.assertEqual(rows[0]["taxAreaId"], "0035")
+            self.assertEqual(rows[0]["totalActual"], 100.0)
+
+
+
+class ValuesAggregateJoinTests(unittest.TestCase):
+    def test_sum_values_across_rows_per_account(self) -> None:
+        from ingest.reader import read_account_rows_with_values
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            loc = root / "location.txt"
+            vals = root / "values.txt"
+            loc.write_text(
+                '"A1000001","0035","Residential"\n'
+                '"A1000002","0043","Vacant Land"\n',
+                encoding="utf-8",
+            )
+            # Two valuation rows for A1000001; one for A1000002
+            vals.write_text(
+                '"A1000001","100","10","L"\n'
+                '"A1000001","200","20","I"\n'
+                '"A1000002","50","5","L"\n',
+                encoding="utf-8",
+            )
+            mapping = {
+                "county": "synthetic",
+                "identifierDigits": 8,
+                "levyAspxTemplate": "",
+                "levyStack": {
+                    "file": "tag",
+                    "taxAreaId": "tax_area_id",
+                    "lineCode": "line_code",
+                    "authorityName": "authority_name",
+                },
+                "accountMap": {
+                    "file": "location",
+                    "valuesFile": "values",
+                    "valuesAggregate": "sum",
+                    "accountId": "account_no",
+                    "taxAreaId": "tax_district_no",
+                    "totalActual": "actual_value",
+                    "totalAssessed": "assessed_value",
+                    "propertyClassDescr": "account_type_code",
+                },
+                "columnAliases": {
+                    "location": {
+                        "account_no": ["Account_No"],
+                        "tax_district_no": ["Tax_District_No"],
+                        "account_type_code": ["Account_Type_Code"],
+                    },
+                    "values": {
+                        "account_no": ["Account_No"],
+                        "actual_value": ["Actual_Value"],
+                        "assessed_value": ["Assessed_Value"],
+                    },
+                    "tag": {
+                        "tax_area_id": ["TaxArea"],
+                        "line_code": ["Code"],
+                        "authority_name": ["Name"],
+                    },
+                },
+                "tabular": {
+                    "location": {
+                        "hasHeaderRow": False,
+                        "encoding": "utf-8",
+                        "headers": ["Account_No", "Tax_District_No", "Account_Type_Code"],
+                    },
+                    "values": {
+                        "hasHeaderRow": False,
+                        "encoding": "utf-8",
+                        "headers": [
+                            "Account_No",
+                            "Actual_Value",
+                            "Assessed_Value",
+                            "Valuation_Type_Code",
+                        ],
+                    },
+                },
+            }
+            rows = read_account_rows_with_values(loc, vals, mapping)
+            by_id = {r["accountId"]: r for r in rows}
+            self.assertEqual(by_id["A1000001"]["totalActual"], 300.0)
+            self.assertEqual(by_id["A1000001"]["totalAssessed"], 30.0)
+            self.assertEqual(by_id["A1000002"]["totalActual"], 50.0)
+            self.assertEqual(by_id["A1000001"]["taxAreaId"], "0035")
+
+
+class TaxDistrictMillPdfTests(unittest.TestCase):
+    def test_parse_tax_district_mill_pdf_texts(self) -> None:
+        from ingest.mill_pdf import parse_tax_district_mill_pdf_texts
+
+        page = """2025 Tax Districts and Mill Levies
+Tax District: 35
+Authority No. Authority Name Mill Levy
+0001 Douglas County Government 19.774
+0002 Douglas County Law Enforcement 4.500
+Authority Count: 2 Total Mill Levy: 24.274
+Tax District: 0043
+Authority No. Authority Name Mill Levy
+0001 Douglas County Government 19.774
+4005 Perry Park Metro District 4.383
+Authority Count: 2 Total Mill Levy: 24.157
+"""
+        rows = parse_tax_district_mill_pdf_texts([page])
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(rows[0]["taxAreaId"], "0035")
+        self.assertEqual(rows[0]["lineCode"], "0001")
+        self.assertEqual(rows[0]["authorityName"], "Douglas County Government")
+        self.assertEqual(rows[0]["millLevy"], 19.774)
+        self.assertEqual(rows[0]["taxYear"], "2025")
+        self.assertEqual(rows[2]["taxAreaId"], "0043")
+        self.assertEqual(rows[3]["millLevy"], 4.383)
+
+    def test_build_levy_stacks_includes_source_mills(self) -> None:
+        mapping = _arapahoe_mapping()
+        mapping["county"] = "synthetic"
+        mapping["levyAspxTemplate"] = ""
+        rows = [
+            {
+                "taxAreaId": "0035",
+                "lineCode": "0001",
+                "authorityName": "SYNTHETIC COUNTY",
+                "millLevy": 12.5,
+                "taxYear": "2025",
+                "effectiveYear": None,
+                "status": None,
+            }
+        ]
+        result = build_levy_stacks_json(rows, mapping, bundled_as_of="2026-08-25")
+        line = result["stacksByTagId"]["0035"]["lines"][0]
+        self.assertEqual(line["dolaMatch"]["mills"], 12.5)
+        self.assertEqual(line["dolaMatch"]["millsReason"], "published_mill_levy_table")
+
 if __name__ == "__main__":
     unittest.main()

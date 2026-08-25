@@ -10,10 +10,16 @@
  * Normalization must stay in sync with _STREET_* helpers in that script.
  */
 
-import { COUNTY_CONFIG } from "@/lib/countyConfig";
+import {
+  COUNTY_CONFIG,
+  COUNTY_CONFIG_BY_ID,
+  countyConfigById,
+  countyFeatureAvailable,
+} from "@/lib/countyConfig";
 import { activeCountyDataRoot } from "@/lib/countyDataEngine";
 import {
   SHIPPING_DATA_ROOT,
+  countyIdForDataPaths,
   countySitusToPinsUrl,
 } from "@/lib/countyDataPaths";
 import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
@@ -570,10 +576,26 @@ export function buildSitusLookupKey(
   return `${num}|${name}|${u}`;
 }
 
-const situsCacheByRoot = new Map<
+const situsCacheByKey = new Map<
   string,
   Promise<ArapahoeSitusToPinsFile | null>
 >();
+
+function situsLoaderCacheKey(dataRoot: string, countyId: string): string {
+  return `${dataRoot}:${countyIdForDataPaths(countyId)}`;
+}
+
+/** Wired counties with situs JSON shipped (`features.situs`). */
+export function situsEnabledCountyIds(): readonly string[] {
+  return Object.keys(COUNTY_CONFIG_BY_ID).filter((countyId) => {
+    const config = countyConfigById(countyId);
+    return config != null && countyFeatureAvailable("situs", config);
+  });
+}
+
+export function anyCountySitusSearchAvailable(): boolean {
+  return situsEnabledCountyIds().length > 0;
+}
 
 /**
  * Bump when regenerating situs JSON with a label/schema change so browsers do
@@ -596,14 +618,17 @@ export function getLastArapahoeSitusFetchFailureDetail(): string | null {
 
 export function fetchArapahoeSitusToPinsJson(
   dataRoot?: string,
+  countyId: string = COUNTY_CONFIG.id,
 ): Promise<ArapahoeSitusToPinsFile | null> {
   const root = normalizeSitusDataRoot(dataRoot);
-  const cached = situsCacheByRoot.get(root);
+  const id = countyIdForDataPaths(countyId);
+  const cacheKey = situsLoaderCacheKey(root, id);
+  const cached = situsCacheByKey.get(cacheKey);
   if (cached) return cached;
 
   const url = countySitusToPinsUrl(
     root,
-    COUNTY_CONFIG.id,
+    id,
     ARAPAHOE_SITUS_TO_PINS_CACHE_BUST,
   );
   const pending = (async () => {
@@ -612,24 +637,24 @@ export function fetchArapahoeSitusToPinsJson(
     });
     if (!result.ok) {
       lastSitusFetchFailureDetail = result.detail;
-      situsCacheByRoot.delete(root);
+      situsCacheByKey.delete(cacheKey);
       return null;
     }
     const validated = validateArapahoeSitusToPinsPayload(result.json);
     if (!validated) {
       lastSitusFetchFailureDetail = `${url}: JSON failed schema validation`;
-      situsCacheByRoot.delete(root);
+      situsCacheByKey.delete(cacheKey);
       return null;
     }
     lastSitusFetchFailureDetail = null;
     return validated;
   })();
-  situsCacheByRoot.set(root, pending);
+  situsCacheByKey.set(cacheKey, pending);
   return pending;
 }
 
 export function clearArapahoeSitusDataCache(): void {
-  situsCacheByRoot.clear();
+  situsCacheByKey.clear();
   lastSitusFetchFailureDetail = null;
 }
 

@@ -72,7 +72,7 @@ These are statewide DOLA exports. One copy on disk for the whole repo. Update **
 
 ## Arapahoe (`arapahoe`)
 
-**Local root (legacy layout):** inputs are split across `supporting-data/county-mart/`, `county-gis/`, and `certs/` (not yet under `supporting-data/arapahoe/`).
+**Local root (legacy layout):** inputs are split across `supporting-data/county-mart/`, `county-gis/`, and `certs/` (not under `supporting-data/arapahoe/`). Arapahoe was the prototype county; leave these paths unless doing a dedicated rename. New counties use `supporting-data/<county-id>/` (see README supporting-data table).
 
 **Last verified:** 2026-08-25 (paths and hubs as used for engine v2 ship / 5.0.0). Direct Data Mart file URLs are portal exports; use the hub and download the named tables.
 

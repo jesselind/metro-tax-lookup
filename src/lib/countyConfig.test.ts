@@ -19,10 +19,12 @@ import {
   looksLikeAinInput,
   looksLikePinOnlyInput,
   pinLookupCandidates,
+  accountIdLookupCandidates,
 } from "@/lib/arapahoeParcelLevyData";
 import {
   ARAPAHOE_COUNTY_CONFIG,
   COUNTY_CONFIG,
+  DOUGLAS_COUNTY_CONFIG,
   countyFeaturePresentation,
   formatIdentifierNotFoundMessage,
   type CountyConfig,
@@ -87,11 +89,32 @@ function scheduleCountyFixture(
 }
 
 describe("COUNTY_CONFIG (Arapahoe shipping)", () => {
-  it("is the Arapahoe county file and validates", () => {
+  it("is the Arapahoe county file in test and production builds", () => {
     expect(COUNTY_CONFIG).toBe(ARAPAHOE_COUNTY_CONFIG);
     expect(validateCountyConfig(ARAPAHOE_COUNTY_CONFIG)).toBeNull();
     expect(ARAPAHOE_COUNTY_CONFIG.identifierDigits).toBe(9);
     expect(ARAPAHOE_COUNTY_CONFIG.dolaCertifyingCounty).toBe("Arapahoe");
+  });
+});
+
+describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
+  it("is in the county registry and validates", () => {
+    expect(validateCountyConfig(DOUGLAS_COUNTY_CONFIG)).toBeNull();
+    expect(DOUGLAS_COUNTY_CONFIG.identifierDigits).toBe(8);
+    expect(DOUGLAS_COUNTY_CONFIG.identifierAllowsLetters).toBe(true);
+    expect(countyFeaturePresentation("situs", DOUGLAS_COUNTY_CONFIG)).toBe(
+      "show",
+    );
+    expect(countyFeaturePresentation("compsPdf", DOUGLAS_COUNTY_CONFIG)).toBe(
+      "omit",
+    );
+  });
+
+  it("accepts letter-prefixed account pastes", () => {
+    expect(looksLikePinOnlyInput("C0193439", DOUGLAS_COUNTY_CONFIG)).toBe(true);
+    expect(accountIdLookupCandidates("c0193439", DOUGLAS_COUNTY_CONFIG)).toEqual([
+      "C0193439",
+    ]);
   });
 });
 

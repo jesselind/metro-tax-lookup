@@ -18,6 +18,7 @@ import { activeCountyDataRoot } from "@/lib/countyDataEngine";
 import {
   SHIPPING_DATA_ROOT,
   countyAccountMapUrl,
+  countyIdForDataPaths,
   countyLevyStacksUrl,
   countyParcelRecordShardUrl,
 } from "@/lib/countyDataPaths";
@@ -286,6 +287,28 @@ export function pinLookupCandidates(
 }
 
 /**
+ * Account-id candidates for `byPin` lookup. Digit-only counties use padding
+ * windows; letter-prefixed ids (Douglas) normalize to uppercase exact length.
+ */
+export function accountIdLookupCandidates(
+  raw: string,
+  config: CountyConfig = COUNTY_CONFIG,
+): string[] {
+  if (config.identifierAllowsLetters) {
+    const normalized = raw.trim().toUpperCase().replace(/[\s-]/g, "");
+    if (!normalized || !/^[A-Z0-9]+$/.test(normalized)) return [];
+    const n = config.identifierDigits;
+    if (normalized.length <= n) {
+      return [normalized];
+    }
+    const first = normalized.slice(0, n);
+    const last = normalized.slice(-n);
+    return first === last ? [first] : [first, last];
+  }
+  return pinLookupCandidates(raw, config.identifierDigits);
+}
+
+/**
  * Public parcel id (Arapahoe AIN is typically ####-##-#-##-###). Returns
  * digit-only keys for reverse lookup against the pin map.
  */
@@ -321,7 +344,16 @@ export function looksLikePinOnlyInput(
   config: CountyConfig = COUNTY_CONFIG,
 ): boolean {
   const t = raw.trim();
-  if (!t || /[A-Za-z]/.test(t)) return false;
+  if (!t) return false;
+  if (config.identifierAllowsLetters) {
+    const normalized = t.toUpperCase().replace(/[\s-]/g, "");
+    if (!/^[A-Z0-9]+$/.test(normalized)) return false;
+    return (
+      normalized.length >= config.identifierPasteMinDigits &&
+      normalized.length <= config.identifierDigits
+    );
+  }
+  if (/[A-Za-z]/.test(t)) return false;
   if (!/^[\d\s-]+$/.test(t)) return false;
   const digits = t.replace(/\D/g, "");
   return (
@@ -367,8 +399,9 @@ export function getAinToPinIndex(file: ArapahoePinToTagFile): Map<string, string
 export function resolvePinKeyFromParcelIdInput(
   file: ArapahoePinToTagFile,
   raw: string,
+  config: CountyConfig = COUNTY_CONFIG,
 ): string | null {
-  const ainCands = ainLookupCandidates(raw);
+  const ainCands = ainLookupCandidates(raw, config);
   if (ainCands.length > 0) {
     const ainIndex = getAinToPinIndex(file);
     for (const ain of ainCands) {
@@ -376,7 +409,7 @@ export function resolvePinKeyFromParcelIdInput(
       if (pin && file.byPin[pin]) return pin;
     }
   }
-  for (const k of pinLookupCandidates(raw, file.pinDigits)) {
+  for (const k of accountIdLookupCandidates(raw, config)) {
     if (file.byPin[k]) return k;
   }
   return null;
@@ -412,6 +445,10 @@ const stacksCacheByRoot = new Map<
 >();
 const pinCacheByRoot = new Map<string, Promise<ArapahoePinToTagFile | null>>();
 
+function loaderCacheKey(dataRoot: string, countyId: string): string {
+  return `${dataRoot}:${countyIdForDataPaths(countyId)}`;
+}
+
 /** Last pin-map / stacks fetch failure (for resident mailto); cleared on success. */
 let lastPinToTagFetchFailureDetail: string | null = null;
 let lastLevyStacksFetchFailureDetail: string | null = null;
@@ -441,9 +478,8 @@ function isArapahoeLevyStackLine(value: unknown): boolean {
 
 function isArapahoeLevyStack(value: unknown): boolean {
   if (!isPlainObject(value)) return false;
-  if (!isNonEmptyString(value.tagId) || !isNonEmptyString(value.levyAspxUrl)) {
-    return false;
-  }
+  if (!isNonEmptyString(value.tagId)) return false;
+  if (typeof value.levyAspxUrl !== "string") return false;
   if (!Array.isArray(value.lines)) return false;
   return value.lines.every(isArapahoeLevyStackLine);
 }
@@ -529,58 +565,64 @@ export function getLastArapahoeLevyStacksFetchFailureDetail(): string | null {
 /** Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads. */
 export function fetchArapahoeLevyStacksJson(
   dataRoot?: string,
+  countyId: string = COUNTY_CONFIG.id,
 ): Promise<ArapahoeLevyStacksFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
-  const cached = stacksCacheByRoot.get(root);
+  const id = countyIdForDataPaths(countyId);
+  const cacheKey = loaderCacheKey(root, id);
+  const cached = stacksCacheByRoot.get(cacheKey);
   if (cached) return cached;
 
-  const url = countyLevyStacksUrl(root);
+  const url = countyLevyStacksUrl(root, id);
   const pending = (async () => {
     const result = await fetchCountyStaticJson(url);
     if (!result.ok) {
       lastLevyStacksFetchFailureDetail = result.detail;
-      stacksCacheByRoot.delete(root);
+      stacksCacheByRoot.delete(cacheKey);
       return null;
     }
     const invalidDetail = validateArapahoeLevyStacksFile(result.json, url);
     if (invalidDetail) {
       lastLevyStacksFetchFailureDetail = invalidDetail;
-      stacksCacheByRoot.delete(root);
+      stacksCacheByRoot.delete(cacheKey);
       return null;
     }
     lastLevyStacksFetchFailureDetail = null;
     return result.json as ArapahoeLevyStacksFile;
   })();
-  stacksCacheByRoot.set(root, pending);
+  stacksCacheByRoot.set(cacheKey, pending);
   return pending;
 }
 
 /** Lazy fetch (~13 MiB) — only when user triggers parcel PIN lookup. */
 export function fetchArapahoePinToTagJson(
   dataRoot?: string,
+  countyId: string = COUNTY_CONFIG.id,
 ): Promise<ArapahoePinToTagFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
-  const cached = pinCacheByRoot.get(root);
+  const id = countyIdForDataPaths(countyId);
+  const cacheKey = loaderCacheKey(root, id);
+  const cached = pinCacheByRoot.get(cacheKey);
   if (cached) return cached;
 
-  const url = countyAccountMapUrl(root);
+  const url = countyAccountMapUrl(root, id);
   const pending = (async () => {
     const result = await fetchCountyStaticJson(url);
     if (!result.ok) {
       lastPinToTagFetchFailureDetail = result.detail;
-      pinCacheByRoot.delete(root);
+      pinCacheByRoot.delete(cacheKey);
       return null;
     }
     const invalidDetail = validateArapahoePinToTagFile(result.json, url);
     if (invalidDetail) {
       lastPinToTagFetchFailureDetail = invalidDetail;
-      pinCacheByRoot.delete(root);
+      pinCacheByRoot.delete(cacheKey);
       return null;
     }
     lastPinToTagFetchFailureDetail = null;
     return result.json as ArapahoePinToTagFile;
   })();
-  pinCacheByRoot.set(root, pending);
+  pinCacheByRoot.set(cacheKey, pending);
   return pending;
 }
 const parcelRecordShardCache = new Map<

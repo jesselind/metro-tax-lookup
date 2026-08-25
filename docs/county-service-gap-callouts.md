@@ -100,6 +100,8 @@ Tone aligns with `.cursor/rules/base-rule.mdc` (educational, bill-centered, midd
 | Aug 17 2026 Data Mart download incomplete | `countyDataMartRefreshNote.tsx` | Property details (compact, after "County data current as of …") | #county-data-mart-gap → under **How current is the data?** |
 | County comps PDF hosting limited | `countyCompsPdfGapNote.tsx`, `countyCompsPdfGuidance.ts` | **Comparable properties** summary tile + popover (`#home-parcel-comps-pdf`); `COUNTY_CONFIG.knownFailures.compsPdfHostedFiles` in `src/lib/countyConfig.ts`. If `features.compsPdf` is false, omit the tile (no gap). | #county-comps-pdf-gap → under **Comparable properties** |
 | No official bulk prior-year assessed | `countyPriorYearValuesGapNote.tsx` | Red **Prior years missing** badge (`CountyServiceGapBadge`) on the **Assessed value** summary chip (white chip; not COUNTY DATA GAP chrome on the tile). Popover is `InfoHintPopover` `variant="county-data-gap"` (same width/scroll as tile glossary briefs; thin red border + light red fill on the panel), with COUNTY DATA GAP header + copy inside (`CountyPriorYearValuesGapPopover`); **Sale history** jumps to `#home-parcel-sale-history`. Dashboard lead: county-published sources lack prior-year assessed; per the assessor's office, no historical information on the public website. `/sources` note: same Assessor fact plus that individual figures may be available only by contacting the office directly (no email address or how-to); Main Parcel is current-year only. | #county-prior-year-values-gap → **Property details methodology** (prior-year values) |
+| Douglas extended parcel fields not bundled | `douglasCountyDataGapNote.tsx` (`DouglasParcelRecordGapNote`) | Property details header (compact) when loaded county is Douglas | #douglas-parcel-record-gap → **Douglas account lookup** (Property details) |
+| Douglas mill PDF missing some tax district numbers | `douglasCountyDataGapNote.tsx` (`DouglasMillPdfTaxDistrictGapNote`) | (lookup failure message when TAG absent; hub explains ~0.9% accounts) | #douglas-mill-pdf-tax-district-gap → **Douglas account lookup** (Levy stacks) |
 
 Comps uses the **summary tile variant** (same header + surface, tile popover interaction). Do not use `CountyServiceGapCallout` inside the tile grid cell. Gap summary tiles (`COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS`) are full width of the summary column at every viewport.
 
@@ -107,6 +109,6 @@ The prior-year values gap is a red **Prior years missing** badge on **Assessed v
 
 ## Related
 
-- `/sources` — #county-service-gaps (hub list only), #county-data-mart-gap, #county-comps-pdf-gap, #county-prior-year-values-gap
+- `/sources` — #county-service-gaps (hub list only), #county-data-mart-gap, #county-comps-pdf-gap, #county-prior-year-values-gap, #douglas-parcel-record-gap, #douglas-mill-pdf-tax-district-gap
 - README — contributor pointer under **County service gap callouts**
 - `.cursor/rules/base-rule.mdc` — always ship dashboard + `/sources` for user-visible county gaps

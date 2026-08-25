@@ -125,10 +125,27 @@ Use after material ingest changes, or before a land when you expect bill data to
 2. Empty or remove `supporting-data/_ingest-out/`. Run `build:ingest` with `--bundled-as-of` matching `tools/county-mart-data-as-of.txt` and shipping `snapshot.bundledAsOf`.
 3. Confirm `git status public/data/` still clean.
 4. `npm run diff:ingest -- public/data supporting-data/_ingest-out` — exit 0.
-5. `npm run validate:app-json -- --data-dir supporting-data/_ingest-out`.
+5. `npm run validate:app-json -- --data-dir supporting-data/_ingest-out` (Arapahoe prove-out; default `--county arapahoe`). Douglas: `--data-dir supporting-data/_ingest-out/douglas --county douglas`.
 6. `npm run test:ingest` and `npm run test:parcel-index`.
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
+
+## Douglas JSON on disk (Phase 9 / 9b)
+
+Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest writes only that county’s filenames into `--out-dir` (never another county’s files). Until Douglas is intentionally shipped in git, `public/data/douglas-*.json` stays gitignored so code PRs stay small — still use **real files** locally (copy from ingest out), not symlinks.
+
+1. **Rebuild** (if needed): `python3 tools/ingest/build.py --mapping tools/ingest/mappings/douglas.json --tag-file supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf --parcel-file supporting-data/douglas/Property_Location.txt --values-file supporting-data/douglas/Property_Values.txt --out-dir supporting-data/_ingest-out/douglas --bundled-as-of 2026-08-25 --tax-year 2025 --skip-dola-join` (omit `--skip-situs-shards` so `douglas-situs-to-pins.json` is written; Douglas has no parcel-record shards)
+2. **Validate:** `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`
+3. **Land locally** (real files; gitignored until ship):
+
+   ```bash
+   cp supporting-data/_ingest-out/douglas/douglas-pin-to-tag.json \
+      supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json \
+      supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json \
+      public/data/
+   ```
+
+4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas.
 
 ## Shipping land (`--ship`)
 

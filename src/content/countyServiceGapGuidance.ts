@@ -40,6 +40,8 @@ export const COUNTY_SERVICE_GAP_SOURCES_ANCHOR = {
   dataMart: "county-data-mart-gap",
   compsPdf: "county-comps-pdf-gap",
   priorYearValues: "county-prior-year-values-gap",
+  douglasParcelRecord: "douglas-parcel-record-gap",
+  douglasMillPdfTaxDistrict: "douglas-mill-pdf-tax-district-gap",
 } as const;
 
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL = `Assessor Data Mart download (${formatLevyBundledAsOf(COUNTY_DATA_MART_REFRESH_ATTEMPT_ISO)} attempt)`;
@@ -49,3 +51,9 @@ export const COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL =
 
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL =
   "Prior-year assessed value (valuation history)";
+
+export const COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_PARCEL_RECORD_LABEL =
+  "Douglas County property details (extended parcel fields)";
+
+export const COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL =
+  "Douglas County mill PDF tax district coverage";
