@@ -726,9 +726,10 @@ class WriteComparisonDirTests(unittest.TestCase):
 
     def test_refuses_out_dir_under_public(self) -> None:
         from ingest.classify import PUBLIC_DIR
+        from ingest.out_dir_policy import OutDirPolicyError
 
         mapping = _arapahoe_mapping()
-        with self.assertRaises(ValueError) as ctx:
+        with self.assertRaises(OutDirPolicyError) as ctx:
             write_comparison_dir(
                 PUBLIC_DIR / "data",
                 stack_rows=[
@@ -741,7 +742,7 @@ class WriteComparisonDirTests(unittest.TestCase):
                 mapping=mapping,
                 bundled_as_of="2026-07-15",
             )
-        self.assertIn("public/", str(ctx.exception))
+        self.assertIn("public/data/", str(ctx.exception))
 
     def test_does_not_write_outside_comparison_dir(self) -> None:
         """write_comparison_dir must not touch public/data/."""
@@ -1189,7 +1190,30 @@ class BuildCliTests(unittest.TestCase):
                 ]
             )
         self.assertEqual(code, 2)
-        self.assertIn("inside public/", stderr.getvalue())
+        self.assertIn("public/data/", stderr.getvalue())
+
+    def test_ship_requires_public_data_out_dir(self) -> None:
+        from ingest.build import main
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            code = main(
+                [
+                    "--mapping",
+                    "tools/ingest/mappings/arapahoe.json",
+                    "--tag-file",
+                    "nonexistent-tag.csv",
+                    "--parcel-file",
+                    "nonexistent-parcel.csv",
+                    "--out-dir",
+                    "supporting-data/_ingest-out",
+                    "--bundled-as-of",
+                    "2026-07-15",
+                    "--ship",
+                ]
+            )
+        self.assertEqual(code, 2)
+        self.assertIn("--ship requires", stderr.getvalue())
 
 
 class CompareCliTests(unittest.TestCase):

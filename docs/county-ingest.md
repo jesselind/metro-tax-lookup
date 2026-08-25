@@ -8,17 +8,17 @@ The **new ingest engine** (`tools/ingest/`) builds the same Arapahoe JSON produc
 
 | Engine | Code | npm | Tests | Output |
 | --- | --- | --- | --- | --- |
-| **Old** (shipping Arapahoe rebuild) | `tools/build_arapahoe_parcel_levy_index.py` | `build:arapahoe-index`, `test:parcel-index` | `tools/test_build_arapahoe_parcel_levy_index.py` | `public/data/arapahoe-*.json` |
-| **New** (ingest) | `tools/ingest/` | `build:ingest`, `diff:ingest`, `classify:ingest`, `test:ingest`, `test:ingest-reader` | `tools/test_ingest_*.py` | `supporting-data/_ingest-out/` only |
+| **Old** (emergency Arapahoe rebuild) | `tools/build_arapahoe_parcel_levy_index.py` | `build:arapahoe-index`, `test:parcel-index` | `tools/test_build_arapahoe_parcel_levy_index.py` | `public/data/arapahoe-*.json` |
+| **New** (ingest) | `tools/ingest/` | `build:ingest`, `build:ingest:ship`, `diff:ingest`, `classify:ingest`, `test:ingest`, `test:ingest-reader` | `tools/test_ingest_*.py` | `_ingest-out/` (compare) or `public/data/` with `--ship` |
 
-**Do not:** import across engines; retarget `build:arapahoe-index` at ingest; delete the old script as part of prove-out; write shipping JSON from ingest without an explicit ship-from-new decision.
+**Do not:** import across engines; retarget `build:arapahoe-index` at ingest; delete the old script as part of prove-out; write shipping JSON from ingest without **`--ship`** / `npm run build:ingest:ship`.
 
 ## Output paths (control vs candidate)
 
 | Role | Path | In git? | Touch during prove-out? |
 | --- | --- | --- | --- |
-| **Control** | `public/data/arapahoe-*.json`, `public/data/arapahoe-parcel-record-by-pin/` | Yes (live site) | **No.** Read-only. Do not run `build:arapahoe-index` or let engine v2 write here. |
-| **Candidate** | `supporting-data/_ingest-out/` (same `arapahoe-*` filenames inside) | No (gitignored) | **Yes.** Only place engine v2 may write during prove-out. |
+| **Control** | `public/data/arapahoe-*.json`, `public/data/arapahoe-parcel-record-by-pin/` | Yes (live site) | **No** during prove-out. Read-only until ship-from-new (`build:ingest:ship`). |
+| **Candidate** | `supporting-data/_ingest-out/` (same `arapahoe-*` filenames inside) | No (gitignored) | **Yes.** Default place engine v2 writes during prove-out (no `--ship`). |
 | **Shared inputs** | `supporting-data/county-mart/`, `supporting-data/county-gis/`, `supporting-data/dola/property-tax-entities-export.csv`, `tools/county-mart-data-as-of.txt`, `tools/arapahoe_dola_authority_overrides.json` | Mart/GIS gitignored; DOLA CSV + mart stamp tracked | Read only. Both engines must use the **same** mart drop and stamp for a fair compare. |
 
 Committed `public/data/` is the **control** (trusted reference). Engine v2 output is the **candidate** (comparison only).
@@ -37,6 +37,7 @@ Loaders resolve `{dataRoot}/{countyId}-*` via `src/lib/countyDataPaths.ts` (`COU
 | Module | Role |
 | --- | --- |
 | `tools/ingest/classify.py` | Inspect drop-folder headers; report readiness (not a rebuild) |
+| `tools/ingest/out_dir_policy.py` | Comparison vs `--ship` out-dir rules + ship preflight |
 | `tools/ingest/reader.py` | Levy stack and account rows via mapping file |
 | `tools/ingest/writer.py`, `parcel_record.py`, `situs.py`, `dola_match.py` | Levy stacks (with DOLA mill join), account map, situs index, parcel-record shards |
 | `tools/ingest/compare.py` | Diff two output directories |
@@ -110,6 +111,38 @@ Run before county 2, after material engine v2 changes, and before any ship-from-
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
 
+## Ship-from-new (write `public/data/`)
+
+After parity gates pass, ship with a **direct v2 write** (not a manual copy). Engine v2 refuses `public/data/` unless you pass **`--ship`** on `build.py`.
+
+**Pre-flight (human):**
+
+1. Gitignored backup of current `public/data/` (see Phase 7 working note).
+2. **`git status public/data/`** clean (enforced by `--ship`).
+3. Candidate parity optional but recommended: `build:ingest` → `_ingest-out`, then `npm run diff:ingest -- public/data supporting-data/_ingest-out` **IDENTICAL**.
+
+**Ship command:**
+
+```bash
+npm run build:ingest:ship
+```
+
+Equivalent to `npm run build:ingest -- ... --out-dir public/data --ship --bundled-as-of $(cat tools/county-mart-data-as-of.txt)`.
+
+**`--ship` guardrails (code):**
+
+| Check | Enforced by |
+| --- | --- |
+| `--out-dir` must be exactly `public/data/` | `out_dir_policy.validate_out_dir` |
+| No `--ship` without `public/data/` | same |
+| No other path under `public/` | same |
+| `--bundled-as-of` matches `tools/county-mart-data-as-of.txt` | `ship_preflight` |
+| `git status public/data/` clean | `ship_preflight` |
+
+Then: `npm run validate:app-json`, address spot-checks, `npm run build`, semver/changelog, commit, deploy.
+
+**Rollback:** restore gitignored backup locally; production: git revert, Vercel promote, or `npm run build:arapahoe-index`.
+
 ## Local UI check (engine v2)
 
 After `npm run build:ingest` writes candidate JSON to `supporting-data/_ingest-out/`:
@@ -127,9 +160,10 @@ Disk parity remains `npm run diff:ingest`; this switch is for eyes-on UI sanity 
 
 | Safeguard | Where enforced |
 | --- | --- |
-| Engine v2 never writes `public/data/` | `build.py`, writer, `parcel_record.py`; tests in `test_ingest_reader.py`, `test_ingest_situs_shards.py`, `test_ingest_classify.py` |
+| Engine v2 never writes `public/data/` without `--ship` | `out_dir_policy.py`, `build.py`, `writer.py`, `parcel_record.py`; tests in `test_ingest_out_dir_policy.py`, `test_ingest_reader.py`, `test_ingest_situs_shards.py` |
+| `--ship` requires clean `git status public/data/` and matching mart stamp | `ship_preflight` in `out_dir_policy.py` |
 | Control not overwritten during prove-out | Procedure: clean `git status public/data/`; no `build:arapahoe-index` |
-| Candidate only under `_ingest-out/` | Default `--out-dir`; gitignored path |
+| Candidate builds default to `_ingest-out/` | Default `--out-dir`; gitignored path |
 | Parity gate | `compare.py` exit 0 = IDENTICAL |
 | Candidate passes app JSON validator | `tools/validate_app_json.mjs --data-dir` |
 | Situs contract vs shipping | `tools/test_situs_lookup_contract.py` (in `test:ingest` + CI) |

@@ -1134,12 +1134,14 @@ def write_parcel_record_shards(
     *,
     pin_digits: int = 9,
     separators: tuple[str, str] = (",", ":"),
+    allow_public_out: bool = False,
 ) -> None:
-    """Write plain JSON shards by PIN prefix under out_dir (never public/)."""
-    if path_is_under_public(out_dir):
+    """Write plain JSON shards by PIN prefix under out_dir."""
+    if path_is_under_public(out_dir) and not allow_public_out:
         raise ValueError(
             f"Refusing to write shards to {out_dir} - path is inside public/. "
-            "Use a comparison directory (e.g. supporting-data/_ingest-out/)."
+            "Use a comparison directory (e.g. supporting-data/_ingest-out/) "
+            "or build.py --ship."
         )
 
     shard_dir = out_dir / "arapahoe-parcel-record-by-pin"

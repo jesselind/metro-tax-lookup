@@ -154,14 +154,14 @@ If a county enables a comps PDF flag, account rows must include an AIN-like fiel
 
 ### County ingest (comparison engine)
 
-Two rebuild engines stay separate during migration. Engine v2 (`tools/ingest/`) writes only to **`supporting-data/_ingest-out/`**; the shipping rebuild stays **`npm run build:arapahoe-index`** → `public/data/`. Do not import across engines or retarget the old script at ingest.
+Two rebuild engines stay separate during migration. Engine v2 (`tools/ingest/`) writes comparison JSON to **`supporting-data/_ingest-out/`** by default. **Ship-from-new** uses **`npm run build:ingest:ship`** (`--ship --out-dir public/data/`). The old script **`npm run build:arapahoe-index`** remains for emergency v1 rebuild. Do not import across engines or retarget the old script at ingest.
 
 | Engine | npm | Output |
 | --- | --- | --- |
-| Old (shipping) | `build:arapahoe-index`, `test:parcel-index` | `public/data/arapahoe-*.json` |
-| New (ingest) | `build:ingest`, `diff:ingest`, `classify:ingest`, `test:ingest` | `supporting-data/_ingest-out/` only |
+| Old (emergency rebuild) | `build:arapahoe-index`, `test:parcel-index` | `public/data/arapahoe-*.json` |
+| New (ingest) | `build:ingest`, `build:ingest:ship`, `diff:ingest`, `classify:ingest`, `test:ingest` | `_ingest-out/` (compare) or `public/data/` with `--ship` |
 
-County JSON fetch URLs use `src/lib/countyDataPaths.ts` (`{dataRoot}/{countyId}-*`). Shipping UI loads `/data/`. Candidate output stays under `supporting-data/_ingest-out/`; compare with `npm run diff:ingest`. Do not write ingest output into `public/data/` without an explicit ship-from-new decision.
+County JSON fetch URLs use `src/lib/countyDataPaths.ts` (`{dataRoot}/{countyId}-*`). Shipping UI loads `/data/`. Compare candidate vs shipping with `npm run diff:ingest` before `--ship`.
 
 Architecture, compare semantics, prove-out procedure, mapping file, and safeguards: **`docs/county-ingest.md`**.
 

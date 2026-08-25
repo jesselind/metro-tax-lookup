@@ -30,6 +30,7 @@
     "test:ingest-reader": "python3 -m unittest discover -s tools -p \"test_ingest_reader.py\" -q",
     "classify:ingest": "python3 tools/ingest/classify.py",
     "build:ingest": "python3 tools/ingest/build.py",
+    "build:ingest:ship": "python3 tools/ingest/build.py --mapping tools/ingest/mappings/arapahoe.json --tag-file \"supporting-data/county-mart/Tax Authority Groups and Tax Authorities (CSV)/Tax Authority Groups and Tax Authorities.csv\" --parcel-file \"supporting-data/county-mart/Main Parcel Table (CSV)/Main Parcel Table.csv\" --out-dir public/data --ship --bundled-as-of $(cat tools/county-mart-data-as-of.txt | tr -d '\\n')",
     "diff:ingest": "python3 tools/ingest/compare.py",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
     "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q",

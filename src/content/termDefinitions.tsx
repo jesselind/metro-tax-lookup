@@ -225,14 +225,14 @@ export function TermParcelRecordAside() {
   return (
     <TermAside
       id="term-parcel-record"
-      title="Property details (parcel record)"
+      title="Property details (Parcel data)"
       titleId="term-parcel-record-title"
     >
       <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-        The county calls this your{" "}
-        <dfn className="font-semibold not-italic text-slate-900">parcel record</dfn>
+        The county labels this{" "}
+        <dfn className="font-semibold not-italic text-slate-900">Parcel data</dfn>
         {": "}
-        the public page for one property: owners, values, and related details on the assessor
+        the public page for one property (owners, values, and related details) on the assessor
         site (
         <span className="whitespace-nowrap">PPINum.aspx</span>).
       </p>

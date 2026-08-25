@@ -8,8 +8,8 @@
 
 Reads the mapping file, reads the levy stack CSV and Main Parcel (one pass for
 account map + situs + parcel records), joins sibling mart / GIS when present,
-and writes app JSON to the comparison directory. Does NOT write to public/data/.
-Production rebuild stays npm run build:arapahoe-index.
+and writes app JSON to the comparison directory or, with --ship, to public/data/.
+Production rebuild stays npm run build:arapahoe-index until ship-from-new cutover.
 
 Usage:
   python3 tools/ingest/build.py --mapping tools/ingest/mappings/arapahoe.json \\
@@ -20,6 +20,9 @@ Usage:
   npm run build:ingest -- --mapping tools/ingest/mappings/arapahoe.json \\
     --tag-file ... --parcel-file ... --out-dir supporting-data/_ingest-out \\
     --bundled-as-of YYYY-MM-DD
+
+  Ship-from-new (explicit; overwrites public/data/):
+  npm run build:ingest:ship
 """
 
 from __future__ import annotations
@@ -36,7 +39,7 @@ if str(_TOOLS) not in sys.path:
 
 from ingest.reader import load_mapping, read_levy_stack_rows  # noqa: E402
 from ingest.writer import write_comparison_dir  # noqa: E402
-from ingest.classify import path_is_under_public  # noqa: E402
+from ingest.out_dir_policy import OutDirPolicyError, ship_preflight, validate_out_dir  # noqa: E402
 from ingest.dola_match import (  # noqa: E402
     DEFAULT_OVERRIDES,
     load_dola_join_context,
@@ -84,7 +87,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         default=Path("supporting-data/_ingest-out"),
         dest="out_dir",
-        help="Comparison output directory (default: supporting-data/_ingest-out)",
+        help=(
+            "Output directory (default: supporting-data/_ingest-out). "
+            "public/data/ requires --ship."
+        ),
+    )
+    parser.add_argument(
+        "--ship",
+        action="store_true",
+        help=(
+            "Ship-from-new: write to public/data/ only. Requires clean "
+            "git status public/data/ and --bundled-as-of matching "
+            "tools/county-mart-data-as-of.txt."
+        ),
     )
     parser.add_argument(
         "--bundled-as-of",
@@ -215,13 +230,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    if path_is_under_public(args.out_dir):
-        print(
-            f"Error: --out-dir {args.out_dir} is inside public/. "
-            "Use supporting-data/_ingest-out/ or another comparison directory.",
-            file=sys.stderr,
-        )
+    try:
+        resolved_out_dir = validate_out_dir(args.out_dir, ship=args.ship, repo_root=_REPO)
+    except OutDirPolicyError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 2
+
+    if args.ship:
+        try:
+            ship_preflight(args.bundled_as_of, repo_root=_REPO)
+        except OutDirPolicyError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 2
 
     for label, path in [("--mapping", args.mapping), ("--tag-file", args.tag_file), ("--parcel-file", args.parcel_file)]:
         if not path.is_file():
@@ -286,7 +306,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         write_comparison_dir(
-            args.out_dir,
+            resolved_out_dir,
             stack_rows=stack_rows,
             account_rows=account_rows,
             mapping=mapping,
@@ -299,12 +319,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             skip_neighborhood=args.skip_neighborhood,
             gis_parcels_gdb=gis_gdb,
             skip_situs_shards=args.skip_situs_shards,
+            ship=args.ship,
         )
+    except OutDirPolicyError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
     except Exception as exc:
-        print(f"Error writing comparison directory: {exc}", file=sys.stderr)
+        print(f"Error writing output directory: {exc}", file=sys.stderr)
         return 1
 
-    print(f"Wrote comparison JSON to: {args.out_dir}", file=sys.stderr)
+    label = "shipping JSON" if args.ship else "comparison JSON"
+    print(f"Wrote {label} to: {resolved_out_dir}", file=sys.stderr)
     return 0
 
 
