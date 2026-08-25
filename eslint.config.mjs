@@ -29,6 +29,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local Playwright artifacts (gitignored; bare `npm run lint` must not scan them):
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

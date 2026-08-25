@@ -16,7 +16,7 @@ export const DATA_RATE_WINDOW_MS = 60_000;
 
 /**
  * Large county index bundles (~MB each). Normal UI needs ~1 of each per session.
- * Includes `/data-engine-v2/` counterparts if that root is served locally.
+ * Path helpers still list retired `/data-engine-v2/` counterparts for rate-limit coverage.
  */
 export const HEAVY_DATA_PATHS = new Set(countyHeavyDataPathnames());
 

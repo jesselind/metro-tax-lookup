@@ -4,16 +4,14 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Which county JSON tree the UI loads (v1 shipping vs v2 ingest candidate).
+ * Which URL root the UI uses for county static JSON.
  *
- * Flip `COUNTY_DATA_ENGINE_SETTING` locally for UI sanity checks against engine
- * v2 output. Keep `'v1'` in commits. Optional override in non-production only:
- * `NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2` in `.env.local` (gitignored).
- *
- * v2 requires a symlink so Next can serve candidate JSON:
- *   ln -sfn ../supporting-data/_ingest-out public/data-engine-v2
- *
- * Parity proof stays `npm run diff:ingest`; this switch is eyes-on UI only.
+ * After ship-from-new, shipping Arapahoe JSON under `/data/` (`public/data/`)
+ * is engine v2. Keep `COUNTY_DATA_ENGINE_SETTING` at `'v1'` so the UI loads
+ * that shipping root. Do not flip to `'v2'` or set
+ * `NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2` — that old Phase 6.5 dual-root path
+ * (`/data-engine-v2` → `_ingest-out`) is retired. Candidate parity is
+ * `npm run diff:ingest`, not a second browser data root.
  */
 
 import {
@@ -24,7 +22,11 @@ import {
 
 export type CountyDataEngine = "v1" | "v2";
 
-/** Local dev: set to `'v2'` to load ingest candidate JSON. Ship as `'v1'`. */
+/**
+ * Committed default: shipping URL root `/data/`.
+ * Name is historical (Phase 6.5); `'v1'` here means shipping paths, not
+ * "engine v1 JSON".
+ */
 export const COUNTY_DATA_ENGINE_SETTING: CountyDataEngine = "v1";
 
 let loggedActiveV2 = false;
@@ -48,7 +50,7 @@ export function activeCountyDataEngine(): CountyDataEngine {
   );
 }
 
-/** URL root for county static JSON fetches (`/data` or `/data-engine-v2`). */
+/** URL root for county static JSON fetches (shipping `/data` by default). */
 export function activeCountyDataRoot(): CountyDataRoot {
   const engine = activeCountyDataEngine();
   const root =
@@ -62,7 +64,7 @@ export function activeCountyDataRoot(): CountyDataRoot {
   ) {
     loggedActiveV2 = true;
     console.info(
-      "[countyDataEngine] UI loading county JSON from v2 (/data-engine-v2). Shipping uses /data/.",
+      "[countyDataEngine] UI loading /data-engine-v2 (retired Phase 6.5 path). Prefer shipping /data/ after cutover.",
     );
   }
 
