@@ -103,6 +103,7 @@ Do **not** put real county PINs in tests "because they match the county site." A
 | `supporting-data/county-mart/` | Arapahoe Assessor Data Mart CSVs (local). |
 | `supporting-data/county-mart-diff/` | Optional staging folder to diff a new mart drop before replacing `county-mart/`. |
 | `supporting-data/county-gis/` | Assessor Open GIS Parcels FileGDB (`Assessor_Parcels_SP.gdb`) + `data-as-of.txt` for neighborhood join. |
+| `supporting-data/douglas/` | Douglas County Assessor published text dumps + tax-district mill PDF (Phase 8 **Go**; Phase 9 rebuild inputs). See **`docs/county-build-inputs.md`**. |
 | `supporting-data/dola/property-tax-entities-export.csv` | **Tracked.** DOLA Property Tax Entities export (mills + Tax Entity ID). No verified current portal download; keep in git so rebuilds stay reproducible (~46 KiB). Build input only, not a runtime file. |
 | `supporting-data/dola/` (other) | Local DOLA exports (`lg-export-all.csv`, optional xlsx). Re-download the LG directory from the LGIS portal when needed. |
 | `supporting-data/certs/` | Mill-levy PDFs for extract scripts. Download from the Assessor Mill Levies hub; see `/sources`. |
@@ -117,6 +118,17 @@ Do **not** put real county PINs in tests "because they match the county site." A
 | `tools/situs_lookup_contract.py` | **Tracked.** Shared `lookupVersion` constant for situs JSON (schema stamp, not engine id). Both engines import it. |
 
 **Policy:** Point people at live county/state sources (`/sources`). Commit transforms under `public/data/`, the mart download stamp under `tools/`, small **irreplaceable** build inputs (today: `supporting-data/dola/property-tax-entities-export.csv`), and the shared curated mill-join overrides (`tools/arapahoe_dola_authority_overrides.json`). Do not commit large weekly dumps (mart, GIS, cert PDFs, LG directory CSV).
+
+### Local build inputs (download lists)
+
+Raw county/state dumps are **not** in git (they go stale immediately). Forkers and maintainers who rebuild need a shopping list of hubs, last-known file URLs, and local save paths.
+
+- **Lists + template:** **[`docs/county-build-inputs.md`](docs/county-build-inputs.md)** — Colorado shared (DOLA) + one section per county; same fields every time. Shared rows name which counties use them today.
+- **Disclaimer:** Those URLs are hosted by the county or state, not by this project. We record where we obtained the latest working drop and try to keep the list current; links can still move or 404. Prefer the hub page when a direct link fails.
+- **Audience:** Rebuild / second-county work. Running the shipped app only needs committed `public/data/`.
+- **Resident narrative** (what the data means): in-app **`/sources`**.
+
+When adding a county, copy the template in that doc before inventing a new layout.
 
 ### What JSON the app needs
 

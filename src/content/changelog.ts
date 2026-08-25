@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.0.1",
+    date: "2026-08-25",
+    title: "Maintainer download lists; Douglas locked as county 2 (inventory Go)",
+    highlights: [
+      "docs/county-build-inputs.md lists hubs, last-known file URLs, and local save paths for Colorado shared (DOLA), Arapahoe, Douglas, and parked El Paso. Root README and docs/county-ingest.md link there. Large dumps stay gitignored.",
+      "Phase 8 inventory Go: Douglas Assessor Property_Location.txt + Property_Values.txt (headerless) plus the tax-district mill PDF can fill required app JSON shapes (account map + levy stacks). Tax_District_No joins PDF tax district ids (4-digit zero-pad). Phase 9 still needs mapping + headerless text reader + mill-PDF stack reader; the live app remains Arapahoe-only.",
+      "El Paso published dumps stay parked (no tax-area stacks under above-board policy). No scraper / property-search API harvest.",
+    ],
+  },
+  {
     version: "5.0.0",
     date: "2026-08-24",
     title: "Arapahoe shipping JSON now built by engine v2 (atomic ship-from-new)",

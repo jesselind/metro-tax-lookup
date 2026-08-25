@@ -8,6 +8,7 @@ Ephemeral checklists and multi-session handoff notes go in **`docs/_working/`** 
 
 | Document | Use when |
 | --- | --- |
+| [county-build-inputs.md](./county-build-inputs.md) | Per-county download hubs, last-known file URLs, and local save paths (Colorado shared + Arapahoe + Douglas county 2; El Paso parked) |
 | [county-ingest.md](./county-ingest.md) | Arapahoe engine v2 rebuild: compare builds, `build:ingest:ship` land, emergency v1 |
 | [levy-explainer-authoring.md](./levy-explainer-authoring.md) | Levy detail modal and authority-chain JSON authoring |
 | [county-service-gap-callouts.md](./county-service-gap-callouts.md) | COUNTY DATA GAP dashboard + `/sources` pairing |
