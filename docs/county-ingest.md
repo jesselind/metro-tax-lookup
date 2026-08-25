@@ -136,8 +136,9 @@ Equivalent to `npm run build:ingest -- ... --out-dir public/data --ship --bundle
 | `--out-dir` must be exactly `public/data/` | `out_dir_policy.validate_out_dir` |
 | No `--ship` without `public/data/` | same |
 | No other path under `public/` | same |
-| `--bundled-as-of` matches `tools/county-mart-data-as-of.txt` | `ship_preflight` |
+| `--bundled-as-of` matches `tools/county-mart-data-as-of.txt` (file required) | `ship_preflight` |
 | `git status public/data/` clean | `ship_preflight` |
+| `write_comparison_dir(..., ship=True)` runs `ship_preflight` before writing | `writer.py` |
 
 Then: `npm run validate:app-json`, address spot-checks, `npm run build`, semver/changelog, commit, deploy.
 
@@ -161,7 +162,7 @@ Disk parity remains `npm run diff:ingest`; this switch is for eyes-on UI sanity 
 | Safeguard | Where enforced |
 | --- | --- |
 | Engine v2 never writes `public/data/` without `--ship` | `out_dir_policy.py`, `build.py`, `writer.py`, `parcel_record.py`; tests in `test_ingest_out_dir_policy.py`, `test_ingest_reader.py`, `test_ingest_situs_shards.py` |
-| `--ship` requires clean `git status public/data/` and matching mart stamp | `ship_preflight` in `out_dir_policy.py` |
+| `--ship` requires clean `git status public/data/` and matching mart stamp (file required); writer re-runs preflight when `ship=True` | `ship_preflight` in `out_dir_policy.py`; called from `build.py` (fail-fast) and `writer.py` |
 | Control not overwritten during prove-out | Procedure: clean `git status public/data/`; no `build:arapahoe-index` |
 | Candidate builds default to `_ingest-out/` | Default `--out-dir`; gitignored path |
 | Parity gate | `compare.py` exit 0 = IDENTICAL |

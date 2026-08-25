@@ -23,7 +23,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from ingest.out_dir_policy import validate_out_dir
+from ingest.out_dir_policy import ship_preflight, validate_out_dir
 from ingest.dola_match import DolaJoinContext
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
@@ -298,9 +298,16 @@ def write_comparison_dir(
     Write levy stacks + account map (+ optional situs/shards) to out_dir.
 
     Comparison builds use supporting-data/_ingest-out/. Ship-from-new passes
-    ship=True with out_dir public/data/ (see build.py --ship).
+    ship=True with out_dir public/data/ (see build.py --ship). When ship=True,
+    ship_preflight runs here before any write.
     """
     validate_out_dir(out_dir, ship=ship)
+    if ship:
+        ship_preflight(bundled_as_of)
+        print(
+            "SHIP: writing engine v2 output to public/data/ (shipping JSON).",
+            file=sys.stderr,
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sep = (",", ":")
@@ -410,5 +417,5 @@ def write_comparison_dir(
         parcel_snapshot,
         pin_digits=pin_digits,
         separators=sep,
-        allow_public_out=ship,
+        ship=ship,
     )

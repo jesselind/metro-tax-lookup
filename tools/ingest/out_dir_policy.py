@@ -13,7 +13,6 @@ With ship=True: exactly repo public/data/ after explicit --ship on build.py.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 from ingest.classify import REPO_ROOT, path_is_under_public
@@ -81,17 +80,26 @@ def ship_preflight(
 ) -> None:
     """Require matching mart stamp and clean git status for public/data/.
 
-    Raises OutDirPolicyError on failure. Prints a SHIP notice to stderr on success.
+    Raises OutDirPolicyError on failure.
     """
     root = repo_root or REPO_ROOT
     stamp_path = root / MART_DATA_AS_OF_FILE
-    if stamp_path.is_file():
+    if not stamp_path.is_file():
+        raise OutDirPolicyError(
+            f"Missing mart stamp file {MART_DATA_AS_OF_FILE}. "
+            "Required before --ship."
+        )
+    try:
         expected = stamp_path.read_text(encoding="utf-8").strip()
-        if bundled_as_of != expected:
-            raise OutDirPolicyError(
-                f"--bundled-as-of {bundled_as_of!r} does not match "
-                f"{MART_DATA_AS_OF_FILE} ({expected!r})."
-            )
+    except OSError as exc:
+        raise OutDirPolicyError(
+            f"Could not read mart stamp {MART_DATA_AS_OF_FILE}: {exc}"
+        ) from exc
+    if bundled_as_of != expected:
+        raise OutDirPolicyError(
+            f"--bundled-as-of {bundled_as_of!r} does not match "
+            f"{MART_DATA_AS_OF_FILE} ({expected!r})."
+        )
 
     try:
         result = subprocess.run(
@@ -115,8 +123,3 @@ def ship_preflight(
             "public/data/ has uncommitted changes. Commit or restore before --ship.\n"
             + result.stdout.strip()
         )
-
-    print(
-        "SHIP: writing engine v2 output to public/data/ (shipping JSON).",
-        file=sys.stderr,
-    )

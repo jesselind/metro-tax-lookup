@@ -79,6 +79,21 @@ class ShipPreflightTests(unittest.TestCase):
             "2026-07-15\n", encoding="utf-8"
         )
 
+    def test_missing_stamp_file_refused(self) -> None:
+        stamp = self.repo / "tools" / "county-mart-data-as-of.txt"
+        stamp.unlink()
+        with self.assertRaises(OutDirPolicyError) as ctx:
+            ship_preflight("2026-07-15", repo_root=self.repo)
+        self.assertIn("Missing mart stamp", str(ctx.exception))
+
+    def test_unreadable_stamp_file_refused(self) -> None:
+        with mock.patch.object(
+            Path, "read_text", side_effect=OSError("permission denied")
+        ):
+            with self.assertRaises(OutDirPolicyError) as ctx:
+                ship_preflight("2026-07-15", repo_root=self.repo)
+        self.assertIn("Could not read mart stamp", str(ctx.exception))
+
     def test_bundled_as_of_must_match_stamp_file(self) -> None:
         with self.assertRaises(OutDirPolicyError) as ctx:
             ship_preflight("2026-01-01", repo_root=self.repo)
