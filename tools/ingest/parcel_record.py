@@ -1134,10 +1134,9 @@ def write_parcel_record_shards(
     *,
     pin_digits: int = 9,
     separators: tuple[str, str] = (",", ":"),
-    ship: bool = False,
 ) -> None:
     """Write plain JSON shards by PIN prefix under out_dir."""
-    validate_out_dir(out_dir, ship=ship)
+    validate_out_dir(out_dir, ship=False)
 
     shard_dir = out_dir / "arapahoe-parcel-record-by-pin"
     if shard_dir.exists():

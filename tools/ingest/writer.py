@@ -7,8 +7,9 @@
 """JSON writer for the new ingest.
 
 Converts intermediate records (from reader.py) into the app JSON shapes defined
-by the Phase 1 contract (arapahoeParcelLevyData.ts). Default output is a
-comparison directory; ship-from-new uses public/data/ via build.py --ship.
+by the Phase 1 contract (arapahoeParcelLevyData.ts). Writes only to a comparison
+or ship-staging directory — never mid-run into live public/data/. Ship-from-new
+lands via build.py --ship + ship_land.py after IDENTICAL.
 
 Usage:
   from ingest.writer import build_levy_stacks_json, build_account_map_json, write_comparison_dir
@@ -23,7 +24,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from ingest.out_dir_policy import ship_preflight, validate_out_dir
+from ingest.out_dir_policy import validate_out_dir
 from ingest.dola_match import DolaJoinContext
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
@@ -292,22 +293,15 @@ def write_comparison_dir(
     skip_neighborhood: bool = False,
     gis_parcels_gdb: Path | None = None,
     skip_situs_shards: bool = False,
-    ship: bool = False,
 ) -> None:
     """
     Write levy stacks + account map (+ optional situs/shards) to out_dir.
 
-    Comparison builds use supporting-data/_ingest-out/. Ship-from-new passes
-    ship=True with out_dir public/data/ (see build.py --ship). When ship=True,
-    ship_preflight runs here before any write.
+    Comparison builds use supporting-data/_ingest-out/. Ship-from-new builds
+    into supporting-data/_ingest-ship-staging/ then lands via ship_land.py.
+    Refuses paths under public/ (including public/data/).
     """
-    validate_out_dir(out_dir, ship=ship)
-    if ship:
-        ship_preflight(bundled_as_of)
-        print(
-            "SHIP: writing engine v2 output to public/data/ (shipping JSON).",
-            file=sys.stderr,
-        )
+    validate_out_dir(out_dir, ship=False)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sep = (",", ":")
@@ -417,5 +411,4 @@ def write_comparison_dir(
         parcel_snapshot,
         pin_digits=pin_digits,
         separators=sep,
-        ship=ship,
     )

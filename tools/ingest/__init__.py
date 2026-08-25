@@ -7,5 +7,6 @@
 
 Classifier, reader, writer, compare, dola_match, situs, parcel_record.
 Default write target is a comparison directory (supporting-data/_ingest-out/).
-Ship-from-new writes public/data/ only via build.py --ship (see out_dir_policy.py).
+Ship-from-new lands public/data/ only via build.py --ship (staging + IDENTICAL
++ atomic land; see ship_land.py and out_dir_policy.py).
 """

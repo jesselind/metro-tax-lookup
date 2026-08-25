@@ -7,7 +7,9 @@
 """Where engine v2 may write JSON (comparison vs ship-from-new).
 
 Default: comparison directories only (never under public/).
-With ship=True: exactly repo public/data/ after explicit --ship on build.py.
+With ship=True on build.py: --out-dir must be exactly repo public/data/
+(the land target). The build itself writes supporting-data/_ingest-ship-staging/
+first; see ship_land.py.
 """
 
 from __future__ import annotations
