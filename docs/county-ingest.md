@@ -1,8 +1,8 @@
 # County ingest
 
-Permanent maintainer reference for rebuilding Arapahoe shipping JSON with engine v2 (`tools/ingest/`). Setup and npm script index: root **[README.md](../README.md)**. Resident-facing source narrative: **`/sources`**. Scratch cutover notes stay in gitignored `docs/_working/` only.
+Permanent maintainer reference for rebuilding Arapahoe shipping JSON with engine v2 (`tools/ingest/`). Setup and npm script index: root **[README.md](../README.md)**. Download hubs and local save paths per county: **[county-build-inputs.md](county-build-inputs.md)** (Colorado shared + Arapahoe + Douglas locked as county 2; El Paso parked). Resident-facing source narrative: **`/sources`**. Scratch notes stay in gitignored `docs/_working/` only.
 
-**Purpose of this doc:** how to refresh or prove Arapahoe bill-data JSON safely — commands, output folders, compare rules, and `--ship` land guards. It is not a product roadmap and not El Paso inventory.
+**Purpose of this doc:** how to refresh or prove Arapahoe bill-data JSON safely — commands, output folders, compare rules, and `--ship` land guards. It is not a product roadmap. Where to obtain raw drops (including Douglas Phase 9 inputs): **county-build-inputs.md**.
 
 ## What ships today
 
