@@ -8,8 +8,10 @@
 
 Reads the mapping file, reads the levy stack CSV and Main Parcel (one pass for
 account map + situs + parcel records), joins sibling mart / GIS when present,
-and writes app JSON to the comparison directory. Does NOT write to public/data/.
-Production rebuild stays npm run build:arapahoe-index.
+and writes app JSON to a comparison directory or, with --ship, to ship staging
+then an atomic land into public/data/ after IDENTICAL.
+Production emergency rebuild stays npm run build:arapahoe-index until cutover
+and afterward as rollback.
 
 Usage:
   python3 tools/ingest/build.py --mapping tools/ingest/mappings/arapahoe.json \\
@@ -20,6 +22,9 @@ Usage:
   npm run build:ingest -- --mapping tools/ingest/mappings/arapahoe.json \\
     --tag-file ... --parcel-file ... --out-dir supporting-data/_ingest-out \\
     --bundled-as-of YYYY-MM-DD
+
+  Ship-from-new (raw → v2 → staging → IDENTICAL → atomic land):
+  npm run build:ingest:ship
 """
 
 from __future__ import annotations
@@ -36,12 +41,41 @@ if str(_TOOLS) not in sys.path:
 
 from ingest.reader import load_mapping, read_levy_stack_rows  # noqa: E402
 from ingest.writer import write_comparison_dir  # noqa: E402
-from ingest.classify import path_is_under_public  # noqa: E402
+from ingest.out_dir_policy import OutDirPolicyError, ship_preflight, validate_out_dir  # noqa: E402
+from ingest.ship_land import (  # noqa: E402
+    ShipLandError,
+    cleanup_ship_staging,
+    land_arapahoe_shipping,
+    reset_ship_staging,
+)
 from ingest.dola_match import (  # noqa: E402
     DEFAULT_OVERRIDES,
     load_dola_join_context,
 )
 from ingest.parcel_record import read_main_parcel_bundle  # noqa: E402
+
+
+def land_ship_from_staging(
+    *,
+    bundled_as_of: str,
+    staging: Path,
+    shipping: Path,
+    ship_allow_diff: bool,
+    repo_root: Path | None = None,
+) -> None:
+    """Re-run ship_preflight, then land Arapahoe targets from staging.
+
+    Called after the staging build finishes so mart stamp / clean public/data/
+    are checked against current disk state, not only the start-of-run check.
+    Preserves --ship-allow-diff (skips pre-swap IDENTICAL only).
+    """
+    root = repo_root if repo_root is not None else _REPO
+    ship_preflight(bundled_as_of, repo_root=root)
+    land_arapahoe_shipping(
+        staging=staging,
+        shipping=shipping,
+        skip_pre_swap_identical=ship_allow_diff,
+    )
 
 
 def _default_path_from_mapping(mapping: dict[str, Any], key: str) -> Path | None:
@@ -55,8 +89,9 @@ def _default_path_from_mapping(mapping: dict[str, Any], key: str) -> Path | None
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Run new ingest for one county. Writes to a comparison directory only. "
-            "Does not write to public/data/."
+            "Run new ingest for one county. Default: comparison directory only. "
+            "With --ship: build in staging, require IDENTICAL vs public/data/, "
+            "then atomically land Arapahoe shipping files."
         )
     )
     parser.add_argument(
@@ -84,7 +119,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         default=Path("supporting-data/_ingest-out"),
         dest="out_dir",
-        help="Comparison output directory (default: supporting-data/_ingest-out)",
+        help=(
+            "Output directory (default: supporting-data/_ingest-out). "
+            "With --ship, must be public/data/ (land target; build uses staging)."
+        ),
+    )
+    parser.add_argument(
+        "--ship",
+        action="store_true",
+        help=(
+            "Ship-from-new: build from raw inputs into staging, require "
+            "IDENTICAL vs public/data/, then atomically replace Arapahoe "
+            "shipping files. Requires clean git status public/data/ and "
+            "--bundled-as-of matching tools/county-mart-data-as-of.txt."
+        ),
+    )
+    parser.add_argument(
+        "--ship-allow-diff",
+        action="store_true",
+        dest="ship_allow_diff",
+        help=(
+            "With --ship only: skip the pre-swap IDENTICAL gate so a mart "
+            "refresh can land intentional diffs. Still builds in staging and "
+            "atomically swaps. Cutover must omit this flag."
+        ),
     )
     parser.add_argument(
         "--bundled-as-of",
@@ -215,15 +273,35 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    if path_is_under_public(args.out_dir):
-        print(
-            f"Error: --out-dir {args.out_dir} is inside public/. "
-            "Use supporting-data/_ingest-out/ or another comparison directory.",
-            file=sys.stderr,
-        )
+    if args.ship_allow_diff and not args.ship:
+        print("Error: --ship-allow-diff requires --ship.", file=sys.stderr)
         return 2
 
-    for label, path in [("--mapping", args.mapping), ("--tag-file", args.tag_file), ("--parcel-file", args.parcel_file)]:
+    try:
+        resolved_out_dir = validate_out_dir(args.out_dir, ship=args.ship, repo_root=_REPO)
+    except OutDirPolicyError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.ship:
+        try:
+            ship_preflight(args.bundled_as_of, repo_root=_REPO)
+        except OutDirPolicyError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 2
+        if args.skip_situs_shards:
+            print(
+                "Error: --ship requires situs and parcel-record shards "
+                "(do not pass --skip-situs-shards).",
+                file=sys.stderr,
+            )
+            return 2
+
+    for label, path in [
+        ("--mapping", args.mapping),
+        ("--tag-file", args.tag_file),
+        ("--parcel-file", args.parcel_file),
+    ]:
         if not path.is_file():
             print(f"Error: {label} file not found: {path}", file=sys.stderr)
             return 2
@@ -284,9 +362,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     }
     gis_gdb = _resolve(args.gis_parcels_gdb, "gisParcelsGdb")
 
+    write_dir = resolved_out_dir
+    shipping_dir: Path | None = None
+    if args.ship:
+        shipping_dir = resolved_out_dir
+        write_dir = reset_ship_staging(repo_root=_REPO)
+        print(
+            f"SHIP: building engine v2 output in staging ({write_dir}); "
+            "live public/data/ unchanged until IDENTICAL + atomic land.",
+            file=sys.stderr,
+        )
+
     try:
         write_comparison_dir(
-            args.out_dir,
+            write_dir,
             stack_rows=stack_rows,
             account_rows=account_rows,
             mapping=mapping,
@@ -300,11 +389,38 @@ def main(argv: Sequence[str] | None = None) -> int:
             gis_parcels_gdb=gis_gdb,
             skip_situs_shards=args.skip_situs_shards,
         )
+    except OutDirPolicyError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
     except Exception as exc:
-        print(f"Error writing comparison directory: {exc}", file=sys.stderr)
+        print(f"Error writing output directory: {exc}", file=sys.stderr)
         return 1
 
-    print(f"Wrote comparison JSON to: {args.out_dir}", file=sys.stderr)
+    if args.ship:
+        assert shipping_dir is not None
+        try:
+            print("SHIP: re-check preflight before land...", file=sys.stderr)
+            print("SHIP: pre-swap IDENTICAL gate...", file=sys.stderr)
+            land_ship_from_staging(
+                bundled_as_of=args.bundled_as_of,
+                staging=write_dir,
+                shipping=shipping_dir,
+                ship_allow_diff=args.ship_allow_diff,
+                repo_root=_REPO,
+            )
+        except (OutDirPolicyError, ShipLandError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            print(
+                "SHIP aborted: live public/data/ Arapahoe files were not replaced. "
+                f"Staging left at {write_dir} for inspection.",
+                file=sys.stderr,
+            )
+            return 1
+        cleanup_ship_staging(repo_root=_REPO)
+        print(f"SHIP: atomic land complete → {shipping_dir}", file=sys.stderr)
+        return 0
+
+    print(f"Wrote comparison JSON to: {write_dir}", file=sys.stderr)
     return 0
 
 

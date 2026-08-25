@@ -8,7 +8,7 @@ Ephemeral checklists and multi-session handoff notes go in **`docs/_working/`** 
 
 | Document | Use when |
 | --- | --- |
-| [county-ingest.md](./county-ingest.md) | Two rebuild engines, comparison output, prove-out vs committed shipping JSON |
+| [county-ingest.md](./county-ingest.md) | Arapahoe engine v2 rebuild: compare builds, `build:ingest:ship` land, emergency v1 |
 | [levy-explainer-authoring.md](./levy-explainer-authoring.md) | Levy detail modal and authority-chain JSON authoring |
 | [county-service-gap-callouts.md](./county-service-gap-callouts.md) | COUNTY DATA GAP dashboard + `/sources` pairing |
 | [authority-chain-unlocated-sources.md](./authority-chain-unlocated-sources.md) | Official documents missing from authority-chain trails |

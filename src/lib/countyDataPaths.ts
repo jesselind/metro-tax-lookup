@@ -7,20 +7,18 @@
  * Static county JSON URL and filesystem path builders.
  *
  * Shipping UI loads `{SHIPPING_DATA_ROOT}/{countyId}-*` (committed under
- * `public/data/`). Local v2 sanity checks use `activeCountyDataRoot()` from
- * `countyDataEngine.ts` (file setting or `NEXT_PUBLIC_COUNTY_DATA_ENGINE`).
+ * `public/data/`). After ship-from-new that tree is engine v2 output.
  * Do not hard-code `arapahoe` in fetch URLs.
  */
 
 import { COUNTY_CONFIG } from "@/lib/countyConfig";
 
-/** Committed shipping JSON (control / live site). */
+/** Committed shipping JSON (live site / localhost `/data/`). */
 export const SHIPPING_DATA_ROOT = "/data";
 
 /**
- * Ingest candidate root (same filenames as shipping). Maps to
- * `public/data-engine-v2` when symlinked to `supporting-data/_ingest-out`.
- * Active only when `countyDataEngine` is set to v2 for local UI checks.
+ * Retired Phase 6.5 dual-root URL (`public/data-engine-v2` → `_ingest-out`).
+ * Kept only so path helpers/tests stay stable; do not use for day-to-day UI.
  */
 export const ENGINE_V2_DATA_ROOT = "/data-engine-v2";
 
@@ -106,8 +104,8 @@ export function countyParcelRecordShardUrl(
 
 /**
  * Filesystem paths under the repo for validators (`public/...`).
- * `dataRoot` is the URL root (`/data` or `/data-engine-v2`); maps to
- * `public/data` or `public/data-engine-v2`.
+ * Shipping URL `/data` → `public/data`. Retired dual-root `/data-engine-v2`
+ * still maps to `public/data-engine-v2` for path helpers only.
  */
 export function countyFsDataDir(
   dataRoot: string = SHIPPING_DATA_ROOT,

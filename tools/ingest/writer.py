@@ -7,8 +7,9 @@
 """JSON writer for the new ingest.
 
 Converts intermediate records (from reader.py) into the app JSON shapes defined
-by the Phase 1 contract (arapahoeParcelLevyData.ts). Writes only to the
-comparison directory; never touches public/data/.
+by the Phase 1 contract (arapahoeParcelLevyData.ts). Writes only to a comparison
+or ship-staging directory — never mid-run into live public/data/. Ship-from-new
+lands via build.py --ship + ship_land.py after IDENTICAL.
 
 Usage:
   from ingest.writer import build_levy_stacks_json, build_account_map_json, write_comparison_dir
@@ -23,7 +24,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from ingest.classify import path_is_under_public
+from ingest.out_dir_policy import validate_out_dir
 from ingest.dola_match import DolaJoinContext
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
@@ -277,14 +278,6 @@ def build_account_map_json(
 # Comparison directory writer
 # -----------------------------------------------------------------------
 
-def _refuse_public(out_dir: Path) -> None:
-    if path_is_under_public(out_dir):
-        raise ValueError(
-            f"Refusing to write to {out_dir} - path is inside public/. "
-            "Use a comparison directory (e.g. supporting-data/_ingest-out/)."
-        )
-
-
 def write_comparison_dir(
     out_dir: Path,
     *,
@@ -304,10 +297,11 @@ def write_comparison_dir(
     """
     Write levy stacks + account map (+ optional situs/shards) to out_dir.
 
-    Comparison only; never public/. Filenames match shipping so compare.py can
-    diff against public/data/.
+    Comparison builds use supporting-data/_ingest-out/. Ship-from-new builds
+    into supporting-data/_ingest-ship-staging/ then lands via ship_land.py.
+    Refuses paths under public/ (including public/data/).
     """
-    _refuse_public(out_dir)
+    validate_out_dir(out_dir, ship=False)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sep = (",", ":")

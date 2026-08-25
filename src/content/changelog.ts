@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.0.0",
+    date: "2026-08-24",
+    title: "Arapahoe shipping JSON now built by engine v2 (atomic ship-from-new)",
+    highlights: [
+      "Canonical Arapahoe rebuild is npm run build:ingest:ship: raw mart/GIS/DOLA inputs through tools/ingest/ into staging, IDENTICAL gate vs live public/data/, then atomic land of Arapahoe files only (levy stacks, pin-to-tag, situs, parcel-record shards). Metro-levies, directory, explainers, and authority mills are untouched by ship.",
+      "Committed public/data/ Arapahoe JSON now carries snapshot.source new ingest (mapping: arapahoe). Bill data matched the prior v1 tree on IDENTICAL compare (snapshot metadata excluded). npm run build:arapahoe-index remains for emergency v1 rebuild / rollback.",
+      "Ship refuses mid-run writes under public/: staging must not be a symlink; ship_preflight (mart stamp + clean git status public/data/) runs at start and immediately before land; multi-target land restores on failure. Post-cutover mart refresh may pass --ship-allow-diff (skips pre-swap IDENTICAL only).",
+      "Comparison builds stay npm run build:ingest → supporting-data/_ingest-out/ (no --ship). Prove-out and docs: docs/county-ingest.md. Phase 6.5 dual-root UI path (public/data-engine-v2 symlink + COUNTY_DATA_ENGINE=v2) is retired; shipping /data/ is engine v2.",
+    ],
+  },
+  {
     version: "4.15.1",
     date: "2026-08-24",
     title: "Typeahead place caption omits condo unit; Real+BPP gate shared with chooser",

@@ -25,7 +25,7 @@ from typing import Any
 
 from ingest.reader import logical_row_from_csv, resolve_role_column_map
 from ingest.situs import accumulate_situs_row, finalize_situs_map
-from ingest.classify import path_is_under_public
+from ingest.out_dir_policy import validate_out_dir
 
 # Keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in arapahoeParcelLevyData.ts
 PARCEL_RECORD_SHARD_PREFIX_LEN = 6
@@ -1135,12 +1135,8 @@ def write_parcel_record_shards(
     pin_digits: int = 9,
     separators: tuple[str, str] = (",", ":"),
 ) -> None:
-    """Write plain JSON shards by PIN prefix under out_dir (never public/)."""
-    if path_is_under_public(out_dir):
-        raise ValueError(
-            f"Refusing to write shards to {out_dir} - path is inside public/. "
-            "Use a comparison directory (e.g. supporting-data/_ingest-out/)."
-        )
+    """Write plain JSON shards by PIN prefix under out_dir."""
+    validate_out_dir(out_dir, ship=False)
 
     shard_dir = out_dir / "arapahoe-parcel-record-by-pin"
     if shard_dir.exists():

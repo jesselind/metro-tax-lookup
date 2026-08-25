@@ -691,8 +691,10 @@ export function TermAssessedValueSplitBriefBody() {
 export function TermParcelRecordBriefBody() {
   return (
     <p className={BRIEF_P}>
-      The county&apos;s public page for one property: names, values, and other details they keep on
-      file.
+      Same as the county&apos;s{" "}
+      <strong className="font-semibold text-slate-900">Parcel data</strong>
+      {" "}
+      page for one property: owners, values, and related details on the assessor site.
     </p>
   );
 }
