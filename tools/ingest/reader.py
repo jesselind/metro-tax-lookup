@@ -381,6 +381,8 @@ def read_values_totals_by_account(
     Uses columnAliases on that role for accountId / totalActual / totalAssessed
     logical keys from accountMap. Returns accountId -> {totalActual, totalAssessed}.
     """
+    from ingest.writer import _normalize_account_id
+
     acct_cfg = mapping["accountMap"]
     values_role = acct_cfg.get("valuesFile")
     if not isinstance(values_role, str) or not values_role:
@@ -400,6 +402,7 @@ def read_values_totals_by_account(
             "when valuesFile is set"
         )
 
+    pin_digits = int(mapping.get("identifierDigits", 9))
     schema = {
         "accountId": account_alias,
         "totalActual": actual_alias,
@@ -423,7 +426,7 @@ def read_values_totals_by_account(
         actual_col = col_map[actual_alias]
         assessed_col = col_map[assessed_alias]
         for raw_row in reader:
-            account_id = _strip(raw_row.get(acct_col, ""))
+            account_id = _normalize_account_id(raw_row.get(acct_col, ""), pin_digits)
             if not account_id:
                 continue
             actual = _parse_float_or_none(raw_row.get(actual_col, ""))
@@ -442,13 +445,16 @@ def read_values_totals_by_account(
 def apply_values_totals(
     account_rows: list[dict[str, Any]],
     totals: dict[str, dict[str, float]],
+    pin_digits: int,
 ) -> list[dict[str, Any]]:
     """Copy account rows with totalActual/totalAssessed filled from totals when present."""
+    from ingest.writer import _normalize_account_id
+
     out: list[dict[str, Any]] = []
     for row in account_rows:
-        account_id = _strip(row.get("accountId", ""))
+        account_id = _normalize_account_id(row.get("accountId", ""), pin_digits)
         merged = dict(row)
-        bucket = totals.get(account_id)
+        bucket = totals.get(account_id) if account_id else None
         if bucket is not None:
             merged["totalActual"] = bucket["totalActual"]
             merged["totalAssessed"] = bucket["totalAssessed"]
@@ -464,7 +470,8 @@ def read_account_rows_with_values(
     """Read the account/location file, then join summed values by account id."""
     rows = read_account_rows(account_path, mapping)
     totals = read_values_totals_by_account(values_path, mapping)
-    return apply_values_totals(rows, totals)
+    pin_digits = int(mapping.get("identifierDigits", 9))
+    return apply_values_totals(rows, totals, pin_digits)
 
 
 def read_location_situs_map(

@@ -24,7 +24,9 @@ import {
 import {
   ARAPAHOE_COUNTY_CONFIG,
   COUNTY_CONFIG,
+  COUNTY_CONFIG_BY_ID,
   DOUGLAS_COUNTY_CONFIG,
+  countyConfigById,
   countyFeaturePresentation,
   formatIdentifierNotFoundMessage,
   type CountyConfig,
@@ -99,6 +101,9 @@ describe("COUNTY_CONFIG (Arapahoe shipping)", () => {
 
 describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
   it("is in the county registry and validates", () => {
+    expect(COUNTY_CONFIG_BY_ID.douglas).toBe(DOUGLAS_COUNTY_CONFIG);
+    expect(countyConfigById("douglas")).toBe(DOUGLAS_COUNTY_CONFIG);
+    expect(countyConfigById(" Douglas ")).toBe(DOUGLAS_COUNTY_CONFIG);
     expect(validateCountyConfig(DOUGLAS_COUNTY_CONFIG)).toBeNull();
     expect(DOUGLAS_COUNTY_CONFIG.identifierDigits).toBe(8);
     expect(DOUGLAS_COUNTY_CONFIG.identifierAllowsLetters).toBe(true);

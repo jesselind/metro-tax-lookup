@@ -15,6 +15,7 @@ import type {
   ArapahoePinToTagRow,
 } from "@/lib/arapahoeParcelLevyData";
 import {
+  accountIdLookupCandidates,
   ainLookupCandidates,
   displayMartAuthorityName,
   fetchArapahoeLevyStacksJson,
@@ -22,7 +23,6 @@ import {
   formatPropertyClassificationDisplay,
   getLastArapahoeLevyStacksFetchFailureDetail,
   getLastArapahoePinToTagFetchFailureDetail,
-  pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
 } from "@/lib/arapahoeParcelLevyData";
 import {
@@ -214,8 +214,17 @@ export async function loadLevyStackFromPin(
   let lookupConfig = COUNTY_CONFIG;
 
   if (options?.countyId) {
-    countyId = options.countyId;
-    lookupConfig = countyConfigById(countyId) ?? COUNTY_CONFIG;
+    const resolved = countyConfigById(options.countyId);
+    if (!resolved) {
+      return {
+        ok: false,
+        error:
+          "We could not load parcel lookup data. Please try again in a moment.",
+        technicalDetail: `unknown countyId: ${options.countyId.trim()}`,
+      };
+    }
+    countyId = resolved.id;
+    lookupConfig = resolved;
     const pinsOnly = await fetchArapahoePinToTagJson(dataRoot, countyId);
     if (!pinsOnly?.byPin) {
       return {
@@ -229,18 +238,15 @@ export async function loadLevyStackFromPin(
     }
     const key = resolvePinKeyFromParcelIdInput(pinsOnly, pinInput, lookupConfig);
     if (!key) {
-      const pinCands = pinLookupCandidates(
-        pinInput,
-        lookupConfig.identifierDigits,
-      );
+      const accountCands = accountIdLookupCandidates(pinInput, lookupConfig);
       const ainCands = ainLookupCandidates(pinInput, lookupConfig);
-      if (pinCands.length === 0 && ainCands.length === 0) {
+      if (accountCands.length === 0 && ainCands.length === 0) {
         return {
           ok: false,
           error: lookupConfig.emptyIdentifierMessage,
         };
       }
-      const tried = [...pinCands, ...ainCands].join(" / ");
+      const tried = [...accountCands, ...ainCands].join(" / ");
       return {
         ok: false,
         error: formatIdentifierNotFoundMessage(tried, lookupConfig),

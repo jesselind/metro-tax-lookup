@@ -93,7 +93,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 **Local root:** `supporting-data/douglas/`
 
-**Last verified:** 2026-08-25 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live API ingest** — Assessor published text downloads + tax-district mill PDF only. Phase 9: mapping file + headerless text reader + mill-PDF stack reader.
+**Last verified:** 2026-08-25 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live API ingest** — Assessor published text downloads + tax-district mill PDF only. Phase 9/9b on branch: mapping + headerless text + mill-PDF stacks + situs from `Property_Location.txt`. **Phase 9c:** optional Ownership / Improvements / Subdivision / Sales (and AccDB CSV siblings) → parcel-record; **production-live ship waits on 9c** (see `docs/county-ingest.md`).
 
 **Also uses (Colorado shared):** **none** yet (add when mill/TE join or directory ships for Douglas).
 
@@ -117,7 +117,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 **API:** none for rebuild. Do not use property-search scraping.
 
-**Join (Phase 8 inventory):** `Property_Location.Tax_District_No` ↔ PDF `Tax District: NNNN` — same **4-digit zero-pad**. ~99% of location accounts matched the 2025 mill PDF; remaining tax-district keys absent from the PDF are an honest gap for Phase 9.
+**Join (Phase 8 inventory):** `Property_Location.Tax_District_No` ↔ PDF `Tax District: NNNN` — same **4-digit zero-pad**. ~99% of location accounts matched the 2025 mill PDF; remaining tax-district keys absent from the PDF are an honest gap (dashboard + `/sources`).
 
 ---
 

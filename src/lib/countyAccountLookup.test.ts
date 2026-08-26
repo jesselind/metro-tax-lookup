@@ -90,4 +90,47 @@ describe("resolveAccountCountyLookup", () => {
       expect(result.hit.matchedPinKey).toBe("C0193439");
     }
   });
+
+  it("returns ambiguous when the same key hits Arapahoe and Douglas", async () => {
+    const douglasKey = "12345678";
+    const arapahoeKey = `0${douglasKey}`;
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("arapahoe-pin-to-tag")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+            pinDigits: 9,
+            byPin: {
+              [arapahoeKey]: { tagId: "1", tagShortDescr: "0001" },
+            },
+          }),
+        });
+      }
+      if (url.includes("douglas-pin-to-tag")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+            pinDigits: 8,
+            byPin: {
+              [douglasKey]: { tagId: "101", tagShortDescr: "101" },
+            },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    // Eight digits: Arapahoe pads to nine; Douglas uses exact eight.
+    const result = await resolveAccountCountyLookup(douglasKey);
+    expect(result.status).toBe("ambiguous");
+    if (result.status === "ambiguous") {
+      expect(result.hits.map((h) => h.countyId).sort()).toEqual([
+        "arapahoe",
+        "douglas",
+      ]);
+    }
+  });
 });

@@ -1524,6 +1524,86 @@ class ValuesAggregateJoinTests(unittest.TestCase):
             self.assertEqual(by_id["A1000002"]["totalActual"], 50.0)
             self.assertEqual(by_id["A1000001"]["taxAreaId"], "0035")
 
+    def test_values_join_normalizes_zero_pad_and_excel_dot_zero(self) -> None:
+        from ingest.reader import read_account_rows_with_values
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            loc = root / "location.txt"
+            vals = root / "values.txt"
+            loc.write_text(
+                '"1234567","0035","Residential"\n'
+                '"87654321","0043","Vacant Land"\n',
+                encoding="utf-8",
+            )
+            # Short id needs zero-pad; Excel-style ".0" must match the padded key.
+            vals.write_text(
+                '"01234567","100","10","L"\n'
+                '"87654321.0","50","5","L"\n',
+                encoding="utf-8",
+            )
+            mapping = {
+                "county": "synthetic",
+                "identifierDigits": 8,
+                "levyAspxTemplate": "",
+                "levyStack": {
+                    "file": "tag",
+                    "taxAreaId": "tax_area_id",
+                    "lineCode": "line_code",
+                    "authorityName": "authority_name",
+                },
+                "accountMap": {
+                    "file": "location",
+                    "valuesFile": "values",
+                    "valuesAggregate": "sum",
+                    "accountId": "account_no",
+                    "taxAreaId": "tax_district_no",
+                    "totalActual": "actual_value",
+                    "totalAssessed": "assessed_value",
+                    "propertyClassDescr": "account_type_code",
+                },
+                "columnAliases": {
+                    "location": {
+                        "account_no": ["Account_No"],
+                        "tax_district_no": ["Tax_District_No"],
+                        "account_type_code": ["Account_Type_Code"],
+                    },
+                    "values": {
+                        "account_no": ["Account_No"],
+                        "actual_value": ["Actual_Value"],
+                        "assessed_value": ["Assessed_Value"],
+                    },
+                    "tag": {
+                        "tax_area_id": ["TaxArea"],
+                        "line_code": ["Code"],
+                        "authority_name": ["Name"],
+                    },
+                },
+                "tabular": {
+                    "location": {
+                        "hasHeaderRow": False,
+                        "encoding": "utf-8",
+                        "headers": ["Account_No", "Tax_District_No", "Account_Type_Code"],
+                    },
+                    "values": {
+                        "hasHeaderRow": False,
+                        "encoding": "utf-8",
+                        "headers": [
+                            "Account_No",
+                            "Actual_Value",
+                            "Assessed_Value",
+                            "Valuation_Type_Code",
+                        ],
+                    },
+                },
+            }
+            rows = read_account_rows_with_values(loc, vals, mapping)
+            by_id = {r["accountId"]: r for r in rows}
+            self.assertEqual(by_id["1234567"]["totalActual"], 100.0)
+            self.assertEqual(by_id["1234567"]["totalAssessed"], 10.0)
+            self.assertEqual(by_id["87654321"]["totalActual"], 50.0)
+            self.assertEqual(by_id["87654321"]["totalAssessed"], 5.0)
+
 
 class TaxDistrictMillPdfTests(unittest.TestCase):
     def test_parse_tax_district_mill_pdf_texts(self) -> None:

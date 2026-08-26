@@ -22,26 +22,26 @@ import {
   type CountyConfig,
 } from "@/lib/countyConfig";
 
-/** Home search availability note (multi-county; not per-county countyScopeNote). */
-export const SUPPORTED_COUNTIES_SCOPE_NOTE =
-  "Supported counties: Arapahoe and Douglas. More coming.";
-
-export const ACCOUNT_COUNTY_AMBIGUOUS_MESSAGE =
-  "That account number matches more than one supported county. Check the number on your county assessor site and try again.";
-
 export function wiredCountyIds(): readonly string[] {
   return Object.keys(COUNTY_CONFIG_BY_ID);
 }
 
-export function looksLikeParcelIdInputAnyCounty(raw: string): boolean {
-  for (const countyId of wiredCountyIds()) {
-    const config = countyConfigById(countyId);
-    if (config && looksLikeParcelIdInput(raw, config)) {
-      return true;
-    }
+/** Home search availability note (multi-county; not per-county countyScopeNote). */
+export const SUPPORTED_COUNTIES_SCOPE_NOTE = (() => {
+  const names = wiredCountyIds()
+    .map((id) => countyConfigById(id)?.displayName)
+    .filter((name): name is string => Boolean(name));
+  if (names.length === 0) return "Supported Colorado counties: more coming.";
+  if (names.length === 1) {
+    return `Supported Colorado counties: ${names[0]}. More coming.`;
   }
-  return false;
-}
+  const head = names.slice(0, -1).join(", ");
+  const last = names[names.length - 1]!;
+  return `Supported Colorado counties: ${head} and ${last}. More coming.`;
+})();
+
+export const ACCOUNT_COUNTY_AMBIGUOUS_MESSAGE =
+  "That account number matches more than one supported county. Check the number on your county assessor site and try again.";
 
 /** Counties whose account-id format rules accept this input (may still miss in data). */
 export function candidateCountyIdsForAccountInput(raw: string): string[] {
@@ -53,6 +53,10 @@ export function candidateCountyIdsForAccountInput(raw: string): string[] {
     }
   }
   return matches;
+}
+
+export function looksLikeParcelIdInputAnyCounty(raw: string): boolean {
+  return candidateCountyIdsForAccountInput(raw).length > 0;
 }
 
 function lookupTriedKeys(raw: string, countyIds: readonly string[]): string {
@@ -76,8 +80,10 @@ function primaryConfigForInput(
   }
   const letterInput = /[A-Za-z]/.test(raw.trim());
   if (letterInput) {
-    const douglas = countyConfigById("douglas");
-    if (douglas) return douglas;
+    for (const countyId of wiredCountyIds()) {
+      const config = countyConfigById(countyId);
+      if (config?.identifierAllowsLetters) return config;
+    }
   }
   return COUNTY_CONFIG;
 }

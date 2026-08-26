@@ -67,9 +67,20 @@ describe("resolveSitusCountyLookup", () => {
   });
 
   it("returns ambiguous when two counties match the same address", async () => {
+    const DOUGLAS_SITUS = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 2,
+      entryCount: 1,
+      byKey: {
+        "1940|EVANS|": [{ pin: "R0000001", label: "1940 Evans Ave, Castle Rock, CO 80104" }],
+      },
+    };
     vi.stubGlobal("fetch", vi.fn().mockImplementation((url: string) => {
-      if (url.includes("situs-to-pins")) {
+      if (url.includes("arapahoe-situs-to-pins")) {
         return Promise.resolve({ ok: true, json: async () => ARAPAHOE_SITUS });
+      }
+      if (url.includes("douglas-situs-to-pins")) {
+        return Promise.resolve({ ok: true, json: async () => DOUGLAS_SITUS });
       }
       if (url.includes("arapahoe-pin-to-tag")) {
         return Promise.resolve({ ok: true, json: async () => ARAPAHOE_PIN });

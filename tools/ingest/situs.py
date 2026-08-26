@@ -174,7 +174,7 @@ def format_situs_locality(city: str, state: str, postal: str) -> str:
 
 
 def _normalize_postal_for_label(postal: str) -> str:
-    """Nine-digit Assessor ZIP+4 blobs (e.g. 801200000) → five-digit ZIP in labels."""
+    """Nine-digit numeric ``sa_postal_cd`` (ZIP + +4 digits) → five-digit ZIP in labels."""
     s = _strip(postal)
     if len(s) == 9 and s.isdigit():
         return s[:5]

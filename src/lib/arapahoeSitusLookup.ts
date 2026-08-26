@@ -603,8 +603,8 @@ export function anyCountySitusSearchAvailable(): boolean {
  */
 export const ARAPAHOE_SITUS_TO_PINS_CACHE_BUST = "20260727zip";
 
-/** Last situs fetch failure detail (for resident mailto); cleared on success. */
-let lastSitusFetchFailureDetail: string | null = null;
+/** Last situs fetch failure detail per data-root + county (for resident mailto). */
+const situsFetchFailureDetailByKey = new Map<string, string>();
 
 function normalizeSitusDataRoot(dataRoot?: string): string {
   const trimmed = (dataRoot ?? activeCountyDataRoot()).trim();
@@ -612,8 +612,13 @@ function normalizeSitusDataRoot(dataRoot?: string): string {
   return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
 }
 
-export function getLastArapahoeSitusFetchFailureDetail(): string | null {
-  return lastSitusFetchFailureDetail;
+export function getLastArapahoeSitusFetchFailureDetail(
+  dataRoot?: string,
+  countyId: string = COUNTY_CONFIG.id,
+): string | null {
+  const root = normalizeSitusDataRoot(dataRoot);
+  const id = countyIdForDataPaths(countyId);
+  return situsFetchFailureDetailByKey.get(situsLoaderCacheKey(root, id)) ?? null;
 }
 
 export function fetchArapahoeSitusToPinsJson(
@@ -636,17 +641,20 @@ export function fetchArapahoeSitusToPinsJson(
       credentials: "same-origin",
     });
     if (!result.ok) {
-      lastSitusFetchFailureDetail = result.detail;
+      situsFetchFailureDetailByKey.set(cacheKey, result.detail);
       situsCacheByKey.delete(cacheKey);
       return null;
     }
     const validated = validateArapahoeSitusToPinsPayload(result.json);
     if (!validated) {
-      lastSitusFetchFailureDetail = `${url}: JSON failed schema validation`;
+      situsFetchFailureDetailByKey.set(
+        cacheKey,
+        `${url}: JSON failed schema validation`,
+      );
       situsCacheByKey.delete(cacheKey);
       return null;
     }
-    lastSitusFetchFailureDetail = null;
+    situsFetchFailureDetailByKey.delete(cacheKey);
     return validated;
   })();
   situsCacheByKey.set(cacheKey, pending);
@@ -655,7 +663,7 @@ export function fetchArapahoeSitusToPinsJson(
 
 export function clearArapahoeSitusDataCache(): void {
   situsCacheByKey.clear();
-  lastSitusFetchFailureDetail = null;
+  situsFetchFailureDetailByKey.clear();
 }
 
 export function lookupPinsBySitusKey(

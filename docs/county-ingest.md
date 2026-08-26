@@ -130,11 +130,13 @@ Use after material ingest changes, or before a land when you expect bill data to
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
 
-## Douglas JSON on disk (Phase 9 / 9b)
+## Douglas JSON on disk (Phase 9 / 9b; live ship after 9c)
 
 Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest writes only that county’s filenames into `--out-dir` (never another county’s files). Until Douglas is intentionally shipped in git, `public/data/douglas-*.json` stays gitignored so code PRs stay small — still use **real files** locally (copy from ingest out), not symlinks.
 
-1. **Rebuild** (if needed): `python3 tools/ingest/build.py --mapping tools/ingest/mappings/douglas.json --tag-file supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf --parcel-file supporting-data/douglas/Property_Location.txt --values-file supporting-data/douglas/Property_Values.txt --out-dir supporting-data/_ingest-out/douglas --bundled-as-of 2026-08-25 --tax-year 2025 --skip-dola-join` (omit `--skip-situs-shards` so `douglas-situs-to-pins.json` is written; Douglas has no parcel-record shards)
+**Live ship gate:** Do not remove the gitignore / deploy Douglas as a production county until **Phase 9c** parcel-record MVP (owner and scoped Property details) is wired. Thin Property details is for local prove-out only.
+
+1. **Rebuild** (if needed): `python3 tools/ingest/build.py --mapping tools/ingest/mappings/douglas.json --tag-file supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf --parcel-file supporting-data/douglas/Property_Location.txt --values-file supporting-data/douglas/Property_Values.txt --out-dir supporting-data/_ingest-out/douglas --bundled-as-of 2026-08-25 --tax-year 2025 --skip-dola-join` (omit `--skip-situs-shards` so `douglas-situs-to-pins.json` is written; parcel-record shards are **Phase 9c**)
 2. **Validate:** `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`
 3. **Land locally** (real files; gitignored until ship):
 

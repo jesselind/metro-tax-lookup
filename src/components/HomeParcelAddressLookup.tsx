@@ -1512,7 +1512,7 @@ export function HomeParcelAddressLookup({
                 plus business personal property). Not sure which PIN is yours?
                 Compare the PIN, owner, or legal description on the{" "}
                 <a
-                  href={COUNTY_CONFIG.residentLinks.propertySearch}
+                  href={activeCountyConfig.residentLinks.propertySearch}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -1523,8 +1523,8 @@ export function HomeParcelAddressLookup({
                 for buildings and land, or the{" "}
                 <a
                   href={
-                    COUNTY_CONFIG.residentLinks.bppSearch ??
-                    COUNTY_CONFIG.residentLinks.propertySearch
+                    activeCountyConfig.residentLinks.bppSearch ??
+                    activeCountyConfig.residentLinks.propertySearch
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -2655,7 +2655,7 @@ export function HomeParcelAddressLookup({
                 <p className="mb-3 text-sm text-slate-700 sm:text-base">
                   Open your parcel from the{" "}
                   <a
-                    href={COUNTY_CONFIG.residentLinks.propertySearch}
+                    href={activeCountyConfig.residentLinks.propertySearch}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={COUNTY_EXTERNAL_LINK_CLASS}

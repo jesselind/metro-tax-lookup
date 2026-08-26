@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.1.0",
+    date: "2026-08-26",
+    title: "Douglas account and address lookup on the multi-county home page (Phase 9/9b)",
+    highlights: [
+      "Douglas County loads beside Arapahoe by account id and street address (no env county switch). Ingest uses Assessor Property_Location + Property_Values (sum join) and the tax-district mill PDF; situs comes from the location file. Local public/data/douglas-*.json stays gitignored until an intentional live ship.",
+      "Property details for Douglas stays thin on purpose until Phase 9c wires parcel-record fields (owner, legal, improvements, sales, …). Dashboard and /sources say so. Do not treat Douglas as production-live until that MVP lands.",
+      "Follow-up hardening: county-aware resident links, safer countyId / situs failure detail handling, account-id not-found candidates for letter counties, values-join account-id normalization, and Douglas validate:app-json CLI tests that do not depend on gitignored ingest-out dumps.",
+    ],
+  },
+  {
     version: "5.0.1",
     date: "2026-08-25",
     title: "Maintainer download lists; Douglas locked as county 2 (inventory Go)",

@@ -77,8 +77,8 @@ async function loadSitusBundleForCounty(
     return {
       countyId,
       detail:
-        getLastArapahoeSitusFetchFailureDetail() ??
-        `${countySitusToPinsUrl(undefined, countyId)}: missing or invalid`,
+        getLastArapahoeSitusFetchFailureDetail(dataRoot, countyId) ??
+        `${countySitusToPinsUrl(dataRoot, countyId)}: missing or invalid`,
     };
   }
   if (!pinToTag?.byPin) {

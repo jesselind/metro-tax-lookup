@@ -236,6 +236,9 @@ export const COUNTY_CONFIG_BY_ID: Readonly<Record<string, CountyConfig>> = {
 
 export function countyConfigById(countyId: string): CountyConfig | null {
   const id = countyId.trim().toLowerCase();
+  if (!Object.prototype.hasOwnProperty.call(COUNTY_CONFIG_BY_ID, id)) {
+    return null;
+  }
   return COUNTY_CONFIG_BY_ID[id] ?? null;
 }
 
