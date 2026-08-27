@@ -101,7 +101,7 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 6. **`/sources`** — county content module + selector entry; hub follows flags. Do not paste another county’s Data Mart / prior-year / comps story.
 7. **Ship** — commit production JSON; drop local-only gitignore lines for that county’s app files.
 
-## Anti-patterns (house of cards)
+## Anti-patterns to avoid
 
 - Always-on COUNTY DATA GAP JSX that assumes Arapahoe (or Douglas) for every resolve.
 - `if (countyId === "douglas")` sprawl for ordinary feature gates (use config flags).

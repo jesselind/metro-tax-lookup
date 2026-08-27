@@ -125,7 +125,7 @@ Use after material ingest changes, or before a land when you expect bill data to
 2. Empty or remove `supporting-data/_ingest-out/`. Run `build:ingest` with `--bundled-as-of` matching `tools/county-mart-data-as-of.txt` and shipping `snapshot.bundledAsOf`.
 3. Confirm `git status public/data/` still clean.
 4. `npm run diff:ingest -- public/data supporting-data/_ingest-out` — exit 0.
-5. `npm run validate:app-json -- --data-dir supporting-data/_ingest-out` (Arapahoe prove-out; default `--county arapahoe`). Douglas: `--data-dir supporting-data/_ingest-out/douglas --county douglas`.
+5. `npm run validate:app-json -- --data-dir supporting-data/_ingest-out` (Arapahoe prove-out; default `--county arapahoe`). Douglas: `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`.
 6. `npm run test:ingest` and `npm run test:parcel-index`.
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.

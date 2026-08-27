@@ -359,11 +359,16 @@ def write_comparison_dir(
         return
 
     if situs_map is not None:
+        county_name = mapping.get("county", "unknown")
+        if (mapping.get("accountMap") or {}).get("valuesFile"):
+            situs_source = f"new ingest (mapping: {county_name}; location situs)"
+        else:
+            situs_source = f"new ingest (mapping: {county_name}; Main Parcel situs)"
         situs_payload = build_situs_json(
             situs_map,
             bundled_as_of=bundled_norm,
             tax_year=resolved_tax_year,
-            source=f"new ingest (mapping: {mapping.get('county', 'unknown')}; Main Parcel situs)",
+            source=situs_source,
         )
         situs_path = out_dir / county_data_basename(mapping, "situs-to-pins.json")
         situs_path.write_text(json.dumps(situs_payload, separators=sep), encoding="utf-8")
