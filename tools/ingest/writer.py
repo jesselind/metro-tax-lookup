@@ -394,6 +394,8 @@ def write_comparison_dir(
         state_class_xlsx_path=paths.get("stateClassXlsx"),
         nbhd_xlsx_path=paths.get("nbhdXlsx"),
         gis_parcels_gdb_path=gdb,
+        ownership_path=paths.get("ownership"),
+        subdivision_path=paths.get("subdivision"),
     )
     if not skip_neighborhood and not join_counts.get("neighborhood"):
         raise ValueError(
@@ -408,13 +410,20 @@ def write_comparison_dir(
             file=sys.stderr,
         )
 
-    parcel_source = (
-        f"new ingest (mapping: {mapping.get('county', 'unknown')}; "
-        "Main Parcel + sibling mart tables"
-    )
+    county_name = mapping.get("county", "unknown")
+    if (mapping.get("accountMap") or {}).get("valuesFile"):
+        parcel_source = (
+            f"new ingest (mapping: {county_name}; "
+            "location + ownership/improvements/subdivision/sales"
+        )
+    else:
+        parcel_source = (
+            f"new ingest (mapping: {county_name}; "
+            "Main Parcel + sibling mart tables"
+        )
     if join_counts.get("neighborhood"):
         parcel_source += " + Open GIS Assessor Parcels (neighborhood)"
-    parcel_source += f"; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
+    parcel_source += f"; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-char account prefix)"
     parcel_snapshot: dict[str, Any] = {
         "bundledAsOf": bundled_norm,
         "source": parcel_source,
@@ -430,5 +439,6 @@ def write_comparison_dir(
         parcel_record_map,
         parcel_snapshot,
         pin_digits=pin_digits,
+        county_id=_strip(mapping.get("county", "")) or "county",
         separators=sep,
     )

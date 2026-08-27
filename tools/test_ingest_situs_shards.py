@@ -169,6 +169,43 @@ class TestParcelRecordShards(unittest.TestCase):
                 len(SYNTHETIC_PIN_SHARD_PREFIX), PARCEL_RECORD_SHARD_PREFIX_LEN
             )
 
+    def test_writes_douglas_shards_with_letter_account_prefix(self) -> None:
+        from ingest.parcel_record import normalize_pin
+
+        account_id = "R0103974"
+        self.assertEqual(normalize_pin(account_id, 8), account_id)
+        self.assertEqual(normalize_pin("r0103974", 8), account_id)
+        prefix = account_id[:PARCEL_RECORD_SHARD_PREFIX_LEN]
+        rec = parcel_record_from_logical_row(
+            {
+                "owner_list": "Test Owner",
+                "sa_addr_number": "100",
+                "sa_street_name": "Main",
+                "sa_street_type": "St",
+                "sa_city": "Castle Rock",
+                "legal_descr": "LOT 1 BLOCK 2",
+                "property_class_descr": "Residential",
+                "total_actual": "100000",
+                "total_assessed": "7000",
+            }
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            write_parcel_record_shards(
+                out,
+                {account_id: rec},
+                {"bundledAsOf": "2026-08-26T12:00:00Z", "source": "test"},
+                pin_digits=8,
+                county_id="douglas",
+            )
+            shard = out / "douglas-parcel-record-by-pin" / f"{prefix}.json"
+            self.assertTrue(shard.is_file())
+            self.assertFalse((out / "arapahoe-parcel-record-by-pin").exists())
+            data = json.loads(shard.read_text(encoding="utf-8"))
+            self.assertEqual(data["shardPrefix"], prefix)
+            self.assertEqual(data["pinDigits"], 8)
+            self.assertEqual(data["byPin"][account_id]["ownerList"], "Test Owner")
+
 
 class TestSitusShardsEndToEnd(unittest.TestCase):
     def test_write_comparison_dir_situs_and_shards(self) -> None:

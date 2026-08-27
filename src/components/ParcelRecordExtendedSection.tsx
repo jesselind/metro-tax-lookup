@@ -16,6 +16,10 @@ import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingV
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
+import {
+  COUNTY_CONFIG,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
@@ -58,6 +62,8 @@ export type ParcelRecordExtendedSectionProps = {
    * under a flat disclosure (not a nested card) so dense tables are not the hero.
    */
   rentMode?: boolean;
+  /** Resolved county for hosted record / clerk links. */
+  countyConfig?: CountyConfig;
 };
 
 /**
@@ -76,6 +82,7 @@ export function ParcelRecordExtendedSection({
   businessPersonal = false,
   omitContinuationHeading = false,
   rentMode = false,
+  countyConfig = COUNTY_CONFIG,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
   const isBusinessPersonal =
@@ -99,7 +106,9 @@ export function ParcelRecordExtendedSection({
         <ParcelRecordSaleTable
           transfers={displayRecord.transfers}
           ain={displayRecord.ain}
+          pin={pin}
           linkClerkRecorder={!demoMode}
+          countyConfig={countyConfig}
         />
         <ParcelRecordBuildingAndLandTable
           buildings={displayRecord.buildings}

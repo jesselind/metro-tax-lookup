@@ -42,3 +42,18 @@ export function parcelTaxAndAssessmentYearsDiffer(
 ): boolean {
   return parcelTaxAssessmentYearNote(taxYear, assessmentYear) != null;
 }
+
+/**
+ * Owner of record for summary tiles: account map first (available at levy load),
+ * then parcel-record shard when that lands (counties that only join ownership
+ * into shards still get a tile once Property details loads).
+ */
+export function summaryOwnerOfRecord(
+  accountMapOwner: string | null | undefined,
+  parcelRecordOwner: string | null | undefined,
+): string | null {
+  const fromMap = (accountMapOwner ?? "").trim();
+  if (fromMap) return fromMap;
+  const fromRecord = (parcelRecordOwner ?? "").trim();
+  return fromRecord || null;
+}

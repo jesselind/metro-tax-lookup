@@ -130,13 +130,30 @@ Use after material ingest changes, or before a land when you expect bill data to
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
 
-## Douglas JSON on disk (Phase 9 / 9b; live ship after 9c)
+## Douglas JSON on disk (Phase 9 / 9b / 9c; live ship after intentional gitignore drop)
 
-Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest writes only that county’s filenames into `--out-dir` (never another county’s files). Until Douglas is intentionally shipped in git, `public/data/douglas-*.json` stays gitignored so code PRs stay small — still use **real files** locally (copy from ingest out), not symlinks.
+Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest writes only that county’s filenames into `--out-dir` (never another county’s files). Until Douglas is intentionally shipped in git, `public/data/douglas-*.json` and `public/data/douglas-parcel-record-by-pin/` stay gitignored so code PRs stay small — still use **real files** locally (copy from ingest out), not symlinks.
 
-**Live ship gate:** Do not remove the gitignore / deploy Douglas as a production county until **Phase 9c** parcel-record MVP (owner and scoped Property details) is wired. Thin Property details is for local prove-out only.
+**Live ship gate:** Do not remove the gitignore / deploy Douglas as a production county until **Phase 9c** parcel-record MVP (owner minimum) is wired and spot-checked. Code on the feat branch may already flip `features.parcelRecordShards`; that is not the same as shipping JSON in git.
 
-1. **Rebuild** (if needed): `python3 tools/ingest/build.py --mapping tools/ingest/mappings/douglas.json --tag-file supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf --parcel-file supporting-data/douglas/Property_Location.txt --values-file supporting-data/douglas/Property_Values.txt --out-dir supporting-data/_ingest-out/douglas --bundled-as-of 2026-08-25 --tax-year 2025 --skip-dola-join` (omit `--skip-situs-shards` so `douglas-situs-to-pins.json` is written; parcel-record shards are **Phase 9c**)
+1. **Rebuild** (if needed):
+
+   ```bash
+   python3 tools/ingest/build.py \
+     --mapping tools/ingest/mappings/douglas.json \
+     --tag-file supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf \
+     --parcel-file supporting-data/douglas/Property_Location.txt \
+     --values-file supporting-data/douglas/Property_Values.txt \
+     --out-dir supporting-data/_ingest-out/douglas \
+     --bundled-as-of YYYY-MM-DD \
+     --tax-year 2025 \
+     --skip-dola-join \
+     --skip-neighborhood \
+     --dola-certifying-county Douglas
+   ```
+
+   Omit `--skip-situs-shards`. Ownership / Improvements / Subdivision / Sales paths come from `douglas.json` `defaultPaths`. `--skip-neighborhood` is required until a Douglas Open GIS Parcels GDB is configured (location still carries `neighborhoodCode`).
+
 2. **Validate:** `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`
 3. **Land locally** (real files; gitignored until ship):
 
@@ -145,9 +162,11 @@ Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest 
       supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json \
       supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json \
       public/data/
+   rm -rf public/data/douglas-parcel-record-by-pin
+   cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/
    ```
 
-4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas.
+4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas — confirm Property details shows owner (and scoped legal / improvements / sales).
 
 ## Shipping land (`--ship`)
 

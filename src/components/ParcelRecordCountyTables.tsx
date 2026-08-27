@@ -19,6 +19,11 @@ import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
+  COUNTY_CONFIG,
+  countyParcelRecordLookupValue,
+  type CountyConfig,
+} from "@/lib/countyConfig";
+import {
   safeCountyClerkRecorderSearchUrl,
   safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
@@ -656,19 +661,30 @@ export const PARCEL_RECORD_SALE_HISTORY_ID = "home-parcel-sale-history";
 export function ParcelRecordSaleTable({
   transfers,
   ain,
+  pin = null,
   linkClerkRecorder = true,
+  countyConfig = COUNTY_CONFIG,
 }: {
   transfers: ParcelRecordTransfer[] | null | undefined;
-  /** AIN for the short note linking to this parcel's county record. */
+  /** Public parcel id (AIN) when the county uses that for hosted record links. */
   ain?: string | null;
+  /** Account id when the county parcel-record URL keys on account number. */
+  pin?: string | null;
   /**
    * When false (demo mode), show Book Page as plain text so clerk links do not
    * reveal the hidden real demo source parcel via recorded documents.
    */
   linkClerkRecorder?: boolean;
+  countyConfig?: CountyConfig;
 }) {
   const rows = transfers ?? [];
-  const countyParcelRecordUrl = safeCountyParcelRecordUrl(ain);
+  const countyParcelRecordUrl = safeCountyParcelRecordUrl(
+    countyParcelRecordLookupValue(countyConfig, {
+      accountId: pin,
+      publicParcelId: ain,
+    }),
+    countyConfig,
+  );
 
   return (
     <div
@@ -701,7 +717,7 @@ export function ParcelRecordSaleTable({
               const bookPage = (sale.bookPage ?? "").trim();
               const clerkHref =
                 linkClerkRecorder && bookPage
-                  ? safeCountyClerkRecorderSearchUrl(bookPage)
+                  ? safeCountyClerkRecorderSearchUrl(bookPage, countyConfig)
                   : null;
               return (
                 <tr key={`sale-${sale.bookPage}-${sale.date ?? ""}-${index}`}>
@@ -758,7 +774,8 @@ export function ParcelRecordSaleTable({
             rel="noopener noreferrer"
             className={COUNTY_EXTERNAL_LINK_CLASS}
           >
-            official county parcel record<span className="sr-only"> (opens in a new tab)</span>
+            official county {countyConfig.hostedPropertyPageName}
+            <span className="sr-only"> (opens in a new tab)</span>
           </a>.
         </p>
       ) : null}

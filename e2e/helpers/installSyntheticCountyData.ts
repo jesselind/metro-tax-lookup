@@ -51,10 +51,11 @@ export async function installSyntheticCountyData(
         : SYNTHETIC_LEVY_STACKS;
 
   await fulfillJson(page, "**/data/arapahoe-situs-to-pins.json*", SYNTHETIC_SITUS_TO_PINS);
-  await fulfillJson(page, "**/data/arapahoe-pin-to-tag.json", SYNTHETIC_PIN_TO_TAG);
+  /* Trailing * matches ?v= cache-bust on countyAccountMapUrl / levy stacks. */
+  await fulfillJson(page, "**/data/arapahoe-pin-to-tag.json*", SYNTHETIC_PIN_TO_TAG);
   await fulfillJson(
     page,
-    "**/data/arapahoe-levy-stacks-by-tag-id.json",
+    "**/data/arapahoe-levy-stacks-by-tag-id.json*",
     levyStacks,
   );
   await fulfillJson(

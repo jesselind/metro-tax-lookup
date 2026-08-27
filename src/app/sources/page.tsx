@@ -11,18 +11,9 @@ import { CountyDataMartRefreshAttemptNote } from "@/content/countyDataMartRefres
 import { CountyPriorYearValuesGapNote } from "@/content/countyPriorYearValuesGapNote";
 import {
   DouglasMillPdfTaxDistrictGapNote,
-  DouglasParcelRecordGapNote,
 } from "@/content/douglasCountyDataGapNote";
 import {
   COUNTY_SERVICE_GAP_SOURCES_ANCHOR,
-  COUNTY_SERVICE_GAP_SOURCES_EXPLAINER,
-  COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL,
-  COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL,
-  COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL,
-  COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_PARCEL_RECORD_LABEL,
-  COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD,
-  COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL,
-  COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE,
 } from "@/content/countyServiceGapGuidance";
 import { StaticArticleShell } from "@/components/StaticArticleShell";
 import {
@@ -42,7 +33,12 @@ import {
   ARAPAHOE_COMP_SHEET_PDF_URL,
   ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY,
 } from "@/lib/arapahoeCountyUrls";
-import { DOUGLAS_COUNTY_CONFIG } from "@/lib/countyConfig";
+import {
+  ARAPAHOE_COUNTY_CONFIG,
+  DOUGLAS_COUNTY_CONFIG,
+  countyFeatureAvailable,
+  countyFeaturePresentation,
+} from "@/lib/countyConfig";
 import {
   DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
   DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
@@ -61,9 +57,9 @@ import { SITE_CONFIG } from "@/lib/siteConfig";
 import levyData from "@/data/metroLevies";
 import { SourcesGlossaryRedirect } from "@/components/SourcesGlossaryRedirect";
 import { OpenDetailsOnHash } from "@/components/OpenDetailsOnHash";
+import { SourcesCountyGate } from "@/components/SourcesCountyGate";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import { glossaryTermHref } from "@/lib/glossary";
-import { countyFeaturePresentation } from "@/lib/countyConfig";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { AUTHORITY_CHAIN_GAPS_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
 import {
@@ -80,10 +76,6 @@ export const metadata = {
 const SECTION_H2 = "text-lg font-semibold text-slate-900 sm:text-xl";
 const SECTION_H3 = "mt-8 text-base font-semibold text-slate-900";
 const SECTION_WRAP = "mt-10 space-y-4 text-base leading-relaxed text-slate-800 sm:text-lg";
-
-/** On this page: grid row height matches tallest cell; links fill cell and center label. */
-const SOURCES_ON_PAGE_NAV_LINK_CLASS =
-  "flex h-full w-full cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-center text-sm font-medium leading-snug text-slate-900 no-underline transition hover:border-indigo-400 hover:bg-indigo-50/60 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
 /** Linked mention of JSON: open glossary definition. */
 function JsonFirstMention() {
@@ -166,45 +158,9 @@ export default function SourcesPage() {
     >
       <SourcesGlossaryRedirect />
       <OpenDetailsOnHash id="authority-chain-unlocated-sources" />
-      <nav
-        aria-label="On this page"
-        className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          On this page
-        </p>
-        <ul className="mt-3 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          <li className="flex min-h-0">
-            <a href="#levy-breakdown-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Your property tax bill
-            </a>
-          </li>
-          <li className="flex min-h-0">
-            <a href="#douglas-levy-breakdown" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Douglas account lookup
-            </a>
-          </li>
-          <li className="flex min-h-0">
-            <a
-              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.section}`}
-              className={SOURCES_ON_PAGE_NAV_LINK_CLASS}
-            >
-              When county data fails
-            </a>
-          </li>
-          <li className="flex min-h-0">
-            <a href="#metro-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Metro district tax share
-            </a>
-          </li>
-          <li className="flex min-h-0">
-            <a href="#sources-code" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Code
-            </a>
-          </li>
-        </ul>
-      </nav>
-
+      <SourcesCountyGate
+        sectionsByCountyId={{
+          arapahoe: (
       <section
         id="levy-breakdown-tool"
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
@@ -231,7 +187,7 @@ export default function SourcesPage() {
         <p className="text-slate-700">
           Use the home card{" "}
           <strong className="font-semibold text-slate-900">
-            See how the county displays your data
+            See how Arapahoe County displays your data
           </strong>
           {" "}
           or the county parcel record and online levy table; compare to what the
@@ -494,12 +450,17 @@ export default function SourcesPage() {
             <strong>Prior-year assessed value:</strong>{" "}
             Property details and the values table use the mart for this
             assessment year&apos;s actual and assessed figures.
-            <CountyServiceGapCallout
-              id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues}
-              className="mt-3 scroll-mt-8"
-            >
-              <CountyPriorYearValuesGapNote />
-            </CountyServiceGapCallout>
+            {countyFeatureAvailable(
+              "priorYearValuesGap",
+              ARAPAHOE_COUNTY_CONFIG,
+            ) ? (
+              <CountyServiceGapCallout
+                id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues}
+                className="mt-3 scroll-mt-8"
+              >
+                <CountyPriorYearValuesGapNote />
+              </CountyServiceGapCallout>
+            ) : null}
           </li>
           <li>
             <strong>Ownership type</strong>{" "}uses legal-party owner rows: one
@@ -536,7 +497,10 @@ export default function SourcesPage() {
               Comp Sheet Layout and Time Adjusted Sales Prices<span className="sr-only"> (opens in a new tab)</span>
             </a>{" "}
             explainer.
-            {countyFeaturePresentation("compsPdf") === "gap" ? (
+            {countyFeaturePresentation(
+              "compsPdf",
+              ARAPAHOE_COUNTY_CONFIG,
+            ) === "gap" ? (
               <CountyServiceGapCallout
                 id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf}
                 className="mt-3 scroll-mt-8"
@@ -628,14 +592,17 @@ export default function SourcesPage() {
           cadence. How maintainers download, stage, and rebuild:{" "}
           <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>.
         </p>
-        <CountyServiceGapCallout
-          id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart}
-          className="mt-3 scroll-mt-8"
-        >
-          <CountyDataMartRefreshAttemptNote />
-        </CountyServiceGapCallout>
+        {countyFeatureAvailable("dataMartRefreshGap", ARAPAHOE_COUNTY_CONFIG) ? (
+          <CountyServiceGapCallout
+            id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart}
+            className="mt-3 scroll-mt-8"
+          >
+            <CountyDataMartRefreshAttemptNote />
+          </CountyServiceGapCallout>
+        ) : null}
       </section>
-
+          ),
+          douglas: (
       <section
         id="douglas-levy-breakdown"
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
@@ -685,18 +652,14 @@ export default function SourcesPage() {
 
         <h3 className={`${SECTION_H3} !mt-6`}>Property details</h3>
         <p className="text-slate-700">
-          Summary appraised and assessed values and property class come from the
-          account map. Douglas situs for address search comes from the same
-          location file (street parts only — not owner mail). Extended Property
-          details (owner, sales, and similar mart-style fields) are not in the
-          Douglas bundle yet.
+          Owner name and mailing, legal description, subdivision, improvements,
+          and sale history come from Douglas Assessor text downloads bundled with
+          this site. Summary appraised and assessed values come from the account
+          map (location joined with values). Ownership type (vesting), GIS
+          neighborhood names, and building permits are not in those downloads, so
+          this site does not show them; use the county property search to check
+          those on the county site.
         </p>
-        <CountyServiceGapCallout
-          id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasParcelRecord}
-          className="mt-3 scroll-mt-8"
-        >
-          <DouglasParcelRecordGapNote linkClassName={TERM_LINK_CLASS} />
-        </CountyServiceGapCallout>
 
         <h3 className={`${SECTION_H3} !mt-8`}>Levy stacks and mill PDF</h3>
         <p className="text-slate-700">
@@ -704,12 +667,17 @@ export default function SourcesPage() {
           PDF for a stack to load. Compare authority names and mills to the
           county PDF after you load an account.
         </p>
-        <CountyServiceGapCallout
-          id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict}
-          className="mt-3 scroll-mt-8"
-        >
-          <DouglasMillPdfTaxDistrictGapNote linkClassName={TERM_LINK_CLASS} />
-        </CountyServiceGapCallout>
+        {countyFeatureAvailable(
+          "millPdfTaxDistrictGap",
+          DOUGLAS_COUNTY_CONFIG,
+        ) ? (
+          <CountyServiceGapCallout
+            id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict}
+            className="mt-3 scroll-mt-8"
+          >
+            <DouglasMillPdfTaxDistrictGapNote linkClassName={TERM_LINK_CLASS} />
+          </CountyServiceGapCallout>
+        ) : null}
 
         <h3
           id="douglas-cross-county-authority"
@@ -743,61 +711,9 @@ export default function SourcesPage() {
           to verify fields we do not bundle yet.
         </p>
       </section>
-
-      <section
-        id={COUNTY_SERVICE_GAP_SOURCES_ANCHOR.section}
-        className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
-      >
-        <h2 className={SECTION_H2}>
-          {COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE}
-        </h2>
-        <p className="text-slate-700">{COUNTY_SERVICE_GAP_SOURCES_EXPLAINER}</p>
-        <p className="mt-2 text-slate-700">{COUNTY_SERVICE_GAP_SOURCES_INDEX_LEAD}</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
-          {countyFeaturePresentation("compsPdf") === "gap" ? (
-            <li>
-              <a
-                href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf}`}
-                className={TERM_LINK_CLASS}
-              >
-                {COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL}
-              </a>
-            </li>
-          ) : null}
-          <li>
-            <a
-              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart}`}
-              className={TERM_LINK_CLASS}
-            >
-              {COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL}
-            </a>
-          </li>
-          <li>
-            <a
-              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues}`}
-              className={TERM_LINK_CLASS}
-            >
-              {COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL}
-            </a>
-          </li>
-          <li>
-            <a
-              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasParcelRecord}`}
-              className={TERM_LINK_CLASS}
-            >
-              {COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_PARCEL_RECORD_LABEL}
-            </a>
-          </li>
-          <li>
-            <a
-              href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict}`}
-              className={TERM_LINK_CLASS}
-            >
-              {COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL}
-            </a>
-          </li>
-        </ul>
-      </section>
+          ),
+        }}
+      />
 
       <section
         id="metro-tool"

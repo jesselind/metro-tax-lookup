@@ -46,7 +46,7 @@ test("synthetic address loads levy stack and property details", async ({
   // inside #home-property-details.
   await expect(
     page
-      .getByRole("region", { name: "See how the county displays your data" })
+      .getByRole("region", { name: "See how Arapahoe County displays your data" })
       .getByText(SYNTHETIC_PIN, { exact: true }),
   ).toBeVisible();
   await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
