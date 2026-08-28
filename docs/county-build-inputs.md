@@ -93,7 +93,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 **Local root:** `supporting-data/douglas/`
 
-**Last verified:** 2026-08-25 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live API ingest** — Assessor published text downloads + tax-district mill PDF only. Phase 9/9b on branch: mapping + headerless text + mill-PDF stacks + situs from `Property_Location.txt`. **Phase 9c:** optional Ownership / Improvements / Subdivision / Sales (and AccDB CSV siblings) → parcel-record; **production-live ship waits on 9c** (see `docs/county-ingest.md`).
+**Last verified:** 2026-08-28 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live API ingest** — Assessor published text downloads + tax-district mill PDF only. Phase 9/9b on branch: mapping + headerless text + mill-PDF stacks + situs from `Property_Location.txt`. **Phase 9c:** Ownership / Improvements / Subdivision / Sales / Filing + optional Hub parcels CSV → parcel-record shards; **production-live ship waits on intentional gitignore drop** (see `docs/county-ingest.md`).
 
 **Also uses (Colorado shared):** **none** yet (add when mill/TE join or directory ships for Douglas).
 
@@ -112,8 +112,8 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 | `supporting-data/douglas/Property_Improvements.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Improvements.txt | optional building characteristics | Headerless. |
 | `supporting-data/douglas/Property_Sales.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Sales.txt | optional sale history | Headerless. |
 | `supporting-data/douglas/Property_Subdivision.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Subdivision.txt | optional subdivision | Headerless. |
-| `supporting-data/douglas/Property_Filing.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Filing.txt | optional filings | Headerless. |
-| DougCo Hub parcels GIS (CSV fine for inspect) | no | Assessor maps / open data | — | optional neighborhood / map | Has `TAX_DISTRICT_NO`; total mill fields are not authority stacks. |
+| `supporting-data/douglas/Property_Filing.txt` | no (9c) | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Filing.txt | parcel-record filing description/number | Headerless. Joined by subdivision recording number. |
+| DougCo Hub parcels GIS export (CSV) | no (9c) | Assessor maps / open data | export filename varies (`Parcels_A_view_*.csv` in mapping `defaultPaths`) | parcel-record block/tract/filing when columns present | Has `TAX_DISTRICT_NO`; not authority stacks. Update mapping path when re-exporting. |
 
 **API:** none for rebuild. Do not use property-search scraping.
 

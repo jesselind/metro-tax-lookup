@@ -652,13 +652,17 @@ export default function SourcesPage() {
 
         <h3 className={`${SECTION_H3} !mt-6`}>Property details</h3>
         <p className="text-slate-700">
-          Owner name and mailing, legal description, subdivision, improvements,
-          and sale history come from Douglas Assessor text downloads bundled with
-          this site. Summary appraised and assessed values come from the account
-          map (location joined with values). Ownership type (vesting), GIS
-          neighborhood names, and building permits are not in those downloads, so
-          this site does not show them; use the county property search to check
-          those on the county site.
+          Owner name and mailing, legal description, land lines (from the values
+          file), lot/block/tract and filing when the county tables provide them,
+          subdivision, improvements, and sale history (including grantor and
+          grantee when present) come from Douglas Assessor text downloads
+          bundled with this site. Summary appraised and assessed values come
+          from the account map (location joined with values). Neighborhood
+          shows the county code and extension from the location file, not a GIS
+          name. Ownership type (vesting), GIS neighborhood names, and building
+          permits are not in those bulk downloads, so this site does not show
+          them; use the county property search to check those on the county
+          site.
         </p>
 
         <h3 className={`${SECTION_H3} !mt-8`}>Levy stacks and mill PDF</h3>

@@ -152,7 +152,9 @@ Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest 
      --dola-certifying-county Douglas
    ```
 
-   Omit `--skip-situs-shards`. Ownership / Improvements / Subdivision / Sales paths come from `douglas.json` `defaultPaths`. `--skip-neighborhood` is required until a Douglas Open GIS Parcels GDB is configured (location still carries `neighborhoodCode`).
+   Omit `--skip-situs-shards`. Ownership / Improvements / Subdivision / Sales / Filing paths and optional Hub parcels CSV come from `douglas.json` `defaultPaths`. `--skip-neighborhood` is required until a Douglas Open GIS Parcels GDB is configured (location still carries composite `neighborhoodCode` as `code-extension`).
+
+   **Phase 9c enrichments (2026-08-28):** `Property_Values.txt` land lines and land/improvement actual split; `Property_Filing.txt` filing description/number; Hub `Parcels_A_view_*.csv` block/tract/filing when present; subdivision lot/block/tract; sales grantor/grantee. No neighborhood **names**, vesting, or permits in bulk downloads — UI omits those rows.
 
 2. **Validate:** `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`
 3. **Land locally** (real files; gitignored until ship):
@@ -166,7 +168,7 @@ Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest 
    cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/
    ```
 
-4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas — confirm Property details shows owner (and scoped legal / improvements / sales).
+4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas — confirm Property details shows owner, land lines, lot/block/tract when present, filing, and grantor/grantee on sales where the county export has them.
 
 ## Shipping land (`--ship`)
 

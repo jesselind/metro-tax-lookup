@@ -72,6 +72,8 @@ Hub bullets for `/sources` are built by `listCountyServiceGapHubItems(config)` i
 
 After lookup resolves a county, use `countyConfigById(resolvedCountyId)` (not a global Arapahoe default) for feature and gap gates. Home search may still default UI copy to Arapahoe until resolve; post-resolve chrome must follow the loaded county.
 
+When **two or more** counties are wired, search surfaces show which county matched: `CountyScopeTopLine` on typeahead / did-you-mean / multi-match chooser rows; the dashboard Address tile appends `· {displayName}` after the locked address headline. Single-county deploys omit that chrome (`showCountyScopeTopLine()`).
+
 ## `/sources`
 
 - **County selector** at the top (`SourcesCountyGate`): wired counties from `wiredCountyConfigs()`. Default Arapahoe. No dashboard→sources county query required for v1.

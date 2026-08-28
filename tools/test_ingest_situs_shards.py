@@ -20,6 +20,7 @@ from pathlib import Path
 from ingest.compare import compare_dirs
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
+    format_neighborhood_code_with_extension,
     parcel_record_from_logical_row,
     write_parcel_record_shards,
 )
@@ -349,6 +350,31 @@ class TestSitusShardsEndToEnd(unittest.TestCase):
             (a / "arapahoe-parcel-record-by-pin").mkdir()
             result = compare_dirs(a, b)
         self.assertFalse(result.identical)
+
+
+class TestDouglasParcelRecordEnrichment(unittest.TestCase):
+    def test_neighborhood_code_includes_extension(self) -> None:
+        self.assertEqual(
+            format_neighborhood_code_with_extension("309", "A"),
+            "309-A",
+        )
+        self.assertEqual(
+            format_neighborhood_code_with_extension("Null", "Null"),
+            None,
+        )
+        self.assertEqual(
+            format_neighborhood_code_with_extension("118", "C"),
+            "118-C",
+        )
+
+    def test_parcel_record_row_carries_composite_neighborhood_code(self) -> None:
+        rec = parcel_record_from_logical_row(
+            {
+                "neighborhood_code": "118",
+                "neighborhood_extention": "C",
+            }
+        )
+        self.assertEqual(rec.get("neighborhoodCode"), "118-C")
 
 
 if __name__ == "__main__":

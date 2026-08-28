@@ -28,11 +28,12 @@ export type ChangelogEntry = {
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
     version: "5.1.0",
-    date: "2026-08-27",
+    date: "2026-08-28",
     title: "Douglas multi-county lookup + parcel-record shards (Phase 9/9b/9c)",
     highlights: [
       "Douglas County loads beside Arapahoe by account id and street address (no env county switch). Ingest uses Assessor Property_Location + Property_Values (sum join) and the tax-district mill PDF; situs comes from the location file. Local public/data/douglas-*.json stays gitignored until an intentional live ship.",
-      "Phase 9c: douglas-parcel-record-by-pin shards join Ownership / Location legal / Improvements / Subdivision / Sales into the same Property details shape as Arapahoe. Alphanumeric 8-char account ids use path-safe shard prefixes. features.parcelRecordShards is on for Douglas; do not remove gitignore / deploy Douglas live until an intentional ship after MVP spot-check.",
+      "Phase 9c: douglas-parcel-record-by-pin shards join Ownership / Location legal / Improvements / Subdivision / Sales / Filing (+ optional Hub parcels CSV) into the same Property details shape as Arapahoe. Enrichments: values land lines, lot/block/tract, filing, composite neighborhood code, sales grantor/grantee. Alphanumeric 8-char account ids use path-safe shard prefixes. features.parcelRecordShards is on for Douglas; do not remove gitignore / deploy Douglas live until an intentional ship after MVP spot-check.",
+      "Multi-county UI: when two or more counties are wired, search typeahead, did-you-mean streets, and multi-match chooser rows show the county display name; the dashboard Address tile shows address · County Name.",
       "Dashboard follows the resolved county: Ownership fills account-map ownerList for Owner of record tiles; LevyCountyCompareSection / parcel-record / levy links take CountyConfig; footer and pin-lookup help list wired counties from COUNTY_CONFIG_BY_ID (not Arapahoe-only hardcodes).",
       "Honesty gates: COUNTY DATA GAP chrome is opt-in per CountyConfig (priorYearValuesGap, dataMartRefreshGap, millPdfTaxDistrictGap; comps via knownFailures). /sources has a county selector; hub and methodology follow the selected county. docs/county-config.md is the durable multi-county model.",
       "Hosted property page: urls.parcelRecord supports query or hashPath templates (Douglas #/details/{year}/{id}); hostedPropertyPageName drives Open county … button copy; compare heading uses displayName (See how {County} displays your data).",

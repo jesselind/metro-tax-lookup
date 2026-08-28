@@ -401,6 +401,9 @@ def write_comparison_dir(
         gis_parcels_gdb_path=gdb,
         ownership_path=paths.get("ownership"),
         subdivision_path=paths.get("subdivision"),
+        values_path=paths.get("values"),
+        filing_path=paths.get("filing"),
+        parcels_csv_path=paths.get("parcelsCsv"),
     )
     if not skip_neighborhood and not join_counts.get("neighborhood"):
         raise ValueError(
@@ -419,7 +422,7 @@ def write_comparison_dir(
     if (mapping.get("accountMap") or {}).get("valuesFile"):
         parcel_source = (
             f"new ingest (mapping: {county_name}; "
-            "location + ownership/improvements/subdivision/sales"
+            "location + values + ownership/improvements/subdivision/sales/filing"
         )
     else:
         parcel_source = (

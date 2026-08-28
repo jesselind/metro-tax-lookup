@@ -164,7 +164,7 @@ If a county enables a comps PDF flag, account rows must include an AIN-like fiel
 
 `src/lib/countyConfig.ts` is the wired-county registry (`COUNTY_CONFIG_BY_ID`): display name, identifier rules (`identifierDigits` must match account-map `pinDigits`), URL templates and host allowlist, feature flags, DOLA certifying-county filter, and known county-data failures. Campaign site / paid-for-by stays in `siteConfig.ts`.
 
-**Three layers** (do not collapse): (1) product sources on `features` — false omits the control; (2) COUNTY DATA GAP opt-in flags / `knownFailures` — only with county-true incident copy; (3) runtime field presence on the loaded parcel — omit empty rows, not gap chrome. Address search stays visible when situs is off (id-only lookup). `/sources` has a county selector; hub and methodology follow the selected county.
+**Three layers** (do not collapse): (1) product sources on `features` — false omits the control; (2) COUNTY DATA GAP opt-in flags / `knownFailures` — only with county-true incident copy; (3) runtime field presence on the loaded parcel — omit empty rows, not gap chrome. Address search stays visible when situs is off (id-only lookup). `/sources` has a county selector; hub and methodology follow the selected county. When two or more counties are wired, home search and the dashboard Address tile show which county matched (`CountyScopeTopLine` / `address · {displayName}`).
 
 Full model, add-county checklist, and anti-patterns: **`docs/county-config.md`**. Gap UI pairing: **`docs/county-service-gap-callouts.md`**.
 

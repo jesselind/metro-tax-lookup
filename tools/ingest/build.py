@@ -462,6 +462,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "nbhdXlsx": _resolve(args.nbhd_xlsx, "nbhdXlsx"),
         "ownership": _resolve(args.ownership, "ownership"),
         "subdivision": _resolve(args.subdivision, "subdivision"),
+        "values": values_path if values_path and values_path.is_file() else None,
+        "filing": _resolve(None, "filing"),
+        "parcelsCsv": _resolve(None, "parcelsCsv"),
     }
     gis_gdb = _resolve(args.gis_parcels_gdb, "gisParcelsGdb")
 

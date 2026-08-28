@@ -31,7 +31,17 @@
     "ownership": "supporting-data/douglas/Property_Ownership.txt",
     "building": "supporting-data/douglas/Property_Improvements.txt",
     "subdivision": "supporting-data/douglas/Property_Subdivision.txt",
-    "transfers": "supporting-data/douglas/Property_Sales.txt"
+    "transfers": "supporting-data/douglas/Property_Sales.txt",
+    "filing": "supporting-data/douglas/Property_Filing.txt",
+    "parcelsCsv": "supporting-data/douglas/Parcels_A_view_717926033806861567.csv"
+  },
+  "parcelsCsv": {
+    "_comment": "DougCo Hub parcels attribute export (account join).",
+    "pin": "ACCOUNT_NO",
+    "blockNo": "BLOCK_NO",
+    "tract": "TRACT",
+    "filingDescr": "FILING_DESCR",
+    "legalDescr": "CAMA_LEGAL_DESC"
   },
   "tabular": {
     "_comment": "Reusable intake options: hasHeaderRow false + headers injects page schema for headerless Assessor dumps. encoding for Windows-1252 county text.",
@@ -157,6 +167,16 @@
         "Page",
         "Recording_No"
       ]
+    },
+    "filing": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Sub_Filing_Recording_No",
+        "Subdivision_Name",
+        "Filing_No",
+        "Filing_Descr"
+      ]
     }
   },
   "columnAliases": {
@@ -191,6 +211,8 @@
       "actual_value": ["Actual_Value"],
       "assessed_value": ["Assessed_Value"],
       "valuation_type_code": ["Valuation_Type_Code"],
+      "valuation_description": ["Valuation_Description"],
+      "valuation_class_code": ["Valuation_Class_Code"],
       "account_type_code": ["Account_Type_Code"],
       "exempt_flag": ["Exempt_Flag"]
     },
@@ -228,7 +250,10 @@
     "subdivision": {
       "pin": ["Account_No"],
       "subdivision_cd": ["Sub_Filing_Recording_No"],
-      "subdivision_name": ["Subdivision_Name"]
+      "subdivision_name": ["Subdivision_Name"],
+      "lot_no": ["Lot_No"],
+      "block_no": ["Block_No"],
+      "tract_no": ["Tract_No"]
     },
     "transfers": {
       "pin": ["Account_No"],
@@ -237,7 +262,15 @@
       "doc_date": ["Sale_Date"],
       "consid": ["Sale_Price"],
       "recording_no": ["Recording_No"],
-      "deed_type": ["Deed_Type"]
+      "deed_type": ["Deed_Type"],
+      "grantor": ["Grantor"],
+      "grantee": ["Grantee"]
+    },
+    "filing": {
+      "sub_filing_recording_no": ["Sub_Filing_Recording_No"],
+      "subdivision_name": ["Subdivision_Name"],
+      "filing_no": ["Filing_No"],
+      "filing_descr": ["Filing_Descr"]
     }
   }
 }

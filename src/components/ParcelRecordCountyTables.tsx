@@ -678,6 +678,13 @@ export function ParcelRecordSaleTable({
   countyConfig?: CountyConfig;
 }) {
   const rows = transfers ?? [];
+  const showParties = rows.some(
+    (sale) => (sale.grantor ?? "").trim() || (sale.grantee ?? "").trim(),
+  );
+  const columnCount = showParties ? 6 : 4;
+  const headerLabels = showParties
+    ? ["Book Page", "Date", "Price", "Type", "Grantor", "Grantee"]
+    : ["Book Page", "Date", "Price", "Type"];
   const countyParcelRecordUrl = safeCountyParcelRecordUrl(
     countyParcelRecordLookupValue(countyConfig, {
       accountId: pin,
@@ -697,14 +704,14 @@ export function ParcelRecordSaleTable({
           Sale history from county transfer records
         </caption>
         <tbody>
-          <SectionTitleRow title="Sale" isFirst colSpan={4} />
+          <SectionTitleRow title="Sale" isFirst colSpan={columnCount} />
           <ColumnHeaderRow
-            labels={["Book Page", "Date", "Price", "Type"].map(saleTableHeaderLabel)}
+            labels={headerLabels.map(saleTableHeaderLabel)}
             shrinkFirstColumn={false}
           />
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={4} className={TD_CLASS}>
+              <td colSpan={columnCount} className={TD_CLASS}>
                 <ParcelRecordMissingValue
                   fieldLabel="Sale"
                   triggerIdSuffix="sale-empty"
@@ -759,6 +766,24 @@ export function ParcelRecordSaleTable({
                   <td className={TD_CLASS}>
                     {typeText ? parcelRecordCellText(typeText) : null}
                   </td>
+                  {showParties ? (
+                    <>
+                      <td className={TD_CLASS}>
+                        {textOrMissing(
+                          sale.grantor,
+                          "Grantor",
+                          `sale-grantor-${index}`,
+                        )}
+                      </td>
+                      <td className={TD_CLASS}>
+                        {textOrMissing(
+                          sale.grantee,
+                          "Grantee",
+                          `sale-grantee-${index}`,
+                        )}
+                      </td>
+                    </>
+                  ) : null}
                 </tr>
               );
             })

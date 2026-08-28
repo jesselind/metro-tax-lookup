@@ -152,12 +152,16 @@ export type ParcelRecordBuilding = {
   totalArea?: string | null;
 };
 
-/** Sale history row from Mart_Transfers (Book+Page rows only). */
+/** Sale history row from Mart_Transfers (Book+Page rows only) or Douglas Property_Sales. */
 export type ParcelRecordTransfer = {
   bookPage: string;
   date?: string | null;
   price?: number | null;
   type?: string | null;
+  /** Grantor when the county sales export includes it (Douglas). */
+  grantor?: string | null;
+  /** Grantee when the county sales export includes it (Douglas). */
+  grantee?: string | null;
 };
 
 /** Permit row from Mart_RDE_Permit. */
@@ -189,7 +193,7 @@ export type ArapahoeParcelRecordRow = {
    * UI shows a plain label; empty → No data found.
    */
   neighborhood?: string | null;
-  /** County neighborhood code from the same Open GIS PIN join. */
+  /** County neighborhood code from location or Open GIS PIN join (Douglas: code-extension composite). */
   neighborhoodCode?: string | null;
   legalDescrFull?: string | null;
   legalDescrDisplay?: string | null;
@@ -197,7 +201,7 @@ export type ArapahoeParcelRecordRow = {
   acreage?: string | null;
   /** Top-level Land Use from Mart_RDE_BLD ImprTpDscr when a building exists. */
   landUse?: string | null;
-  /** Mart_RDE_LndAll land-line table rows (Units + land-use description). */
+  /** Mart_RDE_LndAll or Douglas Property_Values land-line table rows (Units + land-use description). */
   landLines?: ParcelRecordLandLine[] | null;
   /** Mart_RDE_BLD building blocks for the county Building section. */
   buildings?: ParcelRecordBuilding[] | null;
@@ -207,6 +211,16 @@ export type ArapahoeParcelRecordRow = {
   permits?: ParcelRecordPermit[] | null;
   subdivisionCd?: string | null;
   subdivisionName?: string | null;
+  /** Platted lot number when the county subdivision table provides it. */
+  lotNo?: string | null;
+  /** Platted block number when the county subdivision / GIS export provides it. */
+  blockNo?: string | null;
+  /** Platted tract number when the county subdivision / GIS export provides it. */
+  tractNo?: string | null;
+  /** Subdivision filing description when the county filing table provides it. */
+  filingDescr?: string | null;
+  /** Subdivision filing number when the county filing table provides it. */
+  filingNo?: string | null;
   taxRollDescr?: string | null;
   propertyClassDescr?: string | null;
   totalActual?: number | null;
@@ -665,7 +679,7 @@ export function parcelRecordShardPrefixes(
  * Bump when regenerating parcel-record shards with a field/schema change so
  * browsers do not keep a stale copy under /data max-age caching.
  */
-export const ARAPAHOE_PARCEL_RECORD_CACHE_BUST = "20260816nbhd";
+export const ARAPAHOE_PARCEL_RECORD_CACHE_BUST = "20260828douglas-detail";
 
 /** Safe static path for one parcel-record shard (alnum prefix — no user-controlled path segments). */
 export function parcelRecordShardUrl(

@@ -5,6 +5,7 @@
 
 "use client";
 
+import { CountyScopeTopLine } from "@/components/CountyScopeTopLine";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
 import type { SitusEnvelopeDisplayRow } from "@/lib/addressLabelDifference";
@@ -17,6 +18,8 @@ export type SitusMultiAccountChooserItem = {
   label: string;
   enriched: EnrichedSitusPinHit | null;
   envelope: SitusEnvelopeDisplayRow | null;
+  /** Resolved county for multi-county address / account lookup rows. */
+  countyId?: string | null;
 };
 
 export type SitusMultiAccountChooserListProps = {
@@ -80,6 +83,7 @@ type RowBodyProps = {
   label: string;
   enriched: EnrichedSitusPinHit | null;
   envelope: SitusEnvelopeDisplayRow | null;
+  countyId?: string | null;
   isCurrent: boolean;
   showViewingChip: boolean;
 };
@@ -89,6 +93,7 @@ function AccountRowBody({
   label,
   enriched,
   envelope,
+  countyId,
   isCurrent,
   showViewingChip,
 }: RowBodyProps) {
@@ -96,6 +101,7 @@ function AccountRowBody({
 
   return (
     <div className="min-w-0">
+      <CountyScopeTopLine countyId={countyId} className="mb-1" />
       {kindLabel != null ? (
         <p className="text-base font-semibold leading-snug text-slate-900 sm:text-lg">
           {kindLabel}
@@ -159,7 +165,7 @@ export function SitusMultiAccountChooserList({
   return (
     <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
       {items.map((item) => {
-        const { pin, label, enriched, envelope } = item;
+        const { pin, label, enriched, envelope, countyId } = item;
         const isCurrent = currentPin != null && currentPin === pin;
 
         if (isCurrent) {
@@ -175,6 +181,7 @@ export function SitusMultiAccountChooserList({
                     label={label}
                     enriched={enriched}
                     envelope={envelope}
+                    countyId={countyId}
                     isCurrent
                     showViewingChip={false}
                   />
@@ -205,6 +212,7 @@ export function SitusMultiAccountChooserList({
                 label={label}
                 enriched={enriched}
                 envelope={envelope}
+                countyId={countyId}
                 isCurrent={false}
                 showViewingChip={false}
               />

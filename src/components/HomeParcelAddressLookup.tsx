@@ -28,6 +28,10 @@ import {
   COMPS_PDF_ICON_CONTROL_CLASS,
 } from "@/components/CountyCompsPdfHelpPopover";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
+import {
+  CountyScopeTopLine,
+  showCountyScopeTopLine,
+} from "@/components/CountyScopeTopLine";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { DataLoadErrorCallout } from "@/components/DataLoadErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
@@ -1200,12 +1204,14 @@ export function HomeParcelAddressLookup({
       label: h.label,
       enriched: enrichmentReady ? h : null,
       envelope: multiHitEnvelopeRows?.[hitIndex] ?? null,
+      countyId: resolvedCountyId,
     }));
   }, [
     hits,
     enrichedMultiHits,
     multiMatchPinToTag,
     multiHitEnvelopeRows,
+    resolvedCountyId,
   ]);
 
   /** Load pin-to-tag for multi-match enrichment (post-search chooser + dashboard switcher). */
@@ -1610,6 +1616,10 @@ export function HomeParcelAddressLookup({
                         applyStreetSuggestion(s, resolvedCountyId ?? undefined)
                       }
                     >
+                      <CountyScopeTopLine
+                        countyId={resolvedCountyId}
+                        className="mb-0.5"
+                      />
                       <span className="font-semibold">{s.streetNameKey}</span>
                       <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
                         {situsLabelForTypeaheadDisplay(s.sampleLabel)}
@@ -1791,7 +1801,13 @@ export function HomeParcelAddressLookup({
                               applyStreetSuggestion(s, s.countyId);
                             }}
                           >
-                            <SitusEnvelopeAddress row={envelope} />
+                            <div className="min-w-0">
+                              <CountyScopeTopLine
+                                countyId={s.countyId}
+                                className="mb-0.5"
+                              />
+                              <SitusEnvelopeAddress row={envelope} />
+                            </div>
                           </li>
                         );
                       })}
@@ -2105,7 +2121,20 @@ export function HomeParcelAddressLookup({
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
                   <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
                   <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
-                    {lockedAddressHeadline}
+                    <span className="inline">{lockedAddressHeadline}</span>
+                    {showCountyScopeTopLine() ? (
+                      <>
+                        <span
+                          className="px-1.5 text-slate-400"
+                          aria-hidden
+                        >
+                          ·
+                        </span>
+                        <span className="font-semibold text-indigo-800">
+                          {activeCountyConfig.displayName}
+                        </span>
+                      </>
+                    ) : null}
                   </p>
                   {!levyReadyForSummary &&
                   hits != null &&

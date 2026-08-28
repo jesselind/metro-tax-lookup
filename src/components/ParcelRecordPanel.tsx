@@ -308,6 +308,26 @@ export function ParcelRecordPanel({
                   )}
                   triggerIdSuffix="subdivision-code"
                 />
+                <ParcelRecordRow
+                  label="Lot"
+                  value={displayRecord.lotNo}
+                  triggerIdSuffix="lot"
+                />
+                <ParcelRecordRow
+                  label="Block"
+                  value={displayRecord.blockNo}
+                  triggerIdSuffix="block"
+                />
+                <ParcelRecordRow
+                  label="Tract"
+                  value={displayRecord.tractNo}
+                  triggerIdSuffix="tract"
+                />
+                <ParcelRecordRow
+                  label="Filing"
+                  value={displayRecord.filingDescr}
+                  triggerIdSuffix="filing"
+                />
               </>
             ) : null}
             <div className={ROW_CLASS}>
