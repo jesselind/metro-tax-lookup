@@ -408,6 +408,45 @@ export const TOOL_DISCLOSURE_ROW_ALIGN_CLASS = "flex w-full justify-start";
 export const INPUT_CLASS =
   `block w-full max-w-xs ${RADIUS_CONTROL_CLASS} border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30`;
 
+/**
+ * Home address lookup row: county segment, street input, Search, and Try demo
+ * share one label style and identical 48px control height.
+ *
+ * Component chrome lives in `src/app/globals.css` (`.home-address-lookup-*`).
+ * These exports add layout utilities (width, flex) on top of those classes.
+ * See `docs/county-config.md` → County search gate → Layout + CSS.
+ */
+export const HOME_ADDRESS_LOOKUP_LABEL_CLASS =
+  "mb-1 whitespace-nowrap text-sm font-medium text-slate-800";
+
+/** Street and advanced address inputs. Pairs with {@link HOME_ADDRESS_LOOKUP_LABEL_CLASS}. */
+export const HOME_ADDRESS_LOOKUP_INPUT_CLASS =
+  "home-address-lookup-input min-w-0 w-full";
+
+/** Search submit button. Full width on mobile; content-width from md beside inputs. */
+export const HOME_ADDRESS_LOOKUP_SEARCH_CLASS =
+  "home-address-lookup-search w-full min-w-0 md:w-auto md:min-w-[8.75rem] md:flex-none";
+
+/**
+ * Try demo property. Full width when the lookup cluster is stacked; content-width
+ * on the lg+ row. See `.home-address-lookup-demo` in globals.css.
+ */
+export const HOME_ADDRESS_LOOKUP_DEMO_CLASS = "home-address-lookup-demo";
+
+/**
+ * County radiogroup shell. Full width when stacked; content-width on lg+ row.
+ * See `.home-address-lookup-county-segment` in globals.css.
+ */
+export const HOME_ADDRESS_LOOKUP_COUNTY_SEGMENT_CLASS =
+  "home-address-lookup-county-segment";
+
+/**
+ * County segment option button. Mobile: equal columns in full-width bar.
+ * lg+: content-sized with lg:px-8 horizontal padding.
+ */
+export const HOME_ADDRESS_LOOKUP_COUNTY_OPTION_CLASS =
+  "home-address-lookup-county-option";
+
 export const CARD_CLASS_CLIPPED =
   `overflow-hidden ${RADIUS_SURFACE_CLASS} border border-slate-700 bg-slate-700`;
 

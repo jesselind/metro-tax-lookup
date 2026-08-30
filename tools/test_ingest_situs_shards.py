@@ -22,6 +22,7 @@ from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
     format_neighborhood_code_with_extension,
     parcel_record_from_logical_row,
+    read_values_parcel_enrichment_by_pin,
     write_parcel_record_shards,
 )
 from ingest.reader import load_mapping
@@ -206,6 +207,53 @@ class TestParcelRecordShards(unittest.TestCase):
             self.assertEqual(data["shardPrefix"], prefix)
             self.assertEqual(data["pinDigits"], 8)
             self.assertEqual(data["byPin"][account_id]["ownerList"], "Test Owner")
+
+
+class TestValuesParcelEnrichment(unittest.TestCase):
+    def test_land_lines_include_land_valuation_rows_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "values.txt"
+            path.write_text(
+                '"A1000001","568181","IMPROVED RESIDENTIAL LAND","L","0100"\n'
+                '"A1000001","549106","SINGLE FAMILY RES - IMPS","I","0100"\n',
+                encoding="utf-8",
+            )
+            mapping = {
+                "identifierDigits": 8,
+                "accountMap": {
+                    "valuesFile": "values",
+                    "accountId": "account_no",
+                },
+                "columnAliases": {
+                    "values": {
+                        "account_no": ["Account_No"],
+                        "actual_value": ["Actual_Value"],
+                        "assessed_value": ["Assessed_Value"],
+                        "valuation_description": ["Valuation_Description"],
+                        "valuation_type_code": ["Valuation_Type_Code"],
+                        "valuation_class_code": ["Valuation_Class_Code"],
+                    },
+                },
+                "tabular": {
+                    "values": {
+                        "hasHeaderRow": False,
+                        "encoding": "utf-8",
+                        "headers": [
+                            "Account_No",
+                            "Actual_Value",
+                            "Valuation_Description",
+                            "Valuation_Type_Code",
+                            "Valuation_Class_Code",
+                        ],
+                    },
+                },
+            }
+            out = read_values_parcel_enrichment_by_pin(path, mapping, pin_digits=8)
+            rec = out["A1000001"]
+            self.assertEqual(len(rec["landLines"]), 1)
+            self.assertIn("IMPROVED RESIDENTIAL LAND", rec["landLines"][0]["landUse"])
+            self.assertEqual(rec["landActual"], 568181.0)
+            self.assertEqual(rec["improvementActual"], 549106.0)
 
 
 class TestSitusShardsEndToEnd(unittest.TestCase):

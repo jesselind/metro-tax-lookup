@@ -43,6 +43,17 @@ export function parcelTaxAndAssessmentYearsDiffer(
   return parcelTaxAssessmentYearNote(taxYear, assessmentYear) != null;
 }
 
+/** Filing label for Property details: description when present, else recording number. */
+export function formatParcelFilingDisplay(
+  filingDescr: string | null | undefined,
+  filingNo: string | null | undefined,
+): string | null {
+  const descr = (filingDescr ?? "").trim();
+  const no = (filingNo ?? "").trim();
+  if (descr && no) return `${descr} (${no})`;
+  return descr || no || null;
+}
+
 /**
  * Owner of record for summary tiles: account map first (available at levy load),
  * then parcel-record shard when that lands (counties that only join ownership

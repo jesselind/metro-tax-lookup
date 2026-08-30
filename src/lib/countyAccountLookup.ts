@@ -21,24 +21,15 @@ import {
   countyConfigById,
   type CountyConfig,
 } from "@/lib/countyConfig";
+import {
+  DEFAULT_COUNTY_SEARCH_SCOPE,
+  orderedCountyIdsForAccountLookup,
+  type CountySearchScope,
+} from "@/lib/countySearchScope";
 
 export function wiredCountyIds(): readonly string[] {
   return Object.keys(COUNTY_CONFIG_BY_ID);
 }
-
-/** Home search availability note (multi-county; not per-county countyScopeNote). */
-export const SUPPORTED_COUNTIES_SCOPE_NOTE = (() => {
-  const names = wiredCountyIds()
-    .map((id) => countyConfigById(id)?.displayName)
-    .filter((name): name is string => Boolean(name));
-  if (names.length === 0) return "Supported Colorado counties: more coming.";
-  if (names.length === 1) {
-    return `Supported Colorado counties: ${names[0]}. More coming.`;
-  }
-  const head = names.slice(0, -1).join(", ");
-  const last = names[names.length - 1]!;
-  return `Supported Colorado counties: ${head} and ${last}. More coming.`;
-})();
 
 export const ACCOUNT_COUNTY_AMBIGUOUS_MESSAGE =
   "That account number matches more than one supported county. Check the number on your county assessor site and try again.";
@@ -102,14 +93,27 @@ export type AccountCountyLookupResult =
 
 export async function resolveAccountCountyLookup(
   raw: string,
-  dataRoot?: string,
+  dataRootOrOptions?:
+    | string
+    | {
+        dataRoot?: string;
+        scope?: CountySearchScope;
+      },
 ): Promise<AccountCountyLookupResult> {
+  const opts =
+    typeof dataRootOrOptions === "string"
+      ? { dataRoot: dataRootOrOptions }
+      : (dataRootOrOptions ?? {});
+  const dataRoot = opts.dataRoot;
+  const scope = opts.scope ?? DEFAULT_COUNTY_SEARCH_SCOPE;
+
   const trimmed = raw.trim();
   if (!trimmed) {
     return { status: "empty", config: COUNTY_CONFIG };
   }
 
-  const countyIds = candidateCountyIdsForAccountInput(trimmed);
+  const formatMatches = candidateCountyIdsForAccountInput(trimmed);
+  const countyIds = orderedCountyIdsForAccountLookup(formatMatches, scope);
   if (countyIds.length === 0) {
     return {
       status: "not_found",
@@ -118,6 +122,9 @@ export async function resolveAccountCountyLookup(
     };
   }
 
+  // Probe every preferred county (parallel). Scope only decides which ids
+  // are in the set / order preference for messaging — hits from all are kept
+  // so same-id ambiguity across counties still surfaces.
   const hits: AccountCountyLookupHit[] = [];
   await Promise.all(
     countyIds.map(async (countyId) => {

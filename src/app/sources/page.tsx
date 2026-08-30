@@ -613,12 +613,18 @@ export default function SourcesPage() {
           <Link href="/" className={TERM_LINK_CLASS}>
             home page
           </Link>
-          {", enter an "}
+          {", choose your Colorado county (default Arapahoe), then enter an "}
           <strong className="font-semibold text-slate-900">8-character account number</strong>
           {" "}
           from the Douglas Assessor record (letters and digits), or enter a
-          street address. The app probes Arapahoe and Douglas situs indexes and
-          picks the county from the match. No live county API calls. Account
+          street address. Address search loads the county you pick first; if
+          there is no match, the app tries adjacent wired counties (today
+          Arapahoe when Douglas is selected, and the other way around). Choose
+          {" "}
+          <strong className="font-semibold text-slate-900">?</strong>
+          {" "}
+          when you are not sure which county to search; that probes every
+          situs-enabled county we ship. No live county API calls. Account
           numbers still work when you paste them directly.
         </p>
         <p className="text-slate-700">

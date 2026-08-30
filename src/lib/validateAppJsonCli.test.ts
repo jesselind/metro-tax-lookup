@@ -58,16 +58,22 @@ function writeDouglasValidateFixture(): string {
 }
 
 describe("validate_app_json.mjs CLI", () => {
-  it("validates committed Arapahoe shipping JSON by default", () => {
-    const result = spawnSync(process.execPath, [scriptPath], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    });
+  it(
+    "validates committed Arapahoe shipping JSON by default",
+    () => {
+      const result = spawnSync(process.execPath, [scriptPath], {
+        cwd: repoRoot,
+        encoding: "utf8",
+      });
 
-    expect(result.status).toBe(0);
-    expect(result.stdout).toMatch(/app JSON validation: ok/);
-    expect(result.stdout).toMatch(/county=arapahoe/);
-  });
+      expect(result.status).toBe(0);
+      expect(result.stdout).toMatch(/app JSON validation: ok/);
+      expect(result.stdout).toMatch(/county=arapahoe/);
+    },
+    // public/data may also hold untracked Douglas shards; readdir + validate
+    // still scopes to Arapahoe files but the tree walk is heavier.
+    30_000,
+  );
 
   it("validates Douglas prove-out JSON with --county and --data-dir", () => {
     const dataDir = writeDouglasValidateFixture();

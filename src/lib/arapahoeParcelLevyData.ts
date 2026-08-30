@@ -679,7 +679,7 @@ export function parcelRecordShardPrefixes(
  * Bump when regenerating parcel-record shards with a field/schema change so
  * browsers do not keep a stale copy under /data max-age caching.
  */
-export const ARAPAHOE_PARCEL_RECORD_CACHE_BUST = "20260828douglas-detail";
+export const ARAPAHOE_PARCEL_RECORD_CACHE_BUST = "20260828douglas-land-l";
 
 /** Safe static path for one parcel-record shard (alnum prefix — no user-controlled path segments). */
 export function parcelRecordShardUrl(

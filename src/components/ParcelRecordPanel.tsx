@@ -17,7 +17,7 @@ import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
-import { formatMartIntegerCodeDisplay } from "@/lib/parcelRecordDisplay";
+import { formatMartIntegerCodeDisplay, formatParcelFilingDisplay } from "@/lib/parcelRecordDisplay";
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
@@ -325,7 +325,10 @@ export function ParcelRecordPanel({
                 />
                 <ParcelRecordRow
                   label="Filing"
-                  value={displayRecord.filingDescr}
+                  value={formatParcelFilingDisplay(
+                    displayRecord.filingDescr,
+                    displayRecord.filingNo,
+                  )}
                   triggerIdSuffix="filing"
                 />
               </>

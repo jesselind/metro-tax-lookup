@@ -37,10 +37,12 @@ export function CountyScopeTopLine({
   if (!config) return null;
   return (
     <p
-      className={
-        className ??
-        "text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm"
-      }
+      className={[
+        "text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       {config.displayName}
     </p>

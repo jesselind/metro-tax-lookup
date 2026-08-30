@@ -36,7 +36,6 @@ import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { DataLoadErrorCallout } from "@/components/DataLoadErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
-import { InfoIcon } from "@/components/InfoIcon";
 import { LevyCountyCompareSection } from "@/components/LevyCountyCompareSection";
 import {
   LevyStackVisualization,
@@ -45,6 +44,7 @@ import {
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
 import { ParcelRecordExtendedSection, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
 import { AudienceModeSwitch } from "@/components/AudienceModeSwitch";
+import { CountySearchScopeSwitch } from "@/components/CountySearchScopeSwitch";
 import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
@@ -60,11 +60,7 @@ import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
 } from "@/content/countyCompsPdfGuidance";
 import { MILL_LEVY_STACK_HEADING_ID } from "@/content/millLevySummaryCopy";
-import {
-  btnOutlinePrimaryMd,
-  btnOutlineSecondaryMd,
-  btnPrimaryMd,
-} from "@/lib/buttonClasses";
+import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import {
   CONTACT_EMAIL,
   REPORT_PROBLEM_MAILTO_HREF,
@@ -80,7 +76,6 @@ import {
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
 import {
-  fetchArapahoeLevyStacksJson,
   fetchArapahoeParcelRecordForPin,
   fetchArapahoePinToTagJson,
   type ArapahoeParcelRecordRow,
@@ -88,11 +83,9 @@ import {
 } from "@/lib/arapahoeParcelLevyData";
 import {
   anyCountySitusSearchAvailable,
-  fetchArapahoeSitusToPinsJson,
   normalizeStreetNameKey,
   parseSimpleAddressLineForSitusLookup,
   resolveSitusFieldsForLookup,
-  situsEnabledCountyIds,
   situsUnitLooksLikeStreetAutofillDuplicate,
   SITUS_AUTOFILL_LINE1_MAX_LEN,
   SITUS_INPUT_MAX_LEN,
@@ -112,13 +105,20 @@ import {
 } from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
-import { SUPPORTED_COUNTIES_SCOPE_NOTE, looksLikeParcelIdInputAnyCounty, wiredCountyIds } from "@/lib/countyAccountLookup";
+import { looksLikeParcelIdInputAnyCounty } from "@/lib/countyAccountLookup";
 import {
+  prefetchCountySearchIndexes,
   resolveSitusCountyLookup,
   SITUS_COUNTY_AMBIGUOUS_MESSAGE,
   suggestSitusStreetsMultiCounty,
   type SitusStreetSuggestionWithCounty,
 } from "@/lib/countySitusLookup";
+import {
+  DEFAULT_COUNTY_SEARCH_SCOPE,
+  formatCountyIndexLoadMessage,
+  type CountyIndexLoadProgress,
+  type CountySearchScope,
+} from "@/lib/countySearchScope";
 import {
   COUNTY_CONFIG,
   countyConfigById,
@@ -155,6 +155,10 @@ import {
   DASHBOARD_SECTION_META_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   HOME_AUDIENCE_STACK_GAP_CLASS,
+  HOME_ADDRESS_LOOKUP_DEMO_CLASS,
+  HOME_ADDRESS_LOOKUP_INPUT_CLASS,
+  HOME_ADDRESS_LOOKUP_LABEL_CLASS,
+  HOME_ADDRESS_LOOKUP_SEARCH_CLASS,
   INPUT_CLASS,
   COUNTY_SERVICE_GAP_STACK_CLASS,
   COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS,
@@ -181,17 +185,11 @@ import {
 } from "@/lib/toolFlowStyles";
 
 /**
- * PIN + levy-stack JSON (~41MB) are needed right after situs lookup. Starting these fetches
- * while situs (~19MB) downloads overlaps network time (same cached promises as loadLevyStackFromPin).
+ * Prefetch search indexes for the county search gate scope only (lazy on engage).
+ * Adjacent counties load after an address miss inside resolveSitusCountyLookup.
  */
-function prefetchParcelLevyJsonBundle(): void {
-  for (const countyId of wiredCountyIds()) {
-    void fetchArapahoePinToTagJson(undefined, countyId);
-    void fetchArapahoeLevyStacksJson(undefined, countyId);
-  }
-}
 
-const INPUT_ROW = `${INPUT_CLASS} min-w-0 w-full !max-w-none px-2 py-2 text-base sm:text-base`;
+const INPUT_ROW = HOME_ADDRESS_LOOKUP_INPUT_CLASS;
 const INPUT_PIN_ROW = `${INPUT_CLASS} w-full min-w-0 max-w-none px-2 py-2 text-base`;
 const FIELD_LABEL_CLASS =
   "whitespace-nowrap text-xs font-medium text-slate-700 sm:text-sm";
@@ -227,7 +225,7 @@ const addressSitusGrid = {
     "md:col-start-5 md:row-start-2 md:flex-row md:items-end md:gap-2",
 } as const;
 
-const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnPrimaryMd} inline-flex w-full min-w-0 justify-center md:w-auto md:min-w-[8.75rem] md:flex-none`;
+const ADDRESS_FORM_ACTION_BTN_CLASS = HOME_ADDRESS_LOOKUP_SEARCH_CLASS;
 
 /** Shared shell for county help, PIN fallback, and list callouts. */
 const ADDRESS_TILE_SURFACE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
@@ -341,6 +339,13 @@ export function HomeParcelAddressLookup({
   const [audienceMode, setAudienceMode] = useState<AudienceMode>(
     DEFAULT_AUDIENCE_MODE,
   );
+  /** Prefetch / probe scope for address + account search (default Arapahoe). */
+  const [countySearchScope, setCountySearchScope] = useState<CountySearchScope>(
+    DEFAULT_COUNTY_SEARCH_SCOPE,
+  );
+  const [indexLoadProgress, setIndexLoadProgress] =
+    useState<CountyIndexLoadProgress | null>(null);
+  const indexLoadRequestRef = useRef(0);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [parcelRecord, setParcelRecord] = useState<ArapahoeParcelRecordRow | null>(
     null,
@@ -516,7 +521,9 @@ export function HomeParcelAddressLookup({
     try {
       const result = await loadLevyStackFromPin(
         pin,
-        countyId ? { countyId } : undefined,
+        countyId
+          ? { countyId }
+          : { scope: countySearchScope },
       );
       if (!isCurrentRequest()) return false;
       if (!result.ok) {
@@ -551,8 +558,19 @@ export function HomeParcelAddressLookup({
       }
     }
     },
-    [loadParcelRecord],
+    [loadParcelRecord, countySearchScope],
   );
+
+  const reportIndexProgress = useCallback(
+    (progress: CountyIndexLoadProgress) => {
+      setIndexLoadProgress(progress);
+    },
+    [],
+  );
+
+  const clearIndexProgress = useCallback(() => {
+    setIndexLoadProgress(null);
+  }, []);
 
   const streetTypeaheadRequestRef = useRef(0);
   const refreshStreetTypeahead = useCallback(
@@ -567,27 +585,50 @@ export function HomeParcelAddressLookup({
         setStreetTypeahead([]);
         setStreetTypeaheadOpen(false);
         setStreetTypeaheadActiveIndex(-1);
+        clearIndexProgress();
         return;
       }
       const requestId = ++streetTypeaheadRequestRef.current;
-      prefetchParcelLevyJsonBundle();
-      const list = await suggestSitusStreetsMultiCounty(
-        num,
-        suffix,
-        namePartial,
-      );
-      if (requestId !== streetTypeaheadRequestRef.current) return;
-      if (list.length === 0) {
-        setStreetTypeahead([]);
-        setStreetTypeaheadOpen(false);
+      const loadId = ++indexLoadRequestRef.current;
+      try {
+        await prefetchCountySearchIndexes(countySearchScope, {
+          onProgress: (progress) => {
+            if (loadId === indexLoadRequestRef.current) {
+              reportIndexProgress(progress);
+            }
+          },
+        });
+        if (requestId !== streetTypeaheadRequestRef.current) return;
+        const list = await suggestSitusStreetsMultiCounty(
+          num,
+          suffix,
+          namePartial,
+          {
+            scope: countySearchScope,
+            onProgress: (progress) => {
+              if (loadId === indexLoadRequestRef.current) {
+                reportIndexProgress(progress);
+              }
+            },
+          },
+        );
+        if (requestId !== streetTypeaheadRequestRef.current) return;
+        if (list.length === 0) {
+          setStreetTypeahead([]);
+          setStreetTypeaheadOpen(false);
+          setStreetTypeaheadActiveIndex(-1);
+          return;
+        }
+        setStreetTypeahead(list);
         setStreetTypeaheadActiveIndex(-1);
-        return;
+        setStreetTypeaheadOpen(open && list.length > 0);
+      } finally {
+        if (loadId === indexLoadRequestRef.current) {
+          clearIndexProgress();
+        }
       }
-      setStreetTypeahead(list);
-      setStreetTypeaheadActiveIndex(-1);
-      setStreetTypeaheadOpen(open && list.length > 0);
     },
-    [],
+    [countySearchScope, clearIndexProgress, reportIndexProgress],
   );
 
   /** Debounced street typeahead for the simple address line. */
@@ -620,6 +661,7 @@ export function HomeParcelAddressLookup({
     showAdvancedAddressFields,
     simpleAddressLine,
     refreshStreetTypeahead,
+    countySearchScope,
   ]);
 
   /**
@@ -858,13 +900,28 @@ export function HomeParcelAddressLookup({
     }
 
     setBusy(true);
+    const loadId = ++indexLoadRequestRef.current;
     try {
-      prefetchParcelLevyJsonBundle();
+      await prefetchCountySearchIndexes(countySearchScope, {
+        onProgress: (progress) => {
+          if (loadId === indexLoadRequestRef.current) {
+            reportIndexProgress(progress);
+          }
+        },
+      });
       const lookup = await resolveSitusCountyLookup(
         num,
         suffix,
         nameRaw,
         unitTrim,
+        {
+          scope: countySearchScope,
+          onProgress: (progress) => {
+            if (loadId === indexLoadRequestRef.current) {
+              reportIndexProgress(progress);
+            }
+          },
+        },
       );
       if (lookup.status === "data_error") {
         console.error("[civic-lookup]", lookup.detail);
@@ -941,6 +998,9 @@ export function HomeParcelAddressLookup({
         setShowAdvancedAddressFields(true);
       }
     } finally {
+      if (loadId === indexLoadRequestRef.current) {
+        clearIndexProgress();
+      }
       setBusy(false);
     }
   }
@@ -1510,6 +1570,37 @@ export function HomeParcelAddressLookup({
           }
         />
       ) : null}
+      {!addressSearchLocked && indexLoadProgress ? (
+        <div
+          className="w-full min-w-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="text-sm font-medium text-slate-800">
+            {formatCountyIndexLoadMessage(indexLoadProgress)}
+          </p>
+          {indexLoadProgress.total > 0 ? (
+            <div
+              className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200"
+              aria-hidden
+            >
+              <div
+                className="h-full rounded-full bg-slate-700 transition-[width] duration-300 ease-out"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.round(
+                      (100 * indexLoadProgress.completed) /
+                        Math.max(1, indexLoadProgress.total),
+                    ),
+                  )}%`,
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {addressMatchStatus ? (
         <p className="sr-only" role="status" aria-live="polite">
           {addressMatchStatus}
@@ -1646,39 +1737,54 @@ export function HomeParcelAddressLookup({
               )}
             </div>
           ) : null}
-          <form
-            className={
-              showAdvancedAddressFields
-                ? ADDRESS_LOOKUP_FORM_CLASS
-                : SIMPLE_ADDRESS_FORM_CLASS
-            }
-            aria-label="Address lookup"
-            aria-describedby={
-              [
-                error ? HOME_ADDRESS_LOOKUP_ERROR_ID : null,
-                streetDidYouMean != null && streetDidYouMean.length > 0
-                  ? HOME_ADDRESS_STREET_SUGGESTIONS_ID
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" ") || undefined
-            }
-            noValidate
-            aria-busy={busy}
-            onSubmit={(e) => {
-              e.preventDefault();
-              void onLookup();
-            }}
+          <div
+            className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:gap-3"
           >
+            <CountySearchScopeSwitch
+              value={countySearchScope}
+              onChange={(scope) => {
+                setCountySearchScope(scope);
+                streetTypeaheadRequestRef.current += 1;
+                setStreetTypeahead([]);
+                setStreetTypeaheadOpen(false);
+                setStreetTypeaheadActiveIndex(-1);
+                clearIndexProgress();
+              }}
+              className="lg:shrink-0"
+            />
+            <form
+              className={`min-w-0 flex-1 ${
+                showAdvancedAddressFields
+                  ? ADDRESS_LOOKUP_FORM_CLASS
+                  : SIMPLE_ADDRESS_FORM_CLASS
+              }`}
+              aria-label="Address lookup"
+              aria-describedby={
+                [
+                  error ? HOME_ADDRESS_LOOKUP_ERROR_ID : null,
+                  streetDidYouMean != null && streetDidYouMean.length > 0
+                    ? HOME_ADDRESS_STREET_SUGGESTIONS_ID
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
+              }
+              noValidate
+              aria-busy={busy}
+              onSubmit={(e) => {
+                e.preventDefault();
+                void onLookup();
+              }}
+            >
             {!showAdvancedAddressFields ? (
               <>
                 <div
                   ref={streetTypeaheadRootRef}
-                  className="relative flex min-w-0 flex-col gap-y-1"
+                  className="relative flex min-w-0 flex-col"
                 >
                   <label
                     htmlFor="home-address-simple-line"
-                    className={FIELD_LABEL_CLASS}
+                    className={HOME_ADDRESS_LOOKUP_LABEL_CLASS}
                   >
                     Street address
                   </label>
@@ -1711,11 +1817,19 @@ export function HomeParcelAddressLookup({
                       setStreetDidYouMean(null);
                     }}
                     onFocus={() => {
-                      if (SITUS_SEARCH_ON) {
-                        for (const countyId of situsEnabledCountyIds()) {
-                          void fetchArapahoeSitusToPinsJson(undefined, countyId);
+                      if (!SITUS_SEARCH_ON) return;
+                      const loadId = ++indexLoadRequestRef.current;
+                      void prefetchCountySearchIndexes(countySearchScope, {
+                        onProgress: (progress) => {
+                          if (loadId === indexLoadRequestRef.current) {
+                            reportIndexProgress(progress);
+                          }
+                        },
+                      }).finally(() => {
+                        if (loadId === indexLoadRequestRef.current) {
+                          clearIndexProgress();
                         }
-                      }
+                      });
                     }}
                     onBlur={(e) => {
                       // Scroll / iOS Done: relatedTarget is null — keep list open.
@@ -1814,7 +1928,7 @@ export function HomeParcelAddressLookup({
                     </ul>
                   ) : null}
                 </div>
-                <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 md:w-auto md:flex-none md:flex-col md:justify-end">
+                <div className="flex w-full min-w-0 flex-col md:w-auto md:flex-none md:justify-end">
                   <button
                     type="submit"
                     className={ADDRESS_FORM_ACTION_BTN_CLASS}
@@ -1992,22 +2106,11 @@ export function HomeParcelAddressLookup({
                 </div>
               </>
             )}
-          </form>
-          <div
-            className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
-            role="note"
-            aria-label="County availability"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0 flex items-start gap-2 text-sm text-slate-700">
-                <span className="mt-0.5">
-                  <InfoIcon />
-                </span>
-                <p>{SUPPORTED_COUNTIES_SCOPE_NOTE}</p>
-              </div>
+            </form>
+            <div className="flex w-full min-w-0 flex-col lg:w-auto lg:flex-none lg:shrink-0 lg:justify-end">
               <button
                 type="button"
-                className={`${btnOutlineSecondaryMd} w-auto shrink-0 justify-center whitespace-nowrap px-3 py-2 text-sm disabled:cursor-not-allowed`}
+                className={HOME_ADDRESS_LOOKUP_DEMO_CLASS}
                 onClick={() => void onLoadDemoProperty()}
                 disabled={busy || levyLoadBusy}
               >
@@ -2607,7 +2710,20 @@ export function HomeParcelAddressLookup({
                     className={INPUT_PIN_ROW}
                     value={parcelPin}
                     onChange={(e) => setParcelPin(e.target.value)}
-                    onFocus={() => prefetchParcelLevyJsonBundle()}
+                    onFocus={() => {
+                      const loadId = ++indexLoadRequestRef.current;
+                      void prefetchCountySearchIndexes(countySearchScope, {
+                        onProgress: (progress) => {
+                          if (loadId === indexLoadRequestRef.current) {
+                            reportIndexProgress(progress);
+                          }
+                        },
+                      }).finally(() => {
+                        if (loadId === indexLoadRequestRef.current) {
+                          clearIndexProgress();
+                        }
+                      });
+                    }}
                     disabled={levyLoadBusy}
                     placeholder="Account number, PIN, or AIN from your county record"
                     aria-describedby="home-parcel-pin-hint"

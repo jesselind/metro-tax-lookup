@@ -150,6 +150,12 @@ export type CountyConfig = {
    * compsPdfHostedFiles: COUNTY DATA GAP on the comps tile (not omit).
    */
   knownFailures: CountyKnownFailures;
+  /**
+   * Wired neighbor county ids for address/account search fallback after a miss
+   * in this county (county search gate tier 2). Curated shared-border / metro
+   * adjacency only — never alphabetical fill. Empty until neighbors ship.
+   */
+  adjacentCountyIds: readonly string[];
   /** Home search note, e.g. "Arapahoe County only." */
   countyScopeNote: string;
   identifierPlaceholder: string;
@@ -230,6 +236,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
   knownFailures: {
     compsPdfHostedFiles: true,
   },
+  adjacentCountyIds: ["douglas"],
   countyScopeNote: "Arapahoe County only.",
   identifierPlaceholder: "9-digit PIN or AIN from county record",
   emptyIdentifierMessage:
@@ -282,6 +289,7 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
   knownFailures: {
     compsPdfHostedFiles: false,
   },
+  adjacentCountyIds: ["arapahoe"],
   countyScopeNote: "Douglas County only.",
   identifierPlaceholder: "8-character account number from county record",
   emptyIdentifierMessage:
@@ -489,6 +497,41 @@ export function validateCountyConfig(config: CountyConfig): string | null {
   if (!config.identifierNotFoundTemplate.includes("{tried}")) {
     return "county config: identifierNotFoundTemplate must include {tried}";
   }
+  if (!Array.isArray(config.adjacentCountyIds)) {
+    return "county config: adjacentCountyIds must be an array";
+  }
+  const seenAdjacent = new Set<string>();
+  for (const rawId of config.adjacentCountyIds) {
+    if (!isNonEmptyString(rawId)) {
+      return "county config: adjacentCountyIds entries must be non-empty strings";
+    }
+    const neighborId = rawId.trim().toLowerCase();
+    if (neighborId === config.id.trim().toLowerCase()) {
+      return "county config: adjacentCountyIds must not include self";
+    }
+    if (seenAdjacent.has(neighborId)) {
+      return `county config: adjacentCountyIds duplicate ${neighborId}`;
+    }
+    seenAdjacent.add(neighborId);
+  }
+  return null;
+}
+
+/**
+ * Cross-registry check: every adjacentCountyIds entry must be a wired county.
+ * Call after COUNTY_CONFIG_BY_ID is complete (module init).
+ */
+export function validateWiredCountyAdjacency(
+  byId: Readonly<Record<string, CountyConfig>> = COUNTY_CONFIG_BY_ID,
+): string | null {
+  for (const config of Object.values(byId)) {
+    for (const rawId of config.adjacentCountyIds) {
+      const neighborId = rawId.trim().toLowerCase();
+      if (!Object.prototype.hasOwnProperty.call(byId, neighborId)) {
+        return `county config: ${config.id} adjacentCountyIds unknown id ${neighborId}`;
+      }
+    }
+  }
   return null;
 }
 
@@ -531,4 +574,9 @@ if (shippingCountyConfigError) {
 const douglasCountyConfigError = validateCountyConfig(DOUGLAS_COUNTY_CONFIG);
 if (douglasCountyConfigError) {
   throw new Error(douglasCountyConfigError);
+}
+
+const wiredAdjacencyError = validateWiredCountyAdjacency();
+if (wiredAdjacencyError) {
+  throw new Error(wiredAdjacencyError);
 }

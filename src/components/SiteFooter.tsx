@@ -30,17 +30,17 @@ export function SiteFooter() {
   const counties = wiredCountyConfigs();
 
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="border-t border-slate-200 bg-slate-50">
       <div
-        className={`mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-6 text-sm text-slate-700 sm:text-base`}
+        className={`mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-6 text-sm text-slate-800 sm:text-base`}
       >
-        <p className="text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p className="text-center text-sm leading-relaxed text-slate-800 sm:text-base">
           Not affiliated with any county government. This is an independent
           educational tool for taxpayers. It uses publicly available data from
           state and county sources. Always verify important numbers with
           official sources. Not legal or tax advice.
         </p>
-        <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p className="mt-3 text-center text-sm leading-relaxed text-slate-800 sm:text-base">
           We work to show the same figures the county and state publish, using
           the public sources we cite. We try hard, but we can still make
           mistakes. Official county and state records remain the source of
@@ -59,7 +59,7 @@ export function SiteFooter() {
           for term definitions. We update this site and its data files as those
           public sources change.
         </p>
-        <p className="mt-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p className="mt-3 text-center text-sm leading-relaxed text-slate-800 sm:text-base">
           Address lookup runs in your browser from static files on this site;
           your address is not sent to us or any county when you search. Coverage
           today includes{" "}
@@ -85,14 +85,14 @@ export function SiteFooter() {
           business personal property). Use each county&apos;s property search to
           double-check a record or legal description.
         </p>
-        <p className="mt-3 text-center text-xs text-slate-500 sm:text-sm">
+        <p className="mt-3 text-center text-xs text-slate-800 sm:text-sm">
           Version{" "}
           <Link href="/changelog" className={TERM_LINK_CLASS}>
             {APP_VERSION}
           </Link>{" "}
           · Last updated {SITE_LAST_UPDATED_LABEL}
         </p>
-        <p className="mt-3 text-center text-xs leading-relaxed text-slate-500 sm:text-sm">
+        <p className="mt-3 text-center text-xs leading-relaxed text-slate-800 sm:text-sm">
           {SITE_BRAND_MARK} is a trademark of {TRADEMARK_OWNER}. The code is open
           under AGPL; the name is not. Details on the{" "}
           <Link href="/privacy#trademark" className={TERM_LINK_CLASS}>
@@ -138,7 +138,7 @@ export function SiteFooter() {
           </nav>
         </div>
         {SITE_CONFIG.campaignPaidForByDisclaimer?.trim() ? (
-          <p className="mt-6 text-center text-xs leading-relaxed text-slate-500 sm:text-sm">
+          <p className="mt-6 text-center text-xs leading-relaxed text-slate-800 sm:text-sm">
             {/* FORK REQUIRED: SITE_CONFIG.campaignPaidForByDisclaimer */}
             {SITE_CONFIG.campaignPaidForByDisclaimer.trim()}
           </p>

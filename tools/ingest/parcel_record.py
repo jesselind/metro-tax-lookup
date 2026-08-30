@@ -1169,17 +1169,17 @@ def read_values_parcel_enrichment_by_pin(
             if class_code and actual is not None and actual >= largest_actual:
                 largest_actual = actual
                 state_use_cd = class_code
-            units = format_valuation_amount_display(row.get("actual_value"))
-            land_line = land_table_row_from_logical(
-                {
-                    "uts": units,
-                    "unit_tp": "",
-                    "use_cd_dscr": descr,
-                }
-            )
-            if land_line:
-                land_lines.append(land_line)
             if type_code == "L":
+                units = format_valuation_amount_display(row.get("actual_value"))
+                land_line = land_table_row_from_logical(
+                    {
+                        "uts": units,
+                        "unit_tp": "",
+                        "use_cd_dscr": descr,
+                    }
+                )
+                if land_line:
+                    land_lines.append(land_line)
                 if actual is not None:
                     land_actual += actual
                 if assessed is not None:

@@ -35,6 +35,7 @@ import {
   formatIdentifierNotFoundMessage,
 } from "@/lib/countyConfig";
 import { activeCountyDataRoot } from "@/lib/countyDataEngine";
+import type { CountySearchScope } from "@/lib/countySearchScope";
 import {
   countyAccountMapUrl,
   countyLevyStacksUrl,
@@ -205,7 +206,11 @@ export type LoadLevyStackFromPinResult =
 
 export async function loadLevyStackFromPin(
   pinInput: string,
-  options?: { dataRoot?: string; countyId?: string },
+  options?: {
+    dataRoot?: string;
+    countyId?: string;
+    scope?: CountySearchScope;
+  },
 ): Promise<LoadLevyStackFromPinResult> {
   const dataRoot = options?.dataRoot ?? activeCountyDataRoot();
 
@@ -254,7 +259,10 @@ export async function loadLevyStackFromPin(
     }
     matchedPinKey = key;
   } else {
-    const lookup = await resolveAccountCountyLookup(pinInput, dataRoot);
+    const lookup = await resolveAccountCountyLookup(pinInput, {
+      dataRoot,
+      scope: options?.scope,
+    });
     if (lookup.status === "empty") {
       return { ok: false, error: lookup.config.emptyIdentifierMessage };
     }

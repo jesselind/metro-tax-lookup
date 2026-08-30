@@ -4,12 +4,15 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Multi-county situs (address) lookup: probe wired counties' situs indexes and
+ * Multi-county situs (address) lookup: probe scoped county situs indexes and
  * resolve which county owns a street-address search before loading `{countyId}-*`.
  */
 
 import type { ArapahoePinToTagFile } from "@/lib/arapahoeParcelLevyData";
-import { fetchArapahoePinToTagJson } from "@/lib/arapahoeParcelLevyData";
+import {
+  fetchArapahoeLevyStacksJson,
+  fetchArapahoePinToTagJson,
+} from "@/lib/arapahoeParcelLevyData";
 import {
   type ArapahoeSitusToPinsFile,
   fetchArapahoeSitusToPinsJson,
@@ -22,6 +25,16 @@ import {
 } from "@/lib/arapahoeSitusLookup";
 import { countyConfigById, type CountyConfig } from "@/lib/countyConfig";
 import { countySitusToPinsUrl } from "@/lib/countyDataPaths";
+import {
+  COUNTY_SEARCH_INDEX_FILE_KINDS,
+  countyIdsForPrefetch,
+  countySearchIndexFileLabel,
+  DEFAULT_COUNTY_SEARCH_SCOPE,
+  formatCountyNamesList,
+  situsResolveWaves,
+  type CountyIndexLoadProgressHandler,
+  type CountySearchScope,
+} from "@/lib/countySearchScope";
 
 export { situsEnabledCountyIds };
 
@@ -46,6 +59,12 @@ export type SitusStreetSuggestionWithCounty = SitusStreetSuggestion & {
   countyId: string;
 };
 
+export type SitusLookupOptions = {
+  dataRoot?: string;
+  scope?: CountySearchScope;
+  onProgress?: CountyIndexLoadProgressHandler;
+};
+
 function isSitusMatch(result: SitusFuzzyLookupResult): boolean {
   return result.kind === "match" && result.hits.length > 0;
 }
@@ -54,19 +73,17 @@ function isSitusSuggest(result: SitusFuzzyLookupResult): boolean {
   return result.kind === "suggest" && result.suggestions.length > 0;
 }
 
+type LoadedSitusBundle = {
+  countyId: string;
+  config: CountyConfig;
+  situs: ArapahoeSitusToPinsFile;
+  pinToTag: ArapahoePinToTagFile;
+};
+
 async function loadSitusBundleForCounty(
   countyId: string,
   dataRoot?: string,
-): Promise<
-  | {
-      countyId: string;
-      config: CountyConfig;
-      situs: ArapahoeSitusToPinsFile;
-      pinToTag: ArapahoePinToTagFile;
-    }
-  | { countyId: string; detail: string }
-  | null
-> {
+): Promise<LoadedSitusBundle | { countyId: string; detail: string } | null> {
   const config = countyConfigById(countyId);
   if (!config) return null;
   const [situs, pinToTag] = await Promise.all([
@@ -90,43 +107,88 @@ async function loadSitusBundleForCounty(
   return { countyId, config, situs, pinToTag };
 }
 
-export async function resolveSitusCountyLookup(
+/**
+ * Prefetch search indexes for the gate scope (selected county, or all when
+ * unknown). Does not pull adjacent counties until an address miss.
+ */
+export async function prefetchCountySearchIndexes(
+  scope: CountySearchScope = DEFAULT_COUNTY_SEARCH_SCOPE,
+  options?: {
+    dataRoot?: string;
+    onProgress?: CountyIndexLoadProgressHandler;
+    /** When false, skip levy stacks (address typeahead only needs situs + pin map). */
+    includeLevyStacks?: boolean;
+  },
+): Promise<void> {
+  const countyIds = countyIdsForPrefetch(scope);
+  if (countyIds.length === 0) return;
+
+  const kinds = options?.includeLevyStacks === false
+    ? (["situs", "pinToTag"] as const)
+    : COUNTY_SEARCH_INDEX_FILE_KINDS;
+  const total = countyIds.length * kinds.length;
+  let completed = 0;
+  const names = formatCountyNamesList(countyIds);
+  const onProgress = options?.onProgress;
+
+  const report = (countyId: string, kind: (typeof kinds)[number]) => {
+    onProgress?.({
+      message: `Loading ${countySearchIndexFileLabel(countyId, kind)}…`,
+      completed,
+      total,
+    });
+  };
+
+  onProgress?.({
+    message:
+      countyIds.length === 1
+        ? `Loading ${names} search data…`
+        : `Loading search data for ${names}…`,
+    completed: 0,
+    total,
+  });
+
+  await Promise.all(
+    countyIds.flatMap((countyId) =>
+      kinds.map(async (kind) => {
+        report(countyId, kind);
+        if (kind === "situs") {
+          await fetchArapahoeSitusToPinsJson(options?.dataRoot, countyId);
+        } else if (kind === "pinToTag") {
+          await fetchArapahoePinToTagJson(options?.dataRoot, countyId);
+        } else {
+          await fetchArapahoeLevyStacksJson(options?.dataRoot, countyId);
+        }
+        completed += 1;
+        onProgress?.({
+          message: `Loading ${countySearchIndexFileLabel(countyId, kind)}…`,
+          completed,
+          total,
+        });
+      }),
+    ),
+  );
+}
+
+function collectWaveResults(
+  bundles: Array<LoadedSitusBundle | { countyId: string; detail: string } | null>,
   streetNumber: string,
   numberSuffix: string,
   streetName: string,
   unit: string,
-  dataRoot?: string,
-): Promise<SitusCountyLookupResult> {
-  const countyIds = situsEnabledCountyIds();
-  if (countyIds.length === 0) {
-    return { status: "not_found" };
-  }
-
-  const bundles = await Promise.all(
-    countyIds.map((countyId) => loadSitusBundleForCounty(countyId, dataRoot)),
-  );
-
+): {
+  matches: SitusCountyMatch[];
+  suggests: SitusCountyMatch[];
+  dataErrors: { countyId: string; detail: string }[];
+  loadedCount: number;
+} {
   const dataErrors = bundles.filter(
     (b): b is { countyId: string; detail: string } =>
       b != null && "detail" in b,
   );
   const loaded = bundles.filter(
-    (
-      b,
-    ): b is {
-      countyId: string;
-      config: CountyConfig;
-      situs: ArapahoeSitusToPinsFile;
-      pinToTag: ArapahoePinToTagFile;
-    } => b != null && !("detail" in b),
+    (b): b is LoadedSitusBundle => b != null && !("detail" in b),
   );
-
-  if (loaded.length === 0) {
-    return {
-      status: "data_error",
-      detail: dataErrors.map((e) => e.detail).join("; ") || "situs data unavailable",
-    };
-  }
 
   const matches: SitusCountyMatch[] = [];
   const suggests: SitusCountyMatch[] = [];
@@ -148,43 +210,128 @@ export async function resolveSitusCountyLookup(
     }
   }
 
-  if (matches.length === 1) {
-    return { status: "found", match: matches[0]! };
+  return {
+    matches,
+    suggests,
+    dataErrors,
+    loadedCount: loaded.length,
+  };
+}
+
+function finishFromWave(wave: {
+  matches: SitusCountyMatch[];
+  suggests: SitusCountyMatch[];
+}): SitusCountyLookupResult | null {
+  if (wave.matches.length === 1) {
+    return { status: "found", match: wave.matches[0]! };
   }
-  if (matches.length > 1) {
-    return { status: "ambiguous", matches };
+  if (wave.matches.length > 1) {
+    return { status: "ambiguous", matches: wave.matches };
   }
-  if (suggests.length === 1) {
-    return { status: "found", match: suggests[0]! };
+  if (wave.suggests.length === 1) {
+    return { status: "found", match: wave.suggests[0]! };
   }
-  if (suggests.length > 1) {
-    return { status: "ambiguous", matches: suggests };
+  if (wave.suggests.length > 1) {
+    return { status: "ambiguous", matches: wave.suggests };
+  }
+  return null;
+}
+
+export async function resolveSitusCountyLookup(
+  streetNumber: string,
+  numberSuffix: string,
+  streetName: string,
+  unit: string,
+  options?: SitusLookupOptions | string,
+): Promise<SitusCountyLookupResult> {
+  // Back-compat: older call sites passed dataRoot as the 5th argument.
+  const opts: SitusLookupOptions =
+    typeof options === "string" ? { dataRoot: options } : (options ?? {});
+  const scope = opts.scope ?? DEFAULT_COUNTY_SEARCH_SCOPE;
+  const waves = situsResolveWaves(scope);
+  if (waves.length === 0) {
+    return { status: "not_found" };
   }
 
-  if (dataErrors.length > 0 && loaded.length < countyIds.length) {
+  const allDataErrors: { countyId: string; detail: string }[] = [];
+  let anyLoaded = false;
+
+  for (let waveIndex = 0; waveIndex < waves.length; waveIndex++) {
+    const countyIds = waves[waveIndex]!;
+    opts.onProgress?.({
+      message:
+        waveIndex === 0
+          ? `Checking ${formatCountyNamesList(countyIds)}…`
+          : `No match yet — checking nearby ${formatCountyNamesList(countyIds)}…`,
+      completed: waveIndex,
+      total: waves.length,
+    });
+
+    const bundles = await Promise.all(
+      countyIds.map((countyId) =>
+        loadSitusBundleForCounty(countyId, opts.dataRoot),
+      ),
+    );
+    const wave = collectWaveResults(
+      bundles,
+      streetNumber,
+      numberSuffix,
+      streetName,
+      unit,
+    );
+    allDataErrors.push(...wave.dataErrors);
+    if (wave.loadedCount > 0) anyLoaded = true;
+
+    const finished = finishFromWave(wave);
+    if (finished) return finished;
+
+    // Hard miss in this wave → try adjacent wave (if any).
+  }
+
+  if (!anyLoaded && allDataErrors.length > 0) {
     return {
       status: "data_error",
-      detail: dataErrors.map((e) => e.detail).join("; "),
+      detail:
+        allDataErrors.map((e) => e.detail).join("; ") ||
+        "situs data unavailable",
     };
   }
 
   return { status: "not_found" };
 }
 
-/** Merge street typeahead rows from every situs-enabled county (dedupe by county + street key). */
+/** Street typeahead for the current prefetch scope (not adjacent-until-miss). */
 export async function suggestSitusStreetsMultiCounty(
   streetNumber: string,
   numberSuffix: string,
   streetNamePartial: string,
-  dataRoot?: string,
+  options?: SitusLookupOptions | string,
 ): Promise<SitusStreetSuggestionWithCounty[]> {
-  const countyIds = situsEnabledCountyIds();
+  const opts: SitusLookupOptions =
+    typeof options === "string" ? { dataRoot: options } : (options ?? {});
+  const scope = opts.scope ?? DEFAULT_COUNTY_SEARCH_SCOPE;
+  const countyIds = countyIdsForPrefetch(scope);
   const out: SitusStreetSuggestionWithCounty[] = [];
   const seen = new Set<string>();
 
+  if (countyIds.length === 0) return out;
+
+  opts.onProgress?.({
+    message: `Loading suggestions for ${formatCountyNamesList(countyIds)}…`,
+    completed: 0,
+    total: countyIds.length,
+  });
+
+  let completed = 0;
   await Promise.all(
     countyIds.map(async (countyId) => {
-      const bundle = await loadSitusBundleForCounty(countyId, dataRoot);
+      const bundle = await loadSitusBundleForCounty(countyId, opts.dataRoot);
+      completed += 1;
+      opts.onProgress?.({
+        message: `Loading suggestions for ${formatCountyNamesList(countyIds)}…`,
+        completed,
+        total: countyIds.length,
+      });
       if (!bundle || "detail" in bundle) return;
       const list = suggestSitusStreetsForNumber(
         bundle.situs,

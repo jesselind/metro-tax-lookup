@@ -202,9 +202,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument(
         "--dola-certifying-county",
-        default="Arapahoe",
+        default=None,
         dest="dola_certifying_county",
-        help="Certifying County filter for the DOLA export (default: Arapahoe).",
+        help=(
+            "Certifying County filter for the DOLA export. "
+            "Default: title-case of mapping county id (e.g. douglas → Douglas)."
+        ),
     )
     parser.add_argument(
         "--skip-dola-join",
@@ -444,10 +447,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     dola_join = None
     if not args.skip_dola_join:
+        certifying_county = args.dola_certifying_county
+        if certifying_county is None:
+            county_id = str(mapping.get("county", "arapahoe")).strip()
+            certifying_county = county_id.replace("-", " ").title() or "Arapahoe"
         dola_join = load_dola_join_context(
             dola_export=args.dola_export,
             overrides_path=args.dola_overrides,
-            certifying_county=args.dola_certifying_county,
+            certifying_county=certifying_county,
         )
 
     sibling_paths = {

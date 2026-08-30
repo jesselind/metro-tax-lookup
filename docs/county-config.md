@@ -22,6 +22,63 @@ Do **not** treat Arapahoe’s gaps, fields, or methodology text as the default f
 
 **Layer 2 is not Layer 1.** “Never had comps PDFs” → omit (`features.compsPdf` false). “Had comps PDFs; county FileDownload is broken” → show gap (`features.compsPdf` true + `knownFailures.compsPdfHostedFiles`).
 
+## County search gate (locked 2026-08-29; UX refined 2026-08-29)
+
+Multi-county situs / account indexes are large. Do **not** prefetch every wired county on first address focus once two or more counties ship.
+
+**Three tiers** (bandwidth preference — **not** proof of residence):
+
+1. **County selected** — default **Arapahoe** (campaign home). Address search is usable immediately. Prefetch + search that county only on engage (**lazy** — do not eager-fetch on first paint; protect FCP).
+2. **Adjacent auto-try** — on address miss in the selected county, try only `adjacentCountyIds` that are wired and situs-enabled (shared border / metro adjacency; curated on each `CountyConfig`). Never alphabetical / registry key order.
+3. **I don’t know my county** — explicit third option; probe all situs-enabled wired counties; resident accepts the wait.
+
+**Always** show load/search progress for **every** scoped load (including Arapahoe alone) — file-level when the set of JSON files is known. Silent multi-second waits are not acceptable.
+
+**UI (two wired counties today):** Label **Select your Colorado county** above a compact light-gray segment **Arapahoe | Douglas | ?** (custom radiogroup; not native radio dots; not Own | Rent black/white weight). Segment labels use at least `text-base` (16px). Visible “?” has accessible name **I don't know my county**. Default Arapahoe. When many counties ship, reconsider a select.
+
+**Layout (2026-08-30; Try demo on row 2026-08-30):**
+
+| Viewport | County toggle + address row + Try demo |
+| --- | --- |
+| **&lt; lg** | Stack vertically. County segment spans **full width** of the lookup column; three options share the bar evenly. Address + Search use the existing `md` form grid (street beside Search from `md` up). **Try demo property** is its own full-width row under that cluster. |
+| **lg+** | Same row (`lg:flex-row lg:items-end`): county segment **content-width**, address form, Search, **Try demo property**. County options sized to label text (`lg:flex-none`), not equal columns. Option horizontal padding **doubles** on this row (`lg:px-8` vs `px-4` when stacked). |
+
+County segment, street input, Search, and Try demo share **48px** height (`box-border h-12`). Labels share `HOME_ADDRESS_LOOKUP_LABEL_CLASS` (`text-sm font-medium text-slate-800 mb-1`).
+
+**CSS (maintainer):** `src/app/globals.css` `@layer components`:
+
+| Class | Role |
+| --- | --- |
+| `.home-address-lookup-input` | Street / advanced address fields |
+| `.home-address-lookup-search` | Search button (primary chrome inlined; not `@apply btn-primary`) |
+| `.home-address-lookup-demo` | Try demo property (outline; full width stacked, content-width on `lg+`) |
+| `.home-address-lookup-county-segment` | Radiogroup shell (`w-full` stacked; `lg:w-auto` on row) |
+| `.home-address-lookup-county-option` | Segment option buttons |
+
+TSX uses string tokens from `src/lib/toolFlowStyles.ts` (`HOME_ADDRESS_LOOKUP_*`). Tailwind v4 `@apply` in these rules must reference **utilities only** — nesting `@apply` of another component class fails PostCSS in dev and build.
+
+Coverage of wired counties is the county segment (and the footer). Do not restore a "Supported Colorado counties … More coming." box on the lookup screen.
+
+**Dev compile (local `next dev`):** `Ready` in ~2s is normal. First compile of `/` after start is often **20–30s** (large client graph: `HomeParcelAddressLookup` + imports). **`globals.css` hot reload** should stay fast after the content-scan limit below.
+
+Causes of slow first compile (unchanged):
+
+1. `layout.tsx` imports `globals.css` → Turbopack invalidates from the app root.
+2. Tailwind v4 runs the full PostCSS pipeline on every `globals.css` change (`@apply` expansion, utility generation).
+3. Runtime index prefetch on address focus is a separate cost from CSS compile.
+
+**Tailwind content scan (applied 2026-08-30):** `src/app/globals.css` imports Tailwind with `source("../")` so class detection walks **`src/` only**, not committed `public/data/` JSON shards (~8,800+ files). Without that limit, every `globals.css` save walked those data files and hot reload took ~10–15s.
+
+```css
+@import "tailwindcss" source("../");
+```
+
+From `src/app/globals.css`, `../` is `src/` — where all `className` usage lives. Production CSS output is unchanged; this is a dev scan scope fix.
+
+Residents can pick the wrong county. Selected county is search order / prefetch scope, not sole ground truth. Account-id path uses the same preferred order (selected → adjacent among format matches; or all format matches when “I don’t know”).
+
+When adding county N: set `adjacentCountyIds` to real neighbors among wired counties only; leave empty until neighbors ship.
+
 ## Opt-in rule (locked)
 
 Gap callouts and Arapahoe-specific (or Douglas-specific) methodology claims are **opt-in per `CountyConfig`**. Sparse is OK. Wrong gap copy is not.
@@ -96,9 +153,9 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 ## Adding a county (checklist)
 
 1. **Inventory** — `docs/county-build-inputs.md` + ingest Go/No-go; what bulk tables and mill sources exist.
-2. **Config** — new `CountyConfig` in `countyConfig.ts`; validate; register in `COUNTY_CONFIG_BY_ID`. Product flags only for sources you ship. Gap flags default **false**.
-3. **JSON** — `{countyId}-*` under `public/data/` (gitignored until ship commit).
-4. **UI** — confirm dashboard gates use active county config; no Arapahoe-only callouts with flags off.
+2. **Config** — new `CountyConfig` in `countyConfig.ts`; validate; register in `COUNTY_CONFIG_BY_ID`. Product flags only for sources you ship. Gap flags default **false**. Set `adjacentCountyIds` for wired neighbors (county search gate).
+3. **JSON** — `{countyId}-*` under `public/data/` (committed for live counties).
+4. **UI** — confirm dashboard gates use active county config; no Arapahoe-only callouts with flags off. Search gate / prefetch respects selected county → adjacent → “I don’t know.”
 5. **Gaps** — only after a county-true story: copy module + both surfaces + hub item + flag on for that county only.
 6. **`/sources`** — county content module + selector entry; hub follows flags. Do not paste another county’s Data Mart / prior-year / comps story.
 7. **Ship** — commit production JSON; drop local-only gitignore lines for that county’s app files.
@@ -111,12 +168,18 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 - Treating Layer 3 empty fields (or “we do not ship this field yet”) as COUNTY DATA GAP. Omit the row; do not invent a red incident.
 - Shipping a county without committed `public/data/` JSON.
 - Copy-pasting methodology pages as the plan for county N.
+- Prefetching every wired county’s situs / pin / levy on focus once multi-county ships (use the county search gate).
+- Probing counties in alphabetical or registry-key order instead of selected → `adjacentCountyIds`.
+- Treating the county picker as sole ground truth with no adjacent / “I don’t know” escape.
 
 ## Related code
 
 | Piece | Path |
 | --- | --- |
 | Config + flags | `src/lib/countyConfig.ts` |
+| Search scope helpers | `src/lib/countySearchScope.ts` |
+| Home lookup row control CSS | `src/app/globals.css` (`.home-address-lookup-*`) |
+| Choose-your-county UI | `src/components/CountySearchScopeSwitch.tsx` |
 | Config tests / hub list tests | `src/lib/countyConfig.test.ts` |
 | Gap hub builder + anchors | `src/content/countyServiceGapGuidance.ts` |
 | `/sources` selector | `src/components/SourcesCountyGate.tsx` |

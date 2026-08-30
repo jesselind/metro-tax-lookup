@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../");
 
 :root {
   --background: #ffffff;
@@ -78,5 +78,35 @@ summary {
   }
   .btn-primary--md {
     @apply min-h-11 px-5 py-2.5 text-base;
+  }
+
+  /**
+   * Home address lookup row: county segment, street input, Search, and Try demo
+   * share box-border h-12 (48px). @apply utilities only — not other component
+   * classes (Tailwind v4 PostCSS rejects nested @apply of components).
+   *
+   * Tailwind content scan is limited to src/ via source("../") above so committed
+   * public/data/ JSON shards are not walked on every rebuild. See docs/county-config.md.
+   */
+  .home-address-lookup-input {
+    @apply box-border h-12 block w-full max-w-none rounded-md border border-slate-300 bg-white px-3 text-base leading-normal shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30;
+  }
+
+  .home-address-lookup-search {
+    @apply box-border h-12 inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 px-5 text-base font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  /** Outline sibling of Search on the lookup row. Stacked: full width; lg+: content-width. */
+  .home-address-lookup-demo {
+    @apply box-border h-12 inline-flex w-full shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-slate-300 bg-white px-5 text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:flex-none;
+  }
+
+  /** Stacked: full-width bar; lg+: content-width segments. */
+  .home-address-lookup-county-segment {
+    @apply box-border h-12 inline-flex w-full max-w-full overflow-hidden rounded-md border border-slate-300 lg:w-auto;
+  }
+
+  .home-address-lookup-county-option {
+    @apply flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center px-4 text-base font-semibold leading-none tracking-tight transition-colors focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 lg:flex-none lg:shrink-0 lg:px-8;
   }
 }

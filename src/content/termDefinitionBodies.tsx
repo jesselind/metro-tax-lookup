@@ -739,6 +739,24 @@ export function TermParcelBookPageBriefBody() {
   );
 }
 
+export function TermParcelSaleGrantorBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The party who transferred the property in this deed, as the county recorded it. On a typical
+      home sale, this is often the seller.
+    </p>
+  );
+}
+
+export function TermParcelSaleGranteeBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      The party who received the property in this deed, as the county recorded it. On a typical
+      home sale, this is often the buyer.
+    </p>
+  );
+}
+
 export function TermParcelPermitBriefBody() {
   return (
     <p className={BRIEF_P}>
@@ -1007,6 +1025,8 @@ export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-parcel-value-land",
   "term-parcel-sale",
   "term-parcel-book-page",
+  "term-parcel-sale-grantor",
+  "term-parcel-sale-grantee",
   "term-parcel-permit",
   "term-parcel-land-line",
   "term-parcel-land-units",
@@ -1158,6 +1178,14 @@ export const parcelGlossaryTermBriefRegistry: Record<
   "term-parcel-book-page": {
     title: "Book Page",
     Brief: TermParcelBookPageBriefBody,
+  },
+  "term-parcel-sale-grantor": {
+    title: "Grantor",
+    Brief: TermParcelSaleGrantorBriefBody,
+  },
+  "term-parcel-sale-grantee": {
+    title: "Grantee",
+    Brief: TermParcelSaleGranteeBriefBody,
   },
   "term-parcel-permit": {
     title: "Permits",

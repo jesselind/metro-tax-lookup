@@ -93,7 +93,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 **Local root:** `supporting-data/douglas/`
 
-**Last verified:** 2026-08-28 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live API ingest** — Assessor published text downloads + tax-district mill PDF only. Phase 9/9b on branch: mapping + headerless text + mill-PDF stacks + situs from `Property_Location.txt`. **Phase 9c:** Ownership / Improvements / Subdivision / Sales / Filing + optional Hub parcels CSV → parcel-record shards; **production-live ship waits on intentional gitignore drop** (see `docs/county-ingest.md`).
+**Last verified:** 2026-08-28 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live ingestion through an API** — Assessor published text downloads + tax-district mill PDF only. Phase 9/9b/9c: mapping + headerless text + mill-PDF stacks + situs + parcel-record shards; shipping JSON under `public/data/douglas-*` (see `docs/county-ingest.md`).
 
 **Also uses (Colorado shared):** **none** yet (add when mill/TE join or directory ships for Douglas).
 
@@ -105,7 +105,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 | Save as (local path) | Required? | Hub URL | Direct URL (optional) | Feeds | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `supporting-data/douglas/Property_Location.txt` | yes | [Data Downloads](https://www.douglasco.gov/assessor/data-downloads/) | https://apps.douglasco.gov/realware/datadownloads/Property_Location.txt | account map (account id, situs parts, **`Tax_District_No`**) | Quoted CSV, **no header row** (column order on the hub page). Active accounts. ~33 MB on 2026-08-25 drop. |
+| `supporting-data/douglas/Property_Location.txt` | yes | [Data Downloads](https://www.douglasco.gov/assessor/data-downloads/) | https://apps.douglasco.gov/realware/datadownloads/Property_Location.txt | account map (account id, situs parts, **`Tax_District_No`**) | Quoted CSV, **no header row** (column order on the hub page). Active accounts. ~33 MB on 2026-08-25 drop. Stamp download date in tracked `tools/douglas-data-as-of.txt`. |
 | `supporting-data/douglas/Property_Values.txt` | yes | same | https://apps.douglasco.gov/realware/datadownloads/Property_Values.txt | account map (actual / assessed values) | Plural **Values**. Headerless. Multiple valuation rows per account possible. |
 | `supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf` | yes | [Taxing Authorities](https://www.douglasco.gov/assessor/taxing-authorities/) | https://www.douglasco.gov/documents/2025-tax-districts-and-mill-levies.pdf | levy stacks (tax district → authorities + mills) | Tax-district grain (district header, then authority rows). Prefer current tax year on the hub if renamed. |
 | `supporting-data/douglas/Property_Ownership.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Ownership.txt | optional parcel-record / owner fields | Headerless. |

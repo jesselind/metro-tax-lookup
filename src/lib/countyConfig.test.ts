@@ -89,6 +89,7 @@ function scheduleCountyFixture(
     knownFailures: {
       compsPdfHostedFiles: false,
     },
+    adjacentCountyIds: [],
     countyScopeNote: "Synthetic County only.",
     identifierPlaceholder: "10-digit schedule number from county record",
     emptyIdentifierMessage:

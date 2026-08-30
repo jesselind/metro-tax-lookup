@@ -150,6 +150,14 @@ const SALE_TABLE_COLUMN_GLOSSARY: Partial<
     termId: "term-parcel-book-page",
     triggerIdSuffix: "hdr-book-page",
   },
+  Grantor: {
+    termId: "term-parcel-sale-grantor",
+    triggerIdSuffix: "hdr-grantor",
+  },
+  Grantee: {
+    termId: "term-parcel-sale-grantee",
+    triggerIdSuffix: "hdr-grantee",
+  },
 };
 
 /** In-table section title (Values, Sale, Building, Area, Land Line, Permits): label only, no cell chrome. */
