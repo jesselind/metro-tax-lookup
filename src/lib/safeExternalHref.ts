@@ -61,6 +61,58 @@ export function safeCountyHostedQueryUrl(
 }
 
 /**
+ * Fill `{name}` tokens in a path template. Returns null if a used token is empty
+ * or any `{token}` remains unfilled.
+ */
+function fillCountyUrlPathTemplate(
+  template: string,
+  vars: Readonly<Record<string, string>>,
+): string | null {
+  let out = template;
+  for (const [key, value] of Object.entries(vars)) {
+    const token = `{${key}}`;
+    if (!out.includes(token)) continue;
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    out = out.split(token).join(encodeURIComponent(trimmed));
+  }
+  if (/\{[a-zA-Z][a-zA-Z0-9]*\}/.test(out)) return null;
+  return out;
+}
+
+function safeCountyParcelRecordHashPathUrl(
+  template: Extract<
+    CountyConfig["urls"]["parcelRecord"],
+    { style: "hashPath" }
+  >,
+  idRaw: string | null | undefined,
+  config: CountyConfig,
+  opts?: { year?: string | null },
+): string | null {
+  if (!isCountyHostAllowed(template.host, config)) return null;
+  const id = String(idRaw ?? "").trim();
+  if (!id) return null;
+  const year = String(opts?.year ?? template.year ?? "").trim();
+  const hashPath = fillCountyUrlPathTemplate(template.hashPathTemplate, {
+    id,
+    year,
+  });
+  if (!hashPath) return null;
+  try {
+    const url = new URL(`https://${template.host}${template.path}`);
+    if (url.hostname.toLowerCase() !== template.host.toLowerCase()) {
+      return null;
+    }
+    if (!isCountyHostAllowed(url.hostname, config)) return null;
+    const normalized = hashPath.startsWith("/") ? hashPath : `/${hashPath}`;
+    url.hash = normalized;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * County online levy table for a taxing authority (id in query).
  * Arapahoe build script emits https://parcelsearch.arapahoegov.com/Levy.aspx?id=…
  */
@@ -89,16 +141,20 @@ export function safeCountyLevyAspxUrl(
   }
 }
 
-/** County parcel record page for one property (public parcel id / AIN). */
+/**
+ * County official property page for one account / public parcel id.
+ * Query style (Arapahoe) or hash-path style (Douglas `#/details/{year}/{id}`).
+ */
 export function safeCountyParcelRecordUrl(
-  publicParcelIdRaw: string | null | undefined,
+  idRaw: string | null | undefined,
   config: CountyConfig = COUNTY_CONFIG,
+  opts?: { year?: string | null },
 ): string | null {
-  return safeCountyHostedQueryUrl(
-    config.urls.parcelRecord,
-    publicParcelIdRaw,
-    config,
-  );
+  const template = config.urls.parcelRecord;
+  if (template.style === "hashPath") {
+    return safeCountyParcelRecordHashPathUrl(template, idRaw, config, opts);
+  }
+  return safeCountyHostedQueryUrl(template, idRaw, config);
 }
 
 /** County comps grid PDF download (AIN-like field). */

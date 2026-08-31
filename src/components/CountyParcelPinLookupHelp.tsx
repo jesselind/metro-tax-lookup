@@ -10,7 +10,7 @@ import { useState } from "react";
 import parcelPinImg from "@/assets/images/Parcel-PIN.png";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
-import { COUNTY_CONFIG } from "@/lib/countyConfig";
+import { wiredCountyConfigs } from "@/lib/countyConfig";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
@@ -25,26 +25,58 @@ type CountyParcelPinLookupHelpProps = {
 };
 
 /**
- * County assessor property search + where to find parcel PIN (shared home-page help body).
- * Used from the home address card when situs lookup has no match (optionally with levy table help).
+ * Assessor property search + where to find an account id (shared home-page help).
+ * Links every wired county; screenshot example stays Arapahoe until other counties
+ * contribute equivalent help art.
  */
 export function CountyParcelPinLookupHelp({
   includeLevyTableScreenshots = false,
 }: CountyParcelPinLookupHelpProps) {
   const [showParcelPinHelp, setShowParcelPinHelp] = useState(false);
+  const counties = wiredCountyConfigs();
 
   return (
     <div className="space-y-3">
       <p className="text-base text-slate-800 sm:text-lg">
-        Go to the county{" "}
-        <a
-          href={COUNTY_CONFIG.residentLinks.propertySearch}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          property search<span className="sr-only"> (opens in a new tab)</span>
-        </a>.
+        Go to your county property search
+        {counties.length === 1 ? (
+          <>
+            {" "}
+            (
+            <a
+              href={counties[0]!.residentLinks.propertySearch}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={COUNTY_EXTERNAL_LINK_CLASS}
+            >
+              {counties[0]!.displayName}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>).
+          </>
+        ) : (
+          <>
+            :{" "}
+            {counties.map((county, index) => (
+              <span key={county.id}>
+                {index > 0
+                  ? index === counties.length - 1
+                    ? ", or "
+                    : ", "
+                  : null}
+                <a
+                  href={county.residentLinks.propertySearch}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={COUNTY_EXTERNAL_LINK_CLASS}
+                >
+                  {county.displayName}
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              </span>
+            ))}
+            .
+          </>
+        )}
       </p>
       <p className="text-base text-slate-800 sm:text-lg">
         Type your address. Open your property when it comes up. You should see a
@@ -52,7 +84,8 @@ export function CountyParcelPinLookupHelp({
         this your <strong>parcel record</strong>.
       </p>
       <p className="text-base text-slate-800 sm:text-lg">
-        On the parcel record, find your <strong>parcel PIN</strong>.
+        On the parcel record, find your <strong>account number</strong> or{" "}
+        <strong>parcel PIN</strong> (the label depends on the county).
       </p>
       <div className="space-y-3 pt-1">
         <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
@@ -76,7 +109,7 @@ export function CountyParcelPinLookupHelp({
               >
                 <Image
                   src={parcelPinImg}
-                  alt="County parcel record screenshot with the parcel PIN location highlighted."
+                  alt="Arapahoe County parcel record screenshot with the parcel PIN location highlighted."
                   className="w-full rounded-md border border-slate-400"
                   width={800}
                   height={650}
@@ -84,7 +117,8 @@ export function CountyParcelPinLookupHelp({
                 />
               </a>
               <figcaption className="mt-1 text-sm text-slate-500 sm:text-base">
-                Tap image to open full size.
+                Example from Arapahoe County (tap image to open full size). Other
+                counties may label the same field as an account number.
               </figcaption>
             </figure>
           </div>

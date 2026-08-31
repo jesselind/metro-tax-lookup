@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { ARAPAHOE_COUNTY_CONFIG } from "./countyConfig";
+import { ARAPAHOE_COUNTY_CONFIG, DOUGLAS_COUNTY_CONFIG } from "./countyConfig";
 import {
   clerkRecorderSearchValueFromBookPage,
   safeCountyBppAccountDetailsUrl,
@@ -95,6 +95,11 @@ describe("safeCountyParcelRecordUrl", () => {
   it("URL-encodes special characters in AIN", () => {
     expect(safeCountyParcelRecordUrl("a&b=c")).toBe(
       "https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=a%26b%3Dc",
+    );
+  });
+  it("builds Douglas hash-path property details URL", () => {
+    expect(safeCountyParcelRecordUrl("R0399058", DOUGLAS_COUNTY_CONFIG)).toBe(
+      "https://apps.douglas.co.us/assessor/web/#/details/2026/R0399058",
     );
   });
 });

@@ -31,6 +31,10 @@ import {
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 import {
+  COUNTY_CONFIG,
+  type CountyConfig,
+} from "@/lib/countyConfig";
+import {
   safeCountyLevyAspxUrl,
 } from "@/lib/safeExternalHref";
 import {
@@ -270,6 +274,8 @@ export type LevyStackVisualizationProps = {
   levyDollarUnitCount?: number | null;
   /** Rent lens: show monthly whole dollars with /mo (Own stays annual). */
   rentMode?: boolean;
+  /** Resolved county for levy-table host allowlist checks. */
+  countyConfig?: CountyConfig;
 };
 
 export function LevyStackVisualization({
@@ -286,6 +292,7 @@ export function LevyStackVisualization({
   allowLineEdit,
   levyDollarUnitCount = null,
   rentMode = false,
+  countyConfig = COUNTY_CONFIG,
 }: LevyStackVisualizationProps) {
   const templateErrorId = useId();
   const [showLevyDetails, setShowLevyDetails] = useState(false);
@@ -308,9 +315,9 @@ export function LevyStackVisualization({
   const safeLevyTableHref = useMemo(
     () =>
       loadedParcelMeta
-        ? safeCountyLevyAspxUrl(loadedParcelMeta.levyAspxUrl)
+        ? safeCountyLevyAspxUrl(loadedParcelMeta.levyAspxUrl, countyConfig)
         : null,
-    [loadedParcelMeta],
+    [loadedParcelMeta, countyConfig],
   );
 
   /** Positive assessed value only; omit so we never show a fake $0 from missing data. */

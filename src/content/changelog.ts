@@ -27,6 +27,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.1.0",
+    date: "2026-08-28",
+    title: "Douglas multi-county lookup + parcel-record shards (Phase 9/9b/9c)",
+    highlights: [
+      "Douglas County loads beside Arapahoe by account id and street address (no env county switch). Ingest uses Assessor Property_Location + Property_Values (sum join) and the tax-district mill PDF; situs comes from the location file. Shipping JSON under public/data/douglas-* is committed with this release.",
+      "Phase 9c: douglas-parcel-record-by-pin shards join Ownership / Location legal / Improvements / Subdivision / Sales / Filing (+ optional Hub parcels CSV) into the same Property details shape as Arapahoe. Enrichments: values land lines, lot/block/tract, filing, composite neighborhood code, sales grantor/grantee. Alphanumeric 8-char account ids use path-safe shard prefixes. features.parcelRecordShards is on for Douglas.",
+      "Multi-county UI: when two or more counties are wired, search typeahead, did-you-mean streets, and multi-match chooser rows show the county display name; the dashboard Address tile shows address · County Name.",
+      "Dashboard follows the resolved county: Ownership fills account-map ownerList for Owner of record tiles; LevyCountyCompareSection / parcel-record / levy links take CountyConfig; footer and pin-lookup help list wired counties from COUNTY_CONFIG_BY_ID (not Arapahoe-only hardcodes).",
+      "Honesty gates: COUNTY DATA GAP chrome is opt-in per CountyConfig (priorYearValuesGap, dataMartRefreshGap, millPdfTaxDistrictGap; comps via knownFailures). /sources has a county selector; hub and methodology follow the selected county. docs/county-config.md is the durable multi-county model.",
+      "Hosted property page: urls.parcelRecord supports query or hashPath templates (Douglas #/details/{year}/{id}); hostedPropertyPageName drives Open county … button copy; compare heading uses displayName (See how {County} displays your data).",
+      "Follow-up hardening: county-aware resident links, safer countyId / situs failure detail handling, account-id not-found candidates for letter counties, values-join account-id normalization, and Douglas validate:app-json CLI tests that do not depend on gitignored ingest-out dumps.",
+      "County search gate (multi-county bandwidth): default Arapahoe with lazy situs/pin/levy prefetch on engage; adjacent wired counties auto-try on address miss (adjacentCountyIds, not alphabetical); \"?\" (I don't know my county) probes all situs-enabled counties. Visible load progress on every scoped fetch. Account-id lookup uses the same preferred order. docs/county-config.md; countySearchScope.ts + CountySearchScopeSwitch.",
+      "Home lookup row: label Select your Colorado county; segment Arapahoe | Douglas | ?; Try demo property on the same 48px control row from lg up (stacked full-width below lg). Dropped the Supported Colorado counties availability box (footer still lists coverage). Control chrome: .home-address-lookup-* in globals.css + HOME_ADDRESS_LOOKUP_* in toolFlowStyles.ts. Start over keeps the county pick.",
+      "Site footer: light slate-50 band (slightly darker than page white) with slate-800 body copy for contrast.",
+      "Dev: Tailwind content scan limited to src/ (globals.css source(\"../\")) so public/data JSON shards are not walked on CSS hot reload.",
+    ],
+  },
+  {
     version: "5.0.1",
     date: "2026-08-25",
     title: "Maintainer download lists; Douglas locked as county 2 (inventory Go)",

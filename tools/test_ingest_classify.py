@@ -456,5 +456,41 @@ class ClassifyFormatAndWalkTests(unittest.TestCase):
             self.assertNotIn("arapahoe-main-parcel", {f.signature for f in report.files})
 
 
+
+
+class ClassifyHeaderlessTxtTests(unittest.TestCase):
+    def test_headerless_txt_is_visible_as_headerless_csv(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            drop = Path(tmp)
+            # Synthetic account-shaped first cell; no real county ids.
+            (drop / "accounts.txt").write_text(
+                '"A1000001","0035","100 Main"\n"A1000002","0043","200 Oak"\n',
+                encoding="utf-8",
+            )
+            report = classify_drop(drop)
+            sigs = {f.signature for f in report.files}
+            self.assertIn("headerless-csv", sigs)
+            kinds = {f.kind for f in report.files}
+            self.assertIn("txt", kinds)
+
+    def test_headed_csv_still_mapping_candidate_with_accountno(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            drop = Path(tmp)
+            _write_csv(
+                drop / "parcels.csv",
+                [
+                    "ACCOUNT_NO",
+                    "TAX_DISTRICT_NO",
+                    "TOTAL_ACTUAL_VALUE",
+                    "TOTAL_ASSESSED_VALUE",
+                    "STREET_NAME",
+                ],
+                [["A1000001", "0035", "1", "1", "SYNTHETIC"]],
+            )
+            report = classify_drop(drop)
+            sigs = {f.signature for f in report.files}
+            self.assertIn("mapping-candidate-account", sigs)
+            self.assertEqual(report.coverage["accountMap"].status, "mapping-needed")
+
 if __name__ == "__main__":
     unittest.main()

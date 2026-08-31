@@ -24,7 +24,7 @@ Educational first: clear explanation, not a government catalog. Apply when **tou
 
 ### Final checks (user-invoked only)
 
-Phrases: "Do final checks" / "Run final checks". Touched or named scope only. Not redesign permission. Do not auto-run after phases/commits.
+Phrases: "Do final checks" / "Run final checks". Touched or named scope only. Not redesign permission. Do not auto-run after phases, commits, or ordinary implementation / layout / copy turns. The npm list in step 4 is **that invoked pass only**, not after each edit.
 
 - **Fix without asking:** same-product engineering/a11y-in-place (types, tests, validation, `cursor-pointer` on already-clickable controls, focus/keyboard/Escape/`aria-*` on existing popovers, label association).
 - **Ask first:** layout, visual design, disclosure, column order, labels/copy/voice, or a11y that changes what residents see or how they move. Popovers/disclosures are fine when correct. Unsure → one question.
@@ -36,7 +36,7 @@ Phrases: "Do final checks" / "Run final checks". Touched or named scope only. No
    - Any `.ts`/`.tsx` changed: `npm run typecheck` (`next typegen` + `tsc --noEmit`)
    - Any `.tsx`/`.jsx` changed: `npm run lint` (includes `local/jsx-inline-prose-spacing`)
    - Test or logic in scope: `npm run test:unit` (or a targeted `vitest run` path)
-   - JSON/templates, Next config, or anything that affects the production bundle: `npm run build` (same TypeScript + bundle gate as production deploy and CI e2e)
+   - JSON/templates, Next config, or app code that ships in the Next bundle: `npm run build` (same TypeScript + bundle gate as production deploy and CI e2e)
    - UI contract changed: full chromium/firefox/webkit e2e per Playwright rule — fresh `npm run typecheck`, `npm run build`, then `CI=1 npm run test:e2e` (`next start`, not `next dev`). Match current UI.
 5. Triage: `docs/_working/` for deferred research (optional handoff). `locked-decisions.md` survives topic cleanup; not a whitelist.
 6. Report per **Review responses**.

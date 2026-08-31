@@ -6,8 +6,10 @@
 import { describe, expect, it } from "vitest";
 import {
   formatMartIntegerCodeDisplay,
+  formatParcelFilingDisplay,
   parcelTaxAndAssessmentYearsDiffer,
   parcelTaxAssessmentYearNote,
+  summaryOwnerOfRecord,
 } from "./parcelRecordDisplay";
 
 describe("formatMartIntegerCodeDisplay", () => {
@@ -44,5 +46,23 @@ describe("parcelTaxAndAssessmentYearsDiffer", () => {
     expect(parcelTaxAndAssessmentYearsDiffer("2025", "2026")).toBe(true);
     expect(parcelTaxAndAssessmentYearsDiffer("2026", "2026")).toBe(false);
     expect(parcelTaxAndAssessmentYearsDiffer("2025", null)).toBe(false);
+  });
+});
+
+describe("formatParcelFilingDisplay", () => {
+  it("shows description, number, or both", () => {
+    expect(formatParcelFilingDisplay("FILING A", "123")).toBe("FILING A (123)");
+    expect(formatParcelFilingDisplay("FILING A", null)).toBe("FILING A");
+    expect(formatParcelFilingDisplay(null, "123")).toBe("123");
+    expect(formatParcelFilingDisplay("", "  ")).toBeNull();
+  });
+});
+
+describe("summaryOwnerOfRecord", () => {
+  it("prefers account-map owner, then parcel-record owner", () => {
+    expect(summaryOwnerOfRecord("From Map", "From Record")).toBe("From Map");
+    expect(summaryOwnerOfRecord(null, "From Record")).toBe("From Record");
+    expect(summaryOwnerOfRecord("  ", "From Record")).toBe("From Record");
+    expect(summaryOwnerOfRecord(null, null)).toBeNull();
   });
 });

@@ -28,11 +28,14 @@ import {
   COMPS_PDF_ICON_CONTROL_CLASS,
 } from "@/components/CountyCompsPdfHelpPopover";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
+import {
+  CountyScopeTopLine,
+  showCountyScopeTopLine,
+} from "@/components/CountyScopeTopLine";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { DataLoadErrorCallout } from "@/components/DataLoadErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
-import { InfoIcon } from "@/components/InfoIcon";
 import { LevyCountyCompareSection } from "@/components/LevyCountyCompareSection";
 import {
   LevyStackVisualization,
@@ -41,6 +44,7 @@ import {
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
 import { ParcelRecordExtendedSection, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
 import { AudienceModeSwitch } from "@/components/AudienceModeSwitch";
+import { CountySearchScopeSwitch } from "@/components/CountySearchScopeSwitch";
 import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
@@ -56,11 +60,7 @@ import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
 } from "@/content/countyCompsPdfGuidance";
 import { MILL_LEVY_STACK_HEADING_ID } from "@/content/millLevySummaryCopy";
-import {
-  btnOutlinePrimaryMd,
-  btnOutlineSecondaryMd,
-  btnPrimaryMd,
-} from "@/lib/buttonClasses";
+import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import {
   CONTACT_EMAIL,
   REPORT_PROBLEM_MAILTO_HREF,
@@ -76,23 +76,17 @@ import {
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
 import {
-  fetchArapahoeLevyStacksJson,
   fetchArapahoeParcelRecordForPin,
   fetchArapahoePinToTagJson,
-  looksLikeParcelIdInput,
   type ArapahoeParcelRecordRow,
   type ArapahoePinToTagFile,
 } from "@/lib/arapahoeParcelLevyData";
-import { countySitusToPinsUrl } from "@/lib/countyDataPaths";
 import {
-  fetchArapahoeSitusToPinsJson,
-  getLastArapahoeSitusFetchFailureDetail,
-  lookupPinsBySitusFuzzy,
+  anyCountySitusSearchAvailable,
   normalizeStreetNameKey,
   parseSimpleAddressLineForSitusLookup,
   resolveSitusFieldsForLookup,
   situsUnitLooksLikeStreetAutofillDuplicate,
-  suggestSitusStreetsForNumber,
   SITUS_AUTOFILL_LINE1_MAX_LEN,
   SITUS_INPUT_MAX_LEN,
   SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN,
@@ -111,8 +105,23 @@ import {
 } from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
+import { looksLikeParcelIdInputAnyCounty } from "@/lib/countyAccountLookup";
+import {
+  prefetchCountySearchIndexes,
+  resolveSitusCountyLookup,
+  SITUS_COUNTY_AMBIGUOUS_MESSAGE,
+  suggestSitusStreetsMultiCounty,
+  type SitusStreetSuggestionWithCounty,
+} from "@/lib/countySitusLookup";
+import {
+  DEFAULT_COUNTY_SEARCH_SCOPE,
+  formatCountyIndexLoadMessage,
+  type CountyIndexLoadProgress,
+  type CountySearchScope,
+} from "@/lib/countySearchScope";
 import {
   COUNTY_CONFIG,
+  countyConfigById,
   countyFeatureAvailable,
   countyFeaturePresentation,
 } from "@/lib/countyConfig";
@@ -137,6 +146,7 @@ import {
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import {
   parcelTaxAndAssessmentYearsDiffer,
+  summaryOwnerOfRecord,
 } from "@/lib/parcelRecordDisplay";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -145,6 +155,10 @@ import {
   DASHBOARD_SECTION_META_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   HOME_AUDIENCE_STACK_GAP_CLASS,
+  HOME_ADDRESS_LOOKUP_DEMO_CLASS,
+  HOME_ADDRESS_LOOKUP_INPUT_CLASS,
+  HOME_ADDRESS_LOOKUP_LABEL_CLASS,
+  HOME_ADDRESS_LOOKUP_SEARCH_CLASS,
   INPUT_CLASS,
   COUNTY_SERVICE_GAP_STACK_CLASS,
   COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS,
@@ -171,15 +185,11 @@ import {
 } from "@/lib/toolFlowStyles";
 
 /**
- * PIN + levy-stack JSON (~41MB) are needed right after situs lookup. Starting these fetches
- * while situs (~19MB) downloads overlaps network time (same cached promises as loadLevyStackFromPin).
+ * Prefetch search indexes for the county search gate scope only (lazy on engage).
+ * Adjacent counties load after an address miss inside resolveSitusCountyLookup.
  */
-function prefetchParcelLevyJsonBundle(): void {
-  void fetchArapahoePinToTagJson();
-  void fetchArapahoeLevyStacksJson();
-}
 
-const INPUT_ROW = `${INPUT_CLASS} min-w-0 w-full !max-w-none px-2 py-2 text-base sm:text-base`;
+const INPUT_ROW = HOME_ADDRESS_LOOKUP_INPUT_CLASS;
 const INPUT_PIN_ROW = `${INPUT_CLASS} w-full min-w-0 max-w-none px-2 py-2 text-base`;
 const FIELD_LABEL_CLASS =
   "whitespace-nowrap text-xs font-medium text-slate-700 sm:text-sm";
@@ -215,7 +225,7 @@ const addressSitusGrid = {
     "md:col-start-5 md:row-start-2 md:flex-row md:items-end md:gap-2",
 } as const;
 
-const ADDRESS_FORM_ACTION_BTN_CLASS = `${btnPrimaryMd} inline-flex w-full min-w-0 justify-center md:w-auto md:min-w-[8.75rem] md:flex-none`;
+const ADDRESS_FORM_ACTION_BTN_CLASS = HOME_ADDRESS_LOOKUP_SEARCH_CLASS;
 
 /** Shared shell for county help, PIN fallback, and list callouts. */
 const ADDRESS_TILE_SURFACE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
@@ -225,10 +235,7 @@ const ADDRESS_LOOKUP_PANEL_CLASS = `${ADDRESS_TILE_SURFACE_CLASS} p-3 sm:p-4`;
 /** Autocomplete section token paired with `address-line1` on the Number input (mobile autofill). */
 const AC_SECTION = "section-arapahoe-situs";
 
-const SITUS_SEARCH_ON = countyFeatureAvailable("situs");
-const BPP_ON = countyFeatureAvailable("bpp");
-const COMPS_PRESENTATION = countyFeaturePresentation("compsPdf");
-const COMPS_GAP = COMPS_PRESENTATION === "gap";
+const SITUS_SEARCH_ON = anyCountySitusSearchAvailable();
 
 /** Same-page anchor for the manual levy / breakdown region (Parcel PIN card link). */
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
@@ -282,7 +289,7 @@ export function HomeParcelAddressLookup({
   );
   /** Live street suggestions for the current house number (typeahead). */
   const [streetTypeahead, setStreetTypeahead] = useState<
-    SitusStreetSuggestion[]
+    SitusStreetSuggestionWithCounty[]
   >([]);
   const [streetTypeaheadOpen, setStreetTypeaheadOpen] = useState(false);
   const [streetTypeaheadActiveIndex, setStreetTypeaheadActiveIndex] =
@@ -318,6 +325,8 @@ export function HomeParcelAddressLookup({
     useState<string | null>(null);
   /** Parcel PIN is edited in the lookup flow only; levy and metro use loaded data, not a second PIN field. */
   const [parcelPin, setParcelPin] = useState("");
+  /** County resolved from account-id lookup (drives config + JSON paths). */
+  const [resolvedCountyId, setResolvedCountyId] = useState<string | null>(null);
 
   /** Opens levy / metro / hub without a PIN load (user builds the stack with Add tile). */
   const [homeLevyWorkbenchOpen, setHomeLevyWorkbenchOpen] = useState(false);
@@ -330,6 +339,13 @@ export function HomeParcelAddressLookup({
   const [audienceMode, setAudienceMode] = useState<AudienceMode>(
     DEFAULT_AUDIENCE_MODE,
   );
+  /** Prefetch / probe scope for address + account search (default Arapahoe). */
+  const [countySearchScope, setCountySearchScope] = useState<CountySearchScope>(
+    DEFAULT_COUNTY_SEARCH_SCOPE,
+  );
+  const [indexLoadProgress, setIndexLoadProgress] =
+    useState<CountyIndexLoadProgress | null>(null);
+  const indexLoadRequestRef = useRef(0);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [parcelRecord, setParcelRecord] = useState<ArapahoeParcelRecordRow | null>(
     null,
@@ -357,6 +373,27 @@ export function HomeParcelAddressLookup({
     levyLoadedMeta != null &&
     !levyLoadError &&
     !levyLoadBusy;
+
+  const activeCountyConfig = useMemo(
+    () =>
+      (resolvedCountyId ? countyConfigById(resolvedCountyId) : null) ??
+      COUNTY_CONFIG,
+    [resolvedCountyId],
+  );
+  const activeBppOn = countyFeatureAvailable("bpp", activeCountyConfig);
+  const activeCompsPresentation = countyFeaturePresentation(
+    "compsPdf",
+    activeCountyConfig,
+  );
+  const activeCompsGap = activeCompsPresentation === "gap";
+  const activePriorYearValuesGap = countyFeatureAvailable(
+    "priorYearValuesGap",
+    activeCountyConfig,
+  );
+  const activeDataMartRefreshGap = countyFeatureAvailable(
+    "dataMartRefreshGap",
+    activeCountyConfig,
+  );
 
   /** Mobile autofill often ignores autocomplete=off on Unit; strip duplicate street lines. */
   useEffect(() => {
@@ -413,30 +450,45 @@ export function HomeParcelAddressLookup({
     setParcelRecordLoading(false);
     setParcelRecordLoadFailed(false);
     setParcelRecordBundledAsOf(null);
+    setResolvedCountyId(null);
   }, []);
 
-  const loadParcelRecord = useCallback(async (lookupPin: string) => {
-    const requestId = ++parcelRecordRequestRef.current;
-    const isCurrentRequest = () => requestId === parcelRecordRequestRef.current;
-    setParcelRecordLoading(true);
-    setParcelRecordLoadFailed(false);
-    setParcelRecord(null);
-    setParcelRecordBundledAsOf(null);
-    try {
-      const result = await fetchArapahoeParcelRecordForPin(lookupPin);
-      if (!isCurrentRequest()) return;
-      if (!result) {
-        setParcelRecordLoadFailed(true);
+  const loadParcelRecord = useCallback(
+    async (lookupPin: string, countyId: string) => {
+      const config = countyConfigById(countyId);
+      const requestId = ++parcelRecordRequestRef.current;
+      const isCurrentRequest = () => requestId === parcelRecordRequestRef.current;
+      setParcelRecordLoading(true);
+      setParcelRecordLoadFailed(false);
+      setParcelRecord(null);
+      setParcelRecordBundledAsOf(null);
+      if (!config?.features.parcelRecordShards) {
+        if (isCurrentRequest()) {
+          setParcelRecordLoading(false);
+        }
         return;
       }
-      setParcelRecord(result.row);
-      setParcelRecordBundledAsOf(result.bundledAsOf);
-    } finally {
-      if (isCurrentRequest()) {
-        setParcelRecordLoading(false);
+      try {
+        const result = await fetchArapahoeParcelRecordForPin(
+          lookupPin,
+          undefined,
+          config.id,
+        );
+        if (!isCurrentRequest()) return;
+        if (!result) {
+          setParcelRecordLoadFailed(true);
+          return;
+        }
+        setParcelRecord(result.row);
+        setParcelRecordBundledAsOf(result.bundledAsOf);
+      } finally {
+        if (isCurrentRequest()) {
+          setParcelRecordLoading(false);
+        }
       }
-    }
-  }, []);
+    },
+    [],
+  );
 
   function clearLevyStackOnly() {
     levyLoadRequestRef.current += 1;
@@ -453,7 +505,7 @@ export function HomeParcelAddressLookup({
   }
 
   const loadLevyStack = useCallback(
-    async (pin: string): Promise<boolean> => {
+    async (pin: string, countyId?: string): Promise<boolean> => {
     const requestId = ++levyLoadRequestRef.current;
     const isCurrentRequest = () => requestId === levyLoadRequestRef.current;
     parcelRecordRequestRef.current += 1;
@@ -467,7 +519,12 @@ export function HomeParcelAddressLookup({
     setParcelRecordLoadFailed(false);
     setParcelRecordBundledAsOf(null);
     try {
-      const result = await loadLevyStackFromPin(pin);
+      const result = await loadLevyStackFromPin(
+        pin,
+        countyId
+          ? { countyId }
+          : { scope: countySearchScope },
+      );
       if (!isCurrentRequest()) return false;
       if (!result.ok) {
         setLevyLoadError(result.error);
@@ -491,8 +548,9 @@ export function HomeParcelAddressLookup({
         parcelTaxYear: result.parcelTaxYear,
         ain: result.ain,
       });
+      setResolvedCountyId(result.countyId);
       if (!isCurrentRequest()) return false;
-      void loadParcelRecord(result.matchedPin);
+      void loadParcelRecord(result.matchedPin, result.countyId);
       return true;
     } finally {
       if (isCurrentRequest()) {
@@ -500,8 +558,19 @@ export function HomeParcelAddressLookup({
       }
     }
     },
-    [loadParcelRecord],
+    [loadParcelRecord, countySearchScope],
   );
+
+  const reportIndexProgress = useCallback(
+    (progress: CountyIndexLoadProgress) => {
+      setIndexLoadProgress(progress);
+    },
+    [],
+  );
+
+  const clearIndexProgress = useCallback(() => {
+    setIndexLoadProgress(null);
+  }, []);
 
   const streetTypeaheadRequestRef = useRef(0);
   const refreshStreetTypeahead = useCallback(
@@ -512,34 +581,54 @@ export function HomeParcelAddressLookup({
       open: boolean,
     ) => {
       if (!num.trim() || !/\d/.test(num) || !SITUS_SEARCH_ON) {
+        streetTypeaheadRequestRef.current += 1;
         setStreetTypeahead([]);
         setStreetTypeaheadOpen(false);
+        setStreetTypeaheadActiveIndex(-1);
+        clearIndexProgress();
         return;
       }
       const requestId = ++streetTypeaheadRequestRef.current;
-      prefetchParcelLevyJsonBundle();
-      const [data, pinToTag] = await Promise.all([
-        fetchArapahoeSitusToPinsJson(),
-        fetchArapahoePinToTagJson(),
-      ]);
-      if (requestId !== streetTypeaheadRequestRef.current) return;
-      if (!data?.byKey) {
-        setStreetTypeahead([]);
-        return;
+      const loadId = ++indexLoadRequestRef.current;
+      try {
+        await prefetchCountySearchIndexes(countySearchScope, {
+          onProgress: (progress) => {
+            if (loadId === indexLoadRequestRef.current) {
+              reportIndexProgress(progress);
+            }
+          },
+        });
+        if (requestId !== streetTypeaheadRequestRef.current) return;
+        const list = await suggestSitusStreetsMultiCounty(
+          num,
+          suffix,
+          namePartial,
+          {
+            scope: countySearchScope,
+            onProgress: (progress) => {
+              if (loadId === indexLoadRequestRef.current) {
+                reportIndexProgress(progress);
+              }
+            },
+          },
+        );
+        if (requestId !== streetTypeaheadRequestRef.current) return;
+        if (list.length === 0) {
+          setStreetTypeahead([]);
+          setStreetTypeaheadOpen(false);
+          setStreetTypeaheadActiveIndex(-1);
+          return;
+        }
+        setStreetTypeahead(list);
+        setStreetTypeaheadActiveIndex(-1);
+        setStreetTypeaheadOpen(open && list.length > 0);
+      } finally {
+        if (loadId === indexLoadRequestRef.current) {
+          clearIndexProgress();
+        }
       }
-      const list = suggestSitusStreetsForNumber(
-        data,
-        num,
-        suffix,
-        namePartial,
-        { pinToTag },
-      );
-      if (requestId !== streetTypeaheadRequestRef.current) return;
-      setStreetTypeahead(list);
-      setStreetTypeaheadActiveIndex(-1);
-      setStreetTypeaheadOpen(open && list.length > 0);
     },
-    [],
+    [countySearchScope, clearIndexProgress, reportIndexProgress],
   );
 
   /** Debounced street typeahead for the simple address line. */
@@ -551,8 +640,11 @@ export function HomeParcelAddressLookup({
     const handle = window.setTimeout(() => {
       const parsed = parseSimpleAddressLineForSitusLookup(simpleAddressLine);
       if (!parsed || !parsed.streetNumber.trim()) {
+        /* Invalidate in-flight suggest so a late response cannot reopen. */
+        streetTypeaheadRequestRef.current += 1;
         setStreetTypeahead([]);
         setStreetTypeaheadOpen(false);
+        setStreetTypeaheadActiveIndex(-1);
         return;
       }
       void refreshStreetTypeahead(
@@ -569,6 +661,7 @@ export function HomeParcelAddressLookup({
     showAdvancedAddressFields,
     simpleAddressLine,
     refreshStreetTypeahead,
+    countySearchScope,
   ]);
 
   /**
@@ -610,16 +703,21 @@ export function HomeParcelAddressLookup({
 
   const homeCompsGridPdfHref = useMemo(
     () =>
-      COMPS_PRESENTATION === "omit"
+      activeCompsPresentation === "omit"
         ? null
-        : safeCountyCompsGridPdfUrl(levyLoadedMeta?.ain),
-    [levyLoadedMeta?.ain],
+        : safeCountyCompsGridPdfUrl(levyLoadedMeta?.ain, activeCountyConfig),
+    [activeCompsPresentation, levyLoadedMeta?.ain, activeCountyConfig],
   );
 
   const homeBppNovPdfHref = useMemo(
     () =>
-      BPP_ON ? safeCountyBppNoticeOfValuationPdfUrl(levyLoadedMeta?.ain) : null,
-    [levyLoadedMeta?.ain],
+      activeBppOn
+        ? safeCountyBppNoticeOfValuationPdfUrl(
+            levyLoadedMeta?.ain,
+            activeCountyConfig,
+          )
+        : null,
+    [activeBppOn, levyLoadedMeta?.ain, activeCountyConfig],
   );
 
   const metroPrefillTotalMills = useMemo(() => {
@@ -708,7 +806,7 @@ export function HomeParcelAddressLookup({
         setError("Enter your street address.");
         return;
       }
-      if (looksLikeParcelIdInput(rawSimple)) {
+      if (looksLikeParcelIdInputAnyCounty(rawSimple)) {
         setBusy(true);
         try {
           setParcelPin(rawSimple);
@@ -727,7 +825,7 @@ export function HomeParcelAddressLookup({
 
     if (!SITUS_SEARCH_ON) {
       setShowCountyPinFallback(true);
-      setError(COUNTY_CONFIG.situsSearchOffMessage);
+      setError(activeCountyConfig.situsSearchOffMessage);
       return;
     }
 
@@ -802,32 +900,43 @@ export function HomeParcelAddressLookup({
     }
 
     setBusy(true);
+    const loadId = ++indexLoadRequestRef.current;
     try {
-      prefetchParcelLevyJsonBundle();
-      const [data, pinToTag] = await Promise.all([
-        fetchArapahoeSitusToPinsJson(),
-        fetchArapahoePinToTagJson(),
-      ]);
-      if (!data?.byKey) {
-        const detail =
-          getLastArapahoeSitusFetchFailureDetail() ??
-          countySitusToPinsUrl() + ": missing or invalid";
-        console.error("[civic-lookup]", detail);
-        setError(
-          "We could not load address lookup data. Please try searching again in a moment.",
-        );
-        setErrorTechnicalDetail(detail);
-        return;
-      }
-      const result = lookupPinsBySitusFuzzy(
-        data,
+      await prefetchCountySearchIndexes(countySearchScope, {
+        onProgress: (progress) => {
+          if (loadId === indexLoadRequestRef.current) {
+            reportIndexProgress(progress);
+          }
+        },
+      });
+      const lookup = await resolveSitusCountyLookup(
         num,
         suffix,
         nameRaw,
         unitTrim,
-        pinToTag,
+        {
+          scope: countySearchScope,
+          onProgress: (progress) => {
+            if (loadId === indexLoadRequestRef.current) {
+              reportIndexProgress(progress);
+            }
+          },
+        },
       );
-      if (result.kind === "none") {
+      if (lookup.status === "data_error") {
+        console.error("[civic-lookup]", lookup.detail);
+        setError(
+          "We could not load address lookup data. Please try searching again in a moment.",
+        );
+        setErrorTechnicalDetail(lookup.detail);
+        return;
+      }
+      if (lookup.status === "ambiguous") {
+        setShowCountyPinFallback(true);
+        setError(SITUS_COUNTY_AMBIGUOUS_MESSAGE);
+        return;
+      }
+      if (lookup.status === "not_found") {
         if (!useAdvanced) {
           setShowAdvancedAddressFields(true);
           setError(
@@ -837,44 +946,69 @@ export function HomeParcelAddressLookup({
         }
         setShowCountyPinFallback(true);
         setError(
-          "Still no match. Use your Parcel PIN or AIN from the county site (see the help section), or double-check spelling and unit.",
+          "Still no match. Use your account number from the county site (see the help section), or double-check spelling and unit.",
         );
         return;
       }
-      if (result.kind === "suggest") {
-        setShowAdvancedAddressFields(true);
-        setStreetDidYouMean(result.suggestions);
+
+      const { match } = lookup;
+      setResolvedCountyId(match.countyId);
+      const fuzzy = match.fuzzy;
+      if (fuzzy.kind === "none") {
+        if (!useAdvanced) {
+          setShowAdvancedAddressFields(true);
+          setError(
+            "No property matched that address. Use the fields in this form to fix the street name, unit, or spelling, then search again.",
+          );
+          return;
+        }
+        setShowCountyPinFallback(true);
+        setError(
+          "Still no match. Use your account number from the county site (see the help section), or double-check spelling and unit.",
+        );
         return;
       }
-      if (result.approximateStreet) {
-        setStreetName(result.matchedStreetNameKey);
+      if (fuzzy.kind === "suggest") {
+        setMultiMatchPinToTag(match.pinToTag);
+        setShowAdvancedAddressFields(true);
+        setStreetDidYouMean(fuzzy.suggestions);
+        return;
+      }
+      if (fuzzy.approximateStreet) {
+        setStreetName(fuzzy.matchedStreetNameKey);
         setAddressMatchStatus(
-          `Showing results for ${result.matchedStreetNameKey}. No exact match for ${nameNorm}.`,
+          `Showing results for ${fuzzy.matchedStreetNameKey}. No exact match for ${nameNorm}.`,
         );
         if (!useAdvanced) {
           setSimpleAddressLine(
-            [num, suffix, result.matchedStreetNameKey, unitTrim]
+            [num, suffix, fuzzy.matchedStreetNameKey, unitTrim]
               .filter(Boolean)
               .join(" "),
           );
         }
       }
-      const list = result.hits;
-      setMultiMatchPinToTag(pinToTag);
+      const list = fuzzy.hits;
+      setMultiMatchPinToTag(match.pinToTag);
       setHits(list);
       if (list.length === 1) {
         setAddressSearchLocked(true);
         setParcelPin(list[0].pin);
-        void loadLevyStack(list[0].pin);
+        void loadLevyStack(list[0].pin, match.countyId);
       } else {
         setShowAdvancedAddressFields(true);
       }
     } finally {
+      if (loadId === indexLoadRequestRef.current) {
+        clearIndexProgress();
+      }
       setBusy(false);
     }
   }
 
-  function applyStreetSuggestion(suggestion: SitusStreetSuggestion) {
+  function applyStreetSuggestion(
+    suggestion: SitusStreetSuggestion,
+    countyId?: string,
+  ) {
     setStreetDidYouMean(null);
     setAddressMatchStatus(null);
     setStreetTypeaheadOpen(false);
@@ -882,12 +1016,16 @@ export function HomeParcelAddressLookup({
     setErrorTechnicalDetail(null);
     setStreetName(suggestion.streetNameKey);
     setShowAdvancedAddressFields(true);
+    const resolvedId = countyId ?? resolvedCountyId ?? undefined;
+    if (resolvedId) {
+      setResolvedCountyId(resolvedId);
+    }
     const list = suggestion.hits;
     setHits(list);
     if (list.length === 1) {
       setAddressSearchLocked(true);
       setParcelPin(list[0].pin);
-      void loadLevyStack(list[0].pin);
+      void loadLevyStack(list[0].pin, resolvedId);
     }
   }
 
@@ -956,6 +1094,7 @@ export function HomeParcelAddressLookup({
         parcelTaxYear: demo.levy.parcelTaxYear,
         ain: demo.levy.ain,
       });
+      setResolvedCountyId("arapahoe");
       setParcelRecord(demo.parcelRecord);
       setParcelRecordBundledAsOf(demo.parcelRecordBundledAsOf);
       setParcelRecordLoading(false);
@@ -1125,12 +1264,14 @@ export function HomeParcelAddressLookup({
       label: h.label,
       enriched: enrichmentReady ? h : null,
       envelope: multiHitEnvelopeRows?.[hitIndex] ?? null,
+      countyId: resolvedCountyId,
     }));
   }, [
     hits,
     enrichedMultiHits,
     multiMatchPinToTag,
     multiHitEnvelopeRows,
+    resolvedCountyId,
   ]);
 
   /** Load pin-to-tag for multi-match enrichment (post-search chooser + dashboard switcher). */
@@ -1139,13 +1280,13 @@ export function HomeParcelAddressLookup({
       return;
     }
     let cancelled = false;
-    void fetchArapahoePinToTagJson().then((data) => {
+    void fetchArapahoePinToTagJson(undefined, resolvedCountyId ?? COUNTY_CONFIG.id).then((data) => {
       if (!cancelled) setMultiMatchPinToTag(data);
     });
     return () => {
       cancelled = true;
     };
-  }, [hits]);
+  }, [hits, resolvedCountyId]);
 
   /** Same envelope layout for simple-line typeahead suggestions (+4 stripped). */
   const streetTypeaheadEnvelopeRows = useMemo(
@@ -1172,6 +1313,7 @@ export function HomeParcelAddressLookup({
     allowLineEdit: !isRentMode,
     levyDollarUnitCount: isRentMode ? (rentDwellingCount?.n ?? null) : null,
     rentMode: isRentMode,
+    countyConfig: activeCountyConfig,
   };
 
   const showPropertyDetailsColumn =
@@ -1267,11 +1409,13 @@ export function HomeParcelAddressLookup({
             </time>
             .
           </p>
-          <CountyServiceGapCallout density="compact" className="mt-1">
-            <CountyDataMartRefreshAttemptNote
-              bundledAsOfIso={parcelRecordBundledAsOf}
-            />
-          </CountyServiceGapCallout>
+          {activeDataMartRefreshGap ? (
+            <CountyServiceGapCallout density="compact" className="mt-1">
+              <CountyDataMartRefreshAttemptNote
+                bundledAsOfIso={parcelRecordBundledAsOf}
+              />
+            </CountyServiceGapCallout>
+          ) : null}
         </>
       ) : null}
   </>
@@ -1307,6 +1451,7 @@ export function HomeParcelAddressLookup({
     levyLines.length > 0 && levyLoadedMeta ? (
       <>
         <LevyCountyCompareSection
+          countyConfig={activeCountyConfig}
           pin={levyLoadedMeta.pin}
           tagId={levyLoadedMeta.tagId}
           tagShortDescr={levyLoadedMeta.tagShortDescr}
@@ -1338,6 +1483,7 @@ export function HomeParcelAddressLookup({
       businessPersonal={isBusinessPersonalAccount}
       omitContinuationHeading
       rentMode={isRentMode}
+      countyConfig={activeCountyConfig}
     />
   ) : null;
 
@@ -1347,6 +1493,11 @@ export function HomeParcelAddressLookup({
       levyLoadedMeta.parcelTaxYear,
       levyLoadedMeta.parcelAssessmentYear,
     );
+
+  const summaryOwnerList = summaryOwnerOfRecord(
+    levyLoadedMeta?.parcelValues.ownerList,
+    parcelRecord?.ownerList,
+  );
 
   const propertyDetailsSection = showPropertyDetailsColumn ? (
     <section
@@ -1362,6 +1513,7 @@ export function HomeParcelAddressLookup({
         pin={trimmedParcelPin}
         demoMode={isDemoMode}
         rentMode={isRentMode}
+        countyConfig={activeCountyConfig}
       />
       {propertyClassificationLine}
       {parcelRecordExtended}
@@ -1418,6 +1570,37 @@ export function HomeParcelAddressLookup({
           }
         />
       ) : null}
+      {!addressSearchLocked && indexLoadProgress ? (
+        <div
+          className="w-full min-w-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="text-sm font-medium text-slate-800">
+            {formatCountyIndexLoadMessage(indexLoadProgress)}
+          </p>
+          {indexLoadProgress.total > 0 ? (
+            <div
+              className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200"
+              aria-hidden
+            >
+              <div
+                className="h-full rounded-full bg-slate-700 transition-[width] duration-300 ease-out"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.round(
+                      (100 * indexLoadProgress.completed) /
+                        Math.max(1, indexLoadProgress.total),
+                    ),
+                  )}%`,
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {addressMatchStatus ? (
         <p className="sr-only" role="status" aria-live="polite">
           {addressMatchStatus}
@@ -1462,7 +1645,7 @@ export function HomeParcelAddressLookup({
                 plus business personal property). Not sure which PIN is yours?
                 Compare the PIN, owner, or legal description on the{" "}
                 <a
-                  href={COUNTY_CONFIG.residentLinks.propertySearch}
+                  href={activeCountyConfig.residentLinks.propertySearch}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={COUNTY_EXTERNAL_LINK_CLASS}
@@ -1473,8 +1656,8 @@ export function HomeParcelAddressLookup({
                 for buildings and land, or the{" "}
                 <a
                   href={
-                    COUNTY_CONFIG.residentLinks.bppSearch ??
-                    COUNTY_CONFIG.residentLinks.propertySearch
+                    activeCountyConfig.residentLinks.bppSearch ??
+                    activeCountyConfig.residentLinks.propertySearch
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1496,7 +1679,7 @@ export function HomeParcelAddressLookup({
                   onSelectPin={(pin) => {
                     setAddressSearchLocked(true);
                     setParcelPin(pin);
-                    void loadLevyStack(pin);
+                    void loadLevyStack(pin, resolvedCountyId ?? undefined);
                   }}
                 />
               ) : null}
@@ -1520,8 +1703,14 @@ export function HomeParcelAddressLookup({
                       type="button"
                       className={`${btnOutlinePrimaryMd} w-full cursor-pointer justify-start px-3 py-2.5 text-left`}
                       disabled={levyLoadBusy}
-                      onClick={() => applyStreetSuggestion(s)}
+                      onClick={() =>
+                        applyStreetSuggestion(s, resolvedCountyId ?? undefined)
+                      }
                     >
+                      <CountyScopeTopLine
+                        countyId={resolvedCountyId}
+                        className="mb-0.5"
+                      />
                       <span className="font-semibold">{s.streetNameKey}</span>
                       <span className="mt-0.5 block text-xs font-normal text-slate-600 sm:text-sm">
                         {situsLabelForTypeaheadDisplay(s.sampleLabel)}
@@ -1548,39 +1737,54 @@ export function HomeParcelAddressLookup({
               )}
             </div>
           ) : null}
-          <form
-            className={
-              showAdvancedAddressFields
-                ? ADDRESS_LOOKUP_FORM_CLASS
-                : SIMPLE_ADDRESS_FORM_CLASS
-            }
-            aria-label="Address lookup"
-            aria-describedby={
-              [
-                error ? HOME_ADDRESS_LOOKUP_ERROR_ID : null,
-                streetDidYouMean != null && streetDidYouMean.length > 0
-                  ? HOME_ADDRESS_STREET_SUGGESTIONS_ID
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" ") || undefined
-            }
-            noValidate
-            aria-busy={busy}
-            onSubmit={(e) => {
-              e.preventDefault();
-              void onLookup();
-            }}
+          <div
+            className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:gap-3"
           >
+            <CountySearchScopeSwitch
+              value={countySearchScope}
+              onChange={(scope) => {
+                setCountySearchScope(scope);
+                streetTypeaheadRequestRef.current += 1;
+                setStreetTypeahead([]);
+                setStreetTypeaheadOpen(false);
+                setStreetTypeaheadActiveIndex(-1);
+                clearIndexProgress();
+              }}
+              className="lg:shrink-0"
+            />
+            <form
+              className={`min-w-0 flex-1 ${
+                showAdvancedAddressFields
+                  ? ADDRESS_LOOKUP_FORM_CLASS
+                  : SIMPLE_ADDRESS_FORM_CLASS
+              }`}
+              aria-label="Address lookup"
+              aria-describedby={
+                [
+                  error ? HOME_ADDRESS_LOOKUP_ERROR_ID : null,
+                  streetDidYouMean != null && streetDidYouMean.length > 0
+                    ? HOME_ADDRESS_STREET_SUGGESTIONS_ID
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
+              }
+              noValidate
+              aria-busy={busy}
+              onSubmit={(e) => {
+                e.preventDefault();
+                void onLookup();
+              }}
+            >
             {!showAdvancedAddressFields ? (
               <>
                 <div
                   ref={streetTypeaheadRootRef}
-                  className="relative flex min-w-0 flex-col gap-y-1"
+                  className="relative flex min-w-0 flex-col"
                 >
                   <label
                     htmlFor="home-address-simple-line"
-                    className={FIELD_LABEL_CLASS}
+                    className={HOME_ADDRESS_LOOKUP_LABEL_CLASS}
                   >
                     Street address
                   </label>
@@ -1613,9 +1817,19 @@ export function HomeParcelAddressLookup({
                       setStreetDidYouMean(null);
                     }}
                     onFocus={() => {
-                      if (SITUS_SEARCH_ON) {
-                        void fetchArapahoeSitusToPinsJson();
-                      }
+                      if (!SITUS_SEARCH_ON) return;
+                      const loadId = ++indexLoadRequestRef.current;
+                      void prefetchCountySearchIndexes(countySearchScope, {
+                        onProgress: (progress) => {
+                          if (loadId === indexLoadRequestRef.current) {
+                            reportIndexProgress(progress);
+                          }
+                        },
+                      }).finally(() => {
+                        if (loadId === indexLoadRequestRef.current) {
+                          clearIndexProgress();
+                        }
+                      });
                     }}
                     onBlur={(e) => {
                       // Scroll / iOS Done: relatedTarget is null — keep list open.
@@ -1662,6 +1876,7 @@ export function HomeParcelAddressLookup({
                         e.preventDefault();
                         applyStreetSuggestion(
                           streetTypeahead[streetTypeaheadActiveIndex]!,
+                          streetTypeahead[streetTypeaheadActiveIndex]!.countyId,
                         );
                       }
                     }}
@@ -1697,17 +1912,23 @@ export function HomeParcelAddressLookup({
                             }`}
                             onMouseDown={(ev) => {
                               ev.preventDefault();
-                              applyStreetSuggestion(s);
+                              applyStreetSuggestion(s, s.countyId);
                             }}
                           >
-                            <SitusEnvelopeAddress row={envelope} />
+                            <div className="min-w-0">
+                              <CountyScopeTopLine
+                                countyId={s.countyId}
+                                className="mb-0.5"
+                              />
+                              <SitusEnvelopeAddress row={envelope} />
+                            </div>
                           </li>
                         );
                       })}
                     </ul>
                   ) : null}
                 </div>
-                <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-2 md:w-auto md:flex-none md:flex-col md:justify-end">
+                <div className="flex w-full min-w-0 flex-col md:w-auto md:flex-none md:justify-end">
                   <button
                     type="submit"
                     className={ADDRESS_FORM_ACTION_BTN_CLASS}
@@ -1885,22 +2106,11 @@ export function HomeParcelAddressLookup({
                 </div>
               </>
             )}
-          </form>
-          <div
-            className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
-            role="note"
-            aria-label="County availability"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0 flex items-start gap-2 text-sm text-slate-700">
-                <span className="mt-0.5">
-                  <InfoIcon />
-                </span>
-                <p>{COUNTY_CONFIG.countyScopeNote}</p>
-              </div>
+            </form>
+            <div className="flex w-full min-w-0 flex-col lg:w-auto lg:flex-none lg:shrink-0 lg:justify-end">
               <button
                 type="button"
-                className={`${btnOutlineSecondaryMd} w-auto shrink-0 justify-center whitespace-nowrap px-3 py-2 text-sm disabled:cursor-not-allowed`}
+                className={HOME_ADDRESS_LOOKUP_DEMO_CLASS}
                 onClick={() => void onLoadDemoProperty()}
                 disabled={busy || levyLoadBusy}
               >
@@ -2014,7 +2224,20 @@ export function HomeParcelAddressLookup({
                 <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
                   <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
                   <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
-                    {lockedAddressHeadline}
+                    <span className="inline">{lockedAddressHeadline}</span>
+                    {showCountyScopeTopLine() ? (
+                      <>
+                        <span
+                          className="px-1.5 text-slate-400"
+                          aria-hidden
+                        >
+                          ·
+                        </span>
+                        <span className="font-semibold text-indigo-800">
+                          {activeCountyConfig.displayName}
+                        </span>
+                      </>
+                    ) : null}
                   </p>
                   {!levyReadyForSummary &&
                   hits != null &&
@@ -2030,7 +2253,7 @@ export function HomeParcelAddressLookup({
             {!busy &&
             levyReadyForSummary &&
             levyLoadedMeta &&
-            levyLoadedMeta.parcelValues.ownerList != null ? (
+            summaryOwnerList != null ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-owner-list"
@@ -2044,7 +2267,7 @@ export function HomeParcelAddressLookup({
                     />
                   </div>
                   <p className="max-w-full break-words text-base font-semibold leading-snug text-slate-900 sm:text-lg">
-                    {levyLoadedMeta.parcelValues.ownerList}
+                    {summaryOwnerList}
                   </p>
                 </div>
               </div>
@@ -2131,11 +2354,13 @@ export function HomeParcelAddressLookup({
                         <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
                           {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
                         </p>
-                        <CountyPriorYearValuesGapPopover
-                          hasSaleHistory={
-                            !isBusinessPersonalAccount && parcelRecord != null
-                          }
-                        />
+                        {activePriorYearValuesGap ? (
+                          <CountyPriorYearValuesGapPopover
+                            hasSaleHistory={
+                              !isBusinessPersonalAccount && parcelRecord != null
+                            }
+                          />
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
@@ -2172,7 +2397,7 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             !isRentMode &&
             isBusinessPersonalAccount &&
-            BPP_ON ? (
+            activeBppOn ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-notice-of-valuation"
@@ -2213,11 +2438,9 @@ export function HomeParcelAddressLookup({
                         >
                           <>
                             <p className="text-sm leading-relaxed text-slate-800">
-                              We build the county link from your PIN&apos;s AIN in
-                              the bundled{" "}
-                              <span className="font-mono text-xs sm:text-sm">
-                                arapahoe-pin-to-tag.json
-                              </span>. If that field is empty, we cannot form{" "}
+                              We build the county link from your account&apos;s
+                              assessor id (AIN) in the bundled parcel index. If
+                              that field is empty, we cannot form{" "}
                               <span className="whitespace-nowrap">
                                 FileDownload.ashx?AIN=…
                               </span>{" "}
@@ -2227,14 +2450,15 @@ export function HomeParcelAddressLookup({
                               Open{" "}
                               <a
                                 href={
-                                  COUNTY_CONFIG.residentLinks.bppSearch ??
-                                  COUNTY_CONFIG.residentLinks.propertySearch
+                                  activeCountyConfig.residentLinks.bppSearch ??
+                                  activeCountyConfig.residentLinks.propertySearch
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={COUNTY_EXTERNAL_LINK_CLASS}
                               >
-                                Arapahoe business personal property search<span className="sr-only"> (opens in a new tab)</span>
+                                {activeCountyConfig.displayName} business personal
+                                property search<span className="sr-only"> (opens in a new tab)</span>
                               </a>
                               {" "}
                               to reach your account from the county. For how the
@@ -2257,11 +2481,11 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             !isRentMode &&
             !isBusinessPersonalAccount &&
-            COMPS_PRESENTATION !== "omit" ? (
+            activeCompsPresentation !== "omit" ? (
               <div
                 className={
                   homeCompsGridPdfHref &&
-                  COMPS_GAP
+                  activeCompsGap
                     ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
                     : homeCompsGridPdfHref
                       ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
@@ -2272,14 +2496,14 @@ export function HomeParcelAddressLookup({
                 <div
                   className={
                     homeCompsGridPdfHref &&
-                    COMPS_GAP
+                    activeCompsGap
                       ? `${COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS} relative`
                       : PARCEL_SUMMARY_TILE_BODY_CLASS
                   }
                 >
                   {homeCompsGridPdfHref &&
-                  COMPS_GAP ? (
-                    // TODO(comps-pdf-hosted-unavailable): Flip COUNTY_CONFIG.knownFailures.compsPdfHostedFiles to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
+                  activeCompsGap ? (
+                    // TODO(comps-pdf-hosted-unavailable): Flip activeCountyConfig.knownFailures.compsPdfHostedFiles to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
                     <CountyCompsPdfHelpPopover
                       ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}
                       icon={compsIcon}
@@ -2365,12 +2589,9 @@ export function HomeParcelAddressLookup({
                             >
                               <>
                                 <p className="text-sm leading-relaxed text-slate-800">
-                                  We build the county link from your PIN&apos;s AIN in
-                                  the bundled{" "}
-                                  <span className="font-mono text-xs sm:text-sm">
-                                    arapahoe-pin-to-tag.json
-                                  </span>. If that field is empty, we
-                                  cannot form{" "}
+                                  We build the county link from your account&apos;s
+                                  assessor parcel id (AIN) in the bundled parcel
+                                  index. If that field is empty, we cannot form{" "}
                                   <span className="whitespace-nowrap">
                                     FileDownload.ashx?AIN=…
                                   </span>{" "}
@@ -2379,12 +2600,12 @@ export function HomeParcelAddressLookup({
                                 <p className="mt-3 text-sm leading-relaxed text-slate-800">
                                   Open{" "}
                                   <a
-                                    href={COUNTY_CONFIG.residentLinks.propertySearch}
+                                    href={activeCountyConfig.residentLinks.propertySearch}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={COUNTY_EXTERNAL_LINK_CLASS}
                                   >
-                                    Arapahoe property search<span className="sr-only"> (opens in a new tab)</span>
+                                    {activeCountyConfig.displayName} property search<span className="sr-only"> (opens in a new tab)</span>
                                   </a>
                                   {" "}
                                   to reach your parcel and comparable properties
@@ -2489,9 +2710,22 @@ export function HomeParcelAddressLookup({
                     className={INPUT_PIN_ROW}
                     value={parcelPin}
                     onChange={(e) => setParcelPin(e.target.value)}
-                    onFocus={() => prefetchParcelLevyJsonBundle()}
+                    onFocus={() => {
+                      const loadId = ++indexLoadRequestRef.current;
+                      void prefetchCountySearchIndexes(countySearchScope, {
+                        onProgress: (progress) => {
+                          if (loadId === indexLoadRequestRef.current) {
+                            reportIndexProgress(progress);
+                          }
+                        },
+                      }).finally(() => {
+                        if (loadId === indexLoadRequestRef.current) {
+                          clearIndexProgress();
+                        }
+                      });
+                    }}
                     disabled={levyLoadBusy}
-                    placeholder={COUNTY_CONFIG.identifierPlaceholder}
+                    placeholder="Account number, PIN, or AIN from your county record"
                     aria-describedby="home-parcel-pin-hint"
                   />
                 </div>
@@ -2600,7 +2834,7 @@ export function HomeParcelAddressLookup({
                 <p className="mb-3 text-sm text-slate-700 sm:text-base">
                   Open your parcel from the{" "}
                   <a
-                    href={COUNTY_CONFIG.residentLinks.propertySearch}
+                    href={activeCountyConfig.residentLinks.propertySearch}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={COUNTY_EXTERNAL_LINK_CLASS}

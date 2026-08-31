@@ -17,9 +17,14 @@ import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
-import { formatMartIntegerCodeDisplay } from "@/lib/parcelRecordDisplay";
+import { formatMartIntegerCodeDisplay, formatParcelFilingDisplay } from "@/lib/parcelRecordDisplay";
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
+import {
+  COUNTY_CONFIG,
+  countyParcelRecordLookupValue,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_PANEL_SHELL_CLASS,
@@ -94,6 +99,8 @@ export type ParcelRecordPanelProps = {
    * Owner-of-record name stays visible.
    */
   rentMode?: boolean;
+  /** Resolved county for hosted parcel-record links. */
+  countyConfig?: CountyConfig;
 };
 
 export function ParcelRecordPanel({
@@ -103,12 +110,19 @@ export function ParcelRecordPanel({
   pin = null,
   demoMode = false,
   rentMode = false,
+  countyConfig = COUNTY_CONFIG,
 }: ParcelRecordPanelProps) {
   const [legalExpanded, setLegalExpanded] = useState(false);
 
   const displayRecord = useDisplayParcelRecord(record, demoMode);
 
-  const parcelRecordHref = safeCountyParcelRecordUrl(displayRecord?.ain);
+  const parcelRecordHref = safeCountyParcelRecordUrl(
+    countyParcelRecordLookupValue(countyConfig, {
+      accountId: pin,
+      publicParcelId: displayRecord?.ain,
+    }),
+    countyConfig,
+  );
   const isBusinessPersonal =
     displayRecord != null &&
     isBusinessPersonalPropertyAccount({
@@ -293,6 +307,29 @@ export function ParcelRecordPanel({
                     displayRecord.subdivisionCd,
                   )}
                   triggerIdSuffix="subdivision-code"
+                />
+                <ParcelRecordRow
+                  label="Lot"
+                  value={displayRecord.lotNo}
+                  triggerIdSuffix="lot"
+                />
+                <ParcelRecordRow
+                  label="Block"
+                  value={displayRecord.blockNo}
+                  triggerIdSuffix="block"
+                />
+                <ParcelRecordRow
+                  label="Tract"
+                  value={displayRecord.tractNo}
+                  triggerIdSuffix="tract"
+                />
+                <ParcelRecordRow
+                  label="Filing"
+                  value={formatParcelFilingDisplay(
+                    displayRecord.filingDescr,
+                    displayRecord.filingNo,
+                  )}
+                  triggerIdSuffix="filing"
                 />
               </>
             ) : null}

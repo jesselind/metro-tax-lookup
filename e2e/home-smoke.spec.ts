@@ -22,6 +22,17 @@ test("home shows address lookup and Try demo", async ({ page }) => {
     }),
   ).toBeVisible();
   await expect(page.getByRole("radio", { name: "Own" })).toBeChecked();
+  await expect(
+    page.getByRole("radiogroup", { name: "Select your Colorado county" }),
+  ).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Arapahoe" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Douglas" })).toBeVisible();
+  await expect(
+    page.getByRole("radio", { name: "I don't know my county" }),
+  ).toBeVisible();
+  await expect(page.getByRole("radio", { name: "I don't know my county" })).toHaveText(
+    "?",
+  );
   await expect(page.getByRole("form", { name: "Address lookup" })).toBeVisible();
   const street = streetAddressField(page);
   await expect(street).toBeVisible();
@@ -31,6 +42,7 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Try demo property" }),
   ).toBeVisible();
+  await expect(page.getByText("Supported Colorado counties")).toHaveCount(0);
 
   // Campaign disclosure follows SITE_CONFIG; forks that clear values must not
   // assert hardcoded Jesse-Lind copy.

@@ -23,6 +23,32 @@ export type CountyHostedQueryTemplate = {
   queryParam: string;
 };
 
+/**
+ * County official property page deep link.
+ * - `query` (default): `https://{host}{path}?{queryParam}={id}` (Arapahoe PPINum).
+ * - `hashPath`: `https://{host}{path}#{hashPathTemplate}` with `{id}` / optional `{year}`
+ *   (Douglas `#/details/{year}/{id}`).
+ */
+export type CountyParcelRecordUrlTemplate =
+  | (CountyHostedQueryTemplate & { style?: "query" })
+  | {
+      style: "hashPath";
+      host: string;
+      /** Path before the hash (e.g. `/assessor/web/`). */
+      path: string;
+      /**
+       * Hash path after `#`. Must include `{id}`. Include `{year}` when the county
+       * SPA needs a year segment; fill from `year` (or a call-site override).
+       */
+      hashPathTemplate: string;
+      /**
+       * Year for `{year}` in `hashPathTemplate` when the SPA path needs one.
+       * Maintainer stamp for this county data drop / SPA path — update when the
+       * county details URL year changes. Not a Colorado statute invent.
+       */
+      year?: string;
+    };
+
 export type CountyLevyAspxAllowlist = {
   host: string;
   /** Pathname must end with this (case-insensitive), e.g. `/levy.aspx`. */
@@ -44,10 +70,29 @@ export type CountyPublicParcelId = {
 
 export type CountyFeatures = {
   situs: boolean;
+  /**
+   * Lazy `{countyId}-parcel-record-by-pin` shards for Property details.
+   * False: omit shard fetch (summary tiles / gap note only).
+   */
+  parcelRecordShards: boolean;
   compsPdf: boolean;
   bpp: boolean;
   millsHistory: boolean;
   metroPurposes: boolean;
+  /**
+   * COUNTY DATA GAP opt-in: Prior years missing badge + /sources prior-year note.
+   * False: omit (do not reuse another county's story).
+   */
+  priorYearValuesGap: boolean;
+  /**
+   * COUNTY DATA GAP opt-in: Assessor Data Mart incomplete-refresh callout.
+   * Arapahoe-only today; false for counties that do not use that mart export.
+   */
+  dataMartRefreshGap: boolean;
+  /**
+   * COUNTY DATA GAP opt-in: mill PDF missing some tax-district numbers.
+   */
+  millPdfTaxDistrictGap: boolean;
 };
 
 export type CountyFeatureKey = keyof CountyFeatures;
@@ -72,12 +117,17 @@ export type CountyConfig = {
   identifierDigits: number;
   /** Short pastes still treated as an account id (Arapahoe PIN without leading zeros). */
   identifierPasteMinDigits: number;
+  /**
+   * When true, account ids may include letters (Douglas `C0123456` style).
+   * Lookup normalizes to uppercase; digit-only padding rules do not apply.
+   */
+  identifierAllowsLetters?: boolean;
   publicParcelId: CountyPublicParcelId | null;
   /** Hosts allowed in constructed or validated county hrefs. */
   hostAllowlist: readonly string[];
   urls: {
     levyAspx: CountyLevyAspxAllowlist;
-    parcelRecord: CountyHostedQueryTemplate;
+    parcelRecord: CountyParcelRecordUrlTemplate;
     compsPdf?: CountyHostedQueryTemplate;
     bppAccountDetails?: CountyHostedQueryTemplate;
     bppNoticeOfValuationPdf?: CountyHostedQueryTemplate;
@@ -87,6 +137,12 @@ export type CountyConfig = {
     propertySearch: string;
     bppSearch?: string;
   };
+  /**
+   * Resident phrase for the county's official property page (lowercase), used in
+   * button labels such as "Open county {hostedPropertyPageName}".
+   * Arapahoe: "parcel record". Douglas: "property details".
+   */
+  hostedPropertyPageName: string;
   /** Sources this county has. False omits the control (never had a source). */
   features: CountyFeatures;
   /**
@@ -94,6 +150,12 @@ export type CountyConfig = {
    * compsPdfHostedFiles: COUNTY DATA GAP on the comps tile (not omit).
    */
   knownFailures: CountyKnownFailures;
+  /**
+   * Wired neighbor county ids for address/account search fallback after a miss
+   * in this county (county search gate tier 2). Curated shared-border / metro
+   * adjacency only — never alphabetical fill. Empty until neighbors ship.
+   */
+  adjacentCountyIds: readonly string[];
   /** Home search note, e.g. "Arapahoe County only." */
   countyScopeNote: string;
   identifierPlaceholder: string;
@@ -159,16 +221,22 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     propertySearch: ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
     bppSearch: ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH,
   },
+  hostedPropertyPageName: "parcel record",
   features: {
     situs: true,
+    parcelRecordShards: true,
     compsPdf: true,
     bpp: true,
     millsHistory: true,
     metroPurposes: true,
+    priorYearValuesGap: true,
+    dataMartRefreshGap: true,
+    millPdfTaxDistrictGap: false,
   },
   knownFailures: {
     compsPdfHostedFiles: true,
   },
+  adjacentCountyIds: ["douglas"],
   countyScopeNote: "Arapahoe County only.",
   identifierPlaceholder: "9-digit PIN or AIN from county record",
   emptyIdentifierMessage:
@@ -179,7 +247,106 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     "Address search is not available. Enter your PIN or AIN from the county record.",
 };
 
-/** Shipping county for this deploy. */
+/** Douglas County (county 2). Mills from published tax-district PDF; no Levy.aspx. */
+export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
+  id: "douglas",
+  displayName: "Douglas County",
+  dolaCertifyingCounty: "Douglas",
+  identifierDigits: 8,
+  identifierPasteMinDigits: 8,
+  identifierAllowsLetters: true,
+  publicParcelId: null,
+  hostAllowlist: ["apps.douglas.co.us", "www.douglasco.gov"],
+  urls: {
+    levyAspx: {
+      host: "www.douglasco.gov",
+      pathSuffix: "/assessor/taxing-authorities/",
+    },
+    parcelRecord: {
+      style: "hashPath",
+      host: "apps.douglas.co.us",
+      path: "/assessor/web/",
+      hashPathTemplate: "/details/{year}/{id}",
+      /** SPA property-details year segment for the current Douglas drop. */
+      year: "2026",
+    },
+  },
+  residentLinks: {
+    propertySearch: "https://apps.douglas.co.us/assessor/web/",
+  },
+  hostedPropertyPageName: "property details",
+  features: {
+    situs: true,
+    parcelRecordShards: true,
+    compsPdf: false,
+    bpp: false,
+    millsHistory: false,
+    metroPurposes: false,
+    priorYearValuesGap: false,
+    dataMartRefreshGap: false,
+    millPdfTaxDistrictGap: true,
+  },
+  knownFailures: {
+    compsPdfHostedFiles: false,
+  },
+  adjacentCountyIds: ["arapahoe"],
+  countyScopeNote: "Douglas County only.",
+  identifierPlaceholder: "8-character account number from county record",
+  emptyIdentifierMessage:
+    "Enter your account number from your Douglas County property record.",
+  identifierNotFoundTemplate:
+    "No parcel found for {tried}. Copy the 8-character account number from your Douglas property record (letters and digits, as shown on the county site).",
+  situsSearchOffMessage:
+    "Address search is not available. Enter your account number from the county record.",
+};
+
+/** Wired counties keyed by id. Lookup resolves config + `{countyId}-*` JSON at runtime. */
+export const COUNTY_CONFIG_BY_ID: Readonly<Record<string, CountyConfig>> = {
+  arapahoe: ARAPAHOE_COUNTY_CONFIG,
+  douglas: DOUGLAS_COUNTY_CONFIG,
+};
+
+export function countyConfigById(countyId: string): CountyConfig | null {
+  const id = countyId.trim().toLowerCase();
+  if (!Object.prototype.hasOwnProperty.call(COUNTY_CONFIG_BY_ID, id)) {
+    return null;
+  }
+  return COUNTY_CONFIG_BY_ID[id] ?? null;
+}
+
+/** Wired counties in stable display order (footer, multi-county help). */
+export function wiredCountyConfigs(): readonly CountyConfig[] {
+  return Object.values(COUNTY_CONFIG_BY_ID);
+}
+
+/**
+ * Value for the county's hosted property-page deep link.
+ * Counties with `publicParcelId` (Arapahoe AIN) use that; others use account id
+ * (Douglas hash path `{id}`).
+ */
+export function countyParcelRecordLookupValue(
+  config: CountyConfig,
+  opts: {
+    accountId?: string | null;
+    publicParcelId?: string | null;
+  },
+): string | null {
+  if (config.publicParcelId) {
+    const publicId = String(opts.publicParcelId ?? "").trim();
+    return publicId || null;
+  }
+  const accountId = String(opts.accountId ?? "").trim();
+  return accountId || null;
+}
+
+/** Button label: "Open county parcel record" / "Open county property details". */
+export function countyHostedPropertyPageOpenLabel(
+  config: CountyConfig,
+): string {
+  return `Open county ${config.hostedPropertyPageName}`;
+}
+
+/** Default county config until lookup resolves a county (Arapahoe-first UI paths). */
 export const COUNTY_CONFIG: CountyConfig = ARAPAHOE_COUNTY_CONFIG;
 
 function isNonEmptyString(value: unknown): value is string {
@@ -193,9 +360,8 @@ function hostInAllowlist(host: string, allowlist: readonly string[]): boolean {
 }
 
 function collectTemplateHosts(config: CountyConfig): string[] {
-  const hosts: string[] = [config.urls.levyAspx.host];
+  const hosts: string[] = [config.urls.levyAspx.host, config.urls.parcelRecord.host];
   const queryTemplates = [
-    config.urls.parcelRecord,
     config.urls.compsPdf,
     config.urls.bppAccountDetails,
     config.urls.bppNoticeOfValuationPdf,
@@ -207,6 +373,36 @@ function collectTemplateHosts(config: CountyConfig): string[] {
     hosts.push(config.urls.clerkRecorderSearch.host);
   }
   return hosts;
+}
+
+function validateParcelRecordUrlTemplate(
+  template: CountyConfig["urls"]["parcelRecord"],
+): string | null {
+  if (!isNonEmptyString(template.host)) {
+    return "county config: urls.parcelRecord.host required";
+  }
+  if (!isNonEmptyString(template.path)) {
+    return "county config: urls.parcelRecord.path required";
+  }
+  if (template.style === "hashPath") {
+    if (!isNonEmptyString(template.hashPathTemplate)) {
+      return "county config: hashPath parcelRecord requires hashPathTemplate";
+    }
+    if (!template.hashPathTemplate.includes("{id}")) {
+      return "county config: hashPathTemplate must include {id}";
+    }
+    if (
+      template.hashPathTemplate.includes("{year}") &&
+      !isNonEmptyString(template.year)
+    ) {
+      return "county config: hashPathTemplate {year} requires year on the template";
+    }
+    return null;
+  }
+  if (!isNonEmptyString(template.queryParam)) {
+    return "county config: query parcelRecord requires queryParam";
+  }
+  return null;
 }
 
 /**
@@ -262,6 +458,13 @@ export function validateCountyConfig(config: CountyConfig): string | null {
       return `county config: host ${host} is not in hostAllowlist`;
     }
   }
+  const parcelRecordTemplateError = validateParcelRecordUrlTemplate(
+    config.urls.parcelRecord,
+  );
+  if (parcelRecordTemplateError) return parcelRecordTemplateError;
+  if (!isNonEmptyString(config.hostedPropertyPageName)) {
+    return "county config: hostedPropertyPageName required";
+  }
   if (config.features.compsPdf && !config.urls.compsPdf) {
     return "county config: features.compsPdf requires urls.compsPdf";
   }
@@ -293,6 +496,41 @@ export function validateCountyConfig(config: CountyConfig): string | null {
   }
   if (!config.identifierNotFoundTemplate.includes("{tried}")) {
     return "county config: identifierNotFoundTemplate must include {tried}";
+  }
+  if (!Array.isArray(config.adjacentCountyIds)) {
+    return "county config: adjacentCountyIds must be an array";
+  }
+  const seenAdjacent = new Set<string>();
+  for (const rawId of config.adjacentCountyIds) {
+    if (!isNonEmptyString(rawId)) {
+      return "county config: adjacentCountyIds entries must be non-empty strings";
+    }
+    const neighborId = rawId.trim().toLowerCase();
+    if (neighborId === config.id.trim().toLowerCase()) {
+      return "county config: adjacentCountyIds must not include self";
+    }
+    if (seenAdjacent.has(neighborId)) {
+      return `county config: adjacentCountyIds duplicate ${neighborId}`;
+    }
+    seenAdjacent.add(neighborId);
+  }
+  return null;
+}
+
+/**
+ * Cross-registry check: every adjacentCountyIds entry must be a wired county.
+ * Call after COUNTY_CONFIG_BY_ID is complete (module init).
+ */
+export function validateWiredCountyAdjacency(
+  byId: Readonly<Record<string, CountyConfig>> = COUNTY_CONFIG_BY_ID,
+): string | null {
+  for (const config of Object.values(byId)) {
+    for (const rawId of config.adjacentCountyIds) {
+      const neighborId = rawId.trim().toLowerCase();
+      if (!Object.prototype.hasOwnProperty.call(byId, neighborId)) {
+        return `county config: ${config.id} adjacentCountyIds unknown id ${neighborId}`;
+      }
+    }
   }
   return null;
 }
@@ -331,4 +569,14 @@ export function formatIdentifierNotFoundMessage(
 const shippingCountyConfigError = validateCountyConfig(ARAPAHOE_COUNTY_CONFIG);
 if (shippingCountyConfigError) {
   throw new Error(shippingCountyConfigError);
+}
+
+const douglasCountyConfigError = validateCountyConfig(DOUGLAS_COUNTY_CONFIG);
+if (douglasCountyConfigError) {
+  throw new Error(douglasCountyConfigError);
+}
+
+const wiredAdjacencyError = validateWiredCountyAdjacency();
+if (wiredAdjacencyError) {
+  throw new Error(wiredAdjacencyError);
 }

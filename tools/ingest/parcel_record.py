@@ -62,11 +62,12 @@ BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str | None], ...] = (
     ("Cool Method", "cool_cd1"),
     ("Year Built", "act_year"),
     ("Roof", "roof_cd1"),
-    ("Fireplaces", None),
+    ("Fireplaces", "fireplaces"),
     ("Exterior Wall", "extwall_cd1"),
     ("Construction Type", "class"),
 )
 COUNTY_DECIMAL_ATTRIBUTE_KEYS = frozenset({"bed_count", "bath_count"})
+# Arapahoe PPINum shows an empty Fireplaces row when the mart has no value.
 ALWAYS_EMIT_BUILDING_ATTRIBUTE_LABELS = frozenset({"Fireplaces"})
 
 PERMIT_STATUS_LABELS: dict[str, str] = {
@@ -106,8 +107,24 @@ def _optional_str(val: Any) -> str | None:
 
 
 def normalize_pin(raw: str, pin_digits: int = 9) -> str:
-    """Digits-only account id, zero-padded to pin_digits."""
-    digits = re.sub(r"\D", "", raw)
+    """Normalize account id for shard keys.
+
+    Digit-only ids are zero-padded (Arapahoe). Letter+digit ids (Douglas) are
+    uppercased with spaces/dashes stripped — digits-only strip would destroy
+    path-safe prefixes like ``R01039``.
+    """
+    s = _strip(raw)
+    if not s:
+        return ""
+    m = re.fullmatch(r"(-?\d+)\.0+", s)
+    if m:
+        s = m.group(1)
+    if s.isdigit():
+        return s.zfill(pin_digits)[:pin_digits]
+    cleaned = re.sub(r"[\s-]", "", s).upper()
+    if re.fullmatch(r"[A-Z0-9]+", cleaned):
+        return cleaned
+    digits = re.sub(r"\D", "", s)
     if not digits:
         return ""
     return digits.zfill(pin_digits)[:pin_digits]
@@ -299,17 +316,57 @@ def legal_descr_display_tail(full: str) -> str:
     return s
 
 
+def _situs_address_from_logical(row: dict[str, str]) -> str | None:
+    """Prefer free-form situs; otherwise compose from street parts (Douglas)."""
+    free = _optional_str(row.get("sa_free_form_addr"))
+    if free:
+        return free
+    from ingest.situs import format_situs_label
+
+    label = format_situs_label(row)
+    pin = _strip(row.get("pin", ""))
+    if not label or label == pin:
+        return None
+    # Drop locality suffix for the Property details situs line (city is separate).
+    city = _strip(row.get("sa_city", ""))
+    if city and f", {city}" in label:
+        return label.split(f", {city}", 1)[0].strip() or None
+    return label
+
+
+def _owner_city_state_zip_from_logical(row: dict[str, str]) -> str | None:
+    composed = _optional_str(row.get("cur_last_line"))
+    if composed:
+        return composed
+    city = _strip(row.get("mailing_city", ""))
+    state = _strip(row.get("mailing_state", ""))
+    zipc = _strip(row.get("mailing_zip", ""))
+    if zipc and len(zipc) > 5 and zipc[:5].isdigit():
+        zipc = f"{zipc[:5]}-{zipc[5:]}" if len(zipc) >= 9 else zipc[:5]
+    locality = " ".join(x for x in (city, state) if x)
+    if locality and zipc:
+        return f"{locality} {zipc}"
+    return locality or zipc or None
+
+
+def _owner_delivery_from_logical(row: dict[str, str]) -> str | None:
+    line1 = _strip(row.get("cur_delivery_addr", ""))
+    line2 = _strip(row.get("mailing_address_line_2", ""))
+    joined = ", ".join(x for x in (line1, line2) if x)
+    return joined or None
+
+
 def parcel_record_from_logical_row(row: dict[str, str]) -> dict[str, Any]:
-    """Build one parcel-record entry from a logical Main Parcel row."""
+    """Build one parcel-record entry from a logical Main Parcel / location row."""
     legal_full = _optional_str(row.get("legal_descr"))
     legal_display = legal_descr_display_tail(legal_full) if legal_full else None
     rec: dict[str, Any] = {
         "ain": _optional_str(row.get("ain")),
-        "situsAddress": _optional_str(row.get("sa_free_form_addr")),
+        "situsAddress": _situs_address_from_logical(row),
         "situsCity": _optional_str(row.get("sa_city")),
         "ownerList": _optional_str(row.get("owner_list")),
-        "ownerDeliveryAddress": _optional_str(row.get("cur_delivery_addr")),
-        "ownerCityStateZip": _optional_str(row.get("cur_last_line")),
+        "ownerDeliveryAddress": _owner_delivery_from_logical(row),
+        "ownerCityStateZip": _owner_city_state_zip_from_logical(row),
         "legalDescrFull": legal_full,
         "legalDescrDisplay": legal_display,
         "subdivisionCd": normalize_integerish_code(row.get("subdivision_cd")) or None,
@@ -324,6 +381,15 @@ def parcel_record_from_logical_row(row: dict[str, str]) -> dict[str, Any]:
         "parcelTaxYear": _optional_str(row.get("parcel_tax_year")),
         "assessmentYear": _optional_str(row.get("assessment_year")),
     }
+    nbhd_code = format_neighborhood_code_with_extension(
+        row.get("neighborhood_code"),
+        row.get("neighborhood_extention"),
+    )
+    if nbhd_code:
+        rec["neighborhoodCode"] = nbhd_code
+    acre = parse_parcel_value_cell(row.get("acreage"))
+    if acre is not None:
+        rec["acreage"] = format_acreage_display(acre)
     attach_computed_assessed_values(rec, row)
     return rec
 
@@ -391,6 +457,60 @@ def read_main_parcel_bundle(
     return account_rows, finalize_situs_map(situs_by_key), parcel_record_map
 
 
+def read_location_parcel_record_map(
+    location_path: Path,
+    mapping: dict[str, Any],
+    *,
+    values_totals: dict[str, dict[str, float]] | None = None,
+) -> dict[str, dict[str, Any]]:
+    """
+    Build parcel-record rows from a location/account file (Douglas valuesFile path).
+
+    Uses accountMap.file role aliases. Optional values_totals overlays actual/assessed.
+    """
+    from ingest.reader import open_csv_dict_reader
+
+    acct_cfg = mapping["accountMap"]
+    file_role = acct_cfg["file"]
+    pin_digits = int(mapping.get("identifierDigits", 9))
+    account_alias = acct_cfg.get("accountId", "")
+    parcel_record_map: dict[str, dict[str, Any]] = {}
+
+    with open_csv_dict_reader(location_path, mapping, file_role) as (reader, headers):
+        col_map = resolve_role_column_map(headers, mapping, file_role)
+        pin_alias = "pin" if "pin" in col_map else account_alias
+        if pin_alias not in col_map:
+            raise ValueError(
+                f"{location_path}: parcel-record build needs pin/account column via mapping"
+            )
+        for raw in reader:
+            logical = logical_row_from_csv(raw, col_map)
+            pin_raw = logical.get(pin_alias, "") or logical.get(account_alias, "")
+            pin = normalize_pin(pin_raw, pin_digits)
+            if not pin:
+                continue
+            if pin not in parcel_record_map:
+                parcel_record_map[pin] = parcel_record_from_logical_row(
+                    {**logical, "pin": pin}
+                )
+            else:
+                ain = _optional_str(logical.get("ain"))
+                if ain and not parcel_record_map[pin].get("ain"):
+                    parcel_record_map[pin]["ain"] = ain
+
+    if values_totals:
+        for pin, rec in parcel_record_map.items():
+            bucket = values_totals.get(pin)
+            if not bucket:
+                continue
+            if rec.get("totalActual") is None:
+                rec["totalActual"] = bucket.get("totalActual")
+            if rec.get("totalAssessed") is None:
+                rec["totalAssessed"] = bucket.get("totalAssessed")
+
+    return parcel_record_map
+
+
 # -----------------------------------------------------------------------
 # Sibling mart readers (logical fields)
 # -----------------------------------------------------------------------
@@ -402,9 +522,9 @@ def _read_logical_csv_rows(
 ) -> list[dict[str, str]]:
     if not path.is_file():
         return []
-    with path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
-        reader = csv.DictReader(f)
-        headers = list(reader.fieldnames or [])
+    from ingest.reader import open_csv_dict_reader
+
+    with open_csv_dict_reader(path, mapping, file_role) as (reader, headers):
         col_map = resolve_role_column_map(headers, mapping, file_role)
         return [logical_row_from_csv(raw, col_map) for raw in reader]
 
@@ -483,6 +603,90 @@ def read_ownership_type_by_pin(
         label = ownership_type_label_from_owner_lp_types(lp_types)
         if label:
             out[pin] = label
+    return out
+
+
+def read_ownership_name_fields_by_pin(
+    path: Path,
+    mapping: dict[str, Any],
+    *,
+    pin_digits: int = 9,
+) -> dict[str, dict[str, str]]:
+    """Owner name + mailing from Assessor ownership tables (Douglas)."""
+    out: dict[str, dict[str, str]] = {}
+    for row in _read_logical_csv_rows(path, mapping, "ownership"):
+        pin = normalize_pin(row.get("pin", ""), pin_digits)
+        if not pin or pin in out:
+            continue
+        entry: dict[str, str] = {}
+        owner = _optional_str(row.get("owner_list"))
+        if owner:
+            entry["ownerList"] = owner
+        delivery = _owner_delivery_from_logical(row)
+        if delivery:
+            entry["ownerDeliveryAddress"] = delivery
+        city_state_zip = _owner_city_state_zip_from_logical(row)
+        if city_state_zip:
+            entry["ownerCityStateZip"] = city_state_zip
+        if entry:
+            out[pin] = entry
+    return out
+
+
+def apply_ownership_names_to_account_rows(
+    account_rows: list[dict[str, Any]],
+    ownership_by_pin: dict[str, dict[str, str]],
+    *,
+    pin_digits: int,
+) -> list[dict[str, Any]]:
+    """Fill missing account-map ownerList from ownership join (summary tiles)."""
+    if not ownership_by_pin:
+        return account_rows
+    out: list[dict[str, Any]] = []
+    for row in account_rows:
+        merged = dict(row)
+        if merged.get("ownerList"):
+            out.append(merged)
+            continue
+        account_id = normalize_pin(str(merged.get("accountId", "")), pin_digits)
+        fields = ownership_by_pin.get(account_id) if account_id else None
+        owner = fields.get("ownerList") if fields else None
+        if owner:
+            merged["ownerList"] = owner
+        out.append(merged)
+    return out
+
+
+def read_subdivision_fields_by_pin(
+    path: Path,
+    mapping: dict[str, Any],
+    *,
+    pin_digits: int = 9,
+) -> dict[str, dict[str, str]]:
+    """Subdivision name / filing code from Assessor subdivision table (Douglas)."""
+    out: dict[str, dict[str, str]] = {}
+    for row in _read_logical_csv_rows(path, mapping, "subdivision"):
+        pin = normalize_pin(row.get("pin", ""), pin_digits)
+        if not pin or pin in out:
+            continue
+        entry: dict[str, str] = {}
+        name = _optional_str(row.get("subdivision_name"))
+        code = normalize_integerish_code(row.get("subdivision_cd")) or None
+        lot = _optional_str(row.get("lot_no"))
+        block = _optional_str(row.get("block_no"))
+        tract = _optional_str(row.get("tract_no"))
+        if name:
+            entry["subdivisionName"] = name
+        if code:
+            entry["subdivisionCd"] = code
+        if lot and lot != "0":
+            entry["lotNo"] = lot
+        if block and block != "0":
+            entry["blockNo"] = block
+        if tract and tract != "0":
+            entry["tractNo"] = tract
+        if entry:
+            out[pin] = entry
     return out
 
 
@@ -589,6 +793,8 @@ def building_record_from_logical(row: dict[str, str]) -> dict[str, Any] | None:
             continue
         raw = _strip(row.get(key, ""))
         if not raw:
+            if label in ALWAYS_EMIT_BUILDING_ATTRIBUTE_LABELS:
+                attributes.append({"label": label, "value": ""})
             continue
         if key in COUNTY_DECIMAL_ATTRIBUTE_KEYS:
             value = format_county_count(raw)
@@ -608,6 +814,8 @@ def building_record_from_logical(row: dict[str, str]) -> dict[str, Any] | None:
             }
         )
     total_area = format_county_sqft(row.get("base_area"))
+    if total_area and not areas:
+        areas.append({"description": "Improvement", "sqFt": total_area})
     if not building_num and not attributes and not areas:
         return None
     rec: dict[str, Any] = {"buildingNum": building_num or "1"}
@@ -660,6 +868,26 @@ def format_county_mm_dd_yyyy(raw: str) -> str:
     return s
 
 
+def format_sale_date_display(raw: str) -> tuple[str, str]:
+    """Return (display MM-DD-YYYY, sort key YYYYMMDD or raw)."""
+    s = _strip(raw)
+    if not s:
+        return "", ""
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        y, mo, d = m.group(1), m.group(2), m.group(3)
+        return f"{mo}-{d}-{y}", f"{y}{mo}{d}"
+    m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{2,4})", s)
+    if m:
+        mo, d, y = m.group(1), m.group(2), m.group(3)
+        if len(y) == 2:
+            y = f"20{y}" if int(y) < 70 else f"19{y}"
+        return f"{int(mo):02d}-{int(d):02d}-{y}", f"{y}{int(mo):02d}{int(d):02d}"
+    display = format_county_mm_dd_yyyy(s)
+    sort_key = s if len(s) == 8 and s.isdigit() else s
+    return display, sort_key
+
+
 def format_book_page_display(book: str, page: str) -> str:
     b = _strip(book)
     p = _strip(page)
@@ -671,17 +899,28 @@ def format_book_page_display(book: str, page: str) -> str:
 def transfer_sale_row_from_logical(row: dict[str, str]) -> dict[str, Any] | None:
     book = _strip(row.get("book", ""))
     page = _strip(row.get("page", ""))
-    if not book or not page:
-        return None
-    date = format_county_mm_dd_yyyy(row.get("doc_date", ""))
+    recording = _strip(row.get("recording_no", ""))
+    book_page = format_book_page_display(book, page) or recording
+    date, sort_date = format_sale_date_display(row.get("doc_date", ""))
     price = parse_parcel_value_cell(row.get("consid"))
+    deed_type = _optional_str(row.get("deed_type"))
+    grantor = _optional_str(row.get("grantor"))
+    grantee = _optional_str(row.get("grantee"))
+    if not book_page and not date and price is None:
+        return None
     out: dict[str, Any] = {
-        "bookPage": format_book_page_display(book, page),
+        "bookPage": book_page,
         "date": date or "",
-        "sortDate": _strip(row.get("doc_date", "")),
+        "sortDate": sort_date or _strip(row.get("doc_date", "")),
     }
     if price is not None:
         out["price"] = price
+    if deed_type:
+        out["type"] = deed_type
+    if grantor:
+        out["grantor"] = grantor
+    if grantee:
+        out["grantee"] = grantee
     return out
 
 
@@ -847,6 +1086,8 @@ def format_neighborhood_code(raw: Any) -> str:
     s = _strip(str(raw))
     if not s:
         return ""
+    if s.lower() == "null":
+        return ""
     try:
         val = float(s)
     except ValueError:
@@ -856,6 +1097,182 @@ def format_neighborhood_code(raw: Any) -> str:
     if val == int(val):
         return str(int(val))
     return s
+
+
+def format_neighborhood_code_with_extension(
+    code_raw: Any,
+    extension_raw: Any,
+) -> str | None:
+    """Douglas Assessor location: Neighborhood_Code + Neighborhood_Extention."""
+    code = format_neighborhood_code(code_raw)
+    if not code:
+        return None
+    ext = _strip(str(extension_raw) if extension_raw is not None else "")
+    if not ext or ext.lower() in {"null", "00"}:
+        return code
+    return f"{code}-{ext}"
+
+
+def format_valuation_amount_display(raw: Any) -> str:
+    val = parse_parcel_value_cell(raw)
+    if val is None:
+        return ""
+    if val == int(val):
+        return f"{int(val):,}"
+    return f"{val:,.2f}".rstrip("0").rstrip(".")
+
+
+def read_values_parcel_enrichment_by_pin(
+    path: Path,
+    mapping: dict[str, Any],
+    *,
+    pin_digits: int = 9,
+) -> dict[str, dict[str, Any]]:
+    """
+    Douglas Property_Values.txt: valuation-class rows per account.
+
+    Emits landLines (class description + actual value), land/improvement actual
+    splits (Valuation_Type_Code L vs I), and a representative stateUseCd.
+    """
+    from ingest.reader import open_csv_dict_reader
+
+    acct_cfg = mapping.get("accountMap") or {}
+    values_role = acct_cfg.get("valuesFile")
+    if not isinstance(values_role, str) or not values_role:
+        return {}
+    account_alias = acct_cfg.get("accountId", "account_no")
+    by_pin: dict[str, list[dict[str, str]]] = defaultdict(list)
+    with open_csv_dict_reader(path, mapping, values_role) as (reader, headers):
+        col_map = resolve_role_column_map(headers, mapping, values_role)
+        if account_alias not in col_map:
+            return {}
+        for raw in reader:
+            logical = logical_row_from_csv(raw, col_map)
+            pin = normalize_pin(logical.get(account_alias, ""), pin_digits)
+            if pin:
+                by_pin[pin].append(logical)
+    out: dict[str, dict[str, Any]] = {}
+    for pin, rows in by_pin.items():
+        land_lines: list[dict[str, str]] = []
+        land_actual = 0.0
+        improvement_actual = 0.0
+        land_assessed = 0.0
+        improvement_assessed = 0.0
+        state_use_cd: str | None = None
+        largest_actual = -1.0
+        for row in rows:
+            actual = parse_parcel_value_cell(row.get("actual_value"))
+            assessed = parse_parcel_value_cell(row.get("assessed_value"))
+            descr = _optional_str(row.get("valuation_description")) or ""
+            type_code = _strip(row.get("valuation_type_code", "")).upper()
+            class_code = normalize_integerish_code(row.get("valuation_class_code"))
+            if class_code and actual is not None and actual >= largest_actual:
+                largest_actual = actual
+                state_use_cd = class_code
+            if type_code == "L":
+                units = format_valuation_amount_display(row.get("actual_value"))
+                land_line = land_table_row_from_logical(
+                    {
+                        "uts": units,
+                        "unit_tp": "",
+                        "use_cd_dscr": descr,
+                    }
+                )
+                if land_line:
+                    land_lines.append(land_line)
+                if actual is not None:
+                    land_actual += actual
+                if assessed is not None:
+                    land_assessed += assessed
+            elif type_code == "I":
+                if actual is not None:
+                    improvement_actual += actual
+                if assessed is not None:
+                    improvement_assessed += assessed
+        entry: dict[str, Any] = {}
+        if land_lines:
+            entry["landLines"] = land_lines
+        if land_actual > 0:
+            entry["landActual"] = land_actual
+        if improvement_actual > 0:
+            entry["improvementActual"] = improvement_actual
+        if state_use_cd:
+            entry["stateUseCd"] = state_use_cd
+        if entry:
+            out[pin] = entry
+    return out
+
+
+def read_filing_lookup_by_recording_no(
+    path: Path,
+    mapping: dict[str, Any],
+) -> dict[str, dict[str, str]]:
+    """Douglas Property_Filing.txt: recording number → filing description."""
+    out: dict[str, dict[str, str]] = {}
+    for row in _read_logical_csv_rows(path, mapping, "filing"):
+        recording = normalize_integerish_code(row.get("sub_filing_recording_no")) or _strip(
+            row.get("sub_filing_recording_no", "")
+        )
+        if not recording or recording in out:
+            continue
+        entry: dict[str, str] = {}
+        descr = _optional_str(row.get("filing_descr"))
+        filing_no = _optional_str(row.get("filing_no"))
+        subdivision_name = _optional_str(row.get("subdivision_name"))
+        if descr:
+            entry["filingDescr"] = descr
+        if filing_no:
+            entry["filingNo"] = filing_no
+        if subdivision_name:
+            entry["subdivisionName"] = subdivision_name
+        if entry:
+            out[recording] = entry
+    return out
+
+
+def _parcels_csv_config(mapping: dict[str, Any]) -> dict[str, str]:
+    cfg = (mapping or {}).get("parcelsCsv") or {}
+    return {
+        "pin": _strip(cfg.get("pin")) or "ACCOUNT_NO",
+        "blockNo": _strip(cfg.get("blockNo")) or "BLOCK_NO",
+        "tract": _strip(cfg.get("tract")) or "TRACT",
+        "filingDescr": _strip(cfg.get("filingDescr")) or "FILING_DESCR",
+        "legalDescr": _strip(cfg.get("legalDescr")) or "CAMA_LEGAL_DESC",
+    }
+
+
+def read_parcels_csv_enrichment_by_pin(
+    path: Path,
+    mapping: dict[str, Any],
+    *,
+    pin_digits: int = 9,
+) -> dict[str, dict[str, str]]:
+    """Douglas Hub parcels CSV: block / tract / filing / legal when present."""
+    cols = _parcels_csv_config(mapping)
+    pin_col = cols["pin"]
+    out: dict[str, dict[str, str]] = {}
+    with path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
+        reader = csv.DictReader(f)
+        for raw in reader:
+            pin = normalize_pin(raw.get(pin_col, ""), pin_digits)
+            if not pin or pin in out:
+                continue
+            entry: dict[str, str] = {}
+            block = _optional_str(raw.get(cols["blockNo"]))
+            tract = _optional_str(raw.get(cols["tract"]))
+            filing = _optional_str(raw.get(cols["filingDescr"]))
+            legal = _optional_str(raw.get(cols["legalDescr"]))
+            if block and block != "0":
+                entry["blockNo"] = block
+            if tract and tract != "0":
+                entry["tractNo"] = tract
+            if filing:
+                entry["filingDescr"] = filing
+            if legal:
+                entry["legalDescrFull"] = legal
+            if entry:
+                out[pin] = entry
+    return out
 
 
 def neighborhood_by_pin_from_rows(
@@ -1001,6 +1418,11 @@ def enrich_parcel_record_from_sibling_marts(
     state_class_xlsx_path: Path | None = None,
     nbhd_xlsx_path: Path | None = None,
     gis_parcels_gdb_path: Path | None = None,
+    ownership_path: Path | None = None,
+    subdivision_path: Path | None = None,
+    values_path: Path | None = None,
+    filing_path: Path | None = None,
+    parcels_csv_path: Path | None = None,
 ) -> dict[str, int]:
     """Merge sibling mart tables / GIS neighborhood into parcel-record rows."""
     del building_xfob_path  # reserved; not used on PPINum layout today
@@ -1016,6 +1438,20 @@ def enrich_parcel_record_from_sibling_marts(
     ownership_by_pin = (
         read_ownership_type_by_pin(legal_parties_path, mapping, pin_digits=pin_digits)
         if legal_parties_path and legal_parties_path.is_file()
+        else {}
+    )
+    ownership_name_by_pin = (
+        read_ownership_name_fields_by_pin(
+            ownership_path, mapping, pin_digits=pin_digits
+        )
+        if ownership_path and ownership_path.is_file()
+        else {}
+    )
+    subdivision_by_pin = (
+        read_subdivision_fields_by_pin(
+            subdivision_path, mapping, pin_digits=pin_digits
+        )
+        if subdivision_path and subdivision_path.is_file()
         else {}
     )
     land_by_pin = (
@@ -1036,6 +1472,25 @@ def enrich_parcel_record_from_sibling_marts(
     permits_by_pin = (
         read_permits_by_pin(permits_path, mapping, pin_digits=pin_digits)
         if permits_path
+        else {}
+    )
+    values_by_pin = (
+        read_values_parcel_enrichment_by_pin(
+            values_path, mapping, pin_digits=pin_digits
+        )
+        if values_path and values_path.is_file()
+        else {}
+    )
+    filing_lookup = (
+        read_filing_lookup_by_recording_no(filing_path, mapping)
+        if filing_path and filing_path.is_file()
+        else {}
+    )
+    parcels_csv_by_pin = (
+        read_parcels_csv_enrichment_by_pin(
+            parcels_csv_path, mapping, pin_digits=pin_digits
+        )
+        if parcels_csv_path and parcels_csv_path.is_file()
         else {}
     )
     state_class_by_code = (
@@ -1064,12 +1519,17 @@ def enrich_parcel_record_from_sibling_marts(
     counts = {
         "legalDescrDisplay": 0,
         "ownershipType": 0,
+        "ownershipName": 0,
+        "subdivision": 0,
         "land": 0,
         "building": 0,
         "transfers": 0,
         "permits": 0,
         "stateUseLabel": 0,
         "neighborhood": 0,
+        "valuesDetail": 0,
+        "filing": 0,
+        "parcelsCsv": 0,
     }
     for pin, rec in parcel_record_map.items():
         mart_legal = legal_by_pin.get(pin)
@@ -1080,6 +1540,30 @@ def enrich_parcel_record_from_sibling_marts(
         if ownership:
             rec["ownershipType"] = ownership
             counts["ownershipType"] += 1
+        ownership_name = ownership_name_by_pin.get(pin)
+        if ownership_name:
+            rec.update(ownership_name)
+            counts["ownershipName"] += 1
+        subdivision = subdivision_by_pin.get(pin)
+        if subdivision:
+            if subdivision.get("subdivisionName") and not rec.get("subdivisionName"):
+                rec["subdivisionName"] = subdivision["subdivisionName"]
+            if subdivision.get("subdivisionCd") and not rec.get("subdivisionCd"):
+                rec["subdivisionCd"] = subdivision["subdivisionCd"]
+            for field in ("lotNo", "blockNo", "tractNo"):
+                if subdivision.get(field) and not rec.get(field):
+                    rec[field] = subdivision[field]
+            recording = subdivision.get("subdivisionCd")
+            if recording and filing_lookup.get(recording):
+                filing = filing_lookup[recording]
+                if filing.get("filingDescr") and not rec.get("filingDescr"):
+                    rec["filingDescr"] = filing["filingDescr"]
+                if filing.get("filingNo") and not rec.get("filingNo"):
+                    rec["filingNo"] = filing["filingNo"]
+                if filing.get("subdivisionName") and not rec.get("subdivisionName"):
+                    rec["subdivisionName"] = filing["subdivisionName"]
+                counts["filing"] += 1
+            counts["subdivision"] += 1
         land = land_by_pin.get(pin)
         if land:
             rec.update(land)
@@ -1101,6 +1585,30 @@ def enrich_parcel_record_from_sibling_marts(
             counts["permits"] += 1
         if state_class_by_code and attach_state_use_label(rec, state_class_by_code):
             counts["stateUseLabel"] += 1
+        values_detail = values_by_pin.get(pin)
+        if values_detail:
+            if values_detail.get("landLines") and not rec.get("landLines"):
+                rec["landLines"] = values_detail["landLines"]
+            if rec.get("landActual") is None and values_detail.get("landActual") is not None:
+                rec["landActual"] = values_detail["landActual"]
+            if (
+                rec.get("improvementActual") is None
+                and values_detail.get("improvementActual") is not None
+            ):
+                rec["improvementActual"] = values_detail["improvementActual"]
+            if values_detail.get("stateUseCd") and not rec.get("stateUseCd"):
+                rec["stateUseCd"] = values_detail["stateUseCd"]
+            counts["valuesDetail"] += 1
+        parcels_csv = parcels_csv_by_pin.get(pin)
+        if parcels_csv:
+            for field in ("blockNo", "tractNo", "filingDescr"):
+                if parcels_csv.get(field) and not rec.get(field):
+                    rec[field] = parcels_csv[field]
+            if parcels_csv.get("legalDescrFull") and not rec.get("legalDescrFull"):
+                full = parcels_csv["legalDescrFull"]
+                rec["legalDescrFull"] = full
+                rec["legalDescrDisplay"] = legal_descr_display_tail(full)
+            counts["parcelsCsv"] += 1
     if neighborhood_by_pin:
         counts["neighborhood"] = attach_neighborhood_from_gis(
             parcel_record_map, neighborhood_by_pin
@@ -1133,12 +1641,14 @@ def write_parcel_record_shards(
     parcel_snapshot: dict[str, Any],
     *,
     pin_digits: int = 9,
+    county_id: str = "arapahoe",
     separators: tuple[str, str] = (",", ":"),
 ) -> None:
-    """Write plain JSON shards by PIN prefix under out_dir."""
+    """Write plain JSON shards by account-id prefix under out_dir."""
     validate_out_dir(out_dir, ship=False)
 
-    shard_dir = out_dir / "arapahoe-parcel-record-by-pin"
+    county = _strip(county_id) or "county"
+    shard_dir = out_dir / f"{county}-parcel-record-by-pin"
     if shard_dir.exists():
         for old in shard_dir.glob("*.json.gz"):
             old.unlink()
@@ -1146,16 +1656,20 @@ def write_parcel_record_shards(
             old.unlink()
     shard_dir.mkdir(parents=True, exist_ok=True)
 
-    legacy_mono = out_dir / "arapahoe-parcel-record-by-pin.json.gz"
+    legacy_mono = out_dir / f"{county}-parcel-record-by-pin.json.gz"
     if legacy_mono.exists():
         legacy_mono.unlink()
-    legacy_mono_json = out_dir / "arapahoe-parcel-record-by-pin.json"
+    legacy_mono_json = out_dir / f"{county}-parcel-record-by-pin.json"
     if legacy_mono_json.exists():
         legacy_mono_json.unlink()
 
     shards: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for pin, row in parcel_record_map.items():
+        if len(pin) < PARCEL_RECORD_SHARD_PREFIX_LEN:
+            continue
         prefix = pin[:PARCEL_RECORD_SHARD_PREFIX_LEN]
+        if not re.fullmatch(r"[A-Za-z0-9]+", prefix):
+            continue
         shards[prefix][pin] = row
 
     for prefix in sorted(shards):

@@ -7,6 +7,11 @@ import {
   COUNTY_DATA_MART_REFRESH_ATTEMPT_ISO,
 } from "@/content/countyDataMartRefreshNote";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
+import {
+  countyFeatureAvailable,
+  countyFeaturePresentation,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 
 /**
  * Canonical copy for county service gap callouts (broken exports, empty official
@@ -40,6 +45,7 @@ export const COUNTY_SERVICE_GAP_SOURCES_ANCHOR = {
   dataMart: "county-data-mart-gap",
   compsPdf: "county-comps-pdf-gap",
   priorYearValues: "county-prior-year-values-gap",
+  douglasMillPdfTaxDistrict: "douglas-mill-pdf-tax-district-gap",
 } as const;
 
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL = `Assessor Data Mart download (${formatLevyBundledAsOf(COUNTY_DATA_MART_REFRESH_ATTEMPT_ISO)} attempt)`;
@@ -49,3 +55,43 @@ export const COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL =
 
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL =
   "Prior-year assessed value (valuation history)";
+
+export const COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL =
+  "Douglas County mill PDF tax district coverage";
+
+export type CountyServiceGapHubItem = {
+  anchor: string;
+  label: string;
+};
+
+/** Hub bullets for one county (opt-in gap flags only). */
+export function listCountyServiceGapHubItems(
+  config: CountyConfig,
+): CountyServiceGapHubItem[] {
+  const items: CountyServiceGapHubItem[] = [];
+  if (countyFeaturePresentation("compsPdf", config) === "gap") {
+    items.push({
+      anchor: COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf,
+      label: COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL,
+    });
+  }
+  if (countyFeatureAvailable("dataMartRefreshGap", config)) {
+    items.push({
+      anchor: COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart,
+      label: COUNTY_SERVICE_GAP_SOURCES_INDEX_DATA_MART_LABEL,
+    });
+  }
+  if (countyFeatureAvailable("priorYearValuesGap", config)) {
+    items.push({
+      anchor: COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues,
+      label: COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL,
+    });
+  }
+  if (countyFeatureAvailable("millPdfTaxDistrictGap", config)) {
+    items.push({
+      anchor: COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict,
+      label: COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL,
+    });
+  }
+  return items;
+}

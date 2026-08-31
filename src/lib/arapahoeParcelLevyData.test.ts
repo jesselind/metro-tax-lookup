@@ -61,9 +61,14 @@ describe("parcelRecordShardPrefixes", () => {
     expect(new Set(prefixes).size).toBe(prefixes.length);
   });
 
-  it("returns empty for non-numeric input", () => {
+  it("returns empty for short or empty input", () => {
     expect(parcelRecordShardPrefixes("")).toEqual([]);
     expect(parcelRecordShardPrefixes("abc")).toEqual([]);
+  });
+
+  it("accepts letter-prefixed Douglas account ids", () => {
+    expect(parcelRecordShardPrefixes("R0103974", "douglas")).toEqual(["R01039"]);
+    expect(parcelRecordShardPrefixes("c0193439", "douglas")).toEqual(["C01934"]);
   });
 });
 
@@ -74,11 +79,21 @@ describe("parcelRecordShardUrl", () => {
     );
   });
 
-  it("rejects invalid prefix shapes", () => {
+  it("uses the countyId path segment (not always Arapahoe)", () => {
+    expect(
+      parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX, "/data", "douglas"),
+    ).toBe(
+      `/data/douglas-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`,
+    );
+  });
+
+  it("allows alphanumeric prefixes and rejects unsafe shapes", () => {
+    expect(parcelRecordShardUrl("R01039")).toBe(
+      `/data/arapahoe-parcel-record-by-pin/R01039.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`,
+    );
     expect(parcelRecordShardUrl("01000")).toBeNull();
     expect(parcelRecordShardUrl("0100000")).toBeNull();
     expect(parcelRecordShardUrl("../010000")).toBeNull();
-    expect(parcelRecordShardUrl("01x000")).toBeNull();
   });
 });
 

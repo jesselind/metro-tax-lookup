@@ -2,6 +2,8 @@
 
 Permanent reference for maintainers. Do not duplicate the full resident block in this README; cross-link from README and `/sources` instead.
 
+**Multi-county model (features vs gaps vs empty fields):** **[county-config.md](./county-config.md)**. This file is the UI chrome and pairing checklist only.
+
 ## Required surfaces (always both)
 
 When a county data limit is **user-visible**, ship **two linked surfaces**:
@@ -12,6 +14,8 @@ When a county data limit is **user-visible**, ship **two linked surfaces**:
 | **`/sources`** | Methodology + durable explanation: **hub list** plus **contextual red box** (see below). |
 
 Do not add only `/sources` or only the dashboard. Do not stack all red boxes in the hub section.
+
+**County opt-in:** Gap chrome is gated by `CountyConfig.features` (and `knownFailures` for comps PDF). Do not show Arapahoe-only incidents on Douglas (or the reverse). Do not assume a third county shares either set. `/sources` has a **county selector** (wired counties); methodology and the hub list follow the selected county. Default Arapahoe. Dashboard→sources county query is not required for v1. See **[county-config.md](./county-config.md)**.
 
 ### `/sources` layout (locked)
 
@@ -86,20 +90,23 @@ Tone aligns with `.cursor/rules/base-rule.mdc` (educational, bill-centered, midd
 
 ## Adding a new gap (checklist)
 
-1. **Copy:** add or extend incident strings in `src/content/` (shared module, not duplicated prose in components).
-2. **Dashboard:** add compact callout and/or summary tile at the control the resident uses (see **Home dashboard layout**).
-3. **`/sources` — contextual red box:** `<CountyServiceGapCallout id={…}>` in **Your property tax bill** where that feature is explained.
-4. **`/sources` — hub list:** add a bullet under **When county data fails** linking to the same anchor (`COUNTY_SERVICE_GAP_SOURCES_ANCHOR` + index label constant).
-5. **Changelog** when user-visible.
-6. **Resolve:** remove dashboard surface, contextual callout, hub bullet, and incident module when fixed; update stamps such as `tools/county-mart-data-as-of.txt` on successful mart refresh.
+1. **Confirm Layer 2:** this is a county-level incident, not one empty field on a parcel ([county-config.md](./county-config.md)).
+2. **Copy:** add or extend incident strings in `src/content/` (shared module, not duplicated prose in components). County-true facts only.
+3. **Config:** opt-in flag on `CountyConfig.features` (or `knownFailures` when the product source exists but hosting failed). Default **false** on other counties.
+4. **Dashboard:** add compact callout and/or summary tile at the control the resident uses (see **Home dashboard layout**), gated by that flag.
+5. **`/sources` — contextual red box:** `<CountyServiceGapCallout id={…}>` in that county’s methodology context (not pasted into every county section).
+6. **`/sources` — hub list:** register anchor + index label in `src/content/countyServiceGapGuidance.ts`; `listCountyServiceGapHubItems` must include the item when the flag is on.
+7. **Changelog** when user-visible.
+8. **Resolve:** remove dashboard surface, contextual callout, hub registration, and incident module when fixed; clear the county flag; update stamps such as `tools/county-mart-data-as-of.txt` on successful mart refresh.
 
 ## Current incidents
 
-| Incident | Copy module | Dashboard | `/sources` hub link → contextual red box |
-| --- | --- | --- | --- |
-| Aug 17 2026 Data Mart download incomplete | `countyDataMartRefreshNote.tsx` | Property details (compact, after "County data current as of …") | #county-data-mart-gap → under **How current is the data?** |
-| County comps PDF hosting limited | `countyCompsPdfGapNote.tsx`, `countyCompsPdfGuidance.ts` | **Comparable properties** summary tile + popover (`#home-parcel-comps-pdf`); `COUNTY_CONFIG.knownFailures.compsPdfHostedFiles` in `src/lib/countyConfig.ts`. If `features.compsPdf` is false, omit the tile (no gap). | #county-comps-pdf-gap → under **Comparable properties** |
-| No official bulk prior-year assessed | `countyPriorYearValuesGapNote.tsx` | Red **Prior years missing** badge (`CountyServiceGapBadge`) on the **Assessed value** summary chip (white chip; not COUNTY DATA GAP chrome on the tile). Popover is `InfoHintPopover` `variant="county-data-gap"` (same width/scroll as tile glossary briefs; thin red border + light red fill on the panel), with COUNTY DATA GAP header + copy inside (`CountyPriorYearValuesGapPopover`); **Sale history** jumps to `#home-parcel-sale-history`. Dashboard lead: county-published sources lack prior-year assessed; per the assessor's office, no historical information on the public website. `/sources` note: same Assessor fact plus that individual figures may be available only by contacting the office directly (no email address or how-to); Main Parcel is current-year only. | #county-prior-year-values-gap → **Property details methodology** (prior-year values) |
+| Incident | Copy module | Feature / failure flag | Dashboard | `/sources` hub link → contextual red box |
+| --- | --- | --- | --- | --- |
+| Aug 17 2026 Data Mart download incomplete | `countyDataMartRefreshNote.tsx` | `features.dataMartRefreshGap` (Arapahoe) | Property details (compact, after "County data current as of …") | #county-data-mart-gap → under **How current is the data?** |
+| County comps PDF hosting limited | `countyCompsPdfGapNote.tsx`, `countyCompsPdfGuidance.ts` | `features.compsPdf` + `knownFailures.compsPdfHostedFiles` | **Comparable properties** summary tile + popover (`#home-parcel-comps-pdf`). If `features.compsPdf` is false, omit the tile (no gap). | #county-comps-pdf-gap → under **Comparable properties** |
+| No official bulk prior-year assessed | `countyPriorYearValuesGapNote.tsx` | `features.priorYearValuesGap` (Arapahoe; off for Douglas) | Red **Prior years missing** badge on **Assessed value** when the flag is on | #county-prior-year-values-gap → **Property details methodology** (prior-year values) |
+| Douglas mill PDF missing some tax district numbers | `douglasCountyDataGapNote.tsx` (`DouglasMillPdfTaxDistrictGapNote`) | `features.millPdfTaxDistrictGap` (Douglas) | (lookup failure message when TAG absent; hub explains ~0.9% accounts) | #douglas-mill-pdf-tax-district-gap → **Douglas account lookup** (Levy stacks) |
 
 Comps uses the **summary tile variant** (same header + surface, tile popover interaction). Do not use `CountyServiceGapCallout` inside the tile grid cell. Gap summary tiles (`COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS`) are full width of the summary column at every viewport.
 
@@ -107,6 +114,7 @@ The prior-year values gap is a red **Prior years missing** badge on **Assessed v
 
 ## Related
 
-- `/sources` — #county-service-gaps (hub list only), #county-data-mart-gap, #county-comps-pdf-gap, #county-prior-year-values-gap
-- README — contributor pointer under **County service gap callouts**
+- **[county-config.md](./county-config.md)** — features vs gap chrome vs runtime fields; add-county checklist
+- `/sources` — #county-service-gaps (hub list only), #county-data-mart-gap, #county-comps-pdf-gap, #county-prior-year-values-gap, #douglas-mill-pdf-tax-district-gap
+- README — contributor pointer under **County service gap callouts** and **County config**
 - `.cursor/rules/base-rule.mdc` — always ship dashboard + `/sources` for user-visible county gaps

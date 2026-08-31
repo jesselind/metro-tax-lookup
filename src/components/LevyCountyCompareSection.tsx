@@ -9,8 +9,10 @@ import { useMemo } from "react";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import {
-  COUNTY_CONFIG,
   countyFeatureAvailable,
+  countyHostedPropertyPageOpenLabel,
+  countyParcelRecordLookupValue,
+  type CountyConfig,
 } from "@/lib/countyConfig";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
 import {
@@ -22,11 +24,18 @@ import {
 const COUNTY_ACTION_CLASS = `${btnOutlineSecondaryMd} w-full justify-center sm:w-auto`;
 
 export type LevyCountyCompareSectionProps = {
+  /** Resolved county for this loaded property (not the shipping default). */
+  countyConfig: CountyConfig;
   pin: string;
   tagId: string;
   tagShortDescr: string;
   levyAspxUrl: string;
   ain?: string | null;
+  /**
+   * Optional year for hash-path property pages (overrides config template year
+   * when the county SPA path uses `{year}`).
+   */
+  parcelRecordLinkYear?: string | null;
   /** Demo property: show parcel record control disabled (no county link-out). */
   demoMode?: boolean;
   /**
@@ -37,29 +46,44 @@ export type LevyCountyCompareSectionProps = {
 };
 
 export function LevyCountyCompareSection({
+  countyConfig,
   pin,
   tagId,
   tagShortDescr,
   levyAspxUrl,
   ain,
+  parcelRecordLinkYear = null,
   demoMode = false,
   businessPersonal = false,
 }: LevyCountyCompareSectionProps) {
-  const bppOn = countyFeatureAvailable("bpp");
+  const bppOn = countyFeatureAvailable("bpp", countyConfig);
   const useBppLinks = businessPersonal && bppOn;
   const safeLevyTableHref = useMemo(
-    () => safeCountyLevyAspxUrl(levyAspxUrl),
-    [levyAspxUrl],
+    () => safeCountyLevyAspxUrl(levyAspxUrl, countyConfig),
+    [levyAspxUrl, countyConfig],
+  );
+
+  const parcelRecordLookupValue = useMemo(
+    () =>
+      countyParcelRecordLookupValue(countyConfig, {
+        accountId: pin,
+        publicParcelId: ain,
+      }),
+    [countyConfig, pin, ain],
   );
 
   const safeParcelRecordHref = useMemo(
-    () => safeCountyParcelRecordUrl(ain),
-    [ain],
+    () =>
+      safeCountyParcelRecordUrl(parcelRecordLookupValue, countyConfig, {
+        year: parcelRecordLinkYear,
+      }),
+    [parcelRecordLookupValue, countyConfig, parcelRecordLinkYear],
   );
 
   const safeBppDetailsHref = useMemo(
-    () => (bppOn ? safeCountyBppAccountDetailsUrl(ain) : null),
-    [ain, bppOn],
+    () =>
+      bppOn ? safeCountyBppAccountDetailsUrl(ain, countyConfig) : null,
+    [ain, bppOn, countyConfig],
   );
 
   const accountRecordHref = useBppLinks
@@ -67,14 +91,14 @@ export function LevyCountyCompareSection({
     : safeParcelRecordHref;
   const accountRecordLabel = useBppLinks
     ? "Open county business personal property record"
-    : "Open county parcel record";
+    : countyHostedPropertyPageOpenLabel(countyConfig);
 
   const showAccountRecordLink = !demoMode && accountRecordHref != null;
   const showAccountRecordDemoControl = demoMode;
   const propertySearchHref = useBppLinks
-    ? (COUNTY_CONFIG.residentLinks.bppSearch ??
-      COUNTY_CONFIG.residentLinks.propertySearch)
-    : COUNTY_CONFIG.residentLinks.propertySearch;
+    ? (countyConfig.residentLinks.bppSearch ??
+      countyConfig.residentLinks.propertySearch)
+    : countyConfig.residentLinks.propertySearch;
   const propertySearchLabel = useBppLinks
     ? "County business personal property search"
     : "County property search";
@@ -89,7 +113,7 @@ export function LevyCountyCompareSection({
           id="levy-county-compare-heading"
           className="text-base font-semibold leading-snug text-slate-900 sm:text-lg"
         >
-          See how the county displays your data
+          See how {countyConfig.displayName} displays your data
         </h4>
         <div className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
           <span className="sr-only">Property match. </span>

@@ -19,6 +19,11 @@ import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
+  COUNTY_CONFIG,
+  countyParcelRecordLookupValue,
+  type CountyConfig,
+} from "@/lib/countyConfig";
+import {
   safeCountyClerkRecorderSearchUrl,
   safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
@@ -144,6 +149,14 @@ const SALE_TABLE_COLUMN_GLOSSARY: Partial<
   "Book Page": {
     termId: "term-parcel-book-page",
     triggerIdSuffix: "hdr-book-page",
+  },
+  Grantor: {
+    termId: "term-parcel-sale-grantor",
+    triggerIdSuffix: "hdr-grantor",
+  },
+  Grantee: {
+    termId: "term-parcel-sale-grantee",
+    triggerIdSuffix: "hdr-grantee",
   },
 };
 
@@ -656,19 +669,37 @@ export const PARCEL_RECORD_SALE_HISTORY_ID = "home-parcel-sale-history";
 export function ParcelRecordSaleTable({
   transfers,
   ain,
+  pin = null,
   linkClerkRecorder = true,
+  countyConfig = COUNTY_CONFIG,
 }: {
   transfers: ParcelRecordTransfer[] | null | undefined;
-  /** AIN for the short note linking to this parcel's county record. */
+  /** Public parcel id (AIN) when the county uses that for hosted record links. */
   ain?: string | null;
+  /** Account id when the county parcel-record URL keys on account number. */
+  pin?: string | null;
   /**
    * When false (demo mode), show Book Page as plain text so clerk links do not
    * reveal the hidden real demo source parcel via recorded documents.
    */
   linkClerkRecorder?: boolean;
+  countyConfig?: CountyConfig;
 }) {
   const rows = transfers ?? [];
-  const countyParcelRecordUrl = safeCountyParcelRecordUrl(ain);
+  const showParties = rows.some(
+    (sale) => (sale.grantor ?? "").trim() || (sale.grantee ?? "").trim(),
+  );
+  const columnCount = showParties ? 6 : 4;
+  const headerLabels = showParties
+    ? ["Book Page", "Date", "Price", "Type", "Grantor", "Grantee"]
+    : ["Book Page", "Date", "Price", "Type"];
+  const countyParcelRecordUrl = safeCountyParcelRecordUrl(
+    countyParcelRecordLookupValue(countyConfig, {
+      accountId: pin,
+      publicParcelId: ain,
+    }),
+    countyConfig,
+  );
 
   return (
     <div
@@ -681,14 +712,14 @@ export function ParcelRecordSaleTable({
           Sale history from county transfer records
         </caption>
         <tbody>
-          <SectionTitleRow title="Sale" isFirst colSpan={4} />
+          <SectionTitleRow title="Sale" isFirst colSpan={columnCount} />
           <ColumnHeaderRow
-            labels={["Book Page", "Date", "Price", "Type"].map(saleTableHeaderLabel)}
+            labels={headerLabels.map(saleTableHeaderLabel)}
             shrinkFirstColumn={false}
           />
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={4} className={TD_CLASS}>
+              <td colSpan={columnCount} className={TD_CLASS}>
                 <ParcelRecordMissingValue
                   fieldLabel="Sale"
                   triggerIdSuffix="sale-empty"
@@ -701,7 +732,7 @@ export function ParcelRecordSaleTable({
               const bookPage = (sale.bookPage ?? "").trim();
               const clerkHref =
                 linkClerkRecorder && bookPage
-                  ? safeCountyClerkRecorderSearchUrl(bookPage)
+                  ? safeCountyClerkRecorderSearchUrl(bookPage, countyConfig)
                   : null;
               return (
                 <tr key={`sale-${sale.bookPage}-${sale.date ?? ""}-${index}`}>
@@ -743,6 +774,24 @@ export function ParcelRecordSaleTable({
                   <td className={TD_CLASS}>
                     {typeText ? parcelRecordCellText(typeText) : null}
                   </td>
+                  {showParties ? (
+                    <>
+                      <td className={TD_CLASS}>
+                        {textOrMissing(
+                          sale.grantor,
+                          "Grantor",
+                          `sale-grantor-${index}`,
+                        )}
+                      </td>
+                      <td className={TD_CLASS}>
+                        {textOrMissing(
+                          sale.grantee,
+                          "Grantee",
+                          `sale-grantee-${index}`,
+                        )}
+                      </td>
+                    </>
+                  ) : null}
                 </tr>
               );
             })
@@ -758,7 +807,8 @@ export function ParcelRecordSaleTable({
             rel="noopener noreferrer"
             className={COUNTY_EXTERNAL_LINK_CLASS}
           >
-            official county parcel record<span className="sr-only"> (opens in a new tab)</span>
+            official county {countyConfig.hostedPropertyPageName}
+            <span className="sr-only"> (opens in a new tab)</span>
           </a>.
         </p>
       ) : null}

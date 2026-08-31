@@ -45,14 +45,16 @@ export function countyIdForDataPaths(
   return countyId.trim() || COUNTY_CONFIG.id;
 }
 
-/** URL: `{dataRoot}/{countyId}-pin-to-tag.json` */
+/** URL: `{dataRoot}/{countyId}-pin-to-tag.json` (optional cache-bust query). */
 export function countyAccountMapUrl(
   dataRoot: string = SHIPPING_DATA_ROOT,
   countyId: string = COUNTY_CONFIG.id,
+  cacheBust?: string,
 ): string {
   const root = countyDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
-  return `${root}/${id}-pin-to-tag.json`;
+  const base = `${root}/${id}-pin-to-tag.json`;
+  return cacheBust ? `${base}?v=${cacheBust}` : base;
 }
 
 /** URL: `{dataRoot}/{countyId}-levy-stacks-by-tag-id.json` */
@@ -90,7 +92,7 @@ export function countyParcelRecordShardDirUrl(
   return `${root}/${id}-parcel-record-by-pin`;
 }
 
-/** URL for one parcel-record shard file (digits-only prefix; caller validates). */
+/** URL for one parcel-record shard file (caller validates path-safe prefix). */
 export function countyParcelRecordShardUrl(
   prefix: string,
   dataRoot: string = SHIPPING_DATA_ROOT,

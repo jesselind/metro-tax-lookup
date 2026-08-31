@@ -39,7 +39,21 @@ _REPO = _TOOLS.parent
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
-from ingest.reader import load_mapping, read_levy_stack_rows  # noqa: E402
+from ingest.parcel_record import (  # noqa: E402
+    apply_ownership_names_to_account_rows,
+    read_location_parcel_record_map,
+    read_main_parcel_bundle,
+    read_ownership_name_fields_by_pin,
+)
+from ingest.reader import (  # noqa: E402
+    apply_values_totals,
+    load_mapping,
+    read_levy_stack_rows,
+    read_account_rows,
+    read_account_rows_with_values,
+    read_location_situs_map,
+    read_values_totals_by_account,
+)
 from ingest.writer import write_comparison_dir  # noqa: E402
 from ingest.out_dir_policy import OutDirPolicyError, ship_preflight, validate_out_dir  # noqa: E402
 from ingest.ship_land import (  # noqa: E402
@@ -52,7 +66,6 @@ from ingest.dola_match import (  # noqa: E402
     DEFAULT_OVERRIDES,
     load_dola_join_context,
 )
-from ingest.parcel_record import read_main_parcel_bundle  # noqa: E402
 
 
 def land_ship_from_staging(
@@ -105,7 +118,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         required=True,
         dest="tag_file",
-        help="Path to the levy stack CSV (e.g. Tax Authority Groups and Tax Authorities.csv)",
+        help="Path to the levy stack CSV or tax-district mill PDF",
     )
     parser.add_argument(
         "--parcel-file",
@@ -113,6 +126,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         required=True,
         dest="parcel_file",
         help="Path to the account/parcel CSV (e.g. Main Parcel Table.csv)",
+    )
+    parser.add_argument(
+        "--values-file",
+        type=Path,
+        default=None,
+        dest="values_file",
+        help=(
+            "Optional values CSV/TXT when accountMap.valuesFile is set "
+            "(default: mapping defaultPaths.values)."
+        ),
     )
     parser.add_argument(
         "--out-dir",
@@ -179,9 +202,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument(
         "--dola-certifying-county",
-        default="Arapahoe",
+        default=None,
         dest="dola_certifying_county",
-        help="Certifying County filter for the DOLA export (default: Arapahoe).",
+        help=(
+            "Certifying County filter for the DOLA export. "
+            "Default: title-case of mapping county id (e.g. douglas → Douglas)."
+        ),
     )
     parser.add_argument(
         "--skip-dola-join",
@@ -271,6 +297,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         dest="nbhd_xlsx",
         help="NBHD codes xlsx backup lookup (default from mapping; not joined without GIS).",
     )
+    parser.add_argument(
+        "--ownership",
+        type=Path,
+        default=None,
+        dest="ownership",
+        help="Assessor ownership CSV/TXT (default from mapping; Douglas owner name/mail).",
+    )
+    parser.add_argument(
+        "--subdivision",
+        type=Path,
+        default=None,
+        dest="subdivision",
+        help="Assessor subdivision CSV/TXT (default from mapping).",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     if args.ship_allow_diff and not args.ship:
@@ -322,32 +362,100 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print(f"Levy stack rows: {len(stack_rows)}", file=sys.stderr)
 
+    values_path = args.values_file
+    if values_path is None:
+        values_path = _default_path_from_mapping(mapping, "values")
+    values_role = (mapping.get("accountMap") or {}).get("valuesFile")
+
     try:
-        account_rows, situs_map, parcel_record_map = read_main_parcel_bundle(
-            args.parcel_file, mapping
-        )
+        if args.skip_situs_shards:
+            # Account map only (early county loads without situs / shards).
+            if values_role:
+                if values_path is None or not values_path.is_file():
+                    print(
+                        "Error: accountMap.valuesFile is set but values file is missing "
+                        f"(pass --values-file or mapping defaultPaths.values). "
+                        f"Looked for: {values_path}",
+                        file=sys.stderr,
+                    )
+                    return 2
+                account_rows = read_account_rows_with_values(
+                    args.parcel_file, values_path, mapping
+                )
+            else:
+                account_rows = read_account_rows(args.parcel_file, mapping)
+            situs_map: dict[str, list[dict[str, str]]] = {}
+            parcel_record_map: dict[str, dict[str, Any]] | None = {}
+        elif values_role:
+            # Location + values counties (Douglas): account map + situs + parcel shards.
+            if values_path is None or not values_path.is_file():
+                print(
+                    "Error: accountMap.valuesFile is set but values file is missing "
+                    f"(pass --values-file or mapping defaultPaths.values). "
+                    f"Looked for: {values_path}",
+                    file=sys.stderr,
+                )
+                return 2
+            values_totals = read_values_totals_by_account(values_path, mapping)
+            pin_digits = int(mapping.get("identifierDigits", 9))
+            account_rows = apply_values_totals(
+                read_account_rows(args.parcel_file, mapping),
+                values_totals,
+                pin_digits,
+            )
+            situs_map = read_location_situs_map(args.parcel_file, mapping)
+            parcel_record_map = read_location_parcel_record_map(
+                args.parcel_file,
+                mapping,
+                values_totals=values_totals,
+            )
+        else:
+            account_rows, situs_map, parcel_record_map = read_main_parcel_bundle(
+                args.parcel_file, mapping
+            )
     except Exception as exc:
         print(f"Error reading parcel file: {exc}", file=sys.stderr)
         return 1
-
-    print(
-        f"Account rows: {len(account_rows)}; situs keys: {len(situs_map)}; "
-        f"parcel records: {len(parcel_record_map)}",
-        file=sys.stderr,
-    )
-
-    dola_join = None
-    if not args.skip_dola_join:
-        dola_join = load_dola_join_context(
-            dola_export=args.dola_export,
-            overrides_path=args.dola_overrides,
-            certifying_county=args.dola_certifying_county,
-        )
 
     def _resolve(cli: Path | None, key: str) -> Path | None:
         if cli is not None:
             return cli
         return _default_path_from_mapping(mapping, key)
+
+    ownership_path = _resolve(args.ownership, "ownership")
+    if ownership_path is not None and ownership_path.is_file():
+        pin_digits = int(mapping.get("identifierDigits", 9))
+        ownership_by_pin = read_ownership_name_fields_by_pin(
+            ownership_path, mapping, pin_digits=pin_digits
+        )
+        account_rows = apply_ownership_names_to_account_rows(
+            account_rows, ownership_by_pin, pin_digits=pin_digits
+        )
+        print(
+            f"Ownership join onto account map: {len(ownership_by_pin)} owners",
+            file=sys.stderr,
+        )
+
+    parcel_record_count = (
+        len(parcel_record_map) if parcel_record_map is not None else 0
+    )
+    print(
+        f"Account rows: {len(account_rows)}; situs keys: {len(situs_map)}; "
+        f"parcel records: {parcel_record_count}",
+        file=sys.stderr,
+    )
+
+    dola_join = None
+    if not args.skip_dola_join:
+        certifying_county = args.dola_certifying_county
+        if certifying_county is None:
+            county_id = str(mapping.get("county", "arapahoe")).strip()
+            certifying_county = county_id.replace("-", " ").title() or "Arapahoe"
+        dola_join = load_dola_join_context(
+            dola_export=args.dola_export,
+            overrides_path=args.dola_overrides,
+            certifying_county=certifying_county,
+        )
 
     sibling_paths = {
         "legalDescriptions": _resolve(args.legal_descriptions, "legalDescriptions"),
@@ -359,6 +467,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         "permits": _resolve(args.permits, "permits"),
         "stateClassXlsx": _resolve(args.state_class_xlsx, "stateClassXlsx"),
         "nbhdXlsx": _resolve(args.nbhd_xlsx, "nbhdXlsx"),
+        "ownership": _resolve(args.ownership, "ownership"),
+        "subdivision": _resolve(args.subdivision, "subdivision"),
+        "values": values_path if values_path and values_path.is_file() else None,
+        "filing": _resolve(None, "filing"),
+        "parcelsCsv": _resolve(None, "parcelsCsv"),
     }
     gis_gdb = _resolve(args.gis_parcels_gdb, "gisParcelsGdb")
 

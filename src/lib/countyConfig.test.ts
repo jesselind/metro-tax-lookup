@@ -19,15 +19,25 @@ import {
   looksLikeAinInput,
   looksLikePinOnlyInput,
   pinLookupCandidates,
+  accountIdLookupCandidates,
 } from "@/lib/arapahoeParcelLevyData";
 import {
   ARAPAHOE_COUNTY_CONFIG,
   COUNTY_CONFIG,
+  COUNTY_CONFIG_BY_ID,
+  DOUGLAS_COUNTY_CONFIG,
+  countyConfigById,
   countyFeaturePresentation,
+  countyHostedPropertyPageOpenLabel,
+  countyParcelRecordLookupValue,
   formatIdentifierNotFoundMessage,
   type CountyConfig,
   validateCountyConfig,
 } from "@/lib/countyConfig";
+import {
+  COUNTY_SERVICE_GAP_SOURCES_ANCHOR,
+  listCountyServiceGapHubItems,
+} from "@/content/countyServiceGapGuidance";
 import {
   safeCountyBppAccountDetailsUrl,
   safeCountyBppNoticeOfValuationPdfUrl,
@@ -64,16 +74,22 @@ function scheduleCountyFixture(
     residentLinks: {
       propertySearch: "https://parcel.example.test/search",
     },
+    hostedPropertyPageName: "parcel record",
     features: {
       situs: false,
+      parcelRecordShards: false,
       compsPdf: false,
       bpp: false,
       millsHistory: false,
       metroPurposes: false,
+      priorYearValuesGap: false,
+      dataMartRefreshGap: false,
+      millPdfTaxDistrictGap: false,
     },
     knownFailures: {
       compsPdfHostedFiles: false,
     },
+    adjacentCountyIds: [],
     countyScopeNote: "Synthetic County only.",
     identifierPlaceholder: "10-digit schedule number from county record",
     emptyIdentifierMessage:
@@ -87,11 +103,68 @@ function scheduleCountyFixture(
 }
 
 describe("COUNTY_CONFIG (Arapahoe shipping)", () => {
-  it("is the Arapahoe county file and validates", () => {
+  it("is the Arapahoe county file in test and production builds", () => {
     expect(COUNTY_CONFIG).toBe(ARAPAHOE_COUNTY_CONFIG);
     expect(validateCountyConfig(ARAPAHOE_COUNTY_CONFIG)).toBeNull();
     expect(ARAPAHOE_COUNTY_CONFIG.identifierDigits).toBe(9);
     expect(ARAPAHOE_COUNTY_CONFIG.dolaCertifyingCounty).toBe("Arapahoe");
+  });
+});
+
+describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
+  it("is in the county registry and validates", () => {
+    expect(COUNTY_CONFIG_BY_ID.douglas).toBe(DOUGLAS_COUNTY_CONFIG);
+    expect(countyConfigById("douglas")).toBe(DOUGLAS_COUNTY_CONFIG);
+    expect(countyConfigById(" Douglas ")).toBe(DOUGLAS_COUNTY_CONFIG);
+    expect(validateCountyConfig(DOUGLAS_COUNTY_CONFIG)).toBeNull();
+    expect(DOUGLAS_COUNTY_CONFIG.identifierDigits).toBe(8);
+    expect(DOUGLAS_COUNTY_CONFIG.identifierAllowsLetters).toBe(true);
+    expect(countyFeaturePresentation("situs", DOUGLAS_COUNTY_CONFIG)).toBe(
+      "show",
+    );
+    expect(countyFeaturePresentation("compsPdf", DOUGLAS_COUNTY_CONFIG)).toBe(
+      "omit",
+    );
+    expect(DOUGLAS_COUNTY_CONFIG.features.parcelRecordShards).toBe(true);
+    expect(
+      countyFeaturePresentation("parcelRecordShards", DOUGLAS_COUNTY_CONFIG),
+    ).toBe("show");
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(false);
+  });
+
+  it("loads Douglas parcel-record shards under douglas-parcel-record-by-pin", () => {
+    // Home gates shard fetch on features.parcelRecordShards so a Douglas
+    // account lookup uses /data/douglas-parcel-record-by-pin/* (not Arapahoe).
+    expect(ARAPAHOE_COUNTY_CONFIG.features.parcelRecordShards).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.parcelRecordShards).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.id).not.toBe(ARAPAHOE_COUNTY_CONFIG.id);
+  });
+
+  it("accepts letter-prefixed account pastes", () => {
+    expect(looksLikePinOnlyInput("C0193439", DOUGLAS_COUNTY_CONFIG)).toBe(true);
+    expect(accountIdLookupCandidates("c0193439", DOUGLAS_COUNTY_CONFIG)).toEqual([
+      "C0193439",
+    ]);
+  });
+
+  it("uses account id for parcel-record deep links when publicParcelId is null", () => {
+    expect(
+      countyParcelRecordLookupValue(DOUGLAS_COUNTY_CONFIG, {
+        accountId: "R0103974",
+        publicParcelId: "222906000001",
+      }),
+    ).toBe("R0103974");
+    expect(
+      countyParcelRecordLookupValue(ARAPAHOE_COUNTY_CONFIG, {
+        accountId: "035662419",
+        publicParcelId: "1973-05-4-14-003",
+      }),
+    ).toBe("1973-05-4-14-003");
   });
 });
 
@@ -129,6 +202,9 @@ describe("URL templates and host allowlist", () => {
       `https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=${SYNTHETIC_AIN}`,
     );
     expect(
+      countyHostedPropertyPageOpenLabel(ARAPAHOE_COUNTY_CONFIG),
+    ).toBe("Open county parcel record");
+    expect(
       safeCountyLevyAspxUrl(
         "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1251492",
         ARAPAHOE_COUNTY_CONFIG,
@@ -152,6 +228,20 @@ describe("URL templates and host allowlist", () => {
     ).toBe(
       "https://arapahoe.co.publicsearch.us/results?department=RP&searchType=quickSearch&searchValue=D4115095",
     );
+  });
+
+  it("builds Douglas hash-path property details URLs from the template", () => {
+    expect(
+      safeCountyParcelRecordUrl("R0399058", DOUGLAS_COUNTY_CONFIG),
+    ).toBe("https://apps.douglas.co.us/assessor/web/#/details/2026/R0399058");
+    expect(
+      safeCountyParcelRecordUrl("R0399058", DOUGLAS_COUNTY_CONFIG, {
+        year: "2025",
+      }),
+    ).toBe("https://apps.douglas.co.us/assessor/web/#/details/2025/R0399058");
+    expect(
+      countyHostedPropertyPageOpenLabel(DOUGLAS_COUNTY_CONFIG),
+    ).toBe("Open county property details");
   });
 
   it("rejects hosts that are not on the allowlist", () => {
@@ -218,6 +308,9 @@ describe("feature-available flags", () => {
   it("omits situs, comps, BPP, mills history, and metro purposes when flags are off", () => {
     const schedule = scheduleCountyFixture();
     expect(countyFeaturePresentation("situs", schedule)).toBe("omit");
+    expect(countyFeaturePresentation("parcelRecordShards", schedule)).toBe(
+      "omit",
+    );
     expect(countyFeaturePresentation("compsPdf", schedule)).toBe("omit");
     expect(countyFeaturePresentation("bpp", schedule)).toBe("omit");
     expect(countyFeaturePresentation("millsHistory", schedule)).toBe("omit");
@@ -259,5 +352,27 @@ describe("validateCountyConfig resident-facing required fields", () => {
         situsSearchOffMessage: "  ",
       }),
     ).toMatch(/situsSearchOffMessage required/);
+  });
+});
+
+describe("listCountyServiceGapHubItems", () => {
+  it("lists Arapahoe opt-in gaps only (comps, Data Mart, prior-year)", () => {
+    const anchors = listCountyServiceGapHubItems(ARAPAHOE_COUNTY_CONFIG).map(
+      (item) => item.anchor,
+    );
+    expect(anchors).toEqual([
+      COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf,
+      COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart,
+      COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues,
+    ]);
+  });
+
+  it("lists Douglas opt-in gaps only (mill PDF)", () => {
+    const anchors = listCountyServiceGapHubItems(DOUGLAS_COUNTY_CONFIG).map(
+      (item) => item.anchor,
+    );
+    expect(anchors).toEqual([
+      COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict,
+    ]);
   });
 });

@@ -20,7 +20,9 @@ from pathlib import Path
 from ingest.compare import compare_dirs
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
+    format_neighborhood_code_with_extension,
     parcel_record_from_logical_row,
+    read_values_parcel_enrichment_by_pin,
     write_parcel_record_shards,
 )
 from ingest.reader import load_mapping
@@ -169,6 +171,90 @@ class TestParcelRecordShards(unittest.TestCase):
                 len(SYNTHETIC_PIN_SHARD_PREFIX), PARCEL_RECORD_SHARD_PREFIX_LEN
             )
 
+    def test_writes_douglas_shards_with_letter_account_prefix(self) -> None:
+        from ingest.parcel_record import normalize_pin
+
+        account_id = "R0103974"
+        self.assertEqual(normalize_pin(account_id, 8), account_id)
+        self.assertEqual(normalize_pin("r0103974", 8), account_id)
+        prefix = account_id[:PARCEL_RECORD_SHARD_PREFIX_LEN]
+        rec = parcel_record_from_logical_row(
+            {
+                "owner_list": "Test Owner",
+                "sa_addr_number": "100",
+                "sa_street_name": "Main",
+                "sa_street_type": "St",
+                "sa_city": "Castle Rock",
+                "legal_descr": "LOT 1 BLOCK 2",
+                "property_class_descr": "Residential",
+                "total_actual": "100000",
+                "total_assessed": "7000",
+            }
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            write_parcel_record_shards(
+                out,
+                {account_id: rec},
+                {"bundledAsOf": "2026-08-26T12:00:00Z", "source": "test"},
+                pin_digits=8,
+                county_id="douglas",
+            )
+            shard = out / "douglas-parcel-record-by-pin" / f"{prefix}.json"
+            self.assertTrue(shard.is_file())
+            self.assertFalse((out / "arapahoe-parcel-record-by-pin").exists())
+            data = json.loads(shard.read_text(encoding="utf-8"))
+            self.assertEqual(data["shardPrefix"], prefix)
+            self.assertEqual(data["pinDigits"], 8)
+            self.assertEqual(data["byPin"][account_id]["ownerList"], "Test Owner")
+
+
+class TestValuesParcelEnrichment(unittest.TestCase):
+    def test_land_lines_include_land_valuation_rows_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "values.txt"
+            path.write_text(
+                '"A1000001","568181","IMPROVED RESIDENTIAL LAND","L","0100"\n'
+                '"A1000001","549106","SINGLE FAMILY RES - IMPS","I","0100"\n',
+                encoding="utf-8",
+            )
+            mapping = {
+                "identifierDigits": 8,
+                "accountMap": {
+                    "valuesFile": "values",
+                    "accountId": "account_no",
+                },
+                "columnAliases": {
+                    "values": {
+                        "account_no": ["Account_No"],
+                        "actual_value": ["Actual_Value"],
+                        "assessed_value": ["Assessed_Value"],
+                        "valuation_description": ["Valuation_Description"],
+                        "valuation_type_code": ["Valuation_Type_Code"],
+                        "valuation_class_code": ["Valuation_Class_Code"],
+                    },
+                },
+                "tabular": {
+                    "values": {
+                        "hasHeaderRow": False,
+                        "encoding": "utf-8",
+                        "headers": [
+                            "Account_No",
+                            "Actual_Value",
+                            "Valuation_Description",
+                            "Valuation_Type_Code",
+                            "Valuation_Class_Code",
+                        ],
+                    },
+                },
+            }
+            out = read_values_parcel_enrichment_by_pin(path, mapping, pin_digits=8)
+            rec = out["A1000001"]
+            self.assertEqual(len(rec["landLines"]), 1)
+            self.assertIn("IMPROVED RESIDENTIAL LAND", rec["landLines"][0]["landUse"])
+            self.assertEqual(rec["landActual"], 568181.0)
+            self.assertEqual(rec["improvementActual"], 549106.0)
+
 
 class TestSitusShardsEndToEnd(unittest.TestCase):
     def test_write_comparison_dir_situs_and_shards(self) -> None:
@@ -312,6 +398,31 @@ class TestSitusShardsEndToEnd(unittest.TestCase):
             (a / "arapahoe-parcel-record-by-pin").mkdir()
             result = compare_dirs(a, b)
         self.assertFalse(result.identical)
+
+
+class TestDouglasParcelRecordEnrichment(unittest.TestCase):
+    def test_neighborhood_code_includes_extension(self) -> None:
+        self.assertEqual(
+            format_neighborhood_code_with_extension("309", "A"),
+            "309-A",
+        )
+        self.assertEqual(
+            format_neighborhood_code_with_extension("Null", "Null"),
+            None,
+        )
+        self.assertEqual(
+            format_neighborhood_code_with_extension("118", "C"),
+            "118-C",
+        )
+
+    def test_parcel_record_row_carries_composite_neighborhood_code(self) -> None:
+        rec = parcel_record_from_logical_row(
+            {
+                "neighborhood_code": "118",
+                "neighborhood_extention": "C",
+            }
+        )
+        self.assertEqual(rec.get("neighborhoodCode"), "118-C")
 
 
 if __name__ == "__main__":

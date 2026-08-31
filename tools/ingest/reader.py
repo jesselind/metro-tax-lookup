@@ -16,6 +16,8 @@ Usage:
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 import csv
 import json
 import math
@@ -186,6 +188,57 @@ def _optional_str(val: Any) -> str | None:
 # Read levy stack rows (intermediate records)
 # -----------------------------------------------------------------------
 
+
+from contextlib import contextmanager
+
+
+def tabular_options_for_role(mapping: dict[str, Any], file_role: str) -> dict[str, Any]:
+    """Return optional tabular options for a file role from mapping["tabular"].
+
+    Shared shape (any county):
+      hasHeaderRow (bool, default True)
+      encoding (str, default "utf-8-sig")
+      headers (list[str], required when hasHeaderRow is false)
+    """
+    tabular = mapping.get("tabular") or {}
+    opts = tabular.get(file_role) or {}
+    return opts if isinstance(opts, dict) else {}
+
+
+@contextmanager
+def open_csv_dict_reader(csv_path: Path, mapping: dict[str, Any], file_role: str):
+    """Yield (DictReader, headers) for a CSV/TXT, injecting headers when mapping says so.
+
+    County-specific paths and column names stay in the mapping file. This helper
+    is the reusable intake seam for headerless Assessor dumps and non-UTF8 files.
+    """
+    opts = tabular_options_for_role(mapping, file_role)
+    encoding = str(opts.get("encoding") or "utf-8-sig")
+    has_header = opts.get("hasHeaderRow", True)
+    if has_header is None:
+        has_header = True
+    f = csv_path.open(newline="", encoding=encoding, errors="replace")
+    try:
+        if has_header:
+            reader = csv.DictReader(f)
+            yield reader, list(reader.fieldnames or [])
+        else:
+            headers = opts.get("headers")
+            if (
+                not isinstance(headers, list)
+                or not headers
+                or not all(isinstance(h, str) and h for h in headers)
+            ):
+                raise MappingError(
+                    f"{csv_path}: mapping tabular.{file_role} hasHeaderRow is false but "
+                    f"headers is missing or empty"
+                )
+            reader = csv.DictReader(f, fieldnames=list(headers))
+            yield reader, list(headers)
+    finally:
+        f.close()
+
+
 def read_levy_stack_rows(
     csv_path: Path,
     mapping: dict[str, Any],
@@ -196,18 +249,28 @@ def read_levy_stack_rows(
     Each output record has:
       taxAreaId (str, required), lineCode (str, required), authorityName (str, required)
       taxYear (str|None), effectiveYear (str|None), status (str|None)
+      millLevy (float|None) when the source is a tax-district mill PDF
 
+    Dispatches to the mill-PDF reader when levyStack.format is
+    tax-district-mill-pdf (or the path is a .pdf with no format set).
     No Arapahoe-specific column names appear in output.
     Raises MappingError when required mapped columns are absent from the file.
     """
     levy_cfg = mapping["levyStack"]
     file_role = levy_cfg["file"]
+    stack_format = str(levy_cfg.get("format") or "").strip().lower()
+    path = csv_path
+    if stack_format == "tax-district-mill-pdf" or (
+        not stack_format and path.suffix.lower() == ".pdf"
+    ):
+        from ingest.mill_pdf import read_tax_district_mill_pdf_rows
+
+        return read_tax_district_mill_pdf_rows(path, mapping)
+
     schema = _schema_without_file(levy_cfg)
     aliases: dict[str, list[str]] = mapping.get("columnAliases", {}).get(file_role, {})
 
-    with csv_path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
-        reader = csv.DictReader(f)
-        headers = list(reader.fieldnames or [])
+    with open_csv_dict_reader(csv_path, mapping, file_role) as (reader, headers):
         col_map = _build_column_map(headers, file_role, schema, mapping.get("columnAliases", {}))
 
         # Validate required columns
@@ -266,9 +329,7 @@ def read_account_rows(
     file_role = acct_cfg["file"]
     schema = _schema_without_file(acct_cfg)
 
-    with csv_path.open(newline="", encoding="utf-8-sig", errors="replace") as f:
-        reader = csv.DictReader(f)
-        headers = list(reader.fieldnames or [])
+    with open_csv_dict_reader(csv_path, mapping, file_role) as (reader, headers):
         col_map = _build_column_map(headers, file_role, schema, mapping.get("columnAliases", {}))
 
         # Validate required columns
@@ -307,3 +368,147 @@ def read_account_rows(
                 "ain": _optional_str(_get(raw_row, "ain")),
             })
     return rows
+
+
+def read_values_totals_by_account(
+    values_path: Path,
+    mapping: dict[str, Any],
+) -> dict[str, dict[str, float]]:
+    """
+    Sum actual/assessed value rows per account id from a values file.
+
+    Requires accountMap.valuesFile (file role) and valuesAggregate "sum".
+    Uses columnAliases on that role for accountId / totalActual / totalAssessed
+    logical keys from accountMap. Returns accountId -> {totalActual, totalAssessed}.
+    """
+    from ingest.writer import _normalize_account_id
+
+    acct_cfg = mapping["accountMap"]
+    values_role = acct_cfg.get("valuesFile")
+    if not isinstance(values_role, str) or not values_role:
+        raise MappingError("accountMap.valuesFile must be a non-empty file role string")
+    aggregate = acct_cfg.get("valuesAggregate") or "sum"
+    if aggregate != "sum":
+        raise MappingError(
+            f"unsupported accountMap.valuesAggregate {aggregate!r}; only 'sum' is implemented"
+        )
+
+    account_alias = acct_cfg.get("accountId")
+    actual_alias = acct_cfg.get("totalActual")
+    assessed_alias = acct_cfg.get("totalAssessed")
+    if not account_alias or not actual_alias or not assessed_alias:
+        raise MappingError(
+            "accountMap must map accountId, totalActual, and totalAssessed "
+            "when valuesFile is set"
+        )
+
+    pin_digits = int(mapping.get("identifierDigits", 9))
+    schema = {
+        "accountId": account_alias,
+        "totalActual": actual_alias,
+        "totalAssessed": assessed_alias,
+    }
+    totals: dict[str, dict[str, float]] = {}
+    with open_csv_dict_reader(values_path, mapping, values_role) as (reader, headers):
+        col_map = _build_column_map(
+            headers, values_role, schema, mapping.get("columnAliases", {})
+        )
+        aliases_for_role = mapping.get("columnAliases", {}).get(values_role, {})
+        for field, alias_key in schema.items():
+            if alias_key not in col_map:
+                raise MappingError(
+                    f"{values_path}: required values column '{field}' "
+                    f"(mapped from '{alias_key}') not found in headers {headers}. "
+                    f"Available aliases: {aliases_for_role.get(alias_key, [])}"
+                )
+
+        acct_col = col_map[account_alias]
+        actual_col = col_map[actual_alias]
+        assessed_col = col_map[assessed_alias]
+        for raw_row in reader:
+            account_id = _normalize_account_id(raw_row.get(acct_col, ""), pin_digits)
+            if not account_id:
+                continue
+            actual = _parse_float_or_none(raw_row.get(actual_col, ""))
+            assessed = _parse_float_or_none(raw_row.get(assessed_col, ""))
+            bucket = totals.get(account_id)
+            if bucket is None:
+                bucket = {"totalActual": 0.0, "totalAssessed": 0.0}
+                totals[account_id] = bucket
+            if actual is not None:
+                bucket["totalActual"] += actual
+            if assessed is not None:
+                bucket["totalAssessed"] += assessed
+    return totals
+
+
+def apply_values_totals(
+    account_rows: list[dict[str, Any]],
+    totals: dict[str, dict[str, float]],
+    pin_digits: int,
+) -> list[dict[str, Any]]:
+    """Copy account rows with totalActual/totalAssessed filled from totals when present."""
+    from ingest.writer import _normalize_account_id
+
+    out: list[dict[str, Any]] = []
+    for row in account_rows:
+        account_id = _normalize_account_id(row.get("accountId", ""), pin_digits)
+        merged = dict(row)
+        bucket = totals.get(account_id) if account_id else None
+        if bucket is not None:
+            merged["totalActual"] = bucket["totalActual"]
+            merged["totalAssessed"] = bucket["totalAssessed"]
+        out.append(merged)
+    return out
+
+
+def read_account_rows_with_values(
+    account_path: Path,
+    values_path: Path,
+    mapping: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Read the account/location file, then join summed values by account id."""
+    rows = read_account_rows(account_path, mapping)
+    totals = read_values_totals_by_account(values_path, mapping)
+    pin_digits = int(mapping.get("identifierDigits", 9))
+    return apply_values_totals(rows, totals, pin_digits)
+
+
+def read_location_situs_map(
+    location_path: Path,
+    mapping: dict[str, Any],
+) -> dict[str, list[dict[str, str]]]:
+    """
+    Build situs lookup keys from a location/account CSV (Douglas-style).
+
+    Uses ``columnAliases`` on the accountMap file role for logical situs fields
+    (``sa_addr_number``, ``pin``, …) and shared ``ingest.situs`` key/label rules.
+    """
+    from ingest.situs import accumulate_situs_row, finalize_situs_map
+    from ingest.writer import _normalize_account_id
+
+    acct_cfg = mapping["accountMap"]
+    file_role = acct_cfg["file"]
+    pin_digits = int(mapping.get("identifierDigits", 9))
+    account_alias = acct_cfg.get("accountId", "")
+    situs_by_key: dict[str, dict[str, str]] = {}
+
+    with open_csv_dict_reader(location_path, mapping, file_role) as (reader, headers):
+        col_map = resolve_role_column_map(headers, mapping, file_role)
+        pin_alias = "pin" if "pin" in col_map else account_alias
+        if pin_alias not in col_map:
+            raise MappingError(
+                f"{location_path}: situs build needs pin/account column via mapping "
+                f"(accountMap.accountId={account_alias!r})"
+            )
+        for raw_row in reader:
+            logical = logical_row_from_csv(raw_row, col_map)
+            pin_raw = logical.get(pin_alias, "") or logical.get(account_alias, "")
+            pin = _normalize_account_id(pin_raw, pin_digits)
+            if not pin:
+                continue
+            accumulate_situs_row(situs_by_key, {**logical, "pin": pin}, pin)
+
+    return finalize_situs_map(situs_by_key)
+
+

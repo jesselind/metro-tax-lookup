@@ -1,0 +1,276 @@
+{
+  "_comment": "Douglas County: Assessor Data Downloads column names \u2192 shared ingest field names. Headerless Property_*.txt files get headers from tabular.*.headers (page column order). Do not put these column names in shared reader/writer code.",
+  "county": "douglas",
+  "identifierDigits": 8,
+  "levyAspxTemplate": "",
+  "levyStack": {
+    "_comment": "Stacks come from the tax-district mill PDF (format tax-district-mill-pdf). Shared intermediate fields match Arapahoe TAG CSV after the PDF reader emits rows.",
+    "file": "millPdf",
+    "format": "tax-district-mill-pdf",
+    "taxAreaId": "tax_district_no",
+    "lineCode": "authority_no",
+    "authorityName": "authority_name",
+    "millLevy": "mill_levy"
+  },
+  "accountMap": {
+    "_comment": "Location has account + tax district + situs parts. Values has actual/assessed (multiple rows per account). valuesAggregate=sum matches GIS parcel totals.",
+    "file": "location",
+    "valuesFile": "values",
+    "valuesAggregate": "sum",
+    "accountId": "account_no",
+    "taxAreaId": "tax_district_no",
+    "totalActual": "actual_value",
+    "totalAssessed": "assessed_value",
+    "tagShortDescr": "tax_district_no",
+    "propertyClassDescr": "account_type_code"
+  },
+  "defaultPaths": {
+    "location": "supporting-data/douglas/Property_Location.txt",
+    "values": "supporting-data/douglas/Property_Values.txt",
+    "millPdf": "supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf",
+    "ownership": "supporting-data/douglas/Property_Ownership.txt",
+    "building": "supporting-data/douglas/Property_Improvements.txt",
+    "subdivision": "supporting-data/douglas/Property_Subdivision.txt",
+    "transfers": "supporting-data/douglas/Property_Sales.txt",
+    "filing": "supporting-data/douglas/Property_Filing.txt",
+    "parcelsCsv": "supporting-data/douglas/Parcels_A_view_717926033806861567.csv"
+  },
+  "parcelsCsv": {
+    "_comment": "DougCo Hub parcels attribute export (account join).",
+    "pin": "ACCOUNT_NO",
+    "blockNo": "BLOCK_NO",
+    "tract": "TRACT",
+    "filingDescr": "FILING_DESCR",
+    "legalDescr": "CAMA_LEGAL_DESC"
+  },
+  "tabular": {
+    "_comment": "Reusable intake options: hasHeaderRow false + headers injects page schema for headerless Assessor dumps. encoding for Windows-1252 county text.",
+    "location": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Account_No",
+        "Account_Type_Code",
+        "State_Parcel_No",
+        "Address_No",
+        "Pre_Directional_Code",
+        "Street_Name",
+        "Street_Type_Code",
+        "Unit_No",
+        "Location_Zip_Code",
+        "City_Name",
+        "Legal_Descr",
+        "Section",
+        "Township",
+        "Range",
+        "Quarter",
+        "Land_Economic_Area_Code",
+        "Vacant_Flag",
+        "Total_Net_Acres",
+        "Tax_District_No",
+        "Neighborhood_Code",
+        "Neighborhood_Extention"
+      ]
+    },
+    "values": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Account_No",
+        "Actual_Value",
+        "Assessed_Value",
+        "Valuation_Class_Code",
+        "Valuation_Description",
+        "Exempt_Flag",
+        "Account_Subtype_Code",
+        "Valuation_Type_Code",
+        "Account_Type_Code"
+      ]
+    },
+    "ownership": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Account_No",
+        "Owner_Name",
+        "Mailing_Address_Line_1",
+        "Mailing_Address_Line_2",
+        "Mailing_City_Name",
+        "Mailing_State",
+        "Mailing_Zip_Code"
+      ]
+    },
+    "building": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Account_No",
+        "Building_Id",
+        "Style",
+        "Occupancy_Code",
+        "Built_As_Code",
+        "Built_As",
+        "Quality_Code",
+        "Property_Type_Code",
+        "Improvement_Sf",
+        "Completion_Percent",
+        "Unit_Type",
+        "No_Of_Fireplace",
+        "Total_Garage_Sf",
+        "Walkout_Basement_Flag",
+        "Total_Porch_Sf",
+        "Total_Finished_Basement_Sf",
+        "Total_Unfinished_Basement_Sf",
+        "Roof_Construction_Type_Code",
+        "Built_As_Sf",
+        "Exterior_Construction_Type",
+        "Interior_Finish_Type",
+        "No_Of_Story",
+        "Roof_Material_Code",
+        "Floor_Material_Type_Code",
+        "No_Of_Bedroom",
+        "No_Of_Bathroom",
+        "Built_Year",
+        "Remodeled_Year",
+        "Length_Of_Mobile_Home",
+        "Width_Of_Mobile_Home",
+        "Average_Story_Height",
+        "No_Of_Unit",
+        "Sprinkler_Coverage_Sf",
+        "Condition",
+        "Hvac"
+      ]
+    },
+    "subdivision": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Account_No",
+        "Sub_Filing_Recording_No",
+        "Subdivision_Name",
+        "Lot_No",
+        "Block_No",
+        "Tract_No"
+      ]
+    },
+    "transfers": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Account_No",
+        "Sale_Date",
+        "Sale_Price",
+        "Deed_Type",
+        "Grantor",
+        "Grantee",
+        "Book",
+        "Page",
+        "Recording_No"
+      ]
+    },
+    "filing": {
+      "hasHeaderRow": false,
+      "encoding": "cp1252",
+      "headers": [
+        "Sub_Filing_Recording_No",
+        "Subdivision_Name",
+        "Filing_No",
+        "Filing_Descr"
+      ]
+    }
+  },
+  "columnAliases": {
+    "location": {
+      "pin": ["Account_No"],
+      "account_no": ["Account_No"],
+      "sa_addr_number": ["Address_No"],
+      "sa_predirectional": ["Pre_Directional_Code"],
+      "sa_street_name": ["Street_Name"],
+      "sa_street_type": ["Street_Type_Code"],
+      "sa_unit_number": ["Unit_No"],
+      "sa_city": ["City_Name"],
+      "sa_postal_cd": ["Location_Zip_Code"],
+      "tax_district_no": ["Tax_District_No"],
+      "account_type_code": ["Account_Type_Code"],
+      "property_class_descr": ["Account_Type_Code"],
+      "legal_descr": ["Legal_Descr"],
+      "acreage": ["Total_Net_Acres"],
+      "neighborhood_code": ["Neighborhood_Code"],
+      "neighborhood_extention": ["Neighborhood_Extention"],
+      "ain": ["State_Parcel_No"],
+      "address_no": ["Address_No"],
+      "pre_directional_code": ["Pre_Directional_Code"],
+      "street_name": ["Street_Name"],
+      "street_type_code": ["Street_Type_Code"],
+      "unit_no": ["Unit_No"],
+      "location_zip_code": ["Location_Zip_Code"],
+      "city_name": ["City_Name"]
+    },
+    "values": {
+      "account_no": ["Account_No"],
+      "actual_value": ["Actual_Value"],
+      "assessed_value": ["Assessed_Value"],
+      "valuation_type_code": ["Valuation_Type_Code"],
+      "valuation_description": ["Valuation_Description"],
+      "valuation_class_code": ["Valuation_Class_Code"],
+      "account_type_code": ["Account_Type_Code"],
+      "exempt_flag": ["Exempt_Flag"]
+    },
+    "millPdf": {
+      "tax_district_no": ["Tax_District_No"],
+      "authority_no": ["Authority_No"],
+      "authority_name": ["Authority_Name"],
+      "mill_levy": ["Mill_Levy"]
+    },
+    "ownership": {
+      "pin": ["Account_No"],
+      "owner_list": ["Owner_Name"],
+      "cur_delivery_addr": ["Mailing_Address_Line_1"],
+      "mailing_address_line_2": ["Mailing_Address_Line_2"],
+      "mailing_city": ["Mailing_City_Name"],
+      "mailing_state": ["Mailing_State"],
+      "mailing_zip": ["Mailing_Zip_Code"]
+    },
+    "building": {
+      "pin": ["Account_No"],
+      "num": ["Building_Id"],
+      "quality_cd": ["Quality_Code"],
+      "impr_tp_dscr": ["Style", "Built_As"],
+      "bed_count": ["No_Of_Bedroom"],
+      "bath_count": ["No_Of_Bathroom"],
+      "impr_mdl_cd_dscr": ["Built_As"],
+      "heat_cd1": ["Hvac"],
+      "act_year": ["Built_Year"],
+      "roof_cd1": ["Roof_Material_Code"],
+      "fireplaces": ["No_Of_Fireplace"],
+      "extwall_cd1": ["Exterior_Construction_Type"],
+      "class": ["Property_Type_Code"],
+      "base_area": ["Improvement_Sf", "Built_As_Sf"]
+    },
+    "subdivision": {
+      "pin": ["Account_No"],
+      "subdivision_cd": ["Sub_Filing_Recording_No"],
+      "subdivision_name": ["Subdivision_Name"],
+      "lot_no": ["Lot_No"],
+      "block_no": ["Block_No"],
+      "tract_no": ["Tract_No"]
+    },
+    "transfers": {
+      "pin": ["Account_No"],
+      "book": ["Book"],
+      "page": ["Page"],
+      "doc_date": ["Sale_Date"],
+      "consid": ["Sale_Price"],
+      "recording_no": ["Recording_No"],
+      "deed_type": ["Deed_Type"],
+      "grantor": ["Grantor"],
+      "grantee": ["Grantee"]
+    },
+    "filing": {
+      "sub_filing_recording_no": ["Sub_Filing_Recording_No"],
+      "subdivision_name": ["Subdivision_Name"],
+      "filing_no": ["Filing_No"],
+      "filing_descr": ["Filing_Descr"]
+    }
+  }
+}

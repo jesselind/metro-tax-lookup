@@ -125,10 +125,32 @@ Use after material ingest changes, or before a land when you expect bill data to
 2. Empty or remove `supporting-data/_ingest-out/`. Run `build:ingest` with `--bundled-as-of` matching `tools/county-mart-data-as-of.txt` and shipping `snapshot.bundledAsOf`.
 3. Confirm `git status public/data/` still clean.
 4. `npm run diff:ingest -- public/data supporting-data/_ingest-out` — exit 0.
-5. `npm run validate:app-json -- --data-dir supporting-data/_ingest-out`.
+5. `npm run validate:app-json -- --data-dir supporting-data/_ingest-out` (Arapahoe prove-out; default `--county arapahoe`). Douglas: `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`.
 6. `npm run test:ingest` and `npm run test:parcel-index`.
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
+
+## Douglas JSON on disk (Phase 9 / 9b / 9c)
+
+
+Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest writes only that county's filenames into `--out-dir` (never another county's files). Douglas `{countyId}-*` and `douglas-parcel-record-by-pin/` are **committed** like Arapahoe so production and forks load both counties.
+
+1. **Rebuild** (if needed):
+
+   ```bash
+   npm run build:ingest:douglas
+   ```
+
+   Same as the long form with `--bundled-as-of` from `tools/douglas-data-as-of.txt` (Assessor download date; update only when the Douglas dump drop is new).
+
+   Omit `--skip-situs-shards`. Ownership / Improvements / Subdivision / Sales / Filing paths and optional Hub parcels CSV come from `douglas.json` `defaultPaths`. `--skip-neighborhood` is required until a Douglas Open GIS Parcels GDB is configured (location still carries composite `neighborhoodCode` as `code-extension`).
+
+   **Phase 9c enrichments (2026-08-28):** `Property_Values.txt` land lines and land/improvement actual split; `Property_Filing.txt` filing description/number; Hub `Parcels_A_view_*.csv` block/tract/filing when present; subdivision lot/block/tract; sales grantor/grantee. Land lines include valuation rows with `Valuation_Type_Code` **L** only (improvement rows stay in the land/improvement actual split). No GIS neighborhood **names**, vesting, or permits in bulk downloads — Property details still shows Neighborhood and Neighborhood Code rows (name may be empty; code comes from location composite when present). Vesting and permits rows are omitted when the county export has no data.
+
+2. **Validate:** `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`
+3. **Land into `public/data/`** (after validate): `npm run land:douglas`
+
+4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas — confirm Property details shows owner, land lines, lot/block/tract when present, filing, and grantor/grantee on sales where the county export has them.
 
 ## Shipping land (`--ship`)
 

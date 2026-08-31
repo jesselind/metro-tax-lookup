@@ -15,6 +15,7 @@ import type {
   ArapahoePinToTagRow,
 } from "@/lib/arapahoeParcelLevyData";
 import {
+  accountIdLookupCandidates,
   ainLookupCandidates,
   displayMartAuthorityName,
   fetchArapahoeLevyStacksJson,
@@ -22,14 +23,19 @@ import {
   formatPropertyClassificationDisplay,
   getLastArapahoeLevyStacksFetchFailureDetail,
   getLastArapahoePinToTagFetchFailureDetail,
-  pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
 } from "@/lib/arapahoeParcelLevyData";
 import {
+  ACCOUNT_COUNTY_AMBIGUOUS_MESSAGE,
+  resolveAccountCountyLookup,
+} from "@/lib/countyAccountLookup";
+import {
   COUNTY_CONFIG,
+  countyConfigById,
   formatIdentifierNotFoundMessage,
 } from "@/lib/countyConfig";
 import { activeCountyDataRoot } from "@/lib/countyDataEngine";
+import type { CountySearchScope } from "@/lib/countySearchScope";
 import {
   countyAccountMapUrl,
   countyLevyStacksUrl,
@@ -175,6 +181,7 @@ function parcelValuesFromPinRow(row: ArapahoePinToTagRow): ParcelValuesFromExpor
 
 export type LoadLevyStackFromPinOk = {
   ok: true;
+  countyId: string;
   lines: CommittedLevyLine[];
   matchedPin: string;
   /** Tax area id (TAGId) from Main Parcel; same id as county Levy.aspx?id= */
@@ -199,12 +206,83 @@ export type LoadLevyStackFromPinResult =
 
 export async function loadLevyStackFromPin(
   pinInput: string,
-  options?: { dataRoot?: string },
+  options?: {
+    dataRoot?: string;
+    countyId?: string;
+    scope?: CountySearchScope;
+  },
 ): Promise<LoadLevyStackFromPinResult> {
   const dataRoot = options?.dataRoot ?? activeCountyDataRoot();
+
+  let countyId: string;
+  let matchedPinKey: string;
+  let lookupConfig = COUNTY_CONFIG;
+
+  if (options?.countyId) {
+    const resolved = countyConfigById(options.countyId);
+    if (!resolved) {
+      return {
+        ok: false,
+        error:
+          "We could not load parcel lookup data. Please try again in a moment.",
+        technicalDetail: `unknown countyId: ${options.countyId.trim()}`,
+      };
+    }
+    countyId = resolved.id;
+    lookupConfig = resolved;
+    const pinsOnly = await fetchArapahoePinToTagJson(dataRoot, countyId);
+    if (!pinsOnly?.byPin) {
+      return {
+        ok: false,
+        error:
+          "We could not load parcel lookup data. Please try again in a moment.",
+        technicalDetail:
+          getLastArapahoePinToTagFetchFailureDetail() ??
+          `${countyAccountMapUrl(dataRoot, countyId)}: missing or invalid`,
+      };
+    }
+    const key = resolvePinKeyFromParcelIdInput(pinsOnly, pinInput, lookupConfig);
+    if (!key) {
+      const accountCands = accountIdLookupCandidates(pinInput, lookupConfig);
+      const ainCands = ainLookupCandidates(pinInput, lookupConfig);
+      if (accountCands.length === 0 && ainCands.length === 0) {
+        return {
+          ok: false,
+          error: lookupConfig.emptyIdentifierMessage,
+        };
+      }
+      const tried = [...accountCands, ...ainCands].join(" / ");
+      return {
+        ok: false,
+        error: formatIdentifierNotFoundMessage(tried, lookupConfig),
+      };
+    }
+    matchedPinKey = key;
+  } else {
+    const lookup = await resolveAccountCountyLookup(pinInput, {
+      dataRoot,
+      scope: options?.scope,
+    });
+    if (lookup.status === "empty") {
+      return { ok: false, error: lookup.config.emptyIdentifierMessage };
+    }
+    if (lookup.status === "not_found") {
+      return {
+        ok: false,
+        error: formatIdentifierNotFoundMessage(lookup.tried, lookup.config),
+      };
+    }
+    if (lookup.status === "ambiguous") {
+      return { ok: false, error: ACCOUNT_COUNTY_AMBIGUOUS_MESSAGE };
+    }
+    countyId = lookup.hit.countyId;
+    lookupConfig = lookup.hit.config;
+    matchedPinKey = lookup.hit.matchedPinKey;
+  }
+
   const [pins, stacks] = await Promise.all([
-    fetchArapahoePinToTagJson(dataRoot),
-    fetchArapahoeLevyStacksJson(dataRoot),
+    fetchArapahoePinToTagJson(dataRoot, countyId),
+    fetchArapahoeLevyStacksJson(dataRoot, countyId),
   ]);
   if (!pins?.byPin) {
     return {
@@ -213,7 +291,7 @@ export async function loadLevyStackFromPin(
         "We could not load parcel lookup data. Please try again in a moment.",
       technicalDetail:
         getLastArapahoePinToTagFetchFailureDetail() ??
-        `${countyAccountMapUrl(dataRoot)}: missing or invalid`,
+        `${countyAccountMapUrl(dataRoot, countyId)}: missing or invalid`,
     };
   }
   if (!stacks?.stacksByTagId) {
@@ -223,23 +301,7 @@ export async function loadLevyStackFromPin(
         "We could not load tax district data. Please try again in a moment.",
       technicalDetail:
         getLastArapahoeLevyStacksFetchFailureDetail() ??
-        `${countyLevyStacksUrl(dataRoot)}: missing or invalid`,
-    };
-  }
-  const matchedPinKey = resolvePinKeyFromParcelIdInput(pins, pinInput);
-  if (!matchedPinKey) {
-    const pinCands = pinLookupCandidates(pinInput, pins.pinDigits);
-    const ainCands = ainLookupCandidates(pinInput);
-    if (pinCands.length === 0 && ainCands.length === 0) {
-      return {
-        ok: false,
-        error: COUNTY_CONFIG.emptyIdentifierMessage,
-      };
-    }
-    const tried = [...pinCands, ...ainCands].join(" / ");
-    return {
-      ok: false,
-      error: formatIdentifierNotFoundMessage(tried),
+        `${countyLevyStacksUrl(dataRoot, countyId)}: missing or invalid`,
     };
   }
   const row = pins.byPin[matchedPinKey]!;
@@ -249,7 +311,7 @@ export async function loadLevyStackFromPin(
       ok: false,
       error:
         "We found your parcel, but could not load its tax breakdown. Please try again in a moment.",
-      technicalDetail: `TAGId ${row.tagId} missing from arapahoe-levy-stacks-by-tag-id.json for PIN ${matchedPinKey}`,
+      technicalDetail: `TAGId ${row.tagId} missing from ${countyId}-levy-stacks-by-tag-id.json for PIN ${matchedPinKey}`,
     };
   }
   const built = committedLevyLinesFromStackLines(stack.lines, stack.tagId);
@@ -274,6 +336,7 @@ export async function loadLevyStackFromPin(
     typeof row.ain === "string" && row.ain.trim() ? row.ain.trim() : null;
   return {
     ok: true,
+    countyId,
     lines: built.lines,
     matchedPin: matchedPinKey,
     tagId: row.tagId,

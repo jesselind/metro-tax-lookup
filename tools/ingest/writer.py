@@ -39,6 +39,13 @@ from ingest.situs import build_situs_json
 # Helpers
 # -----------------------------------------------------------------------
 
+
+
+def county_data_basename(mapping: dict[str, Any], leaf: str) -> str:
+    """Return ``{countyId}-{leaf}`` for app JSON filenames (pin-to-tag, etc.)."""
+    county = _strip(mapping.get("county", "")) or "county"
+    return f"{county}-{leaf}"
+
 def _strip(val: Any) -> str:
     if val is None:
         return ""
@@ -185,6 +192,19 @@ def build_levy_stacks_json(
                 dola_match = dola_join.match_line(code, authority)
             else:
                 dola_match = {"method": "none", "confidence": "low"}
+            mill_raw = ln.get("millLevy")
+            if mill_raw is not None and mill_raw != "":
+                try:
+                    mill_val = float(mill_raw)
+                except (TypeError, ValueError):
+                    mill_val = None
+                if mill_val is not None:
+                    dola_match = dict(dola_match)
+                    dola_match["mills"] = mill_val
+                    if dola_match.get("method") == "none" and not dola_match.get(
+                        "millsReason"
+                    ):
+                        dola_match["millsReason"] = "published_mill_levy_table"
             built_lines.append({
                 "code": code,
                 "authorityName": authority,
@@ -326,26 +346,31 @@ def write_comparison_dir(
             k: v for k, v in stacks["stacksByTagId"].items() if k in used_tax_area_ids
         }
 
-    stacks_path = out_dir / "arapahoe-levy-stacks-by-tag-id.json"
+    stacks_path = out_dir / county_data_basename(mapping, "levy-stacks-by-tag-id.json")
     stacks_path.write_text(json.dumps(stacks, separators=sep), encoding="utf-8")
 
     account_map = build_account_map_json(
         account_rows, mapping, bundled_as_of=bundled_as_of, tax_year=resolved_tax_year
     )
-    account_path = out_dir / "arapahoe-pin-to-tag.json"
+    account_path = out_dir / county_data_basename(mapping, "pin-to-tag.json")
     account_path.write_text(json.dumps(account_map, separators=sep), encoding="utf-8")
 
     if skip_situs_shards:
         return
 
     if situs_map is not None:
+        county_name = mapping.get("county", "unknown")
+        if (mapping.get("accountMap") or {}).get("valuesFile"):
+            situs_source = f"new ingest (mapping: {county_name}; location situs)"
+        else:
+            situs_source = f"new ingest (mapping: {county_name}; Main Parcel situs)"
         situs_payload = build_situs_json(
             situs_map,
             bundled_as_of=bundled_norm,
             tax_year=resolved_tax_year,
-            source=f"new ingest (mapping: {mapping.get('county', 'unknown')}; Main Parcel situs)",
+            source=situs_source,
         )
-        situs_path = out_dir / "arapahoe-situs-to-pins.json"
+        situs_path = out_dir / county_data_basename(mapping, "situs-to-pins.json")
         situs_path.write_text(json.dumps(situs_payload, separators=sep), encoding="utf-8")
 
     if parcel_record_map is None:
@@ -374,6 +399,11 @@ def write_comparison_dir(
         state_class_xlsx_path=paths.get("stateClassXlsx"),
         nbhd_xlsx_path=paths.get("nbhdXlsx"),
         gis_parcels_gdb_path=gdb,
+        ownership_path=paths.get("ownership"),
+        subdivision_path=paths.get("subdivision"),
+        values_path=paths.get("values"),
+        filing_path=paths.get("filing"),
+        parcels_csv_path=paths.get("parcelsCsv"),
     )
     if not skip_neighborhood and not join_counts.get("neighborhood"):
         raise ValueError(
@@ -388,13 +418,20 @@ def write_comparison_dir(
             file=sys.stderr,
         )
 
-    parcel_source = (
-        f"new ingest (mapping: {mapping.get('county', 'unknown')}; "
-        "Main Parcel + sibling mart tables"
-    )
+    county_name = mapping.get("county", "unknown")
+    if (mapping.get("accountMap") or {}).get("valuesFile"):
+        parcel_source = (
+            f"new ingest (mapping: {county_name}; "
+            "location + values + ownership/improvements/subdivision/sales/filing"
+        )
+    else:
+        parcel_source = (
+            f"new ingest (mapping: {county_name}; "
+            "Main Parcel + sibling mart tables"
+        )
     if join_counts.get("neighborhood"):
         parcel_source += " + Open GIS Assessor Parcels (neighborhood)"
-    parcel_source += f"; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-digit PIN prefix)"
+    parcel_source += f"; sharded by {PARCEL_RECORD_SHARD_PREFIX_LEN}-char account prefix)"
     parcel_snapshot: dict[str, Any] = {
         "bundledAsOf": bundled_norm,
         "source": parcel_source,
@@ -410,5 +447,6 @@ def write_comparison_dir(
         parcel_record_map,
         parcel_snapshot,
         pin_digits=pin_digits,
+        county_id=_strip(mapping.get("county", "")) or "county",
         separators=sep,
     )
