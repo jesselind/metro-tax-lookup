@@ -115,7 +115,7 @@ Defined in `src/lib/countyConfig.ts`. Extend the type when a new product source 
 | `parcelRecordShards` | Lazy `{countyId}-parcel-record-by-pin` Property details shards |
 | `compsPdf` | County comps PDF product |
 | `bpp` | Business personal property URLs / UI |
-| `millsHistory` | Authority mills-over-time product |
+| `millsHistory` | Authority mills-over-time product **and** authority-chain Levy % rate-table cites for that county's bundled AUTH series. **Off** = no cross-county fallback; shared registry entries show narrative-only What changed? + honest open gaps. |
 | `metroPurposes` | Metro purpose-row product |
 | `priorYearValuesGap` | COUNTY DATA GAP: no bulk prior-year assessed story for this county |
 | `dataMartRefreshGap` | COUNTY DATA GAP: Assessor Data Mart incomplete-refresh note (Arapahoe-shaped export only) |
@@ -149,6 +149,8 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 4. **Data** — `{countyId}-*` JSON; Layer 3 omit/show from actual values.
 
 **Current code:** Arapahoe and Douglas methodology still live as two large sections passed into `SourcesCountyGate` via `sectionsByCountyId`. That is a **transitional layout**, not the multi-county content model. When adding county 3, extract shared prose and register a county content module; do not fork the whole Arapahoe section “just in case” it has the same gaps (it will not).
+
+**Cross-county authorities:** shared districts use different per-county AUTH codes. Wired county list: `tools/wired-counties.json` (must match `CountyConfig`). Runtime map: `public/data/cross-county-authority-registry.json`. Maintainer discovery: `docs/cross-county-authorities.md`. **Resident-county gating:** registry joins identity only; levy tile mills, rate-table links, and tax-list labels use the **resident** county (see cross-county doc — no Arapahoe-as-fallback for Douglas).
 
 ## Adding a county (checklist)
 

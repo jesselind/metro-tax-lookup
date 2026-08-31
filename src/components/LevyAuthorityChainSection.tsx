@@ -36,6 +36,7 @@ import {
   type LevyAuthorityChainEntry,
   type LevyAuthorityChainStep,
 } from "@/lib/levyAuthorityChain";
+import { countyConfigById } from "@/lib/countyConfig";
 import { deepLinkLevyPercentageUrlForParcel } from "@/lib/authorityMillsHistory";
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import {
@@ -48,7 +49,30 @@ type Props = {
   entry: LevyAuthorityChainEntry;
   /** Open parcel's short tax-area code (PDF TAG after zero-padding). */
   taxAreaShortCode?: string;
+  /** Resident county id (Levy % deep-links only when this county ships mills history). */
+  countyId?: string;
+  /** Stack AUTH / levy line code on the resident county stack. */
+  levyLineCode?: string;
 };
+
+function residentCountyShipsAuthorityMillsBundle(
+  countyId: string | undefined,
+): boolean {
+  const id = countyId?.trim();
+  if (!id) return true;
+  return countyConfigById(id)?.features.millsHistory === true;
+}
+
+/** AUTH code for Levy % PDF page deep-links (resident stack code, not reference county). */
+function authorityCodeForRateTableDeepLink(
+  entry: LevyAuthorityChainEntry,
+  levyLineCode?: string,
+): string | undefined {
+  const stackCode = levyLineCode?.trim();
+  if (stackCode) return stackCode;
+  const code = entry.match.levyLineCode?.trim();
+  return code || undefined;
+}
 
 /**
  * Turn one or more words/phrases into in-place glossary popovers.
@@ -112,19 +136,23 @@ function SourceLinks({
   sources,
   authorityCode,
   taxAreaShortCode,
+  deepLinkRateTable,
 }: {
   sources: { text: string; url: string }[];
   authorityCode?: string;
   taxAreaShortCode?: string;
+  deepLinkRateTable: boolean;
 }) {
   return (
     <ul className="mt-1 space-y-1">
       {sources.map((src, i) => {
-        const parcelSpecificUrl = deepLinkLevyPercentageUrlForParcel(
-          src.url,
-          authorityCode,
-          taxAreaShortCode,
-        );
+        const parcelSpecificUrl = deepLinkRateTable
+          ? deepLinkLevyPercentageUrlForParcel(
+              src.url,
+              authorityCode,
+              taxAreaShortCode,
+            )
+          : src.url;
         const safeHref = safeHttpOrHttpsUrl(parcelSpecificUrl);
         return (
           <li key={`${src.text}-${i}`}>
@@ -405,8 +433,15 @@ function FactValue({
 export function LevyAuthorityChainSection({
   entry,
   taxAreaShortCode,
+  countyId,
+  levyLineCode,
 }: Props) {
   const headingId = `levy-authority-chain-${entry.id}-heading`;
+  const rateTableAuthorityCode = authorityCodeForRateTableDeepLink(
+    entry,
+    levyLineCode,
+  );
+  const deepLinkRateTable = residentCountyShipsAuthorityMillsBundle(countyId);
 
   return (
     <div
@@ -479,8 +514,9 @@ export function LevyAuthorityChainSection({
                         {fact.sources.length > 0 ? (
                           <SourceLinks
                             sources={fact.sources}
-                            authorityCode={entry.match.levyLineCode}
+                            authorityCode={rateTableAuthorityCode}
                             taxAreaShortCode={taxAreaShortCode}
+                            deepLinkRateTable={deepLinkRateTable}
                           />
                         ) : null}
                       </dd>

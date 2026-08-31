@@ -350,25 +350,34 @@ describe("levyAuthorityChainBuild", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "south-metro-fire-authority-chain",
     )!;
-    const entry = buildLevyAuthorityChainEntry(record);
-    const measure = entry.steps.find(
+    const arapahoeEntry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const douglasEntry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "douglas",
+    });
+    const measure = arapahoeEntry.steps.find(
       (step) => step.id === "ballot-7a-operations-mill",
     );
-    const votes = entry.steps.find(
+    const votes = arapahoeEntry.steps.find(
       (step) => step.id === "county-reported-results",
     );
-    const mills = entry.steps.find((step) => step.id === "certified-mills");
+    const mills = arapahoeEntry.steps.find((step) => step.id === "certified-mills");
 
-    expect(entry.summary).toContain("voters approved Ballot Issue 7A");
-    expect(entry.summary).toMatch(
+    expect(arapahoeEntry.summary).toContain("voters approved Ballot Issue 7A");
+    expect(arapahoeEntry.summary).toMatch(
       /[^\n]\nNOTE: The Arapahoe County Notice of Election PDF for this measure is not currently available/,
     );
-    expect(entry.summary).not.toContain("\n\nNOTE:");
-    expect(entry.summary).toContain(
+    expect(douglasEntry.summary).not.toContain("\nNOTE:");
+    expect(douglasEntry.summary).not.toContain(
+      "Arapahoe County Notice of Election PDF",
+    );
+    expect(arapahoeEntry.summary).not.toContain("\n\nNOTE:");
+    expect(arapahoeEntry.summary).toContain(
       "Douglas County's Notice for the same wording",
     );
-    expect(entry.summary).not.toContain("eligible electors");
-    expect(entry.summary).not.toMatch(/NOTE:\s*NOTE:/);
+    expect(arapahoeEntry.summary).not.toContain("eligible electors");
+    expect(arapahoeEntry.summary).not.toMatch(/NOTE:\s*NOTE:/);
     expect(measure?.title).toBe("Ballot Issue 7A: 3 more mills for fire and EMS");
     expect(measure?.body).toContain("Voters approved");
     expect(measure?.body).toContain("12.25 mills");
@@ -381,8 +390,17 @@ describe("levyAuthorityChainBuild", () => {
     expect(mills?.facts.map((fact) => fact.label)).toEqual([
       "Change from last year",
     ]);
-    expect(entry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only")).toBe(
-      true,
+    expect(
+      arapahoeEntry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only"),
+    ).toBe(false);
+    expect(
+      douglasEntry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only"),
+    ).toBe(true);
+    expect(
+      douglasEntry.openGaps.some((g) => g.id === "no-resident-county-mills-history"),
+    ).toBe(true);
+    expect(douglasEntry.steps.find((step) => step.id === "certified-mills")?.facts).toEqual(
+      [],
     );
   });
 

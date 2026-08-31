@@ -200,8 +200,14 @@ def build_levy_stacks_json(
                     mill_val = None
                 if mill_val is not None:
                     dola_match = dict(dola_match)
+                    prev_mills = dola_match.get("mills")
                     dola_match["mills"] = mill_val
-                    if dola_match.get("method") == "none" and not dola_match.get(
+                    if isinstance(prev_mills, (int, float)) and abs(
+                        float(prev_mills) - mill_val
+                    ) > 1e-6:
+                        dola_match["dolaMills"] = round(float(prev_mills), 6)
+                        dola_match["millsReason"] = "county_levy_table_override"
+                    elif dola_match.get("method") == "none" and not dola_match.get(
                         "millsReason"
                     ):
                         dola_match["millsReason"] = "published_mill_levy_table"

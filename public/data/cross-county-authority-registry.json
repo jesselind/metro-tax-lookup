@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "authorities": [
+    {
+      "id": "smfr-fire",
+      "displayName": "South Metro Fire Rescue Fire Protection District",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4100",
+        "douglas": "4014"
+      },
+      "authorityChainEntryId": "south-metro-fire-authority-chain",
+      "millsReferenceCountyId": "arapahoe"
+    },
+    {
+      "id": "udfcd-main",
+      "displayName": "Urban Drainage & Flood Control District",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4712",
+        "douglas": "4002"
+      },
+      "millsReferenceCountyId": "arapahoe"
+    },
+    {
+      "id": "udfcd-south-platte",
+      "displayName": "Urban Drainage & Flood, South Platte Levy",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4713",
+        "douglas": "4392"
+      },
+      "millsReferenceCountyId": "arapahoe"
+    }
+  ]
+}

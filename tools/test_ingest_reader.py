@@ -1651,5 +1651,43 @@ Authority Count: 2 Total Mill Levy: 24.157
         self.assertEqual(line["dolaMatch"]["mills"], 12.5)
         self.assertEqual(line["dolaMatch"]["millsReason"], "published_mill_levy_table")
 
+    def test_build_levy_stacks_pdf_mills_override_dola_when_joined(self) -> None:
+        class FakeDolaJoin:
+            def match_line(self, line_code: str, authority_name: str) -> dict:
+                return {
+                    "method": "fuzzy",
+                    "confidence": "high",
+                    "taxEntityId": "64108/1",
+                    "mills": 12.25,
+                }
+
+            def snapshot_fields(self) -> dict:
+                return {"dolaRowCount": 1}
+
+        mapping = _arapahoe_mapping()
+        mapping["county"] = "douglas"
+        mapping["levyAspxTemplate"] = ""
+        rows = [
+            {
+                "taxAreaId": "0035",
+                "lineCode": "4014",
+                "authorityName": "South Metro Fire Rescue Fire Protection District",
+                "millLevy": 12.5,
+                "taxYear": "2025",
+                "effectiveYear": None,
+                "status": None,
+            }
+        ]
+        result = build_levy_stacks_json(
+            rows,
+            mapping,
+            bundled_as_of="2026-08-25",
+            dola_join=FakeDolaJoin(),
+        )
+        line = result["stacksByTagId"]["0035"]["lines"][0]
+        self.assertEqual(line["dolaMatch"]["mills"], 12.5)
+        self.assertEqual(line["dolaMatch"]["dolaMills"], 12.25)
+        self.assertEqual(line["dolaMatch"]["millsReason"], "county_levy_table_override")
+
 if __name__ == "__main__":
     unittest.main()

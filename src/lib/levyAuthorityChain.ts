@@ -5,14 +5,20 @@
 
 import raw from "../../public/data/levy-authority-chain-entries.json";
 import {
+  buildLevyAuthorityChainEntry,
+  type LevyAuthorityChainEntryRecord,
+} from "@/lib/levyAuthorityChainBuild";
+import {
+  crossCountyAuthorityById,
+  findCrossCountyAuthorityByCountyLevyCode,
+  findCrossCountyAuthorityByLevyCode,
+  type CrossCountyAuthorityRegistryRow,
+} from "@/lib/crossCountyAuthorityRegistry";
+import {
   findFirstMatchingLevyEntry,
   type LevyEntryLookupContext,
   type LevyEntryMatchKeys,
 } from "@/lib/levyEntryMatch";
-import {
-  buildLevyAuthorityChainEntry,
-  type LevyAuthorityChainEntryRecord,
-} from "@/lib/levyAuthorityChainBuild";
 
 export type LevyAuthorityChainLink = {
   text: string;
@@ -142,9 +148,58 @@ export const LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS: LevyAuthorityChainEntryRecord[]
  * Used by the UI and e2e (expected copy is deterministic from records + templates).
  */
 export const LEVY_AUTHORITY_CHAIN_ENTRIES: LevyAuthorityChainEntry[] =
-  LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.map(buildLevyAuthorityChainEntry);
+  LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.map((record) =>
+    buildLevyAuthorityChainEntry(record),
+  );
 
 export type LevyAuthorityChainLookupContext = LevyEntryLookupContext;
+
+function residentCountyIdForRegistryRow(
+  registryRow: CrossCountyAuthorityRegistryRow,
+  levyLineCode: string,
+  countyId?: string,
+): string | undefined {
+  const explicit = countyId?.trim();
+  if (explicit) return explicit;
+  const code = levyLineCode.trim().toUpperCase();
+  for (const [wiredCountyId, countyCode] of Object.entries(
+    registryRow.levyLineCodeByCounty,
+  )) {
+    if (countyCode.trim().toUpperCase() === code) {
+      return wiredCountyId;
+    }
+  }
+  return undefined;
+}
+
+function buildAuthorityChainEntryForRecord(
+  record: LevyAuthorityChainEntryRecord,
+  residentCountyId?: string,
+  stackAuthorityLabel?: string,
+): LevyAuthorityChainEntry {
+  return buildLevyAuthorityChainEntry(record, {
+    residentCountyId,
+    stackAuthorityLabel,
+  });
+}
+
+function findAuthorityChainRecordByRegistryId(
+  registryId: string,
+): LevyAuthorityChainEntryRecord | null {
+  for (const record of LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS) {
+    if (record.match.registryId?.trim() === registryId) {
+      return record;
+    }
+  }
+  const registryRow = crossCountyAuthorityById(registryId);
+  const chainEntryId = registryRow?.authorityChainEntryId?.trim();
+  if (!chainEntryId) return null;
+  return (
+    LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (record) => record.id === chainEntryId,
+    ) ?? null
+  );
+}
 
 /**
  * Same order as levy explainer: line code, then LG ID + label (when JSON omits
@@ -155,9 +210,37 @@ export function findLevyAuthorityChainEntry(
   authorityLabel: string,
   options?: LevyAuthorityChainLookupContext,
 ): LevyAuthorityChainEntry | null {
-  return findFirstMatchingLevyEntry(
-    LEVY_AUTHORITY_CHAIN_ENTRIES,
+  const code = options?.levyLineCode?.trim().toUpperCase() ?? "";
+  if (code) {
+    const registryRow = options?.countyId
+      ? findCrossCountyAuthorityByCountyLevyCode(options.countyId, code)
+      : findCrossCountyAuthorityByLevyCode(code);
+    if (registryRow) {
+      const record = findAuthorityChainRecordByRegistryId(registryRow.id);
+      if (record) {
+        const residentCountyId = residentCountyIdForRegistryRow(
+          registryRow,
+          code,
+          options?.countyId,
+        );
+        return buildAuthorityChainEntryForRecord(
+          record,
+          residentCountyId,
+          authorityLabel,
+        );
+      }
+    }
+  }
+
+  const matchedRecord = findFirstMatchingLevyEntry(
+    LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS,
     authorityLabel,
     { ...options, skipKeyedEntriesOnLabelOnly: true },
+  );
+  if (!matchedRecord) return null;
+  return buildAuthorityChainEntryForRecord(
+    matchedRecord,
+    options?.countyId?.trim(),
+    authorityLabel,
   );
 }

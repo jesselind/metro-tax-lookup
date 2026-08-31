@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "_comment": "Wired counties for ingest, cross-county match builder, and runtime loaders. When adding county N: add a row here, CountyConfig in src/lib/countyConfig.ts, and mapping under tools/ingest/mappings/. wiredCounties.test.ts enforces id + dolaCertifyingCounty stay aligned with CountyConfig.",
+  "counties": [
+    {
+      "id": "arapahoe",
+      "dolaCertifyingCounty": "Arapahoe"
+    },
+    {
+      "id": "douglas",
+      "dolaCertifyingCounty": "Douglas"
+    }
+  ]
+}

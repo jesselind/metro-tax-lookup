@@ -86,4 +86,10 @@ describe("authorityMillsHistory", () => {
       ),
     ).toBe("https://example.gov/not-a-rate-table.pdf");
   });
+
+  it("does not load another county's AUTH mills for Douglas stack codes", () => {
+    const series = authorityMillsSeries("4014", "douglas");
+    expect(series).toEqual([]);
+    expect(authorityTotalMillsYoY("4014", "douglas")).toBeNull();
+  });
 });

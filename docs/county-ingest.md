@@ -130,6 +130,21 @@ Use after material ingest changes, or before a land when you expect bill data to
 
 Green CI does **not** replace step 4 — CI has no county mart CSVs.
 
+## Cross-county authority overlaps (maintainer)
+
+When a second county ships, stack AUTH codes for the same logical district often differ (e.g. SMFR **4100** Arapahoe vs **4014** Douglas). Full model: **`docs/cross-county-authorities.md`**.
+
+```bash
+npm run build:cross-county-matches
+npm run test:cross-county-matches
+```
+
+Reads `tools/wired-counties.json`, tracked DOLA export, bundled `public/data/{countyId}-levy-stacks-by-tag-id.json`, and optional `tools/cross_county_authority_overrides.json`. Writes **`tools/cross-county-authority-matches.json`** (not loaded by the app). Promote rows with `matchStatus: complete` into **`public/data/cross-county-authority-registry.json`**.
+
+**Resident UI:** registry + authority-chain `countyOverlays` join shared districts without cross-county mills or rate-table fallback — see **`docs/cross-county-authorities.md`** → Resident-county gating.
+
+**Phase 11b** (Douglas DOLA join on stacks): see `docs/cross-county-authorities.md` and `docs/_working/second-county-ingest.md`.
+
 ## Douglas JSON on disk (Phase 9 / 9b / 9c)
 
 
@@ -143,7 +158,7 @@ Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest 
 
    Same as the long form with `--bundled-as-of` from `tools/douglas-data-as-of.txt` (Assessor download date; update only when the Douglas dump drop is new).
 
-   Omit `--skip-situs-shards`. Ownership / Improvements / Subdivision / Sales / Filing paths and optional Hub parcels CSV come from `douglas.json` `defaultPaths`. `--skip-neighborhood` is required until a Douglas Open GIS Parcels GDB is configured (location still carries composite `neighborhoodCode` as `code-extension`).
+   Omit `--skip-situs-shards`. Ownership / Improvements / Subdivision / Sales / Filing paths and optional Hub parcels CSV come from `douglas.json` `defaultPaths`. `--skip-neighborhood` is required until a Douglas Open GIS Parcels GDB is configured (location still carries composite `neighborhoodCode` as `code-extension`). **Phase 11b:** DOLA tax-entity join runs on stack lines (`--dola-certifying-county Douglas`); mills on each line come from the bundled mill PDF when it disagrees with the DOLA export total (same policy as Arapahoe curated overrides — see `/sources`).
 
    **Phase 9c enrichments (2026-08-28):** `Property_Values.txt` land lines and land/improvement actual split; `Property_Filing.txt` filing description/number; Hub `Parcels_A_view_*.csv` block/tract/filing when present; subdivision lot/block/tract; sales grantor/grantee. Land lines include valuation rows with `Valuation_Type_Code` **L** only (improvement rows stay in the land/improvement actual split). No GIS neighborhood **names**, vesting, or permits in bulk downloads — Property details still shows Neighborhood and Neighborhood Code rows (name may be empty; code comes from location composite when present). Vesting and permits rows are omitted when the county export has no data.
 

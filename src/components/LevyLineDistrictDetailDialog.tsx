@@ -270,6 +270,8 @@ function MetroYoYYearCompare({
 
 type Props = {
   authorityLabel: string;
+  /** Resident county id for cross-county registry lookup. */
+  countyId?: string;
   /** Mart levy line code when known (improves explainer matching). */
   levyLineCode?: string;
   /** County TAG / source tag when known. */
@@ -304,6 +306,7 @@ function formatMailingLines(r: SpecialDistrictRecord): string[] {
 
 export function LevyLineDistrictDetailDialog({
   authorityLabel,
+  countyId,
   levyLineCode,
   sourceTagId,
   taxAreaShortCode,
@@ -325,12 +328,13 @@ export function LevyLineDistrictDetailDialog({
       buildLevyLineYoYViewModel(
         { levyLineCode, dolaMatch },
         totalAssessedForEstimate,
+        countyId,
       ),
-    [levyLineCode, dolaMatch, totalAssessedForEstimate],
+    [levyLineCode, dolaMatch, totalAssessedForEstimate, countyId],
   );
   const millsHistory = useMemo(
-    () => authorityMillsSeries(levyLineCode),
-    [levyLineCode],
+    () => authorityMillsSeries(levyLineCode, countyId),
+    [levyLineCode, countyId],
   );
   /** Levy % AUTH timeline (2018–2025 when bundled); separate from YoY headline box. */
   const showMillsHistoryChart =
@@ -355,6 +359,7 @@ export function LevyLineDistrictDetailDialog({
     lgId: dolaMatch?.lgId ?? undefined,
   });
   const levyAuthorityChainEntry = findLevyAuthorityChainEntry(authorityLabel, {
+    countyId,
     levyLineCode,
     sourceTagId,
     lgId: dolaMatch?.lgId ?? undefined,
@@ -810,6 +815,8 @@ export function LevyLineDistrictDetailDialog({
                 <LevyAuthorityChainSection
                   entry={levyAuthorityChainEntry}
                   taxAreaShortCode={taxAreaShortCode}
+                  countyId={countyId}
+                  levyLineCode={levyLineCode}
                 />
               </div>
             ) : null}

@@ -414,7 +414,7 @@
       "id": "south-metro-fire-authority-chain",
       "family": "fire",
       "match": {
-        "levyLineCode": "4100"
+        "registryId": "smfr-fire"
       },
       "authority": {
         "displayName": "South Metro Fire Rescue Fire Protection District",
@@ -423,15 +423,26 @@
         "whoGetsBody": "This district's property-tax revenue pays for fire protection, ambulance, emergency medical response, rescue, and related safety services in its service area."
       },
       "summarySource": {
-        "text": "According to Arapahoe County's certified election results",
+        "text": "According to official certified election results",
         "url": "https://files.arapahoeco.gov/Clerk%20and%20Recorder/ArapahoeVotes/Documents-Articles/Canvass%20Docs/2025%20Coordinated%20Election%20Summary%20Report_11.25.2025.pdf#page=13"
       },
       "summary": {
         "headlineIssues": [
           "7A"
         ],
-        "headlineElection": "November 2025",
-        "summaryClosingNote": "The Arapahoe County Notice of Election PDF for this measure is not currently available, so the Ballot Issue 7A link uses Douglas County's Notice for the same wording, since 7A went to voters in all three counties this fire district covers."
+        "headlineElection": "November 2025"
+      },
+      "countyOverlays": {
+        "arapahoe": {
+          "summaryClosingNote": "The Arapahoe County Notice of Election PDF for this measure is not currently available, so the Ballot Issue 7A link uses Douglas County's Notice for the same wording, since 7A went to voters in all three counties this fire district covers."
+        },
+        "douglas": {
+          "countyListName": "South Metro Fire Rescue Fire Protection District",
+          "openGapIds": [
+            "multi-county-arapahoe-votes-only",
+            "no-resident-county-mills-history"
+          ]
+        }
       },
       "mills": {
         "stepBody": "Ballot Issue 7A raised the district mill rate by 3 mills. The county's published rate for this authority shows that jump between Tax Year 2024 and Tax Year 2025."
@@ -463,9 +474,7 @@
           }
         }
       ],
-      "openGapIds": [
-        "multi-county-arapahoe-votes-only"
-      ]
+      "openGapIds": []
     }
   ]
 }

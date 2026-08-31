@@ -30,6 +30,12 @@ export const SYNTHETIC_PIN_NO_LEADING_ZERO = "10000001";
  */
 export const SYNTHETIC_PIN_NOISY = "123010000001999";
 
+/** Invented Douglas 8-character account id (letter prefix); not a real parcel. */
+export const SYNTHETIC_DOUGLAS_PIN = "R0100001";
+
+/** 6-character shard prefix for {@link SYNTHETIC_DOUGLAS_PIN}. */
+export const SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX = "R01000";
+
 /** County-shaped AIN (####-##-#-##-###); not a real parcel. */
 export const SYNTHETIC_AIN = "1000-00-0-00-001";
 

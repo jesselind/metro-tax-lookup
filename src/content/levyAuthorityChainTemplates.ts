@@ -106,6 +106,11 @@ export const OPEN_GAP_BODIES = {
    */
   "multi-county-arapahoe-votes-only":
     "This district covers parts of more than one county. The yes and no totals here are Arapahoe County's certified counts only, not the full district-wide total across every county.",
+  /**
+   * Resident county has no bundled multi-year AUTH mills / Levy % history yet.
+   */
+  "no-resident-county-mills-history":
+    "We have not yet bundled multi-year mill rates from this county's Levy % PDFs for this authority. The mills on your levy stack still come from this county's published levy data.",
 } as const;
 
 /**
