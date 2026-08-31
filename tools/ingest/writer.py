@@ -7,7 +7,7 @@
 """JSON writer for the new ingest.
 
 Converts intermediate records (from reader.py) into the app JSON shapes defined
-by the Phase 1 contract (arapahoeParcelLevyData.ts). Writes only to a comparison
+by the Phase 1 contract (countyParcelLevyData.ts). Writes only to a comparison
 or ship-staging directory — never mid-run into live public/data/. Ship-from-new
 lands via build.py --ship + ship_land.py after IDENTICAL.
 

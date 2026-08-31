@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { describe, expect, it } from "vitest";
-import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
+import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import {
   buildParcelValueTableRows,
   isResidentialStateUseCode,
@@ -145,7 +145,7 @@ describe("assessed split math", () => {
 });
 
 describe("buildParcelValueTableRows", () => {
-  const porterHospital: ArapahoeParcelRecordRow = {
+  const porterHospital: CountyParcelRecordRow = {
     ain: "2077-34-1-12-014",
     stateUseCd: "9179",
     taxRollDescr: "Real",

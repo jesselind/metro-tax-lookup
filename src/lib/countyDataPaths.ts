@@ -11,7 +11,7 @@
  * Do not hard-code `arapahoe` in fetch URLs.
  */
 
-import { COUNTY_CONFIG } from "@/lib/countyConfig";
+import { COUNTY_CONFIG, COUNTY_CONFIG_BY_ID } from "@/lib/countyConfig";
 
 /** Committed shipping JSON (live site / localhost `/data/`). */
 export const SHIPPING_DATA_ROOT = "/data";
@@ -146,16 +146,19 @@ export function countySitusToPinsFsRelative(
   return `${dir}/${id}-situs-to-pins.json`;
 }
 
-/** Heavy index pathnames for rate limiting (both roots when v2 is served locally). */
-export function countyHeavyDataPathnames(
-  countyId: string = COUNTY_CONFIG.id,
-): string[] {
-  const id = countyIdForDataPaths(countyId);
-  const files = [
-    `${id}-pin-to-tag.json`,
-    `${id}-situs-to-pins.json`,
-    `${id}-levy-stacks-by-tag-id.json`,
-  ];
+/** Heavy index pathnames for rate limiting (every wired county; shipping + engine-v2 roots). */
+export function countyHeavyDataPathnames(): string[] {
   const roots: CountyDataRoot[] = [SHIPPING_DATA_ROOT, ENGINE_V2_DATA_ROOT];
-  return roots.flatMap((root) => files.map((file) => `${root}/${file}`));
+  const countyIds = Object.keys(COUNTY_CONFIG_BY_ID);
+  return roots.flatMap((root) =>
+    countyIds.flatMap((countyId) => {
+      const id = countyIdForDataPaths(countyId);
+      const files = [
+        `${id}-pin-to-tag.json`,
+        `${id}-situs-to-pins.json`,
+        `${id}-levy-stacks-by-tag-id.json`,
+      ];
+      return files.map((file) => `${root}/${file}`);
+    }),
+  );
 }

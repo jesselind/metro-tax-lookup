@@ -10,7 +10,7 @@
  * JSON explainer ("What is it?") if present, then contact and sources. Follow docs/levy-explainer-authoring.md.
  */
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import type { ArapahoeDolaMatch } from "@/lib/arapahoeParcelLevyData";
+import type { CountyDolaMatch } from "@/lib/countyParcelLevyData";
 import type {
   SpecialDistrictMatch,
   SpecialDistrictRecord,
@@ -281,7 +281,7 @@ type Props = {
   /** Null while JSON is still fetching from `/public/data/`. */
   match: SpecialDistrictMatch | null;
   /** Offline LGIS / Tax Entity match from Mart_TA_TAG + DOLA export (build script). */
-  dolaMatch: ArapahoeDolaMatch | null | undefined;
+  dolaMatch: CountyDolaMatch | null | undefined;
   directoryLoading: boolean;
   directoryError: string | null;
   snapshot: { bundledAsOf: string; source: string; sourceCsv?: string } | null;

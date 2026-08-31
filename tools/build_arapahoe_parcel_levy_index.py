@@ -49,7 +49,7 @@ Maintainer notes:
   - UI Book Page links use Clerk & Recorder public search (Book+Page concatenated); build stores
     display bookPage only (no URL in JSON).
   - After regenerating parcel-record shards with a field/schema change, bump
-    ARAPAHOE_PARCEL_RECORD_CACHE_BUST in src/lib/arapahoeParcelLevyData.ts.
+    COUNTY_PARCEL_RECORD_CACHE_BUST in src/lib/countyParcelLevyData.ts.
 """
 
 from __future__ import annotations
@@ -403,7 +403,7 @@ def normalize_pin(raw: str) -> str:
     return digits.zfill(9)[:9]
 
 
-# Situs lookup keys must stay in sync with src/lib/arapahoeSitusLookup.ts (home address flow).
+# Situs lookup keys must stay in sync with src/lib/situsIndexLookup.ts (home address flow).
 _STREET_DIR_TOKENS = frozenset(
     {
         "N",
@@ -492,7 +492,7 @@ def normalize_street_name_key(raw: str) -> str:
 
 
 def normalize_street_number_key(primary: str, range_or_suffix: str) -> str:
-    """Merge SAAddrNumber + optional SAStreetNumberSfx (e.g. 1/2); keep in sync with arapahoeSitusLookup.ts."""
+    """Merge SAAddrNumber + optional SAStreetNumberSfx (e.g. 1/2); keep in sync with situsIndexLookup.ts."""
     a = strip_field(primary)
     b = strip_field(range_or_suffix)
     merged = " ".join(x for x in (a, b) if x)
@@ -2177,7 +2177,7 @@ def read_pin_map(path: Path) -> dict[str, dict[str, Any]]:
     return pin_map
 
 
-# Keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in arapahoeParcelLevyData.ts
+# Keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in countyParcelLevyData.ts
 PARCEL_RECORD_SHARD_PREFIX_LEN = 6
 
 

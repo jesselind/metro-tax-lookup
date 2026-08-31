@@ -9,11 +9,11 @@ import { ParcelRecordMissingValue } from "@/components/ParcelRecordMissingValue"
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecordBuildingAttributeTerms";
 import type {
-  ArapahoeParcelRecordRow,
+  CountyParcelRecordRow,
   ParcelRecordBuilding,
   ParcelRecordPermit,
   ParcelRecordTransfer,
-} from "@/lib/arapahoeParcelLevyData";
+} from "@/lib/countyParcelLevyData";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
@@ -358,7 +358,7 @@ function ParcelValueTable({
   record,
   totalOnly = false,
 }: {
-  record: ArapahoeParcelRecordRow;
+  record: CountyParcelRecordRow;
   /** Business personal property: totals only (no Building / Land columns). */
   totalOnly?: boolean;
 }) {
@@ -474,7 +474,7 @@ export function ParcelRecordBuildingAndLandTable({
   landLines,
 }: {
   buildings: ParcelRecordBuilding[] | null | undefined;
-  landLines: ArapahoeParcelRecordRow["landLines"];
+  landLines: CountyParcelRecordRow["landLines"];
 }) {
   const buildingList = buildings ?? [];
   const landLineList = landLines ?? [];
@@ -898,7 +898,7 @@ export function ParcelRecordValueSection({
   record,
   totalOnly = false,
 }: {
-  record: ArapahoeParcelRecordRow;
+  record: CountyParcelRecordRow;
   /** Business personal property: totals only (no Building / Land columns). */
   totalOnly?: boolean;
 }) {

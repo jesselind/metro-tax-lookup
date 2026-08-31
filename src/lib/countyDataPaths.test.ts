@@ -59,11 +59,13 @@ describe("countyDataPaths", () => {
     );
   });
 
-  it("lists heavy paths for shipping and engine-v2 roots", () => {
+  it("lists heavy paths for every wired county and both URL roots", () => {
     const heavy = countyHeavyDataPathnames();
-    expect(heavy).toContain(`/data/${id}-pin-to-tag.json`);
-    expect(heavy).toContain(`/data-engine-v2/${id}-pin-to-tag.json`);
-    expect(heavy).toContain(`/data/${id}-situs-to-pins.json`);
-    expect(heavy).toContain(`/data/${id}-levy-stacks-by-tag-id.json`);
+    for (const countyId of ["arapahoe", "douglas"]) {
+      expect(heavy).toContain(`/data/${countyId}-pin-to-tag.json`);
+      expect(heavy).toContain(`/data-engine-v2/${countyId}-pin-to-tag.json`);
+      expect(heavy).toContain(`/data/${countyId}-situs-to-pins.json`);
+      expect(heavy).toContain(`/data/${countyId}-levy-stacks-by-tag-id.json`);
+    }
   });
 });

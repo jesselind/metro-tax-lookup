@@ -1,0 +1,1036 @@
+// Metro Tax Lookup - Arapahoe County
+// Copyright (C) 2026 Jesse Lind
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
+
+/**
+ * Offline situs → account lookup index (`public/data/{countyId}-situs-to-pins.json`).
+ *
+ * Normalization must stay in sync with situs builders in ingest and the legacy v1 script.
+ * Multi-county routing (search gate, adjacent try) lives in `countySitusLookup.ts`.
+ *
+ * Phase 10 (5.2.0): canonical module name. Deprecated re-exports at `arapahoeSitusLookup.ts`.
+ */
+
+import {
+  COUNTY_CONFIG,
+  COUNTY_CONFIG_BY_ID,
+  countyConfigById,
+  countyFeatureAvailable,
+} from "@/lib/countyConfig";
+import { activeCountyDataRoot } from "@/lib/countyDataEngine";
+import {
+  SHIPPING_DATA_ROOT,
+  countyIdForDataPaths,
+  countySitusToPinsUrl,
+} from "@/lib/countyDataPaths";
+import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
+import { stripTrailingUnitFragmentFromAddressLine } from "@/lib/addressLabelDifference";
+import type { CountyPinToTagFile } from "@/lib/countyParcelLevyData";
+import { pickSitusPlaceSampleLabelForTypeahead } from "@/lib/situsMultiPinChooser";
+
+export type CountySitusPinHit = {
+  pin: string;
+  label: string;
+};
+
+export type CountySitusToPinsFile = {
+  snapshot: {
+    bundledAsOf: string;
+    source: string;
+    taxYear?: string | null;
+    lookupNote?: string;
+  };
+  /** Schema stamp for key/label rules (see tools/situs_lookup_contract.py). Not an engine id. */
+  lookupVersion: number;
+  entryCount: number;
+  byKey: Record<string, CountySitusPinHit[]>;
+};
+
+/** HTML maxlength + abuse caps (input validation). */
+export const SITUS_INPUT_MAX_LEN = {
+  streetNumber: 24,
+  numberSuffix: 16,
+  streetName: 200,
+  unit: 40,
+} as const;
+
+/**
+ * Mobile autofill often dumps the full first address line into the first text field.
+ * Allow a longer capture on that field; we split into number / suffix / street on blur or search.
+ */
+export const SITUS_AUTOFILL_LINE1_MAX_LEN = 160;
+
+/**
+ * When a single field contains a full first line (e.g. "123 Main St", "3721 1/2 Holly"),
+ * split into situs parts. Returns null if the string does not match that pattern.
+ */
+export function trySplitSitusAutofillLine(raw: string): {
+  streetNumber: string;
+  streetNumberSuffix: string;
+  streetName: string;
+} | null {
+  const trimmed = raw.trim();
+  if (trimmed.length > SITUS_AUTOFILL_LINE1_MAX_LEN + 64) return null;
+  if (!trimmed.includes(" ")) return null;
+  const frac = trimmed.match(/^(\d+)\s+(\d\s*\/\s*\d)\s+(.+)$/);
+  if (frac) {
+    const streetName = frac[3].trim();
+    if (streetName.length < 1 || !/[A-Za-z]/.test(streetName)) return null;
+    return {
+      streetNumber: frac[1],
+      streetNumberSuffix: frac[2].replace(/\s*\/\s*/, "/"),
+      streetName,
+    };
+  }
+  const m = trimmed.match(/^(\d+)\s+(.+)$/);
+  if (!m) return null;
+  const streetName = m[2].trim();
+  if (streetName.length < 1 || !/[A-Za-z]/.test(streetName)) return null;
+  return {
+    streetNumber: m[1],
+    streetNumberSuffix: "",
+    streetName,
+  };
+}
+
+export const SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN = 200;
+
+/**
+ * Parse one user line (street address) into the four situs inputs used by lookup.
+ * Returns null only when the string is empty or far too long.
+ */
+export function parseSimpleAddressLineForSitusLookup(raw: string): {
+  streetNumber: string;
+  streetNumberSuffix: string;
+  streetName: string;
+  unit: string;
+} | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN + 64) return null;
+  const { line, unit } = stripTrailingUnitFragmentFromAddressLine(trimmed);
+  const split = trySplitSitusAutofillLine(line);
+  if (split) {
+    return {
+      streetNumber: split.streetNumber,
+      streetNumberSuffix: split.streetNumberSuffix,
+      streetName: split.streetName,
+      unit,
+    };
+  }
+  return {
+    streetNumber: line,
+    streetNumberSuffix: "",
+    streetName: "",
+    unit,
+  };
+}
+
+/** Same token sets as in tools/build_arapahoe_parcel_levy_index.py street normalization. */
+const STREET_DIR_TOKENS = new Set([
+  "N",
+  "S",
+  "E",
+  "W",
+  "NE",
+  "NW",
+  "SE",
+  "SW",
+  "NORTH",
+  "SOUTH",
+  "EAST",
+  "WEST",
+  "NORTHEAST",
+  "NORTHWEST",
+  "SOUTHEAST",
+  "SOUTHWEST",
+]);
+
+const STREET_TYPE_TOKENS = new Set([
+  "ST",
+  "STREET",
+  "AVE",
+  "AVENUE",
+  "RD",
+  "ROAD",
+  "BLVD",
+  "BOULEVARD",
+  "DR",
+  "DRIVE",
+  "LN",
+  "LANE",
+  "CT",
+  "COURT",
+  "CIR",
+  "CIRCLE",
+  "WAY",
+  "PL",
+  "PLACE",
+  "PKWY",
+  "PARKWAY",
+  "TRL",
+  "TRAIL",
+  "LOOP",
+  "TER",
+  "TERR",
+  "TERRACE",
+  "TPKE",
+  "TURNPIKE",
+  "HWY",
+  "HIGHWAY",
+  "BL",
+  "PATH",
+  "PLZ",
+  "PLAZA",
+  "RUN",
+  "COVE",
+  "PASS",
+  "ALLEY",
+  "ALY",
+  "BEND",
+  "XING",
+  "CROSSING",
+  "POINT",
+  "PT",
+  "COMMONS",
+  "MALL",
+]);
+
+const US_STATE_ABBREV = new Set([
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC",
+]);
+
+/** Built once; alternation is fixed abbreviations only (no user input in the pattern). */
+const US_STATE_TRAILING_RE = new RegExp(
+  `(?:,\\s*)?\\b(?:${[...US_STATE_ABBREV].sort().join("|")})\\b\\s*$`,
+  "i",
+);
+
+/** Do not strip these when they appear after the last street-type token (e.g. "STE 200"). */
+const WORDS_TO_KEEP_AFTER_STREET_TYPE = new Set([
+  "SUITE",
+  "STE",
+  "UNIT",
+  "APT",
+  "APARTMENT",
+  "LOT",
+  "PHASE",
+  "BLDG",
+  "BUILDING",
+  "TRLR",
+  "TRAILER",
+  "SPACE",
+  "SPC",
+]);
+
+function normStreetTokenForLocality(w: string): string {
+  return w.replace(/\./g, "").toUpperCase();
+}
+
+/**
+ * Remove trailing city / state / ZIP and similar junk from a street-name fragment so
+ * lookup keys align with county situs (road name only).
+ */
+function sanitizeSitusStreetNameLineForLookup(raw: string): string {
+  let s = raw.trim().replace(/\s+/g, " ");
+  if (!s) return "";
+
+  if (s.includes(",")) {
+    const firstSeg = s.split(",")[0].trim();
+    const tks = firstSeg.split(/\s+/).filter(Boolean);
+    const hasStreetType = tks.some((w) =>
+      STREET_TYPE_TOKENS.has(normStreetTokenForLocality(w)),
+    );
+    if (hasStreetType && firstSeg.length > 0) {
+      s = firstSeg;
+    }
+  }
+
+  let prev = "";
+  while (prev !== s) {
+    prev = s;
+    s = s.replace(/(?:,\s*)?\b\d{5}(?:-\d{4})?\s*$/i, "").trim();
+    s = s.replace(US_STATE_TRAILING_RE, "").trim();
+  }
+
+  const tokens = s.split(/\s+/).filter(Boolean);
+  if (tokens.length <= 1) return s;
+
+  let lastTypeIdx = -1;
+  for (let i = 0; i < tokens.length; i++) {
+    if (STREET_TYPE_TOKENS.has(normStreetTokenForLocality(tokens[i]!))) {
+      lastTypeIdx = i;
+    }
+  }
+  if (lastTypeIdx < 0) return s;
+
+  let end = tokens.length;
+  while (end > lastTypeIdx + 1) {
+    const w = tokens[end - 1]!;
+    const u = normStreetTokenForLocality(w);
+    if (/^\d{5}(?:-\d{4})?$/.test(w)) {
+      end -= 1;
+      continue;
+    }
+    if (US_STATE_ABBREV.has(u)) {
+      end -= 1;
+      continue;
+    }
+    if (WORDS_TO_KEEP_AFTER_STREET_TYPE.has(u)) {
+      break;
+    }
+    if (/^[A-Za-z]+$/.test(w) && u.length >= 4) {
+      end -= 1;
+      continue;
+    }
+    break;
+  }
+
+  return tokens.slice(0, end).join(" ");
+}
+
+function normAddrCompareKey(s: string): string {
+  return s
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/,\s*$/g, "")
+    .toLowerCase();
+}
+
+/**
+ * True when the unit field contains a full first address line (typical autofill mistake)
+ * or the same text as number (+ optional suffix) + street after normalization.
+ */
+export function situsUnitLooksLikeStreetAutofillDuplicate(
+  unitRaw: string,
+  streetNumber: string,
+  streetNumberSuffix: string,
+  streetName: string,
+): boolean {
+  const u = unitRaw.trim();
+  if (!u) return false;
+  if (trySplitSitusAutofillLine(u) != null) return true;
+  const name = streetName.trim();
+  if (!name) return false;
+  const num = streetNumber.trim();
+  const suf = streetNumberSuffix.trim();
+  const parts = [num];
+  if (suf.length > 0) parts.push(suf);
+  parts.push(name);
+  const combined = normAddrCompareKey(parts.join(" "));
+  return combined.length > 0 && normAddrCompareKey(u) === combined;
+}
+
+export type SitusResolvedForLookup = {
+  num: string;
+  suffix: string;
+  nameRaw: string;
+  unitTrim: string;
+};
+
+/**
+ * Pure normalization before PIN lookup: split combined line1 from the number box,
+ * drop unit values that duplicate the street line (mobile autofill quirk).
+ */
+export function resolveSitusFieldsForLookup(
+  streetNumber: string,
+  streetNumberSuffix: string,
+  streetName: string,
+  unit: string,
+): {
+  resolved: SitusResolvedForLookup;
+  syncNumberFieldsToState: boolean;
+  clearUnitToState: boolean;
+} {
+  const rawNumFromState = streetNumber.trim();
+  let num = rawNumFromState;
+  let suffix = streetNumberSuffix.trim();
+  let nameRaw = streetName.trim();
+  let unitTrim = unit.trim();
+  let syncNumberFieldsToState = false;
+  let clearUnitToState = false;
+
+  if (nameRaw.length === 0) {
+    const s = trySplitSitusAutofillLine(num);
+    if (s) {
+      num = s.streetNumber;
+      suffix = s.streetNumberSuffix;
+      nameRaw = s.streetName;
+      syncNumberFieldsToState = true;
+      if (unitTrim === rawNumFromState && rawNumFromState.length > 0) {
+        unitTrim = "";
+        clearUnitToState = true;
+      }
+    }
+  }
+
+  if (situsUnitLooksLikeStreetAutofillDuplicate(unitTrim, num, suffix, nameRaw)) {
+    unitTrim = "";
+    clearUnitToState = true;
+  }
+
+  if (nameRaw.length > 0) {
+    nameRaw = sanitizeSitusStreetNameLineForLookup(nameRaw);
+  }
+
+  return {
+    resolved: { num, suffix, nameRaw, unitTrim },
+    syncNumberFieldsToState,
+    clearUnitToState,
+  };
+}
+
+/**
+ * Blur handler helper: split combined address-line1 only when it would not overwrite
+ * intentional multi-field entry.
+ */
+export function trySitusAutofillBlurSplit(
+  rawFromInput: string,
+  mode: "number" | "street",
+  current: {
+    streetNumber: string;
+    streetNumberSuffix: string;
+    streetName: string;
+  },
+): ReturnType<typeof trySplitSitusAutofillLine> {
+  const sn = current.streetNumber.trim();
+  const suf = current.streetNumberSuffix.trim();
+  const nm = current.streetName.trim();
+  if (mode === "number") {
+    if (nm !== "") return null;
+  } else if (sn !== "" || suf !== "") {
+    return null;
+  }
+  return trySplitSitusAutofillLine(rawFromInput);
+}
+
+const MAX_PIN_CHARS = 64;
+const MAX_LABEL_CHARS = 4000;
+
+const UNSAFE_JSON_RECORD_KEYS = new Set([
+  "__proto__",
+  "constructor",
+  "prototype",
+]);
+
+function isPinHitRecord(x: unknown): x is CountySitusPinHit {
+  if (!x || typeof x !== "object" || Array.isArray(x)) return false;
+  const o = x as Record<string, unknown>;
+  if (typeof o.pin !== "string" || typeof o.label !== "string") return false;
+  if (o.pin.length > MAX_PIN_CHARS || o.label.length > MAX_LABEL_CHARS) {
+    return false;
+  }
+  return true;
+}
+
+function snapshotFromUnknown(x: unknown): CountySitusToPinsFile["snapshot"] {
+  if (!x || typeof x !== "object" || Array.isArray(x)) {
+    return { bundledAsOf: "", source: "" };
+  }
+  const o = x as Record<string, unknown>;
+  const taxYear = o.taxYear;
+  const lookupNote = o.lookupNote;
+  return {
+    bundledAsOf: typeof o.bundledAsOf === "string" ? o.bundledAsOf : "",
+    source: typeof o.source === "string" ? o.source : "",
+    taxYear:
+      typeof taxYear === "string" || taxYear === null ? taxYear : undefined,
+    lookupNote: typeof lookupNote === "string" ? lookupNote : undefined,
+  };
+}
+
+/**
+ * Validates bundled JSON shape, copies `byKey` into a null-prototype map, and skips
+ * malformed rows — defense in depth if a static file were replaced or corrupted.
+ */
+export function validateCountySitusToPinsPayload(
+  data: unknown,
+): CountySitusToPinsFile | null {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+  const root = data as Record<string, unknown>;
+  const rawByKey = root.byKey;
+  if (
+    rawByKey === null ||
+    typeof rawByKey !== "object" ||
+    Array.isArray(rawByKey)
+  ) {
+    return null;
+  }
+  const safeByKey: Record<string, CountySitusPinHit[]> = Object.create(null);
+  for (const key of Object.keys(rawByKey)) {
+    if (UNSAFE_JSON_RECORD_KEYS.has(key)) continue;
+    const bucket = (rawByKey as Record<string, unknown>)[key];
+    if (!Array.isArray(bucket)) return null;
+    const hits: CountySitusPinHit[] = [];
+    for (const item of bucket) {
+      if (isPinHitRecord(item)) hits.push({ pin: item.pin, label: item.label });
+    }
+    safeByKey[key] = hits;
+  }
+  const lookupVersion =
+    typeof root.lookupVersion === "number" && Number.isFinite(root.lookupVersion)
+      ? root.lookupVersion
+      : 0;
+  const entryCount =
+    typeof root.entryCount === "number" && Number.isFinite(root.entryCount)
+      ? root.entryCount
+      : 0;
+  return {
+    snapshot: snapshotFromUnknown(root.snapshot),
+    lookupVersion,
+    entryCount,
+    byKey: safeByKey,
+  };
+}
+
+export function normalizeStreetNameKey(raw: string): string {
+  const s = raw.trim().toUpperCase();
+  if (!s) return "";
+  const tokens = s.split(/[^\w]+/).filter(Boolean);
+  const kept: string[] = [];
+  for (const t of tokens) {
+    if (STREET_DIR_TOKENS.has(t) || STREET_TYPE_TOKENS.has(t)) continue;
+    kept.push(t);
+  }
+  return kept.join(" ");
+}
+
+/** Merges primary (mart SAAddrNumber) + optional suffix (mart SAStreetNumberSfx, e.g. 1/2). */
+export function normalizeStreetNumberKey(primary: string, rangeOrSuffix: string): string {
+  const a = primary.trim();
+  const b = rangeOrSuffix.trim();
+  const merged = [a, b].filter(Boolean).join(" ");
+  if (!merged) return "";
+  const mergedU = merged.toUpperCase().replace(/\s+/g, "");
+  return mergedU
+    .split("")
+    .filter((c) => c >= "0" && c <= "9" || c === "/" || c === "-")
+    .join("");
+}
+
+export function normalizeUnitKey(raw: string): string {
+  const s = raw.trim().toUpperCase();
+  if (!s) return "";
+  return s.replace(/[^A-Z0-9]/g, "");
+}
+
+export function buildSitusLookupKey(
+  streetNumber: string,
+  numberSuffix: string,
+  streetName: string,
+  unit: string,
+): string {
+  const num = normalizeStreetNumberKey(streetNumber, numberSuffix);
+  const name = normalizeStreetNameKey(streetName);
+  const u = normalizeUnitKey(unit);
+  if (!num || !name) return "";
+  return `${num}|${name}|${u}`;
+}
+
+const situsCacheByKey = new Map<
+  string,
+  Promise<CountySitusToPinsFile | null>
+>();
+
+function situsLoaderCacheKey(dataRoot: string, countyId: string): string {
+  return `${dataRoot}:${countyIdForDataPaths(countyId)}`;
+}
+
+/** Wired counties with situs JSON shipped (`features.situs`). */
+export function situsEnabledCountyIds(): readonly string[] {
+  return Object.keys(COUNTY_CONFIG_BY_ID).filter((countyId) => {
+    const config = countyConfigById(countyId);
+    return config != null && countyFeatureAvailable("situs", config);
+  });
+}
+
+export function anyCountySitusSearchAvailable(): boolean {
+  return situsEnabledCountyIds().length > 0;
+}
+
+/**
+ * Bump when regenerating situs JSON with a label/schema change so browsers do
+ * not keep a stale copy under /data max-age caching.
+ */
+export const COUNTY_SITUS_TO_PINS_CACHE_BUST = "20260727zip";
+
+/** Last situs fetch failure detail per data-root + county (for resident mailto). */
+const situsFetchFailureDetailByKey = new Map<string, string>();
+
+function normalizeSitusDataRoot(dataRoot?: string): string {
+  const trimmed = (dataRoot ?? activeCountyDataRoot()).trim();
+  if (!trimmed) return SHIPPING_DATA_ROOT;
+  return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+}
+
+export function getLastCountySitusFetchFailureDetail(
+  dataRoot?: string,
+  countyId: string = COUNTY_CONFIG.id,
+): string | null {
+  const root = normalizeSitusDataRoot(dataRoot);
+  const id = countyIdForDataPaths(countyId);
+  return situsFetchFailureDetailByKey.get(situsLoaderCacheKey(root, id)) ?? null;
+}
+
+/**
+ * Fetch `{countyId}-situs-to-pins.json` with validation and per-root cache.
+ * URL: {@link countySitusToPinsUrl} + `?v=` from {@link COUNTY_SITUS_TO_PINS_CACHE_BUST}.
+ */
+export function fetchCountySitusToPinsJson(
+  dataRoot?: string,
+  countyId: string = COUNTY_CONFIG.id,
+): Promise<CountySitusToPinsFile | null> {
+  const root = normalizeSitusDataRoot(dataRoot);
+  const id = countyIdForDataPaths(countyId);
+  const cacheKey = situsLoaderCacheKey(root, id);
+  const cached = situsCacheByKey.get(cacheKey);
+  if (cached) return cached;
+
+  const url = countySitusToPinsUrl(
+    root,
+    id,
+    COUNTY_SITUS_TO_PINS_CACHE_BUST,
+  );
+  const pending = (async () => {
+    const result = await fetchCountyStaticJson(url, {
+      credentials: "same-origin",
+    });
+    if (!result.ok) {
+      situsFetchFailureDetailByKey.set(cacheKey, result.detail);
+      situsCacheByKey.delete(cacheKey);
+      return null;
+    }
+    const validated = validateCountySitusToPinsPayload(result.json);
+    if (!validated) {
+      situsFetchFailureDetailByKey.set(
+        cacheKey,
+        `${url}: JSON failed schema validation`,
+      );
+      situsCacheByKey.delete(cacheKey);
+      return null;
+    }
+    situsFetchFailureDetailByKey.delete(cacheKey);
+    return validated;
+  })();
+  situsCacheByKey.set(cacheKey, pending);
+  return pending;
+}
+
+export function clearCountySitusDataCache(): void {
+  situsCacheByKey.clear();
+  situsFetchFailureDetailByKey.clear();
+}
+
+export function lookupPinsBySitusKey(
+  file: CountySitusToPinsFile,
+  key: string,
+): CountySitusPinHit[] {
+  const hits = file.byKey[key];
+  return hits ? [...hits] : [];
+}
+
+/** Max street-name suggestions after a fuzzy miss (did-you-mean). */
+export const SITUS_SUGGESTION_LIMIT = 6;
+
+/**
+ * Max **place** rows in the simple-line typeahead (one row per house number +
+ * street name). Multi-PIN places keep all accounts on `hits` for the post-pick
+ * chooser; typeahead must not emit duplicate address lines per PIN.
+ */
+export const SITUS_TYPEAHEAD_ADDRESS_LIMIT = 40;
+
+/**
+ * Like {@link normalizeStreetNameKey}, but also drops a trailing token that looks
+ * like an unfinished or lightly misspelled street type (e.g. STREE → STREET).
+ * Only strips when another name token remains, so "Park" as a road name is kept.
+ */
+export function normalizeStreetNameKeySoft(raw: string): string {
+  const base = normalizeStreetNameKey(raw);
+  if (!base) return "";
+  const tokens = base.split(" ").filter(Boolean);
+  if (tokens.length < 2) return base;
+  const last = tokens[tokens.length - 1]!;
+  if (!tokenLooksLikeIncompleteStreetType(last)) return base;
+  return tokens.slice(0, -1).join(" ");
+}
+
+function tokenLooksLikeIncompleteStreetType(token: string): boolean {
+  if (STREET_TYPE_TOKENS.has(token) || STREET_DIR_TOKENS.has(token)) {
+    return false;
+  }
+  if (token.length < 2) return false;
+  for (const type of STREET_TYPE_TOKENS) {
+    if (type.length <= token.length) continue;
+    // Proper prefix of a known type, not too far from the full word.
+    if (type.startsWith(token) && type.length - token.length <= 2) {
+      return true;
+    }
+    if (
+      Math.abs(type.length - token.length) <= 1 &&
+      levenshteinDistance(token, type) === 1
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function levenshteinDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  const prev = new Array<number>(b.length + 1);
+  const cur = new Array<number>(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    cur[0] = i;
+    const ca = a.charCodeAt(i - 1);
+    for (let j = 1; j <= b.length; j++) {
+      const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
+      cur[j] = Math.min(
+        (prev[j] ?? 0) + 1,
+        (cur[j - 1] ?? 0) + 1,
+        (prev[j - 1] ?? 0) + cost,
+      );
+    }
+    for (let j = 0; j <= b.length; j++) prev[j] = cur[j] ?? 0;
+  }
+  return prev[b.length] ?? b.length;
+}
+
+/**
+ * Lower is better. Returns null when the pair is too far apart to suggest.
+ */
+export function scoreStreetNameMatch(
+  queryNorm: string,
+  candidateNorm: string,
+): number | null {
+  if (!queryNorm || !candidateNorm) return null;
+  if (queryNorm === candidateNorm) return 0;
+  if (candidateNorm.startsWith(queryNorm) && queryNorm.length >= 2) {
+    return 0.5;
+  }
+  if (queryNorm.startsWith(candidateNorm) && candidateNorm.length >= 2) {
+    return 0.75;
+  }
+  const dist = levenshteinDistance(queryNorm, candidateNorm);
+  const maxLen = Math.max(queryNorm.length, candidateNorm.length);
+  const maxDist = maxLen <= 4 ? 1 : maxLen <= 8 ? 2 : 3;
+  if (dist > maxDist) return null;
+  return 1 + dist;
+}
+
+/** num → streetNameNorm → full situs keys for that pair (lazy per house number). */
+type SitusByNumberIndex = Map<string, Map<string, string[]>>;
+
+const situsNumberIndexCache = new WeakMap<
+  CountySitusToPinsFile,
+  SitusByNumberIndex
+>();
+
+/**
+ * Streets at one house number. Builds and caches that number's bucket on first
+ * use instead of duplicating the full byKey map up front.
+ */
+function getStreetsByNameForNumber(
+  file: CountySitusToPinsFile,
+  numKey: string,
+): Map<string, string[]> {
+  let root = situsNumberIndexCache.get(file);
+  if (!root) {
+    root = new Map();
+    situsNumberIndexCache.set(file, root);
+  }
+  const cached = root.get(numKey);
+  if (cached) return cached;
+
+  const byName = new Map<string, string[]>();
+  const prefix = `${numKey}|`;
+  for (const key of Object.keys(file.byKey)) {
+    if (!key.startsWith(prefix)) continue;
+    const parts = key.split("|");
+    if (parts.length < 3 || parts[0] !== numKey) continue;
+    const name = parts[1]!;
+    if (!name) continue;
+    let keys = byName.get(name);
+    if (!keys) {
+      keys = [];
+      byName.set(name, keys);
+    }
+    keys.push(key);
+  }
+  root.set(numKey, byName);
+  return byName;
+}
+
+function dedupePinHits(hits: CountySitusPinHit[]): CountySitusPinHit[] {
+  const seen = new Set<string>();
+  const out: CountySitusPinHit[] = [];
+  for (const h of hits) {
+    if (seen.has(h.pin)) continue;
+    seen.add(h.pin);
+    out.push(h);
+  }
+  return out;
+}
+
+function hitsForNumberAndStreetName(
+  file: CountySitusToPinsFile,
+  numKey: string,
+  nameNorm: string,
+  unitRaw: string,
+): CountySitusPinHit[] {
+  const byName = getStreetsByNameForNumber(file, numKey);
+  const keys = byName.get(nameNorm);
+  if (!keys || keys.length === 0) return [];
+  const unitKey = normalizeUnitKey(unitRaw);
+  const unitExact: string[] = [];
+  const unitEmpty: string[] = [];
+  for (const k of keys) {
+    const u = k.slice(k.lastIndexOf("|") + 1);
+    if (u === unitKey) unitExact.push(k);
+    else if (u === "") unitEmpty.push(k);
+  }
+  // Never fall back to other units (would auto-load the wrong apartment).
+  const ordered = unitExact.length > 0 ? unitExact : unitEmpty;
+  if (ordered.length === 0) return [];
+  const hits: CountySitusPinHit[] = [];
+  for (const k of ordered) {
+    const bucket = file.byKey[k];
+    if (bucket) hits.push(...bucket);
+  }
+  return dedupePinHits(hits);
+}
+
+export type SitusStreetSuggestion = {
+  streetNameKey: string;
+  sampleLabel: string;
+  hits: CountySitusPinHit[];
+  score: number;
+};
+
+export type SitusFuzzyLookupResult =
+  | {
+      kind: "match";
+      hits: CountySitusPinHit[];
+      /** True when the street name was soft-stripped or fuzzy-matched. */
+      approximateStreet: boolean;
+      matchedStreetNameKey: string;
+    }
+  | {
+      kind: "suggest";
+      suggestions: SitusStreetSuggestion[];
+    }
+  | { kind: "none" };
+
+function streetNameVariantsForLookup(nameRaw: string): string[] {
+  const exact = normalizeStreetNameKey(nameRaw);
+  const soft = normalizeStreetNameKeySoft(nameRaw);
+  const out: string[] = [];
+  const push = (v: string) => {
+    if (v && !out.includes(v)) out.push(v);
+  };
+  push(exact);
+  push(soft);
+  if (exact.includes(" ")) {
+    const tokens = exact.split(" ").filter(Boolean);
+    if (tokens.length >= 2) {
+      push(tokens.slice(0, -1).join(" "));
+    }
+  }
+  return out;
+}
+
+function collectScoredStreetsForNumber(
+  file: CountySitusToPinsFile,
+  numKey: string,
+  query: string,
+  unit: string,
+  options?: {
+    allowSubstring?: boolean;
+    pinToTag?: CountyPinToTagFile | null;
+  },
+): SitusStreetSuggestion[] {
+  const byName = getStreetsByNameForNumber(file, numKey);
+  if (byName.size === 0 || !query) return [];
+
+  const scored: SitusStreetSuggestion[] = [];
+  for (const [candName] of byName) {
+    let score = scoreStreetNameMatch(query, candName);
+    if (
+      score == null &&
+      options?.allowSubstring &&
+      candName.includes(query) &&
+      query.length >= 2
+    ) {
+      score = 3;
+    }
+    if (score == null) continue;
+    const hits = hitsForNumberAndStreetName(file, numKey, candName, unit);
+    if (hits.length === 0) continue;
+    scored.push({
+      streetNameKey: candName,
+      sampleLabel:
+        pickSitusPlaceSampleLabelForTypeahead(hits, options?.pinToTag) ||
+        candName,
+      hits,
+      score,
+    });
+  }
+  scored.sort(
+    (a, b) => a.score - b.score || a.streetNameKey.localeCompare(b.streetNameKey),
+  );
+  return scored;
+}
+
+/**
+ * Exact key first, then soft street-type cleanup, then fuzzy street names for
+ * the same house number. When several streets are close, returns suggestions.
+ */
+export function lookupPinsBySitusFuzzy(
+  file: CountySitusToPinsFile,
+  streetNumber: string,
+  numberSuffix: string,
+  streetName: string,
+  unit: string,
+  pinToTag?: CountyPinToTagFile | null,
+): SitusFuzzyLookupResult {
+  const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
+  if (!numKey) return { kind: "none" };
+
+  const variants = streetNameVariantsForLookup(streetName);
+  if (variants.length === 0) return { kind: "none" };
+
+  for (let i = 0; i < variants.length; i++) {
+    const nameNorm = variants[i]!;
+    const hits = hitsForNumberAndStreetName(file, numKey, nameNorm, unit);
+    if (hits.length > 0) {
+      return {
+        kind: "match",
+        hits,
+        approximateStreet: i > 0,
+        matchedStreetNameKey: nameNorm,
+      };
+    }
+  }
+
+  const scored = collectScoredStreetsForNumber(
+    file,
+    numKey,
+    normalizeStreetNameKeySoft(streetName) || normalizeStreetNameKey(streetName),
+    unit,
+    { pinToTag },
+  );
+  if (scored.length === 0) return { kind: "none" };
+
+  const best = scored[0]!;
+  const second = scored[1];
+  const uniquelyBest =
+    best.score <= 2 && (!second || second.score - best.score >= 0.5);
+
+  if (uniquelyBest) {
+    return {
+      kind: "match",
+      hits: best.hits,
+      approximateStreet: true,
+      matchedStreetNameKey: best.streetNameKey,
+    };
+  }
+
+  return {
+    kind: "suggest",
+    suggestions: scored.slice(0, SITUS_SUGGESTION_LIMIT),
+  };
+}
+
+/**
+ * Typeahead: places at this house number whose street prefix- or fuzzy-matches
+ * the partial street field.
+ *
+ * One suggestion per place (number + street name). When several PINs share that
+ * situs (condo units, Real + business personal property), all PINs stay on
+ * `hits` and the UI shows the multi-match chooser after pick — typeahead must
+ * not list duplicate address lines per PIN (Porter/Radiology crack).
+ *
+ * Pass pin-to-tag when available so Real+BPP places keep today's sample label;
+ * all-Real multi-unit places get a street-only caption when units differ.
+ */
+export function suggestSitusStreetsForNumber(
+  file: CountySitusToPinsFile,
+  streetNumber: string,
+  numberSuffix: string,
+  streetNamePartial: string,
+  options?: {
+    streetLimit?: number;
+    addressLimit?: number;
+    pinToTag?: CountyPinToTagFile | null;
+  },
+): SitusStreetSuggestion[] {
+  const numKey = normalizeStreetNumberKey(streetNumber, numberSuffix);
+  if (!numKey) return [];
+  const query =
+    normalizeStreetNameKeySoft(streetNamePartial) ||
+    normalizeStreetNameKey(streetNamePartial);
+  if (!query) return [];
+  const streetLimit = options?.streetLimit ?? SITUS_SUGGESTION_LIMIT;
+  const addressLimit = options?.addressLimit ?? SITUS_TYPEAHEAD_ADDRESS_LIMIT;
+  const placeCap = Math.min(
+    Math.max(1, streetLimit),
+    Math.max(1, addressLimit),
+  );
+  return collectScoredStreetsForNumber(file, numKey, query, "", {
+    allowSubstring: true,
+    pinToTag: options?.pinToTag,
+  }).slice(0, placeCap);
+}

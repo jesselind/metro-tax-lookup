@@ -4,10 +4,10 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type {
-  ArapahoeParcelRecordRow,
+  CountyParcelRecordRow,
   ParcelRecordBuilding,
   ParcelRecordLandLine,
-} from "@/lib/arapahoeParcelLevyData";
+} from "@/lib/countyParcelLevyData";
 
 /**
  * How dwelling count N was resolved for Rent-mode equal-split.
@@ -134,7 +134,7 @@ function landUseLooksLikeAptMulti(landUse: string | null | undefined): boolean {
  * Positive single-dwelling signal (SFR / condo / townhome-style account).
  * Used only after UB and duplex/triplex/fourplex checks miss.
  */
-function looksLikeSingleDwellingAccount(record: ArapahoeParcelRecordRow): boolean {
+function looksLikeSingleDwellingAccount(record: CountyParcelRecordRow): boolean {
   const stateUse = (record.stateUseCd ?? "").trim();
   if (stateUse.startsWith("1")) {
     // Residential state use, but APT multi land use without UB stays unknown.
@@ -197,7 +197,7 @@ function looksLikeSingleDwellingAccount(record: ArapahoeParcelRecordRow): boolea
  * single-dwelling account → unknown (`null`, whole-property only).
  */
 export function resolveDwellingCount(
-  record: ArapahoeParcelRecordRow | null | undefined,
+  record: CountyParcelRecordRow | null | undefined,
 ): DwellingCountResolution | null {
   if (record == null) return null;
 

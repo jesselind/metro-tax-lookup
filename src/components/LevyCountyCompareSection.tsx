@@ -14,7 +14,7 @@ import {
   countyParcelRecordLookupValue,
   type CountyConfig,
 } from "@/lib/countyConfig";
-import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
+import { formatTaxAreaShortDescrDisplay } from "@/lib/countyParcelLevyData";
 import {
   safeCountyBppAccountDetailsUrl,
   safeCountyLevyAspxUrl,

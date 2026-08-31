@@ -9,22 +9,22 @@
  */
 
 import type {
-  ArapahoeDolaMatch,
-  ArapahoeLevyStackLine,
-  ArapahoeLevyStacksFile,
-  ArapahoePinToTagRow,
-} from "@/lib/arapahoeParcelLevyData";
+  CountyDolaMatch,
+  CountyLevyStackLine,
+  CountyLevyStacksFile,
+  CountyPinToTagRow,
+} from "@/lib/countyParcelLevyData";
 import {
   accountIdLookupCandidates,
   ainLookupCandidates,
   displayMartAuthorityName,
-  fetchArapahoeLevyStacksJson,
-  fetchArapahoePinToTagJson,
+  fetchCountyLevyStacksJson,
+  fetchCountyPinToTagJson,
   formatPropertyClassificationDisplay,
-  getLastArapahoeLevyStacksFetchFailureDetail,
-  getLastArapahoePinToTagFetchFailureDetail,
+  getLastCountyLevyStacksFetchFailureDetail,
+  getLastCountyPinToTagFetchFailureDetail,
   resolvePinKeyFromParcelIdInput,
-} from "@/lib/arapahoeParcelLevyData";
+} from "@/lib/countyParcelLevyData";
 import {
   ACCOUNT_COUNTY_AMBIGUOUS_MESSAGE,
   resolveAccountCountyLookup,
@@ -50,7 +50,7 @@ export type CommittedLevyLine = {
   /** Mart_TA_TAG levy line code when loaded from parcel data. */
   levyLineCode?: string;
   /** Offline DOLA / LGIS match from build script. */
-  dolaMatch?: ArapahoeDolaMatch | null;
+  dolaMatch?: CountyDolaMatch | null;
   sourceTagId?: string;
 };
 
@@ -111,7 +111,7 @@ function normalizeLevyLineCode(code: string | undefined): string {
 }
 
 /** Mills from DOLA when present on the build; otherwise 0 until the user enters them. */
-function initialMillsFromStackLine(ln: ArapahoeLevyStackLine): number {
+function initialMillsFromStackLine(ln: CountyLevyStackLine): number {
   const m = ln.dolaMatch?.mills;
   if (typeof m === "number" && Number.isFinite(m) && m >= 0) {
     return Math.round(m * 1000) / 1000;
@@ -124,7 +124,7 @@ function initialMillsFromStackLine(ln: ArapahoeLevyStackLine): number {
  * Shared by PIN load and the synthetic Try-demo fixture.
  */
 export function committedLevyLinesFromStackLines(
-  stackLines: ArapahoeLevyStackLine[],
+  stackLines: CountyLevyStackLine[],
   sourceTagId: string,
 ): {
   lines: CommittedLevyLine[];
@@ -161,7 +161,7 @@ export type ParcelValuesFromExport = {
   ownerList?: string | null;
 };
 
-function parcelValuesFromPinRow(row: ArapahoePinToTagRow): ParcelValuesFromExport {
+function parcelValuesFromPinRow(row: CountyPinToTagRow): ParcelValuesFromExport {
   const num = (v: unknown): number | null =>
     typeof v === "number" && Number.isFinite(v) ? v : null;
   const str = (v: unknown): string | null => {
@@ -188,7 +188,7 @@ export type LoadLevyStackFromPinOk = {
   tagId: string;
   tagShortDescr: string;
   levyAspxUrl: string;
-  arapahoeStacksSnapshot: ArapahoeLevyStacksFile["snapshot"];
+  levyStacksSnapshot: CountyLevyStacksFile["snapshot"];
   awaitingTemplateMills: boolean;
   templateMillDrafts: Record<string, string>;
   parcelValues: ParcelValuesFromExport;
@@ -230,14 +230,14 @@ export async function loadLevyStackFromPin(
     }
     countyId = resolved.id;
     lookupConfig = resolved;
-    const pinsOnly = await fetchArapahoePinToTagJson(dataRoot, countyId);
+    const pinsOnly = await fetchCountyPinToTagJson(dataRoot, countyId);
     if (!pinsOnly?.byPin) {
       return {
         ok: false,
         error:
           "We could not load parcel lookup data. Please try again in a moment.",
         technicalDetail:
-          getLastArapahoePinToTagFetchFailureDetail() ??
+          getLastCountyPinToTagFetchFailureDetail() ??
           `${countyAccountMapUrl(dataRoot, countyId)}: missing or invalid`,
       };
     }
@@ -281,8 +281,8 @@ export async function loadLevyStackFromPin(
   }
 
   const [pins, stacks] = await Promise.all([
-    fetchArapahoePinToTagJson(dataRoot, countyId),
-    fetchArapahoeLevyStacksJson(dataRoot, countyId),
+    fetchCountyPinToTagJson(dataRoot, countyId),
+    fetchCountyLevyStacksJson(dataRoot, countyId),
   ]);
   if (!pins?.byPin) {
     return {
@@ -290,7 +290,7 @@ export async function loadLevyStackFromPin(
       error:
         "We could not load parcel lookup data. Please try again in a moment.",
       technicalDetail:
-        getLastArapahoePinToTagFetchFailureDetail() ??
+        getLastCountyPinToTagFetchFailureDetail() ??
         `${countyAccountMapUrl(dataRoot, countyId)}: missing or invalid`,
     };
   }
@@ -300,7 +300,7 @@ export async function loadLevyStackFromPin(
       error:
         "We could not load tax district data. Please try again in a moment.",
       technicalDetail:
-        getLastArapahoeLevyStacksFetchFailureDetail() ??
+        getLastCountyLevyStacksFetchFailureDetail() ??
         `${countyLevyStacksUrl(dataRoot, countyId)}: missing or invalid`,
     };
   }
@@ -342,7 +342,7 @@ export async function loadLevyStackFromPin(
     tagId: row.tagId,
     tagShortDescr: row.tagShortDescr,
     levyAspxUrl: stack.levyAspxUrl,
-    arapahoeStacksSnapshot: stacks.snapshot,
+    levyStacksSnapshot: stacks.snapshot,
     awaitingTemplateMills: built.awaitingTemplateMills,
     templateMillDrafts: built.templateMillDrafts,
     parcelValues: pv,

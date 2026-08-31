@@ -9,8 +9,8 @@ import {
   resolveAccountCountyLookup,
 } from "@/lib/countyAccountLookup";
 import {
-  clearArapahoeParcelDataCache,
-} from "@/lib/arapahoeParcelLevyData";
+  clearCountyParcelDataCache,
+} from "@/lib/countyParcelLevyData";
 import { SYNTHETIC_AIN, SYNTHETIC_PIN } from "@/lib/syntheticTestIds";
 
 describe("countyAccountLookup format heuristics", () => {
@@ -35,7 +35,7 @@ describe("countyAccountLookup format heuristics", () => {
 
 describe("resolveAccountCountyLookup", () => {
   afterEach(() => {
-    clearArapahoeParcelDataCache();
+    clearCountyParcelDataCache();
     vi.unstubAllGlobals();
   });
 

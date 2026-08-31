@@ -23,7 +23,7 @@ import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData
 /**
  * Multi-PIN situs chooser (Real + business personal property) and dashboard
  * Switch account type modal. Dedicated suite — not home smoke. Unit coverage
- * lives in `situsMultiPinChooser.test.ts` / `arapahoeSitusLookup.test.ts` /
+ * lives in `situsMultiPinChooser.test.ts` / `situsIndexLookup.test.ts` /
  * `termAccountTypeBrief.test.ts`.
  */
 test("multi-account situs: one typeahead place, then full PIN chooser", async ({

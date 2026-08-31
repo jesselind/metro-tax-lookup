@@ -172,6 +172,20 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 - Probing counties in alphabetical or registry-key order instead of selected → `adjacentCountyIds`.
 - Treating the county picker as sole ground truth with no adjacent / “I don’t know” escape.
 
+## App JSON loaders (Phase 10)
+
+Shipping filenames stay **`{countyId}-*`** under `public/data/` (for example `arapahoe-pin-to-tag.json`, `douglas-pin-to-tag.json`). URL builders: `src/lib/countyDataPaths.ts`.
+
+| Module | Role |
+| --- | --- |
+| `countyParcelLevyData.ts` | Levy stacks, account map, parcel-record shard types + `fetchCounty*` loaders |
+| `situsIndexLookup.ts` | Situs index types + address normalization + `fetchCountySitusToPinsJson` |
+| `countySitusLookup.ts` | Multi-county situs/account probe (search gate, adjacent try) |
+| `arapahoeParcelLevyData.ts` | **Deprecated** re-export barrel → `countyParcelLevyData.ts` |
+| `arapahoeSitusLookup.ts` | **Deprecated** re-export barrel → `situsIndexLookup.ts` |
+
+**Ship gate:** `src/lib/countyLoaderContract.test.ts` — every wired county keeps `{countyId}-*` paths; fetch loaders hit the same URLs as `countyDataPaths`; deprecated shims alias the same functions.
+
 ## Related code
 
 | Piece | Path |
@@ -186,3 +200,6 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 | `/sources` page | `src/app/sources/page.tsx` |
 | Dashboard gates | `src/components/HomeParcelAddressLookup.tsx` |
 | Data paths | `src/lib/countyDataPaths.ts` |
+| App JSON loaders | `src/lib/countyParcelLevyData.ts`, `src/lib/situsIndexLookup.ts` |
+| Loader ship gate (tests) | `src/lib/countyLoaderContract.test.ts` |
+| Deprecated loader barrels | `src/lib/arapahoeParcelLevyData.ts`, `src/lib/arapahoeSitusLookup.ts` |

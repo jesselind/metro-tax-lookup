@@ -538,7 +538,7 @@ class BuildLevyStacksJsonTests(unittest.TestCase):
         mapping = _arapahoe_mapping()
         rows = self._minimal_rows()
         result = build_levy_stacks_json(rows, mapping, bundled_as_of="2026-07-15")
-        # Structural check mirrors appJsonValidate.ts validateArapahoeLevyStacksFile
+        # Structural check mirrors appJsonValidate.ts validateCountyLevyStacksFile
         self.assertIsInstance(result.get("snapshot"), dict)
         self.assertTrue(result["snapshot"].get("bundledAsOf"))
         self.assertIsInstance(result.get("stacksByTagId"), dict)

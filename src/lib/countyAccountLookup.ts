@@ -11,10 +11,10 @@
 import {
   accountIdLookupCandidates,
   ainLookupCandidates,
-  fetchArapahoePinToTagJson,
+  fetchCountyPinToTagJson,
   looksLikeParcelIdInput,
   resolvePinKeyFromParcelIdInput,
-} from "@/lib/arapahoeParcelLevyData";
+} from "@/lib/countyParcelLevyData";
 import {
   COUNTY_CONFIG,
   COUNTY_CONFIG_BY_ID,
@@ -130,7 +130,7 @@ export async function resolveAccountCountyLookup(
     countyIds.map(async (countyId) => {
       const config = countyConfigById(countyId);
       if (!config) return;
-      const pins = await fetchArapahoePinToTagJson(dataRoot, countyId);
+      const pins = await fetchCountyPinToTagJson(dataRoot, countyId);
       if (!pins?.byPin) return;
       const matchedPinKey = resolvePinKeyFromParcelIdInput(
         pins,

@@ -24,21 +24,23 @@ describe("dataRequestGuard", () => {
   });
 
   it("tiers heavy index paths tighter than shards", () => {
-    const countyId = COUNTY_CONFIG.id;
-    const heavy = dataRateTierForPath(`/data/${countyId}-pin-to-tag.json`);
-    expect(heavy.bucket).toBe("heavy");
-    expect(heavy.limit).toBe(HEAVY_DATA_LIMIT);
-    expect(heavy.windowMs).toBe(DATA_RATE_WINDOW_MS);
+    for (const countyId of ["arapahoe", "douglas"] as const) {
+      const heavyTier = dataRateTierForPath(`/data/${countyId}-pin-to-tag.json`);
+      expect(heavyTier.bucket).toBe("heavy");
+      expect(heavyTier.limit).toBe(HEAVY_DATA_LIMIT);
+      expect(heavyTier.windowMs).toBe(DATA_RATE_WINDOW_MS);
+      expect(HEAVY_DATA_PATHS.has(`/data/${countyId}-situs-to-pins.json`)).toBe(
+        true,
+      );
+    }
 
+    const countyId = COUNTY_CONFIG.id;
     const shard = dataRateTierForPath(
       `/data/${countyId}-parcel-record-by-pin/035662.json`,
     );
     expect(shard.bucket).toBe("other");
     expect(shard.limit).toBe(OTHER_DATA_LIMIT);
 
-    expect(HEAVY_DATA_PATHS.has(`/data/${countyId}-situs-to-pins.json`)).toBe(
-      true,
-    );
     expect(
       HEAVY_DATA_PATHS.has(`/data-engine-v2/${countyId}-pin-to-tag.json`),
     ).toBe(true);

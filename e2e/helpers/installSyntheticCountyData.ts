@@ -4,6 +4,13 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { Page } from "@playwright/test";
+import { ARAPAHOE_COUNTY_CONFIG } from "../../src/lib/countyConfig";
+import {
+  countyAccountMapUrl,
+  countyLevyStacksUrl,
+  countyParcelRecordShardDirUrl,
+  countySitusToPinsUrl,
+} from "../../src/lib/countyDataPaths";
 import {
   SYNTHETIC_LEVY_STACKS,
   SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY,
@@ -32,15 +39,20 @@ export type InstallSyntheticCountyDataOptions = {
   authorityChainLevyLineCode?: string;
 };
 
+/** Playwright glob: match committed URL plus optional ?v= cache-bust query. */
+function dataUrlPattern(urlPath: string): string {
+  return `**${urlPath}*`;
+}
+
 /**
- * Replace the large committed county JSON files with tiny synthetic payloads
- * so address → levy → shard can run without a real resident parcel.
- * Call before `page.goto`.
+ * Replace committed county JSON with tiny synthetic payloads for Playwright.
+ * URL patterns come from countyDataPaths + ARAPAHOE_COUNTY_CONFIG.id (Phase 10).
  */
 export async function installSyntheticCountyData(
   page: Page,
   options: InstallSyntheticCountyDataOptions = {},
 ): Promise<void> {
+  const countyId = ARAPAHOE_COUNTY_CONFIG.id;
   const authorityCode = options.authorityChainLevyLineCode?.trim();
   const levyStacks = options.includeMetro
     ? SYNTHETIC_LEVY_STACKS_WITH_METRO
@@ -50,17 +62,26 @@ export async function installSyntheticCountyData(
         ? SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY
         : SYNTHETIC_LEVY_STACKS;
 
-  await fulfillJson(page, "**/data/arapahoe-situs-to-pins.json*", SYNTHETIC_SITUS_TO_PINS);
-  /* Trailing * matches ?v= cache-bust on countyAccountMapUrl / levy stacks. */
-  await fulfillJson(page, "**/data/arapahoe-pin-to-tag.json*", SYNTHETIC_PIN_TO_TAG);
   await fulfillJson(
     page,
-    "**/data/arapahoe-levy-stacks-by-tag-id.json*",
+    dataUrlPattern(countySitusToPinsUrl(undefined, countyId)),
+    SYNTHETIC_SITUS_TO_PINS,
+  );
+  await fulfillJson(
+    page,
+    dataUrlPattern(countyAccountMapUrl(undefined, countyId)),
+    SYNTHETIC_PIN_TO_TAG,
+  );
+  await fulfillJson(
+    page,
+    dataUrlPattern(countyLevyStacksUrl(undefined, countyId)),
     levyStacks,
   );
   await fulfillJson(
     page,
-    `**/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json*`,
+    dataUrlPattern(
+      `${countyParcelRecordShardDirUrl(undefined, countyId)}/${SYNTHETIC_PIN_SHARD_PREFIX}.json`,
+    ),
     SYNTHETIC_PARCEL_RECORD_SHARD,
   );
 }

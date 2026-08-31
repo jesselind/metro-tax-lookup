@@ -4,7 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { expect, type APIRequestContext, type Locator, type Page } from "@playwright/test";
-import { displayMartAuthorityName } from "../../src/lib/arapahoeParcelLevyData";
+import { displayMartAuthorityName } from "../../src/lib/countyParcelLevyData";
 import {
   AUTHORITY_CHAIN_GAPS_DISCLOSURE,
   AUTHORITY_CHAIN_STEPS_DISCLOSURE,

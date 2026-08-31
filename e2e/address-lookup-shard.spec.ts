@@ -4,7 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { expect, test } from "@playwright/test";
-import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
+import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_NEIGHBORHOOD,
