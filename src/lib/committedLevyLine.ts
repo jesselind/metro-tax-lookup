@@ -188,7 +188,7 @@ export type LoadLevyStackFromPinOk = {
   tagId: string;
   tagShortDescr: string;
   levyAspxUrl: string;
-  arapahoeStacksSnapshot: CountyLevyStacksFile["snapshot"];
+  levyStacksSnapshot: CountyLevyStacksFile["snapshot"];
   awaitingTemplateMills: boolean;
   templateMillDrafts: Record<string, string>;
   parcelValues: ParcelValuesFromExport;
@@ -342,7 +342,7 @@ export async function loadLevyStackFromPin(
     tagId: row.tagId,
     tagShortDescr: row.tagShortDescr,
     levyAspxUrl: stack.levyAspxUrl,
-    arapahoeStacksSnapshot: stacks.snapshot,
+    levyStacksSnapshot: stacks.snapshot,
     awaitingTemplateMills: built.awaitingTemplateMills,
     templateMillDrafts: built.templateMillDrafts,
     parcelValues: pv,

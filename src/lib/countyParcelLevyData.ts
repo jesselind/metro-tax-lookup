@@ -575,6 +575,35 @@ export function validateCountyPinToTagFile(
   return null;
 }
 
+/**
+ * Validate one parcel-record shard JSON before caching. Returns a detail string on failure.
+ */
+export function validateCountyParcelRecordByPinFile(
+  data: unknown,
+  sourceUrl: string,
+): string | null {
+  if (!isPlainObject(data)) {
+    return `${sourceUrl}: root must be an object`;
+  }
+  if (!isPlainObject(data.snapshot)) {
+    return `${sourceUrl}: missing snapshot object`;
+  }
+  if (!isNonEmptyString(data.snapshot.bundledAsOf)) {
+    return `${sourceUrl}: snapshot.bundledAsOf required`;
+  }
+  if (
+    typeof data.pinDigits !== "number" ||
+    !Number.isInteger(data.pinDigits) ||
+    data.pinDigits < 1
+  ) {
+    return `${sourceUrl}: pinDigits must be a positive integer`;
+  }
+  if (!isPlainObject(data.byPin)) {
+    return `${sourceUrl}: missing byPin`;
+  }
+  return null;
+}
+
 export function getLastCountyPinToTagFetchFailureDetail(): string | null {
   return lastPinToTagFetchFailureDetail;
 }
@@ -746,6 +775,12 @@ function fetchCountyParcelRecordShard(
     ).then((data) => {
       if (data === null) {
         parcelRecordShardCache.delete(cacheKey);
+        return null;
+      }
+      const invalidDetail = validateCountyParcelRecordByPinFile(data, url);
+      if (invalidDetail) {
+        parcelRecordShardCache.delete(cacheKey);
+        return null;
       }
       return data;
     });

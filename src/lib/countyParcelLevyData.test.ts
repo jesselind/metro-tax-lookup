@@ -15,6 +15,7 @@ import {
   COUNTY_PARCEL_RECORD_CACHE_BUST,
   clearCountyParcelDataCache,
   fetchCountyLevyStacksJson,
+  fetchCountyParcelRecordForPin,
   fetchCountyPinToTagJson,
   getAinToPinIndex,
   getLastCountyLevyStacksFetchFailureDetail,
@@ -29,6 +30,7 @@ import {
   pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
   validateCountyLevyStacksFile,
+  validateCountyParcelRecordByPinFile,
   validateCountyPinToTagFile,
 } from "./countyParcelLevyData";
 import {
@@ -252,6 +254,81 @@ describe("validateCountyPinToTagFile", () => {
         byPin: { [SYNTHETIC_PIN]: { tagId: "1" } },
       }),
     ).toMatch(new RegExp(`byPin\\[${SYNTHETIC_PIN}\\] has an invalid shape`));
+  });
+});
+
+describe("validateCountyParcelRecordByPinFile", () => {
+  const shardUrl = parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)!;
+
+  it("accepts a well-formed shard root", () => {
+    expect(
+      validateCountyParcelRecordByPinFile(
+        {
+          snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+          pinDigits: 9,
+          shardPrefix: SYNTHETIC_PIN_SHARD_PREFIX,
+          byPin: { [SYNTHETIC_PIN]: { ain: SYNTHETIC_AIN } },
+        },
+        shardUrl,
+      ),
+    ).toBeNull();
+  });
+
+  it("rejects a malformed root", () => {
+    expect(validateCountyParcelRecordByPinFile(null, shardUrl)).toMatch(
+      /root must be an object/,
+    );
+    expect(validateCountyParcelRecordByPinFile({}, shardUrl)).toMatch(
+      /missing snapshot/,
+    );
+    expect(
+      validateCountyParcelRecordByPinFile(
+        {
+          snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+          pinDigits: 9,
+        },
+        shardUrl,
+      ),
+    ).toMatch(/missing byPin/);
+  });
+});
+
+describe("fetchCountyParcelRecordForPin shard validation", () => {
+  afterEach(() => {
+    clearCountyParcelDataCache();
+    vi.unstubAllGlobals();
+  });
+
+  it("returns null for an empty-object shard response without throwing", async () => {
+    const shardUrl = parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)!;
+    const validShard = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      pinDigits: 9,
+      shardPrefix: SYNTHETIC_PIN_SHARD_PREFIX,
+      byPin: { [SYNTHETIC_PIN]: { ain: SYNTHETIC_AIN } },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => validShard,
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(
+      await fetchCountyParcelRecordForPin(SYNTHETIC_PIN),
+    ).toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(shardUrl, expect.any(Object));
+
+    expect(await fetchCountyParcelRecordForPin(SYNTHETIC_PIN)).toEqual({
+      row: { ain: SYNTHETIC_AIN },
+      bundledAsOf: "2026-01-01",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
 
