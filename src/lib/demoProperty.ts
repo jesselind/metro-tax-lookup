@@ -10,9 +10,9 @@
  */
 
 import type {
-  ArapahoeLevyStackLine,
-  ArapahoeParcelRecordRow,
-} from "@/lib/arapahoeParcelLevyData";
+  CountyLevyStackLine,
+  CountyParcelRecordRow,
+} from "@/lib/countyParcelLevyData";
 import {
   committedLevyLinesFromStackLines,
   type ParcelValuesFromExport,
@@ -37,11 +37,11 @@ type DemoPropertyFixture = {
     tagId: string;
     tagShortDescr: string;
     levyAspxUrl: string;
-    lines: ArapahoeLevyStackLine[];
+    lines: CountyLevyStackLine[];
   };
   parcelValues: ParcelValuesFromExport;
   parcelAssessmentYear: string | null;
-  parcelRecord: ArapahoeParcelRecordRow;
+  parcelRecord: CountyParcelRecordRow;
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -181,8 +181,8 @@ export function demoPermitNumForIndex(
  * when demoMode is on.
  */
 export function obfuscateParcelRecordRow(
-  record: ArapahoeParcelRecordRow,
-): ArapahoeParcelRecordRow {
+  record: CountyParcelRecordRow,
+): CountyParcelRecordRow {
   const transfers = record.transfers?.map((sale, index) => ({
     ...sale,
     bookPage: demoBookPageForTransferIndex(index),
@@ -221,7 +221,7 @@ export type DemoPropertyLoad = {
     parcelTaxYear: string | null;
     ain: string;
   };
-  parcelRecord: ArapahoeParcelRecordRow;
+  parcelRecord: CountyParcelRecordRow;
   parcelRecordBundledAsOf: string;
 };
 

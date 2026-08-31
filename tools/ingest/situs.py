@@ -6,7 +6,7 @@
 
 """Situs lookup key / label helpers for the new ingest.
 
-Street dir/type tokens must stay in sync with src/lib/arapahoeSitusLookup.ts.
+Street dir/type tokens must stay in sync with src/lib/situsIndexLookup.ts.
 Shared code uses logical field names (sa_addr_number, …) after mapping resolve.
 ``lookupVersion`` comes from tools/situs_lookup_contract.py (shared with the
 shipping rebuild; not an engine id).
@@ -25,7 +25,7 @@ if str(_TOOLS_DIR) not in sys.path:
 
 from situs_lookup_contract import SITUS_LOOKUP_VERSION  # noqa: E402
 
-# Keep in sync with STREET_DIR_TOKENS / STREET_TYPE_TOKENS in arapahoeSitusLookup.ts
+# Keep in sync with STREET_DIR_TOKENS / STREET_TYPE_TOKENS in situsIndexLookup.ts
 # and the frozen sets in the old Arapahoe rebuild script (do not import that script).
 STREET_DIR_TOKENS = frozenset(
     {
@@ -121,7 +121,7 @@ def normalize_street_name_key(raw: str) -> str:
 
 
 def normalize_street_number_key(primary: str, range_or_suffix: str) -> str:
-    """Merge street number + optional range/suffix (e.g. 1/2); sync with arapahoeSitusLookup.ts."""
+    """Merge street number + optional range/suffix (e.g. 1/2); sync with situsIndexLookup.ts."""
     a = _strip(primary)
     b = _strip(range_or_suffix)
     merged = " ".join(x for x in (a, b) if x)

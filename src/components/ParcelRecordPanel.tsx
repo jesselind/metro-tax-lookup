@@ -12,7 +12,7 @@ import {
   ParcelRecordReportIdsProvider,
   PARCEL_RECORD_MISSING_VALUE_TRIGGER_CLASS,
 } from "@/components/ParcelRecordMissingValue";
-import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
+import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
@@ -90,7 +90,7 @@ function ParcelRecordRow({
 export type ParcelRecordPanelProps = {
   loading: boolean;
   loadFailed: boolean;
-  record: ArapahoeParcelRecordRow | null;
+  record: CountyParcelRecordRow | null;
   /** Display PIN for missing-data mailto (demo uses the public demo PIN). */
   pin?: string | null;
   demoMode?: boolean;

@@ -4,15 +4,15 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
-import type { ArapahoePinToTagFile } from "./arapahoeParcelLevyData";
+import type { CountyPinToTagFile } from "./countyParcelLevyData";
 import {
   lookupPinsBySitusFuzzy,
   normalizeStreetNameKey,
   normalizeStreetNameKeySoft,
   scoreStreetNameMatch,
   suggestSitusStreetsForNumber,
-  type ArapahoeSitusToPinsFile,
-} from "./arapahoeSitusLookup";
+  type CountySitusToPinsFile,
+} from "./situsIndexLookup";
 import {
   SYNTHETIC_MULTI_LABEL_MAJORITY,
   SYNTHETIC_MULTI_LABEL_MINORITY,
@@ -25,7 +25,7 @@ import {
   SYNTHETIC_PIN,
 } from "./syntheticTestIds";
 
-function miniSitusFile(): ArapahoeSitusToPinsFile {
+function miniSitusFile(): CountySitusToPinsFile {
   return {
     snapshot: { bundledAsOf: "2026-01-01", source: "test" },
     lookupVersion: 1,
@@ -83,7 +83,7 @@ describe("lookupPinsBySitusFuzzy", () => {
   });
 
   it("auto-picks a unique close street typo", () => {
-    const file: ArapahoeSitusToPinsFile = {
+    const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
       entryCount: 2,
@@ -125,7 +125,7 @@ describe("lookupPinsBySitusFuzzy", () => {
   });
 
   it("matches an exact unit and does not fall back to other units", () => {
-    const file: ArapahoeSitusToPinsFile = {
+    const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
       entryCount: 3,
@@ -159,7 +159,7 @@ describe("lookupPinsBySitusFuzzy", () => {
   });
 
   it("returns none when a unit is requested and only other units exist", () => {
-    const file: ArapahoeSitusToPinsFile = {
+    const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
       entryCount: 2,
@@ -189,7 +189,7 @@ describe("suggestSitusStreetsForNumber", () => {
   });
 
   it("keeps one place suggestion with all PINs (no per-PIN duplicate rows)", () => {
-    const file: ArapahoeSitusToPinsFile = {
+    const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
       entryCount: 3,
@@ -213,7 +213,7 @@ describe("suggestSitusStreetsForNumber", () => {
   });
 
   it("collapses shared-situs Real + personal accounts to one typeahead place", () => {
-    const file: ArapahoeSitusToPinsFile = {
+    const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
       entryCount: 3,
@@ -234,7 +234,7 @@ describe("suggestSitusStreetsForNumber", () => {
         ],
       },
     };
-    const pinToTag: ArapahoePinToTagFile = {
+    const pinToTag: CountyPinToTagFile = {
       snapshot: { bundledAsOf: "t", source: "test" },
       pinDigits: 9,
       byPin: {
@@ -280,7 +280,7 @@ describe("suggestSitusStreetsForNumber", () => {
 
 describe("lookupPinsBySitusFuzzy multi-account situs", () => {
   it("returns every PIN at a shared non-residential situs", () => {
-    const file: ArapahoeSitusToPinsFile = {
+    const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       lookupVersion: 1,
       entryCount: 3,

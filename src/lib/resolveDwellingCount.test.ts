@@ -4,7 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
-import type { ArapahoeParcelRecordRow } from "./arapahoeParcelLevyData";
+import type { CountyParcelRecordRow } from "./countyParcelLevyData";
 import {
   dwellingCountFromImprovementType,
   equalSplitFromAnnualTax,
@@ -121,7 +121,7 @@ describe("dwellingCountFromImprovementType", () => {
 
 describe("resolveDwellingCount", () => {
   it("prefers UB over improvement type (AMLI-shaped synthetic)", () => {
-    const record: ArapahoeParcelRecordRow = {
+    const record: CountyParcelRecordRow = {
       landLines: [
         { units: "352.0000 UB", landUse: "APT Multi-Units (9+)" },
         { units: "9000.0000 SF", landUse: "Merchandising (all Retail)" },
@@ -144,7 +144,7 @@ describe("resolveDwellingCount", () => {
   });
 
   it("uses triplex improvement type when no UB", () => {
-    const record: ArapahoeParcelRecordRow = {
+    const record: CountyParcelRecordRow = {
       landLines: [{ units: "1.0000 LT", landUse: "Duplexes-Triplexes" }],
       buildings: [
         {

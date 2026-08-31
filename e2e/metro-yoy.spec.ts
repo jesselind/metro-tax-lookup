@@ -4,7 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { expect, test, type Page } from "@playwright/test";
-import { displayMartAuthorityName } from "../src/lib/arapahoeParcelLevyData";
+import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "../src/content/levyYoYCopy";
 import { MILL_LEVY_CHANGED_LABEL, MILL_LEVY_TILE_ID } from "../src/content/millLevySummaryCopy";
 import { PARCEL_RECORD_SALE_HISTORY_ID } from "../src/components/ParcelRecordCountyTables";

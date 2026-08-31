@@ -31,7 +31,7 @@ Metro-levies, special-district directory, levy explainers, authority mills YoY, 
 | **`supporting-data/_ingest-ship-staging/`** | No | Ephemeral full tree for `--ship` before land. Deleted after success. |
 | **Shared inputs** | Mart/GIS gitignored; DOLA CSV + `tools/county-mart-data-as-of.txt` + `tools/arapahoe_dola_authority_overrides.json` tracked | Same mart drop and stamp for fair compare or ship. |
 
-Frontend loaders resolve `{dataRoot}/{countyId}-*` via `src/lib/countyDataPaths.ts`. Shipping UI uses `/data/`. Do not recreate `public/data-engine-v2` for day-to-day work (retired Phase 6.5 dual-root UI path; path remains gitignored).
+Frontend loaders resolve `{dataRoot}/{countyId}-*` via `src/lib/countyDataPaths.ts`. Canonical fetch/types: `src/lib/countyParcelLevyData.ts`, `src/lib/situsIndexLookup.ts`. Deprecated `@/lib/arapahoeParcelLevyData` and `@/lib/arapahoeSitusLookup` re-export barrels remain for forks (Phase 10, 5.2.0). Ship gate: `src/lib/countyLoaderContract.test.ts`. Shipping UI uses `/data/`. Do not recreate `public/data-engine-v2` for day-to-day work (retired Phase 6.5 dual-root UI path; path remains gitignored).
 
 ## Mapping and shared mill-join input
 

@@ -11,7 +11,7 @@
  * Non-residential uses a single chart rate; school assessed does not apply.
  */
 
-import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
+import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import {
   COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
   COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
@@ -93,7 +93,7 @@ export function nonResidentialAssessedRateLabel(
 
 export function resolveParcelAssessmentProfile(
   record: Pick<
-    ArapahoeParcelRecordRow,
+    CountyParcelRecordRow,
     | "stateUseCd"
     | "taxRollDescr"
     | "propertyClassDescr"
@@ -219,7 +219,7 @@ export function nonResidentialAssessedSplit(
 
 function residentialSchoolAssessedSplit(
   record: Pick<
-    ArapahoeParcelRecordRow,
+    CountyParcelRecordRow,
     "improvementActual" | "landActual" | "totalActual"
   >,
 ): ParcelValueColumn {
@@ -241,7 +241,7 @@ function residentialSchoolAssessedSplit(
  * Rates and school row follow state use / tax roll, not hardcoded residential defaults.
  */
 export function buildParcelValueTableRows(
-  record: ArapahoeParcelRecordRow,
+  record: CountyParcelRecordRow,
 ): ParcelValueTableRow[] {
   const profile = resolveParcelAssessmentProfile(record);
   const taxRoll = (record.taxRollDescr ?? "").trim().toUpperCase();

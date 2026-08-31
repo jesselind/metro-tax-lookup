@@ -12,13 +12,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ainLookupCandidates,
-  ARAPAHOE_PARCEL_RECORD_CACHE_BUST,
-  clearArapahoeParcelDataCache,
-  fetchArapahoeLevyStacksJson,
-  fetchArapahoePinToTagJson,
+  COUNTY_PARCEL_RECORD_CACHE_BUST,
+  clearCountyParcelDataCache,
+  fetchCountyLevyStacksJson,
+  fetchCountyPinToTagJson,
   getAinToPinIndex,
-  getLastArapahoeLevyStacksFetchFailureDetail,
-  getLastArapahoePinToTagFetchFailureDetail,
+  getLastCountyLevyStacksFetchFailureDetail,
+  getLastCountyPinToTagFetchFailureDetail,
   looksLikeAinInput,
   looksLikeParcelIdInput,
   looksLikePinOnlyInput,
@@ -28,9 +28,9 @@ import {
   parcelRecordShardUrl,
   pinLookupCandidates,
   resolvePinKeyFromParcelIdInput,
-  validateArapahoeLevyStacksFile,
-  validateArapahoePinToTagFile,
-} from "./arapahoeParcelLevyData";
+  validateCountyLevyStacksFile,
+  validateCountyPinToTagFile,
+} from "./countyParcelLevyData";
 import {
   SYNTHETIC_AIN,
   SYNTHETIC_PIN,
@@ -75,7 +75,7 @@ describe("parcelRecordShardPrefixes", () => {
 describe("parcelRecordShardUrl", () => {
   it("builds a static shard path with the cache-bust version", () => {
     expect(parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)).toBe(
-      `/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`,
+      `/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
     );
   });
 
@@ -83,13 +83,13 @@ describe("parcelRecordShardUrl", () => {
     expect(
       parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX, "/data", "douglas"),
     ).toBe(
-      `/data/douglas-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`,
+      `/data/douglas-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
     );
   });
 
   it("allows alphanumeric prefixes and rejects unsafe shapes", () => {
     expect(parcelRecordShardUrl("R01039")).toBe(
-      `/data/arapahoe-parcel-record-by-pin/R01039.json?v=${ARAPAHOE_PARCEL_RECORD_CACHE_BUST}`,
+      `/data/arapahoe-parcel-record-by-pin/R01039.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
     );
     expect(parcelRecordShardUrl("01000")).toBeNull();
     expect(parcelRecordShardUrl("0100000")).toBeNull();
@@ -167,7 +167,7 @@ describe("AIN and parcel-id input helpers", () => {
   });
 });
 
-describe("validateArapahoeLevyStacksFile", () => {
+describe("validateCountyLevyStacksFile", () => {
   const validStack = {
     tagId: "1",
     levyAspxUrl: "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1",
@@ -182,7 +182,7 @@ describe("validateArapahoeLevyStacksFile", () => {
 
   it("accepts a well-formed root and stack entries", () => {
     expect(
-      validateArapahoeLevyStacksFile({
+      validateCountyLevyStacksFile({
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         stacksByTagId: { "1": validStack },
       }),
@@ -190,14 +190,14 @@ describe("validateArapahoeLevyStacksFile", () => {
   });
 
   it("rejects a malformed root", () => {
-    expect(validateArapahoeLevyStacksFile(null)).toMatch(/root must be an object/);
+    expect(validateCountyLevyStacksFile(null)).toMatch(/root must be an object/);
     expect(
-      validateArapahoeLevyStacksFile({
+      validateCountyLevyStacksFile({
         snapshot: { bundledAsOf: "2026-01-01" },
       }),
     ).toMatch(/missing stacksByTagId/);
     expect(
-      validateArapahoeLevyStacksFile({
+      validateCountyLevyStacksFile({
         snapshot: { source: "test" },
         stacksByTagId: {},
       }),
@@ -206,7 +206,7 @@ describe("validateArapahoeLevyStacksFile", () => {
 
   it("rejects a malformed stack entry", () => {
     expect(
-      validateArapahoeLevyStacksFile({
+      validateCountyLevyStacksFile({
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         stacksByTagId: { "1": { tagId: "1", lines: [] } },
       }),
@@ -214,10 +214,10 @@ describe("validateArapahoeLevyStacksFile", () => {
   });
 });
 
-describe("validateArapahoePinToTagFile", () => {
+describe("validateCountyPinToTagFile", () => {
   it("accepts a well-formed root and byPin entries", () => {
     expect(
-      validateArapahoePinToTagFile({
+      validateCountyPinToTagFile({
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         pinDigits: 9,
         byPin: {
@@ -228,15 +228,15 @@ describe("validateArapahoePinToTagFile", () => {
   });
 
   it("rejects a malformed root", () => {
-    expect(validateArapahoePinToTagFile([])).toMatch(/root must be an object/);
+    expect(validateCountyPinToTagFile([])).toMatch(/root must be an object/);
     expect(
-      validateArapahoePinToTagFile({
+      validateCountyPinToTagFile({
         snapshot: { bundledAsOf: "2026-01-01" },
         pinDigits: 9,
       }),
     ).toMatch(/missing byPin/);
     expect(
-      validateArapahoePinToTagFile({
+      validateCountyPinToTagFile({
         snapshot: { source: "test" },
         pinDigits: 9,
         byPin: {},
@@ -246,7 +246,7 @@ describe("validateArapahoePinToTagFile", () => {
 
   it("rejects a malformed byPin entry", () => {
     expect(
-      validateArapahoePinToTagFile({
+      validateCountyPinToTagFile({
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         pinDigits: 9,
         byPin: { [SYNTHETIC_PIN]: { tagId: "1" } },
@@ -255,9 +255,9 @@ describe("validateArapahoePinToTagFile", () => {
   });
 });
 
-describe("fetchArapahoeLevyStacksJson / fetchArapahoePinToTagJson validation", () => {
+describe("fetchCountyLevyStacksJson / fetchCountyPinToTagJson validation", () => {
   afterEach(() => {
-    clearArapahoeParcelDataCache();
+    clearCountyParcelDataCache();
     vi.unstubAllGlobals();
   });
 
@@ -290,12 +290,12 @@ describe("fetchArapahoeLevyStacksJson / fetchArapahoePinToTagJson validation", (
       });
     vi.stubGlobal("fetch", fetchMock);
 
-    expect(await fetchArapahoeLevyStacksJson()).toBeNull();
-    expect(getLastArapahoeLevyStacksFetchFailureDetail()).toMatch(
+    expect(await fetchCountyLevyStacksJson()).toBeNull();
+    expect(getLastCountyLevyStacksFetchFailureDetail()).toMatch(
       /missing stacksByTagId|missing snapshot/,
     );
 
-    expect(await fetchArapahoeLevyStacksJson()).toEqual(validStacks);
+    expect(await fetchCountyLevyStacksJson()).toEqual(validStacks);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -323,12 +323,12 @@ describe("fetchArapahoeLevyStacksJson / fetchArapahoePinToTagJson validation", (
       });
     vi.stubGlobal("fetch", fetchMock);
 
-    expect(await fetchArapahoePinToTagJson()).toBeNull();
-    expect(getLastArapahoePinToTagFetchFailureDetail()).toMatch(
+    expect(await fetchCountyPinToTagJson()).toBeNull();
+    expect(getLastCountyPinToTagFetchFailureDetail()).toMatch(
       /has an invalid shape/,
     );
 
-    expect(await fetchArapahoePinToTagJson()).toEqual(validPinToTag);
+    expect(await fetchCountyPinToTagJson()).toEqual(validPinToTag);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

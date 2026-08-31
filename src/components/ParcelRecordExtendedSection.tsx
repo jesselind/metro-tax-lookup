@@ -14,7 +14,7 @@ import {
 } from "@/components/ParcelRecordCountyTables";
 import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingValue";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
-import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
+import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import {
   COUNTY_CONFIG,
@@ -35,7 +35,7 @@ const TABLE_SKELETON = "h-24 animate-pulse rounded bg-slate-200/70";
 export function shouldShowParcelRecordExtendedSection(
   loading: boolean,
   loadFailed: boolean,
-  record: ArapahoeParcelRecordRow | null,
+  record: CountyParcelRecordRow | null,
 ): boolean {
   return loading || loadFailed || record != null;
 }
@@ -43,7 +43,7 @@ export function shouldShowParcelRecordExtendedSection(
 export type ParcelRecordExtendedSectionProps = {
   loading: boolean;
   loadFailed: boolean;
-  record: ArapahoeParcelRecordRow | null;
+  record: CountyParcelRecordRow | null;
   /** Display PIN for missing-data mailto (demo uses the public demo PIN). */
   pin?: string | null;
   demoMode?: boolean;

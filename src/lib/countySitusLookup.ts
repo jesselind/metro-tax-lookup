@@ -8,21 +8,21 @@
  * resolve which county owns a street-address search before loading `{countyId}-*`.
  */
 
-import type { ArapahoePinToTagFile } from "@/lib/arapahoeParcelLevyData";
+import type { CountyPinToTagFile } from "@/lib/countyParcelLevyData";
 import {
-  fetchArapahoeLevyStacksJson,
-  fetchArapahoePinToTagJson,
-} from "@/lib/arapahoeParcelLevyData";
+  fetchCountyLevyStacksJson,
+  fetchCountyPinToTagJson,
+} from "@/lib/countyParcelLevyData";
 import {
-  type ArapahoeSitusToPinsFile,
-  fetchArapahoeSitusToPinsJson,
-  getLastArapahoeSitusFetchFailureDetail,
+  type CountySitusToPinsFile,
+  fetchCountySitusToPinsJson,
+  getLastCountySitusFetchFailureDetail,
   lookupPinsBySitusFuzzy,
   situsEnabledCountyIds,
   suggestSitusStreetsForNumber,
   type SitusFuzzyLookupResult,
   type SitusStreetSuggestion,
-} from "@/lib/arapahoeSitusLookup";
+} from "@/lib/situsIndexLookup";
 import { countyConfigById, type CountyConfig } from "@/lib/countyConfig";
 import { countySitusToPinsUrl } from "@/lib/countyDataPaths";
 import {
@@ -44,8 +44,8 @@ export const SITUS_COUNTY_AMBIGUOUS_MESSAGE =
 export type SitusCountyMatch = {
   countyId: string;
   config: CountyConfig;
-  situs: ArapahoeSitusToPinsFile;
-  pinToTag: ArapahoePinToTagFile;
+  situs: CountySitusToPinsFile;
+  pinToTag: CountyPinToTagFile;
   fuzzy: SitusFuzzyLookupResult;
 };
 
@@ -76,8 +76,8 @@ function isSitusSuggest(result: SitusFuzzyLookupResult): boolean {
 type LoadedSitusBundle = {
   countyId: string;
   config: CountyConfig;
-  situs: ArapahoeSitusToPinsFile;
-  pinToTag: ArapahoePinToTagFile;
+  situs: CountySitusToPinsFile;
+  pinToTag: CountyPinToTagFile;
 };
 
 async function loadSitusBundleForCounty(
@@ -87,14 +87,14 @@ async function loadSitusBundleForCounty(
   const config = countyConfigById(countyId);
   if (!config) return null;
   const [situs, pinToTag] = await Promise.all([
-    fetchArapahoeSitusToPinsJson(dataRoot, countyId),
-    fetchArapahoePinToTagJson(dataRoot, countyId),
+    fetchCountySitusToPinsJson(dataRoot, countyId),
+    fetchCountyPinToTagJson(dataRoot, countyId),
   ]);
   if (!situs?.byKey) {
     return {
       countyId,
       detail:
-        getLastArapahoeSitusFetchFailureDetail(dataRoot, countyId) ??
+        getLastCountySitusFetchFailureDetail(dataRoot, countyId) ??
         `${countySitusToPinsUrl(dataRoot, countyId)}: missing or invalid`,
     };
   }
@@ -153,11 +153,11 @@ export async function prefetchCountySearchIndexes(
       kinds.map(async (kind) => {
         report(countyId, kind);
         if (kind === "situs") {
-          await fetchArapahoeSitusToPinsJson(options?.dataRoot, countyId);
+          await fetchCountySitusToPinsJson(options?.dataRoot, countyId);
         } else if (kind === "pinToTag") {
-          await fetchArapahoePinToTagJson(options?.dataRoot, countyId);
+          await fetchCountyPinToTagJson(options?.dataRoot, countyId);
         } else {
-          await fetchArapahoeLevyStacksJson(options?.dataRoot, countyId);
+          await fetchCountyLevyStacksJson(options?.dataRoot, countyId);
         }
         completed += 1;
         onProgress?.({

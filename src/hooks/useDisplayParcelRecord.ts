@@ -6,7 +6,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ArapahoeParcelRecordRow } from "@/lib/arapahoeParcelLevyData";
+import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import { obfuscateParcelRecordRow } from "@/lib/demoProperty";
 
 /**
@@ -14,9 +14,9 @@ import { obfuscateParcelRecordRow } from "@/lib/demoProperty";
  * so both surfaces always see the same display row.
  */
 export function useDisplayParcelRecord(
-  record: ArapahoeParcelRecordRow | null,
+  record: CountyParcelRecordRow | null,
   demoMode: boolean,
-): ArapahoeParcelRecordRow | null {
+): CountyParcelRecordRow | null {
   return useMemo(
     () =>
       record ? (demoMode ? obfuscateParcelRecordRow(record) : record) : null,

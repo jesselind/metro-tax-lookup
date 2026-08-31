@@ -133,29 +133,31 @@ When adding a county, copy the template in that doc before inventing a new layou
 
 ### What JSON the app needs
 
-Ingest may start from any county file type. It must end here. Today's shipping filenames still use the `arapahoe-*` prefix; that rename waits until a second county works. The classifier under `tools/ingest/` inspects a drop folder; it does not produce this JSON yet. Canonical Arapahoe shipping rebuild is `npm run build:ingest:ship` (staging + IDENTICAL + atomic land into `public/data/`). Emergency v1 rebuild remains `npm run build:arapahoe-index`.
+Ingest may start from any county file type. It must end here. Per-county shipping files use **`{countyId}-*`** under `public/data/` (for example `arapahoe-pin-to-tag.json`, `douglas-pin-to-tag.json`). Shared Colorado files (`metro-levies-*.json`, directory, explainers) stay unprefixed. Loaders and validators live in `src/lib/countyParcelLevyData.ts` and `src/lib/situsIndexLookup.ts`. The classifier under `tools/ingest/` inspects a drop folder; mapping files under `tools/ingest/mappings/` hold county-specific columns.
 
-**Required for account-load** (bill breakdown, PIN/AIN lookup, actual/assessed):
+**Arapahoe shipping rebuild:** `npm run build:ingest:ship` (staging → IDENTICAL → atomic land into `public/data/`). **Douglas rebuild:** `npm run build:ingest:douglas` → validate → `npm run land:douglas`. Emergency Arapahoe v1 rebuild remains `npm run build:arapahoe-index`.
 
-| File | Unlocks |
-| --- | --- |
-| `public/data/arapahoe-levy-stacks-by-tag-id.json` | Levy stack by tax area |
-| `public/data/arapahoe-pin-to-tag.json` | Account → tax area + values |
+**Required for account-load** (bill breakdown, account id lookup, actual/assessed):
 
-Each required file must have `snapshot.bundledAsOf`. Stacks need `stacksByTagId`; the account map needs `byPin`. Identifier length is **`pinDigits` on the account map** (Arapahoe ships `9`). That is county config, not a Colorado standard.
+| File pattern | Example (Arapahoe) | Unlocks |
+| --- | --- | --- |
+| `{countyId}-levy-stacks-by-tag-id.json` | `arapahoe-levy-stacks-by-tag-id.json` | Levy stack by tax area |
+| `{countyId}-pin-to-tag.json` | `arapahoe-pin-to-tag.json` | Account → tax area + values |
+
+Each required file must have `snapshot.bundledAsOf`. Stacks need `stacksByTagId`; the account map needs `byPin`. Identifier length is **`pinDigits` on the account map** (Arapahoe ships `9`; Douglas ships `8`). That is county config, not a Colorado standard.
 
 **Optional** (absent is allowed; if present, shape must be valid):
 
-| File | Unlocks if present |
-| --- | --- |
-| `public/data/arapahoe-situs-to-pins.json` | Address search. Without it, id-only lookup. |
-| `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` | Property details (per-field optional) |
-| `public/data/colorado-special-district-directory.json` | Registry contact vs bill LG ID |
-| `public/data/metro-levies-YYYY.json` | Purpose rows + purpose YoY. Empty `districts` is allowed. |
-| `public/data/arapahoe-authority-mills-by-tax-year.json` | Tile YoY, mill history chart |
-| `public/data/arapahoe-authority-rate-table-pages.json` | Deep-link a Levy % PDF |
-| `public/data/levy-explainer-entries.json` | Modal briefs (hand-written) |
-| `public/data/levy-authority-chain-entries.json` | Who authorized this? (hand-written) |
+| File pattern | Example (Arapahoe) | Unlocks if present |
+| --- | --- | --- |
+| `{countyId}-situs-to-pins.json` | `arapahoe-situs-to-pins.json` | Address search. Without it, id-only lookup. |
+| `{countyId}-parcel-record-by-pin/<prefix>.json` | `arapahoe-parcel-record-by-pin/…` | Property details (per-field optional) |
+| `colorado-special-district-directory.json` | (shared) | Registry contact vs bill LG ID |
+| `metro-levies-YYYY.json` | (shared) | Purpose rows + purpose YoY. Empty `districts` is allowed. |
+| `arapahoe-authority-mills-by-tax-year.json` | (Arapahoe-only today) | Tile YoY, mill history chart |
+| `arapahoe-authority-rate-table-pages.json` | (Arapahoe-only today) | Deep-link a Levy % PDF |
+| `levy-explainer-entries.json` | (shared) | Modal briefs (hand-written) |
+| `levy-authority-chain-entries.json` | (shared) | Who authorized this? (hand-written) |
 
 Minimum fields: each levy stack line needs a stable tax-area key, authority code, display name, and mills for the current roll (optional DOLA `lgId`). Each account row needs lookup id, tax-area key, actual value, assessed value, tax year / assessment year if published, and property class (Real vs business personal property); optional public parcel id for county URLs; optional owner-of-record list. Situs, if present: normalized lookup key, postage-style label, one or more account ids.
 
@@ -230,10 +232,10 @@ Hand-curated **Who authorized this?** trail for selected stack rows (Cherry Cree
    Outputs include:
    - `public/data/arapahoe-levy-stacks-by-tag-id.json`
    - `public/data/arapahoe-pin-to-tag.json` (per PIN: `tagId`, values, `ain` from Main Parcel for the county comps grid PDF link)
-   - `public/data/arapahoe-situs-to-pins.json` — situs lookup key → `[{ pin, label }, …]`. Labels are postage-style (`street, city, ST ZIP`) from Main Parcel `SA*` (including `SAPostalCd`). Top-level `lookupVersion` is a **schema stamp** for those key/label rules (not which rebuild engine wrote the file). Both `build:arapahoe-index` and `build:ingest` must emit the shared constant in `tools/situs_lookup_contract.py` (currently **2**). Bump that constant only when key or label rules change, regenerate situs with both engines on the same value, and bump `ARAPAHOE_SITUS_TO_PINS_CACHE_BUST` in `src/lib/arapahoeSitusLookup.ts` so browsers skip the `/data` `max-age` cache. Guard test: `tools/test_situs_lookup_contract.py` (shipping file must match the constant; neither engine hardcodes the integer).
-   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** experience (Main Parcel plus sibling mart joins; see build script). UI: scalar rows in `ParcelRecordPanel`; values / sale / building+land / permits in `ParcelRecordExtendedSection` / `ParcelRecordCountyTables`. Joins include legal display, ownership type, land, buildings, sale history (`Mart_Transfers`), permits (`Mart_RDE_Permit`), State Class Codes labels for `StateUseCd` (`stateUseLabel` / `stateUseCd` panel rows), subdivision name/code, tax roll, and **neighborhood name/code** from Open GIS Assessor Parcels (required unless `--skip-neighborhood`; Main Parcel has no NBHD column; do not infer from subdivision). Numeric codes strip Excel-ish `.0` suffixes at build time (`normalize_integerish_code`) and again for display (`formatMartIntegerCodeDisplay`) so already-bundled shards stay readable. Fireplaces is reserved in building attribute order but not in mart CSVs. Sale **Book Page** cells link to Arapahoe Clerk & Recorder public search. Sharded by **6-digit PIN prefix** (~156 KiB median / ~330 KiB max after Transfers/Permits; plain JSON; lazy-loaded after levy succeeds). Build **computes** assessed splits when mart columns are absent: residential local (6.8%) and school (7.05%) for state use `1xxx` improvement; non-residential proportional building/land from mart total (no school assessed). Display logic also in `src/lib/parcelAssessmentRates.ts`. Ownership type derives from legal-party rows — methodology and DPT rates on **`/sources`**; rate constants in the build script and `src/lib/coloradoDptAssessmentRates.ts` (bump when the next assessment year ships). Build logs shard size stats (median, p90, p99); re-shard if shards grow too large. After regenerating with a field/schema change, bump `ARAPAHOE_PARCEL_RECORD_CACHE_BUST` in `src/lib/arapahoeParcelLevyData.ts` so browsers skip the `/data` `max-age` cache.
+   - `public/data/arapahoe-situs-to-pins.json` — situs lookup key → `[{ pin, label }, …]`. Labels are postage-style (`street, city, ST ZIP`) from Main Parcel `SA*` (including `SAPostalCd`). Top-level `lookupVersion` is a **schema stamp** for those key/label rules (not which rebuild engine wrote the file). Both `build:arapahoe-index` and `build:ingest` must emit the shared constant in `tools/situs_lookup_contract.py` (currently **2**). Bump that constant only when key or label rules change, regenerate situs with both engines on the same value, and bump `COUNTY_SITUS_TO_PINS_CACHE_BUST` in `src/lib/situsIndexLookup.ts` so browsers skip the `/data` `max-age` cache. Guard test: `tools/test_situs_lookup_contract.py` (shipping file must match the constant; neither engine hardcodes the integer).
+   - `public/data/arapahoe-parcel-record-by-pin/<prefix>.json` — per PIN: county-record fields for the home **Property details** experience (Main Parcel plus sibling mart joins; see build script). UI: scalar rows in `ParcelRecordPanel`; values / sale / building+land / permits in `ParcelRecordExtendedSection` / `ParcelRecordCountyTables`. Joins include legal display, ownership type, land, buildings, sale history (`Mart_Transfers`), permits (`Mart_RDE_Permit`), State Class Codes labels for `StateUseCd` (`stateUseLabel` / `stateUseCd` panel rows), subdivision name/code, tax roll, and **neighborhood name/code** from Open GIS Assessor Parcels (required unless `--skip-neighborhood`; Main Parcel has no NBHD column; do not infer from subdivision). Numeric codes strip Excel-ish `.0` suffixes at build time (`normalize_integerish_code`) and again for display (`formatMartIntegerCodeDisplay`) so already-bundled shards stay readable. Fireplaces is reserved in building attribute order but not in mart CSVs. Sale **Book Page** cells link to Arapahoe Clerk & Recorder public search. Sharded by **6-digit PIN prefix** (~156 KiB median / ~330 KiB max after Transfers/Permits; plain JSON; lazy-loaded after levy succeeds). Build **computes** assessed splits when mart columns are absent: residential local (6.8%) and school (7.05%) for state use `1xxx` improvement; non-residential proportional building/land from mart total (no school assessed). Display logic also in `src/lib/parcelAssessmentRates.ts`. Ownership type derives from legal-party rows — methodology and DPT rates on **`/sources`**; rate constants in the build script and `src/lib/coloradoDptAssessmentRates.ts` (bump when the next assessment year ships). Build logs shard size stats (median, p90, p99); re-shard if shards grow too large. After regenerating with a field/schema change, bump `COUNTY_PARCEL_RECORD_CACHE_BUST` in `src/lib/countyParcelLevyData.ts` so browsers skip the `/data` `max-age` cache.
 
-   **Runtime load (PIN path):** `fetchArapahoePinToTagJson` / `fetchArapahoeLevyStacksJson` use `fetchCountyStaticJson` (one retry). Before caching, `validateArapahoePinToTagFile` / `validateArapahoeLevyStacksFile` check the root object and every `byPin` / `stacksByTagId` entry shape; malformed payloads clear that cache and set the existing fetch-failure detail (resident mailto / technical detail).
+   **Runtime load (PIN path):** `fetchCountyPinToTagJson` / `fetchCountyLevyStacksJson` use `fetchCountyStaticJson` (one retry). Before caching, `validateCountyPinToTagFile` / `validateCountyLevyStacksFile` check the root object and every `byPin` / `stacksByTagId` entry shape; malformed payloads clear that cache and set the existing fetch-failure detail (resident mailto / technical detail).
 3. Rebuild the district contact bundle (DOLA LG export, filtered to LGIDs in levy stacks):
 
    ```bash

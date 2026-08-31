@@ -28,7 +28,7 @@ import {
   ARAPAHOE_COUNTY_GEOID,
   matchSpecialDistrict,
 } from "@/lib/specialDistrictMatch";
-import { formatTaxAreaShortDescrDisplay } from "@/lib/arapahoeParcelLevyData";
+import { formatTaxAreaShortDescrDisplay } from "@/lib/countyParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 import {
   COUNTY_CONFIG,

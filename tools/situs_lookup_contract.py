@@ -17,7 +17,7 @@ from this module. Do not hardcode the integer in either engine.
 Bump only when key normalization or label shape changes in a way that tools or
 docs need to distinguish generations. After bumping: regenerate situs JSON,
 keep both engines on this constant, and bump
-``ARAPAHOE_SITUS_TO_PINS_CACHE_BUST`` in ``src/lib/arapahoeSitusLookup.ts``.
+``COUNTY_SITUS_TO_PINS_CACHE_BUST`` in ``src/lib/situsIndexLookup.ts``.
 
 Version history (shipping rules):
   1 — early situs index (keys as today; labels without postage locality emphasis)

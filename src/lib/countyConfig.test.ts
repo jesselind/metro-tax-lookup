@@ -9,7 +9,7 @@
  * invented 10-digit schedule ids, not El Paso production numbers.
  *
  * Keep this file separate from:
- * - `arapahoeParcelLevyData.test.ts` (Arapahoe JSON / shard / fetch-time)
+ * - `countyParcelLevyData.test.ts` (Arapahoe JSON / shard / fetch-time)
  * - `tools/test_build_arapahoe_parcel_levy_index.py` (current production rebuild)
  * URL encoding and scheme-rejection stay in `safeExternalHref.test.ts`.
  */
@@ -20,7 +20,7 @@ import {
   looksLikePinOnlyInput,
   pinLookupCandidates,
   accountIdLookupCandidates,
-} from "@/lib/arapahoeParcelLevyData";
+} from "@/lib/countyParcelLevyData";
 import {
   ARAPAHOE_COUNTY_CONFIG,
   COUNTY_CONFIG,

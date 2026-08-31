@@ -27,7 +27,7 @@ from ingest.reader import logical_row_from_csv, resolve_role_column_map
 from ingest.situs import accumulate_situs_row, finalize_situs_map
 from ingest.out_dir_policy import validate_out_dir
 
-# Keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in arapahoeParcelLevyData.ts
+# Keep in sync with PARCEL_RECORD_SHARD_PREFIX_LENGTH in countyParcelLevyData.ts
 PARCEL_RECORD_SHARD_PREFIX_LEN = 6
 GIS_PARCELS_DATA_AS_OF_FILENAME = "data-as-of.txt"
 _DEFAULT_GIS_LAYER = "Assessor_Parcels"

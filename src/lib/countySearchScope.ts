@@ -13,7 +13,7 @@ import {
   countyConfigById,
   type CountyConfig,
 } from "@/lib/countyConfig";
-import { situsEnabledCountyIds } from "@/lib/arapahoeSitusLookup";
+import { situsEnabledCountyIds } from "@/lib/situsIndexLookup";
 
 /** Campaign-default selected county (tier 1). */
 export const DEFAULT_SEARCH_COUNTY_ID = COUNTY_CONFIG.id;

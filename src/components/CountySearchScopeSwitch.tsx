@@ -10,7 +10,7 @@ import {
   countyConfigById,
   type CountyConfig,
 } from "@/lib/countyConfig";
-import { situsEnabledCountyIds } from "@/lib/arapahoeSitusLookup";
+import { situsEnabledCountyIds } from "@/lib/situsIndexLookup";
 import {
   DEFAULT_SEARCH_COUNTY_ID,
   showCountySearchScopeControl,

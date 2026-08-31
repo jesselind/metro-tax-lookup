@@ -8,9 +8,9 @@ import {
   SITUS_COUNTY_AMBIGUOUS_MESSAGE,
 } from "@/lib/countySitusLookup";
 import {
-  clearArapahoeParcelDataCache,
-} from "@/lib/arapahoeParcelLevyData";
-import { clearArapahoeSitusDataCache } from "@/lib/arapahoeSitusLookup";
+  clearCountyParcelDataCache,
+} from "@/lib/countyParcelLevyData";
+import { clearCountySitusDataCache } from "@/lib/situsIndexLookup";
 import { SYNTHETIC_PIN } from "@/lib/syntheticTestIds";
 
 const ARAPAHOE_SITUS = {
@@ -39,8 +39,8 @@ const EMPTY_ARAPAHOE_SITUS = {
 
 describe("resolveSitusCountyLookup", () => {
   afterEach(() => {
-    clearArapahoeParcelDataCache();
-    clearArapahoeSitusDataCache();
+    clearCountyParcelDataCache();
+    clearCountySitusDataCache();
     vi.unstubAllGlobals();
   });
 

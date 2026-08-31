@@ -76,11 +76,11 @@ import {
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
 import {
-  fetchArapahoeParcelRecordForPin,
-  fetchArapahoePinToTagJson,
-  type ArapahoeParcelRecordRow,
-  type ArapahoePinToTagFile,
-} from "@/lib/arapahoeParcelLevyData";
+  fetchCountyParcelRecordForPin,
+  fetchCountyPinToTagJson,
+  type CountyParcelRecordRow,
+  type CountyPinToTagFile,
+} from "@/lib/countyParcelLevyData";
 import {
   anyCountySitusSearchAvailable,
   normalizeStreetNameKey,
@@ -92,7 +92,7 @@ import {
   SITUS_SIMPLE_ADDRESS_LINE_MAX_LEN,
   trySitusAutofillBlurSplit,
   type SitusStreetSuggestion,
-} from "@/lib/arapahoeSitusLookup";
+} from "@/lib/situsIndexLookup";
 import {
   enrichSitusPinHitsForChooser,
   isBusinessPersonalPropertyAccount,
@@ -278,7 +278,7 @@ export function HomeParcelAddressLookup({
   );
   /** pin-to-tag for multi-match chooser enrichment (owner / Real vs BPP / values). */
   const [multiMatchPinToTag, setMultiMatchPinToTag] =
-    useState<ArapahoePinToTagFile | null>(null);
+    useState<CountyPinToTagFile | null>(null);
   /** Close street-name alternatives when exact/fuzzy auto-match is ambiguous. */
   const [streetDidYouMean, setStreetDidYouMean] = useState<
     SitusStreetSuggestion[] | null
@@ -347,7 +347,7 @@ export function HomeParcelAddressLookup({
     useState<CountyIndexLoadProgress | null>(null);
   const indexLoadRequestRef = useRef(0);
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [parcelRecord, setParcelRecord] = useState<ArapahoeParcelRecordRow | null>(
+  const [parcelRecord, setParcelRecord] = useState<CountyParcelRecordRow | null>(
     null,
   );
   const [parcelRecordLoading, setParcelRecordLoading] = useState(false);
@@ -469,7 +469,7 @@ export function HomeParcelAddressLookup({
         return;
       }
       try {
-        const result = await fetchArapahoeParcelRecordForPin(
+        const result = await fetchCountyParcelRecordForPin(
           lookupPin,
           undefined,
           config.id,
@@ -1280,7 +1280,7 @@ export function HomeParcelAddressLookup({
       return;
     }
     let cancelled = false;
-    void fetchArapahoePinToTagJson(undefined, resolvedCountyId ?? COUNTY_CONFIG.id).then((data) => {
+    void fetchCountyPinToTagJson(undefined, resolvedCountyId ?? COUNTY_CONFIG.id).then((data) => {
       if (!cancelled) setMultiMatchPinToTag(data);
     });
     return () => {

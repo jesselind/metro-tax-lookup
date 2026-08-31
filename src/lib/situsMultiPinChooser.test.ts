@@ -4,8 +4,8 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
-import type { ArapahoePinToTagFile } from "./arapahoeParcelLevyData";
-import type { ArapahoeSitusPinHit } from "./arapahoeSitusLookup";
+import type { CountyPinToTagFile } from "./countyParcelLevyData";
+import type { CountySitusPinHit } from "./situsIndexLookup";
 import {
   classifySitusPinAccountKind,
   enrichSitusPinHitsForChooser,
@@ -32,7 +32,7 @@ import {
   SYNTHETIC_MULTI_REAL_PIN,
 } from "./syntheticTestIds";
 
-function multiRealBppPinToTag(): ArapahoePinToTagFile {
+function multiRealBppPinToTag(): CountyPinToTagFile {
   return {
     snapshot: { bundledAsOf: "t", source: "test" },
     pinDigits: 9,
@@ -65,7 +65,7 @@ function multiRealBppPinToTag(): ArapahoePinToTagFile {
   };
 }
 
-function condoAllRealPinToTag(): ArapahoePinToTagFile {
+function condoAllRealPinToTag(): CountyPinToTagFile {
   return {
     snapshot: { bundledAsOf: "t", source: "test" },
     pinDigits: 9,
@@ -203,7 +203,7 @@ describe("situsShouldOfferAccountTypeSwitch", () => {
 });
 
 describe("situsPlaceHasRealAndBusinessPersonal (shared gate)", () => {
-  const broadwayHits: ArapahoeSitusPinHit[] = [
+  const broadwayHits: CountySitusPinHit[] = [
     {
       pin: SYNTHETIC_MULTI_PERSONAL_PIN,
       label: SYNTHETIC_MULTI_LABEL_MAJORITY,
@@ -214,7 +214,7 @@ describe("situsPlaceHasRealAndBusinessPersonal (shared gate)", () => {
     },
   ];
 
-  const condoHits: ArapahoeSitusPinHit[] = [
+  const condoHits: CountySitusPinHit[] = [
     { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
     { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
   ];
@@ -249,7 +249,7 @@ describe("situsPlaceHasRealAndBusinessPersonal (shared gate)", () => {
 
 describe("pickSitusPlaceSampleLabel", () => {
   it("prefers the most common shared label (ZIP+4 majority)", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       { pin: "1", label: SYNTHETIC_MULTI_LABEL_MINORITY },
       { pin: "2", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
       { pin: "3", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
@@ -261,7 +261,7 @@ describe("pickSitusPlaceSampleLabel", () => {
 
 describe("pickSitusPlaceSampleLabelForTypeahead", () => {
   it("strips differing units for all-Real condo places", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
       { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
     ];
@@ -276,7 +276,7 @@ describe("pickSitusPlaceSampleLabelForTypeahead", () => {
   });
 
   it("keeps Broadway Real+BPP sample unchanged (primary gate)", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       {
         pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
         label: SYNTHETIC_MULTI_LABEL_MINORITY,
@@ -299,7 +299,7 @@ describe("pickSitusPlaceSampleLabelForTypeahead", () => {
   });
 
   it("does not strip Real+BPP even when labels differ only by a unit suffix", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       {
         pin: SYNTHETIC_MULTI_REAL_PIN,
         label: "7700 S BROADWAY Unit X1, E2E CITY, CO 80000-1111",
@@ -318,7 +318,7 @@ describe("pickSitusPlaceSampleLabelForTypeahead", () => {
   });
 
   it("strips condo units even when pin-to-tag is missing (street lines differ)", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
       { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
     ];
@@ -328,7 +328,7 @@ describe("pickSitusPlaceSampleLabelForTypeahead", () => {
   });
 
   it("leaves identical street lines alone without pin-to-tag (Broadway-safe)", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       { pin: "1", label: SYNTHETIC_MULTI_LABEL_MINORITY },
       { pin: "2", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
       { pin: "3", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
@@ -341,7 +341,7 @@ describe("pickSitusPlaceSampleLabelForTypeahead", () => {
 
 describe("enrichSitusPinHitsForChooser", () => {
   it("labels Real vs business personal and sorts building above equipment", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       {
         pin: SYNTHETIC_MULTI_PERSONAL_PIN,
         label: SYNTHETIC_MULTI_LABEL_MAJORITY,
@@ -369,7 +369,7 @@ describe("enrichSitusPinHitsForChooser", () => {
   });
 
   it("sorts all-Real condo units by address label, not by actual value", () => {
-    const hits: ArapahoeSitusPinHit[] = [
+    const hits: CountySitusPinHit[] = [
       { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
       { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
     ];

@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.2.0",
+    date: "2026-08-30",
+    title: "County-neutral loader modules with compatibility shims (Phase 10)",
+    highlights: [
+      "Canonical loaders: countyParcelLevyData.ts and situsIndexLookup.ts (County* types, fetchCounty* helpers). Deprecated arapahoeParcelLevyData.ts / arapahoeSitusLookup.ts remain as re-export barrels for forks.",
+      "Shipping JSON paths unchanged ({countyId}-* under /data/). countyLoaderContract.test.ts is the Phase 10 ship gate: wired-county URL contract, fetch URL alignment, shim identity, and validator paths.",
+      "countyHeavyDataPathnames() now lists heavy /data/ paths for every wired county (Douglas indexes included in rate-limit tier). README and county-config.md document loader modules.",
+    ],
+  },
+  {
     version: "5.1.0",
     date: "2026-08-28",
     title: "Douglas multi-county lookup + parcel-record shards (Phase 9/9b/9c)",
@@ -519,7 +529,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Property details panel with sharded parcel data",
     highlights: [
       "Home dashboard Property details column beside the levy stack: lazy-loaded Main Parcel fields after PIN levy lookup; compare card below.",
-      "5-digit PIN-prefix JSON shards (~500 KiB per lookup) with fetchArapahoeParcelRecordForPin caching and stale-response guards on rapid PIN switches.",
+      "5-digit PIN-prefix JSON shards (~500 KiB per lookup) with fetchCountyParcelRecordForPin caching and stale-response guards on rapid PIN switches.",
       "bundledAsOf driven by maintainer county-mart download date; lg+ keyboard tab order hardened.",
     ],
   },

@@ -14,8 +14,8 @@ import {
   splitSitusLabelEnvelopeLines,
   stripTrailingUnitFragmentFromAddressLine,
 } from "@/lib/addressLabelDifference";
-import type { ArapahoePinToTagFile } from "@/lib/arapahoeParcelLevyData";
-import type { ArapahoeSitusPinHit } from "@/lib/arapahoeSitusLookup";
+import type { CountyPinToTagFile } from "@/lib/countyParcelLevyData";
+import type { CountySitusPinHit } from "@/lib/situsIndexLookup";
 
 /** Resident-facing account kind for the multi-match list. */
 export type SitusPinAccountKind =
@@ -109,7 +109,7 @@ export function situsShouldOfferAccountTypeSwitch(
   return false;
 }
 
-export type EnrichedSitusPinHit = ArapahoeSitusPinHit & {
+export type EnrichedSitusPinHit = CountySitusPinHit & {
   accountKind: SitusPinAccountKind;
   accountKindLabel: string;
   ownerList: string | null;
@@ -128,8 +128,8 @@ export type EnrichedSitusPinHit = ArapahoeSitusPinHit & {
  *   read in address order instead of by market value.
  */
 export function enrichSitusPinHitsForChooser(
-  hits: ArapahoeSitusPinHit[],
-  pinToTag: ArapahoePinToTagFile | null | undefined,
+  hits: CountySitusPinHit[],
+  pinToTag: CountyPinToTagFile | null | undefined,
 ): EnrichedSitusPinHit[] {
   const byPin = pinToTag?.byPin;
   const enriched: EnrichedSitusPinHit[] = hits.map((h) => {
@@ -189,8 +189,8 @@ export function enrichSitusPinHitsForChooser(
  * False when pin-to-tag is missing (cannot confirm) or hits are not Real+BPP.
  */
 export function situsPlaceHasRealAndBusinessPersonal(
-  hits: ReadonlyArray<ArapahoeSitusPinHit>,
-  pinToTag: ArapahoePinToTagFile | null | undefined,
+  hits: ReadonlyArray<CountySitusPinHit>,
+  pinToTag: CountyPinToTagFile | null | undefined,
 ): boolean {
   if (hits.length < 2 || pinToTag == null) return false;
   return situsShouldOfferAccountTypeSwitch(
@@ -204,7 +204,7 @@ export function situsPlaceHasRealAndBusinessPersonal(
  * then labels without a unit token, then shortest, then first.
  */
 export function pickSitusPlaceSampleLabel(
-  hits: ArapahoeSitusPinHit[],
+  hits: CountySitusPinHit[],
 ): string {
   if (hits.length === 0) return "";
   if (hits.length === 1) return hits[0]!.label;
@@ -249,8 +249,8 @@ export function pickSitusPlaceSampleLabel(
  * look-alikes keep identical street lines so this path no-ops without pin-to-tag.
  */
 export function pickSitusPlaceSampleLabelForTypeahead(
-  hits: ArapahoeSitusPinHit[],
-  pinToTag?: ArapahoePinToTagFile | null,
+  hits: CountySitusPinHit[],
+  pinToTag?: CountyPinToTagFile | null,
 ): string {
   const baseline = pickSitusPlaceSampleLabel(hits);
   if (hits.length < 2) return baseline;

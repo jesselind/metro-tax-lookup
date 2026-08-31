@@ -6,17 +6,17 @@
 /**
  * App JSON contract: which shipping files the UI needs, and accept/reject
  * rules for optional files and feature flags. Fetch-time row shape stays in
- * arapahoeParcelLevyData.ts / arapahoeSitusLookup.ts (Arapahoe* type names).
+ * countyParcelLevyData.ts / situsIndexLookup.ts (County* type names).
  *
  * Identifier length (Arapahoe pinDigits: 9) is county config, not a Colorado
  * standard. Read it from countyConfig; do not hard-code 9 here.
  */
 
 import {
-  validateArapahoeLevyStacksFile,
-  validateArapahoePinToTagFile,
-} from "@/lib/arapahoeParcelLevyData";
-import { validateArapahoeSitusToPinsPayload } from "@/lib/arapahoeSitusLookup";
+  validateCountyLevyStacksFile,
+  validateCountyPinToTagFile,
+} from "@/lib/countyParcelLevyData";
+import { validateCountySitusToPinsPayload } from "@/lib/situsIndexLookup";
 import {
   countyAccountMapFsRelative,
   countyLevyStacksFsRelative,
@@ -53,14 +53,14 @@ export function validateRequiredLevyStacksJson(
   data: unknown,
   sourceUrl = APP_JSON_REQUIRED_RELATIVE_PATHS.levyStacks,
 ): string | null {
-  return validateArapahoeLevyStacksFile(data, sourceUrl);
+  return validateCountyLevyStacksFile(data, sourceUrl);
 }
 
 export function validateRequiredAccountMapJson(
   data: unknown,
   sourceUrl = APP_JSON_REQUIRED_RELATIVE_PATHS.accountMap,
 ): string | null {
-  return validateArapahoePinToTagFile(data, sourceUrl);
+  return validateCountyPinToTagFile(data, sourceUrl);
 }
 
 /**
@@ -72,7 +72,7 @@ export function validateOptionalSitusJson(
   sourceUrl = APP_JSON_OPTIONAL_RELATIVE_PATHS.situs,
 ): string | null {
   if (data === undefined) return null;
-  const parsed = validateArapahoeSitusToPinsPayload(data);
+  const parsed = validateCountySitusToPinsPayload(data);
   if (!parsed) {
     return `${sourceUrl}: situs file has an invalid shape`;
   }
