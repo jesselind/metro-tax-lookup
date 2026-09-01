@@ -81,6 +81,11 @@ describe("crossCountyAuthorityRegistry", () => {
     });
   });
 
+  it("requires resident county for registry entity mills lookup", () => {
+    expect(resolveRegistryEntityMillsLookup("4014")).toBeNull();
+    expect(resolveRegistryEntityMillsLookup("4014", "")).toBeNull();
+  });
+
   it("matches Douglas SMFR to the same authority-chain entry as Arapahoe", () => {
     const entry = findLevyAuthorityChainEntry(
       "South Metro Fire Rescue Fire Protection District",

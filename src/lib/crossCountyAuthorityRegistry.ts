@@ -180,9 +180,9 @@ export function resolveRegistryEntityMillsLookup(
   if (!stackCode) return null;
 
   const county = countyId?.trim() || null;
-  const registryRow = county
-    ? findCrossCountyAuthorityByCountyLevyCode(county, stackCode)
-    : findCrossCountyAuthorityByLevyCode(stackCode);
+  if (!county) return null;
+
+  const registryRow = findCrossCountyAuthorityByCountyLevyCode(county, stackCode);
   if (!registryRow) return null;
 
   const referenceCountyId = registryRow.millsReferenceCountyId ?? "arapahoe";
