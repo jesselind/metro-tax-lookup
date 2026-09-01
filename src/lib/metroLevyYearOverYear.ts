@@ -400,10 +400,13 @@ export function metroBillImpactCalloutForDistrictIds(
  * from Levy % history. One Changed path for every stack line.
  */
 export function levyLineHasMillRateChange(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): boolean {
-  return levyLineMillDelta(line, eps) != null;
+  return levyLineMillDelta(line, eps, countyId) != null;
 }
 
 /**
@@ -413,11 +416,12 @@ export function levyLineHasMillRateChange(
 export function levyStackTotalMillsDelta(
   lines: CommittedLevyLine[],
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): number | null {
   let sum = 0;
   let anyPublished = false;
   for (const line of lines) {
-    const delta = levyLineMillDelta(line, eps);
+    const delta = levyLineMillDelta(line, eps, countyId);
     if (delta == null) continue;
     anyPublished = true;
     sum += delta;
@@ -434,8 +438,9 @@ export function levyStackTotalMillsDelta(
 export function levyStackTotalMillsChanged(
   lines: CommittedLevyLine[],
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): boolean {
-  const delta = levyStackTotalMillsDelta(lines, eps);
+  const delta = levyStackTotalMillsDelta(lines, eps, countyId);
   if (delta == null) return false;
   return Math.abs(delta) > COUNTY_MILLS_YOY_EPS;
 }
@@ -446,8 +451,11 @@ export function levyStackTotalMillsChanged(
  * Null when there is no published change (never invent).
  */
 export function levyLineMillDelta(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): number | null {
   if (metroPurposeYoYTrustedForLine(line, eps)) {
     const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
@@ -461,7 +469,9 @@ export function levyLineMillDelta(
       METRO_RATE_TO_MILLS
     );
   }
-  const authYoY = authorityTotalMillsYoY(line.levyLineCode);
+  const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId, {
+    residentStackMills: line.mills,
+  });
   if (!authYoY || Math.abs(authYoY.millsDelta) <= COUNTY_MILLS_YOY_EPS) {
     return null;
   }
@@ -472,10 +482,11 @@ export function levyLineMillDelta(
 export function lineIdsWithMillRateChanges(
   lines: CommittedLevyLine[],
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): Set<string> {
   const out = new Set<string>();
   for (const line of lines) {
-    if (levyLineHasMillRateChange(line, eps)) out.add(line.id);
+    if (levyLineHasMillRateChange(line, eps, countyId)) out.add(line.id);
   }
   return out;
 }
@@ -488,9 +499,10 @@ export function lineIdsWithMillRateChanges(
 export function billImpactCalloutForLevyLines(
   lines: CommittedLevyLine[],
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): MetroBillImpactCallout | null {
   for (const line of lines) {
-    if (levyLineMillDelta(line, eps) != null) {
+    if (levyLineMillDelta(line, eps, countyId) != null) {
       return {
         message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
         direction: "neutral",
@@ -560,8 +572,11 @@ function dollarsPairFromMills(
  * Returns null when there is no published change to show.
  */
 export function buildLevyLineYoYViewModel(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   totalAssessedForEstimate: number | null | undefined,
+  countyId?: string | null,
 ): LevyLineYoYViewModel | null {
   const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
   const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
@@ -636,7 +651,7 @@ export function buildLevyLineYoYViewModel(
     };
   }
 
-  return buildAuthLevyLineYoYViewModel(line, assessed);
+  return buildAuthLevyLineYoYViewModel(line, assessed, countyId);
 }
 
 /** Signed direction for a mill-rate delta; neutral when the change is below epsilon. */
@@ -791,10 +806,15 @@ export function metroPurposeYoYTrustedForLine(
 }
 
 function buildAuthLevyLineYoYViewModel(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   assessed: number | null,
+  countyId?: string | null,
 ): LevyLineYoYViewModel | null {
-  const authYoY = authorityTotalMillsYoY(line.levyLineCode);
+  const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId, {
+    residentStackMills: line.mills,
+  });
   if (!authYoY || Math.abs(authYoY.millsDelta) <= COUNTY_MILLS_YOY_EPS) {
     return null;
   }

@@ -675,7 +675,20 @@ export default function SourcesPage() {
         <p className="text-slate-700">
           Each account&apos;s tax district number must appear in the bundled mill
           PDF for a stack to load. Compare authority names and mills to the
-          county PDF after you load an account.
+          county PDF after you load an account. Stack lines also join to{" "}
+          <a
+            href={DOLA_LGIS_PROPERTY_TAX_ENTITIES}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            DOLA Property Tax Entities<span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          for tax entity ID and LG ID on each levy. When the mill PDF and the
+          state export disagree on a rate, this site keeps the{" "}
+          <strong className="font-semibold text-slate-900">PDF mills</strong>
+          {" "}
+          and may note the other figure in the levy tile.
         </p>
         {countyFeatureAvailable(
           "millPdfTaxDistrictGap",
@@ -703,10 +716,23 @@ export default function SourcesPage() {
           <strong className="font-semibold text-slate-900">4100</strong> on
           Arapahoe stacks and AUTH{" "}
           <strong className="font-semibold text-slate-900">4014</strong> on
-          Douglas stacks). Cross-county authority identity is planned
-          follow-on work; we are not adding one-off code aliases per county.
-          Compare names on your stack to the county levy PDF when a tile has no
-          authorization panel.
+          Douglas stacks). A cross-county authority registry maps those codes to
+          one logical district so Douglas stacks can show the same authorization
+          trail where we have curated content (South Metro Fire Rescue today).
+          Shared trails use county-neutral base copy. When your county needs its
+          own source note or honest limit (for example vote totals that cover
+          only one county in a multi-county district), that detail is shown for
+          your county only. Mills-over-time charts and Levy % rate-table links in
+          the authorization panel use <strong className="font-semibold text-slate-900">your county&apos;s</strong> bundled
+          data only — we do not substitute another county&apos;s rate tables or AUTH
+          history (Douglas does not yet ship an authority mills bundle, so those
+          cites are omitted with an honest open gap). For registry-linked shared
+          districts (such as South Metro Fire Rescue), levy stack tiles can still
+          show Changed badges and year-over-year mill rates when your county&apos;s
+          stack mills match that tax entity&apos;s published current-year total
+          (numbers only, not your county&apos;s Levy % PDF links). Urban Drainage districts are mapped in the registry for mills lookup;
+          they do not yet have a full authorization trail. Compare names on your
+          stack to the county levy PDF when a tile has no authorization panel.
         </p>
         <p className="text-slate-700">
           Open your account on the{" "}
@@ -915,9 +941,12 @@ export default function SourcesPage() {
           ; Sky Ranch Metropolitan District No. 3, AUTH{" "}
           <strong className="font-semibold text-slate-900">4571</strong>
           ; South Metro Fire Rescue, AUTH{" "}
-          <strong className="font-semibold text-slate-900">4100</strong>
-          ), tile details can show a plain-language trail from voters and the
-          governing body to the published rate, with{" "}
+          <strong className="font-semibold text-slate-900">4100</strong> on
+          Arapahoe stacks and AUTH{" "}
+          <strong className="font-semibold text-slate-900">4014</strong> on Douglas
+          stacks via the cross-county authority registry), tile details can show a
+          plain-language trail from voters and the governing body to the published
+          rate, with{" "}
           <strong className="font-semibold text-slate-900">See each step</strong>
           {" "}
           for the full trail. Prefer the best official document we can verify;
@@ -956,15 +985,18 @@ export default function SourcesPage() {
           electors (the people legally allowed to vote in that district
           election) authorized, but no public ballot wording or certified vote
           count can be found, we link that district record and leave the missing
-          details blank. For metro and fire
+          details blank.           For metro and fire
           trails, rate history in{" "}
           <strong className="font-semibold text-slate-900">
             What changed?
           </strong>
           {" "}
-          comes from the same county authority mill totals used by the mill-rate
-          history chart: always the change from last year, and a separate Most
-          notable change block when a larger year-to-year move exists. Fire
+          comes from your county&apos;s bundled authority mill totals when that
+          county ships mills history (Arapahoe today): always the change from
+          last year, and a separate Most notable change block when a larger
+          year-to-year move exists. Counties without a bundled mills series show
+          narrative-only What changed? with an honest open gap — no cross-county
+          fallback. Fire
           protection district trails (such as South Metro Fire Rescue Ballot
           Issue 7A) still use county Ballot Issue letters and certified vote
           totals when those exist; when the district covers more than one

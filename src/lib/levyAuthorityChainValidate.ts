@@ -37,6 +37,12 @@ import {
 } from "@/lib/authorityMillsHistory";
 import { measureElectionChronologyKey } from "@/lib/levyAuthorityChainMeasureOrder";
 import { LEVY_MODAL_TERM_IDS } from "@/lib/levyModalTermIds";
+import { validateCrossCountyAuthorityRegistryFile } from "@/lib/crossCountyAuthorityRegistryValidate";
+import {
+  authorityMillsCodeForRegistryEntry,
+  crossCountyAuthorityById,
+} from "@/lib/crossCountyAuthorityRegistry";
+import { WIRED_COUNTY_ID_SET } from "@/lib/wiredCounties";
 
 const EM_DASH = /\u2014/;
 
@@ -196,6 +202,7 @@ type LevyAuthorityChainFileV2 = {
  * @param root - Repo root (defaults to `process.cwd()`).
  */
 export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
+  validateCrossCountyAuthorityRegistryFile(root);
   const path = join(root, "public/data/levy-authority-chain-entries.json");
   const raw = readFileSync(path, "utf8");
   let data: unknown;
@@ -248,6 +255,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
 
   const byEntryId = new Map<string, boolean>();
   const byLevyCode = new Map<string, string>();
+  const byRegistryId = new Map<string, string>();
   const bySourceTag = new Map<string, string>();
   const byLgAndLabel = new Map<string, string>();
   const byLabelOnly = new Map<string, string>();
@@ -271,6 +279,9 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     const code = isNonEmptyString(match.levyLineCode)
       ? match.levyLineCode.trim().toUpperCase()
       : "";
+    const registryId = isNonEmptyString(match.registryId)
+      ? match.registryId.trim()
+      : "";
     const tag = isNonEmptyString(match.sourceTagId)
       ? match.sourceTagId.trim()
       : "";
@@ -282,10 +293,25 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     const labelKey = sortedLabelKey(frags);
     const hasFrags = labelKey.length > 0;
 
-    if (!code && !tag && !lgNorm && !hasFrags) {
+    if (!code && !registryId && !tag && !lgNorm && !hasFrags) {
       fail(
-        `[${id}] match needs levyLineCode, sourceTagId, lgId+labelContainsAll, or labelContainsAll`,
+        `[${id}] match needs levyLineCode, registryId, sourceTagId, lgId+labelContainsAll, or labelContainsAll`,
       );
+    }
+    if (code && registryId) {
+      fail(`[${id}] match must not set both levyLineCode and registryId`);
+    }
+    if (registryId) {
+      const registryRow = crossCountyAuthorityById(registryId);
+      if (!registryRow) {
+        fail(`[${id}] unknown registryId ${registryId}`);
+      }
+      if (byRegistryId.has(registryId)) {
+        fail(
+          `[${id}] duplicate match.registryId ${registryId} (also ${byRegistryId.get(registryId)})`,
+        );
+      }
+      byRegistryId.set(registryId, id);
     }
     if (lgRaw && !code) {
       if (!hasFrags) {
@@ -449,6 +475,11 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           `[${id}] summary.summaryClosingNote must omit the NOTE: prefix (build adds it)`,
         );
       }
+      if (registryId) {
+        fail(
+          `[${id}] registry-linked entries must put summaryClosingNote in countyOverlays, not summary`,
+        );
+      }
     }
     if (record.summary.also !== undefined) {
       if (!Array.isArray(record.summary.also)) {
@@ -470,9 +501,12 @@ export function validateLevyAuthorityChainData(data: unknown): void {
 
     assertObject(record.mills, `[${id}] mills`);
     if (usesAuthDerivedMills(family)) {
-      if (!isNonEmptyString(record.match.levyLineCode)) {
+      const millsCode = registryId
+        ? authorityMillsCodeForRegistryEntry(registryId)
+        : record.match.levyLineCode?.trim();
+      if (!isNonEmptyString(millsCode)) {
         fail(
-          `[${id}] ${family} entries require match.levyLineCode for AUTH mills`,
+          `[${id}] ${family} entries require match.levyLineCode or match.registryId for AUTH mills`,
         );
       }
       if (record.mills.historicalComparison !== undefined) {
@@ -502,12 +536,12 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           `[${id}] ${family} mills must not set rateSourcesByTaxYear (Levy % cites come from AUTH mills bundle)`,
         );
       }
-      const series = authorityMillsSeries(record.match.levyLineCode);
+      const series = authorityMillsSeries(millsCode);
       const { changeFromLastYear, mostNotableChange } =
         selectMetroAuthorityMillsChangeBlocks(series);
       if (!changeFromLastYear) {
         fail(
-          `[${id}] AUTH mills series for ${record.match.levyLineCode} needs at least two published years`,
+          `[${id}] AUTH mills series for ${millsCode} needs at least two published years`,
         );
       }
       const yearsNeeded = new Set<number>([
@@ -1113,6 +1147,77 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       );
     }
 
+    const countyOverlays = record.countyOverlays;
+    if (countyOverlays !== undefined) {
+      if (
+        typeof countyOverlays !== "object" ||
+        countyOverlays === null ||
+        Array.isArray(countyOverlays)
+      ) {
+        fail(`[${id}] countyOverlays must be an object`);
+      } else {
+        for (const [countyId, overlay] of Object.entries(countyOverlays)) {
+          if (!WIRED_COUNTY_ID_SET.has(countyId)) {
+            fail(`[${id}] countyOverlays unknown county id ${countyId}`);
+          }
+          assertObject(overlay, `[${id}] countyOverlays.${countyId}`);
+          if (overlay.summaryClosingNote !== undefined) {
+            if (!isNonEmptyString(overlay.summaryClosingNote)) {
+              fail(
+                `[${id}] countyOverlays.${countyId}.summaryClosingNote must be non-empty`,
+              );
+            }
+            assertNoEmDash(
+              overlay.summaryClosingNote,
+              `[${id}].countyOverlays.${countyId}.summaryClosingNote`,
+            );
+            if (/^NOTE:\s*/i.test(overlay.summaryClosingNote.trim())) {
+              fail(
+                `[${id}] countyOverlays.${countyId}.summaryClosingNote must omit the NOTE: prefix`,
+              );
+            }
+          }
+          if (overlay.countyListName !== undefined) {
+            if (!isNonEmptyString(overlay.countyListName)) {
+              fail(
+                `[${id}] countyOverlays.${countyId}.countyListName must be non-empty`,
+              );
+            }
+            assertNoEmDash(
+              overlay.countyListName,
+              `[${id}].countyOverlays.${countyId}.countyListName`,
+            );
+          }
+          if (overlay.openGapIds !== undefined) {
+            if (!Array.isArray(overlay.openGapIds)) {
+              fail(
+                `[${id}] countyOverlays.${countyId}.openGapIds must be an array`,
+              );
+            }
+            const overlayGapIds = new Set<string>();
+            for (const gapId of overlay.openGapIds) {
+              if (!isNonEmptyString(gapId)) {
+                fail(
+                  `[${id}] countyOverlays.${countyId}.openGapIds entry must be non-empty`,
+                );
+              }
+              if (!KNOWN_OPEN_GAP_IDS.has(gapId as LevyAuthorityChainOpenGapId)) {
+                fail(
+                  `[${id}] countyOverlays.${countyId} unknown openGapIds entry: ${gapId}`,
+                );
+              }
+              if (overlayGapIds.has(gapId)) {
+                fail(
+                  `[${id}] countyOverlays.${countyId} duplicate openGapId: ${gapId}`,
+                );
+              }
+              overlayGapIds.add(gapId);
+            }
+          }
+        }
+      }
+    }
+
     const built = buildLevyAuthorityChainEntry(record);
     if (built.heading !== AUTHORITY_CHAIN_HEADING) {
       fail(`[${id}] built heading must be AUTHORITY_CHAIN_HEADING`);
@@ -1217,6 +1322,23 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
     for (const gap of built.openGaps) {
       assertNoEmDash(gap.body, `[${id}] built openGap ${gap.id}`);
+    }
+    if (countyOverlays) {
+      for (const countyId of Object.keys(countyOverlays)) {
+        const builtForCounty = buildLevyAuthorityChainEntry(record, {
+          residentCountyId: countyId,
+        });
+        assertNoEmDash(
+          builtForCounty.summary,
+          `[${id}] built summary for countyOverlays.${countyId}`,
+        );
+        for (const gap of builtForCounty.openGaps) {
+          assertNoEmDash(
+            gap.body,
+            `[${id}] built openGap ${gap.id} for countyOverlays.${countyId}`,
+          );
+        }
+      }
     }
     assertInlineTermOnRecord(
       record.summary as unknown as Record<string, unknown>,

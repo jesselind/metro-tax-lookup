@@ -10,6 +10,10 @@
 
 import authorityMillsData from "@/data/authorityMillsByTaxYear";
 import authorityRateTablePagesData from "@/data/authorityRateTablePages";
+import {
+  resolveAuthorityMillsLookup,
+  resolveRegistryEntityMillsLookup,
+} from "@/lib/crossCountyAuthorityRegistry";
 
 export type AuthorityMillsByTaxYearFile = {
   _meta: {
@@ -164,6 +168,17 @@ export const AUTHORITY_MILLS_PREVIOUS_TAX_YEAR =
 /** Minimum published years before showing the modal mill-rate history chart. */
 export const AUTHORITY_MILLS_HISTORY_MIN_POINTS = 3;
 
+/**
+ * Max |stack mills − reference current-year mills| before omitting registry
+ * entity YoY (resident county has no mills bundle).
+ */
+export const AUTHORITY_MILLS_STACK_RECONCILE_EPS = 0.011;
+
+export type AuthorityMillsYoYOptions = {
+  /** Resident stack mills on the levy line (required for registry entity YoY). */
+  residentStackMills?: number | null;
+};
+
 export type AuthorityMillsSeriesPoint = {
   taxYear: number;
   mills: number;
@@ -172,11 +187,17 @@ export type AuthorityMillsSeriesPoint = {
 /**
  * Published AUTH mills for one stack line code, ascending by tax year.
  * Omits years with no data (never invents).
+ *
+ * @param countyId Resident county when known; used for cross-county registry
+ *   resolution and mills-bundle selection.
  */
 export function authorityMillsSeries(
   code: string | null | undefined,
+  countyId?: string | null,
 ): AuthorityMillsSeriesPoint[] {
-  const key = normalizeAuthorityCode(code);
+  const target = resolveAuthorityMillsLookup(code, countyId);
+  if (!target || target.bundleCountyId !== "arapahoe") return [];
+  const key = normalizeAuthorityCode(target.authorityCode);
   if (!key) return [];
   const byYear = file.authorities[key]?.millsByTaxYear;
   if (!byYear) return [];
@@ -205,8 +226,11 @@ export function normalizeAuthorityCode(
 export function authorityMillsForTaxYear(
   code: string | null | undefined,
   taxYear: number,
+  countyId?: string | null,
 ): number | null {
-  const key = normalizeAuthorityCode(code);
+  const target = resolveAuthorityMillsLookup(code, countyId);
+  if (!target || target.bundleCountyId !== "arapahoe") return null;
+  const key = normalizeAuthorityCode(target.authorityCode);
   if (!key) return null;
   const mills = file.authorities[key]?.millsByTaxYear[String(taxYear)];
   return typeof mills === "number" && Number.isFinite(mills) ? mills : null;
@@ -221,31 +245,90 @@ export type AuthorityTotalMillsYoY = {
   millsDelta: number;
 };
 
+function readBundledMillsForYear(
+  authorityCode: string,
+  taxYear: number,
+): number | null {
+  const mills =
+    file.authorities[authorityCode]?.millsByTaxYear[String(taxYear)];
+  return typeof mills === "number" && Number.isFinite(mills) ? mills : null;
+}
+
 /**
  * AUTH total mills for current vs prior tax year when both are published.
  * Null when either year is missing (never invent).
+ *
+ * When the resident county has no mills-history bundle but the line is
+ * registry-linked, current mills come from the resident stack and prior mills
+ * from the reference-county entity series — only when stack and reference
+ * current year agree within {@link AUTHORITY_MILLS_STACK_RECONCILE_EPS}.
  */
 export function authorityTotalMillsYoY(
   code: string | null | undefined,
+  countyId?: string | null,
+  options?: AuthorityMillsYoYOptions,
 ): AuthorityTotalMillsYoY | null {
-  const key = normalizeAuthorityCode(code);
+  const residentTarget = resolveAuthorityMillsLookup(code, countyId);
+  if (residentTarget?.bundleCountyId === "arapahoe") {
+    const key = normalizeAuthorityCode(residentTarget.authorityCode);
+    if (!key) return null;
+    const millsCurrent = readBundledMillsForYear(
+      key,
+      AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+    );
+    const millsPrevious = readBundledMillsForYear(
+      key,
+      AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+    );
+    if (millsCurrent == null || millsPrevious == null) return null;
+    return {
+      authorityCode: key,
+      taxYearCurrent: AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+      taxYearPrevious: AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+      millsCurrent,
+      millsPrevious,
+      millsDelta: millsCurrent - millsPrevious,
+    };
+  }
+
+  const entityTarget = resolveRegistryEntityMillsLookup(code, countyId);
+  if (!entityTarget || entityTarget.bundleCountyId !== "arapahoe") {
+    return null;
+  }
+
+  const key = normalizeAuthorityCode(entityTarget.authorityCode);
   if (!key) return null;
-  const millsCurrent = authorityMillsForTaxYear(
+
+  const stackMills = options?.residentStackMills;
+  if (stackMills == null || !Number.isFinite(stackMills)) {
+    return null;
+  }
+
+  const referenceCurrent = readBundledMillsForYear(
     key,
     AUTHORITY_MILLS_CURRENT_TAX_YEAR,
   );
-  const millsPrevious = authorityMillsForTaxYear(
+  const millsPrevious = readBundledMillsForYear(
     key,
     AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
   );
-  if (millsCurrent == null || millsPrevious == null) return null;
+  if (referenceCurrent == null || millsPrevious == null) {
+    return null;
+  }
+  if (
+    Math.abs(stackMills - referenceCurrent) > AUTHORITY_MILLS_STACK_RECONCILE_EPS
+  ) {
+    return null;
+  }
+
+  const millsDelta = stackMills - millsPrevious;
   return {
     authorityCode: key,
     taxYearCurrent: AUTHORITY_MILLS_CURRENT_TAX_YEAR,
     taxYearPrevious: AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
-    millsCurrent,
+    millsCurrent: stackMills,
     millsPrevious,
-    millsDelta: millsCurrent - millsPrevious,
+    millsDelta,
   };
 }
 
@@ -253,8 +336,10 @@ export function authorityTotalMillsYoY(
 export function authorityTotalMillsChanged(
   code: string | null | undefined,
   epsMills: number,
+  countyId?: string | null,
+  options?: AuthorityMillsYoYOptions,
 ): boolean {
-  const yoy = authorityTotalMillsYoY(code);
+  const yoy = authorityTotalMillsYoY(code, countyId, options);
   if (!yoy) return false;
   return Math.abs(yoy.millsDelta) > epsMills;
 }

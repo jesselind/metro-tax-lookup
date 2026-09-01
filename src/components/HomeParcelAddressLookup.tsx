@@ -101,6 +101,7 @@ import {
 import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
 import {
   COUNTY_MILLS_YOY_EPS,
+  METRO_LEVY_RATE_YOY_EPS,
   levyStackTotalMillsDelta,
 } from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
@@ -733,10 +734,14 @@ export function HomeParcelAddressLookup({
   const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
 
   const millLevyTotalDelta = useMemo(() => {
-    const delta = levyStackTotalMillsDelta(levyLines);
+    const delta = levyStackTotalMillsDelta(
+      levyLines,
+      METRO_LEVY_RATE_YOY_EPS,
+      resolvedCountyId,
+    );
     if (delta == null || Math.abs(delta) <= COUNTY_MILLS_YOY_EPS) return null;
     return delta;
-  }, [levyLines]);
+  }, [levyLines, resolvedCountyId]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();

@@ -86,4 +86,40 @@ describe("authorityMillsHistory", () => {
       ),
     ).toBe("https://example.gov/not-a-rate-table.pdf");
   });
+
+  it("does not load another county's AUTH mills for Douglas stack codes", () => {
+    const series = authorityMillsSeries("4014", "douglas");
+    expect(series).toEqual([]);
+  });
+
+  it("uses registry entity mills for Douglas YoY on shared districts", () => {
+    const yoy = authorityTotalMillsYoY("4014", "douglas", {
+      residentStackMills: 12.25,
+    });
+    expect(yoy?.authorityCode).toBe("4100");
+    expect(yoy?.millsPrevious).toBe(9.29);
+    expect(yoy?.millsCurrent).toBe(12.25);
+    expect(yoy?.millsDelta).toBeCloseTo(2.96, 5);
+    expect(
+      authorityTotalMillsChanged("4014", COUNTY_MILLS_YOY_EPS, "douglas", {
+        residentStackMills: 12.25,
+      }),
+    ).toBe(true);
+  });
+
+  it("requires resident stack mills for Douglas registry entity YoY", () => {
+    expect(authorityTotalMillsYoY("4014", "douglas")).toBeNull();
+  });
+
+  it("omits Douglas entity YoY when stack mills disagree with reference current", () => {
+    expect(
+      authorityTotalMillsYoY("4014", "douglas", { residentStackMills: 12.2 }),
+    ).toBeNull();
+  });
+
+  it("does not invent YoY for Douglas stack codes outside the registry", () => {
+    expect(
+      authorityTotalMillsYoY("9999", "douglas", { residentStackMills: 1 }),
+    ).toBeNull();
+  });
 });

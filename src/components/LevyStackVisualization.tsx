@@ -354,8 +354,8 @@ export function LevyStackVisualization({
   }, [assessedForLevyDollars, levyDollarUnitCount]);
 
   const lineIdsWithMillChanges = useMemo(
-    () => lineIdsWithMillRateChanges(lines),
-    [lines],
+    () => lineIdsWithMillRateChanges(lines, undefined, countyConfig.id),
+    [lines, countyConfig.id],
   );
 
   const lineItems = useMemo(
@@ -577,7 +577,9 @@ export function LevyStackVisualization({
                 const millRateChanged =
                   sourceLine != null && lineIdsWithMillChanges.has(sourceLine.id);
                 const millDelta =
-                  sourceLine != null ? levyLineMillDelta(sourceLine) : null;
+                  sourceLine != null
+                    ? levyLineMillDelta(sourceLine, undefined, countyConfig.id)
+                    : null;
                 const millChangeDirectionPhrase =
                   levyTileMillChangeDirectionPhrase(millDelta);
                 const lineDollarsRounded =
@@ -1216,10 +1218,12 @@ export function LevyStackVisualization({
         <LevyLineDistrictDetailDialog
           key={detailLineId ?? ""}
           authorityLabel={detailContext.authority}
+          countyId={countyConfig.id}
           levyLineCode={detailContext.line.levyLineCode}
           sourceTagId={detailContext.line.sourceTagId}
           taxAreaShortCode={loadedParcelMeta?.tagShortDescr}
           millsLabel={formatMills(detailContext.line.mills)}
+          stackMills={detailContext.line.mills}
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}

@@ -270,6 +270,8 @@ function MetroYoYYearCompare({
 
 type Props = {
   authorityLabel: string;
+  /** Resident county id for cross-county registry lookup. */
+  countyId?: string;
   /** Mart levy line code when known (improves explainer matching). */
   levyLineCode?: string;
   /** County TAG / source tag when known. */
@@ -277,6 +279,8 @@ type Props = {
   /** Parcel tax-area short code used as the Levy % PDF TAG after zero-padding. */
   taxAreaShortCode?: string;
   millsLabel: string;
+  /** Numeric stack mills for registry entity YoY reconciliation. */
+  stackMills?: number;
   pctLabel: string;
   /** Null while JSON is still fetching from `/public/data/`. */
   match: SpecialDistrictMatch | null;
@@ -304,10 +308,12 @@ function formatMailingLines(r: SpecialDistrictRecord): string[] {
 
 export function LevyLineDistrictDetailDialog({
   authorityLabel,
+  countyId,
   levyLineCode,
   sourceTagId,
   taxAreaShortCode,
   millsLabel,
+  stackMills,
   pctLabel,
   match,
   dolaMatch,
@@ -323,14 +329,15 @@ export function LevyLineDistrictDetailDialog({
   const yoy = useMemo(
     () =>
       buildLevyLineYoYViewModel(
-        { levyLineCode, dolaMatch },
+        { levyLineCode, dolaMatch, mills: stackMills },
         totalAssessedForEstimate,
+        countyId,
       ),
-    [levyLineCode, dolaMatch, totalAssessedForEstimate],
+    [levyLineCode, dolaMatch, stackMills, totalAssessedForEstimate, countyId],
   );
   const millsHistory = useMemo(
-    () => authorityMillsSeries(levyLineCode),
-    [levyLineCode],
+    () => authorityMillsSeries(levyLineCode, countyId),
+    [levyLineCode, countyId],
   );
   /** Levy % AUTH timeline (2018–2025 when bundled); separate from YoY headline box. */
   const showMillsHistoryChart =
@@ -355,6 +362,7 @@ export function LevyLineDistrictDetailDialog({
     lgId: dolaMatch?.lgId ?? undefined,
   });
   const levyAuthorityChainEntry = findLevyAuthorityChainEntry(authorityLabel, {
+    countyId,
     levyLineCode,
     sourceTagId,
     lgId: dolaMatch?.lgId ?? undefined,
@@ -810,6 +818,8 @@ export function LevyLineDistrictDetailDialog({
                 <LevyAuthorityChainSection
                   entry={levyAuthorityChainEntry}
                   taxAreaShortCode={taxAreaShortCode}
+                  countyId={countyId}
+                  levyLineCode={levyLineCode}
                 />
               </div>
             ) : null}

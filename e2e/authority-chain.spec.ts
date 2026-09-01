@@ -22,12 +22,15 @@ import {
 test.describe("Levy authority chain (Who authorized this?)", () => {
   const cases = authorityChainE2eCases();
 
-  for (const { levyLineCode, entry } of cases) {
+  for (const { levyLineCode, entry, countyId, authorityLabel } of cases) {
     test(`AUTH ${levyLineCode} (${entry.id}): panel, steps, sources`, async ({
       page,
     }) => {
-      const chain = await openAuthorityChainPanel(page, levyLineCode);
-      await assertAuthorityChainPanel(chain, entry);
+      const chain = await openAuthorityChainPanel(page, levyLineCode, {
+        countyId,
+        authorityLabel,
+      });
+      await assertAuthorityChainPanel(chain, entry, levyLineCode, countyId);
     });
   }
 });

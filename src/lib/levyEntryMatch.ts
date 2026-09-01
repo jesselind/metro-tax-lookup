@@ -12,6 +12,8 @@
 export type LevyEntryMatchKeys = {
   labelContainsAll?: string[];
   levyLineCode?: string;
+  /** Cross-county authority registry id (see cross-county-authority-registry.json). */
+  registryId?: string;
   sourceTagId?: string;
   /** DOLA / bill LG ID (digits; compared zero-padded to 5). */
   lgId?: string;
@@ -19,6 +21,8 @@ export type LevyEntryMatchKeys = {
 
 export type LevyEntryLookupContext = {
   levyLineCode?: string;
+  /** Resident county for cross-county registry lookup. */
+  countyId?: string;
   sourceTagId?: string;
   lgId?: string;
 };
@@ -97,6 +101,7 @@ function entryMatchesLgIdWithLabelGuard(
 function hasKeyedMatch(match: LevyEntryMatchKeys): boolean {
   return Boolean(
     match.levyLineCode?.trim() ||
+      match.registryId?.trim() ||
       match.lgId?.trim() ||
       match.sourceTagId?.trim(),
   );

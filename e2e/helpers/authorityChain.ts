@@ -9,10 +9,13 @@ import {
   AUTHORITY_CHAIN_GAPS_DISCLOSURE,
   AUTHORITY_CHAIN_STEPS_DISCLOSURE,
 } from "../../src/content/levyAuthorityChainCopy";
+import { buildLevyAuthorityChainEntry } from "../../src/lib/levyAuthorityChainBuild";
 import {
-  LEVY_AUTHORITY_CHAIN_ENTRIES,
+  LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS,
   type LevyAuthorityChainEntry,
 } from "../../src/lib/levyAuthorityChain";
+import { countyConfigById } from "../../src/lib/countyConfig";
+import { levyLineCodeForCrossCountyAuthority } from "../../src/lib/crossCountyAuthorityRegistry";
 import { deepLinkLevyPercentageUrlForParcel } from "../../src/lib/authorityMillsHistory";
 import { safeHttpOrHttpsUrl } from "../../src/lib/safeExternalHref";
 import {
@@ -28,22 +31,68 @@ import { installSyntheticCountyData } from "./installSyntheticCountyData";
 export type AuthorityChainE2eCase = {
   levyLineCode: string;
   entry: LevyAuthorityChainEntry;
+  /** When set, open the panel under this wired county (default Arapahoe). */
+  countyId?: "arapahoe" | "douglas";
+  /** Stack authority label for the levy tile button (default synthetic fixture). */
+  authorityLabel?: string;
 };
 
 /**
- * One e2e case per curated entry that matches by county AUTH / levy line code.
+ * One e2e case per curated entry that matches by county AUTH / levy line code,
+ * plus registry-linked entries (for example SMFR via `match.registryId`).
  * Expected copy and URLs come from the same JSON the UI loads.
  */
 export function authorityChainE2eCases(): AuthorityChainE2eCase[] {
   const cases: AuthorityChainE2eCase[] = [];
-  for (const entry of LEVY_AUTHORITY_CHAIN_ENTRIES) {
-    const code = entry.match.levyLineCode?.trim();
-    if (!code) continue;
-    cases.push({ levyLineCode: code, entry });
+  const seen = new Set<string>();
+
+  const pushCase = (caseRow: AuthorityChainE2eCase) => {
+    const key = `${caseRow.countyId ?? "arapahoe"}:${caseRow.levyLineCode}:${caseRow.entry.id}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    cases.push(caseRow);
+  };
+
+  for (const record of LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS) {
+    const code = record.match.levyLineCode?.trim();
+    if (code) {
+      pushCase({
+        levyLineCode: code,
+        entry: buildLevyAuthorityChainEntry(record),
+      });
+      continue;
+    }
+    const registryId = record.match.registryId?.trim();
+    if (!registryId) continue;
+    const arapahoeCode = levyLineCodeForCrossCountyAuthority(registryId, "arapahoe");
+    const douglasCode = levyLineCodeForCrossCountyAuthority(registryId, "douglas");
+    if (arapahoeCode) {
+      pushCase({
+        levyLineCode: arapahoeCode,
+        entry: buildLevyAuthorityChainEntry(record, {
+          residentCountyId: "arapahoe",
+        }),
+      });
+    }
+    if (douglasCode) {
+      const douglasLabel =
+        record.id === "south-metro-fire-authority-chain"
+          ? "South Metro Fire Rescue Fire Protection District"
+          : undefined;
+      pushCase({
+        levyLineCode: douglasCode,
+        entry: buildLevyAuthorityChainEntry(record, {
+          residentCountyId: "douglas",
+          stackAuthorityLabel: douglasLabel,
+        }),
+        countyId: "douglas",
+        authorityLabel: douglasLabel,
+      });
+    }
   }
   if (cases.length === 0) {
     throw new Error(
-      "authority-chain e2e: no entries with match.levyLineCode in levy-authority-chain-entries.json",
+      "authority-chain e2e: no entries with match.levyLineCode or registryId in levy-authority-chain-entries.json",
     );
   }
   return cases;
@@ -87,14 +136,25 @@ export function urlForHttpProbe(href: string): string {
 export async function openAuthorityChainPanel(
   page: Page,
   levyLineCode: string,
+  options: {
+    countyId?: "arapahoe" | "douglas";
+    authorityLabel?: string;
+  } = {},
 ): Promise<Locator> {
   await installSyntheticCountyData(page, {
+    countyId: options.countyId,
     authorityChainLevyLineCode: levyLineCode,
+    authorityChainAuthorityName: options.authorityLabel,
   });
   await page.goto("/");
+  if (options.countyId === "douglas") {
+    await page.getByRole("radio", { name: "Douglas" }).click();
+  }
   await searchSyntheticAddress(page);
 
-  const authorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
+  const authorityLabel = displayMartAuthorityName(
+    options.authorityLabel ?? SYNTHETIC_E2E_AUTHORITY,
+  );
   await viewDistrictDetailsButton(page, authorityLabel).click();
 
   const dialog = page.getByRole("dialog");
@@ -111,6 +171,8 @@ export async function openAuthorityChainPanel(
 export async function assertAuthorityChainPanel(
   chain: Locator,
   entry: LevyAuthorityChainEntry,
+  levyLineCode: string,
+  countyId?: "arapahoe" | "douglas",
 ): Promise<void> {
   await expect(
     chain.getByRole("heading", { name: entry.heading, exact: true }),
@@ -126,6 +188,10 @@ export async function assertAuthorityChainPanel(
     await expect(
       chain.getByText(entry.summary.slice(0, 48), { exact: false }),
     ).toBeVisible();
+  }
+
+  if (!entry.summary.includes("\nNOTE:")) {
+    await expect(chain.getByText(/^NOTE:/)).toHaveCount(0);
   }
 
   if (entry.summaryTermMatch) {
@@ -198,12 +264,17 @@ export async function assertAuthorityChainPanel(
     }
   }
 
+  const deepLinkRateTable =
+    !countyId || countyConfigById(countyId)?.features.millsHistory === true;
+
   for (const href of collectAuthorityChainSourceUrls(entry)) {
-    const expectedHref = deepLinkLevyPercentageUrlForParcel(
-      href,
-      entry.match.levyLineCode,
-      SYNTHETIC_E2E_TAG_SHORT_DESCR,
-    );
+    const expectedHref = deepLinkRateTable
+      ? deepLinkLevyPercentageUrlForParcel(
+          href,
+          levyLineCode,
+          SYNTHETIC_E2E_TAG_SHORT_DESCR,
+        )
+      : href;
     await expect(
       chain.locator(`a[href="${cssEscapeAttr(expectedHref)}"]`).first(),
     ).toBeVisible();

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "_comment": "Curated cross-county mappings keyed by DOLA Tax Entity ID. The match builder applies these after stack/DOLA automation. Promote stable rows to public/data/cross-county-authority-registry.json for runtime lookup. Use when fuzzy match is wrong, Douglas stacks lack dola_join (Phase 11b), or a bond/O&M sub-entity needs an explicit per-county AUTH code.",
+  "byTaxEntityId": {
+    "64108/1": {
+      "displayName": "South Metro Fire Rescue Fire Protection District",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4100",
+        "douglas": "4014"
+      },
+      "note": "SMFR; DOLA certifies in Arapahoe, Douglas, Jefferson. Registry id smfr-fire."
+    },
+    "64147/1": {
+      "displayName": "Urban Drainage & Flood Control District",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4712",
+        "douglas": "4002"
+      },
+      "note": "UDFCD main levy; not South Platte (64174/1). Registry id udfcd-main."
+    },
+    "64174/1": {
+      "displayName": "Urban Drainage & Flood, South Platte Levy",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4713",
+        "douglas": "4392"
+      },
+      "note": "UDFCD South Platte sub-levy. Registry id udfcd-south-platte."
+    }
+  }
+}

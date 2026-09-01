@@ -1,0 +1,672 @@
+{
+  "version": 1,
+  "note": "Maintainer cross-county overlap list from DOLA Tax Entity ID + bundled levy stacks. Not loaded by the app. Curate public/data/cross-county-authority-registry.json from rows with matchStatus complete (every wiredCountyOverlap county has a stack AUTH code).",
+  "generatedFrom": {
+    "dolaExport": "supporting-data/dola/property-tax-entities-export.csv",
+    "wiredCounties": "tools/wired-counties.json",
+    "crossCountyOverrides": "tools/cross_county_authority_overrides.json",
+    "levyStacksByCountyId": {
+      "arapahoe": "public/data/arapahoe-levy-stacks-by-tag-id.json",
+      "douglas": "public/data/douglas-levy-stacks-by-tag-id.json"
+    }
+  },
+  "wiredCountyIds": [
+    "arapahoe",
+    "douglas"
+  ],
+  "matchCount": 18,
+  "matchStatusCounts": {
+    "complete": 15,
+    "partial": 1,
+    "dola_only": 2
+  },
+  "matches": [
+    {
+      "id": "64010-1",
+      "taxEntityId": "64010/1",
+      "lgId": "64010",
+      "dolaName": "Aurora",
+      "certifyingCounties": [
+        "Adams",
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "3001",
+        "douglas": "3005"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "CITY OF AURORA",
+        "douglas": "City of Aurora"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "override"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 7.087,
+        "douglas": 7.087
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64079-1",
+      "taxEntityId": "64079/1",
+      "lgId": "64079",
+      "dolaName": "Inverness Metropolitan Improvement District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4382",
+        "douglas": "4048"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "INVERNESS METRO IMPROVE",
+        "douglas": "Inverness Metro Improvement District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 4.56,
+        "douglas": 4.56
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64079-2",
+      "taxEntityId": "64079/2",
+      "lgId": "64079",
+      "dolaName": "Inverness Metropolitan Improvement District - Bonds (4372)",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4372"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "INVRNSS MET IMP DST BONDS N METRO"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.0,
+        "douglas": 0.0
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "low"
+      },
+      "missingStackMatchInCountyIds": [
+        "douglas"
+      ],
+      "matchStatus": "partial"
+    },
+    {
+      "id": "64080-1",
+      "taxEntityId": "64080/1",
+      "lgId": "64080",
+      "dolaName": "Inverness Water & Sanitation District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4378",
+        "douglas": "4020"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "INVERNESS SANITATION DIST",
+        "douglas": "Inverness Water & Sanitation District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "fuzzy",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.5,
+        "douglas": 0.5
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "medium",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64080-12",
+      "taxEntityId": "64080/12",
+      "lgId": "64080",
+      "dolaName": "Inverness Water & Sanitation District - Douglas County Debt Service 3 (4614)",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {},
+      "authorityNameByCounty": {},
+      "stackMatchMethodByCounty": {},
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.0,
+        "douglas": 0.0
+      },
+      "missingStackMatchInCountyIds": [
+        "arapahoe",
+        "douglas"
+      ],
+      "matchStatus": "dola_only"
+    },
+    {
+      "id": "64085-1",
+      "taxEntityId": "64085/1",
+      "lgId": "64085",
+      "dolaName": "Littleton",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas",
+        "Jefferson"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "3009",
+        "douglas": "3001"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "CITY OF LITTLETON",
+        "douglas": "City of Littleton"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "override"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 2.0,
+        "douglas": 2.0
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64108-1",
+      "taxEntityId": "64108/1",
+      "lgId": "64108",
+      "dolaName": "South Metro Fire Rescue Fire Protection District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas",
+        "Jefferson"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4100",
+        "douglas": "4014"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "SMFR FIRE PROTECTION DISTRICT",
+        "douglas": "South Metro Fire Rescue Fire Protection District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "curated_override",
+        "douglas": "curated_override"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 12.25,
+        "douglas": 12.25
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "curatedDisplayName": "South Metro Fire Rescue Fire Protection District",
+      "curatedNote": "SMFR; DOLA certifies in Arapahoe, Douglas, Jefferson. Registry id smfr-fire.",
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64116-1",
+      "taxEntityId": "64116/1",
+      "lgId": "64116",
+      "dolaName": "Regional Transportation District",
+      "certifyingCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Douglas",
+        "Jefferson",
+        "Weld"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4528",
+        "douglas": "4010"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "REGIONAL TRANSPORTATION",
+        "douglas": "Regional Transportation District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.0,
+        "douglas": 0.0
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64126-1",
+      "taxEntityId": "64126/1",
+      "lgId": "64126",
+      "dolaName": "South Suburban Park and Recreation District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas",
+        "Jefferson"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4650",
+        "douglas": "4045"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "S SUBURBAN PARK & REC",
+        "douglas": "South Suburban Park & Recreation District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 8.8,
+        "douglas": 8.8
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64129-1",
+      "taxEntityId": "64129/1",
+      "lgId": "64129",
+      "dolaName": "Southgate Sanitation District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4630",
+        "douglas": "4024"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "SOUTHGATE SANITATION DIST",
+        "douglas": "Southgate Sanitation District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "fuzzy",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.465,
+        "douglas": 0.465
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64130-1",
+      "taxEntityId": "64130/1",
+      "lgId": "64130",
+      "dolaName": "Southgate Water",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4640",
+        "douglas": "4023"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "SOUTHGATE WATER DIST",
+        "douglas": "Southgate Water District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "fuzzy",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.0,
+        "douglas": 0.0
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "low",
+        "douglas": "low"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64131-1",
+      "taxEntityId": "64131/1",
+      "lgId": "64131",
+      "dolaName": "Southwest Metropolitan Water & Sanitation District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas",
+        "Jefferson"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4670",
+        "douglas": "4019"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "SOUTHWEST METRO WATER & S",
+        "douglas": "Southwest Metro Water & Sanitation District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.0,
+        "douglas": 0.0
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64147-1",
+      "taxEntityId": "64147/1",
+      "lgId": "64147",
+      "dolaName": "Urban Drainage & Flood Control District",
+      "certifyingCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "Jefferson"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4712",
+        "douglas": "4002"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "URBAN DRAINAGE & FLOOD",
+        "douglas": "Urban Drainage & Flood Control District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "curated_override",
+        "douglas": "curated_override"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.9,
+        "douglas": 0.9
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "curatedDisplayName": "Urban Drainage & Flood Control District",
+      "curatedNote": "UDFCD main levy; not South Platte (64174/1). Registry id udfcd-main.",
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64174-1",
+      "taxEntityId": "64174/1",
+      "lgId": "64174",
+      "dolaName": "Urban Drainage & Flood, South Platte Levy",
+      "certifyingCounties": [
+        "Adams",
+        "Arapahoe",
+        "Denver",
+        "Douglas",
+        "Jefferson"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4713",
+        "douglas": "4392"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "URBN DRNGE&FLD (S PLATTE)",
+        "douglas": "Urban Drainage & Flood South Platte"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "curated_override",
+        "douglas": "curated_override"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.1,
+        "douglas": 0.1
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "curatedDisplayName": "Urban Drainage & Flood, South Platte Levy",
+      "curatedNote": "UDFCD South Platte sub-levy. Registry id udfcd-south-platte.",
+      "matchStatus": "complete"
+    },
+    {
+      "id": "64187-1",
+      "taxEntityId": "64187/1",
+      "lgId": "64187",
+      "dolaName": "Cherry Creek Basin Water Quality Authority",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4131",
+        "douglas": "4340"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "CHERRY CREEK BASIN AUTH",
+        "douglas": "Cherry Creek Basin Water Quality Authority"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.45,
+        "douglas": 0.45
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "65137-1",
+      "taxEntityId": "65137/1",
+      "lgId": "65137",
+      "dolaName": "Arapahoe County Water and Wastewater Public Improvement District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4035",
+        "douglas": "4456"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "ARAPAHOE W & W PID",
+        "douglas": "Arapahoe County Water & Wastewater PID"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 7.5,
+        "douglas": 7.5
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "low"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "65232-1",
+      "taxEntityId": "65232/1",
+      "lgId": "65232",
+      "dolaName": "Southeast Public Improvement Metropolitan District",
+      "certifyingCounties": [
+        "Arapahoe",
+        "Denver",
+        "Douglas"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {
+        "arapahoe": "4615",
+        "douglas": "4452"
+      },
+      "authorityNameByCounty": {
+        "arapahoe": "STHEST PUB IMP METRO DIS",
+        "douglas": "Southeast Public Improv Metro District"
+      },
+      "stackMatchMethodByCounty": {
+        "arapahoe": "override",
+        "douglas": "fuzzy"
+      },
+      "dolaMillsByCountyId": {
+        "arapahoe": 2.0,
+        "douglas": 2.0
+      },
+      "stackMatchConfidenceByCounty": {
+        "arapahoe": "high",
+        "douglas": "high"
+      },
+      "matchStatus": "complete"
+    },
+    {
+      "id": "67661-1",
+      "taxEntityId": "67661/1",
+      "lgId": "67661",
+      "dolaName": "Front Range Passenger Rail District",
+      "certifyingCounties": [
+        "Adams",
+        "Arapahoe",
+        "Boulder",
+        "Broomfield",
+        "Denver",
+        "Douglas",
+        "El Paso",
+        "Huerfano",
+        "Jefferson",
+        "Larimer",
+        "Las Animas",
+        "Pueblo",
+        "Weld"
+      ],
+      "wiredCountyOverlap": [
+        "arapahoe",
+        "douglas"
+      ],
+      "levyLineCodeByCounty": {},
+      "authorityNameByCounty": {},
+      "stackMatchMethodByCounty": {},
+      "dolaMillsByCountyId": {
+        "arapahoe": 0.0,
+        "douglas": 0.0
+      },
+      "missingStackMatchInCountyIds": [
+        "arapahoe",
+        "douglas"
+      ],
+      "matchStatus": "dola_only"
+    }
+  ]
+}

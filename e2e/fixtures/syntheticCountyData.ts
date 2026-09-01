@@ -17,6 +17,8 @@
 
 import {
   SYNTHETIC_AIN,
+  SYNTHETIC_DOUGLAS_PIN,
+  SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX,
   SYNTHETIC_PIN,
   SYNTHETIC_PIN_SHARD_PREFIX,
 } from "../../src/lib/syntheticTestIds";
@@ -280,20 +282,26 @@ export const SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY = {
  */
 export function syntheticLevyStacksForAuthorityChain(
   levyLineCode: string,
+  options: { authorityName?: string; levyAspxUrl?: string } = {},
 ): typeof SYNTHETIC_LEVY_STACKS {
   const code = levyLineCode.trim();
   if (!code) {
     throw new Error("syntheticLevyStacksForAuthorityChain: levyLineCode required");
   }
+  const authorityName = options.authorityName?.trim() || SYNTHETIC_E2E_AUTHORITY;
+  const levyAspxUrl =
+    options.levyAspxUrl ??
+    `https://parcelsearch.arapahoegov.com/Levy.aspx?id=${SYNTHETIC_E2E_TAG_ID}`;
   return {
     ...SYNTHETIC_LEVY_STACKS,
     stacksByTagId: {
       [SYNTHETIC_E2E_TAG_ID]: {
         ...SYNTHETIC_LEVY_STACKS.stacksByTagId[SYNTHETIC_E2E_TAG_ID],
+        levyAspxUrl,
         lines: [
           {
             code,
-            authorityName: SYNTHETIC_E2E_AUTHORITY,
+            authorityName,
             effectiveYear: "2025",
             status: "A",
             dolaMatch: {
@@ -307,6 +315,37 @@ export function syntheticLevyStacksForAuthorityChain(
     },
   };
 }
+
+/** Douglas County synthetic account map (8-digit ids). */
+export const SYNTHETIC_DOUGLAS_PIN_TO_TAG = {
+  snapshot: SYNTHETIC_PIN_TO_TAG.snapshot,
+  pinDigits: 8,
+  byPin: {
+    [SYNTHETIC_DOUGLAS_PIN]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
+      totalActual: 100000,
+      totalAssessed: 6800,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Residential",
+      ownerList: SYNTHETIC_E2E_OWNER,
+      ain: "2000-00-0-00-001",
+    },
+  },
+};
+
+export const SYNTHETIC_DOUGLAS_SITUS_TO_PINS = {
+  ...SYNTHETIC_SITUS_TO_PINS,
+  byKey: {
+    [SYNTHETIC_E2E_SITUS_KEY]: [
+      {
+        pin: SYNTHETIC_DOUGLAS_PIN,
+        label: `${SYNTHETIC_E2E_ADDRESS} — PIN ${SYNTHETIC_DOUGLAS_PIN}`,
+      },
+    ],
+  },
+};
 
 export const SYNTHETIC_PARCEL_RECORD_SHARD = {
   snapshot: {
@@ -409,8 +448,26 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
   },
 };
 
+/** Douglas County parcel-record shard (8-digit account id). */
+export const SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD = {
+  ...SYNTHETIC_PARCEL_RECORD_SHARD,
+  pinDigits: 8,
+  shardPrefix: SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX,
+  byPin: {
+    [SYNTHETIC_DOUGLAS_PIN]: {
+      ...(SYNTHETIC_PARCEL_RECORD_SHARD.byPin[SYNTHETIC_PIN] as Record<
+        string,
+        unknown
+      >),
+      ain: "2000-00-0-00-001",
+    },
+  },
+};
+
 export {
   SYNTHETIC_AIN,
+  SYNTHETIC_DOUGLAS_PIN,
+  SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX,
   SYNTHETIC_PIN,
   SYNTHETIC_PIN_SHARD_PREFIX,
 };

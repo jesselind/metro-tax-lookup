@@ -61,6 +61,11 @@ import {
   authorityMillsSeries,
   levyPercentageResidentLinkForTaxYear,
 } from "@/lib/authorityMillsHistory";
+import { countyConfigById } from "@/lib/countyConfig";
+import {
+  authorityMillsCodeForRegistryEntry,
+  levyLineCodeForCrossCountyAuthority,
+} from "@/lib/crossCountyAuthorityRegistry";
 import type { LevyEntryMatchKeys } from "@/lib/levyEntryMatch";
 import type {
   LevyAuthorityChainEntry,
@@ -172,6 +177,20 @@ export type LevyAuthorityChainSummarySpec = {
   }>;
 };
 
+/**
+ * Per-resident-county overlay for shared (registry-linked) authority-chain
+ * entries. Base JSON stays county-neutral; county-specific caveats and gaps
+ * live here keyed by wired county id.
+ */
+export type LevyAuthorityChainCountyOverlay = {
+  /** Appended as `NOTE: …` on the closed summary for this county only. */
+  summaryClosingNote?: string;
+  /** Overrides `authority.countyListName` on the Who gets this money? fact. */
+  countyListName?: string;
+  /** Extra open gaps merged after base `openGapIds` for this county only. */
+  openGapIds?: LevyAuthorityChainOpenGapId[];
+};
+
 export type LevyAuthorityChainMillsSpec = {
   /**
    * School/county: authored current/prior rates with cites.
@@ -242,7 +261,57 @@ export type LevyAuthorityChainEntryRecord = {
   measures: LevyAuthorityChainMeasureRecord[];
   budget?: LevyAuthorityChainBudgetSpec;
   openGapIds: LevyAuthorityChainOpenGapId[];
+  /** Optional per-county overlays when `match.registryId` serves multiple counties. */
+  countyOverlays?: Record<string, LevyAuthorityChainCountyOverlay>;
 };
+
+export type BuildLevyAuthorityChainEntryOptions = {
+  /** Resident county for overlay merge (wired county id). */
+  residentCountyId?: string;
+  /** Stack `authorityName` (title-cased) for county tax-list fact fidelity. */
+  stackAuthorityLabel?: string;
+};
+
+/** Merge base record with a resident-county overlay (no-op when absent). */
+export function applyResidentCountyOverlay(
+  record: LevyAuthorityChainEntryRecord,
+  residentCountyId?: string,
+): LevyAuthorityChainEntryRecord {
+  const countyId = residentCountyId?.trim();
+  if (!countyId) return record;
+  const overlay = record.countyOverlays?.[countyId];
+  if (!overlay) return record;
+
+  const openGapIds = [...record.openGapIds];
+  for (const gapId of overlay.openGapIds ?? []) {
+    if (!openGapIds.includes(gapId)) {
+      openGapIds.push(gapId);
+    }
+  }
+
+  const summaryClosingNote =
+    overlay.summaryClosingNote !== undefined
+      ? overlay.summaryClosingNote
+      : record.summary.summaryClosingNote;
+
+  const countyListName =
+    overlay.countyListName !== undefined
+      ? overlay.countyListName
+      : record.authority.countyListName;
+
+  return {
+    ...record,
+    authority: {
+      ...record.authority,
+      countyListName,
+    },
+    summary: {
+      ...record.summary,
+      summaryClosingNote,
+    },
+    openGapIds,
+  };
+}
 
 function ballotTextFactValue(
   family: LevyAuthorityChainFamily,
@@ -369,7 +438,20 @@ function buildSummaryIssueMarks(
   return marks;
 }
 
-function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
+function residentCountyShipsAuthorityMillsBundle(
+  countyId: string | null | undefined,
+): boolean {
+  const id = countyId?.trim();
+  if (!id) return false;
+  return countyConfigById(id)?.features.millsHistory === true;
+}
+
+function buildWhoSetsStep(
+  record: LevyAuthorityChainEntryRecord,
+  stackAuthorityLabel?: string,
+): LevyAuthorityChainStep {
+  const countyListName =
+    stackAuthorityLabel?.trim() || record.authority.countyListName;
   return {
     id: "who-sets",
     title: STEP_TITLE_WHO_GETS,
@@ -377,7 +459,7 @@ function buildWhoSetsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityC
     facts: record.authority.whoGetsFacts ?? [
       {
         label: FACT_LABEL_COUNTY_LIST_NAME,
-        value: record.authority.countyListName,
+        value: countyListName,
         sources: [],
       },
     ],
@@ -409,20 +491,56 @@ function buildMetroMillsChangeFact(
  * change from the AUTH series (same numbers as the mills history chart).
  * Used by metro and fire (`usesAuthDerivedMills`).
  */
-function buildAuthDerivedMillsStep(
+function authMillsCodeForRecord(
   record: LevyAuthorityChainEntryRecord,
-): LevyAuthorityChainStep {
-  const pack = getAuthorityChainFamilyPack(record.family);
+  residentCountyId?: string,
+): string {
+  const registryId = record.match.registryId?.trim();
+  if (registryId) {
+    const county = residentCountyId?.trim();
+    if (county) {
+      const residentCode = levyLineCodeForCrossCountyAuthority(registryId, county);
+      if (residentCode) return residentCode;
+    }
+    const code = authorityMillsCodeForRegistryEntry(registryId);
+    if (!code) {
+      throw new Error(
+        `[${record.id}] registryId ${registryId} has no mills reference code`,
+      );
+    }
+    return code;
+  }
   const code = record.match.levyLineCode?.trim();
   if (!code) {
     throw new Error(
-      `[${record.id}] AUTH-derived mills step requires match.levyLineCode for AUTH series lookup`,
+      `[${record.id}] AUTH-derived mills step requires match.levyLineCode or match.registryId`,
     );
   }
-  const series = authorityMillsSeries(code);
+  return code;
+}
+
+function buildAuthDerivedMillsStep(
+  record: LevyAuthorityChainEntryRecord,
+  options?: BuildLevyAuthorityChainEntryOptions,
+): LevyAuthorityChainStep {
+  const pack = getAuthorityChainFamilyPack(record.family);
+  const residentCountyId = options?.residentCountyId?.trim();
+  const body = millsStepBodyTrim(record, pack.millsStepBody);
+  const terms = record.mills.bodyTerms ?? pack.millsBodyTerms;
+
+  if (residentCountyId && !residentCountyShipsAuthorityMillsBundle(residentCountyId)) {
+    return millsStepWithTerms({ body, terms, facts: [] });
+  }
+
+  const millsCountyId = residentCountyId ?? "arapahoe";
+  const code = authMillsCodeForRecord(record, residentCountyId);
+  const series = authorityMillsSeries(code, millsCountyId);
   const { changeFromLastYear, mostNotableChange } =
     selectMetroAuthorityMillsChangeBlocks(series);
   if (!changeFromLastYear) {
+    if (residentCountyId) {
+      return millsStepWithTerms({ body, terms, facts: [] });
+    }
     throw new Error(
       `[${record.id}] AUTH mills series for ${code} needs at least two published years`,
     );
@@ -443,11 +561,7 @@ function buildAuthDerivedMillsStep(
     );
   }
 
-  return millsStepWithTerms({
-    body: millsStepBodyTrim(record, pack.millsStepBody),
-    terms: record.mills.bodyTerms ?? pack.millsBodyTerms,
-    facts,
-  });
+  return millsStepWithTerms({ body, terms, facts });
 }
 
 function millsStepBodyTrim(
@@ -525,9 +639,12 @@ function buildAuthoredMillsStep(
   });
 }
 
-function buildMillsStep(record: LevyAuthorityChainEntryRecord): LevyAuthorityChainStep {
+function buildMillsStep(
+  record: LevyAuthorityChainEntryRecord,
+  options?: BuildLevyAuthorityChainEntryOptions,
+): LevyAuthorityChainStep {
   if (usesAuthDerivedMills(record.family)) {
-    return buildAuthDerivedMillsStep(record);
+    return buildAuthDerivedMillsStep(record, options);
   }
   return buildAuthoredMillsStep(record);
 }
@@ -775,68 +892,73 @@ function buildOpenGaps(
  */
 export function buildLevyAuthorityChainEntry(
   record: LevyAuthorityChainEntryRecord,
+  options?: BuildLevyAuthorityChainEntryOptions,
 ): LevyAuthorityChainEntry {
-  const trimmedSummaryText = record.summarySource.text.trim();
+  const recordForBuild = applyResidentCountyOverlay(
+    record,
+    options?.residentCountyId,
+  );
+  const trimmedSummaryText = recordForBuild.summarySource.text.trim();
   if (!trimmedSummaryText) {
-    throw new Error(`[${record.id}] summarySource.text must be non-empty`);
+    throw new Error(`[${recordForBuild.id}] summarySource.text must be non-empty`);
   }
   const summarySource: LevyAuthorityChainSourceLink = {
     text: trimmedSummaryText,
-    url: record.summarySource.url,
+    url: recordForBuild.summarySource.url,
   };
 
-  const pack = getAuthorityChainFamilyPack(record.family);
-  const taborMeasureCount = record.measures.filter(
+  const pack = getAuthorityChainFamilyPack(recordForBuild.family);
+  const taborMeasureCount = recordForBuild.measures.filter(
     (m) => m.kind === "tabor_revenue_retention",
   ).length;
   if (taborMeasureCount > 1) {
     throw new Error(
-      `[${record.id}] at most one tabor_revenue_retention measure per entry`,
+      `[${recordForBuild.id}] at most one tabor_revenue_retention measure per entry`,
     );
   }
-  for (const measure of record.measures) {
+  for (const measure of recordForBuild.measures) {
     if (!pack.measureKinds.has(measure.kind)) {
       throw new Error(
-        `[${record.id}] measure kind ${measure.kind} is not valid for family ${record.family}`,
+        `[${recordForBuild.id}] measure kind ${measure.kind} is not valid for family ${recordForBuild.family}`,
       );
     }
   }
 
   const steps: LevyAuthorityChainStep[] = [
-    buildWhoSetsStep(record),
-    buildMillsStep(record),
-    ...record.measures.map((m) => buildMeasureStep(record, m)),
+    buildWhoSetsStep(recordForBuild, options?.stackAuthorityLabel),
+    buildMillsStep(recordForBuild, options),
+    ...recordForBuild.measures.map((m) => buildMeasureStep(recordForBuild, m)),
   ];
   // School/county: separate certified-results step. Metro folds approval onto
   // each measure so the trail stays chronological.
-  if (record.family !== "metro") {
-    steps.push(buildApprovalStep(record));
+  if (recordForBuild.family !== "metro") {
+    steps.push(buildApprovalStep(recordForBuild));
   }
 
-  if (record.budget) {
-    steps.push(buildBudgetStep(record.family, record.budget));
+  if (recordForBuild.budget) {
+    steps.push(buildBudgetStep(recordForBuild.family, recordForBuild.budget));
   }
 
-  const summary = buildSummary(record, summarySource.text);
-  const summaryIssueMarks = buildSummaryIssueMarks(record, summary);
+  const summary = buildSummary(recordForBuild, summarySource.text);
+  const summaryIssueMarks = buildSummaryIssueMarks(recordForBuild, summary);
 
   const entry: LevyAuthorityChainEntry = {
-    id: record.id,
-    match: record.match,
+    id: recordForBuild.id,
+    match: recordForBuild.match,
     heading: AUTHORITY_CHAIN_HEADING,
     summary,
     summarySource,
     steps,
-    openGaps: buildOpenGaps(record),
+    openGaps: buildOpenGaps(recordForBuild),
   };
 
   if (summaryIssueMarks.length > 0) {
     entry.summaryIssueMarks = summaryIssueMarks;
   }
 
-  if (record.summary.summaryTermId && record.summary.summaryTermMatch) {
-    entry.summaryTermId = record.summary.summaryTermId;
-    entry.summaryTermMatch = record.summary.summaryTermMatch;
+  if (recordForBuild.summary.summaryTermId && recordForBuild.summary.summaryTermMatch) {
+    entry.summaryTermId = recordForBuild.summary.summaryTermId;
+    entry.summaryTermMatch = recordForBuild.summary.summaryTermMatch;
   }
 
   return entry;

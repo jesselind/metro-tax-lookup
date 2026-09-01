@@ -172,6 +172,20 @@ class LoadCsvTests(unittest.TestCase):
         self.assertEqual(entities[0]["legalName"], "Alpha District")
         self.assertEqual(entities[0]["levyMills"], 5.5)
 
+    def test_filters_douglas_certifying_county_from_tracked_export(self) -> None:
+        from ingest.dola_match import default_dola_export_path, load_dola_entities_csv
+
+        path = default_dola_export_path()
+        if not path.is_file():
+            self.skipTest(f"tracked DOLA export missing: {path}")
+        entities, levy_col, filtered = load_dola_entities_csv(path, "Douglas")
+        self.assertTrue(filtered)
+        self.assertIsNotNone(levy_col)
+        self.assertGreater(len(entities), 0)
+        names = {e["legalName"] for e in entities}
+        self.assertIn("South Metro Fire Rescue Fire Protection District", names)
+        self.assertIn("Regional Transportation District", names)
+
 
 class OverridesFileTests(unittest.TestCase):
     def test_shared_overrides_file_exists(self) -> None:
