@@ -202,7 +202,7 @@ type LevyAuthorityChainFileV2 = {
  * @param root - Repo root (defaults to `process.cwd()`).
  */
 export function validateLevyAuthorityChainEntries(root = process.cwd()): void {
-  validateCrossCountyAuthorityRegistryFile();
+  validateCrossCountyAuthorityRegistryFile(root);
   const path = join(root, "public/data/levy-authority-chain-entries.json");
   const raw = readFileSync(path, "utf8");
   let data: unknown;

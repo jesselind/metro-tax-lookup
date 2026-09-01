@@ -378,11 +378,11 @@ def build_cross_county_matches(
 
         status = _compute_match_status(overlap, match_row["levyLineCodeByCounty"])
         match_row["matchStatus"] = status
-        status_counts[status] += 1
 
         if only_complete and status != "complete":
             continue
         matches.append(match_row)
+        status_counts[status] += 1
 
     return {
         "version": 1,
@@ -416,7 +416,7 @@ def main() -> None:
         "--dola-export",
         type=Path,
         default=DEFAULT_DOLA_CSV,
-        help="DOLA property-tax-entities export (CSV or xlsx)",
+        help="DOLA property-tax-entities export (CSV)",
     )
     parser.add_argument(
         "--wired-counties",
@@ -447,6 +447,14 @@ def main() -> None:
         help="Print JSON to stdout instead of writing --output",
     )
     args = parser.parse_args()
+
+    if args.dola_export.suffix.lower() != ".csv":
+        print(
+            f"--dola-export must be a CSV file (got {args.dola_export.suffix!r}): "
+            f"{args.dola_export}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     if not args.dola_export.is_file():
         print(f"DOLA export not found: {args.dola_export}", file=sys.stderr)

@@ -110,11 +110,13 @@ export function validateCrossCountyAuthorityRegistryData(
   }
 }
 
-export function validateCrossCountyAuthorityRegistryFile(): void {
-  const path = join(
-    process.cwd(),
-    "public/data/cross-county-authority-registry.json",
-  );
+/**
+ * @param root - Repo root (defaults to `process.cwd()`).
+ */
+export function validateCrossCountyAuthorityRegistryFile(
+  root = process.cwd(),
+): void {
+  const path = join(root, "public/data/cross-county-authority-registry.json");
   const data = JSON.parse(readFileSync(path, "utf8")) as CrossCountyAuthorityRegistryFile;
   validateCrossCountyAuthorityRegistryData(data);
 }

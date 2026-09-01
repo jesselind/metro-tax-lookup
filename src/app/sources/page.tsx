@@ -726,7 +726,11 @@ export default function SourcesPage() {
           the authorization panel use <strong className="font-semibold text-slate-900">your county&apos;s</strong> bundled
           data only — we do not substitute another county&apos;s rate tables or AUTH
           history (Douglas does not yet ship an authority mills bundle, so those
-          cites are omitted with an honest open gap). Urban Drainage districts are mapped in the registry for mills lookup;
+          cites are omitted with an honest open gap). For registry-linked shared
+          districts (such as South Metro Fire Rescue), levy stack tiles can still
+          show Changed badges and year-over-year mill rates when your county&apos;s
+          stack mills match that tax entity&apos;s published current-year total
+          (numbers only, not your county&apos;s Levy % PDF links). Urban Drainage districts are mapped in the registry for mills lookup;
           they do not yet have a full authorization trail. Compare names on your
           stack to the county levy PDF when a tile has no authorization panel.
         </p>

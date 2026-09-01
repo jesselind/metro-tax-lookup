@@ -695,3 +695,39 @@ describe("buildLevyLineYoYViewModel", () => {
     expect(vm?.purposeChanges.length).toBeGreaterThan(0);
   });
 });
+
+describe("Douglas registry entity YoY", () => {
+  it("uses resident stack mills reconciled to entity reference for SMFR", () => {
+    const line = {
+      levyLineCode: "4014",
+      mills: 12.25,
+      dolaMatch: {
+        method: "fuzzy" as const,
+        confidence: "high" as const,
+        taxEntityId: "64108/1",
+        lgId: "64108",
+      },
+    };
+    const delta = levyLineMillDelta(line, undefined, "douglas");
+    expect(delta).toBeCloseTo(2.96, 2);
+    expect(levyLineHasMillRateChange(line, undefined, "douglas")).toBe(true);
+
+    const vm = buildLevyLineYoYViewModel(line, 500_000, "douglas");
+    expect(vm?.totalCompare?.currentMillsLabel).toBe("12.250");
+    expect(vm?.totalCompare?.previousMillsLabel).toBe("9.290");
+  });
+
+  it("omits YoY when Douglas stack mills do not match entity reference current", () => {
+    const line = {
+      levyLineCode: "4014",
+      mills: 12.2,
+      dolaMatch: {
+        method: "fuzzy" as const,
+        confidence: "high" as const,
+        taxEntityId: "64108/1",
+        lgId: "64108",
+      },
+    };
+    expect(levyLineMillDelta(line, undefined, "douglas")).toBeNull();
+  });
+});

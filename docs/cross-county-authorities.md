@@ -113,9 +113,9 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 | AUTH mills history chart | `CountyConfig.features.millsHistory` + resident county bundle only |
 | Authority chain What changed? | Same: no rate-table facts when `millsHistory` is off for resident county |
 | Levy % PDF deep-links | Resident stack AUTH; deep-link only when resident county ships mills history |
-| YoY / stack Changed badges | `resolveAuthorityMillsLookup(code, countyId)` — resident county only; null when no bundle |
+| YoY / stack Changed badges | Resident county bundle when shipped; else registry entity prior year only when resident **stack mills** match reference current year (numbers only — not Levy % PDF cites) |
 
-**`millsReferenceCountyId`** on registry rows is **maintainer-only**: proves curated AUTH history exists at `validate:levy-authority-chain` build time. It is **not** used to show another county's mills to residents.
+**`millsReferenceCountyId`** on registry rows points at the county bundle used to validate curated AUTH history at build time and, when the resident county has no mills bundle, to supply **entity-level YoY numbers** for registry-linked stack lines (not rate-table links or modal charts).
 
 **When Douglas (or county 3) gets mills history:** ship `{countyId}-authority-mills-by-tax-year.json` (+ rate-table page index if deep-linking), set `millsHistory: true` on that county's `CountyConfig`. No architecture change — same resident-county gate.
 
@@ -133,6 +133,8 @@ Open gap templates: `src/content/levyAuthorityChainTemplates.ts` → `OPEN_GAP_B
 
 - `npm run validate:levy-authority-chain` — registry + authority-chain JSON
 - `src/lib/crossCountyAuthorityRegistry.test.ts` — registry rows align with match file for shipped entities
+- `src/lib/authorityMillsHistory.test.ts` — registry entity YoY with stack reconciliation (Douglas SMFR **4014**)
+- `src/lib/metroLevyYearOverYear.test.ts` — Douglas registry entity YoY via `levyLineMillDelta`
 - `src/lib/wiredCounties.test.ts` — manifest ↔ CountyConfig
 
 ## Related docs

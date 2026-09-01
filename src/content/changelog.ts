@@ -29,9 +29,9 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
     version: "5.3.0",
     date: "2026-08-31",
-    title: "Cross-county authority registry + Douglas DOLA stack join (Phase 11 arc)",
+    title: "Cross-county authority registry + Douglas DOLA stack join (Phase 11)",
     highlights: [
-      "Runtime registry public/data/cross-county-authority-registry.json maps one logical district to per-county AUTH codes (SMFR, UDFCD main, UDFCD South Platte). Authority chain resolves through findLevyAuthorityChainEntry with match.registryId; AUTH mills history and YoY use resolveAuthorityMillsLookup for the resident county only (CountyConfig.features.millsHistory; no cross-county fallback).",
+      "Runtime registry public/data/cross-county-authority-registry.json maps one logical district to per-county AUTH codes (SMFR, UDFCD main, UDFCD South Platte). Authority chain resolves through findLevyAuthorityChainEntry with match.registryId; AUTH mills history and YoY use resolveAuthorityMillsLookup for the resident county when that county ships a mills bundle. Registry-linked shared entities use reference-county prior-year mills for Changed/tile YoY only when resident stack mills reconcile to the entity current year (numbers only; no cross-county Levy % PDF cites).",
       "Maintainer stack: tools/wired-counties.json, build_cross_county_authority_matches.py (DOLA Tax Entity ID + matchStatus), tools/cross_county_authority_overrides.json, tools/cross-county-authority-matches.json. Architecture: docs/cross-county-authorities.md.",
       "Phase 11b: Douglas ingest runs DOLA tax-entity join on stack lines (removed --skip-dola-join). County mill PDF wins when DOLA total disagrees; Douglas stacks relanded with stack-embedded dolaMatch (Tax Entity ID + lgId).",
       "SMFR authority-chain closed summary uses neutral certified-election attribution for cross-county residents (summarySource on south-metro-fire-authority-chain). Registry-linked entries use countyOverlays in levy-authority-chain-entries.json so shared trails stay county-neutral with per-county notes, tax-list names, and open gaps (Douglas SMFR no longer shows Arapahoe-only ballot-notice NOTE). Resident UI uses each county's own mills bundle only (no cross-county Levy % fallback). E2e covers registry-linked AUTH codes on Arapahoe and Douglas.",

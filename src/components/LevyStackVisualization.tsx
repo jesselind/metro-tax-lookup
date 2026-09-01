@@ -1223,6 +1223,7 @@ export function LevyStackVisualization({
           sourceTagId={detailContext.line.sourceTagId}
           taxAreaShortCode={loadedParcelMeta?.tagShortDescr}
           millsLabel={formatMills(detailContext.line.mills)}
+          stackMills={detailContext.line.mills}
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}

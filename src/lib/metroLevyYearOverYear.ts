@@ -400,7 +400,9 @@ export function metroBillImpactCalloutForDistrictIds(
  * from Levy % history. One Changed path for every stack line.
  */
 export function levyLineHasMillRateChange(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   eps: number = METRO_LEVY_RATE_YOY_EPS,
   countyId?: string | null,
 ): boolean {
@@ -449,7 +451,9 @@ export function levyStackTotalMillsChanged(
  * Null when there is no published change (never invent).
  */
 export function levyLineMillDelta(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   eps: number = METRO_LEVY_RATE_YOY_EPS,
   countyId?: string | null,
 ): number | null {
@@ -465,7 +469,9 @@ export function levyLineMillDelta(
       METRO_RATE_TO_MILLS
     );
   }
-  const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId);
+  const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId, {
+    residentStackMills: line.mills,
+  });
   if (!authYoY || Math.abs(authYoY.millsDelta) <= COUNTY_MILLS_YOY_EPS) {
     return null;
   }
@@ -566,7 +572,9 @@ function dollarsPairFromMills(
  * Returns null when there is no published change to show.
  */
 export function buildLevyLineYoYViewModel(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   totalAssessedForEstimate: number | null | undefined,
   countyId?: string | null,
 ): LevyLineYoYViewModel | null {
@@ -798,11 +806,15 @@ export function metroPurposeYoYTrustedForLine(
 }
 
 function buildAuthLevyLineYoYViewModel(
-  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
+  line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
+    mills?: number;
+  },
   assessed: number | null,
   countyId?: string | null,
 ): LevyLineYoYViewModel | null {
-  const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId);
+  const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId, {
+    residentStackMills: line.mills,
+  });
   if (!authYoY || Math.abs(authYoY.millsDelta) <= COUNTY_MILLS_YOY_EPS) {
     return null;
   }

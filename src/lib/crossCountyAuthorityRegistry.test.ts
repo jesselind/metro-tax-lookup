@@ -11,6 +11,7 @@ import {
   findCrossCountyAuthorityByLevyCode,
   levyLineCodeForCrossCountyAuthority,
   resolveAuthorityMillsLookup,
+  resolveRegistryEntityMillsLookup,
 } from "@/lib/crossCountyAuthorityRegistry";
 import {
   validateCrossCountyAuthorityRegistryData,
@@ -70,6 +71,13 @@ describe("crossCountyAuthorityRegistry", () => {
     expect(target).toEqual({
       bundleCountyId: "douglas",
       authorityCode: "4014",
+    });
+  });
+
+  it("maps Douglas SMFR stack code to reference entity mills for YoY", () => {
+    expect(resolveRegistryEntityMillsLookup("4014", "douglas")).toEqual({
+      bundleCountyId: "arapahoe",
+      authorityCode: "4100",
     });
   });
 

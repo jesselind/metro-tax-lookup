@@ -141,7 +141,7 @@ npm run test:cross-county-matches
 
 Reads `tools/wired-counties.json`, tracked DOLA export, bundled `public/data/{countyId}-levy-stacks-by-tag-id.json`, and optional `tools/cross_county_authority_overrides.json`. Writes **`tools/cross-county-authority-matches.json`** (not loaded by the app). Promote rows with `matchStatus: complete` into **`public/data/cross-county-authority-registry.json`**.
 
-**Resident UI:** registry + authority-chain `countyOverlays` join shared districts without cross-county mills or rate-table fallback — see **`docs/cross-county-authorities.md`** → Resident-county gating.
+**Resident UI:** registry + authority-chain `countyOverlays` join shared districts without cross-county Levy % cites in authority-chain What changed?. Registry-linked **Changed / tile YoY numbers** on counties without a mills bundle use resident stack mills reconciled to the entity reference series — see **`docs/cross-county-authorities.md`** → Resident-county gating.
 
 **Phase 11b** (Douglas DOLA join on stacks): see `docs/cross-county-authorities.md` and `docs/_working/second-county-ingest.md`.
 

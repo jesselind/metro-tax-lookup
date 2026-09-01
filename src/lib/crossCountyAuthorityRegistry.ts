@@ -166,3 +166,34 @@ export function authorityMillsCodeForRegistryEntry(
     null
   );
 }
+
+/**
+ * Reference county bundle + AUTH code for a registry-linked stack line.
+ * Used for entity-level YoY when the resident county has no mills-history
+ * bundle (numbers only — not Levy % PDF cites or modal charts).
+ */
+export function resolveRegistryEntityMillsLookup(
+  levyLineCode: string | null | undefined,
+  countyId?: string | null,
+): AuthorityMillsLookupTarget | null {
+  const stackCode = normalizeStackAuthorityCode(levyLineCode);
+  if (!stackCode) return null;
+
+  const county = countyId?.trim() || null;
+  const registryRow = county
+    ? findCrossCountyAuthorityByCountyLevyCode(county, stackCode)
+    : findCrossCountyAuthorityByLevyCode(stackCode);
+  if (!registryRow) return null;
+
+  const referenceCountyId = registryRow.millsReferenceCountyId ?? "arapahoe";
+  const authorityCode = levyLineCodeForCrossCountyAuthority(
+    registryRow.id,
+    referenceCountyId,
+  );
+  if (!authorityCode) return null;
+
+  return {
+    bundleCountyId: referenceCountyId,
+    authorityCode: authorityCode.trim().toUpperCase(),
+  };
+}

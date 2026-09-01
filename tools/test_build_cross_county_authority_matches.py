@@ -90,6 +90,10 @@ class BuildCrossCountyAuthorityMatchesTests(unittest.TestCase):
         self.assertLess(complete_rows["matchCount"], all_rows["matchCount"])
         for row in complete_rows["matches"]:
             self.assertEqual(row["matchStatus"], "complete")
+        counts = complete_rows["matchStatusCounts"]
+        self.assertEqual(sum(counts.values()), complete_rows["matchCount"])
+        self.assertEqual(counts["partial"], 0)
+        self.assertEqual(counts["dola_only"], 0)
 
     def test_shipped_match_file_matches_builder(self) -> None:
         repo = _TOOLS.parent

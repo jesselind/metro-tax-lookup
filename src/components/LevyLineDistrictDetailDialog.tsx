@@ -279,6 +279,8 @@ type Props = {
   /** Parcel tax-area short code used as the Levy % PDF TAG after zero-padding. */
   taxAreaShortCode?: string;
   millsLabel: string;
+  /** Numeric stack mills for registry entity YoY reconciliation. */
+  stackMills?: number;
   pctLabel: string;
   /** Null while JSON is still fetching from `/public/data/`. */
   match: SpecialDistrictMatch | null;
@@ -311,6 +313,7 @@ export function LevyLineDistrictDetailDialog({
   sourceTagId,
   taxAreaShortCode,
   millsLabel,
+  stackMills,
   pctLabel,
   match,
   dolaMatch,
@@ -326,11 +329,11 @@ export function LevyLineDistrictDetailDialog({
   const yoy = useMemo(
     () =>
       buildLevyLineYoYViewModel(
-        { levyLineCode, dolaMatch },
+        { levyLineCode, dolaMatch, mills: stackMills },
         totalAssessedForEstimate,
         countyId,
       ),
-    [levyLineCode, dolaMatch, totalAssessedForEstimate, countyId],
+    [levyLineCode, dolaMatch, stackMills, totalAssessedForEstimate, countyId],
   );
   const millsHistory = useMemo(
     () => authorityMillsSeries(levyLineCode, countyId),
