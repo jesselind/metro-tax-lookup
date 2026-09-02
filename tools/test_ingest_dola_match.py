@@ -19,6 +19,7 @@ if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
 from ingest.dola_match import (  # noqa: E402
+    DEFAULT_DOLA_CSV,
     DEFAULT_OVERRIDES,
     attach_levy_mills,
     dola_match_for_mart_line,
@@ -161,12 +162,11 @@ class TrackedExportArapahoeSafeguardTests(unittest.TestCase):
     }
 
     def test_arapahoe_certifying_mill_anchors_unchanged(self) -> None:
-        from ingest.dola_match import default_dola_export_path, load_dola_entities_csv
-
-        path = default_dola_export_path()
-        if not path.is_file():
-            self.skipTest(f"tracked DOLA export missing: {path}")
-        entities, levy_col, filtered = load_dola_entities_csv(path, "Arapahoe")
+        self.assertTrue(
+            DEFAULT_DOLA_CSV.is_file(),
+            f"tracked DOLA export missing: {DEFAULT_DOLA_CSV}",
+        )
+        entities, levy_col, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
         self.assertTrue(filtered)
         self.assertIsNotNone(levy_col)
         by_te = {
@@ -181,12 +181,11 @@ class TrackedExportArapahoeSafeguardTests(unittest.TestCase):
             self.assertAlmostEqual(float(got), want_mills, places=3, msg=te_id)
 
     def test_arapahoe_certifying_row_count_stable(self) -> None:
-        from ingest.dola_match import default_dola_export_path, load_dola_entities_csv
-
-        path = default_dola_export_path()
-        if not path.is_file():
-            self.skipTest(f"tracked DOLA export missing: {path}")
-        entities, _, filtered = load_dola_entities_csv(path, "Arapahoe")
+        self.assertTrue(
+            DEFAULT_DOLA_CSV.is_file(),
+            f"tracked DOLA export missing: {DEFAULT_DOLA_CSV}",
+        )
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
         self.assertTrue(filtered)
         # Shipped arapahoe-levy-stacks snapshot.dolaRowCount (2026-07-15 ingest).
         self.assertEqual(len(entities), 543)
@@ -217,12 +216,11 @@ class LoadCsvTests(unittest.TestCase):
         self.assertEqual(entities[0]["levyMills"], 5.5)
 
     def test_filters_douglas_certifying_county_from_tracked_export(self) -> None:
-        from ingest.dola_match import default_dola_export_path, load_dola_entities_csv
-
-        path = default_dola_export_path()
-        if not path.is_file():
-            self.skipTest(f"tracked DOLA export missing: {path}")
-        entities, levy_col, filtered = load_dola_entities_csv(path, "Douglas")
+        self.assertTrue(
+            DEFAULT_DOLA_CSV.is_file(),
+            f"tracked DOLA export missing: {DEFAULT_DOLA_CSV}",
+        )
+        entities, levy_col, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Douglas")
         self.assertTrue(filtered)
         self.assertIsNotNone(levy_col)
         self.assertGreater(len(entities), 0)
