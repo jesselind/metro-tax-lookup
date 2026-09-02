@@ -113,6 +113,7 @@ describe("crossCountyAuthorityRegistry", () => {
     const matchFile = JSON.parse(readFileSync(matchPath, "utf8")) as {
       matches: Array<{
         taxEntityId: string;
+        lgId: string;
         levyLineCodeByCounty: Record<string, string>;
       }>;
     };
@@ -123,20 +124,23 @@ describe("crossCountyAuthorityRegistry", () => {
     const registry = shippedRegistry();
     const authorities = registry.authorities as Array<{
       id: string;
+      lgId?: string;
       levyLineCodeByCounty: Record<string, string>;
     }>;
 
-    const expectedByRegistryId: Record<string, string> = {
-      "smfr-fire": "64108/1",
-      "udfcd-main": "64147/1",
-      "udfcd-south-platte": "64174/1",
+    const expectedByRegistryId: Record<string, { teId: string; lgId: string }> = {
+      "smfr-fire": { teId: "64108/1", lgId: "64108" },
+      "udfcd-main": { teId: "64147/1", lgId: "64147" },
+      "udfcd-south-platte": { teId: "64174/1", lgId: "64174" },
     };
 
     for (const row of authorities) {
-      const teId = expectedByRegistryId[row.id];
-      expect(teId, `missing test TE map for registry id ${row.id}`).toBeTruthy();
-      const matchRow = byTe.get(teId!);
-      expect(matchRow, `match file missing ${teId}`).toBeTruthy();
+      const expected = expectedByRegistryId[row.id];
+      expect(expected, `missing test TE map for registry id ${row.id}`).toBeTruthy();
+      expect(row.lgId).toBe(expected!.lgId);
+      const matchRow = byTe.get(expected!.teId);
+      expect(matchRow, `match file missing ${expected!.teId}`).toBeTruthy();
+      expect(matchRow!.lgId).toBe(expected!.lgId);
       for (const [countyId, code] of Object.entries(row.levyLineCodeByCounty)) {
         expect(matchRow!.levyLineCodeByCounty[countyId]?.toUpperCase()).toBe(
           code.trim().toUpperCase(),

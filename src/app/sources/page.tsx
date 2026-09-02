@@ -588,6 +588,11 @@ export default function SourcesPage() {
             Special District Mapping Project<span className="sr-only"> (opens in a new tab)</span>
           </a>{" "}
           feed tax-entity and contact matching when mills or IDs change.
+          Maintainers refresh Property Tax Entities as a statewide CSV (see README):
+          on the DOLA portal, select certifying county only and search — do not
+          filter by local government type. The build filters rows by certifying
+          county; replacing the CSV does not change bundled levy JSON until
+          rebuild.
           Metro rates follow the annual mill levy form, not the weekly mart
           cadence. How maintainers download, stage, and rebuild:{" "}
           <ReadmeDataPipelineLink>repository README</ReadmeDataPipelineLink>.
@@ -688,7 +693,9 @@ export default function SourcesPage() {
           state export disagree on a rate, this site keeps the{" "}
           <strong className="font-semibold text-slate-900">PDF mills</strong>
           {" "}
-          and may note the other figure in the levy tile.
+          and may note the other figure in the levy tile. The statewide DOLA
+          tax-entities export is filtered by certifying county at build time
+          (Douglas uses certifying county Douglas).
         </p>
         {countyFeatureAvailable(
           "millPdfTaxDistrictGap",

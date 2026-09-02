@@ -71,7 +71,7 @@ Phase **11b** (sub-phase of 11, not deferred to directory work):
 - Rebuild → `validate:app-json` → `land:douglas`
 - Regenerate match file; Douglas rows use stack-embedded `dolaMatch` (`fuzzy` / `override` methods with Tax Entity ID), not match-builder re-fuzzy when stack `method` was `none`
 
-Phase **11c** (remaining): refresh Arapahoe DOLA mills from export, optional registry `lgId` backfill — see `docs/_working/second-county-ingest.md`. **Phase 12** (directory tile) is separate.
+Phase **11c** (**done** in **5.3.1**): refreshed statewide `property-tax-entities-export.csv` (2026-09-02); registry `lgId` backfill on SMFR and UDFCD rows. Export ritual: certifying county only, no local-government-type filter — see README and `docs/county-build-inputs.md`. Arapahoe mill anchors unchanged; optional Arapahoe rebuild may still update `dolaMatch` metadata (legal name / fuzzy score) without mill changes. **Phase 12** (directory tile) is separate.
 
 ## Commands
 
@@ -88,6 +88,7 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 {
   "id": "smfr-fire",
   "displayName": "South Metro Fire Rescue Fire Protection District",
+  "lgId": "64108",
   "levyLineCodeByCounty": { "arapahoe": "4100", "douglas": "4014" },
   "authorityChainEntryId": "south-metro-fire-authority-chain",
   "millsReferenceCountyId": "arapahoe"
@@ -95,6 +96,7 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 ```
 
 - **`levyLineCodeByCounty`** — per-county AUTH codes (required for each wired county that ships the district)
+- **`lgId`** — optional DOLA LG ID from Property Tax Entities export (Phase **11c**; runtime join still uses line codes; directory tile **Phase 12**)
 - **`millsReferenceCountyId`** — which county's bundled Levy % AUTH series validates curated history at build time (not a resident cross-county fallback)
 - **`authorityChainEntryId`** — optional link to one shared `levy-authority-chain-entries.json` row (`match.registryId`)
 
@@ -132,7 +134,8 @@ Open gap templates: `src/content/levyAuthorityChainTemplates.ts` → `OPEN_GAP_B
 ## Validation and tests
 
 - `npm run validate:levy-authority-chain` — registry + authority-chain JSON
-- `src/lib/crossCountyAuthorityRegistry.test.ts` — registry rows align with match file for shipped entities
+- `src/lib/crossCountyAuthorityRegistry.test.ts` — registry rows align with match file for shipped entities (including `lgId`)
+- `tools/test_ingest_dola_match.py` — Arapahoe mill-anchor safeguards on tracked DOLA CSV before refresh
 - `src/lib/authorityMillsHistory.test.ts` — registry entity YoY with stack reconciliation (Douglas SMFR **4014**)
 - `src/lib/metroLevyYearOverYear.test.ts` — Douglas registry entity YoY via `levyLineMillDelta`
 - `src/lib/wiredCounties.test.ts` — manifest ↔ CountyConfig

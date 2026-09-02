@@ -21,6 +21,8 @@ function normalizeStackAuthorityCode(
 export type CrossCountyAuthorityRegistryRow = {
   id: string;
   displayName: string;
+  /** DOLA LG ID from Property Tax Entities export (Phase 11c; directory tile Phase 12). */
+  lgId?: string;
   levyLineCodeByCounty: Record<string, string>;
   /** When set, links to `levy-authority-chain-entries.json` `id`. */
   authorityChainEntryId?: string;

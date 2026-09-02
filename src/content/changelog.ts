@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.3.1",
+    date: "2026-09-02",
+    title: "Statewide DOLA tax-entities refresh + registry lgId (Phase 11c)",
+    highlights: [
+      "Tracked supporting-data/dola/property-tax-entities-export.csv replaced with a statewide Property Tax Entities export (2026-09-02). Arapahoe certifying-row mills unchanged on anchor entities (SMFR, UDFCD, county); npm run test:ingest includes mill-anchor safeguards before future CSV swaps.",
+      "cross-county-authority-registry.json: lgId backfill on SMFR (64108), UDFCD main (64147), and UDFCD South Platte (64174) from DOLA joins. Line-code mapping unchanged.",
+      "Docs: README, docs/county-build-inputs.md, /sources, and dataSourceUrls.ts document DOLA export ritual (certifying county only; do not filter by local government type). Shipped Arapahoe levy JSON unchanged this release; rebuild optional when mart refreshes.",
+    ],
+  },
+  {
     version: "5.3.0",
     date: "2026-08-31",
     title: "Cross-county authority registry + Douglas DOLA stack join (Phase 11)",

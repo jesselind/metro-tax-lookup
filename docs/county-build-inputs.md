@@ -59,14 +59,14 @@ When a county passes inventory and gets a mapping file, keep this list in sync w
 
 **Local root:** `supporting-data/dola/`
 
-**Last verified:** 2026-08-25
+**Last verified:** 2026-09-02
 
 These are statewide DOLA exports. One copy on disk for the whole repo. Update **Currently used by** when a second county’s rebuild starts reading the same path.
 
 | Save as (local path) | Required? | Hub URL | Direct URL (optional) | Feeds | Currently used by | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `supporting-data/dola/property-tax-entities-export.csv` | yes for mill join on shipping levy stacks | [DOLA LGIS Property Tax Entities](https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf) | — | mill join on levy stack lines (`dolaMatch`); optional directory fallback rows | **`arapahoe`** only today | **Tracked** in git (~46 KiB). Portal export path is unverified for refresh; see README / working notes. Join is filtered by certifying county in the build (Arapahoe default). Not proven required for every future county. |
-| `supporting-data/dola/lg-export-all.csv` | no (directory rebuild) | [DOLA LGIS portal](https://dola.colorado.gov/dlg_lgis_ui_pu/) | — | `build:district-directory` (contacts filtered to LGIDs present in levy stacks) | **`arapahoe`** only today (directory rebuild keyed off Arapahoe stacks) | Local only; not the mill / Tax Entity ID source. Statewide file; filtering is by whatever LGIDs the shipping stacks contain. |
+| `supporting-data/dola/property-tax-entities-export.csv` | yes for mill join on shipping levy stacks | [DOLA LGIS Property Tax Entities](https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf) | — | mill join on levy stack lines (`dolaMatch`); optional directory fallback rows | **`arapahoe`**, **`douglas`** | **Tracked** in git (~390 KiB, refreshed 2026-09-02). **Export ritual:** accept terms → select **Certifying County** only → **Search** → export CSV. Do **not** filter by local government type. Statewide export; ingest filters by certifying county per mapping (`--dola-certifying-county`). After replacing the tracked file (or staging the new CSV in its place), run `npm run test:ingest` so mill-anchor safeguard tests validate the refreshed export. |
+| `supporting-data/dola/lg-export-all.csv` | no (directory rebuild) | [DOLA LGIS portal](https://dola.colorado.gov/dlg_lgis_ui_pu/) | — | `build:district-directory` (contacts filtered to LGIDs present in levy stacks) | **`arapahoe`** only today (directory rebuild keyed off Arapahoe stacks) | Local only; **different export** from Property Tax Entities (mailing address / website / LGID). Not the mill / Tax Entity ID source. |
 
 ---
 
@@ -95,7 +95,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 **Last verified:** 2026-08-28 (Phase 8 **Go**; local inventory notes in gitignored `supporting-data/douglas/INVENTORY.md`). **No live ingestion through an API** — Assessor published text downloads + tax-district mill PDF only. Phase 9/9b/9c: mapping + headerless text + mill-PDF stacks + situs + parcel-record shards; shipping JSON under `public/data/douglas-*` (see `docs/county-ingest.md`).
 
-**Also uses (Colorado shared):** **none** yet (add when mill/TE join or directory ships for Douglas).
+**Also uses (Colorado shared):** `property-tax-entities-export.csv` (mill join; certifying county Douglas).
 
 **Hubs:**
 

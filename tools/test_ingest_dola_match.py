@@ -19,6 +19,7 @@ if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
 from ingest.dola_match import (  # noqa: E402
+    DEFAULT_DOLA_CSV,
     DEFAULT_OVERRIDES,
     attach_levy_mills,
     dola_match_for_mart_line,
@@ -148,6 +149,48 @@ class MatchDolaLineTests(unittest.TestCase):
         self.assertIsNone(result["score"])
 
 
+class TrackedExportArapahoeSafeguardTests(unittest.TestCase):
+    """Phase 11c: DOLA CSV refresh must not change Arapahoe levy mills on anchor entities."""
+
+    # Tax Entity ID -> levy mills (2025 tax year column) for wired cross-county proof cases.
+    _ARAPAHOE_MILL_ANCHORS: dict[str, float] = {
+        "03001/1": 16.959,  # Arapahoe County
+        "03903/1": 54.108,  # Cherry Creek School District No. 5 (name may change in export)
+        "64108/1": 12.25,  # SMFR
+        "64147/1": 0.9,  # UDFCD main
+        "64174/1": 0.1,  # UDFCD South Platte
+    }
+
+    def test_arapahoe_certifying_mill_anchors_unchanged(self) -> None:
+        self.assertTrue(
+            DEFAULT_DOLA_CSV.is_file(),
+            f"tracked DOLA export missing: {DEFAULT_DOLA_CSV}",
+        )
+        entities, levy_col, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        self.assertIsNotNone(levy_col)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        for te_id, want_mills in self._ARAPAHOE_MILL_ANCHORS.items():
+            self.assertIn(te_id, by_te, f"missing Arapahoe certifying row {te_id}")
+            got = by_te[te_id].get("levyMills")
+            self.assertIsNotNone(got, te_id)
+            self.assertAlmostEqual(float(got), want_mills, places=3, msg=te_id)
+
+    def test_arapahoe_certifying_row_count_stable(self) -> None:
+        self.assertTrue(
+            DEFAULT_DOLA_CSV.is_file(),
+            f"tracked DOLA export missing: {DEFAULT_DOLA_CSV}",
+        )
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        # Shipped arapahoe-levy-stacks snapshot.dolaRowCount (2026-07-15 ingest).
+        self.assertEqual(len(entities), 543)
+
+
 class LoadCsvTests(unittest.TestCase):
     def test_filters_certifying_county(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -173,12 +216,11 @@ class LoadCsvTests(unittest.TestCase):
         self.assertEqual(entities[0]["levyMills"], 5.5)
 
     def test_filters_douglas_certifying_county_from_tracked_export(self) -> None:
-        from ingest.dola_match import default_dola_export_path, load_dola_entities_csv
-
-        path = default_dola_export_path()
-        if not path.is_file():
-            self.skipTest(f"tracked DOLA export missing: {path}")
-        entities, levy_col, filtered = load_dola_entities_csv(path, "Douglas")
+        self.assertTrue(
+            DEFAULT_DOLA_CSV.is_file(),
+            f"tracked DOLA export missing: {DEFAULT_DOLA_CSV}",
+        )
+        entities, levy_col, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Douglas")
         self.assertTrue(filtered)
         self.assertIsNotNone(levy_col)
         self.assertGreater(len(entities), 0)
