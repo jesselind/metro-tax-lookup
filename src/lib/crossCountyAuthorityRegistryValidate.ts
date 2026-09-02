@@ -19,6 +19,9 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Validate cross-county authority registry JSON (version, ids, wired counties, optional lgId).
+ */
 export function validateCrossCountyAuthorityRegistryData(
   data: unknown,
 ): void {
@@ -105,6 +108,16 @@ export function validateCrossCountyAuthorityRegistryData(
         throw new Error(
           `[${row.id}] millsReferenceCountyId ${ref} missing from levyLineCodeByCounty`,
         );
+      }
+    }
+
+    if (row.lgId !== undefined) {
+      if (!isNonEmptyString(row.lgId)) {
+        throw new Error(`[${row.id}] lgId must be non-empty when set`);
+      }
+      const lgDigits = row.lgId.trim().replace(/\D/g, "");
+      if (!lgDigits) {
+        throw new Error(`[${row.id}] lgId has no digits`);
       }
     }
   }

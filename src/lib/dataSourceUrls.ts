@@ -8,9 +8,14 @@
  */
 
 /**
- * DOLA LGIS — Property Tax Entities (export to CSV or xlsx for `build_arapahoe_parcel_levy_index.py`;
+ * DOLA LGIS — Property Tax Entities (export to CSV for ingest mill join;
  * the build script prefers `supporting-data/dola/property-tax-entities-export.csv`).
- * Interactive site: accept terms, then export; not machine-scraped by this repo.
+ *
+ * Maintainer export (verified 2026-09-02): accept portal terms, open this page,
+ * select **Certifying County** only, click **Search**, then export CSV. Do **not**
+ * filter by local government type — that omits tax entities the mill join needs.
+ * Statewide export is tracked in git; Arapahoe and Douglas ingest filter rows
+ * by certifying county at build time.
  */
 export const DOLA_LGIS_PROPERTY_TAX_ENTITIES =
   "https://dola.colorado.gov/dlg_lgis_ui_pu/publicLGTaxEntities.jsf";

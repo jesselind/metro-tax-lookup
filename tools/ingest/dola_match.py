@@ -9,7 +9,8 @@
 Reimplements the old rebuild's DOLA Property Tax Entities join inside
 tools/ingest/ only. Does not import from build_arapahoe_parcel_levy_index.py.
 
-Mill source: supporting-data/dola/property-tax-entities-export.csv (tracked).
+Mill source: supporting-data/dola/property-tax-entities-export.csv (tracked;
+statewide Property Tax Entities export; ingest filters by certifying county).
 Authority overrides (shared curated input, both engines): tools/arapahoe_dola_authority_overrides.json.
 Does not import from build_arapahoe_parcel_levy_index.py.
 """

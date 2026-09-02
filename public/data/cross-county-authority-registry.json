@@ -4,6 +4,7 @@
     {
       "id": "smfr-fire",
       "displayName": "South Metro Fire Rescue Fire Protection District",
+      "lgId": "64108",
       "levyLineCodeByCounty": {
         "arapahoe": "4100",
         "douglas": "4014"
@@ -14,6 +15,7 @@
     {
       "id": "udfcd-main",
       "displayName": "Urban Drainage & Flood Control District",
+      "lgId": "64147",
       "levyLineCodeByCounty": {
         "arapahoe": "4712",
         "douglas": "4002"
@@ -23,6 +25,7 @@
     {
       "id": "udfcd-south-platte",
       "displayName": "Urban Drainage & Flood, South Platte Levy",
+      "lgId": "64174",
       "levyLineCodeByCounty": {
         "arapahoe": "4713",
         "douglas": "4392"
