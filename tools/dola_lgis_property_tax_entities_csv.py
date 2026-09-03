@@ -61,12 +61,45 @@ def load_lgid_to_entity_name_for_certifying_county(
     Returns (name_by_lg_id, county_filter_applied). The bool is True only when the CSV
     has a Certifying County column and rows were filtered by certifying_county.
     """
-    if not path.is_file():
-        return {}, False
-    want = certifying_county.strip().upper()
-    if not want:
-        return {}, False
+    name_by_lg, applied, _counties = load_lgid_to_entity_name_for_certifying_counties(
+        path, [certifying_county]
+    )
+    return name_by_lg, applied
 
+
+def load_lgid_to_entity_name_for_certifying_counties(
+    path: Path,
+    certifying_counties: list[str],
+) -> tuple[dict[str, str], bool, list[str]]:
+    """
+    Map normalized LGID → DOLA tax entity legal name for one or more certifying counties.
+
+    County labels are matched case-insensitively. First matching row wins when the same
+    LGID appears under more than one listed county (or multiple tax entities share a
+    prefix). Empty / whitespace county labels are ignored.
+
+    Returns (name_by_lg_id, county_filter_applied, counties_applied). The bool is True
+    only when the CSV has a Certifying County column and at least one usable county
+    label was applied. ``counties_applied`` preserves caller order for labels that
+    were used in the filter.
+    """
+    if not path.is_file():
+        return {}, False, []
+    wants: list[str] = []
+    seen_want: set[str] = set()
+    for raw in certifying_counties:
+        label = (raw or "").strip()
+        if not label:
+            continue
+        key = label.upper()
+        if key in seen_want:
+            continue
+        seen_want.add(key)
+        wants.append(label)
+    if not wants:
+        return {}, False, []
+
+    want_keys = {w.upper() for w in wants}
     out: dict[str, str] = {}
     try:
         csv.field_size_limit(sys.maxsize)
@@ -85,12 +118,12 @@ def load_lgid_to_entity_name_for_certifying_county(
                 "skipping LGID name fallback (would otherwise match zero rows).",
                 file=sys.stderr,
             )
-            return {}, False
+            return {}, False, []
 
         for raw in reader:
             nr = normalize_csv_row_keys(raw)
             county = (nr.get("Certifying County") or "").strip().upper()
-            if county != want:
+            if county not in want_keys:
                 continue
             te = (nr.get("Tax Entity ID") or "").strip()
             if not te:
@@ -105,4 +138,4 @@ def load_lgid_to_entity_name_for_certifying_county(
             if not name:
                 continue
             out.setdefault(nid, name)
-    return out, True
+    return out, True, wants

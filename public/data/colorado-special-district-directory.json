@@ -1,23 +1,30 @@
 {
   "snapshot": {
-    "bundledAsOf": "2026-07-16",
-    "source": "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory.",
+    "bundledAsOf": "2026-09-03",
+    "source": "DOLA LG tabular export, filtered to bundled levy stacks (arapahoe-levy-stacks-by-tag-id.json, douglas-levy-stacks-by-tag-id.json); fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory.",
     "sourceCsv": "lg-export-all.csv"
   },
   "_meta": {
     "lgExportSourceCsv": "lg-export-all.csv",
-    "lgExportBundledAt": "2026-07-16T14:46:05Z",
-    "levyStacksReference": "arapahoe-levy-stacks-by-tag-id.json",
+    "lgExportBundledAt": "2026-09-03T13:47:24Z",
+    "levyStacksReferences": [
+      "arapahoe-levy-stacks-by-tag-id.json",
+      "douglas-levy-stacks-by-tag-id.json"
+    ],
     "propertyTaxEntitiesFallbackCsv": "property-tax-entities-export.csv",
     "propertyTaxEntitiesCountyFilterApplied": true,
-    "certifyingCountyForPropertyTaxFallback": "Arapahoe",
-    "referencedLgIdCount": 367,
-    "directoryRowCount": 367,
+    "certifyingCountiesForPropertyTaxFallback": [
+      "Arapahoe",
+      "Douglas"
+    ],
+    "referencedLgIdCount": 369,
+    "directoryRowCount": 369,
     "lgIdsFilledFromPropertyTaxEntities": [
       "03091",
       "03112",
       "03133",
       "64035",
+      "64084",
       "64200",
       "65137",
       "65690",
@@ -26,7 +33,7 @@
     ],
     "missingLgIdsInExport": []
   },
-  "districtCount": 367,
+  "districtCount": 369,
   "districts": [
     {
       "lgId": "01094",
@@ -1325,6 +1332,22 @@
       "lastUpdate": null
     },
     {
+      "lgId": "18010",
+      "name": "Douglas County Conservation District",
+      "abbrevName": null,
+      "websiteUrl": "https://douglasconserves.org/",
+      "mailAddress": "PO Box 688",
+      "altAddress": null,
+      "mailCity": "Franktown",
+      "mailState": "CO",
+      "mailZip": "80116",
+      "lgTypeId": null,
+      "localGovernmentType": "Conservation Districts (Soil)",
+      "prevName": null,
+      "source": "DOLA LG tabular export (Local Government directory)",
+      "lastUpdate": null
+    },
+    {
       "lgId": "64005",
       "name": "Arapahoe Library District",
       "abbrevName": null,
@@ -1482,6 +1505,22 @@
       "localGovernmentType": "Water & Sanitation Districts",
       "prevName": null,
       "source": "DOLA LG tabular export (Local Government directory)",
+      "lastUpdate": null
+    },
+    {
+      "lgId": "64084",
+      "name": "Littleton Fire Protection District",
+      "abbrevName": null,
+      "websiteUrl": null,
+      "mailAddress": null,
+      "altAddress": null,
+      "mailCity": null,
+      "mailState": null,
+      "mailZip": null,
+      "lgTypeId": null,
+      "localGovernmentType": null,
+      "prevName": null,
+      "source": "DOLA LGIS Property Tax Entities export (fallback; row absent from LG directory CSV)",
       "lastUpdate": null
     },
     {

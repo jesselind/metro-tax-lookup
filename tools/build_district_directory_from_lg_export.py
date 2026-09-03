@@ -6,23 +6,28 @@
 
 """
 Build public/data/colorado-special-district-directory.json from DOLA LG tabular export,
-keeping only rows whose LGID appears in bundled Arapahoe levy stacks (dolaMatch.lgId).
+keeping only rows whose LGID appears in bundled levy stacks (dolaMatch.lgId).
+
+Default filter is the union of LGIDs from every shipping county's levy stacks
+(Arapahoe + Douglas today). One shared directory file; Contact lookup is LGID-keyed.
 
 This replaces the older GIS dlall + data.gov merge: one pipeline, LGID-keyed contact rows
 aligned with Property Tax Entity / bill-side LG IDs.
 
 Inputs:
   - DOLA "lg export" CSV (default: supporting-data/dola/lg-export-all.csv)
-  - Levy stacks JSON (default: public/data/arapahoe-levy-stacks-by-tag-id.json)
+  - One or more levy stacks JSON files (default: Arapahoe + Douglas under public/data/)
   - Optional: DOLA LGIS Property Tax Entities CSV (default: supporting-data/dola/property-tax-entities-export.csv)
     used only when a referenced LGID is missing from the LG directory export (name-only fallback row).
-    Use --certifying-county to match that CSV's certifying county column (default: Arapahoe).
+    Use --certifying-county (repeatable) to match that CSV's certifying county column
+    (default: Arapahoe and Douglas).
 
 Usage:
   python3 tools/build_district_directory_from_lg_export.py
   python3 tools/build_district_directory_from_lg_export.py \\
     --lg-csv path/to/lg-export.csv \\
     --levy-stacks public/data/arapahoe-levy-stacks-by-tag-id.json \\
+    --levy-stacks public/data/douglas-levy-stacks-by-tag-id.json \\
     --out public/data/colorado-special-district-directory.json
 """
 
@@ -39,10 +44,15 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 _TOOLS = Path(__file__).resolve().parent
 DEFAULT_PROPERTY_TAX_ENTITIES = ROOT / "supporting-data" / "dola" / "property-tax-entities-export.csv"
+DEFAULT_LEVY_STACKS = [
+    ROOT / "public" / "data" / "arapahoe-levy-stacks-by-tag-id.json",
+    ROOT / "public" / "data" / "douglas-levy-stacks-by-tag-id.json",
+]
+DEFAULT_CERTIFYING_COUNTIES = ["Arapahoe", "Douglas"]
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 from dola_lgis_property_tax_entities_csv import (  # noqa: E402
-    load_lgid_to_entity_name_for_certifying_county,
+    load_lgid_to_entity_name_for_certifying_counties,
     normalize_csv_row_keys,
     normalize_lg_id_key,
 )
@@ -63,7 +73,7 @@ def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
     Normalized LG IDs referenced by ``dolaMatch.lgId`` on bundled levy stack lines.
 
     Used to filter the statewide LG export down to districts that appear on
-    Arapahoe stacks (and to detect export gaps).
+    shipping stacks (and to detect export gaps).
     """
     data = json.loads(path.read_text(encoding="utf-8"))
     out: set[str] = set()
@@ -81,6 +91,16 @@ def collect_lg_ids_from_levy_stacks(path: Path) -> set[str]:
             if nid:
                 out.add(nid)
     return out
+
+
+def collect_lg_ids_from_levy_stack_paths(paths: list[Path]) -> tuple[set[str], list[str]]:
+    """Union of stack LGIDs across paths; return (wanted, stack filenames in caller order)."""
+    wanted: set[str] = set()
+    names: list[str] = []
+    for path in paths:
+        wanted |= collect_lg_ids_from_levy_stacks(path)
+        names.append(path.name)
+    return wanted, names
 
 
 def load_lg_csv(path: Path) -> tuple[list[dict[str, Any]], str]:
@@ -151,8 +171,101 @@ def minimal_district_row_from_entity_name(lg_id: str, legal_name: str) -> dict[s
     }
 
 
+def build_directory_payload(
+    *,
+    lg_csv: Path,
+    levy_stacks: list[Path],
+    property_tax_entities: Path,
+    certifying_counties: list[str],
+) -> dict[str, Any]:
+    """
+    Filter LG export rows to the union of LGIDs on the given levy stacks.
+
+    Adds name-only fallback rows from the Property Tax Entities CSV when an LGID
+    is referenced on stacks but missing from the LG directory export.
+    """
+    if not lg_csv.is_file():
+        raise FileNotFoundError(f"LG CSV not found: {lg_csv}")
+    if not levy_stacks:
+        raise ValueError("At least one --levy-stacks path is required")
+    for path in levy_stacks:
+        if not path.is_file():
+            raise FileNotFoundError(f"Levy stacks JSON not found: {path}")
+
+    wanted, stack_names = collect_lg_ids_from_levy_stack_paths(levy_stacks)
+    all_rows, source_csv_name = load_lg_csv(lg_csv)
+    by_lg = {d["lgId"]: d for d in all_rows}
+    filtered: list[dict[str, Any]] = []
+    missing: list[str] = []
+    for lg in sorted(wanted):
+        row = by_lg.get(lg)
+        if row:
+            filtered.append(row)
+        else:
+            missing.append(lg)
+
+    pt_path = property_tax_entities
+    if pt_path.is_file():
+        name_by_lg, pt_county_filter_applied, counties_applied = (
+            load_lgid_to_entity_name_for_certifying_counties(pt_path, certifying_counties)
+        )
+    else:
+        name_by_lg, pt_county_filter_applied, counties_applied = {}, False, []
+    filled_from_pt: list[str] = []
+    still_missing: list[str] = []
+    for lg in missing:
+        nm = name_by_lg.get(lg)
+        if nm:
+            filtered.append(minimal_district_row_from_entity_name(lg, nm))
+            filled_from_pt.append(lg)
+        else:
+            still_missing.append(lg)
+    missing = still_missing
+    filtered.sort(key=lambda d: (d["lgId"], d["name"]))
+
+    bundled_date = date.today().isoformat()
+    export_stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    stacks_label = ", ".join(stack_names)
+
+    if filled_from_pt:
+        snapshot_source = (
+            f"DOLA LG tabular export, filtered to bundled levy stacks ({stacks_label}); "
+            "fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent "
+            "from the LG directory."
+        )
+    else:
+        snapshot_source = (
+            "DOLA LG tabular export, filtered to LGIDs referenced in bundled levy stacks "
+            f"({stacks_label})."
+        )
+
+    return {
+        "snapshot": {
+            "bundledAsOf": bundled_date,
+            "source": snapshot_source,
+            "sourceCsv": source_csv_name,
+        },
+        "_meta": {
+            "lgExportSourceCsv": source_csv_name,
+            "lgExportBundledAt": export_stamp,
+            "levyStacksReferences": stack_names,
+            "propertyTaxEntitiesFallbackCsv": pt_path.name if pt_path.is_file() else None,
+            "propertyTaxEntitiesCountyFilterApplied": pt_county_filter_applied,
+            "certifyingCountiesForPropertyTaxFallback": (
+                counties_applied if pt_county_filter_applied else []
+            ),
+            "referencedLgIdCount": len(wanted),
+            "directoryRowCount": len(filtered),
+            "lgIdsFilledFromPropertyTaxEntities": sorted(filled_from_pt),
+            "missingLgIdsInExport": missing,
+        },
+        "districtCount": len(filtered),
+        "districts": filtered,
+    }
+
+
 def main() -> None:
-    """CLI: filter DOLA LG export to LGIDs on Arapahoe levy stacks; write public directory JSON."""
+    """CLI: filter DOLA LG export to LGIDs on shipping levy stacks; write public directory JSON."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--lg-csv",
@@ -163,8 +276,12 @@ def main() -> None:
     ap.add_argument(
         "--levy-stacks",
         type=Path,
-        default=ROOT / "public" / "data" / "arapahoe-levy-stacks-by-tag-id.json",
-        help="Bundled levy stacks JSON (LGIDs taken from each line's dolaMatch).",
+        action="append",
+        default=None,
+        help=(
+            "Bundled levy stacks JSON (LGIDs taken from each line's dolaMatch). "
+            "Repeat for each shipping county. Default: Arapahoe + Douglas under public/data/."
+        ),
     )
     ap.add_argument(
         "--out",
@@ -182,89 +299,35 @@ def main() -> None:
     )
     ap.add_argument(
         "--certifying-county",
-        default="Arapahoe",
+        action="append",
+        default=None,
+        dest="certifying_counties",
         help=(
             "Certifying county label in the Property Tax Entities CSV (case-insensitive). "
-            "Fallback rows are built only from rows matching this county."
+            "Repeat for each county used in fallback name lookup. "
+            "Default: Arapahoe and Douglas."
         ),
     )
     args = ap.parse_args()
 
-    if not args.lg_csv.is_file():
-        raise SystemExit(f"LG CSV not found: {args.lg_csv}")
-    if not args.levy_stacks.is_file():
-        raise SystemExit(f"Levy stacks JSON not found: {args.levy_stacks}")
+    levy_stacks = args.levy_stacks if args.levy_stacks else list(DEFAULT_LEVY_STACKS)
+    certifying_counties = (
+        args.certifying_counties
+        if args.certifying_counties
+        else list(DEFAULT_CERTIFYING_COUNTIES)
+    )
 
-    wanted = collect_lg_ids_from_levy_stacks(args.levy_stacks)
-    all_rows, source_csv_name = load_lg_csv(args.lg_csv)
-    by_lg = {d["lgId"]: d for d in all_rows}
-    filtered: list[dict[str, Any]] = []
-    missing: list[str] = []
-    for lg in sorted(wanted):
-        row = by_lg.get(lg)
-        if row:
-            filtered.append(row)
-        else:
-            missing.append(lg)
-
-    pt_path = args.property_tax_entities
-    if pt_path.is_file():
-        name_by_lg, pt_county_filter_applied = load_lgid_to_entity_name_for_certifying_county(
-            pt_path, args.certifying_county
+    try:
+        out_obj = build_directory_payload(
+            lg_csv=args.lg_csv,
+            levy_stacks=levy_stacks,
+            property_tax_entities=args.property_tax_entities,
+            certifying_counties=certifying_counties,
         )
-    else:
-        name_by_lg, pt_county_filter_applied = {}, False
-    filled_from_pt: list[str] = []
-    still_missing: list[str] = []
-    for lg in missing:
-        nm = name_by_lg.get(lg)
-        if nm:
-            filtered.append(minimal_district_row_from_entity_name(lg, nm))
-            filled_from_pt.append(lg)
-        else:
-            still_missing.append(lg)
-    missing = still_missing
-    filtered.sort(key=lambda d: (d["lgId"], d["name"]))
+    except (FileNotFoundError, ValueError) as exc:
+        raise SystemExit(str(exc)) from exc
 
-    bundled_date = date.today().isoformat()
-    export_stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if filled_from_pt:
-        snapshot_source = (
-            "DOLA LG tabular export, filtered to bundled Arapahoe levy stacks; "
-            "fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory."
-        )
-    else:
-        snapshot_source = (
-            "DOLA LG tabular export, filtered to LGIDs referenced in bundled Arapahoe levy stacks."
-        )
-
-    out_obj: dict[str, Any] = {
-        "snapshot": {
-            "bundledAsOf": bundled_date,
-            "source": snapshot_source,
-            "sourceCsv": source_csv_name,
-        },
-        "_meta": {
-            "lgExportSourceCsv": source_csv_name,
-            "lgExportBundledAt": export_stamp,
-            "levyStacksReference": args.levy_stacks.name,
-            "propertyTaxEntitiesFallbackCsv": pt_path.name if pt_path.is_file() else None,
-            "propertyTaxEntitiesCountyFilterApplied": pt_county_filter_applied,
-            "certifyingCountyForPropertyTaxFallback": (
-                (args.certifying_county.strip() or None)
-                if pt_county_filter_applied
-                else None
-            ),
-            "referencedLgIdCount": len(wanted),
-            "directoryRowCount": len(filtered),
-            "lgIdsFilledFromPropertyTaxEntities": sorted(filled_from_pt),
-            "missingLgIdsInExport": missing,
-        },
-        "districtCount": len(filtered),
-        "districts": filtered,
-    }
-
+    missing = out_obj["_meta"]["missingLgIdsInExport"]
     if missing:
         print(
             f"Warning: {len(missing)} LGID(s) from levy stacks not found in LG export: "
@@ -274,7 +337,13 @@ def main() -> None:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out_obj, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(filtered)} districts (from {len(wanted)} referenced LGIDs) to {args.out}")
+    wanted = out_obj["_meta"]["referencedLgIdCount"]
+    filtered = out_obj["districtCount"]
+    stacks = ", ".join(out_obj["_meta"]["levyStacksReferences"])
+    print(
+        f"Wrote {filtered} districts (from {wanted} referenced LGIDs across {stacks}) "
+        f"to {args.out}"
+    )
 
 
 if __name__ == "__main__":

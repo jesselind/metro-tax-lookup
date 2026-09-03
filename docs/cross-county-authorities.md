@@ -71,7 +71,7 @@ Phase **11b** (sub-phase of 11, not deferred to directory work):
 - Rebuild → `validate:app-json` → `land:douglas`
 - Regenerate match file; Douglas rows use stack-embedded `dolaMatch` (`fuzzy` / `override` methods with Tax Entity ID), not match-builder re-fuzzy when stack `method` was `none`
 
-Phase **11c** (**done** in **5.3.1**): refreshed statewide `property-tax-entities-export.csv` (2026-09-02); registry `lgId` backfill on SMFR and UDFCD rows. Export ritual: certifying county only, no local-government-type filter — see README and `docs/county-build-inputs.md`. Arapahoe mill anchors unchanged; optional Arapahoe rebuild may still update `dolaMatch` metadata (legal name / fuzzy score) without mill changes. **Phase 12** (directory tile) is separate.
+Phase **11c** (**done** in **5.3.1**): refreshed statewide `property-tax-entities-export.csv` (2026-09-02); registry `lgId` backfill on SMFR and UDFCD rows. Export ritual: certifying county only, no local-government-type filter — see README and `docs/county-build-inputs.md`. Arapahoe mill anchors unchanged; optional Arapahoe rebuild may still update `dolaMatch` metadata (legal name / fuzzy score) without mill changes. **Phase 12** (directory tile): shared `colorado-special-district-directory.json` filtered to the union of Arapahoe + Douglas stack LGIDs (`npm run build:district-directory`).
 
 ## Commands
 
@@ -96,7 +96,7 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 ```
 
 - **`levyLineCodeByCounty`** — per-county AUTH codes (required for each wired county that ships the district)
-- **`lgId`** — optional DOLA LG ID from Property Tax Entities export (Phase **11c**; runtime join still uses line codes; directory tile **Phase 12**)
+- **`lgId`** — optional DOLA LG ID from Property Tax Entities export (Phase **11c**; runtime join still uses line codes; directory Contact uses this ID against `colorado-special-district-directory.json`, Phase **12**)
 - **`millsReferenceCountyId`** — which county's bundled Levy % AUTH series validates curated history at build time (not a resident cross-county fallback)
 - **`authorityChainEntryId`** — optional link to one shared `levy-authority-chain-entries.json` row (`match.registryId`)
 
