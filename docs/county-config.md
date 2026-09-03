@@ -115,7 +115,7 @@ Defined in `src/lib/countyConfig.ts`. Extend the type when a new product source 
 | `parcelRecordShards` | Lazy `{countyId}-parcel-record-by-pin` Property details shards |
 | `compsPdf` | County comps PDF product |
 | `bpp` | Business personal property URLs / UI |
-| `millsHistory` | Authority mills-over-time product **and** authority-chain Levy % rate-table cites for that county's bundled AUTH series. **Off** = no Levy % cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). |
+| `millsHistory` | Authority mills-over-time product **and** authority-chain mill rate-table cites for that county's bundled AUTH series. **Off** = no rate-table cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). Arapahoe and Douglas ship bundles today. |
 | `metroPurposes` | Metro purpose-row product |
 | `priorYearValuesGap` | COUNTY DATA GAP: no bulk prior-year assessed story for this county |
 | `dataMartRefreshGap` | COUNTY DATA GAP: Assessor Data Mart incomplete-refresh note (Arapahoe-shaped export only) |
@@ -133,7 +133,7 @@ When **two or more** counties are wired, search surfaces show which county match
 
 ## `/sources`
 
-- **County selector** at the top (`SourcesCountyGate`): wired counties from `wiredCountyConfigs()`. Default Arapahoe. No dashboard→sources county query required for v1.
+- **County selector** at the top (`SourcesCountyGate`): wired counties from `wiredCountyConfigs()`. Default Arapahoe. Dashboard→sources county preselect is **Phase 13** (today: plain `/sources` links; resident must switch selector).
 - **Gap hub** (`#county-service-gaps`) lists only the selected county’s opt-in gaps.
 - **Methodology** for the selected county must not read as universal. Shared Colorado / metro / code sections may stay shared when they are actually shared.
 
@@ -150,7 +150,7 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 
 **Current code:** Arapahoe and Douglas methodology still live as two large sections passed into `SourcesCountyGate` via `sectionsByCountyId`. That is a **transitional layout**, not the multi-county content model. When adding county 3, extract shared prose and register a county content module; do not fork the whole Arapahoe section “just in case” it has the same gaps (it will not).
 
-**Cross-county authorities:** shared districts use different per-county AUTH codes. Wired county list: `tools/wired-counties.json` (must match `CountyConfig`). Runtime map: `public/data/cross-county-authority-registry.json`. Maintainer discovery: `docs/cross-county-authorities.md`. **Resident-county gating:** registry joins identity; levy tile current mills, rate-table links, and tax-list labels use the **resident** county. Registry-linked **Changed / YoY numbers** on Douglas use resident stack mills plus entity reference prior year when they reconcile (no blind AUTH-code lookup in another county's mills file).
+**Cross-county authorities:** shared districts use different per-county AUTH codes. Wired county list: `tools/wired-counties.json` (must match `CountyConfig`). Runtime map: `public/data/cross-county-authority-registry.json`. Maintainer discovery: `docs/cross-county-authorities.md`. **Resident-county gating:** registry joins identity; levy tile current mills, rate-table links, and tax-list labels use the **resident** county. Douglas mill history is `{countyId}-authority-mills-by-tax-year.json` from Tax Districts and Mill Levies PDFs (`millsHistory: true`). `/sources` (Douglas mill history; Arapahoe Related county PDFs) lists those first-party year PDFs. Counties without a mills bundle still use registry-linked **Changed / YoY numbers** from resident stack mills plus entity reference prior year when they reconcile (no blind AUTH-code lookup in another county's mills file).
 
 ## Adding a county (checklist)
 

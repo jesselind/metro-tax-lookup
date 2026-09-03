@@ -587,7 +587,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           .rateSourcesByTaxYear !== undefined
       ) {
         fail(
-          `[${id}] mills.rateSourcesByTaxYear was removed; Levy % cites come from arapahoe-authority-mills-by-tax-year.json`,
+          `[${id}] mills.rateSourcesByTaxYear was removed; rate-table cites come from the resident county's {countyId}-authority-mills-by-tax-year.json bundle`,
         );
       }
       if (record.mills.historicalComparison !== undefined) {

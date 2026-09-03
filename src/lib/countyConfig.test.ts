@@ -122,6 +122,10 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(countyFeaturePresentation("situs", DOUGLAS_COUNTY_CONFIG)).toBe(
       "show",
     );
+    expect(
+      countyFeaturePresentation("millsHistory", DOUGLAS_COUNTY_CONFIG),
+    ).toBe("show");
+    expect(DOUGLAS_COUNTY_CONFIG.features.millsHistory).toBe(true);
     expect(countyFeaturePresentation("compsPdf", DOUGLAS_COUNTY_CONFIG)).toBe(
       "omit",
     );

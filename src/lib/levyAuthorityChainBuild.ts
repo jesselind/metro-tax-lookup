@@ -468,20 +468,22 @@ function buildWhoSetsStep(
 
 function levyPercentageSourceForYear(
   taxYear: number,
+  countyId?: string,
 ): LevyAuthorityChainSourceLink {
-  return levyPercentageResidentLinkForTaxYear(taxYear);
+  return levyPercentageResidentLinkForTaxYear(taxYear, countyId);
 }
 
 function buildMetroMillsChangeFact(
   label: string,
   change: AuthorityMillsYoYChange,
+  countyId?: string,
 ): LevyAuthorityChainFact {
   return {
     label,
     value: formatMetroMillsChangeFactValue(change),
     sources: [
-      levyPercentageSourceForYear(change.fromYear),
-      levyPercentageSourceForYear(change.toYear),
+      levyPercentageSourceForYear(change.fromYear, countyId),
+      levyPercentageSourceForYear(change.toYear, countyId),
     ],
   };
 }
@@ -550,6 +552,7 @@ function buildAuthDerivedMillsStep(
     buildMetroMillsChangeFact(
       METRO_MILLS_CHANGE_FROM_LAST_YEAR_LABEL,
       changeFromLastYear,
+      millsCountyId,
     ),
   ];
   if (mostNotableChange) {
@@ -557,6 +560,7 @@ function buildAuthDerivedMillsStep(
       buildMetroMillsChangeFact(
         METRO_MILLS_MOST_NOTABLE_CHANGE_LABEL,
         mostNotableChange,
+        millsCountyId,
       ),
     );
   }

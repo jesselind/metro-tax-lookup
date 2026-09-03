@@ -114,12 +114,14 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 | Authority chain build | `countyOverlays` + stack `authorityLabel` for tax-list fact |
 | AUTH mills history chart | `CountyConfig.features.millsHistory` + resident county bundle only |
 | Authority chain What changed? | Same: no rate-table facts when `millsHistory` is off for resident county |
-| Levy % PDF deep-links | Resident stack AUTH; deep-link only when resident county ships mills history |
-| YoY / stack Changed badges | Resident county bundle when shipped; else registry entity prior year only when resident **stack mills** match reference current year (numbers only — not Levy % PDF cites) |
+| Mill rate-table PDF deep-links | Resident stack AUTH; deep-link only when resident county ships mills history |
+| YoY / stack Changed badges | Resident county bundle when shipped; else registry entity prior year only when resident **stack mills** match reference current year (numbers only — not mill rate-table PDF cites) |
 
 **`millsReferenceCountyId`** on registry rows points at the county bundle used to validate curated AUTH history at build time and, when the resident county has no mills bundle, to supply **entity-level YoY numbers** for registry-linked stack lines (not rate-table links or modal charts).
 
-**When Douglas (or county 3) gets mills history:** ship `{countyId}-authority-mills-by-tax-year.json` (+ rate-table page index if deep-linking), set `millsHistory: true` on that county's `CountyConfig`. No architecture change — same resident-county gate.
+**Douglas mills history (shipped):** `douglas-authority-mills-by-tax-year.json` + `douglas-authority-rate-table-pages.json` from Tax Districts and Mill Levies PDFs (Tax Years 2020–2025); `millsHistory: true`. Resident cites: `/sources` (Douglas mill history) lists each bundled year PDF from the Taxing Authorities hub. County 3 follows the same gate: ship `{countyId}-authority-mills-by-tax-year.json` (+ page index if deep-linking), set `millsHistory: true`. No architecture change.
+
+**Known ingest join gap:** Some Douglas stack lines for West Metro Fire (AUTH **4402**) incorrectly carry Tax Entity ID **64108/1** (South Metro Fire Rescue). Fix is working-doc **Phase 16** (after product phases **12**–**15**, or pull forward after Douglas mill history **5.4.0**). Do not “fix” by promoting **4402** as SMFR in the registry.
 
 ### `countyOverlays` keys (authority-chain JSON)
 
@@ -136,8 +138,8 @@ Open gap templates: `src/content/levyAuthorityChainTemplates.ts` → `OPEN_GAP_B
 - `npm run validate:levy-authority-chain` — registry + authority-chain JSON
 - `src/lib/crossCountyAuthorityRegistry.test.ts` — registry rows align with match file for shipped entities (including `lgId`)
 - `tools/test_ingest_dola_match.py` — Arapahoe mill-anchor safeguards on tracked DOLA CSV before refresh
-- `src/lib/authorityMillsHistory.test.ts` — registry entity YoY with stack reconciliation (Douglas SMFR **4014**)
-- `src/lib/metroLevyYearOverYear.test.ts` — Douglas registry entity YoY via `levyLineMillDelta`
+- `src/lib/authorityMillsHistory.test.ts` — Douglas mill-PDF AUTH series (SMFR **4014**) plus Arapahoe Levy % lookups
+- `src/lib/metroLevyYearOverYear.test.ts` — Douglas mill-PDF YoY via `levyLineMillDelta`
 - `src/lib/wiredCounties.test.ts` — manifest ↔ CountyConfig
 
 ## Related docs

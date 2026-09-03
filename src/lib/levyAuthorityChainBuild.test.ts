@@ -398,10 +398,20 @@ describe("levyAuthorityChainBuild", () => {
     ).toBe(true);
     expect(
       douglasEntry.openGaps.some((g) => g.id === "no-resident-county-mills-history"),
-    ).toBe(true);
-    expect(douglasEntry.steps.find((step) => step.id === "certified-mills")?.facts).toEqual(
-      [],
+    ).toBe(false);
+    const douglasMills = douglasEntry.steps.find(
+      (step) => step.id === "certified-mills",
     );
+    expect(douglasMills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(
+      douglasMills?.facts.some((fact) =>
+        fact.sources.some((src) =>
+          src.url.includes("douglasco.gov/documents/"),
+        ),
+      ),
+    ).toBe(true);
   });
 
   it("builds Sky Ranch from AUTH-derived mills and chronological metro steps", () => {

@@ -1,0 +1,3754 @@
+{
+  "_meta": {
+    "bundledAsOf": "2026-09-02",
+    "taxYears": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "joinKey": "Stack line `code` (AUTH). Look up authorities[code].millsByTaxYear.",
+    "pdfTagNote": "Mill PDF tax-district number is parcel tagShortDescr zero-padded to four digits (same join as levy stacks). Exception maps use those tax-district keys for audit; app YoY joins AUTH totals.",
+    "yearSemantics": "Numbers are Tax Year mills from Douglas Tax Districts and Mill Levies PDFs. Do not relabel Tax Year 2025 as budget year 2026.",
+    "sources": [
+      {
+        "taxYear": 2020,
+        "type": "tax_districts_and_mill_levies",
+        "title": "2020 Tax Districts and Mill Levies",
+        "file": "supporting-data/douglas/2020-tax-districts-and-mill-levies.pdf",
+        "residentUrl": "https://www.douglasco.gov/documents/2020-tax-districts-and-mill-levies.pdf"
+      },
+      {
+        "taxYear": 2021,
+        "type": "tax_districts_and_mill_levies",
+        "title": "2021 Tax Districts and Mill Levies",
+        "file": "supporting-data/douglas/2021-tax-districts-and-mill-levies.pdf",
+        "residentUrl": "https://www.douglasco.gov/documents/tax-districts-mill-levies.pdf"
+      },
+      {
+        "taxYear": 2022,
+        "type": "tax_districts_and_mill_levies",
+        "title": "2022 Tax Districts and Mill Levies",
+        "file": "supporting-data/douglas/2022-tax-districts-and-mill-levies.pdf",
+        "residentUrl": "https://www.douglasco.gov/documents/2022-tax-districts-and-mill-levies.pdf"
+      },
+      {
+        "taxYear": 2023,
+        "type": "tax_districts_and_mill_levies",
+        "title": "2023 Tax Districts and Mill Levies",
+        "file": "supporting-data/douglas/2023-tax-districts-and-mill-levies.pdf",
+        "residentUrl": "https://www.douglasco.gov/documents/2023-tax-districts-and-mill-levies.pdf"
+      },
+      {
+        "taxYear": 2024,
+        "type": "tax_districts_and_mill_levies",
+        "title": "2024 Tax Districts and Mill Levies",
+        "file": "supporting-data/douglas/2024-tax-districts-and-mill-levies.pdf",
+        "residentUrl": "https://www.douglasco.gov/documents/2024-tax-districts-and-mill-levies.pdf"
+      },
+      {
+        "taxYear": 2025,
+        "type": "tax_districts_and_mill_levies",
+        "title": "2025 Tax Districts and Mill Levies",
+        "file": "supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf",
+        "residentUrl": "https://www.douglasco.gov/documents/2025-tax-districts-and-mill-levies.pdf"
+      }
+    ],
+    "statsByTaxYear": {
+      "2020": {
+        "rowCount": 7719,
+        "uniqueAuthorityCount": 295,
+        "uniformAuthorityCount": 295,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      },
+      "2021": {
+        "rowCount": 7863,
+        "uniqueAuthorityCount": 300,
+        "uniformAuthorityCount": 300,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      },
+      "2022": {
+        "rowCount": 7981,
+        "uniqueAuthorityCount": 309,
+        "uniformAuthorityCount": 309,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      },
+      "2023": {
+        "rowCount": 8150,
+        "uniqueAuthorityCount": 323,
+        "uniformAuthorityCount": 323,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      },
+      "2024": {
+        "rowCount": 8277,
+        "uniqueAuthorityCount": 326,
+        "uniformAuthorityCount": 326,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      },
+      "2025": {
+        "rowCount": 8435,
+        "uniqueAuthorityCount": 334,
+        "uniformAuthorityCount": 334,
+        "exceptionAuthorityCount": 0,
+        "tagAuthConflictCount": 0
+      }
+    }
+  },
+  "authorities": {
+    "0001": {
+      "name": "Douglas County Government",
+      "millsByTaxYear": {
+        "2020": 19.274,
+        "2021": 18.524,
+        "2022": 18.524,
+        "2023": 19.774,
+        "2024": 18.726,
+        "2025": 19.774
+      }
+    },
+    "0002": {
+      "name": "Douglas County Law Enforcement",
+      "millsByTaxYear": {
+        "2020": 4.5,
+        "2021": 4.5,
+        "2022": 4.5,
+        "2023": 4.5,
+        "2024": 4.5,
+        "2025": 4.5
+      }
+    },
+    "2001": {
+      "name": "Douglas County Re-1 School District",
+      "millsByTaxYear": {
+        "2020": 35.45,
+        "2021": 35.743,
+        "2022": 36.136,
+        "2023": 40.73,
+        "2024": 40.324,
+        "2025": 39.752
+      }
+    },
+    "2002": {
+      "name": "Douglas County Schools - Cap Reserve",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "2003": {
+      "name": "Douglas County Schools - Insurance Reserve",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "2004": {
+      "name": "Douglas County Schools - Debt Service",
+      "millsByTaxYear": {
+        "2020": 8.054,
+        "2021": 8.054,
+        "2022": 6.7,
+        "2023": 5.204,
+        "2024": 5.204,
+        "2025": 5.776
+      }
+    },
+    "3001": {
+      "name": "City of Littleton",
+      "millsByTaxYear": {
+        "2020": 2.0,
+        "2021": 2.0,
+        "2022": 2.0,
+        "2023": 2.0,
+        "2024": 2.0,
+        "2025": 2.0
+      }
+    },
+    "3002": {
+      "name": "Town of Castle Rock",
+      "millsByTaxYear": {
+        "2020": 1.196,
+        "2021": 1.139,
+        "2022": 1.139,
+        "2023": 0.92,
+        "2024": 0.92,
+        "2025": 0.92
+      }
+    },
+    "3003": {
+      "name": "Town of Larkspur",
+      "millsByTaxYear": {
+        "2020": 15.0,
+        "2021": 15.0,
+        "2022": 15.0,
+        "2023": 15.0,
+        "2024": 15.0,
+        "2025": 15.0
+      }
+    },
+    "3004": {
+      "name": "Town of Parker",
+      "millsByTaxYear": {
+        "2020": 2.602,
+        "2021": 2.602,
+        "2022": 2.602,
+        "2023": 2.602,
+        "2024": 2.602,
+        "2025": 2.602
+      }
+    },
+    "3005": {
+      "name": "City of Aurora",
+      "millsByTaxYear": {
+        "2020": 8.076,
+        "2021": 8.073,
+        "2022": 7.816,
+        "2023": 8.407,
+        "2024": 6.613,
+        "2025": 7.087
+      }
+    },
+    "3006": {
+      "name": "City of Lone Tree",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "3007": {
+      "name": "City of Castle Pines",
+      "millsByTaxYear": {
+        "2020": 4.5,
+        "2021": 4.5,
+        "2022": 4.5,
+        "2023": 16.5,
+        "2024": 16.5,
+        "2025": 16.5
+      }
+    },
+    "4002": {
+      "name": "Urban Drainage & Flood Control District",
+      "millsByTaxYear": {
+        "2020": 0.9,
+        "2021": 0.9,
+        "2022": 0.9,
+        "2023": 0.9,
+        "2024": 0.9,
+        "2025": 0.9
+      }
+    },
+    "4003": {
+      "name": "Perry Park Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 5.614,
+        "2021": 5.614,
+        "2022": 5.614,
+        "2023": 5.614,
+        "2024": 5.614,
+        "2025": 5.614
+      }
+    },
+    "4004": {
+      "name": "Larkspur Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 19.028,
+        "2021": 18.73,
+        "2022": 19.117,
+        "2023": 19.002,
+        "2024": 18.998,
+        "2025": 18.151
+      }
+    },
+    "4005": {
+      "name": "Perry Park Metro District",
+      "millsByTaxYear": {
+        "2020": 4.733,
+        "2021": 4.733,
+        "2022": 4.733,
+        "2023": 4.233,
+        "2024": 4.383,
+        "2025": 4.383
+      }
+    },
+    "4007": {
+      "name": "Roxborough Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 9.108,
+        "2021": 9.108,
+        "2022": 8.208,
+        "2023": 5.0,
+        "2024": 5.0,
+        "2025": 2.5
+      }
+    },
+    "4008": {
+      "name": "McArthur Ranch Metro Recreation District",
+      "millsByTaxYear": {
+        "2020": 3.053,
+        "2021": 3.053,
+        "2022": 3.053,
+        "2023": 3.053,
+        "2024": 3.053,
+        "2025": 3.053
+      }
+    },
+    "4009": {
+      "name": "Franktown Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 13.026,
+        "2021": 13.015,
+        "2022": 13.354,
+        "2023": 13.0,
+        "2024": 13.0,
+        "2025": 13.995
+      }
+    },
+    "4010": {
+      "name": "Regional Transportation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4011": {
+      "name": "Denver SE Suburban Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4012": {
+      "name": "Cedar Hill Cemetery Association",
+      "millsByTaxYear": {
+        "2020": 0.128,
+        "2021": 0.124,
+        "2022": 0.125,
+        "2023": 0.104,
+        "2024": 0.104,
+        "2025": 0.104
+      }
+    },
+    "4013": {
+      "name": "Castleton Center Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 15.376,
+        "2021": 15.376,
+        "2022": 15.376,
+        "2023": 15.376,
+        "2024": 15.376,
+        "2025": 15.376
+      }
+    },
+    "4014": {
+      "name": "South Metro Fire Rescue Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 9.25,
+        "2021": 9.319,
+        "2022": 9.288,
+        "2023": 9.25,
+        "2024": 9.29,
+        "2025": 12.25
+      }
+    },
+    "4015": {
+      "name": "Silver Heights Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4016": {
+      "name": "Castle Pines Metro District",
+      "millsByTaxYear": {
+        "2020": 33.834,
+        "2021": 33.834,
+        "2022": 33.834,
+        "2023": 33.834,
+        "2024": 33.834,
+        "2025": 33.834
+      }
+    },
+    "4019": {
+      "name": "Southwest Metro Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4020": {
+      "name": "Inverness Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 4.5,
+        "2021": 4.5,
+        "2022": 4.5,
+        "2023": 4.0,
+        "2024": 1.245,
+        "2025": 0.5
+      }
+    },
+    "4021": {
+      "name": "Meridian Metro District",
+      "millsByTaxYear": {
+        "2020": 49.51,
+        "2021": 50.0
+      }
+    },
+    "4022": {
+      "name": "Parker Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 8.404,
+        "2021": 7.743,
+        "2022": 7.698,
+        "2023": 5.901,
+        "2024": 5.778,
+        "2025": 5.771
+      }
+    },
+    "4023": {
+      "name": "Southgate Water District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4024": {
+      "name": "Southgate Sanitation District",
+      "millsByTaxYear": {
+        "2020": 0.465,
+        "2021": 0.463,
+        "2022": 0.465,
+        "2023": 0.428,
+        "2024": 0.445,
+        "2025": 0.465
+      }
+    },
+    "4027": {
+      "name": "Thunderbird Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 9.075,
+        "2021": 8.42,
+        "2022": 5.916,
+        "2023": 25.653,
+        "2024": 25.915,
+        "2025": 23.191
+      }
+    },
+    "4028": {
+      "name": "Upper South Platte Water Conservancy",
+      "millsByTaxYear": {
+        "2020": 0.134,
+        "2021": 0.122,
+        "2022": 0.13,
+        "2023": 0.093,
+        "2024": 0.092,
+        "2025": 0.108
+      }
+    },
+    "4029": {
+      "name": "Westcreek Lakes Water District",
+      "millsByTaxYear": {
+        "2020": 16.36,
+        "2021": 14.764,
+        "2022": 16.171,
+        "2023": 12.279,
+        "2024": 13.05,
+        "2025": 14.571
+      }
+    },
+    "4032": {
+      "name": "West Douglas County Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 8.35,
+        "2021": 8.35,
+        "2022": 8.35,
+        "2023": 8.35,
+        "2024": 8.35,
+        "2025": 10.357
+      }
+    },
+    "4033": {
+      "name": "Jackson 105 Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 12.11,
+        "2021": 12.11,
+        "2022": 12.11,
+        "2023": 12.11,
+        "2024": 12.11,
+        "2025": 12.11
+      }
+    },
+    "4034": {
+      "name": "Castle Rock Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 10.4,
+        "2021": 10.1,
+        "2022": 12.0,
+        "2023": 11.3,
+        "2024": 10.6,
+        "2025": 10.1
+      }
+    },
+    "4045": {
+      "name": "South Suburban Park & Recreation District",
+      "millsByTaxYear": {
+        "2020": 8.385,
+        "2021": 8.396,
+        "2022": 8.426,
+        "2023": 8.32,
+        "2024": 8.286,
+        "2025": 8.8
+      }
+    },
+    "4047": {
+      "name": "Cottonwood Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 13.5,
+        "2021": 12.5,
+        "2022": 12.5,
+        "2023": 7.66,
+        "2024": 9.0,
+        "2025": 5.65
+      }
+    },
+    "4048": {
+      "name": "Inverness Metro Improvement District",
+      "millsByTaxYear": {
+        "2020": 6.15,
+        "2021": 6.15,
+        "2022": 4.5,
+        "2023": 4.0,
+        "2024": 4.21,
+        "2025": 4.56
+      }
+    },
+    "4049": {
+      "name": "Perry Park Water & Sanitation District -Water Only",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4053": {
+      "name": "Northern Douglas County Water & San District",
+      "millsByTaxYear": {
+        "2020": 12.806,
+        "2021": 12.806,
+        "2022": 12.806,
+        "2023": 12.806,
+        "2024": 12.806,
+        "2025": 12.481
+      }
+    },
+    "4056": {
+      "name": "Mirabelle Metro District 1",
+      "millsByTaxYear": {
+        "2020": 83.496,
+        "2021": 83.496,
+        "2022": 83.496,
+        "2023": 77.956,
+        "2024": 77.956,
+        "2025": 26.851
+      }
+    },
+    "4058": {
+      "name": "Centennial Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4060": {
+      "name": "Cottonwood Metro District",
+      "millsByTaxYear": {
+        "2020": 8.8,
+        "2021": 8.8,
+        "2022": 8.8,
+        "2023": 8.3,
+        "2024": 8.3,
+        "2025": 8.3
+      }
+    },
+    "4062": {
+      "name": "Park Meadows Metro District",
+      "millsByTaxYear": {
+        "2020": 6.387,
+        "2021": 6.387,
+        "2022": 6.387,
+        "2023": 6.387,
+        "2024": 6.387,
+        "2025": 6.387
+      }
+    },
+    "4064": {
+      "name": "Lincoln Park Metro District",
+      "millsByTaxYear": {
+        "2020": 51.721,
+        "2021": 51.721,
+        "2022": 51.721,
+        "2023": 47.0,
+        "2024": 47.0,
+        "2025": 47.0
+      }
+    },
+    "4065": {
+      "name": "Stonegate Village Metro District",
+      "millsByTaxYear": {
+        "2020": 28.704,
+        "2021": 28.704,
+        "2022": 29.731,
+        "2023": 23.61,
+        "2024": 23.61,
+        "2025": 0.655
+      }
+    },
+    "4066": {
+      "name": "E-470 Public Highway Authority",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4068": {
+      "name": "Castle Pines North Metro District",
+      "millsByTaxYear": {
+        "2020": 19.0,
+        "2021": 15.79,
+        "2022": 15.79,
+        "2023": 3.522,
+        "2024": 3.5,
+        "2025": 3.5
+      }
+    },
+    "4070": {
+      "name": "Founders Village Metro District",
+      "millsByTaxYear": {
+        "2020": 88.083,
+        "2021": 88.683,
+        "2022": 91.198,
+        "2023": 94.563,
+        "2024": 94.563,
+        "2025": 94.563
+      }
+    },
+    "4071": {
+      "name": "Castlewood Ranch Metro District",
+      "millsByTaxYear": {
+        "2020": 40.0,
+        "2021": 40.0,
+        "2022": 40.0,
+        "2023": 29.805,
+        "2024": 29.805,
+        "2025": 29.805
+      }
+    },
+    "4073": {
+      "name": "Villages at Castle Rock Metro District 4",
+      "millsByTaxYear": {
+        "2020": 4.432,
+        "2021": 4.462,
+        "2022": 4.556,
+        "2023": 4.721,
+        "2024": 4.721,
+        "2025": 5.188
+      }
+    },
+    "4075": {
+      "name": "Villages at Castle Rock Metro District 6",
+      "millsByTaxYear": {
+        "2020": 76.796,
+        "2021": 70.664,
+        "2022": 72.095,
+        "2023": 76.986,
+        "2024": 77.007,
+        "2025": 75.286
+      }
+    },
+    "4077": {
+      "name": "Douglas County Soil Conservation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4078": {
+      "name": "Douglas County Woodmoor Mountain G.I.D.",
+      "millsByTaxYear": {
+        "2020": 10.809,
+        "2021": 9.724,
+        "2022": 10.743,
+        "2023": 7.239,
+        "2024": 7.694,
+        "2025": 8.743
+      }
+    },
+    "4079": {
+      "name": "Meadows Metro District 1",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4081": {
+      "name": "Westfield Metro District 1",
+      "millsByTaxYear": {
+        "2020": 10.0,
+        "2021": 84.044,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 76.511
+      }
+    },
+    "4082": {
+      "name": "Meadows Metro District 2",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4083": {
+      "name": "BMR Metro District fka Bell Mountain Metro",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0
+      }
+    },
+    "4087": {
+      "name": "Westfield Metro District 2",
+      "millsByTaxYear": {
+        "2020": 10.0,
+        "2021": 84.044,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 76.481
+      }
+    },
+    "4088": {
+      "name": "Meadows Metro District 3",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4089": {
+      "name": "Meadows Metro District 4",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4090": {
+      "name": "Canterberry Crossing Metro District",
+      "millsByTaxYear": {
+        "2020": 21.795,
+        "2021": 21.795,
+        "2022": 21.795,
+        "2023": 15.5,
+        "2024": 15.5,
+        "2025": 15.6
+      }
+    },
+    "4099": {
+      "name": "Cherry Creek South Metro District 1",
+      "millsByTaxYear": {
+        "2020": 1.588,
+        "2021": 1.588,
+        "2022": 1.588,
+        "2023": 1.361,
+        "2024": 1.361,
+        "2025": 1.448
+      }
+    },
+    "4101": {
+      "name": "Villages at Castle Rock Metro District 9",
+      "millsByTaxYear": {
+        "2020": 88.083,
+        "2021": 88.683,
+        "2022": 91.198,
+        "2023": 94.563,
+        "2024": 94.563,
+        "2025": 45.111
+      }
+    },
+    "4103": {
+      "name": "Anthology West Metro District 2",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 47.678,
+        "2023": 47.678,
+        "2024": 41.498,
+        "2025": 44.461
+      }
+    },
+    "4104": {
+      "name": "Dawson Ridge Metro District 1",
+      "millsByTaxYear": {
+        "2020": 49.84,
+        "2021": 45.0,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 76.293
+      }
+    },
+    "4105": {
+      "name": "Dawson Ridge Metro District 2",
+      "millsByTaxYear": {
+        "2020": 45.0,
+        "2021": 45.0,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 76.508
+      }
+    },
+    "4106": {
+      "name": "Dawson Ridge Metro District 3",
+      "millsByTaxYear": {
+        "2020": 51.82,
+        "2021": 45.0,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 76.5
+      }
+    },
+    "4107": {
+      "name": "Dawson Ridge Metro District 4",
+      "millsByTaxYear": {
+        "2020": 45.0,
+        "2021": 45.0,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 74.044
+      }
+    },
+    "4108": {
+      "name": "Dawson Ridge Metro District 5",
+      "millsByTaxYear": {
+        "2020": 45.0,
+        "2021": 45.0,
+        "2022": 74.044,
+        "2023": 74.044,
+        "2024": 74.044,
+        "2025": 76.512
+      }
+    },
+    "4109": {
+      "name": "Roxborough Village Metro District",
+      "millsByTaxYear": {
+        "2020": 21.287,
+        "2021": 12.105,
+        "2022": 12.105,
+        "2023": 12.105,
+        "2024": 12.087,
+        "2025": 12.093
+      }
+    },
+    "4110": {
+      "name": "Meadows Metro District 5",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4111": {
+      "name": "Meadows Metro District 6",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4114": {
+      "name": "Meadows Metro District 7",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4115": {
+      "name": "Sedalia Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 13.859,
+        "2021": 13.85,
+        "2022": 16.76,
+        "2023": 13.85,
+        "2024": 13.862,
+        "2025": 16.363
+      }
+    },
+    "4200": {
+      "name": "Crystal Valley Metro District 1",
+      "millsByTaxYear": {
+        "2020": 3.5,
+        "2021": 2.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0
+      }
+    },
+    "4210": {
+      "name": "Crystal Valley Metro District 2",
+      "millsByTaxYear": {
+        "2020": 51.5,
+        "2021": 45.0,
+        "2022": 8.0,
+        "2023": 5.5,
+        "2024": 13.05,
+        "2025": 22.525
+      }
+    },
+    "4250": {
+      "name": "Maher Ranch Metro District 4",
+      "millsByTaxYear": {
+        "2020": 33.5,
+        "2021": 32.5,
+        "2022": 32.5,
+        "2023": 27.872,
+        "2024": 23.9,
+        "2025": 23.9
+      }
+    },
+    "4270": {
+      "name": "Castle Pines Comm Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0
+      }
+    },
+    "4280": {
+      "name": "Castle Pines Comm Metro District 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0
+      }
+    },
+    "4290": {
+      "name": "Castle Pines Comm Metro District 3",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 33.51,
+        "2022": 41.304,
+        "2023": 24.765,
+        "2024": 21.0,
+        "2025": 21.335
+      }
+    },
+    "4300": {
+      "name": "Castle Pines Comm Metro District 4",
+      "millsByTaxYear": {
+        "2020": 34.681,
+        "2021": 34.41,
+        "2022": 25.304,
+        "2023": 29.894,
+        "2024": 24.043,
+        "2025": 25.075
+      }
+    },
+    "4310": {
+      "name": "Castle Pines Comm Metro District 5",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0
+      }
+    },
+    "4330": {
+      "name": "High Prairie Farms Metro District",
+      "millsByTaxYear": {
+        "2020": 12.0,
+        "2021": 12.0,
+        "2022": 12.0,
+        "2023": 12.0,
+        "2024": 12.0,
+        "2025": 12.0
+      }
+    },
+    "4340": {
+      "name": "Cherry Creek Basin Water Quality Authority",
+      "millsByTaxYear": {
+        "2020": 0.478,
+        "2021": 0.479,
+        "2022": 0.5,
+        "2023": 0.425,
+        "2024": 0.43,
+        "2025": 0.45
+      }
+    },
+    "4380": {
+      "name": "Mountain Communities F.P.D.",
+      "millsByTaxYear": {
+        "2020": 8.582,
+        "2021": 8.582,
+        "2022": 8.582,
+        "2023": 8.582,
+        "2024": 8.582,
+        "2025": 8.582
+      }
+    },
+    "4390": {
+      "name": "Douglas Public Library District",
+      "millsByTaxYear": {
+        "2020": 4.012,
+        "2021": 4.021,
+        "2022": 4.008,
+        "2023": 3.513,
+        "2024": 4.0,
+        "2025": 3.519
+      }
+    },
+    "4392": {
+      "name": "Urban Drainage & Flood South Platte",
+      "millsByTaxYear": {
+        "2020": 0.1,
+        "2021": 0.1,
+        "2022": 0.1,
+        "2023": 0.1,
+        "2024": 0.1,
+        "2025": 0.1
+      }
+    },
+    "4393": {
+      "name": "Southgate Water Bond Debt Service",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0
+      }
+    },
+    "4394": {
+      "name": "Hidden Pointe Metro District",
+      "millsByTaxYear": {
+        "2020": 6.5,
+        "2021": 6.5,
+        "2022": 6.5,
+        "2023": 4.5,
+        "2024": 4.5,
+        "2025": 3.5
+      }
+    },
+    "4395": {
+      "name": "Omnipark Metro District",
+      "millsByTaxYear": {
+        "2020": 9.0,
+        "2021": 7.0,
+        "2022": 7.0,
+        "2023": 6.0,
+        "2024": 6.0,
+        "2025": 6.0
+      }
+    },
+    "4396": {
+      "name": "Heritage Hills Metro District",
+      "millsByTaxYear": {
+        "2020": 40.0,
+        "2021": 40.0,
+        "2022": 41.137,
+        "2023": 33.097,
+        "2024": 33.097,
+        "2025": 33.097
+      }
+    },
+    "4398": {
+      "name": "Chatfield South Water District",
+      "millsByTaxYear": {
+        "2020": 5.0,
+        "2021": 5.0,
+        "2022": 5.0,
+        "2023": 5.0,
+        "2024": 5.0,
+        "2025": 5.0
+      }
+    },
+    "4399": {
+      "name": "Compark Business Campus Metro",
+      "millsByTaxYear": {
+        "2020": 42.122,
+        "2021": 42.106,
+        "2022": 42.152,
+        "2023": 43.811,
+        "2024": 43.811,
+        "2025": 43.811
+      }
+    },
+    "4400": {
+      "name": "Consolidated Bell Mountain Ranch Metro District",
+      "millsByTaxYear": {
+        "2020": 65.0,
+        "2021": 57.773,
+        "2022": 58.278,
+        "2023": 45.591,
+        "2024": 47.028,
+        "2025": 47.028
+      }
+    },
+    "4401": {
+      "name": "E-470 Potomac Metro District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0
+      }
+    },
+    "4402": {
+      "name": "West Metro Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 13.227,
+        "2021": 13.196,
+        "2022": 13.431,
+        "2023": 13.401,
+        "2024": 13.69,
+        "2025": 14.361
+      }
+    },
+    "4404": {
+      "name": "Pinery West Metro District 2",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 53.5,
+        "2023": 37.87,
+        "2024": 35.91,
+        "2025": 13.124
+      }
+    },
+    "4406": {
+      "name": "Meridian Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 21.26,
+        "2021": 21.26,
+        "2022": 21.26,
+        "2023": 22.0,
+        "2024": 21.716,
+        "2025": 27.459
+      }
+    },
+    "4407": {
+      "name": "Concord Metro District",
+      "millsByTaxYear": {
+        "2020": 7.0,
+        "2021": 7.0,
+        "2022": 7.0,
+        "2023": 6.0,
+        "2024": 6.0,
+        "2025": 6.0
+      }
+    },
+    "4408": {
+      "name": "South Meridian Metro District",
+      "millsByTaxYear": {
+        "2020": 20.48,
+        "2021": 20.48,
+        "2022": 21.207,
+        "2023": 18.048,
+        "2024": 18.018,
+        "2025": 19.185
+      }
+    },
+    "4410": {
+      "name": "South Meridian Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 6.0,
+        "2021": 6.0,
+        "2022": 6.0,
+        "2023": 5.309,
+        "2024": 5.285,
+        "2025": 5.285
+      }
+    },
+    "4412": {
+      "name": "Franktown Business Area Metro District",
+      "millsByTaxYear": {
+        "2020": 10.0,
+        "2021": 10.0,
+        "2022": 10.0,
+        "2023": 10.026,
+        "2024": 10.0,
+        "2025": 0.0
+      }
+    },
+    "4414": {
+      "name": "Castle Oaks Metro District",
+      "millsByTaxYear": {
+        "2020": 49.0,
+        "2021": 49.0,
+        "2022": 49.0,
+        "2023": 39.0,
+        "2024": 39.0,
+        "2025": 39.0
+      }
+    },
+    "4415": {
+      "name": "Canterberry Crossing Metro District II",
+      "millsByTaxYear": {
+        "2020": 33.0,
+        "2021": 33.0,
+        "2022": 33.0,
+        "2023": 23.6,
+        "2024": 23.6,
+        "2025": 25.8
+      }
+    },
+    "4416": {
+      "name": "South Meridian Metro District Debt Service 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4417": {
+      "name": "North Meridian Metro District",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0
+      }
+    },
+    "4418": {
+      "name": "Rampart Range Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4419": {
+      "name": "Rampart Range Metro District 2",
+      "millsByTaxYear": {
+        "2020": 49.0,
+        "2021": 49.0,
+        "2022": 49.368,
+        "2023": 50.0,
+        "2024": 50.0,
+        "2025": 50.0
+      }
+    },
+    "4420": {
+      "name": "Rampart Range Metro District 3",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 49.0,
+        "2025": 49.0
+      }
+    },
+    "4421": {
+      "name": "Rampart Range Metro District 4",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 9.834,
+        "2024": 8.449,
+        "2025": 8.869
+      }
+    },
+    "4422": {
+      "name": "Rampart Range Metro District 5",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4423": {
+      "name": "Rampart Range Metro District 6",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 55.0,
+        "2022": 55.0,
+        "2023": 57.246,
+        "2024": 58.218,
+        "2025": 60.423
+      }
+    },
+    "4424": {
+      "name": "RockingHorse Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4425": {
+      "name": "Inspiration Metro District",
+      "millsByTaxYear": {
+        "2020": 67.908,
+        "2021": 67.908,
+        "2022": 54.125,
+        "2023": 41.252,
+        "2024": 41.255,
+        "2025": 50.22
+      }
+    },
+    "4426": {
+      "name": "Canyons Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4427": {
+      "name": "Canyons Metro District 2",
+      "millsByTaxYear": {
+        "2020": 69.0,
+        "2021": 69.0,
+        "2022": 69.069,
+        "2023": 71.732,
+        "2024": 71.732,
+        "2025": 74.111
+      }
+    },
+    "4428": {
+      "name": "Canyons Metro District 3",
+      "millsByTaxYear": {
+        "2020": 54.0,
+        "2021": 54.0,
+        "2022": 55.422,
+        "2023": 56.908,
+        "2024": 57.382,
+        "2025": 61.032
+      }
+    },
+    "4429": {
+      "name": "Canyons Metro District 4",
+      "millsByTaxYear": {
+        "2020": 69.0,
+        "2021": 69.0,
+        "2022": 69.0,
+        "2023": 69.0,
+        "2024": 69.0,
+        "2025": 69.0
+      }
+    },
+    "4432": {
+      "name": "Cherokee Ridge Estates Metro",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 50.0,
+        "2024": 50.0,
+        "2025": 49.444
+      }
+    },
+    "4433": {
+      "name": "Solitude Metro District",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 50.0,
+        "2024": 55.0,
+        "2025": 55.0
+      }
+    },
+    "4434": {
+      "name": "Crystal Crossing Metro District",
+      "millsByTaxYear": {
+        "2020": 74.625,
+        "2021": 74.625,
+        "2022": 74.625,
+        "2023": 57.254,
+        "2024": 57.254,
+        "2025": 52.966
+      }
+    },
+    "4435": {
+      "name": "Lincoln Meadows Metro District",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 50.0,
+        "2024": 50.0,
+        "2025": 50.0
+      }
+    },
+    "4436": {
+      "name": "Crowfoot Valley Ranch Metro District 1",
+      "millsByTaxYear": {
+        "2020": 85.443,
+        "2021": 85.443,
+        "2022": 70.01,
+        "2023": 72.767,
+        "2024": 72.769,
+        "2025": 75.186
+      }
+    },
+    "4437": {
+      "name": "Crowfoot Valley Ranch Metro District 2",
+      "millsByTaxYear": {
+        "2020": 85.442,
+        "2021": 85.442,
+        "2022": 75.103,
+        "2023": 81.236,
+        "2024": 80.465,
+        "2025": 83.342
+      }
+    },
+    "4438": {
+      "name": "Antelope Heights Metro District",
+      "millsByTaxYear": {
+        "2020": 43.5,
+        "2021": 43.5,
+        "2022": 43.5,
+        "2023": 43.5,
+        "2024": 43.5,
+        "2025": 43.5
+      }
+    },
+    "4439": {
+      "name": "Kings Point South Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 75.0,
+        "2024": 75.0,
+        "2025": 75.0
+      }
+    },
+    "4440": {
+      "name": "Kings Point South Metro District 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4441": {
+      "name": "Lincoln Station Metro District",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.077,
+        "2023": 23.11,
+        "2024": 23.516,
+        "2025": 24.483
+      }
+    },
+    "4442": {
+      "name": "Stone Canon Ranch Metro District",
+      "millsByTaxYear": {
+        "2020": 43.99,
+        "2021": 47.835,
+        "2022": 51.306,
+        "2023": 49.452,
+        "2024": 46.186,
+        "2025": 49.491
+      }
+    },
+    "4443": {
+      "name": "Horse Creek Metro District",
+      "millsByTaxYear": {
+        "2020": 25.0,
+        "2021": 24.784,
+        "2022": 24.784,
+        "2023": 27.593,
+        "2024": 14.5,
+        "2025": 14.5
+      }
+    },
+    "4444": {
+      "name": "Lanterns Metro District 1",
+      "millsByTaxYear": {
+        "2020": 75.121,
+        "2021": 75.121,
+        "2022": 75.843,
+        "2023": 83.556,
+        "2024": 84.506,
+        "2025": 57.603
+      }
+    },
+    "4445": {
+      "name": "Meridian Village Metro District 1",
+      "millsByTaxYear": {
+        "2020": 51.132,
+        "2021": 51.132,
+        "2022": 51.389,
+        "2023": 38.279,
+        "2024": 38.279,
+        "2025": 32.0
+      }
+    },
+    "4446": {
+      "name": "Meridian Village Metro District 2",
+      "millsByTaxYear": {
+        "2020": 51.132,
+        "2021": 51.132,
+        "2022": 51.389,
+        "2023": 38.279,
+        "2024": 38.279,
+        "2025": 32.0
+      }
+    },
+    "4447": {
+      "name": "Meridian Village Metro District 3",
+      "millsByTaxYear": {
+        "2020": 0.0
+      }
+    },
+    "4448": {
+      "name": "Meridian Village Metro District 4",
+      "millsByTaxYear": {
+        "2020": 0.0
+      }
+    },
+    "4449": {
+      "name": "Pine Bluffs Metro District",
+      "millsByTaxYear": {
+        "2020": 20.0,
+        "2021": 20.0,
+        "2022": 20.0,
+        "2023": 12.5,
+        "2024": 12.5,
+        "2025": 12.5
+      }
+    },
+    "4450": {
+      "name": "Ravenna Metro District",
+      "millsByTaxYear": {
+        "2020": 77.715,
+        "2021": 77.715,
+        "2022": 77.715,
+        "2023": 63.0,
+        "2024": 63.0,
+        "2025": 63.0
+      }
+    },
+    "4451": {
+      "name": "Reata North Metro District",
+      "millsByTaxYear": {
+        "2020": 21.0,
+        "2021": 18.1,
+        "2022": 15.0,
+        "2023": 12.71,
+        "2024": 12.71,
+        "2025": 13.205
+      }
+    },
+    "4452": {
+      "name": "Southeast Public Improv Metro District",
+      "millsByTaxYear": {
+        "2020": 2.0,
+        "2021": 2.0,
+        "2022": 2.0,
+        "2023": 1.865,
+        "2024": 2.0,
+        "2025": 2.0
+      }
+    },
+    "4453": {
+      "name": "Parker Automotive Metro District",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 52.068,
+        "2024": 52.068,
+        "2025": 54.74
+      }
+    },
+    "4454": {
+      "name": "Compark Business Campus Metro Dist Debt Svc",
+      "millsByTaxYear": {
+        "2020": 20.923,
+        "2021": 20.922,
+        "2022": 21.516,
+        "2023": 22.319,
+        "2024": 22.318,
+        "2025": 22.318
+      }
+    },
+    "4455": {
+      "name": "North Meridian Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 40.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4456": {
+      "name": "Arapahoe County Water & Wastewater PID",
+      "millsByTaxYear": {
+        "2020": 12.0,
+        "2021": 10.5,
+        "2022": 10.5,
+        "2023": 8.25,
+        "2024": 7.9,
+        "2025": 7.5
+      }
+    },
+    "4457": {
+      "name": "Dominion Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4459": {
+      "name": "Olde Town Metro District",
+      "millsByTaxYear": {
+        "2020": 28.0,
+        "2021": 36.0,
+        "2022": 36.0,
+        "2023": 31.608,
+        "2024": 55.0,
+        "2025": 55.0
+      }
+    },
+    "4460": {
+      "name": "Neu Towne Metro District",
+      "millsByTaxYear": {
+        "2020": 51.364,
+        "2021": 42.449,
+        "2022": 42.448,
+        "2023": 46.638,
+        "2024": 37.52,
+        "2025": 36.52
+      }
+    },
+    "4461": {
+      "name": "Anthology West Metro District 3",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 47.678,
+        "2023": 47.678,
+        "2024": 47.678,
+        "2025": 47.678
+      }
+    },
+    "4462": {
+      "name": "Cherry Creek South Metro District 4",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 10.069,
+        "2022": 10.317,
+        "2023": 10.492,
+        "2024": 10.394,
+        "2025": 10.74
+      }
+    },
+    "4463": {
+      "name": "Cherry Creek South Metro District 5",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 67.466,
+        "2022": 73.599,
+        "2023": 69.992,
+        "2024": 69.871,
+        "2025": 71.962
+      }
+    },
+    "4464": {
+      "name": "Cherry Creek South Metro District 6",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 67.466,
+        "2022": 73.595,
+        "2023": 70.64,
+        "2024": 69.642,
+        "2025": 71.962
+      }
+    },
+    "4465": {
+      "name": "Cherry Creek South Metro District 7",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4466": {
+      "name": "Cherry Creek South Metro District 8",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4467": {
+      "name": "Cherry Creek South Metro District 9",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4468": {
+      "name": "Cherry Creek South Metro District 10",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4469": {
+      "name": "Cherry Creek South Metro District 11",
+      "millsByTaxYear": {
+        "2020": 38.0,
+        "2021": 10.068,
+        "2022": 10.0,
+        "2023": 20.788,
+        "2024": 20.788,
+        "2025": 21.48
+      }
+    },
+    "4470": {
+      "name": "Bella Mesa Metro District",
+      "millsByTaxYear": {
+        "2020": 75.664,
+        "2021": 75.664,
+        "2022": 77.185,
+        "2023": 77.668,
+        "2024": 78.323,
+        "2025": 77.131
+      }
+    },
+    "4471": {
+      "name": "Ute Pass Regional Health Service District",
+      "millsByTaxYear": {
+        "2020": 3.99,
+        "2021": 3.99,
+        "2022": 3.99,
+        "2023": 3.99,
+        "2024": 3.99,
+        "2025": 4.001
+      }
+    },
+    "4472": {
+      "name": "North Fork Fire Protection District",
+      "millsByTaxYear": {
+        "2020": 12.083,
+        "2021": 12.083,
+        "2022": 12.431,
+        "2023": 12.896,
+        "2024": 12.0,
+        "2025": 13.545
+      }
+    },
+    "4473": {
+      "name": "Lincoln Creek Metro District",
+      "millsByTaxYear": {
+        "2020": 64.84,
+        "2021": 47.5,
+        "2022": 40.53,
+        "2023": 32.179,
+        "2024": 30.179,
+        "2025": 30.179
+      }
+    },
+    "4474": {
+      "name": "Rampart Range Metro District 7",
+      "millsByTaxYear": {
+        "2020": 49.0,
+        "2021": 49.0,
+        "2022": 49.368,
+        "2023": 50.0,
+        "2024": 50.0,
+        "2025": 50.0
+      }
+    },
+    "4475": {
+      "name": "Rampart Range Metro District 8",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 55.0,
+        "2022": 61.455,
+        "2023": 60.949,
+        "2024": 63.951,
+        "2025": 67.496
+      }
+    },
+    "4476": {
+      "name": "Rampart Range Metro District 9",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4477": {
+      "name": "Reata South Metro District",
+      "millsByTaxYear": {
+        "2020": 58.359,
+        "2021": 58.535,
+        "2022": 59.535,
+        "2023": 62.412,
+        "2024": 50.0,
+        "2025": 45.0
+      }
+    },
+    "4478": {
+      "name": "Sierra Ridge Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0
+      }
+    },
+    "4479": {
+      "name": "Sierra Ridge Metro District 2",
+      "millsByTaxYear": {
+        "2020": 65.509,
+        "2021": 65.509,
+        "2022": 55.0,
+        "2023": 43.977,
+        "2024": 43.996,
+        "2025": 45.035
+      }
+    },
+    "4480": {
+      "name": "Pinery Commercial Metro District 1",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 10.0,
+        "2022": 10.0,
+        "2023": 10.0,
+        "2024": 10.0,
+        "2025": 10.0
+      }
+    },
+    "4481": {
+      "name": "Pinery Commercial Metro District 2",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 10.0,
+        "2022": 10.0,
+        "2023": 10.0,
+        "2024": 10.0,
+        "2025": 10.0
+      }
+    },
+    "4482": {
+      "name": "Foxhill Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4483": {
+      "name": "Foxhill Metro District 2",
+      "millsByTaxYear": {
+        "2020": 55.664,
+        "2021": 58.652,
+        "2022": 59.886,
+        "2023": 65.193,
+        "2024": 59.034,
+        "2025": 63.533
+      }
+    },
+    "4484": {
+      "name": "Horseshoe Ridge Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4485": {
+      "name": "Horseshoe Ridge Metro District 2",
+      "millsByTaxYear": {
+        "2020": 38.57,
+        "2021": 38.57,
+        "2022": 39.68,
+        "2023": 40.352,
+        "2024": 40.352,
+        "2025": 40.352
+      }
+    },
+    "4486": {
+      "name": "Horseshoe Ridge Metro District 3",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 33.298
+      }
+    },
+    "4487": {
+      "name": "Grandview Estates Rural Water Conservation",
+      "millsByTaxYear": {
+        "2020": 1.5,
+        "2021": 1.5,
+        "2022": 1.5,
+        "2023": 1.09,
+        "2024": 1.0,
+        "2025": 1.29
+      }
+    },
+    "4488": {
+      "name": "Southeast Public Improv Metro District Debt Svc",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0
+      }
+    },
+    "4489": {
+      "name": "Jordan Crossing Metro District",
+      "millsByTaxYear": {
+        "2020": 47.608,
+        "2021": 47.607,
+        "2022": 48.887,
+        "2023": 41.67,
+        "2024": 41.67,
+        "2025": 43.848
+      }
+    },
+    "4490": {
+      "name": "Regency Metro District",
+      "millsByTaxYear": {
+        "2020": 47.614,
+        "2021": 47.611,
+        "2022": 48.936,
+        "2023": 42.266,
+        "2024": 42.266,
+        "2025": 32.0
+      }
+    },
+    "4491": {
+      "name": "Tallman Gulch Metro District",
+      "millsByTaxYear": {
+        "2020": 67.741,
+        "2021": 60.078,
+        "2022": 58.741,
+        "2023": 58.741,
+        "2024": 58.741,
+        "2025": 60.597
+      }
+    },
+    "4492": {
+      "name": "Castle Oaks Metro District 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4493": {
+      "name": "Castle Oaks Metro District 3",
+      "millsByTaxYear": {
+        "2020": 52.953,
+        "2021": 52.953,
+        "2022": 52.0,
+        "2023": 36.0,
+        "2024": 36.0,
+        "2025": 36.0
+      }
+    },
+    "4494": {
+      "name": "Castleview Metro District 1",
+      "millsByTaxYear": {
+        "2020": 74.6,
+        "2021": 75.12,
+        "2022": 77.57,
+        "2023": 79.961,
+        "2024": 79.961,
+        "2025": 80.189
+      }
+    },
+    "4495": {
+      "name": "Westcreek Metro District 1",
+      "millsByTaxYear": {
+        "2020": 38.965,
+        "2021": 38.965,
+        "2022": 38.965,
+        "2023": 38.148,
+        "2024": 37.922,
+        "2025": 38.413
+      }
+    },
+    "4496": {
+      "name": "Westcreek Metro District 2",
+      "millsByTaxYear": {
+        "2020": 48.0,
+        "2021": 48.0,
+        "2022": 48.0,
+        "2023": 46.587,
+        "2024": 47.172,
+        "2025": 45.727
+      }
+    },
+    "4500": {
+      "name": "Park Meadows Business Improvement District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4501": {
+      "name": "Highlands Ranch Metro District",
+      "millsByTaxYear": {
+        "2020": 11.205,
+        "2021": 11.205,
+        "2022": 11.205,
+        "2023": 10.11,
+        "2024": 11.205,
+        "2025": 12.25
+      }
+    },
+    "4502": {
+      "name": "South Santa Fe Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4503": {
+      "name": "South Santa Fe Metro District 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4504": {
+      "name": "Highfield Metro District",
+      "millsByTaxYear": {
+        "2020": 25.0,
+        "2021": 25.0,
+        "2022": 21.0,
+        "2023": 15.0,
+        "2024": 14.0,
+        "2025": 14.0
+      }
+    },
+    "4505": {
+      "name": "Hunting Hill Metro District",
+      "millsByTaxYear": {
+        "2020": 55.662,
+        "2021": 55.662,
+        "2022": 56.712,
+        "2023": 62.176,
+        "2024": 68.725,
+        "2025": 55.857
+      }
+    },
+    "4506": {
+      "name": "Meadows Metro District 4 Debt Service",
+      "millsByTaxYear": {
+        "2020": 35.0,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 35.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4507": {
+      "name": "Lincoln Station Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 27.5,
+        "2021": 27.5,
+        "2022": 27.561,
+        "2023": 15.31,
+        "2024": 16.0,
+        "2025": 16.658
+      }
+    },
+    "4508": {
+      "name": "Lincoln Meadows Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4509": {
+      "name": "Compark Business Campus Metro Dist Debt Svc 2",
+      "millsByTaxYear": {
+        "2020": 18.015,
+        "2021": 18.014,
+        "2022": 18.527,
+        "2023": 18.686,
+        "2024": 18.685,
+        "2025": 18.685
+      }
+    },
+    "4510": {
+      "name": "Castle Rock Downtown Development Authority",
+      "millsByTaxYear": {
+        "2020": 3.0,
+        "2021": 3.0,
+        "2022": 3.0,
+        "2023": 3.0,
+        "2024": 3.0,
+        "2025": 3.0
+      }
+    },
+    "4512": {
+      "name": "Remuda Ranch Metro District",
+      "millsByTaxYear": {
+        "2020": 55.663,
+        "2021": 55.663,
+        "2022": 55.846,
+        "2023": 53.275,
+        "2024": 56.896,
+        "2025": 58.35
+      }
+    },
+    "4513": {
+      "name": "Airport Vista Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4514": {
+      "name": "Airport Vista Metro District 2",
+      "millsByTaxYear": {
+        "2020": 15.0,
+        "2021": 15.0,
+        "2022": 15.632,
+        "2023": 16.045,
+        "2024": 16.045,
+        "2025": 16.111
+      }
+    },
+    "4515": {
+      "name": "Louviers Water & Sanitation District",
+      "millsByTaxYear": {
+        "2020": 20.795,
+        "2021": 20.795,
+        "2022": 20.795,
+        "2023": 20.795,
+        "2024": 20.795,
+        "2025": 20.795
+      }
+    },
+    "4516": {
+      "name": "Parker Central Area URP",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4517": {
+      "name": "Inverness Water & Sanitation District Debt Service",
+      "millsByTaxYear": {
+        "2020": 4.5,
+        "2021": 4.5,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4518": {
+      "name": "Inverness Metro Improvement District Debt Service",
+      "millsByTaxYear": {
+        "2020": 6.15,
+        "2021": 6.15,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4522": {
+      "name": "Two Bridges Metro District",
+      "millsByTaxYear": {
+        "2020": 65.348,
+        "2021": 65.348,
+        "2022": 66.79,
+        "2023": 69.251,
+        "2024": 73.063,
+        "2025": 74.057
+      }
+    },
+    "4523": {
+      "name": "Robinson Ranch Metro District",
+      "millsByTaxYear": {
+        "2020": 45.0,
+        "2021": 36.0,
+        "2022": 36.0,
+        "2023": 31.0,
+        "2024": 27.0,
+        "2025": 25.5
+      }
+    },
+    "4524": {
+      "name": "Canyons Metro District 5",
+      "millsByTaxYear": {
+        "2020": 45.643,
+        "2021": 45.643,
+        "2022": 44.762,
+        "2023": 49.553,
+        "2024": 59.589,
+        "2025": 60.598
+      }
+    },
+    "4525": {
+      "name": "Canyons Metro District 6",
+      "millsByTaxYear": {
+        "2020": 12.244,
+        "2021": 12.244,
+        "2022": 12.008,
+        "2023": 13.294,
+        "2024": 0.0
+      }
+    },
+    "4526": {
+      "name": "Canyons Metro District 7",
+      "millsByTaxYear": {
+        "2020": 18.925,
+        "2021": 18.925,
+        "2022": 18.56,
+        "2023": 6.064,
+        "2024": 5.791,
+        "2025": 5.719
+      }
+    },
+    "4527": {
+      "name": "Canyons Metro District 8",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4528": {
+      "name": "Canyons Metro District 9",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4529": {
+      "name": "Canyons Metro District 10",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4530": {
+      "name": "Canyons Metro District 11",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4531": {
+      "name": "South Meridian Metro District Debt Service 3",
+      "millsByTaxYear": {
+        "2020": 6.0,
+        "2021": 6.0,
+        "2022": 6.0,
+        "2023": 5.534,
+        "2024": 5.285,
+        "2025": 5.285
+      }
+    },
+    "4534": {
+      "name": "Parker Homestead Metro District",
+      "millsByTaxYear": {
+        "2020": 47.605,
+        "2021": 47.603,
+        "2022": 48.918,
+        "2023": 37.265,
+        "2024": 37.265,
+        "2025": 43.0
+      }
+    },
+    "4535": {
+      "name": "North Pine Vistas Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4536": {
+      "name": "North Pine Vistas Metro District 2",
+      "millsByTaxYear": {
+        "2020": 70.757,
+        "2021": 75.148,
+        "2022": 56.307,
+        "2023": 41.097,
+        "2024": 42.963,
+        "2025": 42.963
+      }
+    },
+    "4537": {
+      "name": "North Pine Vistas Metro District 3",
+      "millsByTaxYear": {
+        "2020": 73.433,
+        "2021": 75.391,
+        "2022": 77.5,
+        "2023": 67.323,
+        "2024": 67.552,
+        "2025": 68.716
+      }
+    },
+    "4538": {
+      "name": "Lincoln Park Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 43.221,
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 24.775,
+        "2024": 24.775,
+        "2025": 24.775
+      }
+    },
+    "4539": {
+      "name": "Meridian Metro District Debt Service 2",
+      "millsByTaxYear": {
+        "2020": 21.26,
+        "2021": 21.26,
+        "2022": 21.26,
+        "2023": 22.34,
+        "2024": 21.716,
+        "2025": 27.459
+      }
+    },
+    "4540": {
+      "name": "Castle Pines Town Center Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4541": {
+      "name": "Castle Pines Town Center Metro District 2",
+      "millsByTaxYear": {
+        "2020": 45.0,
+        "2021": 45.0,
+        "2022": 45.0,
+        "2023": 45.0,
+        "2024": 65.0,
+        "2025": 65.0
+      }
+    },
+    "4542": {
+      "name": "Castle Pines Town Center Metro District 3",
+      "millsByTaxYear": {
+        "2020": 45.0,
+        "2021": 45.0,
+        "2022": 45.0,
+        "2023": 45.0,
+        "2024": 65.0,
+        "2025": 65.0
+      }
+    },
+    "4544": {
+      "name": "Village on the Green Metro District 1",
+      "millsByTaxYear": {
+        "2020": 47.195,
+        "2021": 47.195,
+        "2022": 48.553,
+        "2023": 49.423,
+        "2024": 49.423,
+        "2025": 49.423
+      }
+    },
+    "4545": {
+      "name": "North Meridian Metro District Debt Service 2",
+      "millsByTaxYear": {
+        "2020": 40.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4546": {
+      "name": "Plum Valley Heights Subdistrict of Roxborough W&S",
+      "millsByTaxYear": {
+        "2020": 24.5,
+        "2021": 20.4,
+        "2022": 20.4,
+        "2023": 15.2,
+        "2024": 15.05,
+        "2025": 13.4
+      }
+    },
+    "4547": {
+      "name": "Sterling Ranch Colorado Metro District 1",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 95.436,
+        "2024": 95.522,
+        "2025": 95.522
+      }
+    },
+    "4548": {
+      "name": "Sterling Ranch Colorado Metro District 2",
+      "millsByTaxYear": {
+        "2020": 89.062,
+        "2021": 89.062,
+        "2022": 91.406,
+        "2023": 95.436,
+        "2024": 95.522,
+        "2025": 95.522
+      }
+    },
+    "4549": {
+      "name": "Sterling Ranch Colorado Metro District 3",
+      "millsByTaxYear": {
+        "2020": 89.062,
+        "2021": 89.062,
+        "2022": 91.406,
+        "2023": 95.436,
+        "2024": 95.522,
+        "2025": 95.522
+      }
+    },
+    "4550": {
+      "name": "Sterling Ranch Colorado Metro District 4",
+      "millsByTaxYear": {
+        "2020": 89.062,
+        "2021": 89.062,
+        "2022": 5.0,
+        "2023": 5.492,
+        "2024": 5.492,
+        "2025": 5.492
+      }
+    },
+    "4551": {
+      "name": "Sterling Ranch Colorado Metro District 5",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 95.436,
+        "2024": 95.522,
+        "2025": 95.522
+      }
+    },
+    "4552": {
+      "name": "Sterling Ranch Colorado Metro District 6",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 95.436,
+        "2024": 95.522,
+        "2025": 95.522
+      }
+    },
+    "4553": {
+      "name": "Sterling Ranch Colorado Metro District 7",
+      "millsByTaxYear": {
+        "2020": 40.0,
+        "2021": 5.0,
+        "2022": 5.0,
+        "2023": 5.265,
+        "2024": 5.498,
+        "2025": 5.53
+      }
+    },
+    "4554": {
+      "name": "Cottonwood Commercial Area URP",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4555": {
+      "name": "Parker Road Area URP",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4556": {
+      "name": "Promenade at Castle Rock Metro District 1",
+      "millsByTaxYear": {
+        "2020": 55.663,
+        "2021": 55.663,
+        "2022": 58.365,
+        "2023": 59.282,
+        "2024": 59.317,
+        "2025": 63.477
+      }
+    },
+    "4557": {
+      "name": "Promenade at Castle Rock Metro District 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4558": {
+      "name": "Promenade at Castle Rock Metro District 3",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 52.401,
+        "2024": 52.926,
+        "2025": 54.665
+      }
+    },
+    "4559": {
+      "name": "Inverness Water & Sanitation District Debt Svc 2",
+      "millsByTaxYear": {
+        "2020": 4.5,
+        "2021": 4.5,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4560": {
+      "name": "Inverness Metro Improvement District Debt Svc 2",
+      "millsByTaxYear": {
+        "2020": 6.15,
+        "2021": 6.15,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4561": {
+      "name": "Carousel Farms Metro District",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 48.529,
+        "2023": 55.244,
+        "2024": 54.907,
+        "2025": 53.94
+      }
+    },
+    "4562": {
+      "name": "Salisbury Heights Metro District",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 48.606,
+        "2023": 35.203,
+        "2024": 35.203,
+        "2025": 36.643
+      }
+    },
+    "4563": {
+      "name": "Lanterns Metro District 2",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 75.121,
+        "2022": 74.6,
+        "2023": 78.914,
+        "2024": 80.817,
+        "2025": 79.217
+      }
+    },
+    "4564": {
+      "name": "Lanterns Metro District 3",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 11.433,
+        "2024": 11.436,
+        "2025": 77.21
+      }
+    },
+    "4565": {
+      "name": "Stone Creek Metro District",
+      "millsByTaxYear": {
+        "2020": 66.796,
+        "2021": 66.796,
+        "2022": 68.311,
+        "2023": 44.881,
+        "2024": 45.695,
+        "2025": 44.386
+      }
+    },
+    "4566": {
+      "name": "Cottonwood Highlands Metro District 1",
+      "millsByTaxYear": {
+        "2020": 57.678,
+        "2021": 57.678,
+        "2022": 56.35,
+        "2023": 62.079,
+        "2024": 51.0,
+        "2025": 51.0
+      }
+    },
+    "4567": {
+      "name": "Cottonwood Highlands Metro District 2",
+      "millsByTaxYear": {
+        "2020": 20.0,
+        "2021": 20.0,
+        "2022": 20.0,
+        "2023": 20.0,
+        "2024": 20.0,
+        "2025": 29.013
+      }
+    },
+    "4568": {
+      "name": "Citadel Station - Castle Meadows URP",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4569": {
+      "name": "Overlook Metro District",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 49.036,
+        "2023": 54.208,
+        "2024": 53.347,
+        "2025": 53.024
+      }
+    },
+    "4571": {
+      "name": "Lone Tree Business Improvement District",
+      "millsByTaxYear": {
+        "2020": 17.5,
+        "2021": 17.5,
+        "2022": 17.5,
+        "2023": 17.5,
+        "2024": 17.5,
+        "2025": 17.5
+      }
+    },
+    "4572": {
+      "name": "Trails at Crowfoot Metro District 1",
+      "millsByTaxYear": {
+        "2020": 77.535,
+        "2021": 77.535,
+        "2022": 78.916,
+        "2023": 89.994,
+        "2024": 89.386,
+        "2025": 88.0
+      }
+    },
+    "4573": {
+      "name": "Trails at Crowfoot Metro District 2",
+      "millsByTaxYear": {
+        "2020": 77.535,
+        "2021": 77.535,
+        "2022": 78.267,
+        "2023": 86.924,
+        "2024": 88.276,
+        "2025": 88.026
+      }
+    },
+    "4574": {
+      "name": "Trails at Crowfoot Metro District 3",
+      "millsByTaxYear": {
+        "2020": 77.535,
+        "2021": 77.535,
+        "2022": 77.477,
+        "2023": 82.69,
+        "2024": 84.284,
+        "2025": 85.805
+      }
+    },
+    "4575": {
+      "name": "Hess Ranch Metro District 4",
+      "millsByTaxYear": {
+        "2020": 77.0,
+        "2021": 77.0,
+        "2022": 77.0,
+        "2023": 82.911,
+        "2024": 93.611,
+        "2025": 86.845
+      }
+    },
+    "4576": {
+      "name": "Hess Ranch Metro District 5",
+      "millsByTaxYear": {
+        "2020": 10.0,
+        "2021": 10.0,
+        "2022": 10.984,
+        "2023": 80.749,
+        "2024": 80.036,
+        "2025": 82.702
+      }
+    },
+    "4577": {
+      "name": "Hess Ranch Metro District 6",
+      "millsByTaxYear": {
+        "2020": 10.0,
+        "2021": 10.0,
+        "2022": 10.985,
+        "2023": 10.986,
+        "2024": 10.986,
+        "2025": 82.702
+      }
+    },
+    "4578": {
+      "name": "Hess Ranch Metro District 7",
+      "millsByTaxYear": {
+        "2020": 10.0,
+        "2021": 10.0,
+        "2022": 10.0,
+        "2023": 10.0,
+        "2024": 10.0,
+        "2025": 82.702
+      }
+    },
+    "4579": {
+      "name": "Hess Ranch Metro District 8",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 50.0,
+        "2024": 50.0,
+        "2025": 50.0
+      }
+    },
+    "4580": {
+      "name": "Belford South Metro District",
+      "millsByTaxYear": {
+        "2020": 77.0,
+        "2021": 77.0,
+        "2022": 77.0,
+        "2023": 80.035,
+        "2024": 83.154,
+        "2025": 86.64
+      }
+    },
+    "4581": {
+      "name": "Cielo Metro District",
+      "millsByTaxYear": {
+        "2020": 66.797,
+        "2021": 66.796,
+        "2022": 60.0,
+        "2023": 65.774,
+        "2024": 71.71,
+        "2025": 74.936
+      }
+    },
+    "4582": {
+      "name": "Reata Ridge Village Metro District 1",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 48.978,
+        "2023": 53.946,
+        "2024": 53.94,
+        "2025": 54.403
+      }
+    },
+    "4583": {
+      "name": "Reata Ridge Village Metro District 2",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 50.0,
+        "2022": 50.0,
+        "2023": 52.578,
+        "2024": 52.587,
+        "2025": 53.703
+      }
+    },
+    "4584": {
+      "name": "Anthology West Metro District 4",
+      "millsByTaxYear": {
+        "2020": 22.629,
+        "2021": 47.678,
+        "2022": 47.678,
+        "2023": 47.678,
+        "2024": 41.522,
+        "2025": 44.493
+      }
+    },
+    "4585": {
+      "name": "Anthology West Metro District 5",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 47.678,
+        "2022": 47.678,
+        "2023": 47.678,
+        "2024": 47.678,
+        "2025": 47.678
+      }
+    },
+    "4586": {
+      "name": "Anthology West Metro District 6",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4587": {
+      "name": "Mirabelle Metro District 2",
+      "millsByTaxYear": {
+        "2020": 83.496,
+        "2021": 83.496,
+        "2022": 83.496,
+        "2023": 89.664,
+        "2024": 85.551,
+        "2025": 92.927
+      }
+    },
+    "4588": {
+      "name": "Mirabelle Metro District 3",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4589": {
+      "name": "Mirabelle Metro District 4",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4590": {
+      "name": "Villas Metro District",
+      "millsByTaxYear": {
+        "2020": 74.831,
+        "2021": 75.059,
+        "2022": 76.767,
+        "2023": 76.767,
+        "2024": 76.018,
+        "2025": 76.767
+      }
+    },
+    "4591": {
+      "name": "Lincoln Creek Metro District Debt Service",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4592": {
+      "name": "Chambers Highpoint Metro District 1",
+      "millsByTaxYear": {
+        "2020": 47.678,
+        "2021": 57.678,
+        "2022": 57.678,
+        "2023": 59.557,
+        "2024": 59.557,
+        "2025": 61.209
+      }
+    },
+    "4593": {
+      "name": "Chambers Highpoint Metro District 2",
+      "millsByTaxYear": {
+        "2020": 50.0,
+        "2021": 60.0,
+        "2022": 60.0,
+        "2023": 61.971,
+        "2024": 63.546,
+        "2025": 63.703
+      }
+    },
+    "4594": {
+      "name": "Cottonwood Water & Sanitation District Debt Svc",
+      "millsByTaxYear": {
+        "2020": 13.5,
+        "2021": 12.5,
+        "2022": 12.5,
+        "2023": 7.66,
+        "2024": 9.0,
+        "2025": 5.65
+      }
+    },
+    "4595": {
+      "name": "Hillside at Castle Rock Metro District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 66.796,
+        "2023": 71.283,
+        "2024": 71.283,
+        "2025": 76.416
+      }
+    },
+    "4596": {
+      "name": "Anthology West Metro District 2 Debt Service",
+      "millsByTaxYear": {
+        "2020": 25.049,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0
+      }
+    },
+    "4597": {
+      "name": "The Yard Metro District",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4598": {
+      "name": "Timbers Metro District",
+      "millsByTaxYear": {
+        "2020": 30.0,
+        "2021": 30.0,
+        "2022": 30.0,
+        "2023": 30.0,
+        "2024": 30.0,
+        "2025": 29.5
+      }
+    },
+    "4599": {
+      "name": "Millers Landing Business Improvement District",
+      "millsByTaxYear": {
+        "2020": 60.0,
+        "2021": 60.0,
+        "2022": 60.0,
+        "2023": 60.0,
+        "2024": 62.365,
+        "2025": 62.577
+      }
+    },
+    "4601": {
+      "name": "Belford North Metro District",
+      "millsByTaxYear": {
+        "2020": 77.0,
+        "2021": 77.0,
+        "2022": 77.0,
+        "2023": 80.035,
+        "2024": 80.035,
+        "2025": 82.702
+      }
+    },
+    "4602": {
+      "name": "Meridian Village Metro District 1 Debt Service",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4603": {
+      "name": "Hilltop Metro District",
+      "millsByTaxYear": {
+        "2020": 55.0,
+        "2021": 65.0,
+        "2022": 70.028,
+        "2023": 75.882,
+        "2024": 75.882,
+        "2025": 75.882
+      }
+    },
+    "4604": {
+      "name": "Devils Head Metro District",
+      "millsByTaxYear": {
+        "2020": 70.0,
+        "2021": 70.0,
+        "2022": 70.0,
+        "2023": 70.0,
+        "2024": 70.0,
+        "2025": 0.0
+      }
+    },
+    "4605": {
+      "name": "Meadowlark Metro District",
+      "millsByTaxYear": {
+        "2020": 72.5,
+        "2021": 72.5,
+        "2022": 73.773,
+        "2023": 82.249,
+        "2024": 82.499,
+        "2025": 54.352
+      }
+    },
+    "4606": {
+      "name": "Rock Canyon Metro District",
+      "millsByTaxYear": {
+        "2020": 65.453,
+        "2021": 65.453,
+        "2022": 65.875,
+        "2023": 76.058,
+        "2024": 74.702,
+        "2025": 74.792
+      }
+    },
+    "4607": {
+      "name": "Sterling Ranch Colorado Metro District 3 Debt Svc",
+      "millsByTaxYear": {
+        "2020": 55.664,
+        "2021": 55.664,
+        "2022": 53.543,
+        "2023": 59.871,
+        "2024": 61.538,
+        "2025": 62.238
+      }
+    },
+    "4608": {
+      "name": "Rampart Range Metro District 1 Debt Service",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4609": {
+      "name": "Castleview Metro District 2",
+      "millsByTaxYear": {
+        "2020": 60.0,
+        "2021": 61.076,
+        "2022": 62.353,
+        "2023": 70.73,
+        "2024": 70.73,
+        "2025": 69.001
+      }
+    },
+    "4610": {
+      "name": "Town of Castle Rock Festival Park Commons GID",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 45.0,
+        "2022": 45.0,
+        "2023": 45.0,
+        "2024": 45.0,
+        "2025": 45.0
+      }
+    },
+    "4611": {
+      "name": "Lanterns Metro District 4",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 1.0,
+        "2024": 1.5,
+        "2025": 0.0
+      }
+    },
+    "4612": {
+      "name": "Lanterns Metro District 5",
+      "millsByTaxYear": {
+        "2020": 0.0,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 1.0,
+        "2024": 1.5,
+        "2025": 0.0
+      }
+    },
+    "4613": {
+      "name": "Cherry Creek South Metro District 11 Debt Service",
+      "millsByTaxYear": {
+        "2020": 22.5,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4614": {
+      "name": "Inverness Water & Sanitation District Debt Svc 3",
+      "millsByTaxYear": {
+        "2020": 4.5,
+        "2021": 4.5,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4615": {
+      "name": "Trails Metro District",
+      "millsByTaxYear": {
+        "2020": 60.0,
+        "2021": 60.0,
+        "2022": 60.0,
+        "2023": 61.97,
+        "2024": 62.476,
+        "2025": 68.096
+      }
+    },
+    "4616": {
+      "name": "Villages at Castle Rock Metro District 7 Debt Svc",
+      "millsByTaxYear": {
+        "2020": 12.5,
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4617": {
+      "name": "Canyons Metro District 3 Debt Service",
+      "millsByTaxYear": {
+        "2021": 0.0,
+        "2022": 46.185,
+        "2023": 47.424,
+        "2024": 47.819,
+        "2025": 50.86
+      }
+    },
+    "4618": {
+      "name": "Sterling Ranch Colorado Metro Dist 7 Subdistrict-A",
+      "millsByTaxYear": {
+        "2021": 7.333,
+        "2022": 9.457,
+        "2023": 9.809,
+        "2024": 9.624,
+        "2025": 10.264
+      }
+    },
+    "4619": {
+      "name": "Sterling Ranch Colorado Metro Dist 7 Subdistrict-B",
+      "millsByTaxYear": {
+        "2021": 35.0,
+        "2022": 35.0,
+        "2023": 36.588,
+        "2024": 36.859,
+        "2025": 37.592
+      }
+    },
+    "4620": {
+      "name": "Castle Pines Comm Metro District 1 Debt Service",
+      "millsByTaxYear": {
+        "2021": 0.0,
+        "2022": 0.0
+      }
+    },
+    "4621": {
+      "name": "Castle Pines Comm Metro District 4 Debt Service",
+      "millsByTaxYear": {
+        "2021": 0.0,
+        "2022": 15.304,
+        "2023": 19.5,
+        "2024": 13.55,
+        "2025": 14.335
+      }
+    },
+    "4622": {
+      "name": "Anthology West Metro District 4 Debt Service",
+      "millsByTaxYear": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0
+      }
+    },
+    "4623": {
+      "name": "Anthology West Metro District 6 Debt Service",
+      "millsByTaxYear": {
+        "2021": 0.0,
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4624": {
+      "name": "Newlin Crossing Metro District",
+      "millsByTaxYear": {
+        "2022": 5.0,
+        "2023": 5.0,
+        "2024": 50.734,
+        "2025": 52.304
+      }
+    },
+    "4625": {
+      "name": "Overlook at Kings Point South Metro District",
+      "millsByTaxYear": {
+        "2022": 55.664,
+        "2023": 63.832,
+        "2024": 63.832,
+        "2025": 63.832
+      }
+    },
+    "4626": {
+      "name": "Crystal Valley Metro District 2 Subdistrict",
+      "millsByTaxYear": {
+        "2022": 42.604,
+        "2023": 55.707,
+        "2024": 39.219,
+        "2025": 34.204
+      }
+    },
+    "4627": {
+      "name": "Westfield Metro District 1 Judgment",
+      "millsByTaxYear": {
+        "2022": 10.0,
+        "2023": 10.0,
+        "2024": 10.0,
+        "2025": 10.0
+      }
+    },
+    "4628": {
+      "name": "Westfield Metro District 2 Judgment",
+      "millsByTaxYear": {
+        "2022": 10.0,
+        "2023": 10.0,
+        "2024": 10.0,
+        "2025": 10.0
+      }
+    },
+    "4629": {
+      "name": "Fields Metro District 1",
+      "millsByTaxYear": {
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 20.0,
+        "2025": 68.704
+      }
+    },
+    "4630": {
+      "name": "Fields Metro District 2",
+      "millsByTaxYear": {
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4631": {
+      "name": "Fields Metro District 3",
+      "millsByTaxYear": {
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4632": {
+      "name": "Piney Lake Trails Metro District 1",
+      "millsByTaxYear": {
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 72.759,
+        "2025": 75.184
+      }
+    },
+    "4633": {
+      "name": "Piney Lake Trails Metro District 2",
+      "millsByTaxYear": {
+        "2022": 0.0,
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4634": {
+      "name": "Meridian Metro District - Consolidated",
+      "millsByTaxYear": {
+        "2022": 50.0,
+        "2023": 49.34,
+        "2024": 49.667,
+        "2025": 58.659
+      }
+    },
+    "4635": {
+      "name": "Meridian Metro District - Consolidated Debt Svc",
+      "millsByTaxYear": {
+        "2022": 21.26,
+        "2023": 22.0,
+        "2024": 21.716,
+        "2025": 27.459
+      }
+    },
+    "4636": {
+      "name": "Sterling Ranch Colorado Metro Dist 4 Subdistrict-A",
+      "millsByTaxYear": {
+        "2022": 84.062,
+        "2023": 89.944,
+        "2024": 90.03,
+        "2025": 90.03
+      }
+    },
+    "4637": {
+      "name": "Bear Ridge Metro District",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4638": {
+      "name": "Kings Point South Metro District 3",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4639": {
+      "name": "Range Metro District 1",
+      "millsByTaxYear": {
+        "2023": 15.0,
+        "2024": 15.0,
+        "2025": 66.441
+      }
+    },
+    "4640": {
+      "name": "Range Metro District 2",
+      "millsByTaxYear": {
+        "2023": 15.0,
+        "2024": 15.0,
+        "2025": 0.0
+      }
+    },
+    "4641": {
+      "name": "Range Metro District 3",
+      "millsByTaxYear": {
+        "2023": 15.0,
+        "2024": 15.0,
+        "2025": 0.0
+      }
+    },
+    "4642": {
+      "name": "Sterling Ranch Colorado Metro Dist 4 Subdistrict-B",
+      "millsByTaxYear": {
+        "2023": 89.944,
+        "2024": 90.03,
+        "2025": 90.03
+      }
+    },
+    "4643": {
+      "name": "Sterling Ranch Colorado Metro Dist 4 Subdistrict-C",
+      "millsByTaxYear": {
+        "2023": 89.944,
+        "2024": 90.03,
+        "2025": 90.03
+      }
+    },
+    "4644": {
+      "name": "Sterling Ranch Colorado Metro Dist 4 Subdistrict-D",
+      "millsByTaxYear": {
+        "2023": 89.944,
+        "2024": 90.03,
+        "2025": 90.03
+      }
+    },
+    "4645": {
+      "name": "Sterling Ranch Colorado Metro Dist 7 Subdistrict-C",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 35.0,
+        "2025": 35.0
+      }
+    },
+    "4646": {
+      "name": "Town of Parker My Mainstreet GID",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4647": {
+      "name": "Meridian Metro District - Consolidated Debt Svc 2",
+      "millsByTaxYear": {
+        "2023": 22.0,
+        "2024": 21.716,
+        "2025": 27.459
+      }
+    },
+    "4648": {
+      "name": "Chambers Commercial Center Business Improv Dist",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 25.17,
+        "2025": 27.958
+      }
+    },
+    "4649": {
+      "name": "Downtown Parker Business Improvement District",
+      "millsByTaxYear": {
+        "2023": 8.0,
+        "2024": 8.0,
+        "2025": 8.0
+      }
+    },
+    "4650": {
+      "name": "Kime Ranch Metro District",
+      "millsByTaxYear": {
+        "2023": 70.962,
+        "2024": 70.962,
+        "2025": 72.974
+      }
+    },
+    "4651": {
+      "name": "Scott Gulch Metro District",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 62.365,
+        "2025": 64.498
+      }
+    },
+    "4652": {
+      "name": "Valley View Metro District 1",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4653": {
+      "name": "Valley View Metro District 2",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4654": {
+      "name": "Valley View Metro District 3",
+      "millsByTaxYear": {
+        "2023": 0.0,
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4655": {
+      "name": "Crystal Valley Shops Metro District",
+      "millsByTaxYear": {
+        "2024": 0.0
+      }
+    },
+    "4656": {
+      "name": "Lone Tree Entertainment District URP",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4657": {
+      "name": "Castle Pines West Commercial URP",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4658": {
+      "name": "Sterling Ranch Colorado Metro District 4 Debt Svc",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4659": {
+      "name": "Sterling Ranch Colorado Metro District 7 Debt Svc",
+      "millsByTaxYear": {
+        "2024": 0.0,
+        "2025": 0.0
+      }
+    },
+    "4660": {
+      "name": "Twin Mesa Metro District",
+      "millsByTaxYear": {
+        "2024": 7.5,
+        "2025": 7.5
+      }
+    },
+    "4661": {
+      "name": "Arrowhead Colorado Metro District",
+      "millsByTaxYear": {
+        "2025": 10.333
+      }
+    },
+    "4662": {
+      "name": "Hawkview Metro District",
+      "millsByTaxYear": {
+        "2025": 64.068
+      }
+    },
+    "4663": {
+      "name": "Castle Meadows Metro District 1",
+      "millsByTaxYear": {
+        "2025": 64.444
+      }
+    },
+    "4664": {
+      "name": "Castle Meadows Metro District 2",
+      "millsByTaxYear": {
+        "2025": 64.444
+      }
+    },
+    "4665": {
+      "name": "Castle Meadows Metro District 3",
+      "millsByTaxYear": {
+        "2025": 64.444
+      }
+    },
+    "4666": {
+      "name": "Brickyard Metro District 1",
+      "millsByTaxYear": {
+        "2025": 10.0
+      }
+    },
+    "4667": {
+      "name": "Brickyard Metro District 2",
+      "millsByTaxYear": {
+        "2025": 10.0
+      }
+    },
+    "4668": {
+      "name": "Brickyard Metro District 3",
+      "millsByTaxYear": {
+        "2025": 10.0
+      }
+    },
+    "4669": {
+      "name": "Meridian Metro District - Consolidated Debt Svc 3",
+      "millsByTaxYear": {
+        "2025": 27.459
+      }
+    },
+    "4670": {
+      "name": "Sterling Ranch Colorado Metro Dist 4 Subdistrict-E",
+      "millsByTaxYear": {
+        "2025": 90.03
+      }
+    },
+    "4671": {
+      "name": "Sterling Ranch Colorado Metro Dist 7 Subdistrict-D",
+      "millsByTaxYear": {
+        "2025": 35.0
+      }
+    },
+    "4672": {
+      "name": "Sterling Ranch Colorado Metro Dist 7 Subdistrict-E",
+      "millsByTaxYear": {
+        "2025": 37.591
+      }
+    },
+    "4673": {
+      "name": "Brickyard URP",
+      "millsByTaxYear": {
+        "2025": 0.0
+      }
+    }
+  },
+  "exceptionsByTaxYear": {}
+}

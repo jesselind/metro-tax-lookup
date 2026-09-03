@@ -95,13 +95,14 @@ def parse_tax_district_mill_pdf_texts(
     """
     Parse page texts into intermediate levy-stack rows.
 
-    Each row: taxAreaId, lineCode, authorityName, millLevy (float), taxYear (optional).
+    Each row: taxAreaId, lineCode, authorityName, millLevy (float), taxYear
+    (optional), pageNumber (1-based PDF viewer page).
     """
     rows: list[dict[str, Any]] = []
     current_tax_area: str | None = None
     resolved_year = tax_year
 
-    for text in page_texts:
+    for page_number, text in enumerate(page_texts, start=1):
         for raw_line in text.splitlines():
             line = raw_line.strip()
             if not line:
@@ -136,6 +137,7 @@ def parse_tax_district_mill_pdf_texts(
                 "taxYear": resolved_year,
                 "effectiveYear": None,
                 "status": None,
+                "pageNumber": page_number,
             }
             rows.append(row)
     return rows

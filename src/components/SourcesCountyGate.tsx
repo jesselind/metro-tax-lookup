@@ -14,6 +14,7 @@ import {
   COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE,
   listCountyServiceGapHubItems,
 } from "@/content/countyServiceGapGuidance";
+import { DisclosureChevron } from "@/components/DisclosureChevron";
 import {
   ARAPAHOE_COUNTY_CONFIG,
   countyConfigById,
@@ -49,8 +50,8 @@ type SourcesCountyGateProps = {
 
 /**
  * County selector for /sources: methodology sections and the COUNTY DATA GAP
- * hub follow the selected wired county. Default Arapahoe. No dashboard→sources
- * county query required for v1.
+ * hub follow the selected wired county. Default Arapahoe. Dashboard→sources county
+ * preselect is Phase 13 (see docs/_working/second-county-ingest.md).
  *
  * Pass methodology + contextual gap boxes as `sectionsByCountyId` (keyed by
  * `CountyConfig.id`). Prefer extracting shared prose into content modules when
@@ -81,20 +82,28 @@ export function SourcesCountyGate({
         >
           County
         </label>
-        <select
-          id="sources-county-select"
-          className="mt-2 w-full max-w-md cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
-          value={config.id}
-          onChange={(event) => {
-            setCountyId(event.target.value);
-          }}
-        >
-          {counties.map((county) => (
-            <option key={county.id} value={county.id}>
-              {county.displayName}
-            </option>
-          ))}
-        </select>
+        <div className="relative mt-2 max-w-md">
+          <select
+            id="sources-county-select"
+            className="w-full cursor-pointer appearance-none rounded-md border border-slate-300 bg-white py-2 pl-3 pr-12 text-sm font-medium text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
+            value={config.id}
+            onChange={(event) => {
+              setCountyId(event.target.value);
+            }}
+          >
+            {counties.map((county) => (
+              <option key={county.id} value={county.id}>
+                {county.displayName}
+              </option>
+            ))}
+          </select>
+          <span
+            className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5"
+            aria-hidden
+          >
+            <DisclosureChevron className="h-4 w-4 text-slate-500" />
+          </span>
+        </div>
         <p className="mt-2 text-sm text-slate-600">
           Gap notes and county methodology below follow this county.
         </p>

@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.4.0",
+    date: "2026-09-02",
+    title: "Douglas mill history from Tax Districts and Mill Levies PDFs",
+    highlights: [
+      "Douglas ships public/data/douglas-authority-mills-by-tax-year.json and douglas-authority-rate-table-pages.json (Tax Years 2020–2025). Extract: tools/extract_douglas_authority_mills_by_tax_year.py from the Assessor Tax Districts and Mill Levies PDFs (same format as levy stacks). CountyConfig.features.millsHistory is on.",
+      "Levy tiles, mill-over-time charts, and authority-chain What changed? use the Douglas AUTH series for Douglas residents (SMFR 4014 9.29 → 12.25 in 2024–2025). Rate-table cites are douglasco.gov mill PDFs, not Arapahoe Levy % files. Hub 2021 PDF is unversioned tax-districts-mill-levies.pdf.",
+      "/sources lists each bundled mill-history PDF (Douglas Tax Districts and Mill Levies; Arapahoe Levy Percentage years) so residents can open the same county files the chart cites.",
+      "Removed Douglas SMFR open gap no-resident-county-mills-history. Entity-stack reconciliation remains only for counties that still lack a mills bundle.",
+    ],
+  },
+  {
     version: "5.3.1",
     date: "2026-09-02",
     title: "Statewide DOLA tax-entities refresh + registry lgId (Phase 11c)",

@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  countyHasAuthorityMillsBundle,
   AUTHORITY_MILLS_CURRENT_TAX_YEAR,
   AUTHORITY_MILLS_HISTORY_MIN_POINTS,
   AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
@@ -16,6 +17,7 @@ import {
   deepLinkLevyPercentageUrlForParcel,
   levyPercentageResidentLinkForTaxYear,
   levyPercentageResidentUrlForTaxYear,
+  authorityMillsResidentSources,
   normalizeLevyPercentagePdfTag,
 } from "@/lib/authorityMillsHistory";
 import { COUNTY_MILLS_YOY_EPS } from "@/lib/metroLevyYearOverYear";
@@ -24,6 +26,8 @@ describe("authorityMillsHistory", () => {
   it("exposes Tax Year 2024 / 2025 from bundled meta", () => {
     expect(AUTHORITY_MILLS_PREVIOUS_TAX_YEAR).toBe(2024);
     expect(AUTHORITY_MILLS_CURRENT_TAX_YEAR).toBe(2025);
+    expect(countyHasAuthorityMillsBundle("arapahoe")).toBe(true);
+    expect(countyHasAuthorityMillsBundle("douglas")).toBe(true);
   });
 
   it("looks up AUTH mills without inventing missing years", () => {
@@ -87,39 +91,54 @@ describe("authorityMillsHistory", () => {
     ).toBe("https://example.gov/not-a-rate-table.pdf");
   });
 
-  it("does not load another county's AUTH mills for Douglas stack codes", () => {
+  it("does not load Arapahoe AUTH mills for Douglas stack codes", () => {
     const series = authorityMillsSeries("4014", "douglas");
-    expect(series).toEqual([]);
+    expect(series[0]?.taxYear).toBe(2020);
+    expect(series[series.length - 1]).toEqual({ taxYear: 2025, mills: 12.25 });
+    expect(authorityMillsForTaxYear("4014", 2024, "douglas")).toBe(9.29);
+    expect(authorityMillsForTaxYear("4014", 2018, "douglas")).toBeNull();
   });
 
-  it("uses registry entity mills for Douglas YoY on shared districts", () => {
-    const yoy = authorityTotalMillsYoY("4014", "douglas", {
-      residentStackMills: 12.25,
-    });
-    expect(yoy?.authorityCode).toBe("4100");
+  it("uses Douglas mill-PDF AUTH series for SMFR YoY", () => {
+    const yoy = authorityTotalMillsYoY("4014", "douglas");
+    expect(yoy?.authorityCode).toBe("4014");
     expect(yoy?.millsPrevious).toBe(9.29);
     expect(yoy?.millsCurrent).toBe(12.25);
     expect(yoy?.millsDelta).toBeCloseTo(2.96, 5);
     expect(
-      authorityTotalMillsChanged("4014", COUNTY_MILLS_YOY_EPS, "douglas", {
-        residentStackMills: 12.25,
-      }),
+      authorityTotalMillsChanged("4014", COUNTY_MILLS_YOY_EPS, "douglas"),
     ).toBe(true);
   });
 
-  it("requires resident stack mills for Douglas registry entity YoY", () => {
-    expect(authorityTotalMillsYoY("4014", "douglas")).toBeNull();
+  it("does not invent YoY for Douglas stack codes absent from the mill PDFs", () => {
+    expect(authorityTotalMillsYoY("9999", "douglas")).toBeNull();
   });
 
-  it("omits Douglas entity YoY when stack mills disagree with reference current", () => {
-    expect(
-      authorityTotalMillsYoY("4014", "douglas", { residentStackMills: 12.2 }),
-    ).toBeNull();
+  it("lists Douglas mill-PDF resident cites for every bundled tax year", () => {
+    const sources = authorityMillsResidentSources("douglas");
+    expect(sources.map((s) => s.taxYear)).toEqual([
+      2020, 2021, 2022, 2023, 2024, 2025,
+    ]);
+    for (const source of sources) {
+      expect(source.url).toMatch(/^https:\/\/www\.douglasco\.gov\//);
+      expect(source.title).toContain(String(source.taxYear));
+    }
   });
 
-  it("does not invent YoY for Douglas stack codes outside the registry", () => {
-    expect(
-      authorityTotalMillsYoY("9999", "douglas", { residentStackMills: 1 }),
-    ).toBeNull();
+  it("lists Arapahoe Levy Percentage resident cites for every bundled tax year", () => {
+    const sources = authorityMillsResidentSources("arapahoe");
+    expect(sources.map((s) => s.taxYear)).toEqual([
+      2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025,
+    ]);
+    for (const source of sources) {
+      expect(source.url).toMatch(/^https:\/\//);
+      expect(source.title).toContain(String(source.taxYear));
+    }
+  });
+
+  it("maps a Douglas tax district to the mill-PDF viewer page", () => {
+    expect(authorityRateTablePageForParcel(2025, "4014", "193", "douglas")).toBe(
+      10,
+    );
   });
 });

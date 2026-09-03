@@ -1628,8 +1628,31 @@ Authority Count: 2 Total Mill Levy: 24.157
         self.assertEqual(rows[0]["authorityName"], "Douglas County Government")
         self.assertEqual(rows[0]["millLevy"], 19.774)
         self.assertEqual(rows[0]["taxYear"], "2025")
+        self.assertEqual(rows[0]["pageNumber"], 1)
         self.assertEqual(rows[2]["taxAreaId"], "0043")
         self.assertEqual(rows[3]["millLevy"], 4.383)
+
+    def test_parse_tax_district_mill_pdf_texts_tracks_page_numbers(self) -> None:
+        from ingest.mill_pdf import parse_tax_district_mill_pdf_texts
+
+        page_1 = """2025 Tax Districts and Mill Levies
+Tax District: 35
+Authority No. Authority Name Mill Levy
+0001 Douglas County Government 19.774
+"""
+        page_2 = """2025 Tax Districts and Mill Levies
+0002 Douglas County Law Enforcement 4.500
+Tax District: 43
+4005 Perry Park Metro District 4.383
+"""
+        rows = parse_tax_district_mill_pdf_texts([page_1, page_2])
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0]["pageNumber"], 1)
+        self.assertEqual(rows[1]["taxAreaId"], "0035")
+        self.assertEqual(rows[1]["lineCode"], "0002")
+        self.assertEqual(rows[1]["pageNumber"], 2)
+        self.assertEqual(rows[2]["taxAreaId"], "0043")
+        self.assertEqual(rows[2]["pageNumber"], 2)
 
     def test_build_levy_stacks_includes_source_mills(self) -> None:
         mapping = _arapahoe_mapping()
