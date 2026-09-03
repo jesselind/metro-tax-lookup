@@ -49,10 +49,12 @@ export type SpecialDistrictDirectoryFile = {
   _meta?: {
     lgExportSourceCsv?: string;
     lgExportBundledAt?: string;
-    levyStacksReference?: string;
+    /** Filenames of levy stack JSON files whose LGIDs filtered this directory. */
+    levyStacksReferences?: string[];
     propertyTaxEntitiesFallbackCsv?: string | null;
     propertyTaxEntitiesCountyFilterApplied?: boolean;
-    certifyingCountyForPropertyTaxFallback?: string | null;
+    /** Certifying counties used for Property Tax Entities name-only fallback. */
+    certifyingCountiesForPropertyTaxFallback?: string[];
     referencedLgIdCount?: number;
     directoryRowCount?: number;
     lgIdsFilledFromPropertyTaxEntities?: string[];

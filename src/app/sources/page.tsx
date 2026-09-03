@@ -339,8 +339,9 @@ export default function SourcesPage() {
             <strong>District contact vs tax IDs:</strong>{" "}Levy tile mills and
             tax-entity linkage come from one join path (county tags matched to
             DOLA property-tax entities). Website and mailing contacts come from
-            a separate state LG directory filtered to districts on Arapahoe
-            stacks. Bill LG ID and directory LG ID can{" "}
+            a separate state LG directory filtered to districts on shipping
+            county stacks (Arapahoe and Douglas today). Bill LG ID and directory
+            LG ID can{" "}
             <strong className="text-slate-900">differ</strong>
             {" "}
             — public mail often reflects administration or management, not a
@@ -745,6 +746,24 @@ export default function SourcesPage() {
           and may note the other figure in the levy tile. The statewide DOLA
           tax-entities export is filtered by certifying county at build time
           (Douglas uses certifying county Douglas).
+        </p>
+        <p className="text-slate-700">
+          Levy tile{" "}
+          <strong className="font-semibold text-slate-900">Contact</strong>
+          {" "}
+          (website and mailing address) comes from the same statewide LG
+          directory used for Arapahoe, filtered to LGIDs that appear on shipping
+          Arapahoe or Douglas stacks. Only lines with a DOLA{" "}
+          <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
+            LG ID
+          </Link>
+          {" "}
+          on the stack can open that Contact block from the directory. Many
+          Douglas authorities (county government, school district funds, and
+          similar) have no LG ID on the join, so this site does not invent a
+          directory row for them. When a stack LG ID is missing from both the LG
+          directory export and the Property Tax Entities fallback, that gap stays
+          in the build metadata rather than a fake contact.
         </p>
         {countyFeatureAvailable(
           "millPdfTaxDistrictGap",
