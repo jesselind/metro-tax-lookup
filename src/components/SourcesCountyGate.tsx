@@ -14,6 +14,7 @@ import {
   COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE,
   listCountyServiceGapHubItems,
 } from "@/content/countyServiceGapGuidance";
+import { DisclosureChevron } from "@/components/DisclosureChevron";
 import {
   ARAPAHOE_COUNTY_CONFIG,
   countyConfigById,
@@ -42,23 +43,45 @@ const METHODOLOGY_NAV_BY_COUNTY_ID: Readonly<
   },
 };
 
+/** County-specific On this page link after the gap hub (Arapahoe metro; Douglas mill PDFs). */
+const COUNTY_EXTRA_NAV_BY_COUNTY_ID: Readonly<
+  Record<string, { href: string; label: string }>
+> = {
+  arapahoe: {
+    href: "#metro-tool",
+    label: "Metro district tax share",
+  },
+  douglas: {
+    href: "#douglas-mill-history",
+    label: "Mill history",
+  },
+};
+
 type SourcesCountyGateProps = {
   /** Methodology + contextual gap boxes keyed by `CountyConfig.id`. */
   sectionsByCountyId: Readonly<Record<string, ReactNode>>;
+  /**
+   * Optional county sections after the COUNTY DATA GAP hub (Arapahoe: metro
+   * share + Related county PDFs). Omitted counties render nothing here.
+   */
+  afterGapByCountyId?: Readonly<Partial<Record<string, ReactNode>>>;
 };
 
 /**
  * County selector for /sources: methodology sections and the COUNTY DATA GAP
- * hub follow the selected wired county. Default Arapahoe. No dashboard→sources
- * county query required for v1.
+ * hub follow the selected wired county. Default Arapahoe. Dashboard→sources county
+ * preselect is Phase 13 (see docs/_working/second-county-ingest.md).
  *
  * Pass methodology + contextual gap boxes as `sectionsByCountyId` (keyed by
- * `CountyConfig.id`). Prefer extracting shared prose into content modules when
- * adding county 3 — do not fork an entire Arapahoe article “just in case.”
+ * `CountyConfig.id`). Pass Arapahoe-only metro / Related county PDFs as
+ * `afterGapByCountyId` so they sit after the gap hub and do not show for
+ * Douglas. Prefer extracting shared prose into content modules when adding
+ * county 3 — do not fork an entire Arapahoe article “just in case.”
  * Durable model: `docs/county-config.md`.
  */
 export function SourcesCountyGate({
   sectionsByCountyId,
+  afterGapByCountyId,
 }: SourcesCountyGateProps) {
   const counties = wiredCountyConfigs();
   const [countyId, setCountyId] = useState(ARAPAHOE_COUNTY_CONFIG.id);
@@ -69,8 +92,10 @@ export function SourcesCountyGate({
   const methodologyNav =
     METHODOLOGY_NAV_BY_COUNTY_ID[config.id] ??
     METHODOLOGY_NAV_BY_COUNTY_ID.arapahoe!;
+  const countyExtraNav = COUNTY_EXTRA_NAV_BY_COUNTY_ID[config.id] ?? null;
   const gapHubItems = listCountyServiceGapHubItems(config);
   const countySection = sectionsByCountyId[config.id] ?? null;
+  const afterGapSection = afterGapByCountyId?.[config.id] ?? null;
 
   return (
     <>
@@ -81,20 +106,28 @@ export function SourcesCountyGate({
         >
           County
         </label>
-        <select
-          id="sources-county-select"
-          className="mt-2 w-full max-w-md cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
-          value={config.id}
-          onChange={(event) => {
-            setCountyId(event.target.value);
-          }}
-        >
-          {counties.map((county) => (
-            <option key={county.id} value={county.id}>
-              {county.displayName}
-            </option>
-          ))}
-        </select>
+        <div className="relative mt-2 max-w-md">
+          <select
+            id="sources-county-select"
+            className="w-full cursor-pointer appearance-none rounded-md border border-slate-300 bg-white py-2 pl-3 pr-12 text-sm font-medium text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
+            value={config.id}
+            onChange={(event) => {
+              setCountyId(event.target.value);
+            }}
+          >
+            {counties.map((county) => (
+              <option key={county.id} value={county.id}>
+                {county.displayName}
+              </option>
+            ))}
+          </select>
+          <span
+            className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5"
+            aria-hidden
+          >
+            <DisclosureChevron className="h-4 w-4 text-slate-500" />
+          </span>
+        </div>
         <p className="mt-2 text-sm text-slate-600">
           Gap notes and county methodology below follow this county.
         </p>
@@ -124,11 +157,16 @@ export function SourcesCountyGate({
               When county data fails
             </a>
           </li>
-          <li className="flex min-h-0">
-            <a href="#metro-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Metro district tax share
-            </a>
-          </li>
+          {countyExtraNav ? (
+            <li className="flex min-h-0">
+              <a
+                href={countyExtraNav.href}
+                className={SOURCES_ON_PAGE_NAV_LINK_CLASS}
+              >
+                {countyExtraNav.label}
+              </a>
+            </li>
+          ) : null}
           <li className="flex min-h-0">
             <a href="#sources-code" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
               Code
@@ -168,6 +206,8 @@ export function SourcesCountyGate({
           </p>
         )}
       </section>
+
+      {afterGapSection}
     </>
   );
 }

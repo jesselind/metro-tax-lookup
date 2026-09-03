@@ -696,8 +696,8 @@ describe("buildLevyLineYoYViewModel", () => {
   });
 });
 
-describe("Douglas registry entity YoY", () => {
-  it("uses resident stack mills reconciled to entity reference for SMFR", () => {
+describe("Douglas mill-PDF AUTH YoY", () => {
+  it("uses the Douglas mill-PDF series for SMFR", () => {
     const line = {
       levyLineCode: "4014",
       mills: 12.25,
@@ -717,7 +717,7 @@ describe("Douglas registry entity YoY", () => {
     expect(vm?.totalCompare?.previousMillsLabel).toBe("9.290");
   });
 
-  it("omits YoY when Douglas stack mills do not match entity reference current", () => {
+  it("still publishes AUTH YoY when stack mills differ from the mill-PDF total", () => {
     const line = {
       levyLineCode: "4014",
       mills: 12.2,
@@ -728,6 +728,6 @@ describe("Douglas registry entity YoY", () => {
         lgId: "64108",
       },
     };
-    expect(levyLineMillDelta(line, undefined, "douglas")).toBeNull();
+    expect(levyLineMillDelta(line, undefined, "douglas")).toBeCloseTo(2.96, 2);
   });
 });

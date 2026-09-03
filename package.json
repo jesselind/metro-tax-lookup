@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.3.1",
+  "version": "5.4.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -37,7 +37,8 @@
     "land:douglas": "cp supporting-data/_ingest-out/douglas/douglas-pin-to-tag.json supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json public/data/ && rm -rf public/data/douglas-parcel-record-by-pin && cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/",
     "diff:ingest": "python3 tools/ingest/compare.py",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
-    "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q",
+    "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q && python3 -m unittest discover -s tools -p test_extract_douglas_authority_mills_by_tax_year.py -q",
+    "build:douglas-authority-mills": "python3 tools/extract_douglas_authority_mills_by_tax_year.py",
     "start": "next start",
     "lint": "eslint"
   },

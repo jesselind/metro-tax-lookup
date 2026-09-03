@@ -321,6 +321,12 @@ def build_shipping_payload(
   *,
   source_files: Dict[int, str],
   bundled_as_of: Optional[str] = None,
+  resident_url_by_tax_year: Optional[Dict[int, str]] = None,
+  source_type: str = "taxing_district_levy_percentage",
+  source_title_template: str = "Taxing District Levy Percentage - Tax Year {taxYear}",
+  join_key: Optional[str] = None,
+  pdf_tag_note: Optional[str] = None,
+  year_semantics: Optional[str] = None,
 ) -> Dict[str, Any]:
   """
   Merge per-year collapses into public/data shipping JSON.
@@ -348,18 +354,19 @@ def build_shipping_payload(
     if result["exceptions"]:
       exceptions_by_tax_year[str(tax_year)] = result["exceptions"]
 
+  url_by_year = resident_url_by_tax_year or RESIDENT_URL_BY_TAX_YEAR
   sources = []
   for tax_year in tax_years:
-    resident_url = RESIDENT_URL_BY_TAX_YEAR.get(tax_year)
+    resident_url = url_by_year.get(tax_year)
     if not resident_url:
       raise ValueError(
-        f"Missing RESIDENT_URL_BY_TAX_YEAR entry for tax year {tax_year}",
+        f"Missing resident URL for tax year {tax_year}",
       )
     sources.append(
       {
         "taxYear": tax_year,
-        "type": "taxing_district_levy_percentage",
-        "title": f"Taxing District Levy Percentage - Tax Year {tax_year}",
+        "type": source_type,
+        "title": source_title_template.format(taxYear=tax_year),
         "file": source_files[tax_year],
         "residentUrl": resident_url,
       }
@@ -373,15 +380,18 @@ def build_shipping_payload(
     "_meta": {
       "bundledAsOf": bundled_as_of or date.today().isoformat(),
       "taxYears": tax_years,
-      "joinKey": (
+      "joinKey": join_key
+      or (
         "Stack line `code` (AUTH). Look up authorities[code].millsByTaxYear."
       ),
-      "pdfTagNote": (
+      "pdfTagNote": pdf_tag_note
+      or (
         "Levy % PDF TAG is parcel tagShortDescr zero-padded to four digits. "
         "It is not Levy.aspx tagId in arapahoe-levy-stacks-by-tag-id.json. "
         "Exception maps use PDF TAG keys for audit; app YoY joins AUTH totals."
       ),
-      "yearSemantics": (
+      "yearSemantics": year_semantics
+      or (
         "Numbers are Tax Year mills from the county Levy % PDFs. "
         "Do not relabel Tax Year 2025 as budget year 2026."
       ),

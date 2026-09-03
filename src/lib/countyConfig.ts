@@ -280,7 +280,7 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     parcelRecordShards: true,
     compsPdf: false,
     bpp: false,
-    millsHistory: false,
+    millsHistory: true,
     metroPurposes: false,
     priorYearValuesGap: false,
     dataMartRefreshGap: false,

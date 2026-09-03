@@ -4,12 +4,15 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Lookups for bundled AUTH total mills by tax year (Levy % PDFs).
+ * Lookups for bundled AUTH total mills by tax year.
  * Join key is stack line `code` (AUTH). Never invents a missing year.
+ * Arapahoe: Levy % PDFs. Douglas: Tax Districts and Mill Levies PDFs.
  */
 
 import authorityMillsData from "@/data/authorityMillsByTaxYear";
 import authorityRateTablePagesData from "@/data/authorityRateTablePages";
+import douglasAuthorityMillsData from "@/data/douglasAuthorityMillsByTaxYear";
+import douglasAuthorityRateTablePagesData from "@/data/douglasAuthorityRateTablePages";
 import {
   resolveAuthorityMillsLookup,
   resolveRegistryEntityMillsLookup,
@@ -24,7 +27,7 @@ export type AuthorityMillsByTaxYearFile = {
       type: string;
       title: string;
       file: string;
-      /** Resident https cite for the Levy % PDF (same source as AUTH mills). */
+      /** Resident https cite for the mill rate-table PDF (same source as AUTH mills). */
       residentUrl: string;
     }>;
   };
@@ -49,49 +52,137 @@ type AuthorityRateTablePagesFile = {
   >;
 };
 
-const file = authorityMillsData as AuthorityMillsByTaxYearFile;
-const pageFile = authorityRateTablePagesData as AuthorityRateTablePagesFile;
+type CountyMillsBundle = {
+  countyId: string;
+  fileName: string;
+  mills: AuthorityMillsByTaxYearFile;
+  pages: AuthorityRateTablePagesFile;
+  urlByTaxYear: Map<number, string>;
+  sortedTaxYears: number[];
+};
 
-const levyPercentageResidentUrlByTaxYear = new Map<number, string>();
-for (const source of file._meta.sources) {
-  const url = source.residentUrl?.trim();
-  if (!url || !url.startsWith("https://")) {
-    throw new Error(
-      `arapahoe-authority-mills-by-tax-year.json: tax year ${source.taxYear} missing https residentUrl`,
-    );
+function loadCountyMillsBundle(
+  countyId: string,
+  millsRaw: unknown,
+  pagesRaw: unknown,
+): CountyMillsBundle {
+  const fileName = `${countyId}-authority-mills-by-tax-year.json`;
+  const mills = millsRaw as AuthorityMillsByTaxYearFile;
+  const pages = pagesRaw as AuthorityRateTablePagesFile;
+  const urlByTaxYear = new Map<number, string>();
+  for (const source of mills._meta.sources) {
+    const url = source.residentUrl?.trim();
+    if (!url || !url.startsWith("https://")) {
+      throw new Error(
+        `${fileName}: tax year ${source.taxYear} missing https residentUrl`,
+      );
+    }
+    urlByTaxYear.set(source.taxYear, url);
   }
-  levyPercentageResidentUrlByTaxYear.set(source.taxYear, url);
-}
-for (const taxYear of file._meta.taxYears) {
-  if (!levyPercentageResidentUrlByTaxYear.has(taxYear)) {
-    throw new Error(
-      `arapahoe-authority-mills-by-tax-year.json: tax year ${taxYear} missing _meta.sources residentUrl`,
-    );
+  for (const taxYear of mills._meta.taxYears) {
+    if (!urlByTaxYear.has(taxYear)) {
+      throw new Error(
+        `${fileName}: tax year ${taxYear} missing _meta.sources residentUrl`,
+      );
+    }
   }
+  return {
+    countyId,
+    fileName,
+    mills,
+    pages,
+    urlByTaxYear,
+    sortedTaxYears: [...mills._meta.taxYears].sort((a, b) => a - b),
+  };
 }
 
-/** Resident link label for a county Levy % PDF cite (year-specific text). */
+const BUNDLES: Record<string, CountyMillsBundle> = {
+  arapahoe: loadCountyMillsBundle(
+    "arapahoe",
+    authorityMillsData,
+    authorityRateTablePagesData,
+  ),
+  douglas: loadCountyMillsBundle(
+    "douglas",
+    douglasAuthorityMillsData,
+    douglasAuthorityRateTablePagesData,
+  ),
+};
+
+const ARAPAHOE_BUNDLE = BUNDLES.arapahoe!;
+
+function millsBundleForCounty(
+  countyId?: string | null,
+): CountyMillsBundle | null {
+  const id = countyId?.trim();
+  if (!id) return ARAPAHOE_BUNDLE;
+  return BUNDLES[id] ?? null;
+}
+
+/** True when this county ships `{countyId}-authority-mills-by-tax-year.json`. */
+export function countyHasAuthorityMillsBundle(
+  countyId: string | null | undefined,
+): boolean {
+  const id = countyId?.trim();
+  return Boolean(id && BUNDLES[id]);
+}
+
+/** Resident link label for a county mill rate-table PDF cite. */
 export function levyPercentageResidentLinkText(taxYear: number): string {
   return `County rate table for ${taxYear} (PDF)`;
 }
 
 /**
- * Official https cite for the county Levy % PDF that published AUTH mills for a
- * tax year. Same bundle as {@link authorityMillsSeries} (not a second map).
+ * Official https cite for the county mill rate-table PDF that published AUTH
+ * mills for a tax year. Same bundle as {@link authorityMillsSeries}.
+ * Omit `countyId` for the Arapahoe Levy % bundle (existing callers).
  */
-export function levyPercentageResidentUrlForTaxYear(taxYear: number): string {
-  const url = levyPercentageResidentUrlByTaxYear.get(taxYear);
+export function levyPercentageResidentUrlForTaxYear(
+  taxYear: number,
+  countyId?: string | null,
+): string {
+  const bundle = millsBundleForCounty(countyId);
+  if (!bundle) {
+    throw new Error(
+      `No AUTH mills bundle for county ${countyId?.trim() ?? "(none)"}`,
+    );
+  }
+  const url = bundle.urlByTaxYear.get(taxYear);
   if (!url) {
     throw new Error(
-      `No resident Levy % PDF url bundled for tax year ${taxYear}`,
+      `No resident mill rate-table PDF url bundled for tax year ${taxYear} (${bundle.fileName})`,
     );
   }
   return url;
 }
 
+export type AuthorityMillsResidentSource = {
+  taxYear: number;
+  title: string;
+  url: string;
+};
+
 /**
- * County parcel `tagShortDescr` uses the Levy % PDF TAG code without guaranteed
- * leading zeros (e.g. `747` -> PDF TAG `0747`). Levy.aspx `tagId` is unrelated.
+ * Bundled mill rate-table PDFs for one county (same cites as the chart and
+ * authority-chain What changed?). Empty when that county has no mills bundle.
+ */
+export function authorityMillsResidentSources(
+  countyId?: string | null,
+): AuthorityMillsResidentSource[] {
+  const bundle = millsBundleForCounty(countyId);
+  if (!bundle) return [];
+  return [...bundle.mills._meta.sources]
+    .sort((a, b) => a.taxYear - b.taxYear)
+    .map((source) => ({
+      taxYear: source.taxYear,
+      title: source.title,
+      url: source.residentUrl.trim(),
+    }));
+}
+
+/**
+ * County parcel `tagShortDescr` uses the rate-table PDF tax-area code without
+ * guaranteed leading zeros (e.g. `747` -> `0747`). Levy.aspx `tagId` is unrelated.
  */
 export function normalizeLevyPercentagePdfTag(
   taxAreaShortCode: string | null | undefined,
@@ -99,6 +190,20 @@ export function normalizeLevyPercentagePdfTag(
   const raw = taxAreaShortCode?.trim();
   if (!raw || !/^\d{1,4}$/.test(raw)) return null;
   return raw.padStart(4, "0");
+}
+
+function pageForParcelInBundle(
+  bundle: CountyMillsBundle,
+  taxYear: number,
+  authorityCode: string | null | undefined,
+  taxAreaShortCode: string | null | undefined,
+): number | null {
+  const authority = authorityCode?.trim();
+  const pdfTag = normalizeLevyPercentagePdfTag(taxAreaShortCode);
+  if (!authority || !pdfTag) return null;
+  const page =
+    bundle.pages.pagesByAuthority[authority]?.[String(taxYear)]?.[pdfTag];
+  return Number.isInteger(page) && page > 0 ? page : null;
 }
 
 /**
@@ -111,19 +216,22 @@ export function authorityRateTablePageForParcel(
   taxYear: number,
   authorityCode: string | null | undefined,
   taxAreaShortCode: string | null | undefined,
+  countyId?: string | null,
 ): number | null {
-  const authority = authorityCode?.trim();
-  const pdfTag = normalizeLevyPercentagePdfTag(taxAreaShortCode);
-  if (!authority || !pdfTag) return null;
-  const page =
-    pageFile.pagesByAuthority[authority]?.[String(taxYear)]?.[pdfTag];
-  return Number.isInteger(page) && page > 0 ? page : null;
+  const bundle = millsBundleForCounty(countyId);
+  if (!bundle) return null;
+  return pageForParcelInBundle(
+    bundle,
+    taxYear,
+    authorityCode,
+    taxAreaShortCode,
+  );
 }
 
 /**
  * Add a parcel-specific page fragment only when `rawUrl` is one of the bundled
- * county Levy % PDFs and that year's TAG + AUTH page is known. Otherwise leave
- * the URL unchanged (no fragment → viewer opens at page 1; never invent a page).
+ * county mill rate-table PDFs and that year's TAG + AUTH page is known.
+ * Otherwise leave the URL unchanged (viewer opens at page 1; never invent a page).
  */
 export function deepLinkLevyPercentageUrlForParcel(
   rawUrl: string,
@@ -131,38 +239,44 @@ export function deepLinkLevyPercentageUrlForParcel(
   taxAreaShortCode: string | null | undefined,
 ): string {
   const withoutHash = rawUrl.split("#", 1)[0] ?? rawUrl;
-  for (const [taxYear, residentUrl] of levyPercentageResidentUrlByTaxYear) {
-    if (withoutHash !== residentUrl) continue;
-    const page = authorityRateTablePageForParcel(
-      taxYear,
-      authorityCode,
-      taxAreaShortCode,
-    );
-    return page ? `${withoutHash}#page=${page}` : rawUrl;
+  for (const bundle of Object.values(BUNDLES)) {
+    for (const [taxYear, residentUrl] of bundle.urlByTaxYear) {
+      if (withoutHash !== residentUrl) continue;
+      const page = pageForParcelInBundle(
+        bundle,
+        taxYear,
+        authorityCode,
+        taxAreaShortCode,
+      );
+      return page ? `${withoutHash}#page=${page}` : rawUrl;
+    }
   }
   return rawUrl;
 }
 
-export function levyPercentageResidentLinkForTaxYear(taxYear: number): {
+export function levyPercentageResidentLinkForTaxYear(
+  taxYear: number,
+  countyId?: string | null,
+): {
   text: string;
   url: string;
 } {
   return {
     text: levyPercentageResidentLinkText(taxYear),
-    url: levyPercentageResidentUrlForTaxYear(taxYear),
+    url: levyPercentageResidentUrlForTaxYear(taxYear, countyId),
   };
 }
 
-const sortedTaxYears = [...file._meta.taxYears].sort((a, b) => a - b);
+const arapahoeSortedTaxYears = ARAPAHOE_BUNDLE.sortedTaxYears;
 
-/** Latest tax year in the bundled AUTH history (county Levy % label). */
+/** Latest tax year in the Arapahoe AUTH history (Levy % label). */
 export const AUTHORITY_MILLS_CURRENT_TAX_YEAR =
-  sortedTaxYears[sortedTaxYears.length - 1] ?? 2025;
+  arapahoeSortedTaxYears[arapahoeSortedTaxYears.length - 1] ?? 2025;
 
-/** Prior tax year in the bundled AUTH history (one year back for Phase 0). */
+/** Prior tax year in the Arapahoe AUTH history (one year back for Phase 0). */
 export const AUTHORITY_MILLS_PREVIOUS_TAX_YEAR =
-  sortedTaxYears.length >= 2
-    ? sortedTaxYears[sortedTaxYears.length - 2]!
+  arapahoeSortedTaxYears.length >= 2
+    ? arapahoeSortedTaxYears[arapahoeSortedTaxYears.length - 2]!
     : AUTHORITY_MILLS_CURRENT_TAX_YEAR - 1;
 
 /** Minimum published years before showing the modal mill-rate history chart. */
@@ -184,6 +298,26 @@ export type AuthorityMillsSeriesPoint = {
   mills: number;
 };
 
+function yoyYearPair(
+  bundle: CountyMillsBundle,
+): { current: number; previous: number } | null {
+  if (bundle.sortedTaxYears.length < 2) return null;
+  return {
+    current: bundle.sortedTaxYears[bundle.sortedTaxYears.length - 1]!,
+    previous: bundle.sortedTaxYears[bundle.sortedTaxYears.length - 2]!,
+  };
+}
+
+function readBundledMillsForYear(
+  bundle: CountyMillsBundle,
+  authorityCode: string,
+  taxYear: number,
+): number | null {
+  const mills =
+    bundle.mills.authorities[authorityCode]?.millsByTaxYear[String(taxYear)];
+  return typeof mills === "number" && Number.isFinite(mills) ? mills : null;
+}
+
 /**
  * Published AUTH mills for one stack line code, ascending by tax year.
  * Omits years with no data (never invents).
@@ -196,13 +330,15 @@ export function authorityMillsSeries(
   countyId?: string | null,
 ): AuthorityMillsSeriesPoint[] {
   const target = resolveAuthorityMillsLookup(code, countyId);
-  if (!target || target.bundleCountyId !== "arapahoe") return [];
+  if (!target) return [];
+  const bundle = millsBundleForCounty(target.bundleCountyId);
+  if (!bundle) return [];
   const key = normalizeAuthorityCode(target.authorityCode);
   if (!key) return [];
-  const byYear = file.authorities[key]?.millsByTaxYear;
+  const byYear = bundle.mills.authorities[key]?.millsByTaxYear;
   if (!byYear) return [];
   const points: AuthorityMillsSeriesPoint[] = [];
-  for (const taxYear of sortedTaxYears) {
+  for (const taxYear of bundle.sortedTaxYears) {
     const mills = byYear[String(taxYear)];
     if (typeof mills === "number" && Number.isFinite(mills)) {
       points.push({ taxYear, mills });
@@ -229,11 +365,12 @@ export function authorityMillsForTaxYear(
   countyId?: string | null,
 ): number | null {
   const target = resolveAuthorityMillsLookup(code, countyId);
-  if (!target || target.bundleCountyId !== "arapahoe") return null;
+  if (!target) return null;
+  const bundle = millsBundleForCounty(target.bundleCountyId);
+  if (!bundle) return null;
   const key = normalizeAuthorityCode(target.authorityCode);
   if (!key) return null;
-  const mills = file.authorities[key]?.millsByTaxYear[String(taxYear)];
-  return typeof mills === "number" && Number.isFinite(mills) ? mills : null;
+  return readBundledMillsForYear(bundle, key, taxYear);
 }
 
 export type AuthorityTotalMillsYoY = {
@@ -244,15 +381,6 @@ export type AuthorityTotalMillsYoY = {
   millsPrevious: number;
   millsDelta: number;
 };
-
-function readBundledMillsForYear(
-  authorityCode: string,
-  taxYear: number,
-): number | null {
-  const mills =
-    file.authorities[authorityCode]?.millsByTaxYear[String(taxYear)];
-  return typeof mills === "number" && Number.isFinite(mills) ? mills : null;
-}
 
 /**
  * AUTH total mills for current vs prior tax year when both are published.
@@ -269,22 +397,29 @@ export function authorityTotalMillsYoY(
   options?: AuthorityMillsYoYOptions,
 ): AuthorityTotalMillsYoY | null {
   const residentTarget = resolveAuthorityMillsLookup(code, countyId);
-  if (residentTarget?.bundleCountyId === "arapahoe") {
+  const residentBundle = residentTarget
+    ? millsBundleForCounty(residentTarget.bundleCountyId)
+    : null;
+  if (residentTarget && residentBundle) {
     const key = normalizeAuthorityCode(residentTarget.authorityCode);
     if (!key) return null;
+    const years = yoyYearPair(residentBundle);
+    if (!years) return null;
     const millsCurrent = readBundledMillsForYear(
+      residentBundle,
       key,
-      AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+      years.current,
     );
     const millsPrevious = readBundledMillsForYear(
+      residentBundle,
       key,
-      AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+      years.previous,
     );
     if (millsCurrent == null || millsPrevious == null) return null;
     return {
       authorityCode: key,
-      taxYearCurrent: AUTHORITY_MILLS_CURRENT_TAX_YEAR,
-      taxYearPrevious: AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+      taxYearCurrent: years.current,
+      taxYearPrevious: years.previous,
       millsCurrent,
       millsPrevious,
       millsDelta: millsCurrent - millsPrevious,
@@ -292,9 +427,9 @@ export function authorityTotalMillsYoY(
   }
 
   const entityTarget = resolveRegistryEntityMillsLookup(code, countyId);
-  if (!entityTarget || entityTarget.bundleCountyId !== "arapahoe") {
-    return null;
-  }
+  if (!entityTarget) return null;
+  const referenceBundle = millsBundleForCounty(entityTarget.bundleCountyId);
+  if (!referenceBundle) return null;
 
   const key = normalizeAuthorityCode(entityTarget.authorityCode);
   if (!key) return null;
@@ -304,13 +439,17 @@ export function authorityTotalMillsYoY(
     return null;
   }
 
+  const years = yoyYearPair(referenceBundle);
+  if (!years) return null;
   const referenceCurrent = readBundledMillsForYear(
+    referenceBundle,
     key,
-    AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+    years.current,
   );
   const millsPrevious = readBundledMillsForYear(
+    referenceBundle,
     key,
-    AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+    years.previous,
   );
   if (referenceCurrent == null || millsPrevious == null) {
     return null;
@@ -324,8 +463,8 @@ export function authorityTotalMillsYoY(
   const millsDelta = stackMills - millsPrevious;
   return {
     authorityCode: key,
-    taxYearCurrent: AUTHORITY_MILLS_CURRENT_TAX_YEAR,
-    taxYearPrevious: AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+    taxYearCurrent: years.current,
+    taxYearPrevious: years.previous,
     millsCurrent: stackMills,
     millsPrevious,
     millsDelta,

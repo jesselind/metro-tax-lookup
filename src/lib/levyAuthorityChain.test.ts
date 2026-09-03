@@ -53,7 +53,7 @@ describe("levyAuthorityChain", () => {
     ).toBe(true);
     expect(
       entry?.openGaps.some((g) => g.id === "no-resident-county-mills-history"),
-    ).toBe(true);
+    ).toBe(false);
     const whoGets = entry?.steps.find((step) => step.id === "who-sets");
     expect(
       whoGets?.facts.some((fact) =>
@@ -64,14 +64,14 @@ describe("levyAuthorityChain", () => {
       false,
     );
     const mills = entry?.steps.find((step) => step.id === "certified-mills");
-    expect(mills?.facts.some((fact) => fact.label.includes("rate table"))).toBe(
-      false,
-    );
+    expect(
+      mills?.facts.some((fact) => fact.label === "Change from last year"),
+    ).toBe(true);
     expect(
       mills?.facts.some((fact) =>
         fact.sources.some((src) => src.text.includes("County rate table")),
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("shows Arapahoe-only ballot-notice caveat for SMFR in Arapahoe", () => {

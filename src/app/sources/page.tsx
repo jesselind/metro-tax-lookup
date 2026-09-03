@@ -29,7 +29,6 @@ import {
   ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
   ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
   ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF,
-  ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF,
   ARAPAHOE_COMP_SHEET_PDF_URL,
   ARAPAHOE_PAST_ELECTIONS_FILE_LIBRARY,
 } from "@/lib/arapahoeCountyUrls";
@@ -42,6 +41,7 @@ import {
 import {
   DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
   DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
+  DOUGLAS_2025_TAX_DISTRICT_MILL_PDF_URL,
 } from "@/content/douglasCountyDataGapNote";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import type { LevyDataFile } from "@/lib/levyTypes";
@@ -66,6 +66,7 @@ import {
   AUTHORITY_CHAIN_UNLOCATED_SOURCES_DISCLOSURE,
   openAuthorityChainUnlocatedSources,
 } from "@/content/authorityChainUnlocatedSources";
+import { authorityMillsResidentSources } from "@/lib/authorityMillsHistory";
 
 export const metadata = {
   title: "Sources",
@@ -124,11 +125,50 @@ function ReadmeDataPipelineLink({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * First-party mill rate-table PDF links for one county (same cites as the
+ * chart and Changed badges). Empty when that county has no mills bundle.
+ */
+function CountyMillHistoryPdfList({ countyId }: { countyId: string }) {
+  const sources = authorityMillsResidentSources(countyId).filter(
+    (source) => source.url.length > 0,
+  );
+  if (sources.length === 0) return null;
+  return (
+    <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">
+      {sources.map((source) => (
+        <li key={`${countyId}-${source.taxYear}`}>
+          <a
+            href={source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${TERM_LINK_CLASS} break-words`}
+          >
+            {source.title}
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Human span of bundled mill-history tax years, or null when empty. */
+function millHistoryYearSpan(countyId: string): string | null {
+  const sources = authorityMillsResidentSources(countyId);
+  const first = sources.at(0)?.taxYear;
+  const last = sources.at(-1)?.taxYear;
+  if (first == null || last == null) return null;
+  if (first === last) return `Tax Year ${first}`;
+  return `Tax Years ${first} through ${last}`;
+}
+
 export default function SourcesPage() {
   const levyJson = levyData as LevyDataFile;
   const bundledIso = levyJson.snapshot?.bundledAsOf;
   const bundledLabel = bundledIso ? formatLevyBundledAsOf(bundledIso) : null;
   const unlocatedAuthorityChainSources = openAuthorityChainUnlocatedSources();
+  const douglasMillYearSpan = millHistoryYearSpan(DOUGLAS_COUNTY_CONFIG.id);
 
   return (
     <StaticArticleShell
@@ -606,6 +646,7 @@ export default function SourcesPage() {
           </CountyServiceGapCallout>
         ) : null}
       </section>
+
           ),
           douglas: (
       <section
@@ -679,8 +720,16 @@ export default function SourcesPage() {
         <h3 className={`${SECTION_H3} !mt-8`}>Levy stacks and mill PDF</h3>
         <p className="text-slate-700">
           Each account&apos;s tax district number must appear in the bundled mill
-          PDF for a stack to load. Compare authority names and mills to the
-          county PDF after you load an account. Stack lines also join to{" "}
+          PDF for a stack to load. Compare authority names and mills to the{" "}
+          <a
+            href={DOUGLAS_2025_TAX_DISTRICT_MILL_PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            2025 Tax Districts and Mill Levies PDF<span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          after you load an account. Stack lines also join to{" "}
           <a
             href={DOLA_LGIS_PROPERTY_TAX_ENTITIES}
             target="_blank"
@@ -710,6 +759,49 @@ export default function SourcesPage() {
         ) : null}
 
         <h3
+          id="douglas-mill-history"
+          className={`${SECTION_H3} !mt-8 scroll-mt-8`}
+        >
+          Mill history (year-over-year)
+        </h3>
+        <p className="text-slate-700">
+          This year&apos;s mill rate on each levy tile comes from the current{" "}
+          <a
+            href={DOUGLAS_2025_TAX_DISTRICT_MILL_PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            Tax Districts and Mill Levies PDF<span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          {", the same file as the levy stack. "}
+          Changed badges, year-over-year mill rates, and the mill timeline chart
+          use{" "}
+          <strong className="font-semibold text-slate-900">
+            {douglasMillYearSpan ?? "bundled tax years"}
+          </strong>
+          {" "}
+          of that same series. Each file is a county publication. Open a year
+          below to check the mill total for an authority on your bill. Years
+          follow the PDF Tax Year label; Tax Year 2025 is not budget year 2026.
+          If a year is missing for an authority, this site leaves it off the
+          chart rather than inventing a mill rate.
+        </p>
+        <p className="text-slate-700">
+          Browse the series on the{" "}
+          <a
+            href={DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={TERM_LINK_CLASS}
+          >
+            taxing authorities<span className="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          page.
+        </p>
+        <CountyMillHistoryPdfList countyId={DOUGLAS_COUNTY_CONFIG.id} />
+
+        <h3
           id="douglas-cross-county-authority"
           className={`${SECTION_H3} !mt-8 scroll-mt-8`}
         >
@@ -729,15 +821,16 @@ export default function SourcesPage() {
           Shared trails use county-neutral base copy. When your county needs its
           own source note or honest limit (for example vote totals that cover
           only one county in a multi-county district), that detail is shown for
-          your county only. Mills-over-time charts and Levy % rate-table links in
-          the authorization panel use <strong className="font-semibold text-slate-900">your county&apos;s</strong> bundled
-          data only — we do not substitute another county&apos;s rate tables or AUTH
-          history (Douglas does not yet ship an authority mills bundle, so those
-          cites are omitted with an honest open gap). For registry-linked shared
-          districts (such as South Metro Fire Rescue), levy stack tiles can still
-          show Changed badges and year-over-year mill rates when your county&apos;s
-          stack mills match that tax entity&apos;s published current-year total
-          (numbers only, not your county&apos;s Levy % PDF links). Urban Drainage districts are mapped in the registry for mills lookup;
+          your county only. Mills-over-time charts and county rate-table PDF links in
+          the authorization panel use{" "}
+          <strong className="font-semibold text-slate-900">your county&apos;s</strong>
+          {" "}
+          mill PDFs only. We do not substitute Arapahoe Levy Percentage tables.
+          See{" "}
+          <a href="#douglas-mill-history" className={TERM_LINK_CLASS}>
+            Mill history
+          </a>{" "}
+          above for the Douglas PDFs. Urban Drainage districts are mapped in the registry for mills lookup;
           they do not yet have a full authorization trail. Compare names on your
           stack to the county levy PDF when a tile has no authorization panel.
         </p>
@@ -756,8 +849,8 @@ export default function SourcesPage() {
       </section>
           ),
         }}
-      />
-
+        afterGapByCountyId={{
+          arapahoe: (
       <section
         id="metro-tool"
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
@@ -929,10 +1022,11 @@ export default function SourcesPage() {
             Total mills from county property tax tables
           </strong>
           {" "}
-          chart when we have at least three tax years of Levy Percentage data
-          for that authority (currently Tax Years 2018 through 2025). It shows
-          total mills only, not dollars on your bill. Tap a year on the chart
-          to see that year&apos;s mills.
+          chart when we have at least three tax years of county mill rate-table
+          data for that authority. That is the Levy Percentage series (currently
+          Tax Years 2018 through 2025), listed under Related county PDFs below.
+          The chart shows total mills only, not dollars on your bill. Tap a year
+          on the chart to see that year&apos;s mills.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="font-semibold text-slate-900">
@@ -998,12 +1092,9 @@ export default function SourcesPage() {
             What changed?
           </strong>
           {" "}
-          comes from your county&apos;s bundled authority mill totals when that
-          county ships mills history (Arapahoe today): always the change from
-          last year, and a separate Most notable change block when a larger
-          year-to-year move exists. Counties without a bundled mills series show
-          narrative-only What changed? with an honest open gap — no cross-county
-          fallback. Fire
+          comes from Arapahoe&apos;s bundled authority mill totals (Levy
+          Percentage series): always the change from last year, and a separate
+          Most notable change block when a larger year-to-year move exists. Fire
           protection district trails (such as South Metro Fire Rescue Ballot
           Issue 7A) still use county Ballot Issue letters and certified vote
           totals when those exist; when the district covers more than one
@@ -1203,21 +1294,17 @@ export default function SourcesPage() {
               Optional dollar lines in tile details multiply mills by your
               current assessed value only. The county bulk table does not include
               prior-year assessed value, so those dollars use this year&apos;s
-              assessed value for both tax years in the comparison.
+              assessed value for both tax years in the comparison. Open each
+              tax year below (same files the chart and Changed badges cite).
             </p>
-            <p className="mt-2 break-words">
-              <a
-                href={ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={TERM_LINK_CLASS}
-              >
-                Open PDF (Tax Year 2025)<span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            </p>
+            <CountyMillHistoryPdfList countyId={ARAPAHOE_COUNTY_CONFIG.id} />
           </li>
         </ul>
       </section>
+
+          ),
+        }}
+      />
 
       <section
         id="sources-code"

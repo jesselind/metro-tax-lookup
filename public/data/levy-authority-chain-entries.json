@@ -439,8 +439,7 @@
         "douglas": {
           "countyListName": "South Metro Fire Rescue Fire Protection District",
           "openGapIds": [
-            "multi-county-arapahoe-votes-only",
-            "no-resident-county-mills-history"
+            "multi-county-arapahoe-votes-only"
           ]
         }
       },
