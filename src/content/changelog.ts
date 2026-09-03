@@ -33,7 +33,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     highlights: [
       "colorado-special-district-directory.json is filtered to the union of LGIDs on Arapahoe and Douglas levy stacks (was Arapahoe-only). Douglas levy lines with a DOLA LG ID can show the same Contact block as Arapahoe.",
       "build:district-directory defaults to both county stack files; repeatable --certifying-county defaults to Arapahoe and Douglas for Property Tax Entities name-only fallback. npm run test:district-directory covers the multi-county filter.",
-      "/sources: Arapahoe contact methodology names shipping counties; Douglas methodology notes Contact only when the stack has an LG ID and that gaps stay honest.",
+      "/sources: Arapahoe contact methodology names shipping counties; Douglas methodology matches levy detail Contact behavior (stack LG ID strongest; name match or DOLA entity data when no directory row).",
     ],
   },
   {

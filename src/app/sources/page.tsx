@@ -753,16 +753,18 @@ export default function SourcesPage() {
           {" "}
           (website and mailing address) comes from the same statewide LG
           directory used for Arapahoe, filtered to LGIDs that appear on shipping
-          Arapahoe or Douglas stacks. Only lines with a DOLA{" "}
+          Arapahoe or Douglas stacks. A stack{" "}
           <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
             LG ID
           </Link>
           {" "}
-          on the stack can open that Contact block from the directory. Many
-          Douglas authorities (county government, school district funds, and
-          similar) have no LG ID on the join, so this site does not invent a
-          directory row for them. When a stack LG ID is missing from both the LG
-          directory export and the Property Tax Entities fallback, that gap stays
+          is the strongest link to that directory, but Contact can still open when
+          only the authority name matches closely enough, or when DOLA
+          property-tax entities supply a tax entity or legal name without a
+          directory row yet. Many Douglas authorities (county government, school
+          district funds, and similar) have no LG ID on the join; this site does
+          not invent a directory row for them. When a stack LG ID is missing from
+          both the LG directory export and the Property Tax Entities fallback, that gap stays
           in the build metadata rather than a fake contact.
         </p>
         {countyFeatureAvailable(
