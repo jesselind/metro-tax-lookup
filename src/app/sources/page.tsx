@@ -646,6 +646,7 @@ export default function SourcesPage() {
           </CountyServiceGapCallout>
         ) : null}
       </section>
+
           ),
           douglas: (
       <section
@@ -848,8 +849,8 @@ export default function SourcesPage() {
       </section>
           ),
         }}
-      />
-
+        afterGapByCountyId={{
+          arapahoe: (
       <section
         id="metro-tool"
         className={`${SECTION_WRAP} scroll-mt-8 border-t border-slate-200 pt-10`}
@@ -1022,17 +1023,10 @@ export default function SourcesPage() {
           </strong>
           {" "}
           chart when we have at least three tax years of county mill rate-table
-          data for that authority. For Arapahoe that is the Levy Percentage
-          series (currently Tax Years 2018 through 2025), listed under Related
-          county PDFs below. For Douglas, switch{" "}
-          <strong className="font-semibold text-slate-900">County</strong>
-          {" "}
-          at the top of this page to Douglas and open{" "}
-          <strong className="font-semibold text-slate-900">Mill history</strong>
-          {" "}
-          for the Tax Districts and Mill Levies PDFs. The chart shows total
-          mills only, not dollars on your bill. Tap a year on the chart to see
-          that year&apos;s mills.
+          data for that authority. That is the Levy Percentage series (currently
+          Tax Years 2018 through 2025), listed under Related county PDFs below.
+          The chart shows total mills only, not dollars on your bill. Tap a year
+          on the chart to see that year&apos;s mills.
         </p>
         <p className="mt-3 text-slate-700">
           <strong className="font-semibold text-slate-900">
@@ -1098,12 +1092,9 @@ export default function SourcesPage() {
             What changed?
           </strong>
           {" "}
-          comes from your county&apos;s bundled authority mill totals when that
-          county ships mills history (Arapahoe today): always the change from
-          last year, and a separate Most notable change block when a larger
-          year-to-year move exists. Counties without a bundled mills series show
-          narrative-only What changed? with an honest open gap — no cross-county
-          fallback. Fire
+          comes from Arapahoe&apos;s bundled authority mill totals (Levy
+          Percentage series): always the change from last year, and a separate
+          Most notable change block when a larger year-to-year move exists. Fire
           protection district trails (such as South Metro Fire Rescue Ballot
           Issue 7A) still use county Ballot Issue letters and certified vote
           totals when those exist; when the district covers more than one
@@ -1310,6 +1301,10 @@ export default function SourcesPage() {
           </li>
         </ul>
       </section>
+
+          ),
+        }}
+      />
 
       <section
         id="sources-code"

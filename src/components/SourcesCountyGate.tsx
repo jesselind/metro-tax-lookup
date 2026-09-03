@@ -43,9 +43,28 @@ const METHODOLOGY_NAV_BY_COUNTY_ID: Readonly<
   },
 };
 
+/** County-specific On this page link after the gap hub (Arapahoe metro; Douglas mill PDFs). */
+const COUNTY_EXTRA_NAV_BY_COUNTY_ID: Readonly<
+  Record<string, { href: string; label: string }>
+> = {
+  arapahoe: {
+    href: "#metro-tool",
+    label: "Metro district tax share",
+  },
+  douglas: {
+    href: "#douglas-mill-history",
+    label: "Mill history",
+  },
+};
+
 type SourcesCountyGateProps = {
   /** Methodology + contextual gap boxes keyed by `CountyConfig.id`. */
   sectionsByCountyId: Readonly<Record<string, ReactNode>>;
+  /**
+   * Optional county sections after the COUNTY DATA GAP hub (Arapahoe: metro
+   * share + Related county PDFs). Omitted counties render nothing here.
+   */
+  afterGapByCountyId?: Readonly<Partial<Record<string, ReactNode>>>;
 };
 
 /**
@@ -54,12 +73,15 @@ type SourcesCountyGateProps = {
  * preselect is Phase 13 (see docs/_working/second-county-ingest.md).
  *
  * Pass methodology + contextual gap boxes as `sectionsByCountyId` (keyed by
- * `CountyConfig.id`). Prefer extracting shared prose into content modules when
- * adding county 3 — do not fork an entire Arapahoe article “just in case.”
+ * `CountyConfig.id`). Pass Arapahoe-only metro / Related county PDFs as
+ * `afterGapByCountyId` so they sit after the gap hub and do not show for
+ * Douglas. Prefer extracting shared prose into content modules when adding
+ * county 3 — do not fork an entire Arapahoe article “just in case.”
  * Durable model: `docs/county-config.md`.
  */
 export function SourcesCountyGate({
   sectionsByCountyId,
+  afterGapByCountyId,
 }: SourcesCountyGateProps) {
   const counties = wiredCountyConfigs();
   const [countyId, setCountyId] = useState(ARAPAHOE_COUNTY_CONFIG.id);
@@ -70,8 +92,10 @@ export function SourcesCountyGate({
   const methodologyNav =
     METHODOLOGY_NAV_BY_COUNTY_ID[config.id] ??
     METHODOLOGY_NAV_BY_COUNTY_ID.arapahoe!;
+  const countyExtraNav = COUNTY_EXTRA_NAV_BY_COUNTY_ID[config.id] ?? null;
   const gapHubItems = listCountyServiceGapHubItems(config);
   const countySection = sectionsByCountyId[config.id] ?? null;
+  const afterGapSection = afterGapByCountyId?.[config.id] ?? null;
 
   return (
     <>
@@ -133,11 +157,16 @@ export function SourcesCountyGate({
               When county data fails
             </a>
           </li>
-          <li className="flex min-h-0">
-            <a href="#metro-tool" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
-              Metro district tax share
-            </a>
-          </li>
+          {countyExtraNav ? (
+            <li className="flex min-h-0">
+              <a
+                href={countyExtraNav.href}
+                className={SOURCES_ON_PAGE_NAV_LINK_CLASS}
+              >
+                {countyExtraNav.label}
+              </a>
+            </li>
+          ) : null}
           <li className="flex min-h-0">
             <a href="#sources-code" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
               Code
@@ -177,6 +206,8 @@ export function SourcesCountyGate({
           </p>
         )}
       </section>
+
+      {afterGapSection}
     </>
   );
 }

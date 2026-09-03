@@ -135,7 +135,7 @@ When **two or more** counties are wired, search surfaces show which county match
 
 - **County selector** at the top (`SourcesCountyGate`): wired counties from `wiredCountyConfigs()`. Default Arapahoe. Dashboard→sources county preselect is **Phase 13** (today: plain `/sources` links; resident must switch selector).
 - **Gap hub** (`#county-service-gaps`) lists only the selected county’s opt-in gaps.
-- **Methodology** for the selected county must not read as universal. Shared Colorado / metro / code sections may stay shared when they are actually shared.
+- **Methodology** for the selected county must not read as universal. Arapahoe `#metro-tool` / `#reference-pdfs` (Levy Percentage, Mill Levy Public Information Form) render only for Arapahoe via `afterGapByCountyId`. Douglas mill PDFs stay in the Douglas methodology section (`#douglas-mill-history`). Shared **Code** may stay after the gate when it is actually shared.
 
 ### Growth (do not copy-paste a county page)
 
