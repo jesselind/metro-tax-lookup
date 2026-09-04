@@ -6,7 +6,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   COUNTY_SERVICE_GAP_SOURCES_ANCHOR,
   COUNTY_SERVICE_GAP_SOURCES_EXPLAINER,
@@ -91,11 +91,16 @@ export function SourcesCountyGate({
   initialCountyId = null,
 }: SourcesCountyGateProps) {
   const counties = wiredCountyConfigs();
-  const seededId =
+  const validatedInitialId =
     initialCountyId && countyConfigById(initialCountyId)
       ? initialCountyId
       : ARAPAHOE_COUNTY_CONFIG.id;
-  const [countyId, setCountyId] = useState(seededId);
+  const [countyId, setCountyId] = useState(validatedInitialId);
+  // Soft nav can change `?county=` without remounting; keep state aligned.
+  // Unrelated re-renders with the same validated id leave a manual select alone.
+  useEffect(() => {
+    setCountyId(validatedInitialId);
+  }, [validatedInitialId]);
   const config =
     countyConfigById(countyId) ??
     counties[0] ??

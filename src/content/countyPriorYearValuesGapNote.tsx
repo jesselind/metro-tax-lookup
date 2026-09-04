@@ -258,8 +258,9 @@ function DouglasPriorYearValuesGapNote({
         Property_Values.txt<span className="sr-only"> (opens in a new tab)</span>
       </a>
       {" "}
-      download is a current-year snapshot only (no tax-year column), so this site
-      cannot ship prior-year assessed values from that bulk file. When other
+      download is a current-year snapshot only (no tax-year column) and does not
+      include prior-year assessed values, so this site cannot show those figures
+      from that bulk file. When other
       sources do not meet requirements,{" "}
       <a
         href={DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL}

@@ -856,8 +856,9 @@ export default async function SourcesPage({
           only. Douglas Assessor{" "}
           <code className={CODE_INLINE_CLASS}>Property_Values.txt</code>
           {" "}
-          is a current-year snapshot (no tax-year column), so this site cannot
-          yet pair last year&apos;s assessed value with last year&apos;s mills.
+          is a current-year snapshot (no tax-year column) and does not include
+          prior-year assessed values, so this site cannot pair last year&apos;s
+          assessed value with last year&apos;s mills.
           Full valuation history{" "}
           <strong className="font-semibold text-slate-900">is</strong>
           {" "}
