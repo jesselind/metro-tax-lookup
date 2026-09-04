@@ -81,7 +81,8 @@ export type CountyFeatures = {
   metroPurposes: boolean;
   /**
    * COUNTY DATA GAP opt-in: Prior years missing badge + /sources prior-year note.
-   * False: omit (do not reuse another county's story).
+   * False: omit (do not reuse another county's story). Copy is county-keyed in
+   * `countyPriorYearValuesGapNote.tsx` (Arapahoe vs Douglas differ).
    */
   priorYearValuesGap: boolean;
   /**
@@ -282,7 +283,7 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     bpp: false,
     millsHistory: true,
     metroPurposes: false,
-    priorYearValuesGap: false,
+    priorYearValuesGap: true,
     dataMartRefreshGap: false,
     millPdfTaxDistrictGap: true,
   },

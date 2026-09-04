@@ -35,6 +35,7 @@ import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDi
 import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
 import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
+import { sourcesPageHref } from "@/lib/sourcesPageHref";
 import { isLevyModalTermId, levyModalTermIdForMetroPurpose } from "@/lib/levyModalTermIds";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 import {
@@ -51,21 +52,40 @@ import {
 } from "@/lib/annualTaxFromAssessedMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
-import { YOY_THEORETICAL_DOLLAR_POPOVER_BODY } from "@/content/levyYoYCopy";
+import {
+  YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_AFTER_LINK,
+  YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LEAD_BEFORE_LINK,
+  YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LINK_LABEL,
+  yoyTheoreticalDollarPopoverCopy,
+} from "@/content/levyYoYCopy";
 import {
   AUTHORITY_MILLS_HISTORY_MIN_POINTS,
   authorityMillsSeries,
 } from "@/lib/authorityMillsHistory";
+import { countyConfigById } from "@/lib/countyConfig";
+import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
 
 import type { MetroDistrictTileYoYSummary } from "@/lib/metroLevyYearOverYear";
 
 function YoYTheoreticalDollarHint({
   idSuffix,
   ariaContext,
+  countyId,
+  accountId,
 }: {
   idSuffix: string;
   ariaContext: string;
+  countyId?: string;
+  /** Loaded parcel account id (Douglas hash-path property page). */
+  accountId?: string | null;
 }) {
+  const copy = yoyTheoreticalDollarPopoverCopy(countyId);
+  const config = countyId ? countyConfigById(countyId) : null;
+  const parcelHref =
+    copy.kind === "douglas" && config && accountId
+      ? safeCountyParcelRecordUrl(accountId, config)
+      : null;
+
   return (
     <InfoHintPopover
       textTrigger="today's assessed value"
@@ -75,7 +95,24 @@ function YoYTheoreticalDollarHint({
       ariaLabel={`What ${ariaContext} dollar amounts mean`}
       panelClassName="max-w-xs"
     >
-      <p>{YOY_THEORETICAL_DOLLAR_POPOVER_BODY}</p>
+      {copy.kind === "douglas" && parcelHref ? (
+        <p>
+          {YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LEAD_BEFORE_LINK}
+          {" "}
+          <a
+            href={parcelHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={COUNTY_EXTERNAL_LINK_CLASS}
+          >
+            {YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LINK_LABEL}
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          {YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_AFTER_LINK}
+        </p>
+      ) : (
+        <p>{copy.plainBody}</p>
+      )}
     </InfoHintPopover>
   );
 }
@@ -90,8 +127,12 @@ function yoyDollarFootnoteId(suffix: string): string {
 /** One footnote for the whole YoY breakdown (avoid repeating the assessed-value popover). */
 function YoYTheoreticalDollarFootnote({
   idSuffix,
+  countyId,
+  accountId,
 }: {
   idSuffix: string;
+  countyId?: string;
+  accountId?: string | null;
 }) {
   const footnoteId = yoyDollarFootnoteId(idSuffix);
   return (
@@ -105,6 +146,8 @@ function YoYTheoreticalDollarFootnote({
       <YoYTheoreticalDollarHint
         idSuffix={idSuffix}
         ariaContext="these"
+        countyId={countyId}
+        accountId={accountId}
       />.
     </p>
   );
@@ -294,6 +337,11 @@ type Props = {
    * Omit or non-positive when dollars should not be shown.
    */
   totalAssessedForEstimate?: number | null;
+  /**
+   * Loaded account id (PIN / Douglas account number) for county property-page
+   * links in the YoY dollar footnote (Douglas valuation history).
+   */
+  accountId?: string | null;
   onClose: () => void;
 };
 
@@ -321,6 +369,7 @@ export function LevyLineDistrictDetailDialog({
   directoryError,
   snapshot,
   totalAssessedForEstimate = null,
+  accountId = null,
   onClose,
 }: Props) {
   const assessedForChangeDollars = parcelAssessedForDollarEstimate(
@@ -780,7 +829,11 @@ export function LevyLineDistrictDetailDialog({
                           </div>
                         ) : null}
                         {yoyShowsDollarFootnote ? (
-                          <YoYTheoreticalDollarFootnote idSuffix="breakdown" />
+                          <YoYTheoreticalDollarFootnote
+                            idSuffix="breakdown"
+                            countyId={countyId}
+                            accountId={accountId}
+                          />
                         ) : null}
                         </>
                       ) : null}
@@ -800,7 +853,11 @@ export function LevyLineDistrictDetailDialog({
                       }
                     />
                     {yoyShowsDollarFootnote ? (
-                      <YoYTheoreticalDollarFootnote idSuffix="summary" />
+                      <YoYTheoreticalDollarFootnote
+                        idSuffix="summary"
+                        countyId={countyId}
+                        accountId={accountId}
+                      />
                     ) : null}
                   </div>
                 )}
@@ -1198,7 +1255,12 @@ export function LevyLineDistrictDetailDialog({
                         <span className="font-semibold text-slate-800">How to inquire:</span> Use the
                         taxing authority name, tax entity, and LG ID on your bill or county property
                         tax page to find the right office or official contacts. See{" "}
-                        <PreserveSessionDocLink href="/sources#levy-breakdown-tool">
+                        <PreserveSessionDocLink
+                          href={sourcesPageHref({
+                            countyId,
+                            hash: "levy-breakdown-tool",
+                          })}
+                        >
                           Sources
                         </PreserveSessionDocLink>
                         {" "}
@@ -1221,7 +1283,12 @@ export function LevyLineDistrictDetailDialog({
 
               <p className="text-sm text-slate-600">
                 Want details on data sources and matching?{" "}
-                <PreserveSessionDocLink href="/sources#levy-breakdown-tool">
+                <PreserveSessionDocLink
+                  href={sourcesPageHref({
+                    countyId,
+                    hash: "levy-breakdown-tool",
+                  })}
+                >
                   See Sources
                 </PreserveSessionDocLink>
                 .

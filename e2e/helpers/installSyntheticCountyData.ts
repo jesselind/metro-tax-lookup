@@ -33,6 +33,12 @@ import {
 export type InstallSyntheticCountyDataOptions = {
   /** Wired county whose `/data/{countyId}-*` routes are fulfilled (default Arapahoe). */
   countyId?: "arapahoe" | "douglas";
+  /**
+   * Also fulfill this county with an empty situs index (and minimal pin map) so
+   * address resolve can miss there and hit `countyId` (adjacent auto-try or
+   * “I don’t know my county” unique match).
+   */
+  emptySitusCompanionCountyId?: "arapahoe" | "douglas";
   /** When true, include a levy line whose LG ID matches bundled metro YoY test data. */
   includeMetro?: boolean;
   /**
@@ -59,6 +65,9 @@ function dataUrlPattern(urlPath: string): string {
 /**
  * Replace committed county JSON with tiny synthetic payloads for Playwright.
  * URL patterns come from countyDataPaths + CountyConfig.id (Phase 10).
+ *
+ * Pass `emptySitusCompanionCountyId` when the primary hit county must win after
+ * a tier-1 miss or an unknown-scope probe (Phase 13 adjacent / multi-county).
  */
 export async function installSyntheticCountyData(
   page: Page,
@@ -101,6 +110,74 @@ export async function installSyntheticCountyData(
       ? SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD
       : SYNTHETIC_PARCEL_RECORD_SHARD;
 
+  await fulfillCountyRoutes(page, {
+    countyId,
+    situs,
+    pinToTag,
+    levyStacks,
+    shardPrefix,
+    parcelShard,
+  });
+
+  const companion = options.emptySitusCompanionCountyId;
+  if (companion && companion !== countyId) {
+    const companionId =
+      companion === "douglas"
+        ? DOUGLAS_COUNTY_CONFIG.id
+        : ARAPAHOE_COUNTY_CONFIG.id;
+    await fulfillCountyRoutes(page, {
+      countyId: companionId,
+      situs: emptySitusFixture(companionId),
+      pinToTag: emptyPinToTagFixture(companionId),
+      levyStacks: SYNTHETIC_LEVY_STACKS,
+      shardPrefix:
+        companionId === DOUGLAS_COUNTY_CONFIG.id
+          ? SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX
+          : SYNTHETIC_PIN_SHARD_PREFIX,
+      parcelShard:
+        companionId === DOUGLAS_COUNTY_CONFIG.id
+          ? SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD
+          : SYNTHETIC_PARCEL_RECORD_SHARD,
+    });
+  }
+}
+
+function emptySitusFixture(countyId: string) {
+  const base =
+    countyId === DOUGLAS_COUNTY_CONFIG.id
+      ? SYNTHETIC_DOUGLAS_SITUS_TO_PINS
+      : SYNTHETIC_SITUS_TO_PINS;
+  return {
+    ...base,
+    entryCount: 0,
+    byKey: {},
+  };
+}
+
+function emptyPinToTagFixture(countyId: string) {
+  const base =
+    countyId === DOUGLAS_COUNTY_CONFIG.id
+      ? SYNTHETIC_DOUGLAS_PIN_TO_TAG
+      : SYNTHETIC_PIN_TO_TAG;
+  return {
+    ...base,
+    byPin: {},
+  };
+}
+
+async function fulfillCountyRoutes(
+  page: Page,
+  args: {
+    countyId: string;
+    situs: unknown;
+    pinToTag: unknown;
+    levyStacks: unknown;
+    shardPrefix: string;
+    parcelShard: unknown;
+  },
+): Promise<void> {
+  const { countyId, situs, pinToTag, levyStacks, shardPrefix, parcelShard } =
+    args;
   await fulfillJson(
     page,
     dataUrlPattern(countySitusToPinsUrl(undefined, countyId)),

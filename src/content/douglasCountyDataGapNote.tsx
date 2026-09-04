@@ -9,6 +9,14 @@ import { COUNTY_SERVICE_GAP_LINK_CLASS } from "@/lib/toolFlowStyles";
 export const DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL =
   "https://www.douglasco.gov/assessor/data-downloads/";
 
+/**
+ * Real Estate Data Center — Assessor Custom Reports heading (text fragment).
+ * $50/hr, 1hr minimum when other sources do not meet requirements.
+ * https://www.douglasco.gov/assessor/real-estate-data-center/
+ */
+export const DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL =
+  "https://www.douglasco.gov/assessor/real-estate-data-center/#:~:text=Assessor%20Custom%20Reports";
+
 /** Tax district mill levy PDF hub. */
 export const DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL =
   "https://www.douglasco.gov/assessor/taxing-authorities/";
