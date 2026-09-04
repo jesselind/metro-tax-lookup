@@ -27,6 +27,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.6.0",
+    date: "2026-09-04",
+    title: "Douglas Playwright e2e + prior-year COUNTY DATA GAP (Phase 13)",
+    highlights: [
+      "Dashboard and levy-dialog Sources links pass ?county= for the active / resident county so /sources opens on that methodology (SourcesCountyGate initialCountyId from searchParams; sourcesPageHref helper).",
+      "Playwright: Douglas account-id and address resolve, adjacent auto-try after Arapahoe miss, I don't know my county unique resolve, Douglas See Sources preselect, and Douglas Prior years missing badge (chromium/firefox/webkit). Spec: e2e/douglas-county-search.spec.ts. Synthetic Douglas fixtures; emptySitusCompanionCountyId for miss/hit pairs.",
+      "Douglas priorYearValuesGap on: Prior years missing badge on Assessed value with Douglas COUNTY DATA GAP copy that points residents to this property's Assessor property details (history is there) and notes a bulk download does not appear available for this site. File names and Assessor Custom Reports ($50/hr, text-fragment link to the Real Estate Data Center heading) stay on /sources. Arapahoe keeps assessor guidance that the public site has no bulk prior-year assessed. /sources hub + Property details red box 1:1 for both counties.",
+      "YoY dollar footnote (today's assessed value): same Douglas resident tone (property-page link when loaded; no .txt or fee copy). Arapahoe footnote unchanged.",
+      "Dashboard accuracy mailto secondary: notes we are constantly updating and making corrections to this app.",
+      "docs/county-config.md: Dashboard→sources county query is shipped (no longer Phase 13 deferral).",
+    ],
+  },
+  {
     version: "5.5.0",
     date: "2026-09-02",
     title: "District directory includes Douglas stack LGIDs (Phase 12)",

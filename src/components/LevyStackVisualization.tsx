@@ -1228,6 +1228,7 @@ export function LevyStackVisualization({
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}
           totalAssessedForEstimate={assessedForDetailEstimate}
+          accountId={loadedParcelMeta?.pin ?? null}
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
           snapshot={specialDistrictFile?.snapshot ?? null}

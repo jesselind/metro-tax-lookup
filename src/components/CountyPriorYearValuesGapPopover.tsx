@@ -50,8 +50,12 @@ function jumpToParcelSaleHistory(): void {
 
 function CountyPriorYearValuesGapPopoverBody({
   hasSaleHistory,
+  countyId,
+  parcelRecordHref,
 }: {
   hasSaleHistory: boolean;
+  countyId?: string;
+  parcelRecordHref?: string | null;
 }) {
   const dismiss = useInfoHintPopoverDismiss();
   const titleId = useId();
@@ -63,6 +67,8 @@ function CountyPriorYearValuesGapPopoverBody({
     >
       <CountyServiceGapHeader density="compact" titleId={titleId} />
       <CountyPriorYearValuesGapDashboardNote
+        countyId={countyId}
+        parcelRecordHref={parcelRecordHref}
         onSaleHistoryJump={
           hasSaleHistory
             ? () => {
@@ -83,8 +89,14 @@ function CountyPriorYearValuesGapPopoverBody({
  */
 export function CountyPriorYearValuesGapPopover({
   hasSaleHistory = false,
+  countyId,
+  parcelRecordHref,
 }: {
   hasSaleHistory?: boolean;
+  /** Active / resident county for the Sources link (`?county=`). */
+  countyId?: string;
+  /** Safe Assessor property-page URL when the account is loaded (Douglas). */
+  parcelRecordHref?: string | null;
 }) {
   return (
     <InfoHintPopover
@@ -100,7 +112,11 @@ export function CountyPriorYearValuesGapPopover({
       ariaLabel="Why prior-year assessed values from the county are missing"
       panelClassName={PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
     >
-      <CountyPriorYearValuesGapPopoverBody hasSaleHistory={hasSaleHistory} />
+      <CountyPriorYearValuesGapPopoverBody
+        hasSaleHistory={hasSaleHistory}
+        countyId={countyId}
+        parcelRecordHref={parcelRecordHref}
+      />
     </InfoHintPopover>
   );
 }

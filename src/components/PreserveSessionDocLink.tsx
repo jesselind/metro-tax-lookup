@@ -21,6 +21,9 @@ type PreserveSessionDocLinkProps = {
  * In-app doc link (/sources, /glossary, …) from mid-flow UI (lookup, modals, popovers).
  * Opens in a new tab so parcel/levy session state stays in the origin tab.
  * Site chrome (header/footer) should keep same-tab navigation.
+ *
+ * For `/sources` from a resolved county dashboard, prefer `sourcesPageHref({ countyId })`
+ * so the methodology selector preselects that county.
  */
 export function PreserveSessionDocLink({
   href,

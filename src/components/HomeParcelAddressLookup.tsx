@@ -51,6 +51,7 @@ import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
+import { sourcesPageHref } from "@/lib/sourcesPageHref";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
 import { SitusMultiAccountChooserList, SitusRealVsBusinessPersonalHelp } from "@/components/SitusMultiAccountChooserList";
 import { SitusMultiAccountSwitcherDialog } from "@/components/SitusMultiAccountSwitcherDialog";
@@ -129,6 +130,7 @@ import {
 import {
   safeCountyBppNoticeOfValuationPdfUrl,
   safeCountyCompsGridPdfUrl,
+  safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
@@ -2361,6 +2363,11 @@ export function HomeParcelAddressLookup({
                         </p>
                         {activePriorYearValuesGap ? (
                           <CountyPriorYearValuesGapPopover
+                            countyId={activeCountyConfig.id}
+                            parcelRecordHref={safeCountyParcelRecordUrl(
+                              levyLoadedMeta.pin,
+                              activeCountyConfig,
+                            )}
                             hasSaleHistory={
                               !isBusinessPersonalAccount && parcelRecord != null
                             }
@@ -2468,7 +2475,11 @@ export function HomeParcelAddressLookup({
                               {" "}
                               to reach your account from the county. For how the
                               bundle is built, see{" "}
-                              <PreserveSessionDocLink href="/sources">
+                              <PreserveSessionDocLink
+                                href={sourcesPageHref({
+                                  countyId: activeCountyConfig.id,
+                                })}
+                              >
                                 Sources
                               </PreserveSessionDocLink>
                               .
@@ -2616,7 +2627,11 @@ export function HomeParcelAddressLookup({
                                   to reach your parcel and comparable properties
                                   from the county. For how the bundle is built,
                                   see{" "}
-                                  <PreserveSessionDocLink href="/sources">
+                                  <PreserveSessionDocLink
+                                    href={sourcesPageHref({
+                                      countyId: activeCountyConfig.id,
+                                    })}
+                                  >
                                     Sources
                                   </PreserveSessionDocLink>
                                   .
@@ -2878,7 +2893,7 @@ export function HomeParcelAddressLookup({
                 href={REPORT_PROBLEM_MAILTO_HREF}
                 kicker="Feedback"
                 primaryLine={CONTACT_EMAIL}
-                secondary="We aim for accuracy. If something looks wrong, let us know. This link opens your mail app with a short form ready to fill in."
+                secondary="We aim for accuracy and are constantly updating and making corrections to this app. If something looks wrong, let us know. This link opens your mail app with a short form ready to fill in."
                 fullWidth
               />
             </aside>

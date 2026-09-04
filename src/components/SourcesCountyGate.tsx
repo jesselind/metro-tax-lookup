@@ -6,7 +6,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   COUNTY_SERVICE_GAP_SOURCES_ANCHOR,
   COUNTY_SERVICE_GAP_SOURCES_EXPLAINER,
@@ -65,12 +65,18 @@ type SourcesCountyGateProps = {
    * share + Related county PDFs). Omitted counties render nothing here.
    */
   afterGapByCountyId?: Readonly<Partial<Record<string, ReactNode>>>;
+  /**
+   * Wired county id from `/sources?county=` (page `searchParams`). Invalid or
+   * omitted → Arapahoe. Dashboard mid-flow Sources links pass the active county
+   * via `sourcesPageHref` (`src/lib/sourcesPageHref.ts`).
+   */
+  initialCountyId?: string | null;
 };
 
 /**
  * County selector for /sources: methodology sections and the COUNTY DATA GAP
- * hub follow the selected wired county. Default Arapahoe. Dashboard→sources county
- * preselect is Phase 13 (see docs/_working/second-county-ingest.md).
+ * hub follow the selected wired county. Default Arapahoe unless `initialCountyId`
+ * is a wired id (from `?county=`).
  *
  * Pass methodology + contextual gap boxes as `sectionsByCountyId` (keyed by
  * `CountyConfig.id`). Pass Arapahoe-only metro / Related county PDFs as
@@ -82,9 +88,19 @@ type SourcesCountyGateProps = {
 export function SourcesCountyGate({
   sectionsByCountyId,
   afterGapByCountyId,
+  initialCountyId = null,
 }: SourcesCountyGateProps) {
   const counties = wiredCountyConfigs();
-  const [countyId, setCountyId] = useState(ARAPAHOE_COUNTY_CONFIG.id);
+  const validatedInitialId =
+    initialCountyId && countyConfigById(initialCountyId)
+      ? initialCountyId
+      : ARAPAHOE_COUNTY_CONFIG.id;
+  const [countyId, setCountyId] = useState(validatedInitialId);
+  // Soft nav can change `?county=` without remounting; keep state aligned.
+  // Unrelated re-renders with the same validated id leave a manual select alone.
+  useEffect(() => {
+    setCountyId(validatedInitialId);
+  }, [validatedInitialId]);
   const config =
     countyConfigById(countyId) ??
     counties[0] ??

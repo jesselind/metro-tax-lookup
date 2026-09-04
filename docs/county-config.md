@@ -117,7 +117,7 @@ Defined in `src/lib/countyConfig.ts`. Extend the type when a new product source 
 | `bpp` | Business personal property URLs / UI |
 | `millsHistory` | Authority mills-over-time product **and** authority-chain mill rate-table cites for that county's bundled AUTH series. **Off** = no rate-table cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). Arapahoe and Douglas ship bundles today. |
 | `metroPurposes` | Metro purpose-row product |
-| `priorYearValuesGap` | COUNTY DATA GAP: no bulk prior-year assessed story for this county |
+| `priorYearValuesGap` | COUNTY DATA GAP: no free bulk prior-year assessed story for this county. **Dashboard** copy is county-keyed (Arapahoe: assessor guidance that the public site has no history; Douglas: history is on the Assessor property details page; bulk download does not appear available). **`/sources`** adds methodology detail (Arapahoe mart; Douglas `Property_Values.txt` + Custom Reports). Module: `countyPriorYearValuesGapNote.tsx`. |
 | `dataMartRefreshGap` | COUNTY DATA GAP: Assessor Data Mart incomplete-refresh note (Arapahoe-shaped export only) |
 | `millPdfTaxDistrictGap` | COUNTY DATA GAP: mill PDF missing some tax-district numbers |
 
@@ -133,7 +133,7 @@ When **two or more** counties are wired, search surfaces show which county match
 
 ## `/sources`
 
-- **County selector** at the top (`SourcesCountyGate`): wired counties from `wiredCountyConfigs()`. Default Arapahoe. Dashboard→sources county preselect is **Phase 13** (today: plain `/sources` links; resident must switch selector).
+- **County selector** at the top (`SourcesCountyGate`): wired counties from `wiredCountyConfigs()`. Default Arapahoe. Dashboard and mid-flow **Sources** links use `sourcesPageHref({ countyId })` → `/sources?county={id}` so the selector preselects that county (`initialCountyId` from page `searchParams`). Footer / glossary may keep plain `/sources`.
 - **Gap hub** (`#county-service-gaps`) lists only the selected county’s opt-in gaps.
 - **Methodology** for the selected county must not read as universal. Arapahoe `#metro-tool` / `#reference-pdfs` (Levy Percentage, Mill Levy Public Information Form) render only for Arapahoe via `afterGapByCountyId`. Douglas mill PDFs stay in the Douglas methodology section (`#douglas-mill-history`). Shared **Code** may stay after the gate when it is actually shared.
 
@@ -198,7 +198,7 @@ Shipping filenames stay **`{countyId}-*`** under `public/data/` (for example `ar
 | Choose-your-county UI | `src/components/CountySearchScopeSwitch.tsx` |
 | Config tests / hub list tests | `src/lib/countyConfig.test.ts` |
 | Gap hub builder + anchors | `src/content/countyServiceGapGuidance.ts` |
-| `/sources` selector | `src/components/SourcesCountyGate.tsx` |
+| `/sources` selector | `src/components/SourcesCountyGate.tsx` (`initialCountyId`); `src/lib/sourcesPageHref.ts` |
 | `/sources` page | `src/app/sources/page.tsx` |
 | Dashboard gates | `src/components/HomeParcelAddressLookup.tsx` |
 | Data paths | `src/lib/countyDataPaths.ts` |
