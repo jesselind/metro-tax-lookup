@@ -110,6 +110,23 @@ export function DouglasSourcesMethodology() {
       </p>
       <p className="text-slate-700">
         <strong className="font-semibold text-slate-900">
+          Assessment and tax year:
+        </strong>
+        {" "}
+        Douglas Assessor text downloads do not include separate assessment-year
+        and tax-year columns on each account. Summary tiles use the county SPA
+        path year from{" "}
+        <code className={CODE_INLINE_CLASS}>tools/douglas-realware-detail-stamp.txt</code>
+        {" "}
+        (same year segment as the county property details page) and the tax
+        year on the bundled mill PDF / levy stack snapshot. When valuation
+        history is loaded, outbound property-page links prefer the latest{" "}
+        <code className={CODE_INLINE_CLASS}>taxYear</code>
+        {" "}
+        from the Realware detail extract.
+      </p>
+      <p className="text-slate-700">
+        <strong className="font-semibold text-slate-900">
           Prior-year assessed value:
         </strong>
         {" "}

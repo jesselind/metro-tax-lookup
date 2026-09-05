@@ -42,6 +42,20 @@ test.describe("Douglas county search gate (Phase 13)", () => {
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
     await expect(page.getByText(authorityLabel)).toBeVisible();
+    await expect(page.locator("#home-parcel-assessment-year")).toContainText(
+      "2026",
+    );
+    await expect(page.locator("#home-parcel-tax-year")).toContainText("2025");
+    await expect(
+      page
+        .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
+        .getByRole("link", { name: /Open county property details/i })
+        .first(),
+    ).toHaveAttribute(
+      "href",
+      "https://apps.douglas.co.us/assessor/web/#/details/2026/" +
+        `${SYNTHETIC_DOUGLAS_PIN}`,
+    );
     await expect(
       page
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })

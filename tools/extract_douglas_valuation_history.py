@@ -103,12 +103,61 @@ def parse_detail_file(path: Path) -> tuple[str, list[dict[str, int]]] | None:
 def load_manifest(detail_parent: Path) -> dict[str, Any]:
   manifest_path = detail_parent / "manifest.json"
   if not manifest_path.is_file():
+    meta_path = detail_parent / "meta.json"
+    if meta_path.is_file():
+      try:
+        data = json.loads(meta_path.read_text(encoding="utf-8"))
+      except json.JSONDecodeError:
+        return {}
+      return data if isinstance(data, dict) else {}
     return {}
   try:
     data = json.loads(manifest_path.read_text(encoding="utf-8"))
   except json.JSONDecodeError:
     return {}
   return data if isinstance(data, dict) else {}
+
+
+def expected_account_count_from_manifest(manifest: dict[str, Any]) -> int | None:
+  raw = manifest.get("totalAccountsProcessed")
+  if raw is None:
+    metrics = manifest.get("metrics") or {}
+    if isinstance(metrics, dict):
+      raw = metrics.get("totalAccountsProcessed")
+  if raw is None:
+    return None
+  try:
+    count = int(raw)
+  except (TypeError, ValueError):
+    return None
+  return count if count >= 0 else None
+
+
+def validate_extract_count(
+  extracted: int,
+  manifest: dict[str, Any],
+  *,
+  strict: bool,
+) -> None:
+  expected = expected_account_count_from_manifest(manifest)
+  if expected is None:
+    print(
+      "warning: no totalAccountsProcessed in manifest/meta; skipped count validation",
+      file=sys.stderr,
+    )
+    return
+  if extracted == expected:
+    print(
+      f"meta count OK: {extracted} accounts match totalAccountsProcessed",
+      file=sys.stderr,
+    )
+    return
+  message = (
+    f"extracted {extracted} accounts; meta totalAccountsProcessed={expected}"
+  )
+  if strict:
+    raise SystemExit(message)
+  print(f"warning: {message}", file=sys.stderr)
 
 
 def write_shards(
@@ -189,6 +238,14 @@ def parse_args() -> argparse.Namespace:
     default=8,
     help="Douglas account id length",
   )
+  parser.add_argument(
+    "--validate-meta-count",
+    action="store_true",
+    help=(
+      "Exit 1 when extracted account count != meta totalAccountsProcessed "
+      "(full retain ship ritual)"
+    ),
+  )
   return parser.parse_args()
 
 
@@ -223,6 +280,12 @@ def main() -> None:
 
   if not by_account:
     raise SystemExit("no valuation history extracted")
+
+  validate_extract_count(
+    len(by_account),
+    manifest,
+    strict=args.validate_meta_count,
+  )
 
   total_bytes = write_shards(
     args.out_dir,

@@ -101,7 +101,7 @@ Do **not** hard-code Arapahoe `PPINum.aspx?…` or Douglas `#/details/…` in co
 | `hostedPropertyPageName` | Resident phrase for the county page (`parcel record`, `property details`). Button: `countyHostedPropertyPageOpenLabel` → “Open county …”. |
 | `urls.parcelRecord` | Deep-link template. **`query`** (default): `https://{host}{path}?{queryParam}={id}`. **`hashPath`**: `https://{host}{path}#{hashPathTemplate}` with `{id}` and optional `{year}` (year on the template is a maintainer stamp for that SPA path / data drop — update when the county URL year changes; do not invent from statute). |
 
-Builder: `safeCountyParcelRecordUrl(id, config, { year? })` in `src/lib/safeExternalHref.ts`. Lookup id: `countyParcelRecordLookupValue` (public parcel id when `publicParcelId` is set; otherwise account id).
+Builder: `safeCountyParcelRecordUrl(id, config, { year? })` in `src/lib/safeExternalHref.ts`. Lookup id: `countyParcelRecordLookupValue` (public parcel id when `publicParcelId` is set; otherwise account id). Douglas summary **Assessment year** / **Tax year** tiles and default `{year}` for hashPath links come from `resolveParcelSummaryYears` (`src/lib/parcelSummaryYears.ts`): maintainer stamp (`urls.parcelRecord.year`), levy-stack snapshot tax year, and Realware valuation history when loaded — not invented from statute.
 
 Compare card heading uses `displayName`: “See how {displayName} displays your data.” Button open label: `countyHostedPropertyPageOpenLabel(config)`.
 

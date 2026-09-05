@@ -10,7 +10,9 @@ from pathlib import Path
 
 from extract_douglas_valuation_history import (
   aggregate_values_by_tax_year,
+  expected_account_count_from_manifest,
   parse_detail_file,
+  validate_extract_count,
   write_shards,
 )
 
@@ -100,6 +102,36 @@ class TestWriteShards(unittest.TestCase):
       data = json.loads(shard.read_text(encoding="utf-8"))
       self.assertEqual(data["shardPrefix"], "R01000")
       self.assertIn("R0100001", data["byAccount"])
+
+
+class TestMetaCountValidation(unittest.TestCase):
+  def test_reads_total_accounts_from_manifest_or_meta_metrics(self) -> None:
+    self.assertEqual(
+      expected_account_count_from_manifest({"totalAccountsProcessed": 169000}),
+      169000,
+    )
+    self.assertEqual(
+      expected_account_count_from_manifest(
+        {"metrics": {"totalAccountsProcessed": 42}},
+      ),
+      42,
+    )
+    self.assertIsNone(expected_account_count_from_manifest({}))
+
+  def test_validate_extract_count_strict_exits_on_mismatch(self) -> None:
+    with self.assertRaises(SystemExit):
+      validate_extract_count(
+        10,
+        {"totalAccountsProcessed": 11},
+        strict=True,
+      )
+
+  def test_validate_extract_count_warns_when_not_strict(self) -> None:
+    validate_extract_count(
+      10,
+      {"totalAccountsProcessed": 11},
+      strict=False,
+    )
 
 
 if __name__ == "__main__":

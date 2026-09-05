@@ -168,6 +168,10 @@ import {
   summaryOwnerOfRecord,
 } from "@/lib/parcelRecordDisplay";
 import {
+  parseSummaryYearNumber,
+  resolveParcelSummaryYears,
+} from "@/lib/parcelSummaryYears";
+import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
@@ -328,6 +332,7 @@ export function HomeParcelAddressLookup({
     parcelValues: ParcelValuesFromExport;
     parcelAssessmentYear: string | null;
     parcelTaxYear: string | null;
+    levyStacksTaxYear: string | null;
     ain: string | null;
   } | null>(null);
   const [levyAwaitingTemplateMills, setLevyAwaitingTemplateMills] =
@@ -614,6 +619,7 @@ export function HomeParcelAddressLookup({
         parcelValues: result.parcelValues,
         parcelAssessmentYear: result.parcelAssessmentYear,
         parcelTaxYear: result.parcelTaxYear,
+        levyStacksTaxYear: result.levyStacksSnapshot?.taxYear ?? null,
         ain: result.ain,
       });
       setResolvedCountyId(result.countyId);
@@ -1165,6 +1171,7 @@ export function HomeParcelAddressLookup({
         parcelValues: demo.levy.parcelValues,
         parcelAssessmentYear: demo.levy.parcelAssessmentYear,
         parcelTaxYear: demo.levy.parcelTaxYear,
+        levyStacksTaxYear: null,
         ain: demo.levy.ain,
       });
       setResolvedCountyId("arapahoe");
@@ -1372,28 +1379,30 @@ export function HomeParcelAddressLookup({
     [streetTypeahead],
   );
 
-  /** Bill tax year — pairs current assessed with mill-history AUTH years. */
-  const parcelBillTaxYear = useMemo(() => {
+  const parcelSummaryYears = useMemo(() => {
     if (!levyLoadedMeta) return null;
-    const yearRaw = levyLoadedMeta.parcelTaxYear?.trim();
-    if (!yearRaw) return null;
-    const parsed = Number.parseInt(yearRaw, 10);
-    return Number.isFinite(parsed) ? parsed : null;
-  }, [levyLoadedMeta]);
+    return resolveParcelSummaryYears(activeCountyConfig, {
+      pinRowAssessmentYear: levyLoadedMeta.parcelAssessmentYear,
+      pinRowTaxYear: levyLoadedMeta.parcelTaxYear,
+      levyStacksTaxYear: levyLoadedMeta.levyStacksTaxYear,
+      valuationHistory,
+    });
+  }, [levyLoadedMeta, activeCountyConfig, valuationHistory]);
+
+  /** Bill tax year — pairs current assessed with mill-history AUTH years. */
+  const parcelBillTaxYear = useMemo(
+    () => parseSummaryYearNumber(parcelSummaryYears?.taxYear),
+    [parcelSummaryYears],
+  );
 
   /**
    * Valuation-history YoY year: Realware rows often key on assessment year;
    * fall back to bill tax year.
    */
-  const parcelTaxYearForHistory = useMemo(() => {
-    if (!levyLoadedMeta) return null;
-    const yearRaw =
-      levyLoadedMeta.parcelAssessmentYear?.trim() ||
-      levyLoadedMeta.parcelTaxYear?.trim();
-    if (!yearRaw) return null;
-    const parsed = Number.parseInt(yearRaw, 10);
-    return Number.isFinite(parsed) ? parsed : null;
-  }, [levyLoadedMeta]);
+  const parcelTaxYearForHistory = useMemo(
+    () => parseSummaryYearNumber(parcelSummaryYears?.assessmentYear),
+    [parcelSummaryYears],
+  );
 
   const levyDollarAssessedContext = useMemo(() => {
     if (!levyLoadedMeta) return null;
@@ -1583,6 +1592,7 @@ export function HomeParcelAddressLookup({
           ain={levyLoadedMeta.ain}
           demoMode={isDemoMode}
           businessPersonal={isBusinessPersonalAccount}
+          parcelRecordLinkYear={parcelSummaryYears?.parcelRecordLinkYear ?? null}
         />
         <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
           <BackToTopButton />
@@ -1645,10 +1655,10 @@ export function HomeParcelAddressLookup({
   }, [valuationHistory, levyLoadedMeta, parcelTaxYearForHistory]);
 
   const showTaxYearSummaryTile =
-    !!levyLoadedMeta &&
+    !!parcelSummaryYears &&
     parcelTaxAndAssessmentYearsDiffer(
-      levyLoadedMeta.parcelTaxYear,
-      levyLoadedMeta.parcelAssessmentYear,
+      parcelSummaryYears.taxYear,
+      parcelSummaryYears.assessmentYear,
     );
 
   const summaryOwnerList = summaryOwnerOfRecord(
@@ -1671,6 +1681,7 @@ export function HomeParcelAddressLookup({
         demoMode={isDemoMode}
         rentMode={isRentMode}
         countyConfig={activeCountyConfig}
+        parcelRecordLinkYear={parcelSummaryYears?.parcelRecordLinkYear ?? null}
       />
       {propertyClassificationLine}
       {parcelRecordExtended}
@@ -2432,7 +2443,7 @@ export function HomeParcelAddressLookup({
             {!busy &&
             levyReadyForSummary &&
             levyLoadedMeta &&
-            levyLoadedMeta.parcelAssessmentYear != null ? (
+            parcelSummaryYears?.assessmentYear != null ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-assessment-year"
@@ -2446,7 +2457,7 @@ export function HomeParcelAddressLookup({
                     />
                   </div>
                   <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                    {levyLoadedMeta.parcelAssessmentYear}
+                    {parcelSummaryYears.assessmentYear}
                   </p>
                 </div>
               </div>
@@ -2455,7 +2466,7 @@ export function HomeParcelAddressLookup({
             levyReadyForSummary &&
             levyLoadedMeta &&
             showTaxYearSummaryTile &&
-            levyLoadedMeta.parcelTaxYear ? (
+            parcelSummaryYears?.taxYear ? (
               <div
                 className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
                 id="home-parcel-tax-year"
@@ -2469,7 +2480,7 @@ export function HomeParcelAddressLookup({
                     />
                   </div>
                   <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                    {levyLoadedMeta.parcelTaxYear.trim()}
+                    {parcelSummaryYears.taxYear}
                   </p>
                 </div>
               </div>
@@ -2511,6 +2522,9 @@ export function HomeParcelAddressLookup({
                           parcelRecordHref={safeCountyParcelRecordUrl(
                             levyLoadedMeta.pin,
                             activeCountyConfig,
+                            {
+                              year: parcelSummaryYears?.parcelRecordLinkYear,
+                            },
                           )}
                           hasSaleHistory={
                             !isBusinessPersonalAccount && parcelRecord != null
@@ -2523,6 +2537,9 @@ export function HomeParcelAddressLookup({
                           parcelRecordHref={safeCountyParcelRecordUrl(
                             levyLoadedMeta.pin,
                             activeCountyConfig,
+                            {
+                              year: parcelSummaryYears?.parcelRecordLinkYear,
+                            },
                           )}
                           hasSaleHistory={
                             !isBusinessPersonalAccount && parcelRecord != null
