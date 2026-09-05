@@ -5,10 +5,7 @@
 
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { COUNTY_SERVICE_GAP_SOURCES_ANCHOR } from "@/content/countyServiceGapGuidance";
-import {
-  DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
-  DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL,
-} from "@/content/douglasCountyDataGapNote";
+import { DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL } from "@/content/douglasCountyDataGapNote";
 import { ARAPAHOE_ASSESSOR_DATA_MART_EXPORT } from "@/lib/arapahoeCountyUrls";
 import { ARAPAHOE_COUNTY_CONFIG } from "@/lib/countyConfig";
 import { sourcesPageHref } from "@/lib/sourcesPageHref";
@@ -23,12 +20,13 @@ export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD =
 
 /**
  * Douglas dashboard lead when no property-page URL is available.
- * Resident-facing: history is on the county property page; bulk export is not
- * available for this site. No file names or custom-report pricing here
- * (those stay on /sources).
+ * Resident-facing: history is on the county property page; we have not yet
+ * found a free multi-year bulk download and are still looking. No file names
+ * or custom-report pricing here (those stay off the dashboard).
+ * Gated by `features.priorYearValuesGap` (currently off for Douglas).
  */
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS =
-  "You can see prior-year assessed values on each Assessor property details page. A bulk download of that history does not appear to be available, so this site cannot show prior years here yet.";
+  "You can see prior-year assessed values on each Assessor property details page. We have not yet found a free multi-year bulk download for use here and are still looking into that.";
 
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK =
   "You can see prior-year assessed values on";
@@ -37,7 +35,7 @@ export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL =
   "this property's Assessor property details";
 
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_AFTER_LINK =
-  ". A bulk download of that history does not appear to be available, so this site cannot show prior years here yet.";
+  ". We have not yet found a free multi-year bulk download for use here and are still looking into that.";
 
 export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_LABEL = "Sale history";
 
@@ -258,26 +256,13 @@ function DouglasPriorYearValuesGapNote({
         Property_Values.txt<span className="sr-only"> (opens in a new tab)</span>
       </a>
       {" "}
-      download is a current-year snapshot only (no tax-year column) and does not
-      include prior-year assessed values, so this site cannot show those figures
-      from that bulk file. When other
-      sources do not meet requirements,{" "}
-      <a
-        href={DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={linkClassName}
-      >
-        Assessor Custom Reports<span className="sr-only"> (opens in a new tab)</span>
-      </a>
-      {" "}
-      on the Real Estate Data Center page can build a staff extract at $50 per hour
-      with a one-hour minimum (payment before delivery; subject to staff
-      availability). Without a free multi-year bulk table, there is no valuation
-      trend to show here yet. Sale history on this site still comes from the
-      Douglas Assessor text downloads. Mill-rate year-over-year dollar lines still
-      use this year&apos;s assessed value for both years when last year&apos;s mills
-      are known.
+      download we use today is a current-year snapshot only (no tax-year column).
+      We have not yet found a free multi-year bulk table we can load here, and we
+      are still looking into whether one is available. Until that is settled,
+      there is no valuation trend to show on this site. Sale history on this site
+      still comes from the Douglas Assessor text downloads. Mill-rate
+      year-over-year dollar lines still use this year&apos;s assessed value for
+      both years when last year&apos;s mills are known.
     </>
   );
 }

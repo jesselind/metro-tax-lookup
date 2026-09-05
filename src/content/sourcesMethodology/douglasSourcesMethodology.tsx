@@ -5,13 +5,16 @@
 
 import Link from "next/link";
 import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
+import { InProgressCallout } from "@/components/InProgressCallout";
 import { CountyPriorYearValuesGapNote } from "@/content/countyPriorYearValuesGapNote";
+import { CountyPriorYearValuesInProgressNote } from "@/content/countyPriorYearValuesInProgressNote";
 import {
   DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
   DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
   DOUGLAS_2025_TAX_DISTRICT_MILL_PDF_URL,
   DouglasMillPdfTaxDistrictGapNote,
 } from "@/content/douglasCountyDataGapNote";
+import { IN_PROGRESS_SOURCES_ANCHOR } from "@/content/inProgressGuidance";
 import { COUNTY_SERVICE_GAP_SOURCES_ANCHOR } from "@/content/countyServiceGapGuidance";
 import {
   DOUGLAS_COUNTY_CONFIG,
@@ -117,8 +120,22 @@ export function DouglasSourcesMethodology() {
         (current-year snapshot; no tax-year column). Full valuation history{" "}
         <strong className="font-semibold text-slate-900">is</strong>
         {" "}
-        on each Assessor property details page.
+        on each Assessor property details page. We have not yet found a free
+        multi-year bulk table we can load here, and we are still looking into
+        whether one is available. Until that is settled, this site does not show
+        a valuation trend.
       </p>
+      {countyFeatureAvailable(
+        "priorYearValuesInProgress",
+        DOUGLAS_COUNTY_CONFIG,
+      ) ? (
+        <InProgressCallout
+          id={IN_PROGRESS_SOURCES_ANCHOR.priorYearValues}
+          className="scroll-mt-8"
+        >
+          <CountyPriorYearValuesInProgressNote linkClassName={TERM_LINK_CLASS} />
+        </InProgressCallout>
+      ) : null}
       {countyFeatureAvailable(
         "priorYearValuesGap",
         DOUGLAS_COUNTY_CONFIG,
@@ -232,27 +249,16 @@ export function DouglasSourcesMethodology() {
         only. Douglas Assessor{" "}
         <code className={CODE_INLINE_CLASS}>Property_Values.txt</code>
         {" "}
-        is a current-year snapshot (no tax-year column) and does not include
-        prior-year assessed values, so this site cannot pair last year&apos;s
-        assessed value with last year&apos;s mills.
-        Full valuation history{" "}
+        is a current-year snapshot (no tax-year column). We have not yet found a
+        free multi-year bulk table we can pair with last year&apos;s mills, and we
+        are still looking into that. Full valuation history{" "}
         <strong className="font-semibold text-slate-900">is</strong>
         {" "}
         on each property&apos;s Assessor page (the county SPA / Power BI report);
-        open that page from the dashboard compare strip or the Prior years
-        missing note when you have loaded an account. Assessor Custom Reports
-        on the Real Estate Data Center page are $50 per hour with a one-hour
-        minimum when other sources do not meet requirements. The levy-tile
-        footnote on &quot;today&apos;s assessed value&quot; states this limit
-        and links to the property page when the account is loaded. See{" "}
-        <a
-          href={`#${COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues}`}
-          className={TERM_LINK_CLASS}
-        >
-          Prior-year assessed value
-        </a>
-        {" "}
-        under Property details for the COUNTY DATA GAP note.
+        open that page from the dashboard compare strip when you have loaded an
+        account. The levy-tile footnote on &quot;today&apos;s assessed value&quot;
+        states this limit and links to the property page when the account is
+        loaded.
       </p>
       <p className="text-slate-700">
         Browse the series on the{" "}

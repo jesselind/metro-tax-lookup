@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.8.0",
+    date: "2026-09-04",
+    title: "Douglas prior-year IN PROGRESS chrome (sky Coming soon)",
+    highlights: [
+      "Reusable IN PROGRESS chrome (sky, not red COUNTY DATA GAP): InProgressBadge, InProgressHeader, InProgressCallout, InfoHintPopover variant in-progress, toolFlowStyles tokens. Calendar icon; panel title IN PROGRESS.",
+      "Douglas priorYearValuesGap off; priorYearValuesInProgress on. Assessed value shows a Coming soon badge (not Prior years missing). Popover: working to get prior-year assessed values onto this site soon; property-page link when loaded. Custom Reports / $50 copy removed from resident and /sources surfaces.",
+      "/sources Douglas Property details: sky IN PROGRESS callout (#county-prior-year-values-in-progress), not the gap hub. YoY dollar footnote uses the same still-looking / still-working tone. Arapahoe prior-year COUNTY DATA GAP unchanged.",
+      "Config: priorYearValuesGap and priorYearValuesInProgress mutually exclusive. docs/county-config.md + docs/county-service-gap-callouts.md. Playwright Douglas e2e updated (e2e/douglas-county-search.spec.ts).",
+    ],
+  },
+  {
     version: "5.7.0",
     date: "2026-09-04",
     title: "/sources methodology content modules (Phase 14)",

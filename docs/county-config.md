@@ -117,7 +117,8 @@ Defined in `src/lib/countyConfig.ts`. Extend the type when a new product source 
 | `bpp` | Business personal property URLs / UI |
 | `millsHistory` | Authority mills-over-time product **and** authority-chain mill rate-table cites for that county's bundled AUTH series. **Off** = no rate-table cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). Arapahoe and Douglas ship bundles today. |
 | `metroPurposes` | Metro purpose-row product |
-| `priorYearValuesGap` | COUNTY DATA GAP: no free bulk prior-year assessed story for this county. **Dashboard** copy is county-keyed (Arapahoe: assessor guidance that the public site has no history; Douglas: history is on the Assessor property details page; bulk download does not appear available). **`/sources`** adds methodology detail (Arapahoe mart; Douglas `Property_Values.txt` + Custom Reports). Module: `countyPriorYearValuesGapNote.tsx`. |
+| `priorYearValuesGap` | COUNTY DATA GAP: no free bulk prior-year assessed story for this county. **Dashboard** copy is county-keyed (Arapahoe: assessor guidance that the public site has no history). **`/sources`** adds methodology detail when the flag is on. Module: `countyPriorYearValuesGapNote.tsx`. Mutually exclusive with `priorYearValuesInProgress`. |
+| `priorYearValuesInProgress` | IN PROGRESS (sky chrome, not red): still working to obtain bulk prior-year assessed. Douglas on today; Arapahoe false. Dashboard **Coming soon** badge + `/sources` soft callout. Module: `countyPriorYearValuesInProgressNote.tsx`. Mutually exclusive with `priorYearValuesGap`. |
 | `dataMartRefreshGap` | COUNTY DATA GAP: Assessor Data Mart incomplete-refresh note (Arapahoe-shaped export only) |
 | `millPdfTaxDistrictGap` | COUNTY DATA GAP: mill PDF missing some tax-district numbers |
 

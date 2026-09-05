@@ -17,7 +17,10 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { COUNTY_SERVICE_GAP_SURFACE_TONE_CLASS } from "@/lib/toolFlowStyles";
+import {
+  COUNTY_SERVICE_GAP_SURFACE_TONE_CLASS,
+  IN_PROGRESS_SURFACE_TONE_CLASS,
+} from "@/lib/toolFlowStyles";
 
 /** Button reset only — callers supply typography + underline via textTriggerClassName. */
 const TEXT_TRIGGER_BUTTON_RESET =
@@ -33,6 +36,7 @@ export function useInfoHintPopoverDismiss(): (() => void) | null {
 const PANEL_SURFACE_CLASS = {
   default: "border border-slate-200 bg-white text-slate-700",
   "county-data-gap": COUNTY_SERVICE_GAP_SURFACE_TONE_CLASS,
+  "in-progress": IN_PROGRESS_SURFACE_TONE_CLASS,
 } as const;
 
 export type InfoHintPopoverVariant = keyof typeof PANEL_SURFACE_CLASS;
@@ -42,8 +46,9 @@ type InfoHintPopoverBase = {
   disabled?: boolean;
   /**
    * Panel chrome. `default` is the glossary/hint surface. `county-data-gap` uses
-   * the COUNTY DATA GAP tone (thin red border + light red fill) without changing
-   * positioning, portal, or scroll behavior.
+   * the COUNTY DATA GAP tone (thin red border + light red fill). `in-progress`
+   * uses the IN PROGRESS tone (thin sky border + light sky fill). Positioning,
+   * portal, and scroll behavior stay the same.
    */
   variant?: InfoHintPopoverVariant;
   /** Merged into the floating panel (e.g. wider max-width or scroll). */
@@ -85,7 +90,8 @@ const PANEL_LAYOUT =
 /**
  * Text-trigger floating note for in-flow definitions and hints.
  * Optional {@link InfoHintPopoverProps.customTrigger} for icon/dot controls.
- * Optional {@link InfoHintPopoverProps.variant} `"county-data-gap"` for COUNTY DATA GAP chrome.
+ * Optional {@link InfoHintPopoverProps.variant} `"county-data-gap"` for COUNTY
+ * DATA GAP chrome, or `"in-progress"` for IN PROGRESS chrome.
  * Root is a phrasing-content `<span>` (not `<div>`) so triggers stay valid inside
  * `<p>` and similar parents without hydration nesting warnings.
  * Click outside or Escape closes. Panels portal to `document.body` so they are

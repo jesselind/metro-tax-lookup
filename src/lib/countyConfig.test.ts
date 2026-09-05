@@ -83,6 +83,7 @@ function scheduleCountyFixture(
       millsHistory: false,
       metroPurposes: false,
       priorYearValuesGap: false,
+      priorYearValuesInProgress: false,
       dataMartRefreshGap: false,
       millPdfTaxDistrictGap: false,
     },
@@ -133,10 +134,14 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(
       countyFeaturePresentation("parcelRecordShards", DOUGLAS_COUNTY_CONFIG),
     ).toBe("show");
-    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(true);
     expect(DOUGLAS_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
+      false,
+    );
     expect(ARAPAHOE_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(false);
   });
@@ -371,12 +376,11 @@ describe("listCountyServiceGapHubItems", () => {
     ]);
   });
 
-  it("lists Douglas opt-in gaps only (prior-year + mill PDF)", () => {
+  it("lists Douglas opt-in gaps only (mill PDF; prior-year chrome off)", () => {
     const anchors = listCountyServiceGapHubItems(DOUGLAS_COUNTY_CONFIG).map(
       (item) => item.anchor,
     );
     expect(anchors).toEqual([
-      COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues,
       COUNTY_SERVICE_GAP_SOURCES_ANCHOR.douglasMillPdfTaxDistrict,
     ]);
   });

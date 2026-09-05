@@ -22,13 +22,12 @@ export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
   YOY_THEORETICAL_DOLLAR_POPOVER_BODY_ARAPAHOE;
 
 /**
- * Douglas: history is on each Assessor property details page; a bulk download
- * of that history does not appear available for use here. Do not claim the
- * public site lacks history. File names and custom-report pricing stay on
- * /sources, not in this resident footnote.
+ * Douglas: history is on each Assessor property details page; we have not yet
+ * found a free multi-year bulk table and are still looking. Do not claim the
+ * public site lacks history. File names stay on /sources, not in this footnote.
  */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY_DOUGLAS =
-  "You can see full valuation history on each property's Assessor property details. A bulk download of that history does not appear to be available for use here. These dollar amounts use this year's assessed value for both years.";
+  "You can see full valuation history on each property's Assessor property details. We have not yet found a free multi-year bulk table for use here and are still looking into that. These dollar amounts use this year's assessed value for both years.";
 
 /** Lead sentence before an optional property-page link (Douglas). */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LEAD_BEFORE_LINK =
@@ -40,7 +39,7 @@ export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LINK_LABEL =
 
 /** Remainder after the Douglas property-page link (or after a plain “Assessor page”). */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_AFTER_LINK =
-  ". A bulk download of that history does not appear to be available for use here. These dollar amounts use this year's assessed value for both years.";
+  ". We have not yet found a free multi-year bulk table for use here and are still looking into that. These dollar amounts use this year's assessed value for both years.";
 
 /** Modal mill-rate history chart heading (Levy % AUTH totals). */
 export const AUTHORITY_MILLS_HISTORY_CHART_HEADING =

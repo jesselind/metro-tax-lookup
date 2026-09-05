@@ -7,12 +7,14 @@ import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import { SYNTHETIC_DOUGLAS_PIN } from "../src/lib/syntheticTestIds";
 import {
-  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK,
   COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL,
   COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
-  COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
 } from "../src/content/countyPriorYearValuesGapNote";
-import { COUNTY_SERVICE_GAP_CALLOUT_TITLE } from "../src/content/countyServiceGapGuidance";
+import {
+  COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_LEAD_BEFORE_LINK,
+  COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_TILE_STATUS,
+} from "../src/content/countyPriorYearValuesInProgressNote";
+import { IN_PROGRESS_CALLOUT_TITLE } from "../src/content/inProgressGuidance";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_OWNER,
@@ -32,8 +34,8 @@ const DOUGLAS_COMPARE_REGION =
 
 /**
  * Phase 13: Douglas JSON paths, county search gate (adjacent / unknown),
- * dashboard → `/sources?county=` preselect, and Douglas Prior years missing
- * COUNTY DATA GAP (property-page link; /sources holds file + custom-report cite).
+ * dashboard → `/sources?county=` preselect. Prior-year assessed uses IN
+ * PROGRESS chrome (not COUNTY DATA GAP) while bulk history is still open.
  * Synthetic route fulfill only.
  */
 test.describe("Douglas county search gate (Phase 13)", () => {
@@ -159,7 +161,7 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
   });
 
-  test("Douglas Prior years missing badge uses Douglas COUNTY DATA GAP copy", async ({
+  test("Douglas Assessed value uses IN PROGRESS badge (not COUNTY DATA GAP)", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { countyId: "douglas" });
@@ -167,25 +169,25 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await page.getByRole("radio", { name: "Douglas" }).click();
     await searchSyntheticAddress(page);
 
-    const priorYearTrigger = page.getByRole("button", {
-      name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
-    });
-    await expect(priorYearTrigger).toBeVisible();
-    await priorYearTrigger.click();
-
-    const priorYearGap = page.getByRole("note").filter({
-      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK,
-    });
-    await expect(priorYearGap).toBeVisible();
-    await expect(priorYearGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
-    await expect(priorYearGap).toContainText(/bulk download/i);
-    await expect(priorYearGap).not.toContainText(/Property_Values\.txt/i);
-    await expect(priorYearGap).not.toContainText(/\$50/);
-    await expect(priorYearGap).not.toContainText(
-      /no historical information available on the public website/i,
-    );
     await expect(
-      priorYearGap.getByRole("link", {
+      page.getByRole("button", { name: "Prior years missing" }),
+    ).toHaveCount(0);
+
+    const inProgressTrigger = page.getByRole("button", {
+      name: COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_TILE_STATUS,
+    });
+    await expect(inProgressTrigger).toBeVisible();
+    await inProgressTrigger.click();
+
+    const inProgressNote = page.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_LEAD_BEFORE_LINK,
+    });
+    await expect(inProgressNote).toBeVisible();
+    await expect(inProgressNote).toContainText(IN_PROGRESS_CALLOUT_TITLE);
+    await expect(inProgressNote).not.toContainText(/COUNTY DATA GAP/i);
+    await expect(inProgressNote).not.toContainText(/\$50/);
+    await expect(
+      inProgressNote.getByRole("link", {
         name: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL,
       }),
     ).toHaveAttribute(
@@ -193,12 +195,12 @@ test.describe("Douglas county search gate (Phase 13)", () => {
       `https://apps.douglas.co.us/assessor/web/#/details/2026/${SYNTHETIC_DOUGLAS_PIN}`,
     );
     await expect(
-      priorYearGap.getByRole("link", {
+      inProgressNote.getByRole("link", {
         name: COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
       }),
     ).toHaveAttribute(
       "href",
-      "/sources?county=douglas#county-prior-year-values-gap",
+      "/sources?county=douglas#county-prior-year-values-in-progress",
     );
   });
 
@@ -216,22 +218,16 @@ test.describe("Douglas county search gate (Phase 13)", () => {
         level: 2,
       }),
     ).toHaveCount(0);
+    await expect(page.locator("#county-prior-year-values-gap")).toHaveCount(0);
+    const inProgress = page.locator("#county-prior-year-values-in-progress");
+    await expect(inProgress).toBeVisible();
+    await expect(inProgress).toContainText(IN_PROGRESS_CALLOUT_TITLE);
+    await expect(inProgress).toContainText(/Property_Values\.txt/i);
+    await expect(inProgress).toContainText(/working to get prior-year/i);
+    await expect(inProgress).not.toContainText(/\$50 per hour/i);
     await expect(
-      page.locator("#county-prior-year-values-gap"),
-    ).toContainText(/Property_Values\.txt/i);
-    await expect(
-      page.locator("#county-prior-year-values-gap").getByRole("link", {
-        name: /Assessor Custom Reports/i,
-      }),
-    ).toHaveAttribute(
-      "href",
-      "https://www.douglasco.gov/assessor/real-estate-data-center/#:~:text=Assessor%20Custom%20Reports",
-    );
-    await expect(
-      page.locator("#county-prior-year-values-gap"),
-    ).not.toContainText(
-      /no historical information available on the public website/i,
-    );
+      page.getByText(/no historical information available on the public website/i),
+    ).toHaveCount(0);
   });
 });
 
