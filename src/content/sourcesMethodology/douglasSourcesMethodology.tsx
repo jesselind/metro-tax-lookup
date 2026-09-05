@@ -110,6 +110,23 @@ export function DouglasSourcesMethodology() {
       </p>
       <p className="text-slate-700">
         <strong className="font-semibold text-slate-900">
+          Assessment and tax year:
+        </strong>
+        {" "}
+        Douglas Assessor text downloads do not include separate assessment-year
+        and tax-year columns on each account. Summary tiles use the county SPA
+        path year from{" "}
+        <code className={CODE_INLINE_CLASS}>tools/douglas-realware-detail-stamp.txt</code>
+        {" "}
+        (same year segment as the county property details page) and the tax
+        year on the bundled mill PDF / levy stack snapshot. When valuation
+        history is loaded, outbound property-page links prefer the latest{" "}
+        <code className={CODE_INLINE_CLASS}>taxYear</code>
+        {" "}
+        from the Realware detail extract.
+      </p>
+      <p className="text-slate-700">
+        <strong className="font-semibold text-slate-900">
           Prior-year assessed value:
         </strong>
         {" "}
@@ -117,13 +134,18 @@ export function DouglasSourcesMethodology() {
         assessed figures from{" "}
         <code className={CODE_INLINE_CLASS}>Property_Values.txt</code>
         {" "}
-        (current-year snapshot; no tax-year column). Full valuation history{" "}
-        <strong className="font-semibold text-slate-900">is</strong>
+        (current-year snapshot; no tax-year column). Multi-year actual and
+        assessed values come from Douglas Assessor Realware detail JSON the
+        county SPA already publishes (
+        <code className={CODE_INLINE_CLASS}>
+          /realware/DATA/&#123;year&#125;/detail/&#123;account&#125;.json
+        </code>
+        ). We retain those files at build time, sum{" "}
+        <code className={CODE_INLINE_CLASS}>valuesByAbstractCode</code>
         {" "}
-        on each Assessor property details page. We have not yet found a free
-        multi-year bulk table we can load here, and we are still looking into
-        whether one is available. Until that is settled, this site does not show
-        a valuation trend.
+        per tax year, and ship valuation history on this site (Assessed value
+        summary tile modal). Compare any year on the Assessor property details page when you want the county
+        view side by side.
       </p>
       {countyFeatureAvailable(
         "priorYearValuesInProgress",
@@ -241,24 +263,15 @@ export function DouglasSourcesMethodology() {
         chart rather than inventing a mill rate.
       </p>
       <p className="text-slate-700">
-        Optional dollar lines next to mill changes multiply mills by{" "}
-        <strong className="font-semibold text-slate-900">
-          this year&apos;s assessed value
-        </strong>
+        Optional dollar lines next to mill changes multiply mills by assessed
+        value for each tax year when valuation history provides it
         {" "}
-        only. Douglas Assessor{" "}
-        <code className={CODE_INLINE_CLASS}>Property_Values.txt</code>
-        {" "}
-        is a current-year snapshot (no tax-year column). We have not yet found a
-        free multi-year bulk table we can pair with last year&apos;s mills, and we
-        are still looking into that. Full valuation history{" "}
-        <strong className="font-semibold text-slate-900">is</strong>
-        {" "}
-        on each property&apos;s Assessor page (the county SPA / Power BI report);
-        open that page from the dashboard compare strip when you have loaded an
-        account. The levy-tile footnote on &quot;today&apos;s assessed value&quot;
-        states this limit and links to the property page when the account is
-        loaded.
+        (<code className={CODE_INLINE_CLASS}>levyDollarAssessedContext</code>
+        ).{" "}
+        When prior-year assessed is missing, those lines hold this year&apos;s
+        assessed constant and show the &quot;today&apos;s assessed value&quot;
+        footnote. The mill-history chart shows dollars above mills on year dots
+        and endpoint readouts only for years with assessed on file.
       </p>
       <p className="text-slate-700">
         Browse the series on the{" "}

@@ -165,7 +165,9 @@ Same layout as Arapahoe: real `{countyId}-*` files under `public/data/`. Ingest 
 2. **Validate:** `npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas`
 3. **Land into `public/data/`** (after validate): `npm run land:douglas`
 
-4. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas — confirm Property details shows owner, land lines, lot/block/tract when present, filing, and grantor/grantee on sales where the county export has them.
+4. **Valuation history (Phase 15):** after Realware detail JSON is retained under `supporting-data/douglas/realware-detail/{stamp}/`, run `npm run build:douglas-valuation-history:ship` (or extract into `supporting-data/_ingest-out/douglas` and include shards in `land:douglas`). Dashboard reads `douglas-valuation-history-by-account/` only; no live Douglas fetches.
+
+5. Spot-check with an account id / address in `supporting-data/_private/` (never commit) after county lookup routes to Douglas — confirm Property details shows owner, land lines, lot/block/tract when present, filing, grantor/grantee on sales where the county export has them, and **Valuation history** when the account is in the extract.
 
 ## Shipping land (`--ship`)
 

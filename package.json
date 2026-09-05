@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.8.0",
+  "version": "5.9.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -35,11 +35,15 @@
     "build:ingest": "python3 tools/ingest/build.py",
     "build:ingest:ship": "python3 tools/ingest/build.py --mapping tools/ingest/mappings/arapahoe.json --tag-file \"supporting-data/county-mart/Tax Authority Groups and Tax Authorities (CSV)/Tax Authority Groups and Tax Authorities.csv\" --parcel-file \"supporting-data/county-mart/Main Parcel Table (CSV)/Main Parcel Table.csv\" --out-dir public/data --ship --bundled-as-of $(cat tools/county-mart-data-as-of.txt | tr -d '\\n')",
     "build:ingest:douglas": "python3 tools/ingest/build.py --mapping tools/ingest/mappings/douglas.json --tag-file supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf --parcel-file supporting-data/douglas/Property_Location.txt --values-file supporting-data/douglas/Property_Values.txt --out-dir supporting-data/_ingest-out/douglas --bundled-as-of $(cat tools/douglas-data-as-of.txt | tr -d '\\n') --tax-year 2025 --skip-neighborhood --dola-certifying-county Douglas",
-    "land:douglas": "cp supporting-data/_ingest-out/douglas/douglas-pin-to-tag.json supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json public/data/ && rm -rf public/data/douglas-parcel-record-by-pin && cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/",
+    "land:douglas": "cp supporting-data/_ingest-out/douglas/douglas-pin-to-tag.json supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json public/data/ && rm -rf public/data/douglas-parcel-record-by-pin && cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/ && rm -rf public/data/douglas-valuation-history-by-account && cp -R supporting-data/_ingest-out/douglas/douglas-valuation-history-by-account public/data/",
     "diff:ingest": "python3 tools/ingest/compare.py",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
-    "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q && python3 -m unittest discover -s tools -p test_extract_douglas_authority_mills_by_tax_year.py -q",
+    "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q && python3 -m unittest discover -s tools -p test_extract_douglas_authority_mills_by_tax_year.py -q && python3 -m unittest discover -s tools -p test_extract_douglas_valuation_history.py -q",
     "build:douglas-authority-mills": "python3 tools/extract_douglas_authority_mills_by_tax_year.py",
+    "fetch:douglas-realware-detail": "python3 tools/fetch_douglas_realware_detail.py --skip-existing",
+    "fetch:douglas-realware-detail:meta": "python3 tools/fetch_douglas_realware_detail.py --meta-only",
+    "build:douglas-valuation-history": "python3 tools/extract_douglas_valuation_history.py",
+    "build:douglas-valuation-history:ship": "python3 tools/extract_douglas_valuation_history.py --out-dir public/data",
     "start": "next start",
     "lint": "eslint"
   },

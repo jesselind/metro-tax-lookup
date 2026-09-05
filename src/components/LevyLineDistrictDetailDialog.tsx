@@ -23,14 +23,14 @@ import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSectio
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
-import { countyFeatureAvailable } from "@/lib/countyConfig";
+import { COUNTY_CONFIG, countyConfigById, countyFeatureAvailable } from "@/lib/countyConfig";
+import { safeCountyParcelRecordUrl, safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   TERM_LINK_CLASS,
   TILE_DETAILS_CUE_ON_LIGHT_CLASS,
 } from "@/lib/toolFlowStyles";
-import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
 import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
 import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
@@ -47,9 +47,10 @@ import {
   METRO_RATE_TO_MILLS,
 } from "@/lib/metroLevyYearOverYear";
 import {
-  annualTaxDollarsFromAssessedMills,
-  parcelAssessedForDollarEstimate,
-} from "@/lib/annualTaxFromAssessedMills";
+  levyDollarsPairForTaxYears,
+  type LevyDollarAssessedContext,
+  type LevyDollarAudience,
+} from "@/lib/levyDollarAssessedContext";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import {
@@ -62,8 +63,6 @@ import {
   AUTHORITY_MILLS_HISTORY_MIN_POINTS,
   authorityMillsSeries,
 } from "@/lib/authorityMillsHistory";
-import { countyConfigById } from "@/lib/countyConfig";
-import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
 
 import type { MetroDistrictTileYoYSummary } from "@/lib/metroLevyYearOverYear";
 
@@ -159,6 +158,7 @@ function LevyYoYSummaryBlock({
   headlineClassName,
   showCollapsedDollarLine,
   collapsedDollarFootnoteId,
+  usesTheoreticalAssessed = true,
   /** Inline "Details ›" on the same line as the headline (expandable YoY box). */
   showDetailsCue = false,
 }: {
@@ -168,6 +168,7 @@ function LevyYoYSummaryBlock({
   /** When there is no year-by-year breakdown, show dollars once below the mills headline. */
   showCollapsedDollarLine: boolean;
   collapsedDollarFootnoteId?: string;
+  usesTheoreticalAssessed?: boolean;
   showDetailsCue?: boolean;
 }) {
   const collapsedDollars =
@@ -178,6 +179,8 @@ function LevyYoYSummaryBlock({
     collapsedDollars != null ? formatUsdWhole(Math.abs(collapsedDollars)) : null;
   const collapsedDirectionWord =
     collapsedDollars != null && collapsedDollars > 0 ? "more" : "less";
+  const showTheoreticalMarker =
+    usesTheoreticalAssessed !== false && collapsedDollars != null;
 
   return (
     <>
@@ -200,10 +203,13 @@ function LevyYoYSummaryBlock({
       {collapsedAmount != null ? (
         <p
           className="mt-1 text-sm font-medium leading-snug text-slate-800 sm:text-base"
-          aria-describedby={collapsedDollarFootnoteId}
+          aria-describedby={
+            showTheoreticalMarker ? collapsedDollarFootnoteId : undefined
+          }
         >
-          About {collapsedAmount} {collapsedDirectionWord}
-          {YOY_DOLLAR_FOOTNOTE_MARKER}
+          {usesTheoreticalAssessed === false ? "" : "About "}
+          {collapsedAmount} {collapsedDirectionWord}
+          {showTheoreticalMarker ? YOY_DOLLAR_FOOTNOTE_MARKER : null}
         </p>
       ) : null}
     </>
@@ -223,6 +229,7 @@ function MetroYoYYearCompare({
   diffClassName,
   density,
   dollarFootnoteId,
+  usesTheoreticalAssessed = true,
 }: {
   previousYearLabel: string;
   currentYearLabel: string;
@@ -235,7 +242,10 @@ function MetroYoYYearCompare({
   diffClassName: string;
   density: "total" | "purpose";
   dollarFootnoteId?: string;
+  usesTheoreticalAssessed?: boolean;
 }) {
+  const showDollarFootnote =
+    usesTheoreticalAssessed && dollarFootnoteId != null;
   const yearLabelClass =
     "text-sm font-semibold tracking-wide text-slate-600 sm:text-base";
   const millsClass =
@@ -264,10 +274,10 @@ function MetroYoYYearCompare({
           {previousDollars != null ? (
             <p
               className={dollarsClass}
-              aria-describedby={dollarFootnoteId}
+              aria-describedby={showDollarFootnote ? dollarFootnoteId : undefined}
             >
-              About {formatUsdWhole(previousDollars)}
-              {YOY_DOLLAR_FOOTNOTE_MARKER}
+              {formatUsdWhole(previousDollars)}
+              {showDollarFootnote ? YOY_DOLLAR_FOOTNOTE_MARKER : null}
             </p>
           ) : null}
         </div>
@@ -281,10 +291,10 @@ function MetroYoYYearCompare({
           {currentDollars != null ? (
             <p
               className={dollarsClass}
-              aria-describedby={dollarFootnoteId}
+              aria-describedby={showDollarFootnote ? dollarFootnoteId : undefined}
             >
-              About {formatUsdWhole(currentDollars)}
-              {YOY_DOLLAR_FOOTNOTE_MARKER}
+              {formatUsdWhole(currentDollars)}
+              {showDollarFootnote ? YOY_DOLLAR_FOOTNOTE_MARKER : null}
             </p>
           ) : null}
         </div>
@@ -292,18 +302,20 @@ function MetroYoYYearCompare({
       <p
         className={diffClass}
         aria-describedby={
-          differenceDollars != null ? dollarFootnoteId : undefined
+          differenceDollars != null && showDollarFootnote
+            ? dollarFootnoteId
+            : undefined
         }
       >
         Difference: {differenceMillsLabel} mills
         {differenceDollars != null ? (
           <>
             {" "}
-            (about{" "}
+            (
             {differenceDollars > 0
               ? `+${formatUsdWhole(differenceDollars)}`
               : formatUsdWhole(differenceDollars)}
-            {YOY_DOLLAR_FOOTNOTE_MARKER})
+            {showDollarFootnote ? YOY_DOLLAR_FOOTNOTE_MARKER : null})
           </>
         ) : null}
       </p>
@@ -337,11 +349,15 @@ type Props = {
    * Omit or non-positive when dollars should not be shown.
    */
   totalAssessedForEstimate?: number | null;
+  levyDollarAssessedContext?: LevyDollarAssessedContext | null;
+  dollarAudience?: LevyDollarAudience;
   /**
    * Loaded account id (PIN / Douglas account number) for county property-page
    * links in the YoY dollar footnote (Douglas valuation history).
    */
   accountId?: string | null;
+  /** Sale-history jump in prior-year gap popover (same as Assessed value tile). */
+  hasSaleHistory?: boolean;
   onClose: () => void;
 };
 
@@ -369,11 +385,24 @@ export function LevyLineDistrictDetailDialog({
   directoryError,
   snapshot,
   totalAssessedForEstimate = null,
+  levyDollarAssessedContext = null,
+  dollarAudience,
   accountId = null,
+  hasSaleHistory = false,
   onClose,
 }: Props) {
-  const assessedForChangeDollars = parcelAssessedForDollarEstimate(
-    totalAssessedForEstimate,
+  const countyConfig = useMemo(
+    () => (countyId ? countyConfigById(countyId) : null) ?? COUNTY_CONFIG,
+    [countyId],
+  );
+  const priorYearValuesGap = countyFeatureAvailable(
+    "priorYearValuesGap",
+    countyConfig,
+  );
+  const parcelRecordHref = useMemo(
+    () =>
+      accountId ? safeCountyParcelRecordUrl(accountId, countyConfig) : null,
+    [accountId, countyConfig],
   );
   const yoy = useMemo(
     () =>
@@ -381,8 +410,18 @@ export function LevyLineDistrictDetailDialog({
         { levyLineCode, dolaMatch, mills: stackMills },
         totalAssessedForEstimate,
         countyId,
+        levyDollarAssessedContext,
+        dollarAudience,
       ),
-    [levyLineCode, dolaMatch, stackMills, totalAssessedForEstimate, countyId],
+    [
+      levyLineCode,
+      dolaMatch,
+      stackMills,
+      totalAssessedForEstimate,
+      countyId,
+      levyDollarAssessedContext,
+      dollarAudience,
+    ],
   );
   const millsHistory = useMemo(
     () => authorityMillsSeries(levyLineCode, countyId),
@@ -472,9 +511,11 @@ export function LevyLineDistrictDetailDialog({
   const metroYoYBreakdownPanelId = useId();
   const yoyBreakdownDollarFootnoteId = yoyDollarFootnoteId("breakdown");
   const yoySummaryDollarFootnoteId = yoyDollarFootnoteId("summary");
+  const yoyUsesTheoreticalAssessed =
+    yoy?.usesTheoreticalAssessedForDollars ?? true;
   const yoyShowsDollarFootnote = Boolean(
     yoy &&
-      assessedForChangeDollars != null &&
+      yoyUsesTheoreticalAssessed &&
       ((!yoy.canExpand && yoy.summary.theoreticalDeltaDollars != null) ||
         (yoy.canExpand &&
           metroYoYBreakdownOpen &&
@@ -662,6 +703,7 @@ export function LevyLineDistrictDetailDialog({
                           headlineId="levy-detail-metro-yoy-heading"
                           headlineClassName={metroYoySurface.headline}
                           showCollapsedDollarLine={false}
+                          usesTheoreticalAssessed={yoyUsesTheoreticalAssessed}
                           showDetailsCue
                         />
                       </span>
@@ -708,6 +750,7 @@ export function LevyLineDistrictDetailDialog({
                                   ? yoyBreakdownDollarFootnoteId
                                   : undefined
                               }
+                              usesTheoreticalAssessed={yoyUsesTheoreticalAssessed}
                             />
                           </div>
                         ) : null}
@@ -745,24 +788,14 @@ export function LevyLineDistrictDetailDialog({
                                   change.ratePrevious * METRO_RATE_TO_MILLS;
                                 const currMills =
                                   change.rateCurrent * METRO_RATE_TO_MILLS;
-                                const prevDollars =
-                                  assessedForChangeDollars != null
-                                    ? annualTaxDollarsFromAssessedMills(
-                                        assessedForChangeDollars,
-                                        prevMills,
-                                      )
-                                    : null;
-                                const currDollars =
-                                  assessedForChangeDollars != null
-                                    ? annualTaxDollarsFromAssessedMills(
-                                        assessedForChangeDollars,
-                                        currMills,
-                                      )
-                                    : null;
-                                const deltaDollars =
-                                  prevDollars != null && currDollars != null
-                                    ? currDollars - prevDollars
-                                    : null;
+                                const purposeDollars = levyDollarsPairForTaxYears(
+                                  prevMills,
+                                  currMills,
+                                  yoy.taxYearPrevious,
+                                  yoy.taxYearCurrent,
+                                  levyDollarAssessedContext,
+                                  dollarAudience,
+                                );
                                 return (
                                   <li
                                     key={`${change.districtId}-${change.rawRowIndex}`}
@@ -807,19 +840,22 @@ export function LevyLineDistrictDetailDialog({
                                         change.rateCurrent,
                                         METRO_RATE_TO_MILLS,
                                       )}
-                                      previousDollars={prevDollars}
-                                      currentDollars={currDollars}
+                                      previousDollars={purposeDollars.previousDollars}
+                                      currentDollars={purposeDollars.currentDollars}
                                       differenceMillsLabel={formatMetroMillsDeltaFromRate(
                                         change.rateDelta,
                                         METRO_RATE_TO_MILLS,
                                       )}
-                                      differenceDollars={deltaDollars}
+                                      differenceDollars={purposeDollars.differenceDollars}
                                       diffClassName={purposeSurface.diff}
                                       density="purpose"
                                       dollarFootnoteId={
                                         yoyShowsDollarFootnote
                                           ? yoyBreakdownDollarFootnoteId
                                           : undefined
+                                      }
+                                      usesTheoreticalAssessed={
+                                        purposeDollars.usesTheoreticalAssessed
                                       }
                                     />
                                   </li>
@@ -846,6 +882,7 @@ export function LevyLineDistrictDetailDialog({
                       headlineId="levy-detail-metro-yoy-heading"
                       headlineClassName={metroYoySurface.headline}
                       showCollapsedDollarLine
+                      usesTheoreticalAssessed={yoyUsesTheoreticalAssessed}
                       collapsedDollarFootnoteId={
                         yoyShowsDollarFootnote
                           ? yoySummaryDollarFootnoteId
@@ -866,7 +903,15 @@ export function LevyLineDistrictDetailDialog({
 
             {showMillsHistoryChart ? (
               <div className="mt-3">
-                <AuthorityMillsHistoryChart series={millsHistory} />
+                <AuthorityMillsHistoryChart
+                  series={millsHistory}
+                  assessedContext={levyDollarAssessedContext}
+                  dollarAudience={dollarAudience}
+                  priorYearValuesGap={priorYearValuesGap}
+                  countyId={countyId}
+                  hasSaleHistory={hasSaleHistory}
+                  parcelRecordHref={parcelRecordHref}
+                />
               </div>
             ) : null}
 

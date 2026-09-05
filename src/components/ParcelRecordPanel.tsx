@@ -101,6 +101,8 @@ export type ParcelRecordPanelProps = {
   rentMode?: boolean;
   /** Resolved county for hosted parcel-record links. */
   countyConfig?: CountyConfig;
+  /** hashPath `{year}` override (Douglas SPA path year from file-backed sources). */
+  parcelRecordLinkYear?: string | null;
 };
 
 export function ParcelRecordPanel({
@@ -111,6 +113,7 @@ export function ParcelRecordPanel({
   demoMode = false,
   rentMode = false,
   countyConfig = COUNTY_CONFIG,
+  parcelRecordLinkYear = null,
 }: ParcelRecordPanelProps) {
   const [legalExpanded, setLegalExpanded] = useState(false);
 
@@ -122,6 +125,7 @@ export function ParcelRecordPanel({
       publicParcelId: displayRecord?.ain,
     }),
     countyConfig,
+    { year: parcelRecordLinkYear },
   );
   const isBusinessPersonal =
     displayRecord != null &&

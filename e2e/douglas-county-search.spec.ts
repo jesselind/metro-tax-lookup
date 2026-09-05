@@ -6,15 +6,7 @@
 import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import { SYNTHETIC_DOUGLAS_PIN } from "../src/lib/syntheticTestIds";
-import {
-  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL,
-  COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
-} from "../src/content/countyPriorYearValuesGapNote";
-import {
-  COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_LEAD_BEFORE_LINK,
-  COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_TILE_STATUS,
-} from "../src/content/countyPriorYearValuesInProgressNote";
-import { IN_PROGRESS_CALLOUT_TITLE } from "../src/content/inProgressGuidance";
+import { VALUATION_HISTORY_MODAL_TITLE_ASSESSED } from "../src/content/valuationHistoryCopy";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_OWNER,
@@ -34,9 +26,8 @@ const DOUGLAS_COMPARE_REGION =
 
 /**
  * Phase 13: Douglas JSON paths, county search gate (adjacent / unknown),
- * dashboard → `/sources?county=` preselect. Prior-year assessed uses IN
- * PROGRESS chrome (not COUNTY DATA GAP) while bulk history is still open.
- * Synthetic route fulfill only.
+ * dashboard → `/sources?county=` preselect. Douglas ships valuation history
+ * from Realware detail JSON (Phase 15). Synthetic route fulfill only.
  */
 test.describe("Douglas county search gate (Phase 13)", () => {
   test("Douglas account-id load from the address field", async ({ page }) => {
@@ -51,12 +42,26 @@ test.describe("Douglas county search gate (Phase 13)", () => {
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
     await expect(page.getByText(authorityLabel)).toBeVisible();
+    await expect(page.locator("#home-parcel-assessment-year")).toContainText(
+      "2026",
+    );
+    await expect(page.locator("#home-parcel-tax-year")).toContainText("2025");
+    await expect(
+      page
+        .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
+        .getByRole("link", { name: /Open county property details/i })
+        .first(),
+    ).toHaveAttribute(
+      "href",
+      "https://apps.douglas.co.us/assessor/web/#/details/2026/" +
+        `${SYNTHETIC_DOUGLAS_PIN}`,
+    );
     await expect(
       page
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
         .getByText(SYNTHETIC_DOUGLAS_PIN, { exact: true }),
     ).toBeVisible();
-    await expect(page.locator("#home-parcel-property-tax")).toContainText("$68");
+    await expect(page.locator("#home-parcel-property-tax")).toContainText("$272");
   });
 
   test("Douglas address resolve with county scope selected", async ({
@@ -161,7 +166,7 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
   });
 
-  test("Douglas Assessed value uses IN PROGRESS badge (not COUNTY DATA GAP)", async ({
+  test("Douglas assessed value opens valuation history modal", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { countyId: "douglas" });
@@ -172,36 +177,39 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(
       page.getByRole("button", { name: "Prior years missing" }),
     ).toHaveCount(0);
-
-    const inProgressTrigger = page.getByRole("button", {
-      name: COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_TILE_STATUS,
-    });
-    await expect(inProgressTrigger).toBeVisible();
-    await inProgressTrigger.click();
-
-    const inProgressNote = page.getByRole("note").filter({
-      hasText: COUNTY_PRIOR_YEAR_VALUES_IN_PROGRESS_LEAD_BEFORE_LINK,
-    });
-    await expect(inProgressNote).toBeVisible();
-    await expect(inProgressNote).toContainText(IN_PROGRESS_CALLOUT_TITLE);
-    await expect(inProgressNote).not.toContainText(/COUNTY DATA GAP/i);
-    await expect(inProgressNote).not.toContainText(/\$50/);
     await expect(
-      inProgressNote.getByRole("link", {
-        name: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL,
-      }),
-    ).toHaveAttribute(
-      "href",
-      `https://apps.douglas.co.us/assessor/web/#/details/2026/${SYNTHETIC_DOUGLAS_PIN}`,
-    );
+      page.getByRole("button", { name: "Coming soon" }),
+    ).toHaveCount(0);
+
+    await page
+      .getByRole("button", {
+        name: /Assessed value\. View valuation history/i,
+      })
+      .click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
     await expect(
-      inProgressNote.getByRole("link", {
-        name: COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
+      dialog.getByRole("heading", {
+        name: VALUATION_HISTORY_MODAL_TITLE_ASSESSED,
+        level: 3,
       }),
-    ).toHaveAttribute(
-      "href",
-      "/sources?county=douglas#county-prior-year-values-in-progress",
-    );
+    ).toBeVisible();
+    const yoyRegion = dialog.getByRole("region", {
+      name: /higher than last year/i,
+    });
+    await expect(yoyRegion).toBeVisible();
+    await expect(yoyRegion.getByText(/\$25,740/)).toBeVisible();
+    await expect(yoyRegion.getByText(/\$27,170/)).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await expect(dialog).toBeHidden();
+
+    await page
+      .getByRole("region", { name: "Appraised and assessed values" })
+      .getByRole("button", { name: "View valuation history", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toBeVisible();
   });
 
   test("/sources?county=douglas preselects Douglas methodology", async ({
@@ -219,15 +227,11 @@ test.describe("Douglas county search gate (Phase 13)", () => {
       }),
     ).toHaveCount(0);
     await expect(page.locator("#county-prior-year-values-gap")).toHaveCount(0);
-    const inProgress = page.locator("#county-prior-year-values-in-progress");
-    await expect(inProgress).toBeVisible();
-    await expect(inProgress).toContainText(IN_PROGRESS_CALLOUT_TITLE);
-    await expect(inProgress).toContainText(/Property_Values\.txt/i);
-    await expect(inProgress).toContainText(/working to get prior-year/i);
-    await expect(inProgress).not.toContainText(/\$50 per hour/i);
-    await expect(
-      page.getByText(/no historical information available on the public website/i),
-    ).toHaveCount(0);
+    await expect(page.locator("#county-prior-year-values-in-progress")).toHaveCount(
+      0,
+    );
+    await expect(page.getByText(/Realware detail JSON/i)).toBeVisible();
+    await expect(page.getByText(/valuesByAbstractCode/i)).toBeVisible();
   });
 });
 

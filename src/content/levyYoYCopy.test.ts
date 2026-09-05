@@ -26,16 +26,14 @@ describe("yoyTheoreticalDollarPopoverCopy", () => {
     );
   });
 
-  it("does not claim Douglas lacks public valuation history", () => {
+  it("uses Douglas copy that points to on-site valuation history", () => {
     const copy = yoyTheoreticalDollarPopoverCopy("douglas");
     expect(copy.kind).toBe("douglas");
     expect(copy.plainBody).toBe(YOY_THEORETICAL_DOLLAR_POPOVER_BODY_DOUGLAS);
-    expect(copy.plainBody).toMatch(/full valuation history/i);
-    expect(copy.plainBody).toMatch(/still looking/i);
-    expect(copy.plainBody).toMatch(/bulk table/i);
-    expect(copy.plainBody).not.toMatch(/Property_Values\.txt/i);
+    expect(copy.plainBody).toMatch(/Assessed value above/i);
+    expect(copy.plainBody).toMatch(/this year's assessed value/i);
+    expect(copy.plainBody).not.toMatch(/still looking/i);
     expect(copy.plainBody).not.toMatch(/\$50/i);
-    expect(copy.plainBody).not.toMatch(/does not appear to be available/i);
     expect(copy.plainBody).not.toMatch(
       /no historical information available on the public website/i,
     );

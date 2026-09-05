@@ -21,7 +21,7 @@ import {
 import { focusNearestDashboardSection } from "@/lib/focusNearestDashboardSection";
 import { COUNTY_SERVICE_GAP_STACK_CLASS } from "@/lib/toolFlowStyles";
 
-const TRIGGER_CLASS = "inline-flex cursor-pointer";
+const TRIGGER_CLASS = "inline-flex cursor-pointer items-center";
 
 function jumpToParcelSaleHistory(): void {
   if (typeof document === "undefined") return;
@@ -83,20 +83,24 @@ function CountyPriorYearValuesGapPopoverBody({
 }
 
 /**
- * Red status badge on Assessed value. Same InfoHintPopover as tile glossary briefs
- * (width/scroll); `county-data-gap` paints the panel with COUNTY DATA GAP chrome.
- * Header + copy sit inside that panel, not a nested red box.
+ * Red status badge on Assessed value and the levy modal mill-history chart footer.
+ * Same InfoHintPopover as tile glossary briefs (width/scroll); `county-data-gap`
+ * paints the panel with COUNTY DATA GAP chrome. Header + copy sit inside that
+ * panel, not a nested red box.
  */
 export function CountyPriorYearValuesGapPopover({
   hasSaleHistory = false,
   countyId,
   parcelRecordHref,
+  textTriggerId = "assessed-prior-year-values-gap",
 }: {
   hasSaleHistory?: boolean;
   /** Active / resident county for the Sources link (`?county=`). */
   countyId?: string;
   /** Safe Assessor property-page URL when the account is loaded (Douglas). */
   parcelRecordHref?: string | null;
+  /** Unique id when multiple gap badges can appear on screen (e.g. levy modal chart). */
+  textTriggerId?: string;
 }) {
   return (
     <InfoHintPopover
@@ -106,7 +110,7 @@ export function CountyPriorYearValuesGapPopover({
           {COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}
         </CountyServiceGapBadge>
       }
-      textTriggerId="assessed-prior-year-values-gap"
+      textTriggerId={textTriggerId}
       textTriggerClassName={TRIGGER_CLASS}
       textTriggerAriaLabel={COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}
       ariaLabel="Why prior-year assessed values from the county are missing"
