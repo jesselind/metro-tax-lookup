@@ -57,6 +57,8 @@ import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
 import { SitusMultiAccountChooserList, SitusRealVsBusinessPersonalHelp } from "@/components/SitusMultiAccountChooserList";
 import { SitusMultiAccountSwitcherDialog } from "@/components/SitusMultiAccountSwitcherDialog";
 import { MillLevySummaryTile } from "@/components/MillLevySummaryTile";
+import { ValuationHistoryDialog } from "@/components/ValuationHistoryDialog";
+import { ValuationValueSummaryTile } from "@/components/ValuationValueSummaryTile";
 import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
@@ -77,6 +79,19 @@ import {
   type CommittedLevyLine,
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
+import {
+  fetchCountyValuationHistoryForPin,
+  type CountyValuationHistoryPoint,
+} from "@/lib/countyValuationHistoryData";
+import {
+  actualValueDeltaFromHistory,
+  assessedValueDeltaFromHistory,
+  type ValuationValueKind,
+} from "@/lib/valuationHistoryYoY";
+import {
+  buildLevyDollarAssessedContext,
+  scaleLevyDollarAssessedContextPerUnit,
+} from "@/lib/levyDollarAssessedContext";
 import {
   fetchCountyParcelRecordForPin,
   fetchCountyPinToTagJson,
@@ -359,6 +374,12 @@ export function HomeParcelAddressLookup({
   const [parcelRecordBundledAsOf, setParcelRecordBundledAsOf] = useState<
     string | null
   >(null);
+  const [valuationHistory, setValuationHistory] = useState<
+    CountyValuationHistoryPoint[] | null
+  >(null);
+  const [valuationHistoryLoading, setValuationHistoryLoading] = useState(false);
+  const [valuationHistoryDialogKind, setValuationHistoryDialogKind] =
+    useState<ValuationValueKind | null>(null);
   const prevAddressSearchLockedRef = useRef(false);
   /** Dashboard Account type tile: in-place multi-PIN switcher modal. */
   const [accountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
@@ -458,8 +479,41 @@ export function HomeParcelAddressLookup({
     setParcelRecordLoading(false);
     setParcelRecordLoadFailed(false);
     setParcelRecordBundledAsOf(null);
+    setValuationHistory(null);
+    setValuationHistoryLoading(false);
+    setValuationHistoryDialogKind(null);
     setResolvedCountyId(null);
   }, []);
+
+  const loadValuationHistory = useCallback(
+    async (lookupPin: string, countyId: string) => {
+      const config = countyConfigById(countyId);
+      const requestId = parcelRecordRequestRef.current;
+      const isCurrentRequest = () => requestId === parcelRecordRequestRef.current;
+      setValuationHistoryLoading(true);
+      setValuationHistory(null);
+      if (!config?.features.valuationHistoryShards) {
+        if (isCurrentRequest()) {
+          setValuationHistoryLoading(false);
+        }
+        return;
+      }
+      try {
+        const result = await fetchCountyValuationHistoryForPin(
+          lookupPin,
+          undefined,
+          config.id,
+        );
+        if (!isCurrentRequest()) return;
+        setValuationHistory(result?.series ?? null);
+      } finally {
+        if (isCurrentRequest()) {
+          setValuationHistoryLoading(false);
+        }
+      }
+    },
+    [],
+  );
 
   const loadParcelRecord = useCallback(
     async (lookupPin: string, countyId: string) => {
@@ -510,6 +564,9 @@ export function HomeParcelAddressLookup({
     setParcelRecordLoading(false);
     setParcelRecordLoadFailed(false);
     setParcelRecordBundledAsOf(null);
+    setValuationHistory(null);
+    setValuationHistoryLoading(false);
+    setValuationHistoryDialogKind(null);
   }
 
   const loadLevyStack = useCallback(
@@ -526,6 +583,9 @@ export function HomeParcelAddressLookup({
     setParcelRecordLoading(false);
     setParcelRecordLoadFailed(false);
     setParcelRecordBundledAsOf(null);
+    setValuationHistory(null);
+    setValuationHistoryLoading(false);
+    setValuationHistoryDialogKind(null);
     try {
       const result = await loadLevyStackFromPin(
         pin,
@@ -559,6 +619,7 @@ export function HomeParcelAddressLookup({
       setResolvedCountyId(result.countyId);
       if (!isCurrentRequest()) return false;
       void loadParcelRecord(result.matchedPin, result.countyId);
+      void loadValuationHistory(result.matchedPin, result.countyId);
       return true;
     } finally {
       if (isCurrentRequest()) {
@@ -566,7 +627,7 @@ export function HomeParcelAddressLookup({
       }
     }
     },
-    [loadParcelRecord, countySearchScope],
+    [loadParcelRecord, loadValuationHistory, countySearchScope],
   );
 
   const reportIndexProgress = useCallback(
@@ -1311,6 +1372,54 @@ export function HomeParcelAddressLookup({
     [streetTypeahead],
   );
 
+  /** Bill tax year — pairs current assessed with mill-history AUTH years. */
+  const parcelBillTaxYear = useMemo(() => {
+    if (!levyLoadedMeta) return null;
+    const yearRaw = levyLoadedMeta.parcelTaxYear?.trim();
+    if (!yearRaw) return null;
+    const parsed = Number.parseInt(yearRaw, 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }, [levyLoadedMeta]);
+
+  /**
+   * Valuation-history YoY year: Realware rows often key on assessment year;
+   * fall back to bill tax year.
+   */
+  const parcelTaxYearForHistory = useMemo(() => {
+    if (!levyLoadedMeta) return null;
+    const yearRaw =
+      levyLoadedMeta.parcelAssessmentYear?.trim() ||
+      levyLoadedMeta.parcelTaxYear?.trim();
+    if (!yearRaw) return null;
+    const parsed = Number.parseInt(yearRaw, 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }, [levyLoadedMeta]);
+
+  const levyDollarAssessedContext = useMemo(() => {
+    if (!levyLoadedMeta) return null;
+    const assessed = parcelAssessedForDollarEstimate(
+      levyLoadedMeta.parcelValues.totalAssessed,
+    );
+    // Mill AUTH series and levy YoY dollars use bill tax year, not assessment
+    // year (Arapahoe: assessment 2026 + tax 2025; mills end at 2025).
+    const base = buildLevyDollarAssessedContext(
+      valuationHistory,
+      assessed,
+      parcelBillTaxYear,
+    );
+    if (!base) return null;
+    if (isRentMode && rentDwellingCount != null && rentDwellingCount.n >= 1) {
+      return scaleLevyDollarAssessedContextPerUnit(base, rentDwellingCount.n);
+    }
+    return base;
+  }, [
+    valuationHistory,
+    levyLoadedMeta,
+    parcelBillTaxYear,
+    isRentMode,
+    rentDwellingCount,
+  ]);
+
   const homeLevyStackProps: LevyStackVisualizationProps = {
     lines: levyLines,
     setLines: setLevyLines,
@@ -1326,6 +1435,9 @@ export function HomeParcelAddressLookup({
     levyDollarUnitCount: isRentMode ? (rentDwellingCount?.n ?? null) : null,
     rentMode: isRentMode,
     countyConfig: activeCountyConfig,
+    levyDollarAssessedContext,
+    parcelHasSaleHistory:
+      !isBusinessPersonalAccount && parcelRecord != null,
   };
 
   const showPropertyDetailsColumn =
@@ -1485,6 +1597,19 @@ export function HomeParcelAddressLookup({
       parcelRecord,
     );
 
+  const hasValuationHistory =
+    !valuationHistoryLoading &&
+    valuationHistory != null &&
+    valuationHistory.length >= 2;
+
+  const openValuationHistory = useCallback((kind: ValuationValueKind) => {
+    setValuationHistoryDialogKind(kind);
+  }, []);
+
+  const closeValuationHistory = useCallback(() => {
+    setValuationHistoryDialogKind(null);
+  }, []);
+
   const parcelRecordExtended = showParcelRecordExtended ? (
     <ParcelRecordExtendedSection
       loading={parcelRecordLoading}
@@ -1496,8 +1621,28 @@ export function HomeParcelAddressLookup({
       omitContinuationHeading
       rentMode={isRentMode}
       countyConfig={activeCountyConfig}
+      showValuationHistoryLink={hasValuationHistory}
+      onOpenValuationHistory={() => openValuationHistory("assessed")}
     />
   ) : null;
+
+  const assessedValueDelta = useMemo(() => {
+    if (!valuationHistory?.length || !levyLoadedMeta) return null;
+    return assessedValueDeltaFromHistory(
+      valuationHistory,
+      levyLoadedMeta.parcelValues.totalAssessed,
+      parcelTaxYearForHistory,
+    );
+  }, [valuationHistory, levyLoadedMeta, parcelTaxYearForHistory]);
+
+  const actualValueDelta = useMemo(() => {
+    if (!valuationHistory?.length || !levyLoadedMeta) return null;
+    return actualValueDeltaFromHistory(
+      valuationHistory,
+      levyLoadedMeta.parcelValues.totalActual,
+      parcelTaxYearForHistory,
+    );
+  }, [valuationHistory, levyLoadedMeta, parcelTaxYearForHistory]);
 
   const showTaxYearSummaryTile =
     !!levyLoadedMeta &&
@@ -2338,60 +2483,53 @@ export function HomeParcelAddressLookup({
               sumMills > 0) ? (
                 <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
                   {levyLoadedMeta.parcelValues.totalActual != null ? (
-                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}>
-                      <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                        <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                          <ParcelGlossaryPopoverTrigger
-                            termId="term-actual-value"
-                            textTrigger="Actual value"
-                            textTriggerId="actual-value-term-first"
-                          />
-                        </div>
-                        <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                          {formatUsdWhole(levyLoadedMeta.parcelValues.totalActual)}
-                        </p>
-                      </div>
-                    </div>
+                    <ValuationValueSummaryTile
+                      valueKind="actual"
+                      termId="term-actual-value"
+                      textTrigger="Actual value"
+                      textTriggerId="actual-value-term-first"
+                      value={levyLoadedMeta.parcelValues.totalActual}
+                      valueDelta={actualValueDelta}
+                      hasHistory={hasValuationHistory}
+                      onOpen={() => openValuationHistory("actual")}
+                    />
                   ) : null}
                   {levyLoadedMeta.parcelValues.totalAssessed != null ? (
-                    <div className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}>
-                      <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                        <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                          <ParcelGlossaryPopoverTrigger
-                            termId="term-assessed-value"
-                            textTrigger="Assessed value"
-                            textTriggerId="assessed-value-term-first"
-                          />
-                        </div>
-                        <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                          {formatUsdWhole(levyLoadedMeta.parcelValues.totalAssessed)}
-                        </p>
-                        {activePriorYearValuesGap ? (
-                          <CountyPriorYearValuesGapPopover
-                            countyId={activeCountyConfig.id}
-                            parcelRecordHref={safeCountyParcelRecordUrl(
-                              levyLoadedMeta.pin,
-                              activeCountyConfig,
-                            )}
-                            hasSaleHistory={
-                              !isBusinessPersonalAccount && parcelRecord != null
-                            }
-                          />
-                        ) : null}
-                        {activePriorYearValuesInProgress ? (
-                          <CountyPriorYearValuesInProgressPopover
-                            countyId={activeCountyConfig.id}
-                            parcelRecordHref={safeCountyParcelRecordUrl(
-                              levyLoadedMeta.pin,
-                              activeCountyConfig,
-                            )}
-                            hasSaleHistory={
-                              !isBusinessPersonalAccount && parcelRecord != null
-                            }
-                          />
-                        ) : null}
-                      </div>
-                    </div>
+                    <ValuationValueSummaryTile
+                      valueKind="assessed"
+                      termId="term-assessed-value"
+                      textTrigger="Assessed value"
+                      textTriggerId="assessed-value-term-first"
+                      value={levyLoadedMeta.parcelValues.totalAssessed}
+                      valueDelta={assessedValueDelta}
+                      hasHistory={hasValuationHistory}
+                      onOpen={() => openValuationHistory("assessed")}
+                    >
+                      {activePriorYearValuesGap ? (
+                        <CountyPriorYearValuesGapPopover
+                          countyId={activeCountyConfig.id}
+                          parcelRecordHref={safeCountyParcelRecordUrl(
+                            levyLoadedMeta.pin,
+                            activeCountyConfig,
+                          )}
+                          hasSaleHistory={
+                            !isBusinessPersonalAccount && parcelRecord != null
+                          }
+                        />
+                      ) : null}
+                      {activePriorYearValuesInProgress ? (
+                        <CountyPriorYearValuesInProgressPopover
+                          countyId={activeCountyConfig.id}
+                          parcelRecordHref={safeCountyParcelRecordUrl(
+                            levyLoadedMeta.pin,
+                            activeCountyConfig,
+                          )}
+                          hasSaleHistory={
+                            !isBusinessPersonalAccount && parcelRecord != null
+                          }
+                        />
+                      ) : null}
+                    </ValuationValueSummaryTile>
                   ) : null}
                   {estimatedAnnualPropertyTaxDollars != null ? (
                     <div
@@ -2930,6 +3068,24 @@ export function HomeParcelAddressLookup({
           selectDisabled={levyLoadBusy}
           onSelectPin={switchDashboardAccount}
           onClose={closeAccountSwitcher}
+        />
+      ) : null}
+
+      {valuationHistoryDialogKind != null &&
+      hasValuationHistory &&
+      valuationHistory != null &&
+      levyLoadedMeta ? (
+        <ValuationHistoryDialog
+          valueKind={valuationHistoryDialogKind}
+          series={valuationHistory}
+          currentValue={
+            valuationHistoryDialogKind === "assessed"
+              ? levyLoadedMeta.parcelValues.totalAssessed!
+              : levyLoadedMeta.parcelValues.totalActual!
+          }
+          currentTaxYear={parcelTaxYearForHistory}
+          totalMills={sumMills > 0 ? sumMills : null}
+          onClose={closeValuationHistory}
         />
       ) : null}
     </section>

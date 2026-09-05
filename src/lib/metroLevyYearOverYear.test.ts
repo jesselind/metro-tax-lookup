@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+import { buildLevyDollarAssessedContext } from "@/lib/levyDollarAssessedContext";
 import { describe, expect, it } from "vitest";
 import type { LevyDistrictFromJson } from "@/lib/levyTypes";
 import {
@@ -628,6 +629,31 @@ describe("buildLevyLineYoYViewModel", () => {
     expect(vm?.totalCompare?.currentMillsLabel).toBe("51.071");
     expect(vm?.summary.headline).toMatch(/2\.0% higher/i);
     expect(vm?.summary.theoreticalDeltaDollars).toBe(100);
+    expect(vm?.usesTheoreticalAssessedForDollars).toBe(true);
+  });
+
+  it("uses per-year assessed when valuation context includes the prior tax year", () => {
+    const ctx = buildLevyDollarAssessedContext(
+      [
+        { taxYear: 2024, actualValue: 400_000, assessedValue: 90_000 },
+        { taxYear: 2025, actualValue: 410_000, assessedValue: 95_000 },
+      ],
+      100_000,
+      2025,
+    );
+    const vm = buildLevyLineYoYViewModel(
+      { levyLineCode: "0101", dolaMatch: null },
+      100_000,
+      "arapahoe",
+      ctx,
+    );
+    expect(vm?.usesTheoreticalAssessedForDollars).toBe(false);
+    expect(vm?.totalCompare?.previousDollars).toBe(
+      Math.round((90_000 * 50.071) / 1000),
+    );
+    expect(vm?.totalCompare?.currentDollars).toBe(
+      Math.round((100_000 * 51.071) / 1000),
+    );
   });
 
   it("prefers metro purpose path when Public Info purposes changed", () => {

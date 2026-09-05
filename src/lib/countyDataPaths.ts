@@ -105,6 +105,34 @@ export function countyParcelRecordShardUrl(
 }
 
 /**
+ * URL prefix for valuation-history shards (no trailing slash):
+ * `{dataRoot}/{countyId}-valuation-history-by-account`
+ */
+export function countyValuationHistoryShardDirUrl(
+  dataRoot: string = SHIPPING_DATA_ROOT,
+  countyId: string = COUNTY_CONFIG.id,
+): string {
+  const root = countyDataRoot(dataRoot);
+  const id = countyIdForDataPaths(countyId);
+  return `${root}/${id}-valuation-history-by-account`;
+}
+
+/** URL for one valuation-history shard (caller validates path-safe prefix). */
+export function countyValuationHistoryShardUrl(
+  prefix: string,
+  dataRoot: string = SHIPPING_DATA_ROOT,
+  countyId: string = COUNTY_CONFIG.id,
+  cacheBust?: string,
+): string | null {
+  if (prefix.length !== 6 || !/^[A-Za-z0-9]+$/.test(prefix)) {
+    return null;
+  }
+  const dir = countyValuationHistoryShardDirUrl(dataRoot, countyId);
+  const base = `${dir}/${prefix}.json`;
+  return cacheBust ? `${base}?v=${cacheBust}` : base;
+}
+
+/**
  * Filesystem paths under the repo for validators (`public/...`).
  * Shipping URL `/data` → `public/data`. Retired dual-root `/data-engine-v2`
  * still maps to `public/data-engine-v2` for path helpers only.

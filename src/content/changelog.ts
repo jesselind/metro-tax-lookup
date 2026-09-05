@@ -27,6 +27,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.9.0",
+    date: "2026-09-05",
+    title: "Douglas valuation history + levy per-year dollars (Phase 15)",
+    highlights: [
+      "Douglas valuation history from build-time Realware detail JSON retain (not live fetch): tools/fetch_douglas_realware_detail.py, tools/extract_douglas_valuation_history.py, stamp tools/douglas-realware-detail-stamp.txt, ship npm run build:douglas-valuation-history:ship to public/data/douglas-valuation-history-by-account/.",
+      "Assessed value and Actual value summary tiles open ValuationHistoryDialog (YoY box, tax-impact line, SVG chart, collapsible table). Property details: View valuation history link only. Douglas priorYearValuesInProgress off; valuationHistoryShards on.",
+      "levyDollarAssessedContext: per-year assessed from valuation-history shards plus loaded parcel current year. Levy YoY dollars use per-year assessed when history has the prior tax year; theoretical plus today's assessed footnote when not (Arapahoe).",
+      "AuthorityMillsHistoryChart: footer mills row, ledger rule, then dollars (larger type) or Prior years missing badge when features.priorYearValuesGap and oldest endpoint lacks assessed. Badge reuses CountyPriorYearValuesGapPopover (same panel as Assessed value tile). Flag-driven, not county-hardcoded.",
+      "ValuationHistoryDialog: bottom scroll padding; See data in table form scrolls the table into view. Unit: levyDollarAssessedContext, valuationHistoryYoY, authorityMillsChartFooter. e2e: douglas-county-search valuation modal; metro-yoy chart gap badge.",
+      "Fix: mill-chart / levy dollar context keys parcel assessed to bill tax year (not assessment year) so Arapahoe current-year dollars show beside Prior years missing. Gap badge requires newest endpoint dollars.",
+    ],
+  },
+  {
     version: "5.8.0",
     date: "2026-09-04",
     title: "Douglas prior-year IN PROGRESS chrome (sky Coming soon)",

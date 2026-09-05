@@ -12,10 +12,12 @@ import {
   countyAccountMapUrl,
   countyLevyStacksUrl,
   countyParcelRecordShardDirUrl,
+  countyValuationHistoryShardDirUrl,
   countySitusToPinsUrl,
 } from "../../src/lib/countyDataPaths";
 import {
   SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD,
+  SYNTHETIC_DOUGLAS_VALUATION_HISTORY_SHARD,
   SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX,
   SYNTHETIC_DOUGLAS_PIN_TO_TAG,
   SYNTHETIC_DOUGLAS_SITUS_TO_PINS,
@@ -109,6 +111,10 @@ export async function installSyntheticCountyData(
     countyId === DOUGLAS_COUNTY_CONFIG.id
       ? SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD
       : SYNTHETIC_PARCEL_RECORD_SHARD;
+  const valuationHistoryShard =
+    countyId === DOUGLAS_COUNTY_CONFIG.id
+      ? SYNTHETIC_DOUGLAS_VALUATION_HISTORY_SHARD
+      : null;
 
   await fulfillCountyRoutes(page, {
     countyId,
@@ -117,6 +123,7 @@ export async function installSyntheticCountyData(
     levyStacks,
     shardPrefix,
     parcelShard,
+    valuationHistoryShard,
   });
 
   const companion = options.emptySitusCompanionCountyId;
@@ -138,6 +145,10 @@ export async function installSyntheticCountyData(
         companionId === DOUGLAS_COUNTY_CONFIG.id
           ? SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD
           : SYNTHETIC_PARCEL_RECORD_SHARD,
+      valuationHistoryShard:
+        companionId === DOUGLAS_COUNTY_CONFIG.id
+          ? SYNTHETIC_DOUGLAS_VALUATION_HISTORY_SHARD
+          : null,
     });
   }
 }
@@ -174,10 +185,18 @@ async function fulfillCountyRoutes(
     levyStacks: unknown;
     shardPrefix: string;
     parcelShard: unknown;
+    valuationHistoryShard: unknown | null;
   },
 ): Promise<void> {
-  const { countyId, situs, pinToTag, levyStacks, shardPrefix, parcelShard } =
-    args;
+  const {
+    countyId,
+    situs,
+    pinToTag,
+    levyStacks,
+    shardPrefix,
+    parcelShard,
+    valuationHistoryShard,
+  } = args;
   await fulfillJson(
     page,
     dataUrlPattern(countySitusToPinsUrl(undefined, countyId)),
@@ -200,6 +219,15 @@ async function fulfillCountyRoutes(
     ),
     parcelShard,
   );
+  if (valuationHistoryShard) {
+    await fulfillJson(
+      page,
+      dataUrlPattern(
+        `${countyValuationHistoryShardDirUrl(undefined, countyId)}/${shardPrefix}.json`,
+      ),
+      valuationHistoryShard,
+    );
+  }
 }
 
 async function fulfillJson(

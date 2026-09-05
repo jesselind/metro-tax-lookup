@@ -1,4 +1,4 @@
-// Metro Tax Lookup - Arapahoe County
+// Metro Tax Lookup
 // Copyright (C) 2026 Jesse Lind
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
@@ -8,8 +8,11 @@
 /**
  * Inline SVG mill-rate timeline for levy tile details (Levy % AUTH totals).
  * Renders only when the parent passes a series with at least two points.
- * Descriptive heading only (no caption popover): keeps y-axis space on mobile.
- * Year dots open {@link InfoHintPopover} with that year's mills.
+ * Year dots and endpoint readouts show mills first; when valuation history
+ * provides assessed for that tax year, whole-dollar levy-line amounts appear
+ * below the mills in the footer (annual in Own, monthly per-unit in Rent).
+ * When `priorYearValuesGap` is on and the oldest year has no assessed, the
+ * footer secondary row shows the Prior years missing badge (opt-in per county config).
  */
 
 import { useMemo, useId } from "react";
@@ -19,26 +22,110 @@ import {
   buildAuthorityMillsChartLayout,
 } from "@/lib/authorityMillsChartLayout";
 import type { AuthorityMillsSeriesPoint } from "@/lib/authorityMillsHistory";
-import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "@/content/levyYoYCopy";
+import {
+  AUTHORITY_MILLS_HISTORY_CHART_HEADING,
+} from "@/content/levyYoYCopy";
+import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
+import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { formatTaxYearLabel } from "@/lib/metroLevyYearOverYear";
-import { InfoHintPopover } from "@/components/InfoHintPopover";
+import {
+  assessedForLevyTaxYear,
+  levyLineDisplayDollars,
+  type LevyDollarAssessedContext,
+  type LevyDollarAudience,
+} from "@/lib/levyDollarAssessedContext";
+import { formatUsdWhole } from "@/lib/formatUsd";
+import {
+  showMillsChartFooterLedger,
+  showPriorYearGapOnMillsChartFooter,
+} from "@/lib/authorityMillsChartFooter";
 
 type Props = {
   series: AuthorityMillsSeriesPoint[];
+  assessedContext?: LevyDollarAssessedContext | null;
+  dollarAudience?: LevyDollarAudience;
+  /** Opt-in county config: confirmed no public prior-year assessed (not hardcoded). */
+  priorYearValuesGap?: boolean;
+  /** Resident county for the Sources link (`?county=`). */
+  countyId?: string | null;
+  /** Same sale-history jump as the Assessed value gap badge when true. */
+  hasSaleHistory?: boolean;
+  /** Safe Assessor property-page URL when the account is loaded. */
+  parcelRecordHref?: string | null;
 };
 
-export function AuthorityMillsHistoryChart({ series }: Props) {
+function rentDollarSuffix(rentMode: boolean): string {
+  return rentMode ? "/mo" : "";
+}
+
+function formatChartDollarLine(
+  dollars: number,
+  rentMode: boolean,
+): string {
+  return `${formatUsdWhole(dollars)}${rentDollarSuffix(rentMode)}`;
+}
+
+const CHART_FOOTER_MILLS_CLASS =
+  "text-sm font-semibold tabular-nums text-slate-800 sm:text-[0.9375rem]";
+const CHART_FOOTER_DOLLARS_CLASS =
+  "text-base font-bold tabular-nums leading-none text-slate-900 sm:text-lg";
+/** Ledger rule between mills (always shown) and dollars or gap badge below. */
+const CHART_FOOTER_LEDGER_CLASS = "col-span-2 border-t border-slate-200/90";
+const CHART_FOOTER_SECONDARY_CLASS = "flex min-w-0 items-center pt-1.5";
+
+export function AuthorityMillsHistoryChart({
+  series,
+  assessedContext = null,
+  dollarAudience,
+  priorYearValuesGap = false,
+  countyId = null,
+  hasSaleHistory = false,
+  parcelRecordHref = null,
+}: Props) {
   const headingId = useId();
+  const priorYearGapTriggerId = useId();
   const pointTriggerIdBase = useId().replace(/:/g, "");
   const gradientId = useId().replace(/:/g, "");
   const layout = useMemo(() => buildAuthorityMillsChartLayout(series), [series]);
+  const rentMode = dollarAudience?.rentMode ?? false;
+
+  const dollarsForPoint = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const point of series) {
+      const assessed = assessedForLevyTaxYear(assessedContext, point.taxYear);
+      const dollars = levyLineDisplayDollars(
+        assessed,
+        point.mills,
+        dollarAudience,
+      );
+      if (dollars != null) map.set(point.taxYear, dollars);
+    }
+    return map;
+  }, [series, assessedContext, dollarAudience]);
+
   if (!layout || series.length < 2) return null;
 
   const first = series[0]!;
   const last = series[series.length - 1]!;
   const ariaLabel = authorityMillsChartAriaLabel(series);
   const { width, height } = AUTHORITY_MILLS_CHART_VIEWBOX;
+  const oldestEndpointHasDollars =
+    dollarsForPoint.get(first.taxYear) != null;
+  const newestEndpointHasDollars =
+    dollarsForPoint.get(last.taxYear) != null;
+  const showPriorYearGapFooter = showPriorYearGapOnMillsChartFooter({
+    priorYearValuesGap,
+    oldestEndpointHasDollars,
+    newestEndpointHasDollars,
+    countyId,
+  });
+  const gapCountyId = String(countyId ?? "").trim().toLowerCase();
+  const showFooterLedgerLine = showMillsChartFooterLedger({
+    showPriorYearGap: showPriorYearGapFooter,
+    oldestEndpointHasDollars,
+    newestEndpointHasDollars,
+  });
 
   return (
     <div
@@ -109,7 +196,12 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
         {layout.points.map((point) => {
           const yearLabel = formatTaxYearLabel(point.taxYear);
           const millsLabel = formatCountyLevyMillsDisplay(point.mills);
+          const displayDollars = dollarsForPoint.get(point.taxYear) ?? null;
           const isLatest = point.taxYear === last.taxYear;
+          const ariaParts = [yearLabel, `${millsLabel} mills`];
+          if (displayDollars != null) {
+            ariaParts.push(formatChartDollarLine(displayDollars, rentMode));
+          }
           return (
             <span
               key={point.taxYear}
@@ -122,7 +214,7 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
               <InfoHintPopover
                 textTriggerId={`${pointTriggerIdBase}-${point.taxYear}`}
                 textTriggerClassName="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full"
-                textTriggerAriaLabel={`${yearLabel}, ${millsLabel} mills`}
+                textTriggerAriaLabel={ariaParts.join(", ")}
                 ariaLabel={`${yearLabel} mill rate`}
                 customTrigger={
                   <span
@@ -137,25 +229,60 @@ export function AuthorityMillsHistoryChart({ series }: Props) {
               >
                 <p className="font-semibold text-slate-900">{yearLabel}</p>
                 <p className="mt-0.5 tabular-nums">{millsLabel} mills</p>
+                {displayDollars != null ? (
+                  <p className="mt-0.5 tabular-nums font-semibold text-slate-900">
+                    {formatChartDollarLine(displayDollars, rentMode)}
+                  </p>
+                ) : null}
               </InfoHintPopover>
             </span>
           );
         })}
       </div>
 
-      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm tabular-nums text-slate-800 sm:text-[0.9375rem]">
-        <div className="min-w-0">
-          <dt className="text-xs text-slate-500">{formatTaxYearLabel(first.taxYear)}</dt>
-          <dd className="font-semibold">
-            {formatCountyLevyMillsDisplay(first.mills)} mills
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 tabular-nums">
+        {[first, last].map((point, index) => (
+          <dt
+            key={`year-${point.taxYear}`}
+            className={`text-xs text-slate-500 ${index === 1 ? "text-right" : ""}`}
+          >
+            {formatTaxYearLabel(point.taxYear)}
+          </dt>
+        ))}
+        {[first, last].map((point, index) => (
+          <dd
+            key={`mills-${point.taxYear}`}
+            className={`${CHART_FOOTER_MILLS_CLASS} ${index === 1 ? "text-right" : ""}`}
+          >
+            {formatCountyLevyMillsDisplay(point.mills)} mills
           </dd>
-        </div>
-        <div className="min-w-0 text-right">
-          <dt className="text-xs text-slate-500">{formatTaxYearLabel(last.taxYear)}</dt>
-          <dd className="font-semibold">
-            {formatCountyLevyMillsDisplay(last.mills)} mills
-          </dd>
-        </div>
+        ))}
+        {showFooterLedgerLine ? (
+          <dd aria-hidden="true" className={CHART_FOOTER_LEDGER_CLASS} />
+        ) : null}
+        {[first, last].map((point, index) => {
+          const displayDollars = dollarsForPoint.get(point.taxYear) ?? null;
+          const showGapBadge = index === 0 && showPriorYearGapFooter;
+          return (
+            <dd
+              key={`secondary-${point.taxYear}`}
+              className={`${CHART_FOOTER_SECONDARY_CLASS} ${index === 1 ? "justify-end" : ""}`}
+            >
+              {showGapBadge ? (
+                <CountyPriorYearValuesGapPopover
+                  countyId={gapCountyId}
+                  hasSaleHistory={hasSaleHistory}
+                  parcelRecordHref={parcelRecordHref}
+                  textTriggerId={priorYearGapTriggerId}
+                />
+              ) : displayDollars != null ? (
+                <span className={CHART_FOOTER_DOLLARS_CLASS}>
+                  {formatChartDollarLine(displayDollars, rentMode)}
+                </span>
+              ) : null}
+            </dd>
+          );
+        })}
       </dl>
     </div>
   );

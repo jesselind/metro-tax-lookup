@@ -22,16 +22,15 @@ export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY =
   YOY_THEORETICAL_DOLLAR_POPOVER_BODY_ARAPAHOE;
 
 /**
- * Douglas: history is on each Assessor property details page; we have not yet
- * found a free multi-year bulk table and are still looking. Do not claim the
- * public site lacks history. File names stay on /sources, not in this footnote.
+ * Douglas: valuation history opens from the Assessed value summary tile;
+ * mill YoY dollar lines still use this year's assessed for both years.
  */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_BODY_DOUGLAS =
-  "You can see full valuation history on each property's Assessor property details. We have not yet found a free multi-year bulk table for use here and are still looking into that. These dollar amounts use this year's assessed value for both years.";
+  "Tap Assessed value above for year-by-year history. These dollar amounts next to mill changes still use this year's assessed value for both years.";
 
 /** Lead sentence before an optional property-page link (Douglas). */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LEAD_BEFORE_LINK =
-  "You can see full valuation history on";
+  "Tap Assessed value above for year-by-year history. You can also review values on";
 
 /** Link label when a safe county property-page URL is available. */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LINK_LABEL =
@@ -39,7 +38,7 @@ export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LINK_LABEL =
 
 /** Remainder after the Douglas property-page link (or after a plain “Assessor page”). */
 export const YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_AFTER_LINK =
-  ". We have not yet found a free multi-year bulk table for use here and are still looking into that. These dollar amounts use this year's assessed value for both years.";
+  ". These dollar amounts next to mill changes still use this year's assessed value for both years.";
 
 /** Modal mill-rate history chart heading (Levy % AUTH totals). */
 export const AUTHORITY_MILLS_HISTORY_CHART_HEADING =
@@ -57,6 +56,7 @@ export type YoyTheoreticalDollarPopoverCopy = {
 
 /**
  * County-specific copy for the YoY “today's assessed value” dollar footnote popover.
+ * Shown only when prior-year assessed is unavailable (theoretical mill-only dollars).
  */
 export function yoyTheoreticalDollarPopoverCopy(
   countyId: string | null | undefined,

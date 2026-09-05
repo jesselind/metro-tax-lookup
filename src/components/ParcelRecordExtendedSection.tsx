@@ -18,10 +18,12 @@ import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import {
   COUNTY_CONFIG,
+  countyFeatureAvailable,
   type CountyConfig,
 } from "@/lib/countyConfig";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
+import { VALUATION_HISTORY_PROPERTY_DETAILS_LINK } from "@/content/valuationHistoryCopy";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
@@ -64,6 +66,9 @@ export type ParcelRecordExtendedSectionProps = {
   rentMode?: boolean;
   /** Resolved county for hosted record / clerk links. */
   countyConfig?: CountyConfig;
+  /** When set, show a link that opens the valuation history modal. */
+  onOpenValuationHistory?: () => void;
+  showValuationHistoryLink?: boolean;
 };
 
 /**
@@ -83,6 +88,8 @@ export function ParcelRecordExtendedSection({
   omitContinuationHeading = false,
   rentMode = false,
   countyConfig = COUNTY_CONFIG,
+  onOpenValuationHistory,
+  showValuationHistoryLink = false,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
   const isBusinessPersonal =
@@ -96,9 +103,20 @@ export function ParcelRecordExtendedSection({
   const saleBuildingLandToggleId = useId();
   const saleBuildingLandPanelId = useId();
 
-  if (!shouldShowParcelRecordExtendedSection(loading, loadFailed, record)) {
+  if (
+    !shouldShowParcelRecordExtendedSection(
+      loading,
+      loadFailed,
+      record,
+    )
+  ) {
     return null;
   }
+
+  const valuationHistoryLinkVisible =
+    showValuationHistoryLink &&
+    onOpenValuationHistory != null &&
+    countyFeatureAvailable("valuationHistoryShards", countyConfig);
 
   const saleBuildingLandTables =
     displayRecord != null && !isBusinessPersonal ? (
@@ -204,6 +222,16 @@ export function ParcelRecordExtendedSection({
           ) : null}
         </ParcelRecordReportIdsProvider>
       )}
+      {valuationHistoryLinkVisible ? (
+        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+          <ToolOutlinedToggleButton
+            type="button"
+            onClick={onOpenValuationHistory}
+          >
+            {VALUATION_HISTORY_PROPERTY_DETAILS_LINK}
+          </ToolOutlinedToggleButton>
+        </div>
+      ) : null}
     </section>
   );
 }
