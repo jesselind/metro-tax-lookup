@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.7.0",
+    date: "2026-09-04",
+    title: "/sources methodology content modules (Phase 14)",
+    highlights: [
+      "Arapahoe and Douglas /sources methodology moved out of src/app/sources/page.tsx into src/content/sourcesMethodology/ (per-county modules + single registry entry). page.tsx is the shared shell (intro, SourcesCountyGate wiring, Code).",
+      "One SOURCES_COUNTY_CONTENT_MODULES entry per county: methodologyNav, optional extraNav, Methodology, and AfterGap (function or explicit null). Builders: buildSourcesNavByCountyId, buildSourcesSectionsByCountyId, buildSourcesAfterGapByCountyId. Client gate receives navByCountyId so methodology JSX stays off the client graph.",
+      "Page intro and metadata county list come from formatWiredCountyNamesForSourcesIntro(wiredCountyConfigs()) so county 3 does not require a hand-edited string.",
+      "Unit gate: registry.test.ts (every wired county registered; AfterGap explicit; nav/section/after-gap maps agree). docs/county-config.md includes the /sources county N ritual.",
+    ],
+  },
+  {
     version: "5.6.0",
     date: "2026-09-04",
     title: "Douglas Playwright e2e + prior-year COUNTY DATA GAP (Phase 13)",

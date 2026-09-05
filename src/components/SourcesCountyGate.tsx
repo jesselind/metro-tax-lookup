@@ -14,6 +14,7 @@ import {
   COUNTY_SERVICE_GAP_SOURCES_SECTION_TITLE,
   listCountyServiceGapHubItems,
 } from "@/content/countyServiceGapGuidance";
+import type { SourcesCountyNavFields } from "@/content/sourcesMethodology/types";
 import { DisclosureChevron } from "@/components/DisclosureChevron";
 import {
   ARAPAHOE_COUNTY_CONFIG,
@@ -30,33 +31,6 @@ const SECTION_WRAP =
 const SOURCES_ON_PAGE_NAV_LINK_CLASS =
   "flex h-full w-full cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-center text-sm font-medium leading-snug text-slate-900 no-underline transition hover:border-indigo-400 hover:bg-indigo-50/60 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2";
 
-const METHODOLOGY_NAV_BY_COUNTY_ID: Readonly<
-  Record<string, { href: string; label: string }>
-> = {
-  arapahoe: {
-    href: "#levy-breakdown-tool",
-    label: "Your property tax bill",
-  },
-  douglas: {
-    href: "#douglas-levy-breakdown",
-    label: "Douglas account lookup",
-  },
-};
-
-/** County-specific On this page link after the gap hub (Arapahoe metro; Douglas mill PDFs). */
-const COUNTY_EXTRA_NAV_BY_COUNTY_ID: Readonly<
-  Record<string, { href: string; label: string }>
-> = {
-  arapahoe: {
-    href: "#metro-tool",
-    label: "Metro district tax share",
-  },
-  douglas: {
-    href: "#douglas-mill-history",
-    label: "Mill history",
-  },
-};
-
 type SourcesCountyGateProps = {
   /** Methodology + contextual gap boxes keyed by `CountyConfig.id`. */
   sectionsByCountyId: Readonly<Record<string, ReactNode>>;
@@ -65,6 +39,12 @@ type SourcesCountyGateProps = {
    * share + Related county PDFs). Omitted counties render nothing here.
    */
   afterGapByCountyId?: Readonly<Partial<Record<string, ReactNode>>>;
+  /**
+   * On this page nav keyed by county id. Built on the server from
+   * `buildSourcesNavByCountyId()` so this client component does not import
+   * methodology JSX.
+   */
+  navByCountyId: Readonly<Record<string, SourcesCountyNavFields>>;
   /**
    * Wired county id from `/sources?county=` (page `searchParams`). Invalid or
    * omitted → Arapahoe. Dashboard mid-flow Sources links pass the active county
@@ -78,16 +58,15 @@ type SourcesCountyGateProps = {
  * hub follow the selected wired county. Default Arapahoe unless `initialCountyId`
  * is a wired id (from `?county=`).
  *
- * Pass methodology + contextual gap boxes as `sectionsByCountyId` (keyed by
- * `CountyConfig.id`). Pass Arapahoe-only metro / Related county PDFs as
- * `afterGapByCountyId` so they sit after the gap hub and do not show for
- * Douglas. Prefer extracting shared prose into content modules when adding
- * county 3 — do not fork an entire Arapahoe article “just in case.”
- * Durable model: `docs/county-config.md`.
+ * Pass methodology, after-gap, and nav maps from
+ * `src/content/sourcesMethodology/registry.tsx` builders. When adding county 3,
+ * register **one** entry in that registry — do not fork an Arapahoe article into
+ * `src/app/sources/page.tsx`. Durable model: `docs/county-config.md`.
  */
 export function SourcesCountyGate({
   sectionsByCountyId,
   afterGapByCountyId,
+  navByCountyId,
   initialCountyId = null,
 }: SourcesCountyGateProps) {
   const counties = wiredCountyConfigs();
@@ -105,10 +84,15 @@ export function SourcesCountyGate({
     countyConfigById(countyId) ??
     counties[0] ??
     ARAPAHOE_COUNTY_CONFIG;
-  const methodologyNav =
-    METHODOLOGY_NAV_BY_COUNTY_ID[config.id] ??
-    METHODOLOGY_NAV_BY_COUNTY_ID.arapahoe!;
-  const countyExtraNav = COUNTY_EXTRA_NAV_BY_COUNTY_ID[config.id] ?? null;
+  const navFields =
+    navByCountyId[config.id] ??
+    navByCountyId[ARAPAHOE_COUNTY_CONFIG.id] ??
+    null;
+  const methodologyNav = navFields?.methodologyNav ?? {
+    href: "#levy-breakdown-tool",
+    label: "Your property tax bill",
+  };
+  const countyExtraNav = navFields?.extraNav ?? null;
   const gapHubItems = listCountyServiceGapHubItems(config);
   const countySection = sectionsByCountyId[config.id] ?? null;
   const afterGapSection = afterGapByCountyId?.[config.id] ?? null;

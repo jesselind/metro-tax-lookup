@@ -141,14 +141,22 @@ When **two or more** counties are wired, search surfaces show which county match
 
 Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” article for each new county and hoping gaps match.
 
-**Target shape:**
+**Target shape (shipped Phase 14 / 5.7.0):**
 
 1. **Config** — identifiers, URLs, `features`, `knownFailures` (Layer 1–2).
-2. **Content modules** — per-incident gap notes and per-county methodology blocks under `src/content/` (or a small registry keyed by `countyId`), not a second copy of `src/app/sources/page.tsx`.
-3. **Shared shell** — selector, hub builder, COUNTY DATA GAP chrome, shared Colorado sections.
+2. **Content modules** — per-incident gap notes and per-county methodology under `src/content/sourcesMethodology/`. **One** registry entry per county in `registry.tsx` (`countyId`, nav, `Methodology`, `AfterGap` function or explicit `null`). Client-safe types in `types.ts`. Page intro county list from `formatWiredCountyNamesForSourcesIntro(wiredCountyConfigs())`.
+3. **Shared shell** — `SourcesCountyGate` (selector, On this page from `navByCountyId`, hub builder), COUNTY DATA GAP chrome, shared Code section on the page.
 4. **Data** — `{countyId}-*` JSON; Layer 3 omit/show from actual values.
 
-**Current code:** Arapahoe and Douglas methodology still live as two large sections passed into `SourcesCountyGate` via `sectionsByCountyId`. That is a **transitional layout**, not the multi-county content model. When adding county 3, extract shared prose and register a county content module; do not fork the whole Arapahoe section “just in case” it has the same gaps (it will not).
+### `/sources` county N ritual (Phase 14+)
+
+1. Add `{countyId}SourcesMethodology.tsx` (honest methodology + contextual gap boxes for that county only).
+2. Optional: `{countyId}SourcesAfterGap.tsx` if the county needs a section **after** the gap hub (Arapahoe metro / Related PDFs pattern).
+3. Register **one** object in `SOURCES_COUNTY_CONTENT_MODULES` (`registry.tsx`): `methodologyNav`, optional `extraNav`, `Methodology`, and `AfterGap` (`null` if none).
+4. Confirm `registry.test.ts` still passes (every wired county has a module; AfterGap explicit).
+5. Do **not** edit `page.tsx` for methodology prose (intro names update automatically from `wiredCountyConfigs()`).
+
+Unit gate: `src/content/sourcesMethodology/registry.test.ts`.
 
 **Cross-county authorities:** shared districts use different per-county AUTH codes. Wired county list: `tools/wired-counties.json` (must match `CountyConfig`). Runtime map: `public/data/cross-county-authority-registry.json`. Maintainer discovery: `docs/cross-county-authorities.md`. **Resident-county gating:** registry joins identity; levy tile current mills, rate-table links, and tax-list labels use the **resident** county. Douglas mill history is `{countyId}-authority-mills-by-tax-year.json` from Tax Districts and Mill Levies PDFs (`millsHistory: true`). `/sources` (Douglas mill history; Arapahoe Related county PDFs) lists those first-party year PDFs. Counties without a mills bundle still use registry-linked **Changed / YoY numbers** from resident stack mills plus entity reference prior year when they reconcile (no blind AUTH-code lookup in another county's mills file).
 
@@ -159,7 +167,7 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 3. **JSON** — `{countyId}-*` under `public/data/` (committed for live counties).
 4. **UI** — confirm dashboard gates use active county config; no Arapahoe-only callouts with flags off. Search gate / prefetch respects selected county → adjacent → “I don’t know.”
 5. **Gaps** — only after a county-true story: copy module + both surfaces + hub item + flag on for that county only.
-6. **`/sources`** — county content module + selector entry; hub follows flags. Do not paste another county’s Data Mart / prior-year / comps story.
+6. **`/sources`** — one registry entry in `src/content/sourcesMethodology/registry.tsx` + methodology module; hub follows flags. Do not paste another county’s Data Mart / prior-year / comps story. See **`/sources` county N ritual** above.
 7. **Ship** — commit production JSON; drop local-only gitignore lines for that county’s app files.
 
 ## Anti-patterns to avoid
@@ -199,7 +207,8 @@ Shipping filenames stay **`{countyId}-*`** under `public/data/` (for example `ar
 | Config tests / hub list tests | `src/lib/countyConfig.test.ts` |
 | Gap hub builder + anchors | `src/content/countyServiceGapGuidance.ts` |
 | `/sources` selector | `src/components/SourcesCountyGate.tsx` (`initialCountyId`); `src/lib/sourcesPageHref.ts` |
-| `/sources` page | `src/app/sources/page.tsx` |
+| `/sources` page shell | `src/app/sources/page.tsx` (intro, gate wiring, Code) |
+| `/sources` methodology modules | `src/content/sourcesMethodology/` (`registry.tsx`, `types.ts`, per-county `*SourcesMethodology.tsx`) |
 | Dashboard gates | `src/components/HomeParcelAddressLookup.tsx` |
 | Data paths | `src/lib/countyDataPaths.ts` |
 | App JSON loaders | `src/lib/countyParcelLevyData.ts`, `src/lib/situsIndexLookup.ts` |
