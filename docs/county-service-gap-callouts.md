@@ -57,6 +57,8 @@ Use **`InlineErrorCallout`** (same family of red chrome, `role="alert"`) for **t
 
 County gap = external failure, informational (`role="note"`). App error = our failure, interrupt when appropriate.
 
+**IN PROGRESS (separate chrome):** When we are still working to obtain or ship data and have **not** confirmed a county failure, use sky **IN PROGRESS** surfaces (`InProgressCallout`, `InProgressBadge`, `InfoHintPopover` `variant="in-progress"`; tokens in `toolFlowStyles`). Title is **IN PROGRESS**, not COUNTY DATA GAP. Do not put IN PROGRESS items in the `#county-service-gaps` hub. Example: Douglas `priorYearValuesInProgress`.
+
 **Omit vs gap:** `countyFeaturePresentation` in `src/lib/countyConfig.ts`. No source (`features.*` false) → omit the control. Source exists but county hosting failed (`knownFailures`, e.g. comps PDFs) → COUNTY DATA GAP on both dashboard and `/sources`.
 
 ## UI pattern (locked)
@@ -105,7 +107,8 @@ Tone aligns with `.cursor/rules/base-rule.mdc` (educational, bill-centered, midd
 | --- | --- | --- | --- | --- |
 | Aug 17 2026 Data Mart download incomplete | `countyDataMartRefreshNote.tsx` | `features.dataMartRefreshGap` (Arapahoe) | Property details (compact, after "County data current as of …") | #county-data-mart-gap → under **How current is the data?** |
 | County comps PDF hosting limited | `countyCompsPdfGapNote.tsx`, `countyCompsPdfGuidance.ts` | `features.compsPdf` + `knownFailures.compsPdfHostedFiles` | **Comparable properties** summary tile + popover (`#home-parcel-comps-pdf`). If `features.compsPdf` is false, omit the tile (no gap). | #county-comps-pdf-gap → under **Comparable properties** |
-| No official bulk prior-year assessed | `countyPriorYearValuesGapNote.tsx` (county-keyed Arapahoe / Douglas copy) | `features.priorYearValuesGap` (Arapahoe + Douglas) | Red **Prior years missing** badge on **Assessed value** when the flag is on | #county-prior-year-values-gap → Arapahoe **Property details methodology**; Douglas **Property details** |
+| No official bulk prior-year assessed | `countyPriorYearValuesGapNote.tsx` (county-keyed) | `features.priorYearValuesGap` (**Arapahoe** on; Douglas uses IN PROGRESS instead) | Red **Prior years missing** badge on **Assessed value** when the flag is on | #county-prior-year-values-gap → Arapahoe **Property details methodology** |
+| Douglas prior-year assessed (still working) | `countyPriorYearValuesInProgressNote.tsx` | `features.priorYearValuesInProgress` (Douglas) | Sky **Coming soon** badge on **Assessed value** (IN PROGRESS chrome, not COUNTY DATA GAP) | #county-prior-year-values-in-progress → Douglas **Property details** (sky callout; not the gap hub) |
 | Douglas mill PDF missing some tax district numbers | `douglasCountyDataGapNote.tsx` (`DouglasMillPdfTaxDistrictGapNote`) | `features.millPdfTaxDistrictGap` (Douglas) | (lookup failure message when TAG absent; hub explains ~0.9% accounts) | #douglas-mill-pdf-tax-district-gap → **Douglas account lookup** (Levy stacks) |
 
 Comps uses the **summary tile variant** (same header + surface, tile popover interaction). Do not use `CountyServiceGapCallout` inside the tile grid cell. Gap summary tiles (`COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS`) are full width of the summary column at every viewport.

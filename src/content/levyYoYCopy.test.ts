@@ -31,9 +31,11 @@ describe("yoyTheoreticalDollarPopoverCopy", () => {
     expect(copy.kind).toBe("douglas");
     expect(copy.plainBody).toBe(YOY_THEORETICAL_DOLLAR_POPOVER_BODY_DOUGLAS);
     expect(copy.plainBody).toMatch(/full valuation history/i);
-    expect(copy.plainBody).toMatch(/bulk download/i);
+    expect(copy.plainBody).toMatch(/still looking/i);
+    expect(copy.plainBody).toMatch(/bulk table/i);
     expect(copy.plainBody).not.toMatch(/Property_Values\.txt/i);
     expect(copy.plainBody).not.toMatch(/\$50/i);
+    expect(copy.plainBody).not.toMatch(/does not appear to be available/i);
     expect(copy.plainBody).not.toMatch(
       /no historical information available on the public website/i,
     );

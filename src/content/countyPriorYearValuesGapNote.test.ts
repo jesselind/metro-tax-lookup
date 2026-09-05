@@ -24,7 +24,7 @@ describe("countyPriorYearValuesGap copy", () => {
     );
   });
 
-  it("Douglas dashboard lead points to the property page, not file names or fees", () => {
+  it("Douglas dashboard lead points to the property page and still-looking bulk tone", () => {
     expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS).toMatch(
       /prior-year assessed values/i,
     );
@@ -32,12 +32,15 @@ describe("countyPriorYearValuesGap copy", () => {
       /property details/i,
     );
     expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS).toMatch(
-      /bulk download/i,
+      /still looking/i,
     );
     expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS).not.toMatch(
       /Property_Values\.txt/i,
     );
     expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS).not.toMatch(/\$50/i);
+    expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS).not.toMatch(
+      /does not appear to be available/i,
+    );
     expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS).not.toMatch(
       /no historical information available on the public website/i,
     );
@@ -46,19 +49,23 @@ describe("countyPriorYearValuesGap copy", () => {
     );
   });
 
-  it("Douglas custom-report URL stays available for /sources methodology", () => {
+  it("Douglas custom-report URL stays available for last-resort cite", () => {
     expect(DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL).toBe(
       "https://www.douglasco.gov/assessor/real-estate-data-center/#:~:text=Assessor%20Custom%20Reports",
     );
   });
 
-  it("builds a Douglas Assessor property-page href for the gap popover link", () => {
+  it("builds a Douglas Assessor property-page href; prior-year gap chrome is off", () => {
     expect(
       safeCountyParcelRecordUrl(SYNTHETIC_DOUGLAS_PIN, DOUGLAS_COUNTY_CONFIG),
     ).toBe(
       `https://apps.douglas.co.us/assessor/web/#/details/2026/${SYNTHETIC_DOUGLAS_PIN}`,
     );
-    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
+      false,
+    );
   });
 });

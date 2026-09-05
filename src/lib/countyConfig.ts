@@ -83,8 +83,15 @@ export type CountyFeatures = {
    * COUNTY DATA GAP opt-in: Prior years missing badge + /sources prior-year note.
    * False: omit (do not reuse another county's story). Copy is county-keyed in
    * `countyPriorYearValuesGapNote.tsx` (Arapahoe vs Douglas differ).
+   * Mutually exclusive with {@link CountyFeatures.priorYearValuesInProgress}.
    */
   priorYearValuesGap: boolean;
+  /**
+   * IN PROGRESS opt-in: sky **Coming soon** badge + /sources soft note while we
+   * are still tracking down bulk prior-year assessed values (not a confirmed
+   * COUNTY DATA GAP). Mutually exclusive with priorYearValuesGap.
+   */
+  priorYearValuesInProgress: boolean;
   /**
    * COUNTY DATA GAP opt-in: Assessor Data Mart incomplete-refresh callout.
    * Arapahoe-only today; false for counties that do not use that mart export.
@@ -231,6 +238,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     millsHistory: true,
     metroPurposes: true,
     priorYearValuesGap: true,
+    priorYearValuesInProgress: false,
     dataMartRefreshGap: true,
     millPdfTaxDistrictGap: false,
   },
@@ -283,7 +291,10 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     bpp: false,
     millsHistory: true,
     metroPurposes: false,
-    priorYearValuesGap: true,
+    // Gap off / in-progress on while we verify bulk valuation history the
+    // assessor said exists. Not a confirmed COUNTY DATA GAP yet.
+    priorYearValuesGap: false,
+    priorYearValuesInProgress: true,
     dataMartRefreshGap: false,
     millPdfTaxDistrictGap: true,
   },
@@ -479,6 +490,12 @@ export function validateCountyConfig(config: CountyConfig): string | null {
   }
   if (config.knownFailures.compsPdfHostedFiles && !config.features.compsPdf) {
     return "county config: compsPdfHostedFiles failure requires features.compsPdf";
+  }
+  if (
+    config.features.priorYearValuesGap &&
+    config.features.priorYearValuesInProgress
+  ) {
+    return "county config: priorYearValuesGap and priorYearValuesInProgress are mutually exclusive";
   }
   if (!isNonEmptyString(config.countyScopeNote)) {
     return "county config: countyScopeNote required";

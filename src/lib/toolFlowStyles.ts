@@ -109,6 +109,34 @@ export const COUNTY_EXTERNAL_LINK_CLASS =
   `cursor-pointer font-medium ${TOOL_LINK_TRIGGER_AFFORDANCE_CLASS} focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-1`;
 
 /**
+ * Thin sky border + light sky fill for IN PROGRESS surfaces (in-flow callouts
+ * and {@link InfoHintPopover} `variant="in-progress"`). Not a COUNTY DATA GAP
+ * (red) and not an app error ({@link InlineErrorCallout}).
+ */
+export const IN_PROGRESS_SURFACE_TONE_CLASS =
+  "border border-sky-300 bg-sky-50 text-sky-950";
+
+/**
+ * In-flow callout when we are still working to ship data (not a confirmed
+ * county failure). Same radius/shadow recipe as county-gap callouts.
+ */
+export const IN_PROGRESS_CALLOUT_SURFACE_CLASS = `${RADIUS_SURFACE_CLASS} ${IN_PROGRESS_SURFACE_TONE_CLASS} shadow-sm`;
+
+/** In-flow links inside {@link IN_PROGRESS_CALLOUT_SURFACE_CLASS}. */
+export const IN_PROGRESS_LINK_CLASS =
+  "cursor-pointer font-medium text-sky-900 underline decoration-sky-700 decoration-2 underline-offset-2 leading-snug hover:text-sky-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/40 focus-visible:ring-offset-2";
+
+/** Space from the IN PROGRESS header to the body copy below it. */
+export const IN_PROGRESS_HEADER_TO_BODY_GAP_CLASS = "gap-1.5";
+
+/** Header + body column for IN PROGRESS callouts and popovers. */
+export const IN_PROGRESS_STACK_CLASS = `flex flex-col ${IN_PROGRESS_HEADER_TO_BODY_GAP_CLASS}`;
+
+/** Sky IN PROGRESS badge (e.g. Assessed value). Light fill + dark text, same recipe as Changed. */
+export const IN_PROGRESS_BADGE_TONE_CLASS =
+  "border-sky-950 bg-sky-200 text-sky-950";
+
+/**
  * Thin red border + light red fill for COUNTY DATA GAP surfaces (in-flow callouts
  * and {@link InfoHintPopover} `variant="county-data-gap"`). Not for app or user
  * input errors ({@link InlineErrorCallout}).

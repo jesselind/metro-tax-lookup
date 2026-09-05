@@ -10,8 +10,9 @@ export const DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL =
   "https://www.douglasco.gov/assessor/data-downloads/";
 
 /**
- * Real Estate Data Center — Assessor Custom Reports heading (text fragment).
- * $50/hr, 1hr minimum when other sources do not meet requirements.
+ * Real Estate Data Center page (kept for last-resort Custom Reports cite if
+ * free bulk history cannot be located). Not linked from resident gap copy while
+ * that search is open.
  * https://www.douglasco.gov/assessor/real-estate-data-center/
  */
 export const DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL =

@@ -49,6 +49,7 @@ import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
+import { CountyPriorYearValuesInProgressPopover } from "@/components/CountyPriorYearValuesInProgressPopover";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { sourcesPageHref } from "@/lib/sourcesPageHref";
@@ -391,6 +392,10 @@ export function HomeParcelAddressLookup({
   const activeCompsGap = activeCompsPresentation === "gap";
   const activePriorYearValuesGap = countyFeatureAvailable(
     "priorYearValuesGap",
+    activeCountyConfig,
+  );
+  const activePriorYearValuesInProgress = countyFeatureAvailable(
+    "priorYearValuesInProgress",
     activeCountyConfig,
   );
   const activeDataMartRefreshGap = countyFeatureAvailable(
@@ -2363,6 +2368,18 @@ export function HomeParcelAddressLookup({
                         </p>
                         {activePriorYearValuesGap ? (
                           <CountyPriorYearValuesGapPopover
+                            countyId={activeCountyConfig.id}
+                            parcelRecordHref={safeCountyParcelRecordUrl(
+                              levyLoadedMeta.pin,
+                              activeCountyConfig,
+                            )}
+                            hasSaleHistory={
+                              !isBusinessPersonalAccount && parcelRecord != null
+                            }
+                          />
+                        ) : null}
+                        {activePriorYearValuesInProgress ? (
+                          <CountyPriorYearValuesInProgressPopover
                             countyId={activeCountyConfig.id}
                             parcelRecordHref={safeCountyParcelRecordUrl(
                               levyLoadedMeta.pin,
