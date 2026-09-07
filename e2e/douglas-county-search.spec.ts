@@ -88,6 +88,23 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
   });
 
+  test("Douglas with a matching metro LG ID omits Arapahoe purpose-row chrome", async ({
+    page,
+  }) => {
+    await installSyntheticCountyData(page, {
+      countyId: "douglas",
+      includeMetro: true,
+    });
+    await page.goto("/");
+    await page.getByRole("radio", { name: "Douglas" }).click();
+    await searchSyntheticAddress(page);
+
+    await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Metro district share" }),
+    ).toHaveCount(0);
+  });
+
   test("adjacent auto-try loads Douglas after Arapahoe miss", async ({
     page,
   }) => {

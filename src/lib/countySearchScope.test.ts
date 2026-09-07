@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ARAPAHOE_COUNTY_CONFIG,
+  COUNTY_CONFIG_BY_ID,
   DOUGLAS_COUNTY_CONFIG,
   validateCountyConfig,
   validateWiredCountyAdjacency,
@@ -59,7 +60,7 @@ describe("county search scope", () => {
     expect(DOUGLAS_COUNTY_CONFIG.adjacentCountyIds).toEqual(["arapahoe"]);
     expect(adjacentWiredCountyIds("arapahoe")).toEqual(["douglas"]);
     expect(adjacentSitusCountyIds("douglas")).toEqual(["arapahoe"]);
-    expect(validateWiredCountyAdjacency()).toBeNull();
+    expect(validateWiredCountyAdjacency(COUNTY_CONFIG_BY_ID)).toBeNull();
   });
 
   it("rejects self-adjacent config", () => {

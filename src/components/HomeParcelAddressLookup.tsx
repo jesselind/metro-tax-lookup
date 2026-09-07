@@ -115,7 +115,7 @@ import {
   isBusinessPersonalPropertyAccount,
   situsShouldOfferAccountTypeSwitch,
 } from "@/lib/situsMultiPinChooser";
-import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
+import { metroFromLevyLines, shouldShowMetroPurposesSection } from "@/lib/metroDistrictFromLevyLines";
 import {
   COUNTY_MILLS_YOY_EPS,
   METRO_LEVY_RATE_YOY_EPS,
@@ -805,7 +805,10 @@ export function HomeParcelAddressLookup({
     () => metroFromLevyLines(levyLines),
     [levyLines],
   );
-  const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
+  const showHomeMetroSection = shouldShowMetroPurposesSection(
+    activeCountyConfig,
+    homeMetroFromLevyStack,
+  );
 
   const millLevyTotalDelta = useMemo(() => {
     const delta = levyStackTotalMillsDelta(
@@ -1481,6 +1484,7 @@ export function HomeParcelAddressLookup({
   const levyBreakdownMain = showHomeMetroSection ? (
     <MetroTaxShareFlow
       idPrefix="home-metro"
+      countyConfig={activeCountyConfig}
       prefillTotalMills={metroPrefillTotalMills}
       metroFromLevyStack={homeMetroFromLevyStack}
       rentMode={isRentMode}

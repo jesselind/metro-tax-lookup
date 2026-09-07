@@ -4,6 +4,10 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
+import {
+  countyFeatureAvailable,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 import type { LevyDataFile, LevyDistrictFromJson } from "@/lib/levyTypes";
 import levyData from "@/data/metroLevies";
 
@@ -88,4 +92,21 @@ export function metroFromLevyLines(
   const districtIds = findMetroDistrictIdsFromCommittedLines(levyLines);
   if (districtIds.length > 0) return { kind: "match", districtIds };
   return { kind: "no_metro_lgid_match" };
+}
+
+/**
+ * Whether the home metro purpose-breakdown section should mount.
+ *
+ * Requires the resident county's `features.metroPurposes` flag **and** a levy-stack
+ * LG ID match into the bundled metro purpose JSON. A shared metro LG ID alone is not
+ * enough: counties without purpose-row data must not show another county's breakdown.
+ */
+export function shouldShowMetroPurposesSection(
+  config: CountyConfig,
+  metroFromStack: MetroFromLevyStack | undefined,
+): boolean {
+  return (
+    countyFeatureAvailable("metroPurposes", config) &&
+    metroFromStack?.kind === "match"
+  );
 }

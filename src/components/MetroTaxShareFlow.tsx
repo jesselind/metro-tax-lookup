@@ -21,14 +21,14 @@ import {
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { monthlyFromAnnualTax } from "@/lib/resolveDwellingCount";
 import levyData from "@/data/metroLevies";
-import { countyFeatureAvailable } from "@/lib/countyConfig";
+import {
+  countyFeatureAvailable,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 import { MetroDistrictInfoDetails } from "@/components/MetroDistrictInfoDetails";
 import { LevyLinesCard } from "@/components/LevyLinesCard";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
-import {
-  ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB as ASSESSOR_MILL_LEVIES_HUB_URL,
-  ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF as MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL,
-} from "@/lib/arapahoeCountyUrls";
+import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
@@ -129,6 +129,11 @@ function formatDistrictNamesList(names: string[]): string {
 
 export type MetroTaxShareFlowProps = {
   idPrefix?: string;
+  /**
+   * Resolved resident county. Gates purpose-row loading and cite URLs via
+   * `features.metroPurposes` / `residentLinks` (no Arapahoe default inside this tree).
+   */
+  countyConfig: CountyConfig;
   /** Sum of mills from the levy stack (home page); drives all metro share math. */
   prefillTotalMills?: number | null;
   metroFromLevyStack?: MetroFromLevyStack;
@@ -152,6 +157,7 @@ export type MetroTaxShareFlowProps = {
 
 export function MetroTaxShareFlow({
   idPrefix = "",
+  countyConfig,
   prefillTotalMills = null,
   metroFromLevyStack,
   totalAssessedForEstimate = null,
@@ -161,6 +167,18 @@ export function MetroTaxShareFlow({
 }: MetroTaxShareFlowProps) {
   const p = idPrefix ? `${idPrefix}-` : "";
 
+  /**
+   * Defense in depth: if mounted without `metroPurposes`, pass children through and
+   * omit purpose chrome (home should already gate with `shouldShowMetroPurposesSection`).
+   */
+  const metroPurposesOn = countyFeatureAvailable("metroPurposes", countyConfig);
+  const publicInfoFormHref = safeHttpOrHttpsUrl(
+    countyConfig.residentLinks.millLevyPublicInfoForm,
+  );
+  const millLeviesHubHref = safeHttpOrHttpsUrl(
+    countyConfig.residentLinks.millLeviesHub,
+  );
+
   const metroBreakdownPanelId = `${p}metro-breakdown-panel`;
   /** Disclosure target for the Check the math table and levy-line cards (WCAG: aria-controls). */
   const metroCheckMathPanelId = `${p}metro-check-math-panel`;
@@ -169,7 +187,7 @@ export function MetroTaxShareFlow({
   const checkMathSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!showCheckMath) return;
+    if (!showCheckMath || !metroPurposesOn) return;
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -177,7 +195,7 @@ export function MetroTaxShareFlow({
       behavior: reduceMotion ? "auto" : "smooth",
       block: "start",
     });
-  }, [showCheckMath]);
+  }, [showCheckMath, metroPurposesOn]);
 
   const levyJson = levyData as LevyDataFile;
   const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
@@ -230,7 +248,7 @@ export function MetroTaxShareFlow({
       const fullDistrict = levyJson.districts.find(
         (d) => d.districtId === districtId,
       );
-      const metroLevies = countyFeatureAvailable("metroPurposes")
+      const metroLevies = metroPurposesOn
         ? (fullDistrict?.levies ?? [])
         : [];
       const metroDebtLevies = metroLevies.filter(
@@ -294,7 +312,7 @@ export function MetroTaxShareFlow({
         pickerDebtMatchesAggregate,
       };
     });
-  }, [activeDistrictIds, metroOptions, levyJson.districts]);
+  }, [activeDistrictIds, metroOptions, levyJson.districts, metroPurposesOn]);
 
   const totalDistrictMillsCombined = useMemo(
     () =>
@@ -349,7 +367,8 @@ export function MetroTaxShareFlow({
     totalDistrictMillsCombined,
   );
 
-  const showResultCard = totalMills > 0 && activeDistrictIds.length > 0;
+  const showResultCard =
+    metroPurposesOn && totalMills > 0 && activeDistrictIds.length > 0;
 
   const otherMillsForStack =
     totalMills > 0
@@ -1090,15 +1109,19 @@ export function MetroTaxShareFlow({
                         </div>
                       </div>
                       <p className="text-[0.7rem] text-slate-500 sm:text-xs">
-                        Based on Arapahoe County&apos;s{" "}
-                        <a
-                          href={MILL_LEVY_PUBLIC_INFO_FORM_PDF_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={COUNTY_EXTERNAL_LINK_CLASS}
-                        >
-                          Mill Levy Public Information Form<span className="sr-only"> (opens in a new tab)</span>
-                        </a>{" "}
+                        Based on {countyConfig.displayName}&apos;s{" "}
+                        {publicInfoFormHref ? (
+                          <a
+                            href={publicInfoFormHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={COUNTY_EXTERNAL_LINK_CLASS}
+                          >
+                            Mill Levy Public Information Form<span className="sr-only"> (opens in a new tab)</span>
+                          </a>
+                        ) : (
+                          "Mill Levy Public Information Form"
+                        )}{" "}
                         (PDF) for budget year {levyJson.year}
                         {bundledAsOfLabel && bundledAsOfIso ? (
                           <>
@@ -1112,18 +1135,26 @@ export function MetroTaxShareFlow({
                         {levyJson.source?.title
                           ? `Full citation: ${levyJson.source.title}. `
                           : null}
-                        More levy PDFs:{" "}
-                        <a
-                          href={ASSESSOR_MILL_LEVIES_HUB_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={COUNTY_EXTERNAL_LINK_CLASS}
-                        >
-                          Assessor Mill Levies and Tax Districts<span className="sr-only"> (opens in a new tab)</span>
-                        </a>.
+                        {millLeviesHubHref ? (
+                          <>
+                            More levy PDFs:{" "}
+                            <a
+                              href={millLeviesHubHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={COUNTY_EXTERNAL_LINK_CLASS}
+                            >
+                              Assessor Mill Levies and Tax Districts<span className="sr-only"> (opens in a new tab)</span>
+                            </a>.
+                          </>
+                        ) : null}
                       </p>
                     </div>
     ) : null;
+
+  if (!metroPurposesOn) {
+    return <>{children}</>;
+  }
 
   return (
     <>

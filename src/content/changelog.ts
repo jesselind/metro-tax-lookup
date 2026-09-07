@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.11.0",
+    date: "2026-09-07",
+    title: "County-resolved metro purposes gate + countyConfig package split",
+    highlights: [
+      "Home metro purpose-row breakdown mounts only when the resolved county has features.metroPurposes and the levy stack matches a metro LG ID (shouldShowMetroPurposesSection). A shared metro LG ID alone must not show another county's purpose JSON (Douglas stays off until it ships purpose rows).",
+      "MetroTaxShareFlow requires countyConfig; cite URLs come from residentLinks.millLevyPublicInfoForm / millLeviesHub when metroPurposes is on (validated). Defense in depth: without the flag, children pass through with no purpose chrome.",
+      "Split src/lib/countyConfig.ts into src/lib/countyConfig/ (one data file per county: arapahoe.ts, douglas.ts; shared types/validate/helpers/naming/registry). Import path stays @/lib/countyConfig. Disk ↔ registry contract: packageContract.test.ts.",
+      "Docs: docs/county-config.md metroPurposes row + package map; src/lib/countyConfig/README.md; root README. Unit: metroDistrictFromLevyLines.test.ts. e2e: Douglas with a matching metro LG ID must not show the Metro district share region.",
+    ],
+  },
+  {
     version: "5.10.0",
     date: "2026-09-07",
     title: "Douglas West Metro Fire AUTH 4402 DOLA join (Phase 16)",

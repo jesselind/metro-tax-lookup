@@ -38,7 +38,7 @@ County stack labels alone are not a durable join (truncation, abbreviations, dup
 
 ## Wired county manifest
 
-`tools/wired-counties.json` lists counties included in cross-county tooling and must stay aligned with `src/lib/countyConfig.ts` (`wiredCounties.test.ts` enforces this).
+`tools/wired-counties.json` lists counties included in cross-county tooling and must stay aligned with `src/lib/countyConfig/` (`COUNTY_CONFIG_BY_ID` in `registry.ts`; `wiredCounties.test.ts` enforces this).
 
 When adding county 3:
 
