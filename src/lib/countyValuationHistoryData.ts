@@ -45,8 +45,8 @@ export type CountyValuationHistoryByAccountFile = {
 
 const VALUATION_HISTORY_SHARD_FETCH_TIMEOUT_MS = 30_000;
 
-/** Bump when regenerating valuation-history shards with a schema change. */
-export const COUNTY_VALUATION_HISTORY_CACHE_BUST = "20260904phase15";
+/** Bump when regenerating valuation-history shards (schema or full-county re-ship). */
+export const COUNTY_VALUATION_HISTORY_CACHE_BUST = "20260906fullship";
 
 const valuationHistoryShardCache = new Map<
   string,

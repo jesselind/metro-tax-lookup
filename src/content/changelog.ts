@@ -28,10 +28,10 @@ export type ChangelogEntry = {
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
     version: "5.9.0",
-    date: "2026-09-05",
+    date: "2026-09-06",
     title: "Douglas valuation history + levy per-year dollars (Phase 15)",
     highlights: [
-      "Douglas valuation history from build-time Realware detail JSON retain (not live fetch): tools/fetch_douglas_realware_detail.py, tools/extract_douglas_valuation_history.py, stamp tools/douglas-realware-detail-stamp.txt, ship npm run build:douglas-valuation-history:ship to public/data/douglas-valuation-history-by-account/. Optional --validate-meta-count compares extracted accounts to meta totalAccountsProcessed (full retain ritual).",
+      "Douglas valuation history from build-time Realware detail JSON retain (not live fetch): tools/fetch_douglas_realware_detail.py, tools/extract_douglas_valuation_history.py, stamp tools/douglas-realware-detail-stamp.txt, ship npm run build:douglas-valuation-history:ship to public/data/douglas-valuation-history-by-account/. Full-county ship: ~169k accounts / thousands of shards (not the early spot-check tree). Optional --validate-meta-count compares extracted accounts to meta totalAccountsProcessed; count deltas warn when retain has missing/unparseable files. Bump COUNTY_VALUATION_HISTORY_CACHE_BUST on re-ship.",
       "Assessed value and Actual value summary tiles open ValuationHistoryDialog (YoY box, tax-impact line, SVG chart, collapsible table). Property details: View valuation history link only. Douglas priorYearValuesInProgress off; valuationHistoryShards on.",
       "resolveParcelSummaryYears: Douglas Assessment year / Tax year summary tiles use hashPath maintainer stamp (SPA path year), levy-stack snapshot tax year, and Realware valuation-history latest taxYear for outbound property-page links when loaded. Arapahoe unchanged (mart columns on pin-to-tag). Douglas /sources documents year provenance.",
       "levyDollarAssessedContext: per-year assessed from valuation-history shards plus loaded parcel current year. Levy YoY dollars use per-year assessed when history has the prior tax year; theoretical plus today's assessed footnote when not (Arapahoe).",
