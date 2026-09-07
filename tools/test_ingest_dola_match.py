@@ -227,6 +227,66 @@ class LoadCsvTests(unittest.TestCase):
         names = {e["legalName"] for e in entities}
         self.assertIn("South Metro Fire Rescue Fire Protection District", names)
         self.assertIn("Regional Transportation District", names)
+        self.assertIn("West Metro Fire Protection District", names)
+        # Phase 11b ship had dolaRowCount 24 (thin filter); West Metro missing → fuzzy → SMFR.
+        self.assertGreaterEqual(len(entities), 300)
+
+
+class WestMetroFireOverrideTests(unittest.TestCase):
+    """Phase 16: Douglas AUTH 4402 must not join to SMFR TE 64108/1."""
+
+    def test_override_pins_west_metro_te_not_smfr(self) -> None:
+        self.assertTrue(DEFAULT_DOLA_CSV.is_file(), str(DEFAULT_DOLA_CSV))
+        self.assertTrue(DEFAULT_OVERRIDES.is_file(), str(DEFAULT_OVERRIDES))
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Douglas")
+        self.assertTrue(filtered)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        self.assertIn("64243/1", by_te)
+        self.assertIn("64108/1", by_te)
+        overrides = load_overrides(DEFAULT_OVERRIDES)
+        self.assertEqual(
+            overrides.get("WEST METRO FIRE PROTECTION DISTRICT", {}).get("taxEntityId"),
+            "64243/1",
+        )
+        result = dola_match_for_mart_line(
+            "4402",
+            "WEST METRO FIRE PROTECTION DISTRICT",
+            entities=entities,
+            overrides=overrides,
+            entities_by_te_id=by_te,
+        )
+        self.assertEqual(result["method"], "override")
+        self.assertEqual(result["taxEntityId"], "64243/1")
+        self.assertEqual(result["lgId"], "64243")
+        self.assertEqual(
+            result["matchedLegalName"],
+            "West Metro Fire Protection District",
+        )
+        self.assertNotEqual(result["taxEntityId"], "64108/1")
+
+    def test_smfr_auth_4014_still_joins_64108(self) -> None:
+        self.assertTrue(DEFAULT_DOLA_CSV.is_file(), str(DEFAULT_DOLA_CSV))
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Douglas")
+        self.assertTrue(filtered)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        overrides = load_overrides(DEFAULT_OVERRIDES)
+        result = dola_match_for_mart_line(
+            "4014",
+            "SOUTH METRO FIRE RESCUE FIRE PROTECTION DISTRICT",
+            entities=entities,
+            overrides=overrides,
+            entities_by_te_id=by_te,
+        )
+        self.assertEqual(result["taxEntityId"], "64108/1")
+        self.assertEqual(result["lgId"], "64108")
 
 
 class OverridesFileTests(unittest.TestCase):
@@ -240,9 +300,14 @@ class OverridesFileTests(unittest.TestCase):
         self.assertEqual(DEFAULT_OVERRIDES.parent.name, "tools")
         loaded = load_overrides(DEFAULT_OVERRIDES)
         self.assertIn("ARAPAHOE COUNTY", loaded)
+        self.assertIn("WEST METRO FIRE PROTECTION DISTRICT", loaded)
         mills = loaded["ARAPAHOE COUNTY"].get("millsOverride")
         self.assertIsInstance(mills, (int, float))
         self.assertFalse(isinstance(mills, bool))
+        self.assertEqual(
+            loaded["WEST METRO FIRE PROTECTION DISTRICT"].get("taxEntityId"),
+            "64243/1",
+        )
 
     def test_no_duplicate_overrides_under_ingest_mappings(self) -> None:
         dup = (

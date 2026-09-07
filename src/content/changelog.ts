@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.10.0",
+    date: "2026-09-07",
+    title: "Douglas West Metro Fire AUTH 4402 DOLA join (Phase 16)",
+    highlights: [
+      "Douglas stack lines for West Metro Fire Protection District (AUTH 4402) join DOLA Tax Entity ID 64243/1 (lgId 64243), not South Metro Fire Rescue 64108/1. Shared override in tools/arapahoe_dola_authority_overrides.json pins the TE id so a thin certifying-county DOLA load cannot fuzzy-match SMFR.",
+      "Rebuilt Douglas levy stacks with the full Douglas DOLA entity set (snapshot dolaRowCount 24 → 379). Stack-embedded lgIds rise accordingly; colorado-special-district-directory.json rebuild covers the union (369 → 609 districts), including West Metro 64243. SMFR AUTH 4014 remains 64108/1. Cross-county match file unchanged for SMFR (4014).",
+      "Regression: tools/test_ingest_dola_match.py asserts AUTH 4402 → 64243/1, AUTH 4014 → 64108/1, and Douglas certifying-county load includes West Metro with a non-thin row count. src/lib/specialDistrictMatch.test.ts locks shipped stack lgIds and Contact preferredLgId alignment (tile name vs directory website). docs/cross-county-authorities.md gap note replaced with the locked TE id.",
+    ],
+  },
+  {
     version: "5.9.0",
     date: "2026-09-06",
     title: "Douglas valuation history + levy per-year dollars (Phase 15)",
