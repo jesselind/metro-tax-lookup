@@ -30,6 +30,11 @@
       "legalName": "South Metro Fire Rescue Fire Protection District",
       "note": "SMFR acronym; full FPD name for DOLA row."
     },
+    "WEST METRO FIRE PROTECTION DISTRICT": {
+      "legalName": "West Metro Fire Protection District",
+      "taxEntityId": "64243/1",
+      "note": "Douglas AUTH 4402. Pin TE 64243/1 so fuzzy cannot land on South Metro Fire Rescue (64108/1) when the DOLA certifying-county filter is thin or West Metro is absent from the loaded entity set. Not SMFR (Douglas AUTH 4014)."
+    },
     "CITY OF AURORA": {
       "legalName": "Aurora",
       "note": "DOLA LGIS export uses municipality name without City of prefix (TE e.g. 64010/1)."

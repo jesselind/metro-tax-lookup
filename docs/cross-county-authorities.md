@@ -121,7 +121,7 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 
 **Douglas mills history (shipped):** `douglas-authority-mills-by-tax-year.json` + `douglas-authority-rate-table-pages.json` from Tax Districts and Mill Levies PDFs (Tax Years 2020–2025); `millsHistory: true`. Resident cites: `/sources` (Douglas mill history) lists each bundled year PDF from the Taxing Authorities hub. County 3 follows the same gate: ship `{countyId}-authority-mills-by-tax-year.json` (+ page index if deep-linking), set `millsHistory: true`. No architecture change.
 
-**Known ingest join gap:** Some Douglas stack lines for West Metro Fire (AUTH **4402**) incorrectly carry Tax Entity ID **64108/1** (South Metro Fire Rescue). Fix is working-doc **Phase 16** (after product phases **12**–**15**, or pull forward after Douglas mill history **5.4.0**). Do not “fix” by promoting **4402** as SMFR in the registry.
+**West Metro Fire (AUTH 4402):** Douglas stacks join DOLA Tax Entity ID **64243/1** (`lgId` **64243**) via curated override in `tools/arapahoe_dola_authority_overrides.json`. Do not map **4402** to SMFR (**64108** / Douglas AUTH **4014**) in the cross-county registry. A thin Douglas DOLA load (historical `dolaRowCount` 24) fuzzy-matched West Metro to SMFR; the override + `test_ingest_dola_match.py` regression keep **64243/1**.
 
 ### `countyOverlays` keys (authority-chain JSON)
 
