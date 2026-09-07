@@ -62,7 +62,7 @@ describe("countyPriorYearValuesGap copy", () => {
       `https://apps.douglas.co.us/assessor/web/#/details/2026/${SYNTHETIC_DOUGLAS_PIN}`,
     );
     expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(false);
-    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(false);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
       false,

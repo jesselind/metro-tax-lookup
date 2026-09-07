@@ -134,6 +134,26 @@ test.describe("Metro year-over-year UI", () => {
     await expect(millsChart).toBeVisible();
     await expect(millsChart.getByText("Tax Year 2018")).toBeVisible();
 
+    const chartGapBadge = millsChart.getByRole("button", {
+      name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
+    });
+    await expect(chartGapBadge).toBeVisible();
+    // Arapahoe always has current assessed × mills on the newest chart year.
+    // Gap badge is only honest when that current dollar line is present.
+    await expect(millsChart.getByText("$347")).toBeVisible();
+    await expect(millsChart.getByText("Tax Year 2025")).toBeVisible();
+    await chartGapBadge.click();
+    const chartGapPanel = page.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
+    });
+    await expect(chartGapPanel).toBeVisible();
+    await expect(chartGapPanel).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(
+      chartGapPanel.getByRole("link", {
+        name: COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
+      }),
+    ).toBeVisible();
+
     const year2018Dot = millsChart.getByRole("button", {
       name: /Tax Year 2018,/i,
     });

@@ -37,8 +37,11 @@ describe("countyPriorYearValuesInProgress copy", () => {
     );
   });
 
-  it("gates Douglas on in-progress and Arapahoe on gap", () => {
-    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(true);
+  it("gates Douglas on valuation history and Arapahoe on gap", () => {
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
+      false,
+    );
+    expect(DOUGLAS_COUNTY_CONFIG.features.valuationHistoryShards).toBe(true);
     expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(false);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
       false,

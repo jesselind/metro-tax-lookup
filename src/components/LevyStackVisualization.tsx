@@ -57,6 +57,7 @@ import {
   levyLineMillDelta,
   lineIdsWithMillRateChanges,
 } from "@/lib/metroLevyYearOverYear";
+import type { LevyDollarAssessedContext } from "@/lib/levyDollarAssessedContext";
 import { levyDisplayDollarsForAudience } from "@/lib/resolveDwellingCount";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
@@ -276,6 +277,13 @@ export type LevyStackVisualizationProps = {
   rentMode?: boolean;
   /** Resolved county for levy-table host allowlist checks. */
   countyConfig?: CountyConfig;
+  /**
+   * Assessed-by-tax-year from valuation history (when loaded). Drives per-year
+   * levy-line dollars on the mill history chart and YoY modal columns.
+   */
+  levyDollarAssessedContext?: LevyDollarAssessedContext | null;
+  /** Sale-history jump in prior-year gap popover on the mill history chart. */
+  parcelHasSaleHistory?: boolean;
 };
 
 export function LevyStackVisualization({
@@ -293,6 +301,8 @@ export function LevyStackVisualization({
   levyDollarUnitCount = null,
   rentMode = false,
   countyConfig = COUNTY_CONFIG,
+  levyDollarAssessedContext = null,
+  parcelHasSaleHistory = false,
 }: LevyStackVisualizationProps) {
   const templateErrorId = useId();
   const [showLevyDetails, setShowLevyDetails] = useState(false);
@@ -352,6 +362,14 @@ export function LevyStackVisualization({
     }
     return assessedForLevyDollars / levyDollarUnitCount;
   }, [assessedForLevyDollars, levyDollarUnitCount]);
+
+  const dollarAudience = useMemo(
+    () => ({
+      unitCount: levyDollarUnitCount,
+      rentMode,
+    }),
+    [levyDollarUnitCount, rentMode],
+  );
 
   const lineIdsWithMillChanges = useMemo(
     () => lineIdsWithMillRateChanges(lines, undefined, countyConfig.id),
@@ -1228,7 +1246,10 @@ export function LevyStackVisualization({
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}
           totalAssessedForEstimate={assessedForDetailEstimate}
+          levyDollarAssessedContext={levyDollarAssessedContext}
+          dollarAudience={dollarAudience}
           accountId={loadedParcelMeta?.pin ?? null}
+          hasSaleHistory={parcelHasSaleHistory}
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
           snapshot={specialDistrictFile?.snapshot ?? null}

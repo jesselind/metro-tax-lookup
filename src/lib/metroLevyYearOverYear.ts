@@ -11,12 +11,17 @@ import {
   parcelAssessedForDollarEstimate,
 } from "@/lib/annualTaxFromAssessedMills";
 import {
-  AUTHORITY_MILLS_CURRENT_TAX_YEAR,
   AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+  AUTHORITY_MILLS_CURRENT_TAX_YEAR,
   authorityMillsForTaxYear,
   authorityTotalMillsYoY,
   normalizeAuthorityCode,
 } from "@/lib/authorityMillsHistory";
+import type {
+  LevyDollarAssessedContext,
+  LevyDollarAudience,
+} from "@/lib/levyDollarAssessedContext";
+import { levyDollarsPairForTaxYears } from "@/lib/levyDollarAssessedContext";
 import { STACK_RATE_CHANGE_CALLOUT_MESSAGE } from "@/content/levyYoYCopy";
 import {
   findMetroDistrictIdsFromLevyLines,
@@ -532,39 +537,59 @@ export type LevyLineYoYViewModel = {
   showPurposeDetails: boolean;
   previousYearLabel: string;
   currentYearLabel: string;
+  taxYearPrevious: number;
+  taxYearCurrent: number;
+  /** When true, dollar amounts hold current assessed constant (no prior-year history). */
+  usesTheoreticalAssessedForDollars: boolean;
   totalCompare: LevyLineYoYCompareTotals | null;
   purposeChanges: MetroLevyPurposeChange[];
 };
 
 function dollarsPairFromMills(
-  assessed: number | null,
   millsPrevious: number,
   millsCurrent: number,
+  taxYearPrevious: number,
+  taxYearCurrent: number,
+  assessed: number | null,
+  assessedContext: LevyDollarAssessedContext | null | undefined,
+  audience?: LevyDollarAudience,
 ): {
   previousDollars: number | null;
   currentDollars: number | null;
   differenceDollars: number | null;
+  usesTheoreticalAssessed: boolean;
 } {
+  if (assessedContext) {
+    return levyDollarsPairForTaxYears(
+      millsPrevious,
+      millsCurrent,
+      taxYearPrevious,
+      taxYearCurrent,
+      assessedContext,
+      audience,
+    );
+  }
   if (assessed == null) {
     return {
       previousDollars: null,
       currentDollars: null,
       differenceDollars: null,
+      usesTheoreticalAssessed: true,
     };
   }
-  const previousDollars = annualTaxDollarsFromAssessedMills(
-    assessed,
+  const pair = levyDollarsPairForTaxYears(
     millsPrevious,
-  );
-  const currentDollars = annualTaxDollarsFromAssessedMills(
-    assessed,
     millsCurrent,
+    taxYearPrevious,
+    taxYearCurrent,
+    {
+      currentAssessed: assessed,
+      currentTaxYear: taxYearCurrent,
+      assessedByTaxYear: new Map(),
+    },
+    audience,
   );
-  return {
-    previousDollars,
-    currentDollars,
-    differenceDollars: currentDollars - previousDollars,
-  };
+  return pair;
 }
 
 /**
@@ -577,6 +602,8 @@ export function buildLevyLineYoYViewModel(
   },
   totalAssessedForEstimate: number | null | undefined,
   countyId?: string | null,
+  assessedContext?: LevyDollarAssessedContext | null,
+  dollarAudience?: LevyDollarAudience,
 ): LevyLineYoYViewModel | null {
   const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
   const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
@@ -588,20 +615,45 @@ export function buildLevyLineYoYViewModel(
       metroTotal?.rateDelta != null
         ? metroTotal.rateDelta * METRO_RATE_TO_MILLS
         : null;
-    const deltaDollars =
-      assessed != null &&
-      metroTotal?.ratePreviousTotal != null &&
-      metroTotal.rateDelta != null
-        ? metroDistrictDeltaDollarsFromRates(
-            assessed,
-            metroTotal.rateCurrentTotal,
-            metroTotal.ratePreviousTotal,
-          )
-        : null;
     const millsPrevious =
       metroTotal?.ratePreviousTotal != null
         ? metroTotal.ratePreviousTotal * METRO_RATE_TO_MILLS
         : null;
+    const millsCurrent = metroTotal?.rateCurrentTotal != null
+      ? metroTotal.rateCurrentTotal * METRO_RATE_TO_MILLS
+      : null;
+
+    let deltaDollars: number | null = null;
+    let usesTheoreticalAssessed = true;
+    if (
+      millsPrevious != null &&
+      millsCurrent != null &&
+      metroTotal?.ratePreviousTotal != null &&
+      metroTotal.rateDelta != null
+    ) {
+      const dollars = dollarsPairFromMills(
+        millsPrevious,
+        millsCurrent,
+        AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+        AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+        assessed,
+        assessedContext,
+        dollarAudience,
+      );
+      deltaDollars = dollars.differenceDollars;
+      usesTheoreticalAssessed = dollars.usesTheoreticalAssessed;
+    } else if (
+      assessed != null &&
+      metroTotal?.ratePreviousTotal != null &&
+      metroTotal.rateDelta != null
+    ) {
+      deltaDollars = metroDistrictDeltaDollarsFromRates(
+        assessed,
+        metroTotal.rateCurrentTotal,
+        metroTotal.ratePreviousTotal,
+      );
+    }
+
     const summary = metroDistrictTileYoYSummary(
       deltaMills,
       millsPrevious,
@@ -621,21 +673,27 @@ export function buildLevyLineYoYViewModel(
 
     let totalCompare: LevyLineYoYCompareTotals | null = null;
     if (showTotalCompare && metroTotal?.ratePreviousTotal != null) {
-      const millsPrevious =
-        metroTotal.ratePreviousTotal * METRO_RATE_TO_MILLS;
-      const millsCurrent = metroTotal.rateCurrentTotal * METRO_RATE_TO_MILLS;
+      const prevMills = metroTotal.ratePreviousTotal * METRO_RATE_TO_MILLS;
+      const currMills = metroTotal.rateCurrentTotal * METRO_RATE_TO_MILLS;
       const dollars = dollarsPairFromMills(
+        prevMills,
+        currMills,
+        AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+        AUTHORITY_MILLS_CURRENT_TAX_YEAR,
         assessed,
-        millsPrevious,
-        millsCurrent,
+        assessedContext,
+        dollarAudience,
       );
+      usesTheoreticalAssessed = dollars.usesTheoreticalAssessed;
       totalCompare = {
-        previousMillsLabel: formatCountyMillsLabel(millsPrevious),
-        currentMillsLabel: formatCountyMillsLabel(millsCurrent),
+        previousMillsLabel: formatCountyMillsLabel(prevMills),
+        currentMillsLabel: formatCountyMillsLabel(currMills),
         differenceMillsLabel: formatCountyMillsDelta(
           metroTotal.rateDelta! * METRO_RATE_TO_MILLS,
         ),
-        ...dollars,
+        previousDollars: dollars.previousDollars,
+        currentDollars: dollars.currentDollars,
+        differenceDollars: dollars.differenceDollars,
       };
     }
 
@@ -646,12 +704,21 @@ export function buildLevyLineYoYViewModel(
       showPurposeDetails,
       previousYearLabel: formatTaxYearLabel(AUTHORITY_MILLS_PREVIOUS_TAX_YEAR),
       currentYearLabel: formatTaxYearLabel(AUTHORITY_MILLS_CURRENT_TAX_YEAR),
+      taxYearPrevious: AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+      taxYearCurrent: AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+      usesTheoreticalAssessedForDollars: usesTheoreticalAssessed,
       totalCompare,
       purposeChanges,
     };
   }
 
-  return buildAuthLevyLineYoYViewModel(line, assessed, countyId);
+  return buildAuthLevyLineYoYViewModel(
+    line,
+    assessed,
+    countyId,
+    assessedContext,
+    dollarAudience,
+  );
 }
 
 /** Signed direction for a mill-rate delta; neutral when the change is below epsilon. */
@@ -667,8 +734,8 @@ export type MetroDistrictTileYoYSummary = {
   headline: string;
   direction: MetroYoYDirection;
   /**
-   * Whole-dollar change at current assessed (mill delta x today's value).
-   * Shown as secondary detail with a popover; uses current assessed only (no prior-year assessed).
+   * Whole-dollar change for this levy line (mill delta at current assessed when
+   * prior-year assessed is unavailable; per-year assessed when history provides it).
    */
   theoreticalDeltaDollars: number | null;
 };
@@ -811,6 +878,8 @@ function buildAuthLevyLineYoYViewModel(
   },
   assessed: number | null,
   countyId?: string | null,
+  assessedContext?: LevyDollarAssessedContext | null,
+  dollarAudience?: LevyDollarAudience,
 ): LevyLineYoYViewModel | null {
   const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId, {
     residentStackMills: line.mills,
@@ -820,9 +889,13 @@ function buildAuthLevyLineYoYViewModel(
   }
 
   const dollars = dollarsPairFromMills(
-    assessed,
     authYoY.millsPrevious,
     authYoY.millsCurrent,
+    authYoY.taxYearPrevious,
+    authYoY.taxYearCurrent,
+    assessed,
+    assessedContext,
+    dollarAudience,
   );
   const summary = metroDistrictTileYoYSummary(
     authYoY.millsDelta,
@@ -839,11 +912,16 @@ function buildAuthLevyLineYoYViewModel(
     showPurposeDetails: false,
     previousYearLabel: formatTaxYearLabel(authYoY.taxYearPrevious),
     currentYearLabel: formatTaxYearLabel(authYoY.taxYearCurrent),
+    taxYearPrevious: authYoY.taxYearPrevious,
+    taxYearCurrent: authYoY.taxYearCurrent,
+    usesTheoreticalAssessedForDollars: dollars.usesTheoreticalAssessed,
     totalCompare: {
       previousMillsLabel: formatCountyMillsLabel(authYoY.millsPrevious),
       currentMillsLabel: formatCountyMillsLabel(authYoY.millsCurrent),
       differenceMillsLabel: formatCountyMillsDelta(authYoY.millsDelta),
-      ...dollars,
+      previousDollars: dollars.previousDollars,
+      currentDollars: dollars.currentDollars,
+      differenceDollars: dollars.differenceDollars,
     },
     purposeChanges: [],
   };

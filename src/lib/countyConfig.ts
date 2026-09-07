@@ -75,6 +75,11 @@ export type CountyFeatures = {
    * False: omit shard fetch (summary tiles / gap note only).
    */
   parcelRecordShards: boolean;
+  /**
+   * Lazy `{countyId}-valuation-history-by-account` shards (Douglas Realware
+   * detail extract). False: omit valuation-history fetch.
+   */
+  valuationHistoryShards: boolean;
   compsPdf: boolean;
   bpp: boolean;
   millsHistory: boolean;
@@ -233,6 +238,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
   features: {
     situs: true,
     parcelRecordShards: true,
+    valuationHistoryShards: false,
     compsPdf: true,
     bpp: true,
     millsHistory: true,
@@ -287,14 +293,13 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
   features: {
     situs: true,
     parcelRecordShards: true,
+    valuationHistoryShards: true,
     compsPdf: false,
     bpp: false,
     millsHistory: true,
     metroPurposes: false,
-    // Gap off / in-progress on while we verify bulk valuation history the
-    // assessor said exists. Not a confirmed COUNTY DATA GAP yet.
     priorYearValuesGap: false,
-    priorYearValuesInProgress: true,
+    priorYearValuesInProgress: false,
     dataMartRefreshGap: false,
     millPdfTaxDistrictGap: true,
   },

@@ -324,8 +324,8 @@ export const SYNTHETIC_DOUGLAS_PIN_TO_TAG = {
     [SYNTHETIC_DOUGLAS_PIN]: {
       tagId: SYNTHETIC_E2E_TAG_ID,
       tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
-      totalActual: 100000,
-      totalAssessed: 6800,
+      totalActual: 380_000,
+      totalAssessed: 27_170,
       parcelTaxYear: "2025",
       assessmentYear: "2026",
       propertyClassDescr: "Residential",
@@ -460,7 +460,26 @@ export const SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD = {
         unknown
       >),
       ain: "2000-00-0-00-001",
+      totalActual: 380_000,
+      totalAssessed: 27_170,
     },
+  },
+};
+
+/** Douglas County valuation-history shard (8-digit account id). */
+export const SYNTHETIC_DOUGLAS_VALUATION_HISTORY_SHARD = {
+  snapshot: {
+    bundledAsOf: "2026-08-28",
+    source: "synthetic test fixture",
+    stampYear: "2026",
+  },
+  pinDigits: 8,
+  shardPrefix: SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX,
+  byAccount: {
+    [SYNTHETIC_DOUGLAS_PIN]: [
+      { taxYear: 2025, actualValue: 360000, assessedValue: 25740 },
+      { taxYear: 2026, actualValue: 380000, assessedValue: 27170 },
+    ],
   },
 };
 

@@ -78,6 +78,7 @@ function scheduleCountyFixture(
     features: {
       situs: false,
       parcelRecordShards: false,
+      valuationHistoryShards: false,
       compsPdf: false,
       bpp: false,
       millsHistory: false,
@@ -135,7 +136,10 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
       countyFeaturePresentation("parcelRecordShards", DOUGLAS_COUNTY_CONFIG),
     ).toBe("show");
     expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesGap).toBe(false);
-    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
+      false,
+    );
+    expect(DOUGLAS_COUNTY_CONFIG.features.valuationHistoryShards).toBe(true);
     expect(DOUGLAS_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
