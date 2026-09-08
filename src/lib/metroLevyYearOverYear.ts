@@ -837,6 +837,7 @@ export function metroPurposeTotalsReconcileWithAuth(
   const authCurrent = authorityMillsForTaxYear(
     authorityCode,
     AUTHORITY_MILLS_CURRENT_TAX_YEAR,
+    "arapahoe",
   );
   if (authCurrent == null) return false;
 
@@ -847,6 +848,7 @@ export function metroPurposeTotalsReconcileWithAuth(
   const authPrevious = authorityMillsForTaxYear(
     authorityCode,
     AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
+    "arapahoe",
   );
   if (metroTotal.ratePreviousTotal == null || authPrevious == null) {
     return false;

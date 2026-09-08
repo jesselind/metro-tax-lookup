@@ -475,7 +475,7 @@ describe("levyAuthorityChainBuild", () => {
       "Change from last year",
       "Most notable change",
     ]);
-    const series = authorityMillsSeries("4571");
+    const series = authorityMillsSeries("4571", "arapahoe");
     const { changeFromLastYear, mostNotableChange } =
       selectMetroAuthorityMillsChangeBlocks(series);
     expect(changeFromLastYear).toBeTruthy();

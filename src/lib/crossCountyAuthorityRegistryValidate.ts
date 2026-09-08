@@ -20,7 +20,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Validate cross-county authority registry JSON (version, ids, wired counties, optional lgId).
+ * Validate cross-county authority registry JSON (version, ids, wired counties,
+ * required millsReferenceCountyId, optional lgId).
  */
 export function validateCrossCountyAuthorityRegistryData(
   data: unknown,
@@ -97,7 +98,10 @@ export function validateCrossCountyAuthorityRegistryData(
       }
     }
 
-    if (row.millsReferenceCountyId !== undefined) {
+    if (!isNonEmptyString(row.millsReferenceCountyId)) {
+      throw new Error(`[${row.id}] millsReferenceCountyId is required`);
+    }
+    {
       const ref = row.millsReferenceCountyId.trim();
       if (!(ref in COUNTY_CONFIG_BY_ID)) {
         throw new Error(

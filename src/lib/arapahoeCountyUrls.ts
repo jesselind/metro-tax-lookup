@@ -63,7 +63,7 @@ import { levyPercentageResidentUrlForTaxYear } from "@/lib/authorityMillsHistory
  * bundle so cites stay aligned with chart and authority-chain mill blocks.
  */
 export const ARAPAHOE_2025_TAXING_DISTRICT_LEVY_PERCENTAGE_PDF =
-  levyPercentageResidentUrlForTaxYear(2025);
+  levyPercentageResidentUrlForTaxYear(2025, "arapahoe");
 
 export const ARAPAHOE_2025_CERTIFICATION_LEVIES_PDF =
   "https://files.arapahoeco.gov/Assessor/Certification%20of%20Levies%20and%20Revenues/2025%20Certification%20of%20Levies%20and%20Revenues.pdf?t=202412301249070";

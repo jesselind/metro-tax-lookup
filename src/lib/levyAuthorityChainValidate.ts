@@ -509,6 +509,16 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           `[${id}] ${family} entries require match.levyLineCode or match.registryId for AUTH mills`,
         );
       }
+      let millsBundleCountyId = "arapahoe";
+      if (registryId) {
+        const ref = crossCountyAuthorityById(registryId)?.millsReferenceCountyId?.trim();
+        if (!ref) {
+          fail(
+            `[${id}] registryId ${registryId} requires millsReferenceCountyId for AUTH mills`,
+          );
+        }
+        millsBundleCountyId = ref;
+      }
       if (record.mills.historicalComparison !== undefined) {
         fail(
           `[${id}] ${family} mills must not set historicalComparison (derived from AUTH series)`,
@@ -536,7 +546,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           `[${id}] ${family} mills must not set rateSourcesByTaxYear (Levy % cites come from AUTH mills bundle)`,
         );
       }
-      const series = authorityMillsSeries(millsCode);
+      const series = authorityMillsSeries(millsCode, millsBundleCountyId);
       const { changeFromLastYear, mostNotableChange } =
         selectMetroAuthorityMillsChangeBlocks(series);
       if (!changeFromLastYear) {
@@ -554,10 +564,10 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
       for (const year of yearsNeeded) {
         try {
-          levyPercentageResidentUrlForTaxYear(year);
+          levyPercentageResidentUrlForTaxYear(year, millsBundleCountyId);
         } catch {
           fail(
-            `[${id}] bundled AUTH mills missing resident Levy % PDF url for tax year ${year}`,
+            `[${id}] AUTH mills year ${year} missing resident rate-table PDF url (${millsBundleCountyId})`,
           );
         }
       }
