@@ -4,13 +4,14 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Runtime helpers that read a resolved {@link CountyConfig}.
+ * Runtime helpers that read a **resolved** {@link CountyConfig}.
  *
- * Prefer passing the **resolved** county after lookup. Defaults to
- * {@link COUNTY_CONFIG} (Arapahoe campaign default) only for pre-resolve paths.
+ * `config` is required on every helper below. There is no silent Arapahoe
+ * default: after lookup, pass the active county; for intentional campaign-home
+ * paths, pass {@link CAMPAIGN_DEFAULT_COUNTY_CONFIG} (or `ARAPAHOE_COUNTY_CONFIG`)
+ * explicitly.
  */
 
-import { COUNTY_CONFIG } from "@/lib/countyConfig/registry";
 import type {
   CountyConfig,
   CountyFeatureKey,
@@ -20,11 +21,10 @@ import { isCountyHostAllowed as isCountyHostAllowedStrict } from "@/lib/countyCo
 
 /**
  * True when hostname is in the county host allowlist (case-insensitive).
- * Defaults to the campaign default county when `config` is omitted.
  */
 export function isCountyHostAllowed(
   hostname: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): boolean {
   return isCountyHostAllowedStrict(hostname, config);
 }
@@ -56,21 +56,24 @@ export function countyHostedPropertyPageOpenLabel(
   return `Open county ${config.hostedPropertyPageName}`;
 }
 
-/** True when the county has a source for this feature. */
+/**
+ * True when the county has a source for this feature.
+ * Pass the resolved county after lookup — never omit `config`.
+ */
 export function countyFeatureAvailable(
   feature: CountyFeatureKey,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): boolean {
   return config.features[feature];
 }
 
 /**
  * How the UI should treat a feature: omit (no source), gap (source failed),
- * or show.
+ * or show. Pass the resolved county after lookup — never omit `config`.
  */
 export function countyFeaturePresentation(
   feature: CountyFeatureKey,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): CountyFeaturePresentation {
   if (!config.features[feature]) return "omit";
   if (feature === "compsPdf" && config.knownFailures.compsPdfHostedFiles) {
@@ -82,7 +85,7 @@ export function countyFeaturePresentation(
 /** Resident error when account-id lookup candidates did not match. */
 export function formatIdentifierNotFoundMessage(
   tried: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string {
   return config.identifierNotFoundTemplate.replaceAll("{tried}", tried);
 }

@@ -13,7 +13,6 @@
  */
 
 import {
-  COUNTY_CONFIG,
   COUNTY_CONFIG_BY_ID,
   countyConfigById,
   countyFeatureAvailable,
@@ -615,8 +614,8 @@ function normalizeSitusDataRoot(dataRoot?: string): string {
 }
 
 export function getLastCountySitusFetchFailureDetail(
+  countyId: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): string | null {
   const root = normalizeSitusDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -626,10 +625,11 @@ export function getLastCountySitusFetchFailureDetail(
 /**
  * Fetch `{countyId}-situs-to-pins.json` with validation and per-root cache.
  * URL: {@link countySitusToPinsUrl} + `?v=` from {@link COUNTY_SITUS_TO_PINS_CACHE_BUST}.
+ * `countyId` is required (no silent Arapahoe default).
  */
 export function fetchCountySitusToPinsJson(
+  countyId: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<CountySitusToPinsFile | null> {
   const root = normalizeSitusDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -638,8 +638,8 @@ export function fetchCountySitusToPinsJson(
   if (cached) return cached;
 
   const url = countySitusToPinsUrl(
-    root,
     id,
+    root,
     COUNTY_SITUS_TO_PINS_CACHE_BUST,
   );
   const pending = (async () => {

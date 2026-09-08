@@ -130,7 +130,7 @@ export async function resolveAccountCountyLookup(
     countyIds.map(async (countyId) => {
       const config = countyConfigById(countyId);
       if (!config) return;
-      const pins = await fetchCountyPinToTagJson(dataRoot, countyId);
+      const pins = await fetchCountyPinToTagJson(countyId, dataRoot);
       if (!pins?.byPin) return;
       const matchedPinKey = resolvePinKeyFromParcelIdInput(
         pins,

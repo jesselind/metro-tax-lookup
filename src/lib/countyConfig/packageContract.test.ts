@@ -20,6 +20,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_ID,
   COUNTY_CONFIG,
   COUNTY_CONFIG_BY_ID,
   countyConfigById,
@@ -133,6 +135,12 @@ describe("registry lookup helpers", () => {
   it("COUNTY_CONFIG campaign default is Arapahoe", () => {
     expect(COUNTY_CONFIG).toBe(COUNTY_CONFIG_BY_ID.arapahoe);
     expect(COUNTY_CONFIG.id).toBe("arapahoe");
+  });
+
+  it("CAMPAIGN_DEFAULT_COUNTY_CONFIG / _ID alias the same Arapahoe campaign default", () => {
+    expect(CAMPAIGN_DEFAULT_COUNTY_CONFIG).toBe(COUNTY_CONFIG);
+    expect(CAMPAIGN_DEFAULT_COUNTY_ID).toBe("arapahoe");
+    expect(CAMPAIGN_DEFAULT_COUNTY_ID).toBe(CAMPAIGN_DEFAULT_COUNTY_CONFIG.id);
   });
 });
 

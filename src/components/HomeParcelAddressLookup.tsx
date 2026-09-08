@@ -138,7 +138,8 @@ import {
   type CountySearchScope,
 } from "@/lib/countySearchScope";
 import {
-  COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_ID,
   countyConfigById,
   countyFeatureAvailable,
   countyFeaturePresentation,
@@ -407,7 +408,7 @@ export function HomeParcelAddressLookup({
   const activeCountyConfig = useMemo(
     () =>
       (resolvedCountyId ? countyConfigById(resolvedCountyId) : null) ??
-      COUNTY_CONFIG,
+      CAMPAIGN_DEFAULT_COUNTY_CONFIG,
     [resolvedCountyId],
   );
   const activeBppOn = countyFeatureAvailable("bpp", activeCountyConfig);
@@ -506,7 +507,6 @@ export function HomeParcelAddressLookup({
       try {
         const result = await fetchCountyValuationHistoryForPin(
           lookupPin,
-          undefined,
           config.id,
         );
         if (!isCurrentRequest()) return;
@@ -538,7 +538,6 @@ export function HomeParcelAddressLookup({
       try {
         const result = await fetchCountyParcelRecordForPin(
           lookupPin,
-          undefined,
           config.id,
         );
         if (!isCurrentRequest()) return;
@@ -1363,7 +1362,9 @@ export function HomeParcelAddressLookup({
       return;
     }
     let cancelled = false;
-    void fetchCountyPinToTagJson(undefined, resolvedCountyId ?? COUNTY_CONFIG.id).then((data) => {
+    void fetchCountyPinToTagJson(
+      resolvedCountyId ?? CAMPAIGN_DEFAULT_COUNTY_ID,
+    ).then((data) => {
       if (!cancelled) setMultiMatchPinToTag(data);
     });
     return () => {

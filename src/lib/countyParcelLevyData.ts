@@ -16,7 +16,6 @@
 
 import { clearCountySitusDataCache } from "@/lib/situsIndexLookup";
 import {
-  COUNTY_CONFIG,
   countyConfigById,
   type CountyConfig,
 } from "@/lib/countyConfig";
@@ -292,7 +291,7 @@ function isParcelRecordShardPrefix(prefix: string): boolean {
  */
 export function pinLookupCandidates(
   raw: string,
-  pinDigits: number = COUNTY_CONFIG.identifierDigits,
+  pinDigits: number,
 ): string[] {
   const digits = raw.replace(/\D/g, "");
   if (!digits) return [];
@@ -313,7 +312,7 @@ export function pinLookupCandidates(
  */
 export function accountIdLookupCandidates(
   raw: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string[] {
   if (config.identifierAllowsLetters) {
     const normalized = raw.trim().toUpperCase().replace(/[\s-]/g, "");
@@ -335,7 +334,7 @@ export function accountIdLookupCandidates(
  */
 export function ainLookupCandidates(
   raw: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string[] {
   if (!config.publicParcelId) return [];
   const digits = raw.replace(/\D/g, "");
@@ -346,7 +345,7 @@ export function ainLookupCandidates(
 /** True when the string looks like a county public parcel id, not a street. */
 export function looksLikeAinInput(
   raw: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): boolean {
   if (!config.publicParcelId) return false;
   const t = raw.trim();
@@ -362,7 +361,7 @@ export function looksLikeAinInput(
  */
 export function looksLikePinOnlyInput(
   raw: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): boolean {
   const t = raw.trim();
   if (!t) return false;
@@ -386,7 +385,7 @@ export function looksLikePinOnlyInput(
 /** PIN/schedule or public parcel id paste into the address or parcel-id field. */
 export function looksLikeParcelIdInput(
   raw: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): boolean {
   return looksLikeAinInput(raw, config) || looksLikePinOnlyInput(raw, config);
 }
@@ -395,18 +394,22 @@ const ainToPinIndexCache = new WeakMap<CountyPinToTagFile, Map<string, string>>(
 
 /**
  * Digits-only AIN → first PIN that carries that AIN (Main Parcel export).
- * Built once per loaded pin map.
+ * Built once per loaded pin map. Pass the county that owns the file so public
+ * parcel id length is not assumed Arapahoe.
  */
-export function getAinToPinIndex(file: CountyPinToTagFile): Map<string, string> {
+export function getAinToPinIndex(
+  file: CountyPinToTagFile,
+  config: CountyConfig,
+): Map<string, string> {
   const cached = ainToPinIndexCache.get(file);
   if (cached) return cached;
   const idx = new Map<string, string>();
+  const publicDigits = config.publicParcelId?.digits;
   for (const pin of Object.keys(file.byPin)) {
     const row = file.byPin[pin];
     const ain = typeof row?.ain === "string" ? row.ain.trim() : "";
     if (!ain) continue;
     const dig = ain.replace(/\D/g, "");
-    const publicDigits = COUNTY_CONFIG.publicParcelId?.digits;
     if (publicDigits == null || dig.length !== publicDigits) continue;
     if (!idx.has(dig)) idx.set(dig, pin);
   }
@@ -416,15 +419,16 @@ export function getAinToPinIndex(file: CountyPinToTagFile): Map<string, string> 
 
 /**
  * Resolve a user PIN/schedule or public parcel id paste to a pin map key, or null.
+ * Pass the resolved county config (required).
  */
 export function resolvePinKeyFromParcelIdInput(
   file: CountyPinToTagFile,
   raw: string,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   const ainCands = ainLookupCandidates(raw, config);
   if (ainCands.length > 0) {
-    const ainIndex = getAinToPinIndex(file);
+    const ainIndex = getAinToPinIndex(file, config);
     for (const ain of ainCands) {
       const pin = ainIndex.get(ain);
       if (pin && file.byPin[pin]) return pin;
@@ -512,10 +516,11 @@ function isCountyPinToTagRow(value: unknown): boolean {
 
 /**
  * Validate levy-stacks JSON before caching. Returns a detail string on failure.
+ * `sourceUrl` is for error messages only (pass the fetch URL or fs path).
  */
 export function validateCountyLevyStacksFile(
   data: unknown,
-  sourceUrl: string = countyLevyStacksUrl(),
+  sourceUrl: string,
 ): string | null {
   if (!isPlainObject(data)) {
     return `${sourceUrl}: root must be an object`;
@@ -539,10 +544,11 @@ export function validateCountyLevyStacksFile(
 
 /**
  * Validate pin-to-tag JSON before caching. Returns a detail string on failure.
+ * `sourceUrl` is for error messages only (pass the fetch URL or fs path).
  */
 export function validateCountyPinToTagFile(
   data: unknown,
-  sourceUrl: string = countyAccountMapUrl(),
+  sourceUrl: string,
 ): string | null {
   if (!isPlainObject(data)) {
     return `${sourceUrl}: root must be an object`;
@@ -612,10 +618,13 @@ export function getLastCountyLevyStacksFetchFailureDetail(): string | null {
   return lastLevyStacksFetchFailureDetail;
 }
 
-/** Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads. */
+/**
+ * Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads.
+ * `countyId` is required (resolved or campaign-default id passed explicitly).
+ */
 export function fetchCountyLevyStacksJson(
+  countyId: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<CountyLevyStacksFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -623,7 +632,7 @@ export function fetchCountyLevyStacksJson(
   const cached = stacksCacheByRoot.get(cacheKey);
   if (cached) return cached;
 
-  const url = countyLevyStacksUrl(root, id);
+  const url = countyLevyStacksUrl(id, root);
   const pending = (async () => {
     const result = await fetchCountyStaticJson(url);
     if (!result.ok) {
@@ -650,10 +659,11 @@ export const COUNTY_ACCOUNT_MAP_CACHE_BUST = "20260826owner";
 /**
  * Fetch `{countyId}-pin-to-tag.json` with validation and per-root cache.
  * URL: {@link countyAccountMapUrl} + optional `?v=` from {@link COUNTY_ACCOUNT_MAP_CACHE_BUST}.
+ * `countyId` is required (resolved or campaign-default id passed explicitly).
  */
 export function fetchCountyPinToTagJson(
+  countyId: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<CountyPinToTagFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -661,7 +671,7 @@ export function fetchCountyPinToTagJson(
   const cached = pinCacheByRoot.get(cacheKey);
   if (cached) return cached;
 
-  const url = countyAccountMapUrl(root, id, COUNTY_ACCOUNT_MAP_CACHE_BUST);
+  const url = countyAccountMapUrl(id, root, COUNTY_ACCOUNT_MAP_CACHE_BUST);
   const pending = (async () => {
     const result = await fetchCountyStaticJson(url);
     if (!result.ok) {
@@ -694,12 +704,16 @@ function parcelRecordShardCacheKey(
   return `${normalizeLoaderDataRoot(dataRoot)}:${countyIdForDataPaths(countyId)}:${prefix}`;
 }
 
-/** Shard keys to try for an account id (unique, lookup order). */
+/**
+ * Shard keys to try for an account id (unique, lookup order).
+ * Unknown `countyId` yields no prefixes (does not fall back to Arapahoe).
+ */
 export function parcelRecordShardPrefixes(
   pinInput: string,
-  countyId: string = COUNTY_CONFIG.id,
+  countyId: string,
 ): string[] {
-  const config = countyConfigById(countyId) ?? COUNTY_CONFIG;
+  const config = countyConfigById(countyId);
+  if (!config) return [];
   const candidates = accountIdLookupCandidates(pinInput, config);
   const prefixes: string[] = [];
   const seen = new Set<string>();
@@ -719,17 +733,20 @@ export function parcelRecordShardPrefixes(
  */
 export const COUNTY_PARCEL_RECORD_CACHE_BUST = "20260828douglas-land-l";
 
-/** Safe static path for one parcel-record shard (alnum prefix — no user-controlled path segments). */
+/**
+ * Safe static path for one parcel-record shard (alnum prefix — no user-controlled path segments).
+ * `countyId` is required.
+ */
 export function parcelRecordShardUrl(
+  countyId: string,
   prefix: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string | null {
   if (!isParcelRecordShardPrefix(prefix)) return null;
   return countyParcelRecordShardUrl(
+    countyIdForDataPaths(countyId),
     prefix,
     dataRoot,
-    countyIdForDataPaths(countyId),
     COUNTY_PARCEL_RECORD_CACHE_BUST,
   );
 }
@@ -757,13 +774,13 @@ async function fetchJsonWithTimeout<T>(
  * transient failures do not poison the cache.
  */
 function fetchCountyParcelRecordShard(
+  countyId: string,
   prefix: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<CountyParcelRecordByPinFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
-  const url = parcelRecordShardUrl(prefix, root, id);
+  const url = parcelRecordShardUrl(id, prefix, root);
   if (!url) return Promise.resolve(null);
 
   const cacheKey = parcelRecordShardCacheKey(prefix, root, id);
@@ -793,10 +810,14 @@ function fetchCountyParcelRecordShard(
  * Resolve extended parcel-record fields for one account id from sharded bundles.
  * Tries each shard prefix implied by accountIdLookupCandidates.
  */
+/**
+ * Resolve extended parcel-record fields for one account id from sharded bundles.
+ * `countyId` is required (no silent Arapahoe default).
+ */
 export async function fetchCountyParcelRecordForPin(
   pinInput: string,
+  countyId: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<{
   row: CountyParcelRecordRow;
   bundledAsOf: string | null;
@@ -807,7 +828,7 @@ export async function fetchCountyParcelRecordForPin(
   if (prefixes.length === 0) return null;
 
   for (const prefix of prefixes) {
-    const file = await fetchCountyParcelRecordShard(prefix, root, id);
+    const file = await fetchCountyParcelRecordShard(id, prefix, root);
     if (!file) continue;
     const row = lookupParcelRecordRow(pinInput, file, id);
     if (row) {
@@ -820,13 +841,17 @@ export async function fetchCountyParcelRecordForPin(
   return null;
 }
 
-/** Resolve one parcel record row from a loaded file (account-id candidates). */
+/**
+ * Resolve one parcel record row from a loaded file (account-id candidates).
+ * Unknown `countyId` returns null (does not fall back to Arapahoe).
+ */
 export function lookupParcelRecordRow(
   pinInput: string,
   file: CountyParcelRecordByPinFile,
-  countyId: string = COUNTY_CONFIG.id,
+  countyId: string,
 ): CountyParcelRecordRow | null {
-  const base = countyConfigById(countyId) ?? COUNTY_CONFIG;
+  const base = countyConfigById(countyId);
+  if (!base) return null;
   const config: CountyConfig = {
     ...base,
     identifierDigits: file.pinDigits || base.identifierDigits,

@@ -32,7 +32,10 @@ import {
   COLORADO_DPT_PROPERTY_TAX_GUIDE_URL,
 } from "@/lib/arapahoeCountyUrls";
 import { glossaryTermHref } from "@/lib/glossary";
-import { countyFeaturePresentation } from "@/lib/countyConfig";
+import {
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  countyFeaturePresentation,
+} from "@/lib/countyConfig";
 import {
   CODE_INLINE_CLASS,
   COUNTY_EXTERNAL_LINK_CLASS,
@@ -463,7 +466,11 @@ export function TermAssessedValueAside() {
 }
 
 export function TermCompsAside() {
-  const compsPdfPresentation = countyFeaturePresentation("compsPdf");
+  // Glossary comps aside is Arapahoe campaign copy; pass campaign default explicitly.
+  const compsPdfPresentation = countyFeaturePresentation(
+    "compsPdf",
+    CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  );
   return (
     <TermAside
       id="term-comps"

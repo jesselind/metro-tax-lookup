@@ -10,6 +10,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ARAPAHOE_COUNTY_CONFIG, CAMPAIGN_DEFAULT_COUNTY_ID } from "./countyConfig";
 import {
   ainLookupCandidates,
   COUNTY_PARCEL_RECORD_CACHE_BUST,
@@ -44,17 +45,17 @@ import {
 describe("parcelRecordShardPrefixes", () => {
   it("uses the configured PIN prefix length of a normalized 9-digit PIN", () => {
     expect(PARCEL_RECORD_SHARD_PREFIX_LENGTH).toBe(6);
-    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN)).toEqual([
+    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN, CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual([
       SYNTHETIC_PIN_SHARD_PREFIX,
     ]);
-    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN_NO_LEADING_ZERO)).toEqual([
+    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN_NO_LEADING_ZERO, CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual([
       SYNTHETIC_PIN_SHARD_PREFIX,
     ]);
   });
 
   it("returns unique prefixes when first and last nine digits differ", () => {
-    const candidates = pinLookupCandidates(SYNTHETIC_PIN_NOISY);
-    const prefixes = parcelRecordShardPrefixes(SYNTHETIC_PIN_NOISY);
+    const candidates = pinLookupCandidates(SYNTHETIC_PIN_NOISY, 9);
+    const prefixes = parcelRecordShardPrefixes(SYNTHETIC_PIN_NOISY, CAMPAIGN_DEFAULT_COUNTY_ID);
     expect(candidates.length).toBeGreaterThan(1);
     expect(prefixes).toEqual([
       candidates[0].slice(0, PARCEL_RECORD_SHARD_PREFIX_LENGTH),
@@ -64,38 +65,44 @@ describe("parcelRecordShardPrefixes", () => {
   });
 
   it("returns empty for short or empty input", () => {
-    expect(parcelRecordShardPrefixes("")).toEqual([]);
-    expect(parcelRecordShardPrefixes("abc")).toEqual([]);
+    expect(parcelRecordShardPrefixes("", CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual([]);
+    expect(parcelRecordShardPrefixes("abc", CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual([]);
   });
 
   it("accepts letter-prefixed Douglas account ids", () => {
     expect(parcelRecordShardPrefixes("R0103974", "douglas")).toEqual(["R01039"]);
     expect(parcelRecordShardPrefixes("c0193439", "douglas")).toEqual(["C01934"]);
   });
+
+  it("returns empty prefixes for an unknown countyId (no Arapahoe fallback)", () => {
+    expect(parcelRecordShardPrefixes(SYNTHETIC_PIN, "not-a-wired-county")).toEqual(
+      [],
+    );
+  });
 });
 
 describe("parcelRecordShardUrl", () => {
   it("builds a static shard path with the cache-bust version", () => {
-    expect(parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)).toBe(
+    expect(parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, SYNTHETIC_PIN_SHARD_PREFIX)).toBe(
       `/data/arapahoe-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
     );
   });
 
   it("uses the countyId path segment (not always Arapahoe)", () => {
     expect(
-      parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX, "/data", "douglas"),
+      parcelRecordShardUrl("douglas", SYNTHETIC_PIN_SHARD_PREFIX, "/data"),
     ).toBe(
       `/data/douglas-parcel-record-by-pin/${SYNTHETIC_PIN_SHARD_PREFIX}.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
     );
   });
 
   it("allows alphanumeric prefixes and rejects unsafe shapes", () => {
-    expect(parcelRecordShardUrl("R01039")).toBe(
+    expect(parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, "R01039")).toBe(
       `/data/arapahoe-parcel-record-by-pin/R01039.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
     );
-    expect(parcelRecordShardUrl("01000")).toBeNull();
-    expect(parcelRecordShardUrl("0100000")).toBeNull();
-    expect(parcelRecordShardUrl("../010000")).toBeNull();
+    expect(parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, "01000")).toBeNull();
+    expect(parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, "0100000")).toBeNull();
+    expect(parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, "../010000")).toBeNull();
   });
 });
 
@@ -108,23 +115,23 @@ describe("lookupParcelRecordRow", () => {
       byPin: { [SYNTHETIC_PIN]: { ain: SYNTHETIC_AIN } },
     };
     expect(
-      lookupParcelRecordRow(SYNTHETIC_PIN_NO_LEADING_ZERO, file)?.ain,
+      lookupParcelRecordRow(SYNTHETIC_PIN_NO_LEADING_ZERO, file, CAMPAIGN_DEFAULT_COUNTY_ID)?.ain,
     ).toBe(SYNTHETIC_AIN);
   });
 });
 
 describe("AIN and parcel-id input helpers", () => {
   it("normalizes AIN candidates to 12 digits", () => {
-    expect(ainLookupCandidates(SYNTHETIC_AIN)).toEqual(["100000000001"]);
-    expect(ainLookupCandidates("1000 00 0 00 001")).toEqual(["100000000001"]);
-    expect(ainLookupCandidates(SYNTHETIC_PIN)).toEqual([]);
+    expect(ainLookupCandidates(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toEqual(["100000000001"]);
+    expect(ainLookupCandidates("1000 00 0 00 001", ARAPAHOE_COUNTY_CONFIG)).toEqual(["100000000001"]);
+    expect(ainLookupCandidates(SYNTHETIC_PIN, ARAPAHOE_COUNTY_CONFIG)).toEqual([]);
   });
 
   it("detects AIN vs PIN-only vs street-like input", () => {
-    expect(looksLikeAinInput(SYNTHETIC_AIN)).toBe(true);
-    expect(looksLikePinOnlyInput(SYNTHETIC_PIN)).toBe(true);
-    expect(looksLikeParcelIdInput(SYNTHETIC_AIN)).toBe(true);
-    expect(looksLikeParcelIdInput("1940 Holly St")).toBe(false);
+    expect(looksLikeAinInput(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(true);
+    expect(looksLikePinOnlyInput(SYNTHETIC_PIN, ARAPAHOE_COUNTY_CONFIG)).toBe(true);
+    expect(looksLikeParcelIdInput(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(true);
+    expect(looksLikeParcelIdInput("1940 Holly St", ARAPAHOE_COUNTY_CONFIG)).toBe(false);
   });
 
   it("resolves AIN to PIN through the reverse index", () => {
@@ -135,11 +142,11 @@ describe("AIN and parcel-id input helpers", () => {
         [SYNTHETIC_PIN]: { tagId: "1", tagShortDescr: "0001", ain: SYNTHETIC_AIN },
       },
     };
-    expect(getAinToPinIndex(file).get("100000000001")).toBe(SYNTHETIC_PIN);
-    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN)).toBe(
+    expect(getAinToPinIndex(file, ARAPAHOE_COUNTY_CONFIG).get("100000000001")).toBe(SYNTHETIC_PIN);
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       SYNTHETIC_PIN,
     );
-    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_PIN)).toBe(
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_PIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       SYNTHETIC_PIN,
     );
   });
@@ -160,10 +167,10 @@ describe("AIN and parcel-id input helpers", () => {
         [collidingPin]: { tagId: "2", tagShortDescr: "0002" },
       },
     };
-    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN)).toBe(
+    expect(resolvePinKeyFromParcelIdInput(file, SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       SYNTHETIC_PIN,
     );
-    expect(resolvePinKeyFromParcelIdInput(file, collidingPin)).toBe(
+    expect(resolvePinKeyFromParcelIdInput(file, collidingPin, ARAPAHOE_COUNTY_CONFIG)).toBe(
       collidingPin,
     );
   });
@@ -187,22 +194,22 @@ describe("validateCountyLevyStacksFile", () => {
       validateCountyLevyStacksFile({
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         stacksByTagId: { "1": validStack },
-      }),
+      }, "test"),
     ).toBeNull();
   });
 
   it("rejects a malformed root", () => {
-    expect(validateCountyLevyStacksFile(null)).toMatch(/root must be an object/);
+    expect(validateCountyLevyStacksFile(null, "test")).toMatch(/root must be an object/);
     expect(
       validateCountyLevyStacksFile({
         snapshot: { bundledAsOf: "2026-01-01" },
-      }),
+      }, "test"),
     ).toMatch(/missing stacksByTagId/);
     expect(
       validateCountyLevyStacksFile({
         snapshot: { source: "test" },
         stacksByTagId: {},
-      }),
+      }, "test"),
     ).toMatch(/snapshot\.bundledAsOf required/);
   });
 
@@ -211,7 +218,7 @@ describe("validateCountyLevyStacksFile", () => {
       validateCountyLevyStacksFile({
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         stacksByTagId: { "1": { tagId: "1", lines: [] } },
-      }),
+      }, "test"),
     ).toMatch(/stacksByTagId\[1\] has an invalid shape/);
   });
 });
@@ -225,24 +232,24 @@ describe("validateCountyPinToTagFile", () => {
         byPin: {
           [SYNTHETIC_PIN]: { tagId: "1", tagShortDescr: "0001" },
         },
-      }),
+      }, "test"),
     ).toBeNull();
   });
 
   it("rejects a malformed root", () => {
-    expect(validateCountyPinToTagFile([])).toMatch(/root must be an object/);
+    expect(validateCountyPinToTagFile([], "test")).toMatch(/root must be an object/);
     expect(
       validateCountyPinToTagFile({
         snapshot: { bundledAsOf: "2026-01-01" },
         pinDigits: 9,
-      }),
+      }, "test"),
     ).toMatch(/missing byPin/);
     expect(
       validateCountyPinToTagFile({
         snapshot: { source: "test" },
         pinDigits: 9,
         byPin: {},
-      }),
+      }, "test"),
     ).toMatch(/snapshot\.bundledAsOf required/);
   });
 
@@ -252,13 +259,13 @@ describe("validateCountyPinToTagFile", () => {
         snapshot: { bundledAsOf: "2026-01-01", source: "test" },
         pinDigits: 9,
         byPin: { [SYNTHETIC_PIN]: { tagId: "1" } },
-      }),
+      }, "test"),
     ).toMatch(new RegExp(`byPin\\[${SYNTHETIC_PIN}\\] has an invalid shape`));
   });
 });
 
 describe("validateCountyParcelRecordByPinFile", () => {
-  const shardUrl = parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)!;
+  const shardUrl = parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, SYNTHETIC_PIN_SHARD_PREFIX)!;
 
   it("accepts a well-formed shard root", () => {
     expect(
@@ -300,7 +307,7 @@ describe("fetchCountyParcelRecordForPin shard validation", () => {
   });
 
   it("returns null for an empty-object shard response without throwing", async () => {
-    const shardUrl = parcelRecordShardUrl(SYNTHETIC_PIN_SHARD_PREFIX)!;
+    const shardUrl = parcelRecordShardUrl(CAMPAIGN_DEFAULT_COUNTY_ID, SYNTHETIC_PIN_SHARD_PREFIX)!;
     const validShard = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
       pinDigits: 9,
@@ -320,11 +327,11 @@ describe("fetchCountyParcelRecordForPin shard validation", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     expect(
-      await fetchCountyParcelRecordForPin(SYNTHETIC_PIN),
+      await fetchCountyParcelRecordForPin(SYNTHETIC_PIN, CAMPAIGN_DEFAULT_COUNTY_ID),
     ).toBeNull();
     expect(fetchMock).toHaveBeenCalledWith(shardUrl, expect.any(Object));
 
-    expect(await fetchCountyParcelRecordForPin(SYNTHETIC_PIN)).toEqual({
+    expect(await fetchCountyParcelRecordForPin(SYNTHETIC_PIN, CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual({
       row: { ain: SYNTHETIC_AIN },
       bundledAsOf: "2026-01-01",
     });
@@ -367,12 +374,12 @@ describe("fetchCountyLevyStacksJson / fetchCountyPinToTagJson validation", () =>
       });
     vi.stubGlobal("fetch", fetchMock);
 
-    expect(await fetchCountyLevyStacksJson()).toBeNull();
+    expect(await fetchCountyLevyStacksJson(CAMPAIGN_DEFAULT_COUNTY_ID)).toBeNull();
     expect(getLastCountyLevyStacksFetchFailureDetail()).toMatch(
       /missing stacksByTagId|missing snapshot/,
     );
 
-    expect(await fetchCountyLevyStacksJson()).toEqual(validStacks);
+    expect(await fetchCountyLevyStacksJson(CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual(validStacks);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -400,12 +407,12 @@ describe("fetchCountyLevyStacksJson / fetchCountyPinToTagJson validation", () =>
       });
     vi.stubGlobal("fetch", fetchMock);
 
-    expect(await fetchCountyPinToTagJson()).toBeNull();
+    expect(await fetchCountyPinToTagJson(CAMPAIGN_DEFAULT_COUNTY_ID)).toBeNull();
     expect(getLastCountyPinToTagFetchFailureDetail()).toMatch(
       /has an invalid shape/,
     );
 
-    expect(await fetchCountyPinToTagJson()).toEqual(validPinToTag);
+    expect(await fetchCountyPinToTagJson(CAMPAIGN_DEFAULT_COUNTY_ID)).toEqual(validPinToTag);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

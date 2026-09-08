@@ -19,7 +19,6 @@ import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
-  COUNTY_CONFIG,
   countyParcelRecordLookupValue,
   type CountyConfig,
 } from "@/lib/countyConfig";
@@ -671,7 +670,7 @@ export function ParcelRecordSaleTable({
   ain,
   pin = null,
   linkClerkRecorder = true,
-  countyConfig = COUNTY_CONFIG,
+  countyConfig,
 }: {
   transfers: ParcelRecordTransfer[] | null | undefined;
   /** Public parcel id (AIN) when the county uses that for hosted record links. */
@@ -683,7 +682,8 @@ export function ParcelRecordSaleTable({
    * reveal the hidden real demo source parcel via recorded documents.
    */
   linkClerkRecorder?: boolean;
-  countyConfig?: CountyConfig;
+  /** Resolved county for hosted parcel-record / clerk links (required). */
+  countyConfig: CountyConfig;
 }) {
   const rows = transfers ?? [];
   const showParties = rows.some(

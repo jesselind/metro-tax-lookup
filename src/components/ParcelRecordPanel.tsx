@@ -21,7 +21,6 @@ import { formatMartIntegerCodeDisplay, formatParcelFilingDisplay } from "@/lib/p
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
 import {
-  COUNTY_CONFIG,
   countyParcelRecordLookupValue,
   type CountyConfig,
 } from "@/lib/countyConfig";
@@ -100,7 +99,7 @@ export type ParcelRecordPanelProps = {
    */
   rentMode?: boolean;
   /** Resolved county for hosted parcel-record links. */
-  countyConfig?: CountyConfig;
+  countyConfig: CountyConfig;
   /** hashPath `{year}` override (Douglas SPA path year from file-backed sources). */
   parcelRecordLinkYear?: string | null;
 };
@@ -112,7 +111,7 @@ export function ParcelRecordPanel({
   pin = null,
   demoMode = false,
   rentMode = false,
-  countyConfig = COUNTY_CONFIG,
+  countyConfig,
   parcelRecordLinkYear = null,
 }: ParcelRecordPanelProps) {
   const [legalExpanded, setLegalExpanded] = useState(false);

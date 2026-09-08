@@ -15,7 +15,7 @@ Longer product model (three layers, search gate, `/sources`): **[`docs/county-co
 | **`douglas.ts`** | Douglas data record: `DOUGLAS_COUNTY_CONFIG`. |
 | **`registry.ts`** | `COUNTY_CONFIG_BY_ID`, `countyConfigById`, `wiredCountyConfigs`, campaign default `COUNTY_CONFIG`, boot-time validation. |
 | **`validate.ts`** | `validateCountyConfig` / `validateWiredCountyAdjacency`. Must **not** import the registry (avoids circular boot). |
-| **`helpers.ts`** | `countyFeatureAvailable`, `countyFeaturePresentation`, label/format helpers. Prefer a **resolved** config after lookup. |
+| **`helpers.ts`** | `countyFeatureAvailable`, `countyFeaturePresentation`, label/format helpers. **`config` is required** (no silent Arapahoe default). |
 | **`index.ts`** | Public barrel. App code imports `@/lib/countyConfig`. |
 | **`naming.ts`** | `{countyId}.ts` ↔ `{ID}_COUNTY_CONFIG` export name helper. |
 | **`packageContract.test.ts`** | Disk ↔ registry contract (one `{countyId}.ts` per wired id). |
@@ -32,7 +32,7 @@ Longer product model (three layers, search gate, `/sources`): **[`docs/county-co
 3. Loaders fetch `{countyId}-*` under `public/data/` (see `countyDataPaths.ts`).
 4. `/sources` methodology is a separate content module per county (`src/content/sourcesMethodology/`).
 
-**Rule:** After resolve, do **not** keep using `COUNTY_CONFIG` (Arapahoe default) for another county’s feature gates. That default exists only for pre-resolve / campaign-home paths.
+**Rule:** After resolve, do **not** use `COUNTY_CONFIG` / `CAMPAIGN_DEFAULT_COUNTY_CONFIG` (Arapahoe campaign default) for another county’s feature gates, URL builders, or loaders. Pass `countyConfigById(resolvedId)` (or the resolved config object). Helpers and path builders take a **required** `config` / `countyId` — TypeScript rejects omitted args. When a pre-resolve path truly means Arapahoe campaign home, pass `CAMPAIGN_DEFAULT_COUNTY_CONFIG` (or `CAMPAIGN_DEFAULT_COUNTY_ID`) **explicitly** so the default is obvious in review.
 
 ## Adding county N (checklist)
 

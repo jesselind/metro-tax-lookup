@@ -103,22 +103,22 @@ describe("county loader contract", () => {
     it.each(WIRED_COUNTY_IDS)(
       "%s required index URLs use county id prefix",
       (countyId) => {
-        expect(countyAccountMapUrl(undefined, countyId)).toBe(
+        expect(countyAccountMapUrl(countyId)).toBe(
           `/data/${countyId}-pin-to-tag.json`,
         );
-        expect(countyLevyStacksUrl(undefined, countyId)).toBe(
+        expect(countyLevyStacksUrl(countyId)).toBe(
           `/data/${countyId}-levy-stacks-by-tag-id.json`,
         );
         expect(
-          countySitusToPinsUrl(undefined, countyId, COUNTY_SITUS_TO_PINS_CACHE_BUST),
+          countySitusToPinsUrl(countyId, undefined, COUNTY_SITUS_TO_PINS_CACHE_BUST),
         ).toBe(
           `/data/${countyId}-situs-to-pins.json?v=${COUNTY_SITUS_TO_PINS_CACHE_BUST}`,
         );
-        expect(countyParcelRecordShardDirUrl(undefined, countyId)).toBe(
+        expect(countyParcelRecordShardDirUrl(countyId)).toBe(
           `/data/${countyId}-parcel-record-by-pin`,
         );
         expect(
-          countyParcelRecordShardUrl("035662", undefined, countyId, "v1"),
+          countyParcelRecordShardUrl(countyId, "035662", undefined, "v1"),
         ).toBe(`/data/${countyId}-parcel-record-by-pin/035662.json?v=v1`);
       },
     );
@@ -126,13 +126,13 @@ describe("county loader contract", () => {
     it.each(WIRED_COUNTY_IDS)(
       "%s validator filesystem paths match URL layout",
       (countyId) => {
-        expect(countyAccountMapFsRelative(undefined, countyId)).toBe(
+        expect(countyAccountMapFsRelative(countyId)).toBe(
           `public/data/${countyId}-pin-to-tag.json`,
         );
-        expect(countyLevyStacksFsRelative(undefined, countyId)).toBe(
+        expect(countyLevyStacksFsRelative(countyId)).toBe(
           `public/data/${countyId}-levy-stacks-by-tag-id.json`,
         );
-        expect(countySitusToPinsFsRelative(undefined, countyId)).toBe(
+        expect(countySitusToPinsFsRelative(countyId)).toBe(
           `public/data/${countyId}-situs-to-pins.json`,
         );
       },
@@ -162,8 +162,8 @@ describe("county loader contract", () => {
         expect(config).not.toBeNull();
         const pin = "1".padStart(config!.identifierDigits, "0");
         const expectedUrl = countyAccountMapUrl(
-          undefined,
           countyId,
+          undefined,
           COUNTY_ACCOUNT_MAP_CACHE_BUST,
         );
         const fetchMock = vi.fn().mockResolvedValue({
@@ -172,7 +172,7 @@ describe("county loader contract", () => {
         });
         vi.stubGlobal("fetch", fetchMock);
 
-        await fetchCountyPinToTagJson(undefined, countyId);
+        await fetchCountyPinToTagJson(countyId);
 
         expect(fetchMock).toHaveBeenCalledWith(expectedUrl, undefined);
       },
@@ -181,14 +181,14 @@ describe("county loader contract", () => {
     it.each(WIRED_COUNTY_IDS)(
       "%s levy stacks fetch uses countyLevyStacksUrl",
       async (countyId) => {
-        const expectedUrl = countyLevyStacksUrl(undefined, countyId);
+        const expectedUrl = countyLevyStacksUrl(countyId);
         const fetchMock = vi.fn().mockResolvedValue({
           ok: true,
           json: async () => minimalLevyStacksJson(),
         });
         vi.stubGlobal("fetch", fetchMock);
 
-        await fetchCountyLevyStacksJson(undefined, countyId);
+        await fetchCountyLevyStacksJson(countyId);
 
         expect(fetchMock).toHaveBeenCalledWith(expectedUrl, undefined);
       },
@@ -198,8 +198,8 @@ describe("county loader contract", () => {
       "%s situs fetch uses countySitusToPinsUrl",
       async (countyId) => {
         const expectedUrl = countySitusToPinsUrl(
-          undefined,
           countyId,
+          undefined,
           COUNTY_SITUS_TO_PINS_CACHE_BUST,
         );
         const fetchMock = vi.fn().mockResolvedValue({
@@ -208,7 +208,7 @@ describe("county loader contract", () => {
         });
         vi.stubGlobal("fetch", fetchMock);
 
-        await fetchCountySitusToPinsJson(undefined, countyId);
+        await fetchCountySitusToPinsJson(countyId);
 
         expect(fetchMock).toHaveBeenCalledWith(expectedUrl, {
           credentials: "same-origin",
@@ -219,7 +219,7 @@ describe("county loader contract", () => {
     it.each(WIRED_COUNTY_IDS)(
       "%s parcel-record shard URL uses county id segment",
       (countyId) => {
-        expect(parcelRecordShardUrl("035662", undefined, countyId)).toBe(
+        expect(parcelRecordShardUrl(countyId, "035662")).toBe(
           `/data/${countyId}-parcel-record-by-pin/035662.json?v=${COUNTY_PARCEL_RECORD_CACHE_BUST}`,
         );
       },
@@ -258,8 +258,8 @@ describe("county loader contract", () => {
         const config = countyConfigById(countyId);
         expect(config).not.toBeNull();
         const pin = "2".padStart(config!.identifierDigits, "0");
-        const stacksPath = countyLevyStacksFsRelative(undefined, countyId);
-        const accountPath = countyAccountMapFsRelative(undefined, countyId);
+        const stacksPath = countyLevyStacksFsRelative(countyId);
+        const accountPath = countyAccountMapFsRelative(countyId);
 
         expect(
           validateRequiredLevyStacksJson(minimalLevyStacksJson(), stacksPath),

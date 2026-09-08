@@ -17,6 +17,7 @@ import {
   committedLevyLinesFromStackLines,
   type ParcelValuesFromExport,
 } from "@/lib/committedLevyLine";
+import { CAMPAIGN_DEFAULT_COUNTY_CONFIG } from "@/lib/countyConfig";
 import { safeCountyLevyAspxUrl } from "@/lib/safeExternalHref";
 import demoPropertyData from "../data/demo-property.json";
 
@@ -81,7 +82,10 @@ function assertDemoPropertyFixture(data: unknown): DemoPropertyFixture {
   if (!Array.isArray(levy.lines) || levy.lines.length === 0) {
     throw new Error("demo-property.json: non-empty levy.lines required");
   }
-  if (typeof levy.levyAspxUrl !== "string" || !safeCountyLevyAspxUrl(levy.levyAspxUrl)) {
+  if (
+    typeof levy.levyAspxUrl !== "string" ||
+    !safeCountyLevyAspxUrl(levy.levyAspxUrl, CAMPAIGN_DEFAULT_COUNTY_CONFIG)
+  ) {
     throw new Error("demo-property.json: levy.levyAspxUrl must be a safe county levy table URL");
   }
   for (let i = 0; i < levy.lines.length; i++) {

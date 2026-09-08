@@ -50,17 +50,19 @@ describe("safeCountyLevyAspxUrl", () => {
     expect(
       safeCountyLevyAspxUrl(
         "https://parcelsearch.arapahoegov.com/Levy.aspx?id=1251492",
+        ARAPAHOE_COUNTY_CONFIG,
       ),
     ).toBe("https://parcelsearch.arapahoegov.com/Levy.aspx?id=1251492");
   });
 
   it("rejects wrong host or path", () => {
     expect(
-      safeCountyLevyAspxUrl("https://evil.example/Levy.aspx?id=1"),
+      safeCountyLevyAspxUrl("https://evil.example/Levy.aspx?id=1", ARAPAHOE_COUNTY_CONFIG),
     ).toBeNull();
     expect(
       safeCountyLevyAspxUrl(
         "https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=x",
+        ARAPAHOE_COUNTY_CONFIG,
       ),
     ).toBeNull();
   });
@@ -69,6 +71,7 @@ describe("safeCountyLevyAspxUrl", () => {
     expect(
       safeCountyLevyAspxUrl(
         "http://parcelsearch.arapahoegov.com/Levy.aspx?id=1",
+        ARAPAHOE_COUNTY_CONFIG,
       ),
     ).toBeNull();
   });
@@ -76,24 +79,24 @@ describe("safeCountyLevyAspxUrl", () => {
 
 describe("safeCountyParcelRecordUrl", () => {
   it("builds PPINum.aspx URL from AIN", () => {
-    expect(safeCountyParcelRecordUrl(SYNTHETIC_AIN)).toBe(
+    expect(safeCountyParcelRecordUrl(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       `https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=${SYNTHETIC_AIN}`,
     );
   });
 
   it("trims AIN and URL-encodes when needed", () => {
-    expect(safeCountyParcelRecordUrl(`  ${SYNTHETIC_AIN}  `)).toBe(
+    expect(safeCountyParcelRecordUrl(`  ${SYNTHETIC_AIN}  `, ARAPAHOE_COUNTY_CONFIG)).toBe(
       `https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=${SYNTHETIC_AIN}`,
     );
   });
 
   it("returns null for empty AIN", () => {
-    expect(safeCountyParcelRecordUrl("")).toBeNull();
-    expect(safeCountyParcelRecordUrl(null)).toBeNull();
+    expect(safeCountyParcelRecordUrl("", ARAPAHOE_COUNTY_CONFIG)).toBeNull();
+    expect(safeCountyParcelRecordUrl(null, ARAPAHOE_COUNTY_CONFIG)).toBeNull();
   });
 
   it("URL-encodes special characters in AIN", () => {
-    expect(safeCountyParcelRecordUrl("a&b=c")).toBe(
+    expect(safeCountyParcelRecordUrl("a&b=c", ARAPAHOE_COUNTY_CONFIG)).toBe(
       "https://parcelsearch.arapahoegov.com/PPINum.aspx?PPINum=a%26b%3Dc",
     );
   });
@@ -106,17 +109,17 @@ describe("safeCountyParcelRecordUrl", () => {
 
 describe("safeCountyCompsGridPdfUrl", () => {
   it("builds FileDownload.ashx URL from AIN", () => {
-    expect(safeCountyCompsGridPdfUrl(SYNTHETIC_AIN)).toBe(
+    expect(safeCountyCompsGridPdfUrl(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       `https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=${SYNTHETIC_AIN}`,
     );
   });
 
   it("returns null for empty AIN", () => {
-    expect(safeCountyCompsGridPdfUrl("   ")).toBeNull();
+    expect(safeCountyCompsGridPdfUrl("   ", ARAPAHOE_COUNTY_CONFIG)).toBeNull();
   });
 
   it("URL-encodes special characters in AIN", () => {
-    expect(safeCountyCompsGridPdfUrl("a&b=c")).toBe(
+    expect(safeCountyCompsGridPdfUrl("a&b=c", ARAPAHOE_COUNTY_CONFIG)).toBe(
       "https://parcelsearch.arapahoegov.com/FileDownload.ashx?AIN=a%26b%3Dc",
     );
   });
@@ -124,24 +127,24 @@ describe("safeCountyCompsGridPdfUrl", () => {
 
 describe("safeCountyBppNoticeOfValuationPdfUrl", () => {
   it("builds personalpropertysearch FileDownload.ashx URL from AIN", () => {
-    expect(safeCountyBppNoticeOfValuationPdfUrl(SYNTHETIC_AIN)).toBe(
+    expect(safeCountyBppNoticeOfValuationPdfUrl(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       `https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=${SYNTHETIC_AIN}`,
     );
   });
 
   it("returns null for empty AIN", () => {
-    expect(safeCountyBppNoticeOfValuationPdfUrl("   ")).toBeNull();
-    expect(safeCountyBppNoticeOfValuationPdfUrl(null)).toBeNull();
+    expect(safeCountyBppNoticeOfValuationPdfUrl("   ", ARAPAHOE_COUNTY_CONFIG)).toBeNull();
+    expect(safeCountyBppNoticeOfValuationPdfUrl(null, ARAPAHOE_COUNTY_CONFIG)).toBeNull();
   });
 
   it("URL-encodes special characters in AIN", () => {
-    expect(safeCountyBppNoticeOfValuationPdfUrl("a&b=c")).toBe(
+    expect(safeCountyBppNoticeOfValuationPdfUrl("a&b=c", ARAPAHOE_COUNTY_CONFIG)).toBe(
       "https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=a%26b%3Dc",
     );
   });
 
   it("does not use the real-property parcelsearch host", () => {
-    const href = safeCountyBppNoticeOfValuationPdfUrl(SYNTHETIC_AIN);
+    const href = safeCountyBppNoticeOfValuationPdfUrl(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG);
     expect(href).not.toMatch(/parcelsearch\.arapahoegov\.com/);
     expect(href).toMatch(/^https:\/\/personalpropertysearch\.arapahoegov\.com\//);
   });
@@ -149,18 +152,18 @@ describe("safeCountyBppNoticeOfValuationPdfUrl", () => {
 
 describe("safeCountyBppAccountDetailsUrl", () => {
   it("builds personalpropertysearch Details.aspx URL from AIN", () => {
-    expect(safeCountyBppAccountDetailsUrl(SYNTHETIC_AIN)).toBe(
+    expect(safeCountyBppAccountDetailsUrl(SYNTHETIC_AIN, ARAPAHOE_COUNTY_CONFIG)).toBe(
       `https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=${SYNTHETIC_AIN}`,
     );
   });
 
   it("returns null for empty AIN", () => {
-    expect(safeCountyBppAccountDetailsUrl("")).toBeNull();
-    expect(safeCountyBppAccountDetailsUrl(null)).toBeNull();
+    expect(safeCountyBppAccountDetailsUrl("", ARAPAHOE_COUNTY_CONFIG)).toBeNull();
+    expect(safeCountyBppAccountDetailsUrl(null, ARAPAHOE_COUNTY_CONFIG)).toBeNull();
   });
 
   it("URL-encodes special characters in AIN", () => {
-    expect(safeCountyBppAccountDetailsUrl("a&b=c")).toBe(
+    expect(safeCountyBppAccountDetailsUrl("a&b=c", ARAPAHOE_COUNTY_CONFIG)).toBe(
       "https://personalpropertysearch.arapahoegov.com/Details.aspx?AIN=a%26b%3Dc",
     );
   });
@@ -193,25 +196,25 @@ describe("clerkRecorderSearchValueFromBookPage", () => {
 
 describe("safeCountyClerkRecorderSearchUrl", () => {
   it("builds Clerk & Recorder quick-search URL from Book Page", () => {
-    expect(safeCountyClerkRecorderSearchUrl("D411 5095")).toBe(
+    expect(safeCountyClerkRecorderSearchUrl("D411 5095", ARAPAHOE_COUNTY_CONFIG)).toBe(
       "https://arapahoe.co.publicsearch.us/results?department=RP&searchType=quickSearch&searchValue=D4115095",
     );
   });
 
   it("returns null for empty Book Page", () => {
-    expect(safeCountyClerkRecorderSearchUrl("")).toBeNull();
-    expect(safeCountyClerkRecorderSearchUrl(null)).toBeNull();
+    expect(safeCountyClerkRecorderSearchUrl("", ARAPAHOE_COUNTY_CONFIG)).toBeNull();
+    expect(safeCountyClerkRecorderSearchUrl(null, ARAPAHOE_COUNTY_CONFIG)).toBeNull();
   });
 
   it("rejects unsafe Book Page values", () => {
-    expect(safeCountyClerkRecorderSearchUrl("javascript:alert(1)")).toBeNull();
+    expect(safeCountyClerkRecorderSearchUrl("javascript:alert(1)", ARAPAHOE_COUNTY_CONFIG)).toBeNull();
     expect(
-      safeCountyClerkRecorderSearchUrl("https://evil.example/?x=1"),
+      safeCountyClerkRecorderSearchUrl("https://evil.example/?x=1", ARAPAHOE_COUNTY_CONFIG),
     ).toBeNull();
   });
 
   it("always targets the configured Clerk host", () => {
-    const url = safeCountyClerkRecorderSearchUrl("D411 5095");
+    const url = safeCountyClerkRecorderSearchUrl("D411 5095", ARAPAHOE_COUNTY_CONFIG);
     expect(url).toMatch(/^https:\/\/arapahoe\.co\.publicsearch\.us\//);
     expect(ARAPAHOE_COUNTY_CONFIG.urls.clerkRecorderSearch?.host).toBe(
       "arapahoe.co.publicsearch.us",

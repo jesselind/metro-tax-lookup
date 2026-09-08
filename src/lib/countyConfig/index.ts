@@ -39,6 +39,8 @@ export { ARAPAHOE_COUNTY_CONFIG } from "@/lib/countyConfig/arapahoe";
 export { DOUGLAS_COUNTY_CONFIG } from "@/lib/countyConfig/douglas";
 
 export {
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_ID,
   COUNTY_CONFIG,
   COUNTY_CONFIG_BY_ID,
   countyConfigById,

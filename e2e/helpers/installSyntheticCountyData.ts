@@ -212,23 +212,23 @@ async function fulfillCountyRoutes(
   } = args;
   await fulfillJson(
     page,
-    dataUrlPattern(countySitusToPinsUrl(undefined, countyId)),
+    dataUrlPattern(countySitusToPinsUrl(countyId)),
     situs,
   );
   await fulfillJson(
     page,
-    dataUrlPattern(countyAccountMapUrl(undefined, countyId)),
+    dataUrlPattern(countyAccountMapUrl(countyId)),
     pinToTag,
   );
   await fulfillJson(
     page,
-    dataUrlPattern(countyLevyStacksUrl(undefined, countyId)),
+    dataUrlPattern(countyLevyStacksUrl(countyId)),
     levyStacks,
   );
   await fulfillJson(
     page,
     dataUrlPattern(
-      `${countyParcelRecordShardDirUrl(undefined, countyId)}/${shardPrefix}.json`,
+      `${countyParcelRecordShardDirUrl(countyId)}/${shardPrefix}.json`,
     ),
     parcelShard,
   );
@@ -236,7 +236,7 @@ async function fulfillCountyRoutes(
     await fulfillJson(
       page,
       dataUrlPattern(
-        `${countyValuationHistoryShardDirUrl(undefined, countyId)}/${shardPrefix}.json`,
+        `${countyValuationHistoryShardDirUrl(countyId)}/${shardPrefix}.json`,
       ),
       valuationHistoryShard,
     );

@@ -133,7 +133,7 @@ Hub bullets for `/sources` are built by `listCountyServiceGapHubItems(config)` i
 
 ## Dashboard
 
-After lookup resolves a county, use `countyConfigById(resolvedCountyId)` (not a global Arapahoe default) for feature and gap gates. Home search may still default UI copy to Arapahoe until resolve; post-resolve chrome must follow the loaded county. Home metro purpose breakdown: `shouldShowMetroPurposesSection(activeCountyConfig, metroFromLevyLines(…, resolvedCountyId))` — `features.metroPurposes` plus stack LG ID match into **that county's** purpose JSON; never LG ID alone and never another county's file.
+After lookup resolves a county, use `countyConfigById(resolvedCountyId)` (not a global Arapahoe default) for feature and gap gates. Helpers (`countyFeatureAvailable`, `countyFeaturePresentation`, `safeCounty*Url`, path builders, fetch loaders) take a **required** config or `countyId` — omitting them is a TypeScript error. Pre-resolve / campaign-home paths that truly mean Arapahoe must pass `CAMPAIGN_DEFAULT_COUNTY_CONFIG` or `CAMPAIGN_DEFAULT_COUNTY_ID` explicitly (search scope default and `/sources` selector default stay Arapahoe by product design). Home search may still default UI copy to Arapahoe until resolve; post-resolve chrome must follow the loaded county. Home metro purpose breakdown: `shouldShowMetroPurposesSection(activeCountyConfig, metroFromLevyLines(…, resolvedCountyId))` — `features.metroPurposes` plus stack LG ID match into **that county's** purpose JSON; never LG ID alone and never another county's file.
 
 When **two or more** counties are wired, search surfaces show which county matched: `CountyScopeTopLine` on typeahead / did-you-mean / multi-match chooser rows; the dashboard Address tile appends `· {displayName}` after the locked address headline. Single-county deploys omit that chrome (`showCountyScopeTopLine()`).
 
@@ -181,6 +181,7 @@ Full step list with file names: **`src/lib/countyConfig/README.md`**. Summary:
 ## Anti-patterns to avoid
 
 - Always-on COUNTY DATA GAP JSX that assumes Arapahoe (or Douglas) for every resolve.
+- Optional `config = COUNTY_CONFIG` / `countyId = COUNTY_CONFIG.id` defaults on helpers used after resolve (omit → silent Arapahoe).
 - `if (countyId === "douglas")` sprawl for ordinary feature gates (use config flags).
 - Reusing another county’s gap copy because “we need something red.”
 - Treating Layer 3 empty fields (or “we do not ship this field yet”) as COUNTY DATA GAP. Omit the row; do not invent a red incident.

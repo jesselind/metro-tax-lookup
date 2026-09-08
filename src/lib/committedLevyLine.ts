@@ -30,9 +30,9 @@ import {
   resolveAccountCountyLookup,
 } from "@/lib/countyAccountLookup";
 import {
-  COUNTY_CONFIG,
   countyConfigById,
   formatIdentifierNotFoundMessage,
+  type CountyConfig,
 } from "@/lib/countyConfig";
 import { activeCountyDataRoot } from "@/lib/countyDataEngine";
 import type { CountySearchScope } from "@/lib/countySearchScope";
@@ -216,7 +216,7 @@ export async function loadLevyStackFromPin(
 
   let countyId: string;
   let matchedPinKey: string;
-  let lookupConfig = COUNTY_CONFIG;
+  let lookupConfig: CountyConfig;
 
   if (options?.countyId) {
     const resolved = countyConfigById(options.countyId);
@@ -230,7 +230,7 @@ export async function loadLevyStackFromPin(
     }
     countyId = resolved.id;
     lookupConfig = resolved;
-    const pinsOnly = await fetchCountyPinToTagJson(dataRoot, countyId);
+    const pinsOnly = await fetchCountyPinToTagJson(countyId, dataRoot);
     if (!pinsOnly?.byPin) {
       return {
         ok: false,
@@ -238,7 +238,7 @@ export async function loadLevyStackFromPin(
           "We could not load parcel lookup data. Please try again in a moment.",
         technicalDetail:
           getLastCountyPinToTagFetchFailureDetail() ??
-          `${countyAccountMapUrl(dataRoot, countyId)}: missing or invalid`,
+          `${countyAccountMapUrl(countyId, dataRoot)}: missing or invalid`,
       };
     }
     const key = resolvePinKeyFromParcelIdInput(pinsOnly, pinInput, lookupConfig);
@@ -281,8 +281,8 @@ export async function loadLevyStackFromPin(
   }
 
   const [pins, stacks] = await Promise.all([
-    fetchCountyPinToTagJson(dataRoot, countyId),
-    fetchCountyLevyStacksJson(dataRoot, countyId),
+    fetchCountyPinToTagJson(countyId, dataRoot),
+    fetchCountyLevyStacksJson(countyId, dataRoot),
   ]);
   if (!pins?.byPin) {
     return {
@@ -291,7 +291,7 @@ export async function loadLevyStackFromPin(
         "We could not load parcel lookup data. Please try again in a moment.",
       technicalDetail:
         getLastCountyPinToTagFetchFailureDetail() ??
-        `${countyAccountMapUrl(dataRoot, countyId)}: missing or invalid`,
+        `${countyAccountMapUrl(countyId, dataRoot)}: missing or invalid`,
     };
   }
   if (!stacks?.stacksByTagId) {
@@ -301,7 +301,7 @@ export async function loadLevyStackFromPin(
         "We could not load tax district data. Please try again in a moment.",
       technicalDetail:
         getLastCountyLevyStacksFetchFailureDetail() ??
-        `${countyLevyStacksUrl(dataRoot, countyId)}: missing or invalid`,
+        `${countyLevyStacksUrl(countyId, dataRoot)}: missing or invalid`,
     };
   }
   const row = pins.byPin[matchedPinKey]!;

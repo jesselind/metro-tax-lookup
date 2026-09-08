@@ -45,11 +45,26 @@ export function wiredCountyConfigs(): readonly CountyConfig[] {
 }
 
 /**
- * Default county config until lookup resolves a county (Arapahoe-first UI paths).
- * After resolve, pass `countyConfigById(resolvedId)` — do not keep using this default
- * for feature gates on another county's parcel.
+ * Campaign / pre-resolve default county (Arapahoe search-scope and `/sources`
+ * selector default). After lookup resolves a county, use
+ * {@link countyConfigById} (or the resolved config object) for feature gates,
+ * URL builders, and loaders — never this constant for another county's parcel.
+ *
+ * Prefer {@link CAMPAIGN_DEFAULT_COUNTY_CONFIG} at call sites that intentionally
+ * mean "unresolved campaign home," so the Arapahoe default is obvious in review.
  */
 export const COUNTY_CONFIG: CountyConfig = ARAPAHOE_COUNTY_CONFIG;
+
+/**
+ * Same record as {@link COUNTY_CONFIG}. Use this name when passing the Arapahoe
+ * campaign default **on purpose** (glossary comps aside, demo property, legacy
+ * Arapahoe-only path constants). Do not use as a silent substitute for a
+ * resolved county.
+ */
+export const CAMPAIGN_DEFAULT_COUNTY_CONFIG: CountyConfig = COUNTY_CONFIG;
+
+/** `CAMPAIGN_DEFAULT_COUNTY_CONFIG.id` (`"arapahoe"`). */
+export const CAMPAIGN_DEFAULT_COUNTY_ID: string = CAMPAIGN_DEFAULT_COUNTY_CONFIG.id;
 
 for (const config of Object.values(COUNTY_CONFIG_BY_ID)) {
   const error = validateCountyConfig(config);

@@ -9,7 +9,6 @@
  */
 
 import {
-  COUNTY_CONFIG,
   countyConfigById,
   type CountyConfig,
 } from "@/lib/countyConfig";
@@ -61,12 +60,12 @@ function isValuationHistoryShardPrefix(prefix: string): boolean {
 }
 
 function valuationHistoryShardUrl(
+  countyId: string,
   prefix: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string | null {
   if (!isValuationHistoryShardPrefix(prefix)) return null;
-  const dir = countyValuationHistoryShardDirUrl(dataRoot, countyId);
+  const dir = countyValuationHistoryShardDirUrl(countyId, dataRoot);
   return `${dir}/${prefix}.json?v=${COUNTY_VALUATION_HISTORY_CACHE_BUST}`;
 }
 
@@ -148,13 +147,13 @@ async function fetchJsonWithTimeout<T>(
 }
 
 function fetchCountyValuationHistoryShard(
+  countyId: string,
   prefix: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<CountyValuationHistoryByAccountFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
-  const url = valuationHistoryShardUrl(prefix, root, id);
+  const url = valuationHistoryShardUrl(id, prefix, root);
   if (!url) return Promise.resolve(null);
 
   const cacheKey = valuationHistoryShardCacheKey(prefix, root, id);
@@ -180,12 +179,17 @@ function fetchCountyValuationHistoryShard(
   return pending;
 }
 
+/**
+ * Resolve valuation history series from a loaded shard.
+ * Unknown `countyId` returns null (does not fall back to Arapahoe).
+ */
 export function lookupValuationHistorySeries(
   pinInput: string,
   file: CountyValuationHistoryByAccountFile,
-  countyId: string = COUNTY_CONFIG.id,
+  countyId: string,
 ): CountyValuationHistoryPoint[] | null {
-  const base = countyConfigById(countyId) ?? COUNTY_CONFIG;
+  const base = countyConfigById(countyId);
+  if (!base) return null;
   const config: CountyConfig = {
     ...base,
     identifierDigits: file.pinDigits || base.identifierDigits,
@@ -200,10 +204,14 @@ export function lookupValuationHistorySeries(
   return null;
 }
 
+/**
+ * Lazy fetch valuation history for one account id.
+ * `countyId` is required (no silent Arapahoe default).
+ */
 export async function fetchCountyValuationHistoryForPin(
   pinInput: string,
+  countyId: string,
   dataRoot?: string,
-  countyId: string = COUNTY_CONFIG.id,
 ): Promise<{
   series: CountyValuationHistoryPoint[];
   bundledAsOf: string | null;
@@ -214,7 +222,7 @@ export async function fetchCountyValuationHistoryForPin(
   if (prefixes.length === 0) return null;
 
   for (const prefix of prefixes) {
-    const file = await fetchCountyValuationHistoryShard(prefix, root, id);
+    const file = await fetchCountyValuationHistoryShard(id, prefix, root);
     if (!file) continue;
     const series = lookupValuationHistorySeries(pinInput, file, id);
     if (series?.length) {
