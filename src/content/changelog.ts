@@ -37,7 +37,8 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       "Split src/lib/countyConfig.ts into src/lib/countyConfig/ (one data file per county: arapahoe.ts, douglas.ts; shared types/validate/helpers/naming/registry). Import path stays @/lib/countyConfig. Disk ↔ registry contract: packageContract.test.ts.",
       "LevyLineDistrictDetailDialog mills-history chart uses countyFeatureAvailable(\"millsHistory\", countyConfig) for the resolved county (no bare Arapahoe default).",
       "AUTH mills: county-keyed BUNDLES map (arapahoeAuthority* / douglasAuthority* data modules). Missing or unknown county no longer loads Arapahoe mills. resolveAuthorityMillsLookup returns null without a resident county or registry inference. Cross-county registry millsReferenceCountyId is required. levyPercentageResidentUrlForTaxYear requires an explicit county id.",
-      "Docs: docs/county-config.md, docs/cross-county-authorities.md, src/lib/countyConfig/README.md, root README. Unit: metroDistrictFromLevyLines, authorityMillsHistory (no silent Arapahoe), crossCountyAuthorityRegistry. e2e: Douglas with a matching metro LG ID must not show the Metro district share region.",
+      "Docs: docs/county-config.md, docs/cross-county-authorities.md (millsReferenceCountyId entity YoY only when resident stack mills match reference current-year mills), src/lib/countyConfig/README.md, root README (AUTH mills lookups require a resolved county ID). Unit: metroDistrictFromLevyLines, authorityMillsHistory (no silent Arapahoe), crossCountyAuthorityRegistry. e2e: Douglas with a matching metro LG ID must not show the Metro district share region.",
+      "prebuild validate:app-json -- --all-wired: every county in tools/wired-counties.json must have required {countyId}-* JSON under public/data/ (missing or malformed Douglas shipping files fail the build). Single-county and --data-dir prove-out paths unchanged.",
     ],
   },
   {

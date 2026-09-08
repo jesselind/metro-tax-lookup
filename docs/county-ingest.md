@@ -84,12 +84,18 @@ Exit **0** = IDENTICAL; exit **1** = diffs.
 **Validate JSON root keys:**
 
 ```bash
-# Shipping (also runs in prebuild)
+# Shipping: every wired county under public/data/ (also runs in prebuild)
+npm run validate:app-json -- --all-wired
+
+# Single county (default Arapahoe)
 npm run validate:app-json
 
-# Compare build only
+# Compare / prove-out build only
 npm run validate:app-json -- --data-dir supporting-data/_ingest-out
+npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas
 ```
+
+`--all-wired` reads `tools/wired-counties.json` and validates each county's required `{countyId}-*` files in the chosen `--data-dir` (default `public/data/`). Do not combine with `--county` (prove-out counties land in separate dirs).
 
 Row-shape tests: `src/lib/appJsonValidate.test.ts`.
 
