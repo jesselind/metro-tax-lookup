@@ -42,7 +42,10 @@ const { values } = parseArgs({
 
 const dataDir = values["data-dir"].replace(/\/+$/, "") || "public/data";
 const allWired = values["all-wired"] === true;
-const countyExplicit = process.argv.includes("--county");
+// parseArgs accepts --county <id> and --county=<id>; argv only has bare "--county" for the spaced form.
+const countyExplicit = process.argv.some(
+  (arg) => arg === "--county" || arg.startsWith("--county="),
+);
 
 function displayPath(absPath) {
   return relative(root, absPath) || absPath;
@@ -126,6 +129,24 @@ function readJson(absPath) {
 }
 
 /**
+ * Optional metro purpose-row filenames for a county (present files are shape-checked).
+ * Arapahoe keeps the historical unprefixed names; other counties use
+ * `{countyId}-metro-levies-YYYY.json` (see metroPurposesBundle.ts).
+ *
+ * @param {string} countyId
+ * @returns {string[]}
+ */
+function metroPurposesOptionalFilenames(countyId) {
+  if (countyId === "arapahoe") {
+    return ["metro-levies-2026.json", "metro-levies-2025.json"];
+  }
+  return [
+    `${countyId}-metro-levies-2026.json`,
+    `${countyId}-metro-levies-2025.json`,
+  ];
+}
+
+/**
  * Validate required (and present optional) app JSON for one county under dataRoot.
  * Fail-fast via process.exit(1); does not return a result object.
  *
@@ -141,11 +162,10 @@ function validateCounty(countyId, dataRootCanonical) {
     accountMap: countyDataBasename("pin-to-tag.json"),
   };
 
-  const OPTIONAL_FILES = {
-    situs: countyDataBasename("situs-to-pins.json"),
-    metro2026: "metro-levies-2026.json",
-    metro2025: "metro-levies-2025.json",
-  };
+  const optionalFilenames = [
+    countyDataBasename("situs-to-pins.json"),
+    ...metroPurposesOptionalFilenames(countyId),
+  ];
 
   const levyStacksPath = join(dataRootCanonical, REQUIRED_FILES.levyStacks);
   const levyStacks = readJson(levyStacksPath);
@@ -191,7 +211,7 @@ function validateCounty(countyId, dataRootCanonical) {
     }
   }
 
-  for (const filename of Object.values(OPTIONAL_FILES)) {
+  for (const filename of optionalFilenames) {
     const absPath = join(dataRootCanonical, filename);
     if (!existsSync(absPath)) continue;
     let data;

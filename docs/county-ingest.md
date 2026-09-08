@@ -208,7 +208,7 @@ npm run build:ingest:ship -- --ship-allow-diff
 5. **Atomic land:** replace together `arapahoe-levy-stacks-by-tag-id.json`, `arapahoe-pin-to-tag.json`, `arapahoe-situs-to-pins.json`, and `arapahoe-parcel-record-by-pin/`. On failure, restore prior targets. Non-Arapahoe shipping files untouched. Kill mid-rename can leave temps; backup + git remain the safety net.
 6. **Post-land gate:** staging vs live IDENTICAL again; then delete staging.
 
-Then: `npm run validate:app-json`, spot-check a few addresses locally, `npm run build`, bump semver/changelog when the shipping data or pipeline contract changes, commit, deploy.
+Then: `npm run validate:app-json -- --all-wired`, spot-check a few addresses locally, `npm run build`, bump semver/changelog when the shipping data or pipeline contract changes, commit, deploy.
 
 **Rollback:** local restore from gitignored backup; production: git revert, Vercel promote, or `npm run build:arapahoe-index`.
 
