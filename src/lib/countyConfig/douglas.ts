@@ -9,17 +9,22 @@
  * Data only. Types: `./types.ts`. Registry: `./registry.ts`.
  *
  * Mills from published Tax Districts and Mill Levies PDFs (no Levy.aspx).
- * Account ids are 8-character alphanumeric. No comps PDF / BPP / metro purpose
- * product in this county today (`metroPurposes: false`).
+ * Account ids are 8-character alphanumeric. No comps PDF / BPP product.
+ * Metro purpose rows come from the Abstract of Assessment tax-rates extract
+ * (`douglas-metro-levies-*.json`).
  *
  * Shipping JSON: `public/data/douglas-*`. Methodology: Douglas `/sources` module.
  */
 
+import {
+  DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
+  DOUGLAS_CURRENT_ABSTRACT_OF_ASSESSMENT_PDF_URL,
+} from "@/lib/douglasCountyUrls";
 import type { CountyConfig } from "@/lib/countyConfig/types";
 
 /**
  * County 2. Alphanumeric accounts, hash-path property details, mill PDF gap,
- * valuation-history shards; no Arapahoe-style purpose-row metro product.
+ * valuation-history shards; metro purposes from abstract tax-rates CSV.
  */
 export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
   id: "douglas",
@@ -46,6 +51,10 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
   },
   residentLinks: {
     propertySearch: "https://apps.douglas.co.us/assessor/web/",
+    millLeviesHub: DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
+    millLeviesHubLabel: "Assessor taxing authorities",
+    millLevyPublicInfoForm: DOUGLAS_CURRENT_ABSTRACT_OF_ASSESSMENT_PDF_URL,
+    millLevyPublicInfoFormLabel: "Abstract of Assessment",
   },
   hostedPropertyPageName: "property details",
   features: {
@@ -55,7 +64,7 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     compsPdf: false,
     bpp: false,
     millsHistory: true,
-    metroPurposes: false,
+    metroPurposes: true,
     priorYearValuesGap: false,
     priorYearValuesInProgress: false,
     dataMartRefreshGap: false,

@@ -88,12 +88,53 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
   });
 
-  test("Douglas with a matching metro LG ID omits Arapahoe purpose-row chrome", async ({
+  test("Douglas with a matching metro LG ID shows Douglas purpose-row chrome", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, {
       countyId: "douglas",
       includeMetro: true,
+    });
+    await page.goto("/");
+    await page.getByRole("radio", { name: "Douglas" }).click();
+    await searchSyntheticAddress(page);
+
+    await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+    const metroRegion = page.getByRole("region", {
+      name: "Metro district share",
+    });
+    await expect(metroRegion).toBeVisible();
+    await metroRegion
+      .getByRole("button", { name: /Check the math/i })
+      .click();
+    await expect(
+      metroRegion.getByRole("link", { name: /Abstract of Assessment/i }),
+    ).toHaveAttribute(
+      "href",
+      "https://www.douglasco.gov/documents/current-abstract-of-assessment.pdf/",
+    );
+    // Expanded math panel cites the district by name (visible after toggle).
+    await expect(
+      metroRegion.locator(`#home-metro-metro-check-math-panel`).getByText(
+        "Canyons Metropolitan District No. 3",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      metroRegion.getByText("Metro. General Operating", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      metroRegion.getByText("Metro. Debt Service", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(metroRegion.getByText(/Adonea/i)).toHaveCount(0);
+  });
+
+  test("Douglas with an Arapahoe-only metro LG ID omits purpose-row chrome", async ({
+    page,
+  }) => {
+    await installSyntheticCountyData(page, {
+      countyId: "douglas",
+      includeForeignArapahoeMetroLgId: true,
     });
     await page.goto("/");
     await page.getByRole("radio", { name: "Douglas" }).click();
@@ -249,6 +290,17 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     );
     await expect(page.getByText(/Realware detail JSON/i)).toBeVisible();
     await expect(page.getByText(/valuesByAbstractCode/i)).toBeVisible();
+    await expect(
+      page
+        .getByRole("navigation", { name: "On this page" })
+        .getByRole("link", { name: "Metro district tax share" }),
+    ).toHaveAttribute("href", "#douglas-metro-purposes");
+    await expect(
+      page.getByRole("heading", {
+        name: "Metro district purpose rows",
+        level: 3,
+      }),
+    ).toBeVisible();
   });
 });
 

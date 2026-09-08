@@ -85,7 +85,9 @@ export type CountyFeatures = {
   millsHistory: boolean;
   /**
    * Metro purpose-row product (ops/debt/other). When on, also set
-   * `residentLinks.millLevyPublicInfoForm` and `millLeviesHub` (validated).
+   * `residentLinks.millLevyPublicInfoForm`, `millLevyPublicInfoFormLabel`,
+   * `millLeviesHub`, and `millLeviesHubLabel` (validated). Load purpose JSON
+   * via `metroPurposesFileForCounty` for the resolved county only.
    */
   metroPurposes: boolean;
   /**
@@ -165,11 +167,15 @@ export type CountyConfig = {
      * Required by `validateCountyConfig` for that flag.
      */
     millLeviesHub?: string;
+    /** Visible hub link label when `millLeviesHub` is set (metro purposes cite). */
+    millLeviesHubLabel?: string;
     /**
-     * Mill Levy Public Information Form (or county equivalent PDF) when
+     * Primary mill-purpose source PDF (Public Info Form, Abstract, etc.) when
      * `features.metroPurposes` is on. Required by `validateCountyConfig` for that flag.
      */
     millLevyPublicInfoForm?: string;
+    /** Visible PDF link label when `millLevyPublicInfoForm` is set. */
+    millLevyPublicInfoFormLabel?: string;
   };
   /**
    * Resident phrase for the county's official property page (lowercase), used in

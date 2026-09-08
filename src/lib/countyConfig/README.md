@@ -55,7 +55,7 @@ Full table: `docs/county-config.md`.
 
 - **Product** (`features.compsPdf`, `situs`, `metroPurposes`, …): false → omit control.
 - **Gap / in-progress**: opt-in only with honest copy; pair dashboard + `/sources` for COUNTY DATA GAP.
-- **`metroPurposes`**: when true, `residentLinks.millLevyPublicInfoForm` and `millLeviesHub` are required. Home UI also needs a levy-stack LG ID match (`shouldShowMetroPurposesSection` in `metroDistrictFromLevyLines.ts`).
+- **`metroPurposes`**: when true, `residentLinks.millLevyPublicInfoForm`, `millLevyPublicInfoFormLabel`, `millLeviesHub`, and `millLeviesHubLabel` are required. Home UI also needs a levy-stack LG ID match into **that county's** purpose JSON (`shouldShowMetroPurposesSection` + `metroPurposesFileForCounty`).
 
 ## Related paths
 

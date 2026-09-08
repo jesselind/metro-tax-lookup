@@ -517,7 +517,7 @@ describe("metroLgIdsWithPurposeMillChanges", () => {
         },
       },
     ];
-    expect(metroLgIdsWithPurposeMillChanges(lines).has("65214")).toBe(true);
+    expect(metroLgIdsWithPurposeMillChanges(lines, undefined, "arapahoe").has("65214")).toBe(true);
   });
 
   it("omits LG IDs with no published previous rates", () => {
@@ -533,7 +533,7 @@ describe("metroLgIdsWithPurposeMillChanges", () => {
         },
       },
     ];
-    expect(metroLgIdsWithPurposeMillChanges(lines).size).toBe(0);
+    expect(metroLgIdsWithPurposeMillChanges(lines, undefined, "arapahoe").size).toBe(0);
   });
 });
 
@@ -668,6 +668,7 @@ describe("buildLevyLineYoYViewModel", () => {
         },
       },
       6800,
+      "arapahoe",
     );
     expect(vm).not.toBeNull();
     expect(vm?.showPurposeDetails || vm?.purposeChanges.length).toBeTruthy();
@@ -684,10 +685,10 @@ describe("buildLevyLineYoYViewModel", () => {
         lgId: "65416",
       },
     };
-    const skyRanch1 = metroDistrictForLgId("65416");
+    const skyRanch1 = metroDistrictForLgId("65416", "arapahoe");
     expect(skyRanch1).not.toBeNull();
-    expect(metroPurposeTotalsReconcileWithAuth(skyRanch1!)).toBe(false);
-    expect(metroPurposeYoYTrustedForLine(line)).toBe(false);
+    expect(metroPurposeTotalsReconcileWithAuth(skyRanch1!, undefined, "arapahoe")).toBe(false);
+    expect(metroPurposeYoYTrustedForLine(line, undefined, "arapahoe")).toBe(false);
     // 78.446 -> 76.08 = -2.366 mills (not the bogus -120 from bad prior ops).
     expect(levyLineMillDelta(line, undefined, "arapahoe")).toBeCloseTo(-2.366, 3);
 
@@ -709,13 +710,13 @@ describe("buildLevyLineYoYViewModel", () => {
         lgId: "65417",
       },
     };
-    const skyRanch3 = metroDistrictForLgId("65417");
+    const skyRanch3 = metroDistrictForLgId("65417", "arapahoe");
     expect(skyRanch3).not.toBeNull();
-    expect(metroPurposeTotalsReconcileWithAuth(skyRanch3!)).toBe(true);
-    expect(metroPurposeYoYTrustedForLine(line)).toBe(true);
-    expect(levyLineMillDelta(line)).toBeCloseTo(-0.431, 3);
+    expect(metroPurposeTotalsReconcileWithAuth(skyRanch3!, undefined, "arapahoe")).toBe(true);
+    expect(metroPurposeYoYTrustedForLine(line, undefined, "arapahoe")).toBe(true);
+    expect(levyLineMillDelta(line, undefined, "arapahoe")).toBeCloseTo(-0.431, 3);
 
-    const vm = buildLevyLineYoYViewModel(line, 500_000);
+    const vm = buildLevyLineYoYViewModel(line, 500_000, "arapahoe");
     expect(vm).not.toBeNull();
     expect(vm?.totalCompare?.previousMillsLabel).toBe("119.387");
     expect(vm?.totalCompare?.currentMillsLabel).toBe("118.956");

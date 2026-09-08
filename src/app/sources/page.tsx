@@ -24,7 +24,7 @@ import {
 } from "@/lib/contact";
 import { wiredCountyConfigs } from "@/lib/countyConfig";
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
-import type { LevyDataFile } from "@/lib/levyTypes";
+import { metroPurposesFileForCounty } from "@/lib/metroPurposesBundle";
 import { wiredCountyIdFromSourcesSearchParam } from "@/lib/sourcesPageHref";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import {
@@ -32,7 +32,6 @@ import {
   TOOL_PAGE_INTRO_PARAGRAPH_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
-import levyData from "@/data/metroLevies";
 
 const wiredCountyNames = formatWiredCountyNamesForSourcesIntro(
   wiredCountyConfigs(),
@@ -50,8 +49,9 @@ export default async function SourcesPage({
 }) {
   const params = await searchParams;
   const initialCountyId = wiredCountyIdFromSourcesSearchParam(params.county);
-  const levyJson = levyData as LevyDataFile;
-  const bundledIso = levyJson.snapshot?.bundledAsOf;
+  // Arapahoe after-gap metro chrome uses Arapahoe Public Info bundledAsOf.
+  const arapahoeMetro = metroPurposesFileForCounty("arapahoe");
+  const bundledIso = arapahoeMetro?.snapshot?.bundledAsOf;
   const bundledLabel = bundledIso ? formatLevyBundledAsOf(bundledIso) : null;
   const unlocatedAuthorityChainSources = openAuthorityChainUnlocatedSources();
 

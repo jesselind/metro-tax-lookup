@@ -68,8 +68,18 @@ export const SYNTHETIC_E2E_AUTHORITY = "SYNTHETIC E2E TEST DISTRICT";
  */
 export const SYNTHETIC_E2E_METRO_LG_ID = "65214";
 
+/**
+ * Bundled Douglas abstract metro LG ID (Canyons Metropolitan District No. 3).
+ * Ops + debt purpose rows in `douglas-metro-levies-2026.json`.
+ */
+export const SYNTHETIC_E2E_DOUGLAS_METRO_LG_ID = "65041";
+
 /** Authority label on the synthetic metro levy line in e2e mocks. */
 export const SYNTHETIC_E2E_METRO_AUTHORITY = "E2E SYNTHETIC METRO DISTRICT";
+
+/** Authority label on the Douglas synthetic metro levy line. */
+export const SYNTHETIC_E2E_DOUGLAS_METRO_AUTHORITY =
+  "E2E SYNTHETIC DOUGLAS METRO DISTRICT";
 
 /** Owner listing asserted after parcel-record shard fetch. */
 export const SYNTHETIC_E2E_OWNER = "E2E Synthetic Owner";
@@ -230,6 +240,44 @@ export const SYNTHETIC_LEVY_STACKS_WITH_METRO = {
             confidence: "high" as const,
             lgId: SYNTHETIC_E2E_METRO_LG_ID,
             mills: 50.804,
+          },
+        },
+        {
+          code: "9999",
+          authorityName: SYNTHETIC_E2E_AUTHORITY,
+          effectiveYear: "2025",
+          status: "A",
+          dolaMatch: {
+            method: "none" as const,
+            confidence: "low" as const,
+            mills: 10,
+          },
+        },
+      ],
+    },
+  },
+};
+
+/**
+ * Douglas stack with a metro LG ID present in `douglas-metro-levies-2026.json`
+ * (Canyons MD No. 3 — ops + debt purpose rows).
+ */
+export const SYNTHETIC_LEVY_STACKS_WITH_DOUGLAS_METRO = {
+  ...SYNTHETIC_LEVY_STACKS,
+  stacksByTagId: {
+    [SYNTHETIC_E2E_TAG_ID]: {
+      ...SYNTHETIC_LEVY_STACKS.stacksByTagId[SYNTHETIC_E2E_TAG_ID],
+      lines: [
+        {
+          code: "8888",
+          authorityName: SYNTHETIC_E2E_DOUGLAS_METRO_AUTHORITY,
+          effectiveYear: "2025",
+          status: "A",
+          dolaMatch: {
+            method: "fuzzy" as const,
+            confidence: "high" as const,
+            lgId: SYNTHETIC_E2E_DOUGLAS_METRO_LG_ID,
+            mills: 111.892,
           },
         },
         {

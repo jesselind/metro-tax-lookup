@@ -12,6 +12,7 @@ import {
   DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
   DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
   DOUGLAS_2025_TAX_DISTRICT_MILL_PDF_URL,
+  DOUGLAS_CURRENT_ABSTRACT_OF_ASSESSMENT_PDF_URL,
   DouglasMillPdfTaxDistrictGapNote,
 } from "@/content/douglasCountyDataGapNote";
 import { IN_PROGRESS_SOURCES_ANCHOR } from "@/content/inProgressGuidance";
@@ -92,6 +93,36 @@ export function DouglasSourcesMethodology() {
           taxing authorities<span className="sr-only"> (opens in a new tab)</span>
         </a>{" "}
         pages to verify against county files.
+      </p>
+
+      <h3
+        id="douglas-metro-purposes"
+        className={`${SOURCES_SECTION_H3} !mt-6 scroll-mt-8`}
+      >
+        Metro district purpose rows
+      </h3>
+      <p className="text-slate-700">
+        When a Douglas levy stack line carries a metro{" "}
+        <strong className="font-semibold text-slate-900">LG ID</strong>
+        {" "}
+        that matches this site&apos;s Douglas purpose file, the home page shows
+        that district&apos;s mill breakdown (operations, debt, and other parts
+        when the abstract lists them). Rows come from page 2 of the county{" "}
+        <a
+          href={DOUGLAS_CURRENT_ABSTRACT_OF_ASSESSMENT_PDF_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={TERM_LINK_CLASS}
+        >
+          Abstract of Assessment<span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {" "}
+        (Tax Rates and Revenues), joined to DOLA Property Tax Entities for the
+        LG ID. Debt often appears as a separate abstract name; this site folds
+        those rows onto the parent district when the name matches. Prior-year
+        purpose mills are not in that abstract extract, so purpose-level year
+        over year stays off until a prior year is published here. AUTH mill
+        history from the tax-district PDFs still applies when available.
       </p>
 
       <h3 className={`${SOURCES_SECTION_H3} !mt-6`}>Property details</h3>

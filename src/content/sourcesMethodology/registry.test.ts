@@ -25,8 +25,11 @@ describe("SOURCES_COUNTY_CONTENT_MODULES", () => {
       expect(entry.methodologyNav.href).toMatch(/^#/);
       expect(entry.methodologyNav.label.trim().length).toBeGreaterThan(0);
       if (entry.extraNav) {
-        expect(entry.extraNav.href).toMatch(/^#/);
-        expect(entry.extraNav.label.trim().length).toBeGreaterThan(0);
+        expect(entry.extraNav.length).toBeGreaterThan(0);
+        for (const link of entry.extraNav) {
+          expect(link.href).toMatch(/^#/);
+          expect(link.label.trim().length).toBeGreaterThan(0);
+        }
       }
     }
   });
@@ -63,6 +66,15 @@ describe("SOURCES_COUNTY_CONTENT_MODULES", () => {
         expect(afterGap[entry.countyId]).toBeTruthy();
       }
     }
+  });
+
+  it("lists Douglas metro purposes and mill history On this page links", () => {
+    const douglas = sourcesCountyContentModuleById("douglas");
+    expect(douglas?.extraNav?.map((l) => l.href)).toEqual([
+      "#douglas-metro-purposes",
+      "#douglas-mill-history",
+    ]);
+    expect(douglas?.extraNav?.[0]?.label).toBe("Metro district tax share");
   });
 
   it("keeps Arapahoe after-gap and omits Douglas (AfterGap null)", () => {

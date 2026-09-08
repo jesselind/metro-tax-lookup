@@ -149,8 +149,14 @@ export function validateCountyConfig(config: CountyConfig): string | null {
     if (!isNonEmptyString(config.residentLinks.millLevyPublicInfoForm)) {
       return "county config: features.metroPurposes requires residentLinks.millLevyPublicInfoForm";
     }
+    if (!isNonEmptyString(config.residentLinks.millLevyPublicInfoFormLabel)) {
+      return "county config: features.metroPurposes requires residentLinks.millLevyPublicInfoFormLabel";
+    }
     if (!isNonEmptyString(config.residentLinks.millLeviesHub)) {
       return "county config: features.metroPurposes requires residentLinks.millLeviesHub";
+    }
+    if (!isNonEmptyString(config.residentLinks.millLeviesHubLabel)) {
+      return "county config: features.metroPurposes requires residentLinks.millLeviesHubLabel";
     }
   }
   if (config.knownFailures.compsPdfHostedFiles && !config.features.compsPdf) {

@@ -78,7 +78,9 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     propertySearch: ARAPAHOE_ASSESSOR_PROPERTY_SEARCH,
     bppSearch: ARAPAHOE_ASSESSOR_BUSINESS_PERSONAL_PROPERTY_SEARCH,
     millLeviesHub: ARAPAHOE_ASSESSOR_MILL_LEVIES_HUB,
+    millLeviesHubLabel: "Assessor Mill Levies and Tax Districts",
     millLevyPublicInfoForm: ARAPAHOE_MILL_LEVY_PUBLIC_INFO_FORM_PDF,
+    millLevyPublicInfoFormLabel: "Mill Levy Public Information Form",
   },
   hostedPropertyPageName: "parcel record",
   features: {

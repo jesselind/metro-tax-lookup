@@ -802,8 +802,8 @@ export function HomeParcelAddressLookup({
   }, [levyAwaitingTemplateMills, sumMills]);
 
   const homeMetroFromLevyStack = useMemo(
-    () => metroFromLevyLines(levyLines),
-    [levyLines],
+    () => metroFromLevyLines(levyLines, resolvedCountyId),
+    [levyLines, resolvedCountyId],
   );
   const showHomeMetroSection = shouldShowMetroPurposesSection(
     activeCountyConfig,

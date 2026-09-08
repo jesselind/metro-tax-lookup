@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import type { LevyDistrictFromJson, LevyDataFile, LevyLineFromJson } from "@/lib/levyTypes";
+import type { LevyDistrictFromJson, LevyLineFromJson } from "@/lib/levyTypes";
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
-import levyData from "@/data/metroLevies";
 import {
   annualTaxDollarsFromAssessedMills,
   parcelAssessedForDollarEstimate,
@@ -28,6 +27,7 @@ import {
   metroLgIdKeyFromDolaMatch,
   normalizeMetroLgIdKey,
 } from "@/lib/metroDistrictFromLevyLines";
+import { metroPurposesFileForCounty } from "@/lib/metroPurposesBundle";
 
 /** Ignore float drift when comparing PDF mill rates (decimal form, e.g. 0.0634). */
 export const METRO_LEVY_RATE_YOY_EPS = 1e-9;
@@ -312,8 +312,10 @@ export function formatMillRatePercentMagnitude(percent: number): string {
 export function metroLgIdsWithPurposeMillChanges(
   lines: CommittedLevyLine[],
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): Set<string> {
-  const file = levyData as LevyDataFile;
+  const file = metroPurposesFileForCounty(countyId);
+  if (!file) return new Set();
   const districtIds = findMetroDistrictIdsFromLevyLines(lines, file.districts);
   if (districtIds.length === 0) return new Set();
 
@@ -339,10 +341,12 @@ export function metroLgIdsWithPurposeMillChanges(
 export function listMetroLevyPurposeChangesForLgId(
   lgIdKey: string | null | undefined,
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): MetroLevyPurposeChange[] {
   const key = normalizeMetroLgIdKey(lgIdKey);
   if (!key) return [];
-  const file = levyData as LevyDataFile;
+  const file = metroPurposesFileForCounty(countyId);
+  if (!file) return [];
   const districts = file.districts.filter(
     (d) =>
       d.type === "metro" && normalizeMetroLgIdKey(d.lgid ?? null) === key,
@@ -462,13 +466,21 @@ export function levyLineMillDelta(
   eps: number = METRO_LEVY_RATE_YOY_EPS,
   countyId?: string | null,
 ): number | null {
-  if (metroPurposeYoYTrustedForLine(line, eps)) {
+  if (metroPurposeYoYTrustedForLine(line, eps, countyId)) {
     const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
-    const metroTotal = metroLevyDistrictTotalChangeForLgId(lgKey, eps);
+    const metroTotal = metroLevyDistrictTotalChangeForLgId(
+      lgKey,
+      eps,
+      countyId,
+    );
     if (metroTotal?.rateDelta != null) {
       return metroTotal.rateDelta * METRO_RATE_TO_MILLS;
     }
-    const purposeChanges = listMetroLevyPurposeChangesForLgId(lgKey, eps);
+    const purposeChanges = listMetroLevyPurposeChangesForLgId(
+      lgKey,
+      eps,
+      countyId,
+    );
     return (
       purposeChanges.reduce((sum, change) => sum + change.rateDelta, 0) *
       METRO_RATE_TO_MILLS
@@ -608,9 +620,17 @@ export function buildLevyLineYoYViewModel(
   const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
   const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
 
-  if (metroPurposeYoYTrustedForLine(line)) {
-    const purposeChanges = listMetroLevyPurposeChangesForLgId(lgKey);
-    const metroTotal = metroLevyDistrictTotalChangeForLgId(lgKey);
+  if (metroPurposeYoYTrustedForLine(line, METRO_LEVY_RATE_YOY_EPS, countyId)) {
+    const purposeChanges = listMetroLevyPurposeChangesForLgId(
+      lgKey,
+      METRO_LEVY_RATE_YOY_EPS,
+      countyId,
+    );
+    const metroTotal = metroLevyDistrictTotalChangeForLgId(
+      lgKey,
+      METRO_LEVY_RATE_YOY_EPS,
+      countyId,
+    );
     const deltaMills =
       metroTotal?.rateDelta != null
         ? metroTotal.rateDelta * METRO_RATE_TO_MILLS
@@ -794,19 +814,22 @@ export function metroDistrictTileYoYSummary(
 export function metroLevyDistrictTotalChangeForLgId(
   lgIdKey: string | null | undefined,
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): MetroLevyDistrictTotalChange | null {
-  const district = metroDistrictForLgId(lgIdKey);
+  const district = metroDistrictForLgId(lgIdKey, countyId);
   if (!district) return null;
   return metroLevyDistrictTotalChange(district, eps);
 }
 
-/** Metro district for one LG ID, or null when unknown / not metro. */
+/** Metro district for one LG ID in the county bundle, or null when unknown. */
 export function metroDistrictForLgId(
   lgIdKey: string | null | undefined,
+  countyId?: string | null,
 ): LevyDistrictFromJson | null {
   const key = normalizeMetroLgIdKey(lgIdKey);
   if (!key) return null;
-  const file = levyData as LevyDataFile;
+  const file = metroPurposesFileForCounty(countyId);
+  if (!file) return null;
   return (
     file.districts.find(
       (d) =>
@@ -830,6 +853,7 @@ function authorityCodeFromMetroDistrict(
 export function metroPurposeTotalsReconcileWithAuth(
   district: LevyDistrictFromJson,
   epsMills: number = METRO_AUTH_RECONCILE_EPS_MILLS,
+  countyId?: string | null,
 ): boolean {
   const authorityCode = authorityCodeFromMetroDistrict(district);
   if (!authorityCode) return false;
@@ -837,7 +861,7 @@ export function metroPurposeTotalsReconcileWithAuth(
   const authCurrent = authorityMillsForTaxYear(
     authorityCode,
     AUTHORITY_MILLS_CURRENT_TAX_YEAR,
-    "arapahoe",
+    countyId,
   );
   if (authCurrent == null) return false;
 
@@ -848,7 +872,7 @@ export function metroPurposeTotalsReconcileWithAuth(
   const authPrevious = authorityMillsForTaxYear(
     authorityCode,
     AUTHORITY_MILLS_PREVIOUS_TAX_YEAR,
-    "arapahoe",
+    countyId,
   );
   if (metroTotal.ratePreviousTotal == null || authPrevious == null) {
     return false;
@@ -865,13 +889,18 @@ export function metroPurposeTotalsReconcileWithAuth(
 export function metroPurposeYoYTrustedForLine(
   line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch">,
   eps: number = METRO_LEVY_RATE_YOY_EPS,
+  countyId?: string | null,
 ): boolean {
   const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
-  const purposeChanges = listMetroLevyPurposeChangesForLgId(lgKey, eps);
+  const purposeChanges = listMetroLevyPurposeChangesForLgId(
+    lgKey,
+    eps,
+    countyId,
+  );
   if (purposeChanges.length === 0) return false;
-  const district = metroDistrictForLgId(lgKey);
+  const district = metroDistrictForLgId(lgKey, countyId);
   if (!district) return false;
-  return metroPurposeTotalsReconcileWithAuth(district);
+  return metroPurposeTotalsReconcileWithAuth(district, undefined, countyId);
 }
 
 function buildAuthLevyLineYoYViewModel(

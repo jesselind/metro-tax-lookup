@@ -20,7 +20,6 @@ import {
 } from "@/lib/annualTaxFromAssessedMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { monthlyFromAnnualTax } from "@/lib/resolveDwellingCount";
-import levyData from "@/data/metroLevies";
 import {
   countyFeatureAvailable,
   type CountyConfig,
@@ -49,6 +48,7 @@ import {
   type MetroLevyBarSegment,
 } from "@/lib/metroLevyBarSegments";
 import { METRO_RATE_TO_MILLS } from "@/lib/metroLevyYearOverYear";
+import { metroPurposesFileForCounty } from "@/lib/metroPurposesBundle";
 
 /** Ignore float drift when comparing levy line sums to certified totals. */
 const MILLS_ROUND_EPS = 0.0005;
@@ -175,9 +175,15 @@ export function MetroTaxShareFlow({
   const publicInfoFormHref = safeHttpOrHttpsUrl(
     countyConfig.residentLinks.millLevyPublicInfoForm,
   );
+  const publicInfoFormLabel =
+    countyConfig.residentLinks.millLevyPublicInfoFormLabel?.trim() ||
+    "county mill levy source";
   const millLeviesHubHref = safeHttpOrHttpsUrl(
     countyConfig.residentLinks.millLeviesHub,
   );
+  const millLeviesHubLabel =
+    countyConfig.residentLinks.millLeviesHubLabel?.trim() ||
+    "Assessor mill levies";
 
   const metroBreakdownPanelId = `${p}metro-breakdown-panel`;
   /** Disclosure target for the Check the math table and levy-line cards (WCAG: aria-controls). */
@@ -197,7 +203,14 @@ export function MetroTaxShareFlow({
     });
   }, [showCheckMath, metroPurposesOn]);
 
-  const levyJson = levyData as LevyDataFile;
+  const levyJson = useMemo((): LevyDataFile => {
+    return (
+      metroPurposesFileForCounty(countyConfig.id) ?? {
+        year: 0,
+        districts: [],
+      }
+    );
+  }, [countyConfig.id]);
   const bundledAsOfIso = levyJson.snapshot?.bundledAsOf;
   const bundledAsOfLabel = bundledAsOfIso
     ? formatLevyBundledAsOf(bundledAsOfIso)
@@ -1117,10 +1130,11 @@ export function MetroTaxShareFlow({
                             rel="noopener noreferrer"
                             className={COUNTY_EXTERNAL_LINK_CLASS}
                           >
-                            Mill Levy Public Information Form<span className="sr-only"> (opens in a new tab)</span>
+                            {publicInfoFormLabel}
+                            <span className="sr-only"> (opens in a new tab)</span>
                           </a>
                         ) : (
-                          "Mill Levy Public Information Form"
+                          publicInfoFormLabel
                         )}{" "}
                         (PDF) for budget year {levyJson.year}
                         {bundledAsOfLabel && bundledAsOfIso ? (
@@ -1144,8 +1158,10 @@ export function MetroTaxShareFlow({
                               rel="noopener noreferrer"
                               className={COUNTY_EXTERNAL_LINK_CLASS}
                             >
-                              Assessor Mill Levies and Tax Districts<span className="sr-only"> (opens in a new tab)</span>
-                            </a>.
+                              {millLeviesHubLabel}
+                              <span className="sr-only"> (opens in a new tab)</span>
+                            </a>
+                            {"."}
                           </>
                         ) : null}
                       </p>

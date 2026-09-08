@@ -24,6 +24,7 @@ import {
   SYNTHETIC_E2E_TAG_ID,
   SYNTHETIC_LEVY_STACKS,
   SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY,
+  SYNTHETIC_LEVY_STACKS_WITH_DOUGLAS_METRO,
   SYNTHETIC_LEVY_STACKS_WITH_METRO,
   SYNTHETIC_PARCEL_RECORD_SHARD,
   SYNTHETIC_PIN_SHARD_PREFIX,
@@ -41,8 +42,16 @@ export type InstallSyntheticCountyDataOptions = {
    * “I don’t know my county” unique match).
    */
   emptySitusCompanionCountyId?: "arapahoe" | "douglas";
-  /** When true, include a levy line whose LG ID matches bundled metro YoY test data. */
+  /**
+   * When true, include a levy line whose LG ID matches bundled metro purpose
+   * JSON for the selected county (Arapahoe Adonea 65214; Douglas Canyons 65041).
+   */
   includeMetro?: boolean;
+  /**
+   * Douglas-only regression: stack an Arapahoe metro LG ID under Douglas resolve
+   * so purpose chrome must stay off (county-keyed bundle has no Adonea row).
+   */
+  includeForeignArapahoeMetroLgId?: boolean;
   /**
    * When true (and not includeMetro / authorityChainLevyLineCode), use an AUTH
    * code that changed in bundled Levy % history so all-tile YoY chrome can be
@@ -81,19 +90,23 @@ export async function installSyntheticCountyData(
       : ARAPAHOE_COUNTY_CONFIG.id;
   const authorityCode = options.authorityChainLevyLineCode?.trim();
   const authorityName = options.authorityChainAuthorityName?.trim();
-  const levyStacks = options.includeMetro
+  const levyStacks = options.includeForeignArapahoeMetroLgId
     ? SYNTHETIC_LEVY_STACKS_WITH_METRO
-    : authorityCode
-      ? syntheticLevyStacksForAuthorityChain(authorityCode, {
-          authorityName,
-          levyAspxUrl:
-            countyId === DOUGLAS_COUNTY_CONFIG.id
-              ? `https://www.douglasco.gov/assessor/taxing-authorities/${SYNTHETIC_E2E_TAG_ID}`
-              : undefined,
-        })
-      : options.includeAuthYoY
-        ? SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY
-        : SYNTHETIC_LEVY_STACKS;
+    : options.includeMetro
+      ? countyId === DOUGLAS_COUNTY_CONFIG.id
+        ? SYNTHETIC_LEVY_STACKS_WITH_DOUGLAS_METRO
+        : SYNTHETIC_LEVY_STACKS_WITH_METRO
+      : authorityCode
+        ? syntheticLevyStacksForAuthorityChain(authorityCode, {
+            authorityName,
+            levyAspxUrl:
+              countyId === DOUGLAS_COUNTY_CONFIG.id
+                ? `https://www.douglasco.gov/assessor/taxing-authorities/${SYNTHETIC_E2E_TAG_ID}`
+                : undefined,
+          })
+        : options.includeAuthYoY
+          ? SYNTHETIC_LEVY_STACKS_WITH_AUTH_YOY
+          : SYNTHETIC_LEVY_STACKS;
 
   const situs =
     countyId === DOUGLAS_COUNTY_CONFIG.id
