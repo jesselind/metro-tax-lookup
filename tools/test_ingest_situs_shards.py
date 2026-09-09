@@ -20,6 +20,7 @@ from pathlib import Path
 from ingest.compare import compare_dirs
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
+    building_record_from_logical,
     format_neighborhood_code_with_extension,
     parcel_record_from_logical_row,
     read_values_parcel_enrichment_by_pin,
@@ -423,6 +424,34 @@ class TestDouglasParcelRecordEnrichment(unittest.TestCase):
             }
         )
         self.assertEqual(rec.get("neighborhoodCode"), "118-C")
+
+    def test_building_record_emits_units_from_unit_count(self) -> None:
+        """Douglas No_Of_Unit aliases to unit_count → resident Units attr."""
+        rec = building_record_from_logical(
+            {
+                "num": "1.00",
+                "impr_tp_dscr": "Apartment <= 3 Stories",
+                "unit_count": "18",
+                "bed_count": "28",
+            }
+        )
+        assert rec is not None
+        attrs = {a["label"]: a["value"] for a in rec.get("attributes", [])}
+        self.assertEqual(attrs.get("Improvement Type"), "Apartment <= 3 Stories")
+        self.assertEqual(attrs.get("Units"), "18")
+        self.assertEqual(attrs.get("Bedrooms"), "28.00")
+
+    def test_building_record_omits_units_when_blank(self) -> None:
+        rec = building_record_from_logical(
+            {
+                "num": "1",
+                "impr_tp_dscr": "Hospital",
+                "unit_count": "",
+            }
+        )
+        assert rec is not None
+        labels = [a["label"] for a in rec.get("attributes", [])]
+        self.assertNotIn("Units", labels)
 
 
 if __name__ == "__main__":

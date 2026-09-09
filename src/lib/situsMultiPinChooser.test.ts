@@ -96,14 +96,74 @@ describe("classifySitusPinAccountKind", () => {
     expect(classifySitusPinAccountKind("PERSPROP")).toBe("business_personal");
   });
 
-  it("maps Real and Improvement to real property", () => {
+  it("maps Arapahoe Real and Improvement to real property", () => {
     expect(classifySitusPinAccountKind("Real")).toBe("real_property");
     expect(classifySitusPinAccountKind("Improvement")).toBe("real_property");
   });
 
-  it("treats unknown or empty class as other", () => {
+  it("maps Douglas real-estate account types to real property", () => {
+    expect(classifySitusPinAccountKind("Residential")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Commercial")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Industrial")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Vacant Land")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Agricultural")).toBe("real_property");
+    expect(classifySitusPinAccountKind("HOA")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Mobile Home")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Leasing")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Exempt")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Utilities")).toBe("real_property");
+    expect(classifySitusPinAccountKind("State Assessed")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Producing Mine")).toBe("real_property");
+    expect(classifySitusPinAccountKind("Severed Int")).toBe("real_property");
+  });
+
+  it("treats possessory-style or empty class as other", () => {
     expect(classifySitusPinAccountKind(null)).toBe("other");
+    expect(classifySitusPinAccountKind("")).toBe("other");
     expect(classifySitusPinAccountKind("Possessory")).toBe("other");
+    expect(classifySitusPinAccountKind("Possessory Int")).toBe("other");
+  });
+});
+
+describe("enrichSitusPinHitsForChooser Douglas Commercial+Personal", () => {
+  it("offers Switch account type when Commercial and Personal share a situs", () => {
+    const pinToTag: CountyPinToTagFile = {
+      snapshot: { bundledAsOf: "t", source: "test" },
+      pinDigits: 8,
+      byPin: {
+        P0202999: {
+          tagId: "1",
+          tagShortDescr: "x",
+          propertyClassDescr: "Personal",
+          totalActual: 50_000,
+          totalAssessed: 14_500,
+        },
+        R0436688: {
+          tagId: "2",
+          tagShortDescr: "x",
+          propertyClassDescr: "Commercial",
+          totalActual: 2_000_000,
+          totalAssessed: 580_000,
+        },
+      },
+    };
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: "P0202999",
+        label: "2 E PLUM CREEK PKWY, CASTLE ROCK, CO 80104",
+      },
+      {
+        pin: "R0436688",
+        label: "2 E PLUM CREEK PKWY, CASTLE ROCK, CO 80104",
+      },
+    ];
+    const enriched = enrichSitusPinHitsForChooser(hits, pinToTag);
+    expect(enriched.map((h) => h.accountKind)).toEqual([
+      "real_property",
+      "business_personal",
+    ]);
+    expect(situsShouldOfferAccountTypeSwitch(enriched)).toBe(true);
+    expect(situsPlaceHasRealAndBusinessPersonal(hits, pinToTag)).toBe(true);
   });
 });
 

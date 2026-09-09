@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.12.0",
+    date: "2026-09-08",
+    title:
+      "County-agnostic Real+BPP switch and Rent dwelling N from building Units",
+    highlights: [
+      "classifySitusPinAccountKind maps Douglas account types (Residential, Commercial, Industrial, …) to real_property alongside Arapahoe Real/Improvement; Personal stays BPP. Switch account type appears whenever a situs mixes real_property + business personal (Matching properties already listed both). features.bpp remains PDF cites only.",
+      "Rent dwelling count N: after land-line UB, sum positive building Units attributes (Douglas Property_Improvements No_Of_Unit → parcel-record Units). Then duplex/triplex/fourplex Improvement Type, then single-dwelling. Never invent N from Apartment w/9 + Units text.",
+      "Ingest: BUILDING_ATTRIBUTE_FIELDS Units/unit_count; douglas.json aliases No_Of_Unit. Rebuilt douglas-parcel-record-by-pin; COUNTY_PARCEL_RECORD_CACHE_BUST bumped. Unit + ingest tests for Commercial+Personal switch and Units sum.",
+    ],
+  },
+  {
     version: "5.11.0",
     date: "2026-09-08",
     title:
