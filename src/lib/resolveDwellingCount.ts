@@ -11,10 +11,12 @@ import type {
 
 /**
  * How dwelling count N was resolved for Rent-mode equal-split.
- * Prefer land-line `UB`; never invent N when signals are ambiguous.
+ * Prefer land-line `UB`, then building `Units` attrs; never invent N when
+ * signals are ambiguous.
  */
 export type DwellingCountSource =
   | "land-line-ub"
+  | "building-units"
   | "improvement-type"
   | "single-dwelling";
 
@@ -118,6 +120,45 @@ export function dwellingCountFromImprovementType(
   return counts[0] ?? null;
 }
 
+/**
+ * Parse a building attribute Units cell (`18`, `18.00`) → positive whole number.
+ * Returns null for blank, zero, fractional, or unparseable values.
+ */
+export function parseBuildingUnitsAttribute(
+  value: string | null | undefined,
+): number | null {
+  const raw = (value ?? "").trim().replace(/,/g, "");
+  if (!raw) return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1) return null;
+  return n;
+}
+
+/**
+ * Sum positive whole-number `Units` attributes across buildings.
+ * Used when the county ships per-building unit counts (Douglas
+ * `No_Of_Unit` → building attr `Units`). Ignores blank/zero rows (clubhouse).
+ * Returns null when no building contributes a positive count.
+ */
+export function sumBuildingUnitsAttributes(
+  buildings: ParcelRecordBuilding[] | null | undefined,
+): number | null {
+  if (buildings == null || buildings.length === 0) return null;
+  let sum = 0;
+  let found = false;
+  for (const building of buildings) {
+    for (const attr of building.attributes ?? []) {
+      if ((attr.label ?? "").trim() !== "Units") continue;
+      const n = parseBuildingUnitsAttribute(attr.value);
+      if (n == null) continue;
+      sum += n;
+      found = true;
+    }
+  }
+  if (!found || sum < 1) return null;
+  return sum;
+}
+
 /** True when land-use text looks like a multi-unit apartment line without relying on UB. */
 function landUseLooksLikeAptMulti(landUse: string | null | undefined): boolean {
   const u = (landUse ?? "").toLowerCase();
@@ -193,8 +234,10 @@ function looksLikeSingleDwellingAccount(record: CountyParcelRecordRow): boolean 
 /**
  * Resolve dwelling count N for Rent-mode equal-split.
  *
- * Order (locked): land-line `UB` sum → duplex/triplex/fourplex Improvement Type →
- * single-dwelling account → unknown (`null`, whole-property only).
+ * Order (locked): land-line `UB` sum → building `Units` attr sum →
+ * duplex/triplex/fourplex Improvement Type → single-dwelling account →
+ * unknown (`null`, whole-property only). County-agnostic: use whichever
+ * signals the loaded parcel-record carries; do not invent N from "9+" text.
  */
 export function resolveDwellingCount(
   record: CountyParcelRecordRow | null | undefined,
@@ -207,6 +250,17 @@ export function resolveDwellingCount(
       n: ub,
       source: "land-line-ub",
       sourceLabel: `county land record: ${ub} ${ub === 1 ? "unit" : "units"}`,
+    };
+  }
+
+  const fromBuildingUnits = sumBuildingUnitsAttributes(record.buildings);
+  if (fromBuildingUnits != null) {
+    return {
+      n: fromBuildingUnits,
+      source: "building-units",
+      sourceLabel: `county building record: ${fromBuildingUnits} ${
+        fromBuildingUnits === 1 ? "unit" : "units"
+      }`,
     };
   }
 

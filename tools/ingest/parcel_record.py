@@ -51,10 +51,13 @@ _LEGAL_DESCR_TYPE_RANK = (
     "Platted",
 )
 
-# County PPINum attribute labels → logical building fields (mapping aliases).
+# County PPINum / parcel-record attribute labels → logical building fields
+# (mapping aliases). ``Units`` is Douglas ``No_Of_Unit`` (and any county that
+# aliases ``unit_count``); Arapahoe mart rows omit it and the attr is skipped.
 BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str | None], ...] = (
     ("Quality Grade", "quality_cd"),
     ("Improvement Type", "impr_tp_dscr"),
+    ("Units", "unit_count"),
     ("Bedrooms", "bed_count"),
     ("Bathrooms", "bath_count"),
     ("Architectural", "impr_mdl_cd_dscr"),
@@ -67,6 +70,8 @@ BUILDING_ATTRIBUTE_FIELDS: tuple[tuple[str, str | None], ...] = (
     ("Construction Type", "class"),
 )
 COUNTY_DECIMAL_ATTRIBUTE_KEYS = frozenset({"bed_count", "bath_count"})
+# Whole-number unit counts (Douglas No_Of_Unit): emit as integers, not ``6.00``.
+COUNTY_INTEGER_ATTRIBUTE_KEYS = frozenset({"unit_count"})
 # Arapahoe PPINum shows an empty Fireplaces row when the mart has no value.
 ALWAYS_EMIT_BUILDING_ATTRIBUTE_LABELS = frozenset({"Fireplaces"})
 
@@ -798,6 +803,8 @@ def building_record_from_logical(row: dict[str, str]) -> dict[str, Any] | None:
             continue
         if key in COUNTY_DECIMAL_ATTRIBUTE_KEYS:
             value = format_county_count(raw)
+        elif key in COUNTY_INTEGER_ATTRIBUTE_KEYS:
+            value = format_county_sqft(raw)
         else:
             value = raw
         attributes.append({"label": label, "value": value})

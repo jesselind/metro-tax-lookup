@@ -23,6 +23,8 @@ export default defineConfig({
   retries: isCI ? 1 : 0,
   workers: 1,
   reporter: isCI ? [["list"], ["html", { open: "never" }]] : "list",
+  /* Same as playwright.config.ts: avoid buffering huge county-data git diffs. */
+  captureGitInfo: { commit: true, diff: false },
   timeout: 120_000,
   grep: /@live-sources/,
   use: {

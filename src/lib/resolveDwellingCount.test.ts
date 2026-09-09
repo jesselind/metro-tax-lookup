@@ -11,9 +11,11 @@ import {
   levyDisplayDollarsForAudience,
   levyDollarsForAudience,
   monthlyFromAnnualTax,
+  parseBuildingUnitsAttribute,
   parseLandLineUbUnits,
   perUnitShareWholeDollars,
   resolveDwellingCount,
+  sumBuildingUnitsAttributes,
   sumLandLineUbUnits,
 } from "./resolveDwellingCount";
 
@@ -55,6 +57,62 @@ describe("sumLandLineUbUnits", () => {
         { units: "50.0000 UB", landUse: "APT Multi-Units (9+)" },
       ]),
     ).toBe(150);
+  });
+});
+
+describe("parseBuildingUnitsAttribute / sumBuildingUnitsAttributes", () => {
+  it("parses whole positive unit counts", () => {
+    expect(parseBuildingUnitsAttribute("18")).toBe(18);
+    expect(parseBuildingUnitsAttribute("18.00")).toBe(18);
+    expect(parseBuildingUnitsAttribute("1")).toBe(1);
+  });
+
+  it("rejects blank, zero, fractional, and non-numeric", () => {
+    expect(parseBuildingUnitsAttribute("")).toBeNull();
+    expect(parseBuildingUnitsAttribute(null)).toBeNull();
+    expect(parseBuildingUnitsAttribute("0")).toBeNull();
+    expect(parseBuildingUnitsAttribute("0.00")).toBeNull();
+    expect(parseBuildingUnitsAttribute("1.5")).toBeNull();
+    expect(parseBuildingUnitsAttribute("abc")).toBeNull();
+  });
+
+  it("sums Units attrs and skips zero clubhouse rows (Douglas apartment shape)", () => {
+    expect(
+      sumBuildingUnitsAttributes([
+        {
+          buildingNum: "1",
+          attributes: [
+            { label: "Improvement Type", value: "Apartment <= 3 Stories" },
+            { label: "Units", value: "18" },
+          ],
+        },
+        {
+          buildingNum: "2",
+          attributes: [
+            { label: "Improvement Type", value: "Clubhouse" },
+            { label: "Units", value: "0" },
+          ],
+        },
+        {
+          buildingNum: "3",
+          attributes: [
+            { label: "Improvement Type", value: "Apartment <= 3 Stories" },
+            { label: "Units", value: "20" },
+          ],
+        },
+      ]),
+    ).toBe(38);
+  });
+
+  it("returns null when no positive Units attrs", () => {
+    expect(
+      sumBuildingUnitsAttributes([
+        {
+          buildingNum: "1",
+          attributes: [{ label: "Improvement Type", value: "Hospital" }],
+        },
+      ]),
+    ).toBeNull();
   });
 });
 
@@ -143,7 +201,78 @@ describe("resolveDwellingCount", () => {
     });
   });
 
-  it("uses triplex improvement type when no UB", () => {
+  it("prefers UB over building Units attrs", () => {
+    expect(
+      resolveDwellingCount({
+        landLines: [
+          { units: "352.0000 UB", landUse: "APT Multi-Units (9+)" },
+        ],
+        buildings: [
+          {
+            buildingNum: "1",
+            attributes: [{ label: "Units", value: "10" }],
+          },
+        ],
+      }),
+    ).toMatchObject({ n: 352, source: "land-line-ub" });
+  });
+
+  it("sums building Units when no UB (Douglas apartment shape)", () => {
+    expect(
+      resolveDwellingCount({
+        landLines: [
+          { units: "4,976,294", landUse: "MULTI-UNITS(9 AND UP) - LAND" },
+        ],
+        buildings: [
+          {
+            buildingNum: "1",
+            attributes: [
+              { label: "Improvement Type", value: "Apartment w/9 + Units" },
+              { label: "Units", value: "18" },
+            ],
+          },
+          {
+            buildingNum: "2",
+            attributes: [
+              { label: "Improvement Type", value: "Clubhouse" },
+              { label: "Units", value: "0" },
+            ],
+          },
+          {
+            buildingNum: "3",
+            attributes: [
+              { label: "Improvement Type", value: "Apartment w/9 + Units" },
+              { label: "Units", value: "20" },
+            ],
+          },
+        ],
+        stateUseCd: "1225",
+        landUse: "Apartment w/9 + Units",
+      }),
+    ).toEqual({
+      n: 38,
+      source: "building-units",
+      sourceLabel: "county building record: 38 units",
+    });
+  });
+
+  it("prefers building Units over duplex improvement type", () => {
+    expect(
+      resolveDwellingCount({
+        buildings: [
+          {
+            buildingNum: "1",
+            attributes: [
+              { label: "Improvement Type", value: "Duplex One Story" },
+              { label: "Units", value: "2" },
+            ],
+          },
+        ],
+      }),
+    ).toMatchObject({ n: 2, source: "building-units" });
+  });
+
+  it("uses triplex improvement type when no UB and no Units", () => {
     const record: CountyParcelRecordRow = {
       landLines: [{ units: "1.0000 LT", landUse: "Duplexes-Triplexes" }],
       buildings: [
@@ -179,7 +308,7 @@ describe("resolveDwellingCount", () => {
     ).toMatchObject({ n: 1, source: "single-dwelling" });
   });
 
-  it("returns null for APT multi land use without UB (no invented N)", () => {
+  it("returns null for APT multi without UB or Units (no invented N)", () => {
     expect(
       resolveDwellingCount({
         landLines: [{ units: "1.0000 LT", landUse: "APT Multi-Units (9+)" }],

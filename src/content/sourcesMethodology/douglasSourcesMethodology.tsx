@@ -94,6 +94,29 @@ export function DouglasSourcesMethodology() {
         </a>{" "}
         pages to verify against county files.
       </p>
+      <p className="text-slate-700">
+        When one street has both a real-property account (for example
+        Commercial or Residential) and a business personal property account,
+        the dashboard offers{" "}
+        <strong className="font-semibold text-slate-900">Switch account type</strong>
+        {" "}
+        the same way it does for Arapahoe Real + Personal mixes. In{" "}
+        <strong className="font-semibold text-slate-900">Rent</strong>
+        {" "}
+        mode, dwelling count{" "}
+        <strong className="font-semibold text-slate-900">N</strong>
+        {" "}
+        for equal-split estimates comes from building{" "}
+        <strong className="font-semibold text-slate-900">Units</strong>
+        {" "}
+        on the Assessor improvements file (
+        <code className={CODE_INLINE_CLASS}>No_Of_Unit</code>
+        ), summed across buildings when present, not from inventing a count from
+        &quot;apartment with 9+ units&quot; labels. Arapahoe still prefers land-line{" "}
+        <strong className="font-semibold text-slate-900">UB</strong>
+        {" "}
+        when that signal exists.
+      </p>
 
       <h3
         id="douglas-metro-purposes"

@@ -24,18 +24,54 @@ export type SitusPinAccountKind =
   | "other";
 
 /**
- * Map Main Parcel `PropertyClassDescr` (on pin-to-tag) to chooser kind.
- * Personal → business personal property; Real/Improvement → real property.
- * Tax roll is not on pin-to-tag today; class is the available trigger.
+ * Pin-to-tag / Main Parcel class strings that mean business personal property.
+ * Arapahoe: Personal, PERSPROP. Douglas account_type_code: Personal.
+ */
+const BUSINESS_PERSONAL_PROPERTY_CLASS_DESCR = new Set([
+  "PERSONAL",
+  "PERSPROP",
+]);
+
+/**
+ * Pin-to-tag class strings that mean a real-property (non-BPP) tax account.
+ * Arapahoe Mart: Real, Improvement. Douglas account_type_code values that are
+ * land/building accounts (not Personal). Possessory-style classes stay `other`.
+ */
+const REAL_PROPERTY_CLASS_DESCR = new Set([
+  "REAL",
+  "IMPROVEMENT",
+  "RESIDENTIAL",
+  "COMMERCIAL",
+  "INDUSTRIAL",
+  "VACANT LAND",
+  "AGRICULTURAL",
+  "HOA",
+  "MOBILE HOME",
+  "LEASING",
+  "UTILITIES",
+  "STATE ASSESSED",
+  "PRODUCING MINE",
+  "SEVERED INT",
+  "EXEMPT",
+]);
+
+/**
+ * Map pin-to-tag `propertyClassDescr` to chooser account kind.
+ * Personal / PERSPROP → business personal property; Arapahoe Real/Improvement
+ * and Douglas real-estate account types → real property; else other
+ * (e.g. Possessory / Possessory Int). Tax roll is not on pin-to-tag today;
+ * class is the available trigger. County-agnostic: vocabulary union, not a
+ * countyId branch.
  */
 export function classifySitusPinAccountKind(
   propertyClassDescr: string | null | undefined,
 ): SitusPinAccountKind {
   const raw = (propertyClassDescr ?? "").trim().toUpperCase();
-  if (raw === "PERSONAL" || raw === "PERSPROP") {
+  if (!raw) return "other";
+  if (BUSINESS_PERSONAL_PROPERTY_CLASS_DESCR.has(raw)) {
     return "business_personal";
   }
-  if (raw === "REAL" || raw === "IMPROVEMENT") {
+  if (REAL_PROPERTY_CLASS_DESCR.has(raw)) {
     return "real_property";
   }
   return "other";

@@ -251,8 +251,12 @@ export function ArapahoeSourcesMethodology() {
           from county land-line{" "}
           <strong className="text-slate-900">UB</strong>
           {" "}
-          units, or from a duplex / triplex / fourplex building type, or from a
-          typical single-dwelling account, we also show a crude equal split
+          units, from building{" "}
+          <strong className="text-slate-900">Units</strong>
+          {" "}
+          counts when the parcel record includes them, or from a duplex /
+          triplex / fourplex building type, or from a typical single-dwelling
+          account, we also show a crude equal split
           (annual ÷ N and that amount ÷ 12), and the dollar amounts on those
           bill entries (and metro estimates when shown) use that same per-unit
           share, then show as monthly figures labeled /mo so they read like

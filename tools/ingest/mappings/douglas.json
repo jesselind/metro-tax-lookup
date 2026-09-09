@@ -236,6 +236,7 @@
       "num": ["Building_Id"],
       "quality_cd": ["Quality_Code"],
       "impr_tp_dscr": ["Style", "Built_As"],
+      "unit_count": ["No_Of_Unit"],
       "bed_count": ["No_Of_Bedroom"],
       "bath_count": ["No_Of_Bathroom"],
       "impr_mdl_cd_dscr": ["Built_As"],

@@ -29,6 +29,13 @@ export default defineConfig({
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
   reporter: isCI ? [["list"], ["html", { open: "never" }]] : "html",
+  /*
+   * CI defaults captureGitInfo.diff to true and buffers the full `git diff` into
+   * one string before truncating. County shard-tree refreshes (thousands of
+   * one-line JSON files) can exceed V8's string limit and crash Playwright
+   * before any test runs. Commit metadata is enough for the HTML report.
+   */
+  captureGitInfo: { commit: true, diff: false },
   /* Do not gate merges on county/district host availability. */
   grepInvert: /@live-sources/,
   use: {
