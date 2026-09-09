@@ -92,7 +92,7 @@ export function SourcesCountyGate({
     href: "#levy-breakdown-tool",
     label: "Your property tax bill",
   };
-  const countyExtraNav = navFields?.extraNav ?? null;
+  const countyExtraNav = navFields?.extraNav ?? [];
   const gapHubItems = listCountyServiceGapHubItems(config);
   const countySection = sectionsByCountyId[config.id] ?? null;
   const afterGapSection = afterGapByCountyId?.[config.id] ?? null;
@@ -157,16 +157,13 @@ export function SourcesCountyGate({
               When county data fails
             </a>
           </li>
-          {countyExtraNav ? (
-            <li className="flex min-h-0">
-              <a
-                href={countyExtraNav.href}
-                className={SOURCES_ON_PAGE_NAV_LINK_CLASS}
-              >
-                {countyExtraNav.label}
+          {countyExtraNav.map((link) => (
+            <li key={link.href} className="flex min-h-0">
+              <a href={link.href} className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
+                {link.label}
               </a>
             </li>
-          ) : null}
+          ))}
           <li className="flex min-h-0">
             <a href="#sources-code" className={SOURCES_ON_PAGE_NAV_LINK_CLASS}>
               Code

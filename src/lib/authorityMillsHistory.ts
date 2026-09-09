@@ -7,10 +7,15 @@
  * Lookups for bundled AUTH total mills by tax year.
  * Join key is stack line `code` (AUTH). Never invents a missing year.
  * Arapahoe: Levy % PDFs. Douglas: Tax Districts and Mill Levies PDFs.
+ *
+ * County N: add `{countyId}-authority-mills-by-tax-year.json` + rate-table
+ * pages JSON, a `src/data/{countyId}Authority*.ts` import pair, and one
+ * `BUNDLES` entry below. Callers must pass a resolved `countyId`; missing or
+ * unknown county yields no bundle (never silent Arapahoe).
  */
 
-import authorityMillsData from "@/data/authorityMillsByTaxYear";
-import authorityRateTablePagesData from "@/data/authorityRateTablePages";
+import arapahoeAuthorityMillsData from "@/data/arapahoeAuthorityMillsByTaxYear";
+import arapahoeAuthorityRateTablePagesData from "@/data/arapahoeAuthorityRateTablePages";
 import douglasAuthorityMillsData from "@/data/douglasAuthorityMillsByTaxYear";
 import douglasAuthorityRateTablePagesData from "@/data/douglasAuthorityRateTablePages";
 import {
@@ -96,11 +101,15 @@ function loadCountyMillsBundle(
   };
 }
 
+/**
+ * Static import map: county id → shipped mills + rate-table page bundles.
+ * Adding county N is data JSON + import modules + one entry here.
+ */
 const BUNDLES: Record<string, CountyMillsBundle> = {
   arapahoe: loadCountyMillsBundle(
     "arapahoe",
-    authorityMillsData,
-    authorityRateTablePagesData,
+    arapahoeAuthorityMillsData,
+    arapahoeAuthorityRateTablePagesData,
   ),
   douglas: loadCountyMillsBundle(
     "douglas",
@@ -109,13 +118,12 @@ const BUNDLES: Record<string, CountyMillsBundle> = {
   ),
 };
 
-const ARAPAHOE_BUNDLE = BUNDLES.arapahoe!;
-
+/** Lookup only; empty/unknown county → null (never Arapahoe). */
 function millsBundleForCounty(
   countyId?: string | null,
 ): CountyMillsBundle | null {
   const id = countyId?.trim();
-  if (!id) return ARAPAHOE_BUNDLE;
+  if (!id) return null;
   return BUNDLES[id] ?? null;
 }
 
@@ -135,16 +143,16 @@ export function levyPercentageResidentLinkText(taxYear: number): string {
 /**
  * Official https cite for the county mill rate-table PDF that published AUTH
  * mills for a tax year. Same bundle as {@link authorityMillsSeries}.
- * Omit `countyId` for the Arapahoe Levy % bundle (existing callers).
+ * Requires a wired county id that ships a mills bundle.
  */
 export function levyPercentageResidentUrlForTaxYear(
   taxYear: number,
-  countyId?: string | null,
+  countyId: string,
 ): string {
   const bundle = millsBundleForCounty(countyId);
   if (!bundle) {
     throw new Error(
-      `No AUTH mills bundle for county ${countyId?.trim() ?? "(none)"}`,
+      `No AUTH mills bundle for county ${countyId.trim() || "(none)"}`,
     );
   }
   const url = bundle.urlByTaxYear.get(taxYear);
@@ -167,7 +175,7 @@ export type AuthorityMillsResidentSource = {
  * authority-chain What changed?). Empty when that county has no mills bundle.
  */
 export function authorityMillsResidentSources(
-  countyId?: string | null,
+  countyId: string | null | undefined,
 ): AuthorityMillsResidentSource[] {
   const bundle = millsBundleForCounty(countyId);
   if (!bundle) return [];
@@ -256,7 +264,7 @@ export function deepLinkLevyPercentageUrlForParcel(
 
 export function levyPercentageResidentLinkForTaxYear(
   taxYear: number,
-  countyId?: string | null,
+  countyId: string,
 ): {
   text: string;
   url: string;
@@ -267,13 +275,16 @@ export function levyPercentageResidentLinkForTaxYear(
   };
 }
 
-const arapahoeSortedTaxYears = ARAPAHOE_BUNDLE.sortedTaxYears;
+const arapahoeSortedTaxYears = BUNDLES.arapahoe!.sortedTaxYears;
 
-/** Latest tax year in the Arapahoe AUTH history (Levy % label). */
+/**
+ * Latest tax year in the **Arapahoe** AUTH history (metro-levies / Levy % stamp).
+ * Prefer {@link authorityMillsSeries} with a resolved county for other counties.
+ */
 export const AUTHORITY_MILLS_CURRENT_TAX_YEAR =
   arapahoeSortedTaxYears[arapahoeSortedTaxYears.length - 1] ?? 2025;
 
-/** Prior tax year in the Arapahoe AUTH history (one year back for Phase 0). */
+/** Prior tax year in the Arapahoe AUTH history (one year back). */
 export const AUTHORITY_MILLS_PREVIOUS_TAX_YEAR =
   arapahoeSortedTaxYears.length >= 2
     ? arapahoeSortedTaxYears[arapahoeSortedTaxYears.length - 2]!
@@ -322,8 +333,10 @@ function readBundledMillsForYear(
  * Published AUTH mills for one stack line code, ascending by tax year.
  * Omits years with no data (never invents).
  *
- * @param countyId Resident county when known; used for cross-county registry
- *   resolution and mills-bundle selection.
+ * @param countyId Resident county when known. Required for non-registry AUTH
+ *   codes (missing county returns []). Registry-linked codes may omit it when
+ *   the stack code uniquely maps to one wired county; never falls back to
+ *   Arapahoe silently.
  */
 export function authorityMillsSeries(
   code: string | null | undefined,
@@ -357,7 +370,7 @@ export function normalizeAuthorityCode(
 
 /**
  * AUTH total mills for one tax year, or null when the code/year is absent.
- * Does not invent priors.
+ * Does not invent priors. Same countyId rules as {@link authorityMillsSeries}.
  */
 export function authorityMillsForTaxYear(
   code: string | null | undefined,

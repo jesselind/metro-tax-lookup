@@ -8,10 +8,11 @@
  *
  * Shipping UI loads `{SHIPPING_DATA_ROOT}/{countyId}-*` (committed under
  * `public/data/`). After ship-from-new that tree is engine v2 output.
- * Do not hard-code `arapahoe` in fetch URLs.
+ * Do not hard-code `arapahoe` in fetch URLs — pass the resolved `countyId`
+ * as the **first** argument (required; no silent campaign-default fill-in).
  */
 
-import { COUNTY_CONFIG, COUNTY_CONFIG_BY_ID } from "@/lib/countyConfig";
+import { COUNTY_CONFIG_BY_ID } from "@/lib/countyConfig";
 
 /** Committed shipping JSON (live site / localhost `/data/`). */
 export const SHIPPING_DATA_ROOT = "/data";
@@ -39,16 +40,22 @@ export function countyDataRoot(
   return normalizeDataRoot(dataRoot);
 }
 
-export function countyIdForDataPaths(
-  countyId: string = COUNTY_CONFIG.id,
-): string {
-  return countyId.trim() || COUNTY_CONFIG.id;
+/**
+ * Normalize a county id for path segments. Does **not** substitute Arapahoe when
+ * empty — callers must pass a real id (resolved or campaign-default `"arapahoe"`).
+ */
+export function countyIdForDataPaths(countyId: string): string {
+  const id = countyId.trim();
+  if (!id) {
+    throw new Error("countyId is required for county data paths");
+  }
+  return id;
 }
 
 /** URL: `{dataRoot}/{countyId}-pin-to-tag.json` (optional cache-bust query). */
 export function countyAccountMapUrl(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
   cacheBust?: string,
 ): string {
   const root = countyDataRoot(dataRoot);
@@ -59,8 +66,8 @@ export function countyAccountMapUrl(
 
 /** URL: `{dataRoot}/{countyId}-levy-stacks-by-tag-id.json` */
 export function countyLevyStacksUrl(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string {
   const root = countyDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -69,8 +76,8 @@ export function countyLevyStacksUrl(
 
 /** URL: `{dataRoot}/{countyId}-situs-to-pins.json` (optional cache-bust query). */
 export function countySitusToPinsUrl(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
   cacheBust?: string,
 ): string {
   const root = countyDataRoot(dataRoot);
@@ -84,8 +91,8 @@ export function countySitusToPinsUrl(
  * `{dataRoot}/{countyId}-parcel-record-by-pin`
  */
 export function countyParcelRecordShardDirUrl(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string {
   const root = countyDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -94,12 +101,12 @@ export function countyParcelRecordShardDirUrl(
 
 /** URL for one parcel-record shard file (caller validates path-safe prefix). */
 export function countyParcelRecordShardUrl(
+  countyId: string,
   prefix: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
   cacheBust?: string,
 ): string {
-  const dir = countyParcelRecordShardDirUrl(dataRoot, countyId);
+  const dir = countyParcelRecordShardDirUrl(countyId, dataRoot);
   const base = `${dir}/${prefix}.json`;
   return cacheBust ? `${base}?v=${cacheBust}` : base;
 }
@@ -109,8 +116,8 @@ export function countyParcelRecordShardUrl(
  * `{dataRoot}/{countyId}-valuation-history-by-account`
  */
 export function countyValuationHistoryShardDirUrl(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string {
   const root = countyDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -119,15 +126,15 @@ export function countyValuationHistoryShardDirUrl(
 
 /** URL for one valuation-history shard (caller validates path-safe prefix). */
 export function countyValuationHistoryShardUrl(
+  countyId: string,
   prefix: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
   cacheBust?: string,
 ): string | null {
   if (prefix.length !== 6 || !/^[A-Za-z0-9]+$/.test(prefix)) {
     return null;
   }
-  const dir = countyValuationHistoryShardDirUrl(dataRoot, countyId);
+  const dir = countyValuationHistoryShardDirUrl(countyId, dataRoot);
   const base = `${dir}/${prefix}.json`;
   return cacheBust ? `${base}?v=${cacheBust}` : base;
 }
@@ -148,8 +155,8 @@ export function countyFsDataDir(
 }
 
 export function countyAccountMapFsRelative(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string {
   const dir = countyFsDataDir(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -157,8 +164,8 @@ export function countyAccountMapFsRelative(
 }
 
 export function countyLevyStacksFsRelative(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string {
   const dir = countyFsDataDir(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -166,8 +173,8 @@ export function countyLevyStacksFsRelative(
 }
 
 export function countySitusToPinsFsRelative(
+  countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
-  countyId: string = COUNTY_CONFIG.id,
 ): string {
   const dir = countyFsDataDir(dataRoot);
   const id = countyIdForDataPaths(countyId);
@@ -178,15 +185,14 @@ export function countySitusToPinsFsRelative(
 export function countyHeavyDataPathnames(): string[] {
   const roots: CountyDataRoot[] = [SHIPPING_DATA_ROOT, ENGINE_V2_DATA_ROOT];
   const countyIds = Object.keys(COUNTY_CONFIG_BY_ID);
-  return roots.flatMap((root) =>
-    countyIds.flatMap((countyId) => {
+  const out: string[] = [];
+  for (const root of roots) {
+    for (const countyId of countyIds) {
       const id = countyIdForDataPaths(countyId);
-      const files = [
-        `${id}-pin-to-tag.json`,
-        `${id}-situs-to-pins.json`,
-        `${id}-levy-stacks-by-tag-id.json`,
-      ];
-      return files.map((file) => `${root}/${file}`);
-    }),
-  );
+      out.push(`${root}/${id}-pin-to-tag.json`);
+      out.push(`${root}/${id}-levy-stacks-by-tag-id.json`);
+      out.push(`${root}/${id}-situs-to-pins.json`);
+    }
+  }
+  return out;
 }

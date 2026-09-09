@@ -9,14 +9,14 @@
  */
 
 import {
-  COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_ID,
   countyConfigById,
   type CountyConfig,
 } from "@/lib/countyConfig";
 import { situsEnabledCountyIds } from "@/lib/situsIndexLookup";
 
-/** Campaign-default selected county (tier 1). */
-export const DEFAULT_SEARCH_COUNTY_ID = COUNTY_CONFIG.id;
+/** Campaign-default selected county (tier 1) — intentional Arapahoe home default. */
+export const DEFAULT_SEARCH_COUNTY_ID = CAMPAIGN_DEFAULT_COUNTY_ID;
 
 /**
  * Resident search scope.

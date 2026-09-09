@@ -91,6 +91,138 @@ describe("validate_app_json.mjs CLI", () => {
     expect(result.stdout).toMatch(/county=douglas/);
   });
 
+  it(
+    "validates every wired county under public/data with --all-wired",
+    () => {
+      const result = spawnSync(process.execPath, [scriptPath, "--all-wired"], {
+        cwd: repoRoot,
+        encoding: "utf8",
+      });
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toMatch(/county=arapahoe/);
+      expect(result.stdout).toMatch(/county=douglas/);
+      expect(result.stdout).toMatch(/ok all wired/);
+    },
+    60_000,
+  );
+
+  it("rejects --all-wired when a wired county's required JSON is missing", () => {
+    const dir = mkdtempSync(join(repoRoot, "supporting-data", "validate-app-json-all-wired-"));
+    cleanupPaths.push(dir);
+    // Arapahoe-shaped only — Douglas required files absent.
+    writeFileSync(
+      join(dir, "arapahoe-levy-stacks-by-tag-id.json"),
+      JSON.stringify({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        stacksByTagId: {},
+      }),
+    );
+    writeFileSync(
+      join(dir, "arapahoe-pin-to-tag.json"),
+      JSON.stringify({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        pinDigits: 9,
+        byPin: { "123456789": { tagId: "0001", tagShortDescr: "0001" } },
+      }),
+    );
+
+    const dataDirArg = relative(repoRoot, dir);
+    const result = spawnSync(
+      process.execPath,
+      [scriptPath, "--all-wired", "--data-dir", dataDirArg],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+      },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/douglas-levy-stacks-by-tag-id\.json|douglas-pin-to-tag\.json/);
+  });
+
+  it("rejects --all-wired combined with --county", () => {
+    const result = spawnSync(
+      process.execPath,
+      [scriptPath, "--all-wired", "--county", "douglas"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+      },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/either --all-wired or --county/);
+  });
+
+  it("rejects --all-wired combined with --county=<id>", () => {
+    const result = spawnSync(
+      process.execPath,
+      [scriptPath, "--all-wired", "--county=douglas"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+      },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/either --all-wired or --county/);
+  });
+
+  it("rejects --all-wired when Douglas metro purpose JSON has a malformed districts field", () => {
+    const dir = mkdtempSync(join(repoRoot, "supporting-data", "validate-app-json-metro-"));
+    cleanupPaths.push(dir);
+
+    writeFileSync(
+      join(dir, "arapahoe-levy-stacks-by-tag-id.json"),
+      JSON.stringify({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        stacksByTagId: {},
+      }),
+    );
+    writeFileSync(
+      join(dir, "arapahoe-pin-to-tag.json"),
+      JSON.stringify({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        pinDigits: 9,
+        byPin: { "123456789": { tagId: "0001", tagShortDescr: "0001" } },
+      }),
+    );
+    writeFileSync(
+      join(dir, "douglas-levy-stacks-by-tag-id.json"),
+      JSON.stringify({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        stacksByTagId: {},
+      }),
+    );
+    writeFileSync(
+      join(dir, "douglas-pin-to-tag.json"),
+      JSON.stringify({
+        snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+        pinDigits: 8,
+        byPin: { R0000001: { tagId: "0035", tagShortDescr: "0035" } },
+      }),
+    );
+    writeFileSync(
+      join(dir, "douglas-metro-levies-2026.json"),
+      JSON.stringify({ year: 2026, districts: "not-an-array" }),
+    );
+
+    const dataDirArg = relative(repoRoot, dir);
+    const result = spawnSync(
+      process.execPath,
+      [scriptPath, "--all-wired", "--data-dir", dataDirArg],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+      },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/douglas-metro-levies-2026\.json/);
+    expect(result.stderr).toMatch(/missing districts array/);
+  });
+
   it("rejects --data-dir when an in-repo symlink resolves outside the repository", () => {
     const outsideDir = mkdtempSync(join(tmpdir(), "validate-app-json-outside-"));
     cleanupPaths.push(outsideDir);

@@ -4,8 +4,9 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Single import site for the active metro levy JSON year.
- * Flip the file path here when a newer extract ships.
+ * Single import site for the active Arapahoe metro levy JSON year.
+ * Flip the file path here when shipping a newer extract.
+ * County-keyed lookups: `src/lib/metroPurposesBundle.ts`.
  */
 import levyData from "../../public/data/metro-levies-2026.json";
 

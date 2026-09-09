@@ -31,7 +31,6 @@ import {
 import { formatTaxAreaShortDescrDisplay } from "@/lib/countyParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
 import {
-  COUNTY_CONFIG,
   type CountyConfig,
 } from "@/lib/countyConfig";
 import {
@@ -276,7 +275,7 @@ export type LevyStackVisualizationProps = {
   /** Rent lens: show monthly whole dollars with /mo (Own stays annual). */
   rentMode?: boolean;
   /** Resolved county for levy-table host allowlist checks. */
-  countyConfig?: CountyConfig;
+  countyConfig: CountyConfig;
   /**
    * Assessed-by-tax-year from valuation history (when loaded). Drives per-year
    * levy-line dollars on the mill history chart and YoY modal columns.
@@ -300,7 +299,7 @@ export function LevyStackVisualization({
   allowLineEdit,
   levyDollarUnitCount = null,
   rentMode = false,
-  countyConfig = COUNTY_CONFIG,
+  countyConfig,
   levyDollarAssessedContext = null,
   parcelHasSaleHistory = false,
 }: LevyStackVisualizationProps) {
@@ -1236,7 +1235,7 @@ export function LevyStackVisualization({
         <LevyLineDistrictDetailDialog
           key={detailLineId ?? ""}
           authorityLabel={detailContext.authority}
-          countyId={countyConfig.id}
+          countyConfig={countyConfig}
           levyLineCode={detailContext.line.levyLineCode}
           sourceTagId={detailContext.line.sourceTagId}
           taxAreaShortCode={loadedParcelMeta?.tagShortDescr}

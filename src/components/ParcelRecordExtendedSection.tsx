@@ -17,7 +17,6 @@ import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton"
 import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import {
-  COUNTY_CONFIG,
   countyFeatureAvailable,
   type CountyConfig,
 } from "@/lib/countyConfig";
@@ -65,7 +64,7 @@ export type ParcelRecordExtendedSectionProps = {
    */
   rentMode?: boolean;
   /** Resolved county for hosted record / clerk links. */
-  countyConfig?: CountyConfig;
+  countyConfig: CountyConfig;
   /** When set, show a link that opens the valuation history modal. */
   onOpenValuationHistory?: () => void;
   showValuationHistoryLink?: boolean;
@@ -87,7 +86,7 @@ export function ParcelRecordExtendedSection({
   businessPersonal = false,
   omitContinuationHeading = false,
   rentMode = false,
-  countyConfig = COUNTY_CONFIG,
+  countyConfig,
   onOpenValuationHistory,
   showValuationHistoryLink = false,
 }: ParcelRecordExtendedSectionProps) {

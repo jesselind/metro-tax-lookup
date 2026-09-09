@@ -10,7 +10,6 @@
  */
 
 import {
-  COUNTY_CONFIG,
   isCountyHostAllowed,
   type CountyConfig,
   type CountyHostedQueryTemplate,
@@ -37,11 +36,12 @@ export function safeHttpOrHttpsUrl(
 /**
  * Build a same-origin https URL with one query param from a raw value.
  * Trims empty values to null; rejects hostname drift after construction.
+ * Pass the resolved county config (required — no silent Arapahoe default).
  */
 export function safeCountyHostedQueryUrl(
   template: CountyHostedQueryTemplate | undefined,
   rawValue: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   if (!template) return null;
   if (!isCountyHostAllowed(template.host, config)) return null;
@@ -115,10 +115,11 @@ function safeCountyParcelRecordHashPathUrl(
 /**
  * County online levy table for a taxing authority (id in query).
  * Arapahoe build script emits https://parcelsearch.arapahoegov.com/Levy.aspx?id=…
+ * Pass the resolved county config (required — no silent Arapahoe default).
  */
 export function safeCountyLevyAspxUrl(
   raw: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   if (raw == null) return null;
   const t = String(raw).trim();
@@ -144,10 +145,11 @@ export function safeCountyLevyAspxUrl(
 /**
  * County official property page for one account / public parcel id.
  * Query style (Arapahoe) or hash-path style (Douglas `#/details/{year}/{id}`).
+ * Pass the resolved county config (required — no silent Arapahoe default).
  */
 export function safeCountyParcelRecordUrl(
   idRaw: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
   opts?: { year?: string | null },
 ): string | null {
   const template = config.urls.parcelRecord;
@@ -157,19 +159,19 @@ export function safeCountyParcelRecordUrl(
   return safeCountyHostedQueryUrl(template, idRaw, config);
 }
 
-/** County comps grid PDF download (AIN-like field). */
+/** County comps grid PDF download (AIN-like field). Requires resolved county config. */
 export function safeCountyCompsGridPdfUrl(
   publicParcelIdRaw: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   if (!config.features.compsPdf) return null;
   return safeCountyHostedQueryUrl(config.urls.compsPdf, publicParcelIdRaw, config);
 }
 
-/** County business personal property account details page. */
+/** County business personal property account details page. Requires resolved county config. */
 export function safeCountyBppAccountDetailsUrl(
   publicParcelIdRaw: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   if (!config.features.bpp) return null;
   return safeCountyHostedQueryUrl(
@@ -179,10 +181,10 @@ export function safeCountyBppAccountDetailsUrl(
   );
 }
 
-/** County business personal property Notice of Valuation PDF. */
+/** County business personal property Notice of Valuation PDF. Requires resolved county config. */
 export function safeCountyBppNoticeOfValuationPdfUrl(
   publicParcelIdRaw: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   if (!config.features.bpp) return null;
   return safeCountyHostedQueryUrl(
@@ -204,10 +206,10 @@ export function clerkRecorderSearchValueFromBookPage(
   return compact;
 }
 
-/** Clerk & Recorder public search for one Book+Page (real property). */
+/** Clerk & Recorder public search for one Book+Page (real property). Requires resolved county config. */
 export function safeCountyClerkRecorderSearchUrl(
   bookPageRaw: string | null | undefined,
-  config: CountyConfig = COUNTY_CONFIG,
+  config: CountyConfig,
 ): string | null {
   const template = config.urls.clerkRecorderSearch;
   if (!template) return null;

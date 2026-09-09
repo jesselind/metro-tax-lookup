@@ -59,7 +59,7 @@ County gap = external failure, informational (`role="note"`). App error = our fa
 
 **IN PROGRESS (separate chrome):** When we are still working to obtain or ship data and have **not** confirmed a county failure, use sky **IN PROGRESS** surfaces (`InProgressCallout`, `InProgressBadge`, `InfoHintPopover` `variant="in-progress"`; tokens in `toolFlowStyles`). Title is **IN PROGRESS**, not COUNTY DATA GAP. Do not put IN PROGRESS items in the `#county-service-gaps` hub. Example: Douglas `priorYearValuesInProgress`.
 
-**Omit vs gap:** `countyFeaturePresentation` in `src/lib/countyConfig.ts`. No source (`features.*` false) → omit the control. Source exists but county hosting failed (`knownFailures`, e.g. comps PDFs) → COUNTY DATA GAP on both dashboard and `/sources`.
+**Omit vs gap:** `countyFeaturePresentation` in `src/lib/countyConfig/` (`helpers.ts`). No source (`features.*` false) → omit the control. Source exists but county hosting failed (`knownFailures`, e.g. comps PDFs) → COUNTY DATA GAP on both dashboard and `/sources`.
 
 ## UI pattern (locked)
 

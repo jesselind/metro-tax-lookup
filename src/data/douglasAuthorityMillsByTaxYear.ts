@@ -6,6 +6,7 @@
 /**
  * Douglas AUTH total mills by tax year (tax-district mill PDF extract).
  * Regenerate via tools/extract_douglas_authority_mills_by_tax_year.py.
+ * Registered in `src/lib/authorityMillsHistory.ts` BUNDLES by county id.
  */
 import douglasAuthorityMillsByTaxYear from "../../public/data/douglas-authority-mills-by-tax-year.json";
 

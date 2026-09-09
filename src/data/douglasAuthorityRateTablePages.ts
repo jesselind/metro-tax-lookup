@@ -6,6 +6,7 @@
 /**
  * Douglas AUTH + tax-district mill-PDF page lookups.
  * Regenerate via tools/extract_douglas_authority_mills_by_tax_year.py.
+ * Registered in `src/lib/authorityMillsHistory.ts` BUNDLES by county id.
  */
 import douglasAuthorityRateTablePages from "../../public/data/douglas-authority-rate-table-pages.json";
 

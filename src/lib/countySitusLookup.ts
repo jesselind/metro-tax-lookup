@@ -87,15 +87,15 @@ async function loadSitusBundleForCounty(
   const config = countyConfigById(countyId);
   if (!config) return null;
   const [situs, pinToTag] = await Promise.all([
-    fetchCountySitusToPinsJson(dataRoot, countyId),
-    fetchCountyPinToTagJson(dataRoot, countyId),
+    fetchCountySitusToPinsJson(countyId, dataRoot),
+    fetchCountyPinToTagJson(countyId, dataRoot),
   ]);
   if (!situs?.byKey) {
     return {
       countyId,
       detail:
-        getLastCountySitusFetchFailureDetail(dataRoot, countyId) ??
-        `${countySitusToPinsUrl(dataRoot, countyId)}: missing or invalid`,
+        getLastCountySitusFetchFailureDetail(countyId, dataRoot) ??
+        `${countySitusToPinsUrl(countyId, dataRoot)}: missing or invalid`,
     };
   }
   if (!pinToTag?.byPin) {
@@ -153,11 +153,11 @@ export async function prefetchCountySearchIndexes(
       kinds.map(async (kind) => {
         report(countyId, kind);
         if (kind === "situs") {
-          await fetchCountySitusToPinsJson(options?.dataRoot, countyId);
+          await fetchCountySitusToPinsJson(countyId, options?.dataRoot);
         } else if (kind === "pinToTag") {
-          await fetchCountyPinToTagJson(options?.dataRoot, countyId);
+          await fetchCountyPinToTagJson(countyId, options?.dataRoot);
         } else {
-          await fetchCountyLevyStacksJson(options?.dataRoot, countyId);
+          await fetchCountyLevyStacksJson(countyId, options?.dataRoot);
         }
         completed += 1;
         onProgress?.({

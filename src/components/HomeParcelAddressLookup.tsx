@@ -115,7 +115,7 @@ import {
   isBusinessPersonalPropertyAccount,
   situsShouldOfferAccountTypeSwitch,
 } from "@/lib/situsMultiPinChooser";
-import { metroFromLevyLines } from "@/lib/metroDistrictFromLevyLines";
+import { metroFromLevyLines, shouldShowMetroPurposesSection } from "@/lib/metroDistrictFromLevyLines";
 import {
   COUNTY_MILLS_YOY_EPS,
   METRO_LEVY_RATE_YOY_EPS,
@@ -138,7 +138,8 @@ import {
   type CountySearchScope,
 } from "@/lib/countySearchScope";
 import {
-  COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_ID,
   countyConfigById,
   countyFeatureAvailable,
   countyFeaturePresentation,
@@ -407,7 +408,7 @@ export function HomeParcelAddressLookup({
   const activeCountyConfig = useMemo(
     () =>
       (resolvedCountyId ? countyConfigById(resolvedCountyId) : null) ??
-      COUNTY_CONFIG,
+      CAMPAIGN_DEFAULT_COUNTY_CONFIG,
     [resolvedCountyId],
   );
   const activeBppOn = countyFeatureAvailable("bpp", activeCountyConfig);
@@ -506,7 +507,6 @@ export function HomeParcelAddressLookup({
       try {
         const result = await fetchCountyValuationHistoryForPin(
           lookupPin,
-          undefined,
           config.id,
         );
         if (!isCurrentRequest()) return;
@@ -538,7 +538,6 @@ export function HomeParcelAddressLookup({
       try {
         const result = await fetchCountyParcelRecordForPin(
           lookupPin,
-          undefined,
           config.id,
         );
         if (!isCurrentRequest()) return;
@@ -802,10 +801,13 @@ export function HomeParcelAddressLookup({
   }, [levyAwaitingTemplateMills, sumMills]);
 
   const homeMetroFromLevyStack = useMemo(
-    () => metroFromLevyLines(levyLines),
-    [levyLines],
+    () => metroFromLevyLines(levyLines, resolvedCountyId),
+    [levyLines, resolvedCountyId],
   );
-  const showHomeMetroSection = homeMetroFromLevyStack?.kind === "match";
+  const showHomeMetroSection = shouldShowMetroPurposesSection(
+    activeCountyConfig,
+    homeMetroFromLevyStack,
+  );
 
   const millLevyTotalDelta = useMemo(() => {
     const delta = levyStackTotalMillsDelta(
@@ -1360,7 +1362,9 @@ export function HomeParcelAddressLookup({
       return;
     }
     let cancelled = false;
-    void fetchCountyPinToTagJson(undefined, resolvedCountyId ?? COUNTY_CONFIG.id).then((data) => {
+    void fetchCountyPinToTagJson(
+      resolvedCountyId ?? CAMPAIGN_DEFAULT_COUNTY_ID,
+    ).then((data) => {
       if (!cancelled) setMultiMatchPinToTag(data);
     });
     return () => {
@@ -1481,6 +1485,7 @@ export function HomeParcelAddressLookup({
   const levyBreakdownMain = showHomeMetroSection ? (
     <MetroTaxShareFlow
       idPrefix="home-metro"
+      countyConfig={activeCountyConfig}
       prefillTotalMills={metroPrefillTotalMills}
       metroFromLevyStack={homeMetroFromLevyStack}
       rentMode={isRentMode}

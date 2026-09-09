@@ -38,7 +38,7 @@ County stack labels alone are not a durable join (truncation, abbreviations, dup
 
 ## Wired county manifest
 
-`tools/wired-counties.json` lists counties included in cross-county tooling and must stay aligned with `src/lib/countyConfig.ts` (`wiredCounties.test.ts` enforces this).
+`tools/wired-counties.json` lists counties included in cross-county tooling and must stay aligned with `src/lib/countyConfig/` (`COUNTY_CONFIG_BY_ID` in `registry.ts`; `wiredCounties.test.ts` enforces this).
 
 When adding county 3:
 
@@ -117,9 +117,9 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 | Mill rate-table PDF deep-links | Resident stack AUTH; deep-link only when resident county ships mills history |
 | YoY / stack Changed badges | Resident county bundle when shipped; else registry entity prior year only when resident **stack mills** match reference current year (numbers only — not mill rate-table PDF cites) |
 
-**`millsReferenceCountyId`** on registry rows points at the county bundle used to validate curated AUTH history at build time and, when the resident county has no mills bundle, to supply **entity-level YoY numbers** for registry-linked stack lines (not rate-table links or modal charts).
+**`millsReferenceCountyId`** on registry rows is **required**. It points at the county bundle used to validate curated AUTH history at build time. When the resident county has no mills bundle, that reference series may supply **entity-level YoY numbers** for registry-linked stack lines **only if** the resident stack mills match the reference county's current-year mills (same gate as the YoY row above; numbers only — not rate-table links or modal charts). `resolveAuthorityMillsLookup` never falls back to Arapahoe when the resident county is missing.
 
-**Douglas mills history (shipped):** `douglas-authority-mills-by-tax-year.json` + `douglas-authority-rate-table-pages.json` from Tax Districts and Mill Levies PDFs (Tax Years 2020–2025); `millsHistory: true`. Resident cites: `/sources` (Douglas mill history) lists each bundled year PDF from the Taxing Authorities hub. County 3 follows the same gate: ship `{countyId}-authority-mills-by-tax-year.json` (+ page index if deep-linking), set `millsHistory: true`. No architecture change.
+**Douglas mills history (shipped):** `douglas-authority-mills-by-tax-year.json` + `douglas-authority-rate-table-pages.json` from Tax Districts and Mill Levies PDFs (Tax Years 2020–2025); `millsHistory: true`. Resident cites: `/sources` (Douglas mill history) lists each bundled year PDF from the Taxing Authorities hub. County 3: ship `{countyId}-authority-mills-by-tax-year.json` (+ page index if deep-linking), add `src/data/{countyId}Authority*.ts` imports, register in `BUNDLES` in `src/lib/authorityMillsHistory.ts`, set `millsHistory: true`.
 
 **West Metro Fire (AUTH 4402):** Douglas stacks join DOLA Tax Entity ID **64243/1** (`lgId` **64243**) via curated override in `tools/arapahoe_dola_authority_overrides.json`. Do not map **4402** to SMFR (**64108** / Douglas AUTH **4014**) in the cross-county registry. A thin Douglas DOLA load (historical `dolaRowCount` 24) fuzzy-matched West Metro to SMFR; the override + `test_ingest_dola_match.py` regression keep **64243/1**.
 

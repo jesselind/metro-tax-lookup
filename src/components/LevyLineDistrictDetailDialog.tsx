@@ -23,7 +23,11 @@ import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSectio
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
-import { COUNTY_CONFIG, countyConfigById, countyFeatureAvailable } from "@/lib/countyConfig";
+import {
+  countyConfigById,
+  countyFeatureAvailable,
+  type CountyConfig,
+} from "@/lib/countyConfig";
 import { safeCountyParcelRecordUrl, safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import {
@@ -325,8 +329,8 @@ function MetroYoYYearCompare({
 
 type Props = {
   authorityLabel: string;
-  /** Resident county id for cross-county registry lookup. */
-  countyId?: string;
+  /** Resolved resident county (feature gates, mills history, parcel links). */
+  countyConfig: CountyConfig;
   /** Mart levy line code when known (improves explainer matching). */
   levyLineCode?: string;
   /** County TAG / source tag when known. */
@@ -372,7 +376,7 @@ function formatMailingLines(r: SpecialDistrictRecord): string[] {
 
 export function LevyLineDistrictDetailDialog({
   authorityLabel,
-  countyId,
+  countyConfig,
   levyLineCode,
   sourceTagId,
   taxAreaShortCode,
@@ -391,10 +395,7 @@ export function LevyLineDistrictDetailDialog({
   hasSaleHistory = false,
   onClose,
 }: Props) {
-  const countyConfig = useMemo(
-    () => (countyId ? countyConfigById(countyId) : null) ?? COUNTY_CONFIG,
-    [countyId],
-  );
+  const countyId = countyConfig.id;
   const priorYearValuesGap = countyFeatureAvailable(
     "priorYearValuesGap",
     countyConfig,
@@ -429,7 +430,7 @@ export function LevyLineDistrictDetailDialog({
   );
   /** Levy % AUTH timeline (2018–2025 when bundled); separate from YoY headline box. */
   const showMillsHistoryChart =
-    countyFeatureAvailable("millsHistory") &&
+    countyFeatureAvailable("millsHistory", countyConfig) &&
     millsHistory.length >= AUTHORITY_MILLS_HISTORY_MIN_POINTS;
   const metroYoySurface = levyYoYSurfaceClasses(
     yoy?.summary.direction ?? "neutral",

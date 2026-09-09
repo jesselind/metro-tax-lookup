@@ -16,7 +16,7 @@ import {
   resolvePinKeyFromParcelIdInput,
 } from "@/lib/countyParcelLevyData";
 import {
-  COUNTY_CONFIG,
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
   COUNTY_CONFIG_BY_ID,
   countyConfigById,
   type CountyConfig,
@@ -62,12 +62,19 @@ function lookupTriedKeys(raw: string, countyIds: readonly string[]): string {
   return unique.length > 0 ? unique.join(" / ") : raw.trim();
 }
 
+/**
+ * Config for empty / not-found messaging before a county is resolved.
+ * Single-candidate and letter-county probes prefer that county; otherwise the
+ * campaign-home Arapahoe default (not a silent post-resolve fill-in).
+ */
 function primaryConfigForInput(
   raw: string,
   countyIds: readonly string[],
 ): CountyConfig {
   if (countyIds.length === 1) {
-    return countyConfigById(countyIds[0]!) ?? COUNTY_CONFIG;
+    return (
+      countyConfigById(countyIds[0]!) ?? CAMPAIGN_DEFAULT_COUNTY_CONFIG
+    );
   }
   const letterInput = /[A-Za-z]/.test(raw.trim());
   if (letterInput) {
@@ -76,7 +83,7 @@ function primaryConfigForInput(
       if (config?.identifierAllowsLetters) return config;
     }
   }
-  return COUNTY_CONFIG;
+  return CAMPAIGN_DEFAULT_COUNTY_CONFIG;
 }
 
 export type AccountCountyLookupHit = {
@@ -109,7 +116,7 @@ export async function resolveAccountCountyLookup(
 
   const trimmed = raw.trim();
   if (!trimmed) {
-    return { status: "empty", config: COUNTY_CONFIG };
+    return { status: "empty", config: CAMPAIGN_DEFAULT_COUNTY_CONFIG };
   }
 
   const formatMatches = candidateCountyIdsForAccountInput(trimmed);
@@ -118,7 +125,7 @@ export async function resolveAccountCountyLookup(
     return {
       status: "not_found",
       tried: trimmed,
-      config: COUNTY_CONFIG,
+      config: CAMPAIGN_DEFAULT_COUNTY_CONFIG,
     };
   }
 
@@ -130,7 +137,7 @@ export async function resolveAccountCountyLookup(
     countyIds.map(async (countyId) => {
       const config = countyConfigById(countyId);
       if (!config) return;
-      const pins = await fetchCountyPinToTagJson(dataRoot, countyId);
+      const pins = await fetchCountyPinToTagJson(countyId, dataRoot);
       if (!pins?.byPin) return;
       const matchedPinKey = resolvePinKeyFromParcelIdInput(
         pins,

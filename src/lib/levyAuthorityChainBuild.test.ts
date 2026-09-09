@@ -75,8 +75,14 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.steps[1]?.body).toContain("returning to taxpayers");
     expect(entry.steps[1]?.body).not.toContain("taxpayers like you");
     expect(entry.steps[1]?.body).toContain("temporary tax credit");
-    expect(entry.steps[1]?.body).toContain("lowered the mill rate");
+    expect(entry.steps[1]?.body).toContain(
+      "stayed under TABOR by billing a lower rate",
+    );
     expect(entry.steps[1]?.body).not.toContain("cut the rate");
+    expect(entry.steps[1]?.body).toContain("November 2024");
+    expect(entry.steps[1]?.body).toContain(
+      "2024 tax bill, which you pay in 2025",
+    );
     expect(entry.steps[1]?.body).toContain("Tax Years 2023 and 2024");
     expect(entry.steps[1]?.body).not.toMatch(/\brow\b/);
     expect(entry.steps[1]?.body).not.toContain("this app");
@@ -87,7 +93,9 @@ describe("levyAuthorityChainBuild", () => {
       { termId: "term-mill-levy", match: "total rate" },
     ]);
     const measure = entry.steps.find((s) => s.id === "ballot-1a-tabor-retention");
-    expect(measure?.title).toContain("Ending the temporary tax credit");
+    expect(measure?.title).toBe(
+      "Ballot Issue 1A: Keeping money TABOR would otherwise return",
+    );
     expect(measure?.body).toContain("15.821");
     expect(measure?.body).toContain("go back to taxpayers");
     expect(measure?.body).not.toContain("taxpayers like you");
@@ -475,7 +483,7 @@ describe("levyAuthorityChainBuild", () => {
       "Change from last year",
       "Most notable change",
     ]);
-    const series = authorityMillsSeries("4571");
+    const series = authorityMillsSeries("4571", "arapahoe");
     const { changeFromLastYear, mostNotableChange } =
       selectMetroAuthorityMillsChangeBlocks(series);
     expect(changeFromLastYear).toBeTruthy();

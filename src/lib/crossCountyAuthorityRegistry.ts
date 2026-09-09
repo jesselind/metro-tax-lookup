@@ -28,10 +28,11 @@ export type CrossCountyAuthorityRegistryRow = {
   authorityChainEntryId?: string;
   /**
    * Which wired county ships the curated AUTH mills bundle used to validate
-   * registry-linked entries at build time. Not used as a cross-county resident
-   * fallback; resident UI uses the resident county bundle only.
+   * registry-linked entries at build time and for entity YoY numbers when the
+   * resident county has no mills bundle. Required on every registry row.
+   * Not a silent resident-county substitute.
    */
-  millsReferenceCountyId?: string;
+  millsReferenceCountyId: string;
 };
 
 export type CrossCountyAuthorityRegistryFile = {
@@ -122,7 +123,8 @@ function wiredCountyIdForRegistryStackCode(
  * Resolve which county mills bundle and AUTH code to use for history / YoY.
  * Always uses the **resident** county (explicit `countyId` or inferred from the
  * stack code on the registry row). Never substitutes another county's Levy %
- * PDF or AUTH series in resident UI.
+ * PDF or AUTH series in resident UI. Missing county with no registry inference
+ * returns null (never silent Arapahoe).
  */
 export function resolveAuthorityMillsLookup(
   levyLineCode: string | null | undefined,
@@ -150,9 +152,6 @@ export function resolveAuthorityMillsLookup(
     return { bundleCountyId: county, authorityCode: stackCode };
   }
 
-  if (WIRED_COUNTY_ID_SET.has("arapahoe")) {
-    return { bundleCountyId: "arapahoe", authorityCode: stackCode };
-  }
   return null;
 }
 
@@ -162,7 +161,8 @@ export function authorityMillsCodeForRegistryEntry(
 ): string | null {
   const row = crossCountyAuthorityById(registryId);
   if (!row) return null;
-  const referenceCountyId = row.millsReferenceCountyId ?? "arapahoe";
+  const referenceCountyId = row.millsReferenceCountyId?.trim();
+  if (!referenceCountyId) return null;
   return (
     levyLineCodeForCrossCountyAuthority(registryId, referenceCountyId) ??
     null
@@ -187,7 +187,8 @@ export function resolveRegistryEntityMillsLookup(
   const registryRow = findCrossCountyAuthorityByCountyLevyCode(county, stackCode);
   if (!registryRow) return null;
 
-  const referenceCountyId = registryRow.millsReferenceCountyId ?? "arapahoe";
+  const referenceCountyId = registryRow.millsReferenceCountyId?.trim();
+  if (!referenceCountyId) return null;
   const authorityCode = levyLineCodeForCrossCountyAuthority(
     registryRow.id,
     referenceCountyId,

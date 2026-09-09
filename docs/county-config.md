@@ -4,11 +4,15 @@ Permanent maintainer reference. Ephemeral phase checklists stay in gitignored `d
 
 Companion: **[county-service-gap-callouts.md](./county-service-gap-callouts.md)** (COUNTY DATA GAP UI chrome). Build inputs: **[county-build-inputs.md](./county-build-inputs.md)**. Ingest ship path: **[county-ingest.md](./county-ingest.md)**.
 
+**Code map (start here in the repo):** [`src/lib/countyConfig/README.md`](../src/lib/countyConfig/README.md) — one data file per county, shared types/validate/helpers, registry.
+
 ## Goal
 
-One frontend. Each wired county is a row in `src/lib/countyConfig.ts` (`COUNTY_CONFIG_BY_ID`) plus `{countyId}-*` JSON under `public/data/`. Lookup resolves the county; the UI loads that county’s files and **only that county’s honest holes**.
+One frontend. Each wired county is **one data module** under `src/lib/countyConfig/` (for example `arapahoe.ts`, `douglas.ts`), registered in `registry.ts` as `COUNTY_CONFIG_BY_ID`, plus `{countyId}-*` JSON under `public/data/`. Lookup resolves the county; the UI loads that county’s files and **only that county’s honest holes**.
 
 Do **not** treat Arapahoe’s gaps, fields, or methodology text as the default for every county. A third county may share nothing with Arapahoe or Douglas except the shared app shell.
+
+Do **not** put county-specific URLs or flags into `types.ts` / `helpers.ts` / `validate.ts`. Those files stay county-agnostic; county values live only in `{countyId}.ts`.
 
 ## Three layers (do not collapse them)
 
@@ -107,7 +111,7 @@ Compare card heading uses `displayName`: “See how {displayName} displays your 
 
 ## `CountyFeatures` today
 
-Defined in `src/lib/countyConfig.ts`. Extend the type when a new product source or gap incident is real; do not overload an unrelated flag.
+Defined in `src/lib/countyConfig/types.ts` (`CountyFeatures`). Extend the type when a new product source or gap incident is real; do not overload an unrelated flag. Set each county’s values only in that county’s data file (`arapahoe.ts`, `douglas.ts`, …).
 
 | Flag | Role |
 | --- | --- |
@@ -116,8 +120,8 @@ Defined in `src/lib/countyConfig.ts`. Extend the type when a new product source 
 | `valuationHistoryShards` | Lazy `{countyId}-valuation-history-by-account` prior-year actual/assessed series (Douglas Realware extract) |
 | `compsPdf` | County comps PDF product |
 | `bpp` | Business personal property URLs / UI |
-| `millsHistory` | Authority mills-over-time product **and** authority-chain mill rate-table cites for that county's bundled AUTH series. **Off** = no rate-table cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). Arapahoe and Douglas ship bundles today. |
-| `metroPurposes` | Metro purpose-row product |
+| `millsHistory` | Authority mills-over-time product **and** authority-chain mill rate-table cites for that county's bundled AUTH series. **Off** = no rate-table cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). Arapahoe and Douglas ship bundles today. Loaders: `src/lib/authorityMillsHistory.ts` `BUNDLES` map keyed by county id (no silent Arapahoe default when county is missing). |
+| `metroPurposes` | Metro purpose-row product (ops/debt/other breakdown from a county extract: Arapahoe Mill Levy Public Information → `metro-levies-*.json`; Douglas Abstract Tax Rates → `douglas-metro-levies-*.json`). Loaded by resolved county via `metroPurposesFileForCounty` (never another county's file). **Off** omits the home metro purpose section even when a levy-stack LG ID would match another county's JSON. When **on**, `residentLinks.millLevyPublicInfoForm`, `millLevyPublicInfoFormLabel`, `millLeviesHub`, and `millLeviesHubLabel` are required (validated). Gate helper: `shouldShowMetroPurposesSection` in `metroDistrictFromLevyLines.ts`; UI passes resolved `countyConfig` into `MetroTaxShareFlow`. |
 | `priorYearValuesGap` | COUNTY DATA GAP: no free bulk prior-year assessed story for this county. **Dashboard** copy is county-keyed (Arapahoe: assessor guidance that the public site has no history). **`/sources`** adds methodology detail when the flag is on. Module: `countyPriorYearValuesGapNote.tsx`. Mutually exclusive with `priorYearValuesInProgress`. |
 | `priorYearValuesInProgress` | IN PROGRESS (sky chrome, not red): still working to obtain bulk prior-year assessed. Douglas off after Phase 15; Arapahoe false. Dashboard **Coming soon** badge + `/sources` soft callout. Module: `countyPriorYearValuesInProgressNote.tsx`. Mutually exclusive with `priorYearValuesGap`. |
 | `dataMartRefreshGap` | COUNTY DATA GAP: Assessor Data Mart incomplete-refresh note (Arapahoe-shaped export only) |
@@ -129,7 +133,7 @@ Hub bullets for `/sources` are built by `listCountyServiceGapHubItems(config)` i
 
 ## Dashboard
 
-After lookup resolves a county, use `countyConfigById(resolvedCountyId)` (not a global Arapahoe default) for feature and gap gates. Home search may still default UI copy to Arapahoe until resolve; post-resolve chrome must follow the loaded county.
+After lookup resolves a county, use `countyConfigById(resolvedCountyId)` (not a global Arapahoe default) for feature and gap gates. Helpers (`countyFeatureAvailable`, `countyFeaturePresentation`, `safeCounty*Url`, path builders, fetch loaders) take a **required** config or `countyId` — omitting them is a TypeScript error. Pre-resolve / campaign-home paths that truly mean Arapahoe must pass `CAMPAIGN_DEFAULT_COUNTY_CONFIG` or `CAMPAIGN_DEFAULT_COUNTY_ID` explicitly (search scope default and `/sources` selector default stay Arapahoe by product design). Home search may still default UI copy to Arapahoe until resolve; post-resolve chrome must follow the loaded county. Home metro purpose breakdown: `shouldShowMetroPurposesSection(activeCountyConfig, metroFromLevyLines(…, resolvedCountyId))` — `features.metroPurposes` plus stack LG ID match into **that county's** purpose JSON; never LG ID alone and never another county's file.
 
 When **two or more** counties are wired, search surfaces show which county matched: `CountyScopeTopLine` on typeahead / did-you-mean / multi-match chooser rows; the dashboard Address tile appends `· {displayName}` after the locked address headline. Single-county deploys omit that chrome (`showCountyScopeTopLine()`).
 
@@ -154,7 +158,7 @@ Do **not** grow by duplicating the entire Arapahoe “Your property tax bill” 
 
 1. Add `{countyId}SourcesMethodology.tsx` (honest methodology + contextual gap boxes for that county only).
 2. Optional: `{countyId}SourcesAfterGap.tsx` if the county needs a section **after** the gap hub (Arapahoe metro / Related PDFs pattern).
-3. Register **one** object in `SOURCES_COUNTY_CONTENT_MODULES` (`registry.tsx`): `methodologyNav`, optional `extraNav`, `Methodology`, and `AfterGap` (`null` if none).
+3. Register **one** object in `SOURCES_COUNTY_CONTENT_MODULES` (`registry.tsx`): `methodologyNav`, optional `extraNav` (zero or more On this page links), `Methodology`, and `AfterGap` (`null` if none).
 4. Confirm `registry.test.ts` still passes (every wired county has a module; AfterGap explicit).
 5. Do **not** edit `page.tsx` for methodology prose (intro names update automatically from `wiredCountyConfigs()`).
 
@@ -164,8 +168,10 @@ Unit gate: `src/content/sourcesMethodology/registry.test.ts`.
 
 ## Adding a county (checklist)
 
+Full step list with file names: **`src/lib/countyConfig/README.md`**. Summary:
+
 1. **Inventory** — `docs/county-build-inputs.md` + ingest Go/No-go; what bulk tables and mill sources exist.
-2. **Config** — new `CountyConfig` in `countyConfig.ts`; validate; register in `COUNTY_CONFIG_BY_ID`. Product flags only for sources you ship. Gap flags default **false**. Set `adjacentCountyIds` for wired neighbors (county search gate).
+2. **Config data file** — add `src/lib/countyConfig/{countyId}.ts` exporting `{NAME}_COUNTY_CONFIG`; register in `registry.ts` → `COUNTY_CONFIG_BY_ID`. Product flags only for sources you ship. Gap flags default **false**. Set `adjacentCountyIds` for wired neighbors (county search gate). Align `tools/wired-counties.json`.
 3. **JSON** — `{countyId}-*` under `public/data/` (committed for live counties).
 4. **UI** — confirm dashboard gates use active county config; no Arapahoe-only callouts with flags off. Search gate / prefetch respects selected county → adjacent → “I don’t know.”
 5. **Gaps** — only after a county-true story: copy module + both surfaces + hub item + flag on for that county only.
@@ -175,6 +181,7 @@ Unit gate: `src/content/sourcesMethodology/registry.test.ts`.
 ## Anti-patterns to avoid
 
 - Always-on COUNTY DATA GAP JSX that assumes Arapahoe (or Douglas) for every resolve.
+- Optional `config = COUNTY_CONFIG` / `countyId = COUNTY_CONFIG.id` defaults on helpers used after resolve (omit → silent Arapahoe).
 - `if (countyId === "douglas")` sprawl for ordinary feature gates (use config flags).
 - Reusing another county’s gap copy because “we need something red.”
 - Treating Layer 3 empty fields (or “we do not ship this field yet”) as COUNTY DATA GAP. Omit the row; do not invent a red incident.
@@ -202,7 +209,8 @@ Shipping filenames stay **`{countyId}-*`** under `public/data/` (for example `ar
 
 | Piece | Path |
 | --- | --- |
-| Config + flags | `src/lib/countyConfig.ts` |
+| Config package (types, per-county data, registry) | `src/lib/countyConfig/` — see **`README.md`** in that folder |
+| Package disk↔registry contract | `src/lib/countyConfig/packageContract.test.ts` |
 | Search scope helpers | `src/lib/countySearchScope.ts` |
 | Home lookup row control CSS | `src/app/globals.css` (`.home-address-lookup-*`) |
 | Choose-your-county UI | `src/components/CountySearchScopeSwitch.tsx` |

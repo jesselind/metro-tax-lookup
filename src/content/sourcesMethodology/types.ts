@@ -20,10 +20,10 @@ export type SourcesOnPageNavLink = {
 export type SourcesCountyNavFields = {
   methodologyNav: SourcesOnPageNavLink;
   /**
-   * Optional county-specific On this page link after the gap hub (Arapahoe
-   * metro; Douglas mill PDFs).
+   * Optional county-specific On this page links after the gap hub (metro
+   * purposes, mill history, …). Empty/omitted when the county has none.
    */
-  extraNav?: SourcesOnPageNavLink;
+  extraNav?: readonly SourcesOnPageNavLink[];
 };
 
 /**

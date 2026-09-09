@@ -23,40 +23,45 @@ describe("countyDataPaths", () => {
   const id = COUNTY_CONFIG.id;
 
   it("builds shipping URLs from county id (no hard-coded arapahoe segment beyond config)", () => {
-    expect(countyAccountMapUrl()).toBe(`/data/${id}-pin-to-tag.json`);
-    expect(countyLevyStacksUrl()).toBe(
+    expect(countyAccountMapUrl(id)).toBe(`/data/${id}-pin-to-tag.json`);
+    expect(countyLevyStacksUrl(id)).toBe(
       `/data/${id}-levy-stacks-by-tag-id.json`,
     );
-    expect(countySitusToPinsUrl(SHIPPING_DATA_ROOT, id, "bust")).toBe(
+    expect(countySitusToPinsUrl(id, SHIPPING_DATA_ROOT, "bust")).toBe(
       `/data/${id}-situs-to-pins.json?v=bust`,
     );
-    expect(countyParcelRecordShardUrl("035662", SHIPPING_DATA_ROOT, id, "v1")).toBe(
+    expect(countyParcelRecordShardUrl(id, "035662", SHIPPING_DATA_ROOT, "v1")).toBe(
       `/data/${id}-parcel-record-by-pin/035662.json?v=v1`,
     );
   });
 
   it("builds engine-v2 URLs under /data-engine-v2", () => {
-    expect(countyAccountMapUrl(ENGINE_V2_DATA_ROOT)).toBe(
+    expect(countyAccountMapUrl(id, ENGINE_V2_DATA_ROOT)).toBe(
       `/data-engine-v2/${id}-pin-to-tag.json`,
     );
-    expect(countyLevyStacksUrl(ENGINE_V2_DATA_ROOT)).toBe(
+    expect(countyLevyStacksUrl(id, ENGINE_V2_DATA_ROOT)).toBe(
       `/data-engine-v2/${id}-levy-stacks-by-tag-id.json`,
     );
   });
 
   it("maps URL roots to public/ filesystem relatives for validators", () => {
-    expect(countyAccountMapFsRelative()).toBe(
+    expect(countyAccountMapFsRelative(id)).toBe(
       `public/data/${id}-pin-to-tag.json`,
     );
-    expect(countyLevyStacksFsRelative()).toBe(
+    expect(countyLevyStacksFsRelative(id)).toBe(
       `public/data/${id}-levy-stacks-by-tag-id.json`,
     );
-    expect(countySitusToPinsFsRelative()).toBe(
+    expect(countySitusToPinsFsRelative(id)).toBe(
       `public/data/${id}-situs-to-pins.json`,
     );
-    expect(countyAccountMapFsRelative(ENGINE_V2_DATA_ROOT)).toBe(
+    expect(countyAccountMapFsRelative(id, ENGINE_V2_DATA_ROOT)).toBe(
       `public/data-engine-v2/${id}-pin-to-tag.json`,
     );
+  });
+
+  it("rejects an empty county id instead of substituting Arapahoe", () => {
+    expect(() => countyLevyStacksUrl("")).toThrow(/countyId is required/);
+    expect(() => countyLevyStacksUrl("   ")).toThrow(/countyId is required/);
   });
 
   it("lists heavy paths for every wired county and both URL roots", () => {

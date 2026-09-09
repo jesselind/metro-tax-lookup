@@ -51,10 +51,12 @@ export const SOURCES_COUNTY_CONTENT_MODULES: readonly SourcesCountyContentModule
         href: "#levy-breakdown-tool",
         label: "Your property tax bill",
       },
-      extraNav: {
-        href: "#metro-tool",
-        label: "Metro district tax share",
-      },
+      extraNav: [
+        {
+          href: "#metro-tool",
+          label: "Metro district tax share",
+        },
+      ],
       Methodology: ArapahoeSourcesMethodology,
       AfterGap: (ctx) => <ArapahoeSourcesAfterGap {...ctx} />,
     },
@@ -64,10 +66,16 @@ export const SOURCES_COUNTY_CONTENT_MODULES: readonly SourcesCountyContentModule
         href: "#douglas-levy-breakdown",
         label: "Douglas account lookup",
       },
-      extraNav: {
-        href: "#douglas-mill-history",
-        label: "Mill history",
-      },
+      extraNav: [
+        {
+          href: "#douglas-metro-purposes",
+          label: "Metro district tax share",
+        },
+        {
+          href: "#douglas-mill-history",
+          label: "Mill history",
+        },
+      ],
       Methodology: DouglasSourcesMethodology,
       AfterGap: null,
     },
@@ -93,7 +101,9 @@ export function buildSourcesNavByCountyId(): Readonly<
   for (const entry of SOURCES_COUNTY_CONTENT_MODULES) {
     out[entry.countyId] = {
       methodologyNav: entry.methodologyNav,
-      ...(entry.extraNav ? { extraNav: entry.extraNav } : {}),
+      ...(entry.extraNav && entry.extraNav.length > 0
+        ? { extraNav: entry.extraNav }
+        : {}),
     };
   }
   return out;

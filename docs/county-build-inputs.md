@@ -101,6 +101,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 
 - Assessor data downloads: https://www.douglasco.gov/assessor/data-downloads/
 - Taxing authorities / mill PDFs: https://www.douglasco.gov/assessor/taxing-authorities/
+- Abstract of Assessment (Tax Rates and Revenues, page 2): https://www.douglasco.gov/documents/current-abstract-of-assessment.pdf/
 - Direct file host (same files the hub links): `https://apps.douglasco.gov/realware/datadownloads/`
 
 | Save as (local path) | Required? | Hub URL | Direct URL (optional) | Feeds | Notes |
@@ -109,6 +110,7 @@ CLI path defaults for mart siblings and the GIS GDB: `tools/ingest/mappings/arap
 | `supporting-data/douglas/Property_Values.txt` | yes | same | https://apps.douglasco.gov/realware/datadownloads/Property_Values.txt | account map (actual / assessed values) | Plural **Values**. Headerless. Multiple valuation rows per account possible. |
 | `supporting-data/douglas/2025-tax-districts-and-mill-levies.pdf` | yes | [Taxing Authorities](https://www.douglasco.gov/assessor/taxing-authorities/) | https://www.douglasco.gov/documents/2025-tax-districts-and-mill-levies.pdf | levy stacks (tax district → authorities + mills) | Tax-district grain (district header, then authority rows). Prefer current tax year on the hub if renamed. |
 | `supporting-data/douglas/{year}-tax-districts-and-mill-levies.pdf` (2020–2024) | no (mills history) | same Taxing Authorities hub | year-specific `https://www.douglasco.gov/documents/{year}-tax-districts-and-mill-levies.pdf`; **2021** hub file is `https://www.douglasco.gov/documents/tax-districts-mill-levies.pdf` (save as `2021-tax-districts-and-mill-levies.pdf`) | `douglas-authority-mills-by-tax-year.json` | Same PDF layout as the current-year stack file. `npm run build:douglas-authority-mills`. `/sources` (Douglas mill history) lists these hub URLs plus the current-year PDF. |
+| `supporting-data/douglas/current-abstract-of-assessment.pdf` | no (metro purposes) | Assessor / documents | https://www.douglasco.gov/documents/current-abstract-of-assessment.pdf/ | `douglas-metro-levies-YYYY.json` | Page 2 Tax Rates and Revenues. Local CSV extract: `2025-abstract-tax-rates-and-revenues.csv`. Build: `npm run build:douglas-metro-levies` (DOLA LG ID join; PDF Tax Rate is mills/10). |
 | `supporting-data/douglas/Property_Ownership.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Ownership.txt | optional parcel-record / owner fields | Headerless. |
 | `supporting-data/douglas/Property_Improvements.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Improvements.txt | optional building characteristics | Headerless. |
 | `supporting-data/douglas/Property_Sales.txt` | no | Data Downloads | https://apps.douglasco.gov/realware/datadownloads/Property_Sales.txt | optional sale history | Headerless. |

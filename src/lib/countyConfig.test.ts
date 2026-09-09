@@ -9,6 +9,7 @@
  * invented 10-digit schedule ids, not El Paso production numbers.
  *
  * Keep this file separate from:
+ * - `countyConfig/packageContract.test.ts` (one-file-per-county disk ↔ registry)
  * - `countyParcelLevyData.test.ts` (Arapahoe JSON / shard / fetch-time)
  * - `tools/test_build_arapahoe_parcel_levy_index.py` (current production rebuild)
  * URL encoding and scheme-rejection stay in `safeExternalHref.test.ts`.
@@ -347,6 +348,65 @@ describe("validateCountyConfig resident-facing required fields", () => {
         },
       }),
     ).toMatch(/propertySearch required/);
+  });
+
+  it("requires mill purpose cite URLs and labels when metroPurposes is on", () => {
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        residentLinks: {
+          ...ARAPAHOE_COUNTY_CONFIG.residentLinks,
+          millLevyPublicInfoForm: undefined,
+        },
+      }),
+    ).toMatch(/residentLinks\.millLevyPublicInfoForm/);
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        residentLinks: {
+          ...ARAPAHOE_COUNTY_CONFIG.residentLinks,
+          millLevyPublicInfoFormLabel: "  ",
+        },
+      }),
+    ).toMatch(/residentLinks\.millLevyPublicInfoFormLabel/);
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        residentLinks: {
+          ...ARAPAHOE_COUNTY_CONFIG.residentLinks,
+          millLeviesHub: "  ",
+        },
+      }),
+    ).toMatch(/residentLinks\.millLeviesHub/);
+    expect(
+      validateCountyConfig({
+        ...ARAPAHOE_COUNTY_CONFIG,
+        residentLinks: {
+          ...ARAPAHOE_COUNTY_CONFIG.residentLinks,
+          millLeviesHubLabel: undefined,
+        },
+      }),
+    ).toMatch(/residentLinks\.millLeviesHubLabel/);
+  });
+
+  it("does not require mill purpose cite URLs when metroPurposes is off", () => {
+    expect(
+      validateCountyConfig({
+        ...DOUGLAS_COUNTY_CONFIG,
+        features: {
+          ...DOUGLAS_COUNTY_CONFIG.features,
+          metroPurposes: false,
+        },
+        residentLinks: {
+          propertySearch: DOUGLAS_COUNTY_CONFIG.residentLinks.propertySearch,
+        },
+      }),
+    ).toBeNull();
+  });
+
+  it("accepts shipping Douglas config with metro purposes on", () => {
+    expect(validateCountyConfig(DOUGLAS_COUNTY_CONFIG)).toBeNull();
+    expect(DOUGLAS_COUNTY_CONFIG.features.metroPurposes).toBe(true);
   });
 
   it("rejects blank emptyIdentifierMessage", () => {

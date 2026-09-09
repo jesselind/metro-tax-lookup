@@ -84,12 +84,18 @@ Exit **0** = IDENTICAL; exit **1** = diffs.
 **Validate JSON root keys:**
 
 ```bash
-# Shipping (also runs in prebuild)
+# Shipping: every wired county under public/data/ (also runs in prebuild)
+npm run validate:app-json -- --all-wired
+
+# Single county (default Arapahoe)
 npm run validate:app-json
 
-# Compare build only
+# Compare / prove-out build only
 npm run validate:app-json -- --data-dir supporting-data/_ingest-out
+npm run validate:app-json -- --data-dir supporting-data/_ingest-out/douglas --county douglas
 ```
+
+`--all-wired` reads `tools/wired-counties.json` and validates each county's required `{countyId}-*` files in the chosen `--data-dir` (default `public/data/`). Do not combine with `--county` (prove-out counties land in separate dirs).
 
 Row-shape tests: `src/lib/appJsonValidate.test.ts`.
 
@@ -202,7 +208,7 @@ npm run build:ingest:ship -- --ship-allow-diff
 5. **Atomic land:** replace together `arapahoe-levy-stacks-by-tag-id.json`, `arapahoe-pin-to-tag.json`, `arapahoe-situs-to-pins.json`, and `arapahoe-parcel-record-by-pin/`. On failure, restore prior targets. Non-Arapahoe shipping files untouched. Kill mid-rename can leave temps; backup + git remain the safety net.
 6. **Post-land gate:** staging vs live IDENTICAL again; then delete staging.
 
-Then: `npm run validate:app-json`, spot-check a few addresses locally, `npm run build`, bump semver/changelog when the shipping data or pipeline contract changes, commit, deploy.
+Then: `npm run validate:app-json -- --all-wired`, spot-check a few addresses locally, `npm run build`, bump semver/changelog when the shipping data or pipeline contract changes, commit, deploy.
 
 **Rollback:** local restore from gitignored backup; production: git revert, Vercel promote, or `npm run build:arapahoe-index`.
 

@@ -41,6 +41,17 @@ describe("crossCountyAuthorityRegistry", () => {
     );
   });
 
+  it("rejects registry rows missing millsReferenceCountyId", () => {
+    const data = shippedRegistry();
+    const authorities = data.authorities as Array<Record<string, unknown>>;
+    const row = { ...authorities[0] };
+    delete row.millsReferenceCountyId;
+    authorities[0] = row;
+    expect(() => validateCrossCountyAuthorityRegistryData(data)).toThrow(
+      /millsReferenceCountyId is required/i,
+    );
+  });
+
   it("resolves SMFR by county levy line code", () => {
     const arapahoe = findCrossCountyAuthorityByCountyLevyCode("arapahoe", "4100");
     const douglas = findCrossCountyAuthorityByCountyLevyCode("douglas", "4014");
@@ -71,6 +82,22 @@ describe("crossCountyAuthorityRegistry", () => {
     expect(target).toEqual({
       bundleCountyId: "douglas",
       authorityCode: "4014",
+    });
+  });
+
+  it("does not fall back to Arapahoe when resident county is omitted", () => {
+    expect(resolveAuthorityMillsLookup("0101")).toBeNull();
+    expect(resolveAuthorityMillsLookup("0101", "")).toBeNull();
+  });
+
+  it("infers resident county from a registry stack code when county is omitted", () => {
+    expect(resolveAuthorityMillsLookup("4014")).toEqual({
+      bundleCountyId: "douglas",
+      authorityCode: "4014",
+    });
+    expect(resolveAuthorityMillsLookup("4100")).toEqual({
+      bundleCountyId: "arapahoe",
+      authorityCode: "4100",
     });
   });
 

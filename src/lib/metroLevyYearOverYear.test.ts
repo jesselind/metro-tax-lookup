@@ -517,7 +517,7 @@ describe("metroLgIdsWithPurposeMillChanges", () => {
         },
       },
     ];
-    expect(metroLgIdsWithPurposeMillChanges(lines).has("65214")).toBe(true);
+    expect(metroLgIdsWithPurposeMillChanges(lines, undefined, "arapahoe").has("65214")).toBe(true);
   });
 
   it("omits LG IDs with no published previous rates", () => {
@@ -533,7 +533,7 @@ describe("metroLgIdsWithPurposeMillChanges", () => {
         },
       },
     ];
-    expect(metroLgIdsWithPurposeMillChanges(lines).size).toBe(0);
+    expect(metroLgIdsWithPurposeMillChanges(lines, undefined, "arapahoe").size).toBe(0);
   });
 });
 
@@ -545,8 +545,8 @@ describe("levyLineHasMillRateChange / billImpactCalloutForLevyLines", () => {
       mills: 51.071,
       levyLineCode: "0101",
     };
-    expect(levyLineHasMillRateChange(line)).toBe(true);
-    expect(billImpactCalloutForLevyLines([line])).toMatchObject({
+    expect(levyLineHasMillRateChange(line, undefined, "arapahoe")).toBe(true);
+    expect(billImpactCalloutForLevyLines([line], undefined, "arapahoe")).toMatchObject({
       direction: "neutral",
       message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
     });
@@ -559,7 +559,7 @@ describe("levyLineHasMillRateChange / billImpactCalloutForLevyLines", () => {
       mills: 10.898,
       levyLineCode: "4060",
     };
-    expect(billImpactCalloutForLevyLines([line])).toMatchObject({
+    expect(billImpactCalloutForLevyLines([line], undefined, "arapahoe")).toMatchObject({
       direction: "neutral",
       message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
     });
@@ -572,8 +572,8 @@ describe("levyLineHasMillRateChange / billImpactCalloutForLevyLines", () => {
       mills: 10,
       levyLineCode: "9999",
     };
-    expect(levyLineHasMillRateChange(line)).toBe(false);
-    expect(billImpactCalloutForLevyLines([line])).toBeNull();
+    expect(levyLineHasMillRateChange(line, undefined, "arapahoe")).toBe(false);
+    expect(billImpactCalloutForLevyLines([line], undefined, "arapahoe")).toBeNull();
   });
 
   it("returns neutral callout when any line changed", () => {
@@ -583,7 +583,7 @@ describe("levyLineHasMillRateChange / billImpactCalloutForLevyLines", () => {
       mills: 51.071,
       levyLineCode: "0101",
     };
-    expect(billImpactCalloutForLevyLines([line])).toMatchObject({
+    expect(billImpactCalloutForLevyLines([line], undefined, "arapahoe")).toMatchObject({
       direction: "neutral",
       message: STACK_RATE_CHANGE_CALLOUT_MESSAGE,
     });
@@ -598,7 +598,7 @@ describe("levyStackTotalMillsChanged", () => {
       mills: 51.071,
       levyLineCode: "0101",
     };
-    expect(levyStackTotalMillsChanged([line])).toBe(true);
+    expect(levyStackTotalMillsChanged([line], undefined, "arapahoe")).toBe(true);
   });
 
   it("is false when no line has a published mill change", () => {
@@ -608,7 +608,7 @@ describe("levyStackTotalMillsChanged", () => {
       mills: 10,
       levyLineCode: "9999",
     };
-    expect(levyStackTotalMillsChanged([line])).toBe(false);
+    expect(levyStackTotalMillsChanged([line], undefined, "arapahoe")).toBe(false);
   });
 });
 
@@ -620,6 +620,7 @@ describe("buildLevyLineYoYViewModel", () => {
         dolaMatch: null,
       },
       100_000,
+      "arapahoe",
     );
     expect(vm).not.toBeNull();
     expect(vm?.previousYearLabel).toBe("Tax Year 2024");
@@ -667,6 +668,7 @@ describe("buildLevyLineYoYViewModel", () => {
         },
       },
       6800,
+      "arapahoe",
     );
     expect(vm).not.toBeNull();
     expect(vm?.showPurposeDetails || vm?.purposeChanges.length).toBeTruthy();
@@ -683,14 +685,14 @@ describe("buildLevyLineYoYViewModel", () => {
         lgId: "65416",
       },
     };
-    const skyRanch1 = metroDistrictForLgId("65416");
+    const skyRanch1 = metroDistrictForLgId("65416", "arapahoe");
     expect(skyRanch1).not.toBeNull();
-    expect(metroPurposeTotalsReconcileWithAuth(skyRanch1!)).toBe(false);
-    expect(metroPurposeYoYTrustedForLine(line)).toBe(false);
+    expect(metroPurposeTotalsReconcileWithAuth(skyRanch1!, undefined, "arapahoe")).toBe(false);
+    expect(metroPurposeYoYTrustedForLine(line, undefined, "arapahoe")).toBe(false);
     // 78.446 -> 76.08 = -2.366 mills (not the bogus -120 from bad prior ops).
-    expect(levyLineMillDelta(line)).toBeCloseTo(-2.366, 3);
+    expect(levyLineMillDelta(line, undefined, "arapahoe")).toBeCloseTo(-2.366, 3);
 
-    const vm = buildLevyLineYoYViewModel(line, 500_000);
+    const vm = buildLevyLineYoYViewModel(line, 500_000, "arapahoe");
     expect(vm).not.toBeNull();
     expect(vm?.showPurposeDetails).toBe(false);
     expect(vm?.purposeChanges).toHaveLength(0);
@@ -708,13 +710,13 @@ describe("buildLevyLineYoYViewModel", () => {
         lgId: "65417",
       },
     };
-    const skyRanch3 = metroDistrictForLgId("65417");
+    const skyRanch3 = metroDistrictForLgId("65417", "arapahoe");
     expect(skyRanch3).not.toBeNull();
-    expect(metroPurposeTotalsReconcileWithAuth(skyRanch3!)).toBe(true);
-    expect(metroPurposeYoYTrustedForLine(line)).toBe(true);
-    expect(levyLineMillDelta(line)).toBeCloseTo(-0.431, 3);
+    expect(metroPurposeTotalsReconcileWithAuth(skyRanch3!, undefined, "arapahoe")).toBe(true);
+    expect(metroPurposeYoYTrustedForLine(line, undefined, "arapahoe")).toBe(true);
+    expect(levyLineMillDelta(line, undefined, "arapahoe")).toBeCloseTo(-0.431, 3);
 
-    const vm = buildLevyLineYoYViewModel(line, 500_000);
+    const vm = buildLevyLineYoYViewModel(line, 500_000, "arapahoe");
     expect(vm).not.toBeNull();
     expect(vm?.totalCompare?.previousMillsLabel).toBe("119.387");
     expect(vm?.totalCompare?.currentMillsLabel).toBe("118.956");

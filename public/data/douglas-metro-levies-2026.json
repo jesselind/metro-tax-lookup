@@ -1,0 +1,6074 @@
+{
+  "year": 2026,
+  "snapshot": {
+    "bundledAsOf": "2026-09-08"
+  },
+  "source": {
+    "type": "douglas_abstract_tax_rates",
+    "title": "2025 Tax Rates and Revenues (Abstract of Assessment, page 2)",
+    "file": "supporting-data/douglas/2025-abstract-tax-rates-and-revenues.csv",
+    "residentUrl": "https://www.douglasco.gov/documents/current-abstract-of-assessment.pdf/",
+    "hubUrl": "https://www.douglasco.gov/assessor/taxing-authorities/",
+    "dolaFile": "supporting-data/dola/property-tax-entities-export.csv",
+    "buildMeta": {
+      "matchedDistricts": 212,
+      "skippedNoLgid": 30,
+      "skippedMultiLgid": 2,
+      "skippedEmpty": 0,
+      "groupCount": 244
+    }
+  },
+  "schema": {
+    "notes": "Douglas metro purpose rows from abstract CSV; LG ID from DOLA Douglas certifying-county entities. Rates are mills/1000. No prior-year purpose mills in this source."
+  },
+  "districts": [
+    {
+      "districtId": "douglas-66001-0",
+      "countyId": "",
+      "lgid": "66001",
+      "subdistrict": null,
+      "name": "Airport Vista Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Airport Vista Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66002-0",
+      "countyId": "",
+      "lgid": "66002",
+      "subdistrict": null,
+      "name": "Airport Vista Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0161147203,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0161147203,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0161147203,
+        "audit": {
+          "abstractParentName": "Airport Vista Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65098-0",
+      "countyId": "",
+      "lgid": "65098",
+      "subdistrict": null,
+      "name": "Antelope Heights Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0435000141,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0435000141,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0435000141,
+        "audit": {
+          "abstractParentName": "Antelope Heights Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18054-0",
+      "countyId": "",
+      "lgid": "18054",
+      "subdistrict": null,
+      "name": "Anthology West Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0444609482,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0444609482,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0444609482,
+        "audit": {
+          "abstractParentName": "Anthology West Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65336-0",
+      "countyId": "",
+      "lgid": "65336",
+      "subdistrict": null,
+      "name": "Anthology West Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0475609756,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0475609756,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0475609756,
+        "audit": {
+          "abstractParentName": "Anthology West Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66681-0",
+      "countyId": "",
+      "lgid": "66681",
+      "subdistrict": null,
+      "name": "Anthology West Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0444930393,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0444930393,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0444930393,
+        "audit": {
+          "abstractParentName": "Anthology West Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66682-0",
+      "countyId": "",
+      "lgid": "66682",
+      "subdistrict": null,
+      "name": "Anthology West Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0476780693,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0476780693,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0476780693,
+        "audit": {
+          "abstractParentName": "Anthology West Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66683-0",
+      "countyId": "",
+      "lgid": "66683",
+      "subdistrict": null,
+      "name": "Anthology West Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Anthology West Metro District 6",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68084-0",
+      "countyId": "",
+      "lgid": "68084",
+      "subdistrict": null,
+      "name": "Arrowhead Colorado Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0103329616,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0103329616,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0103329616,
+        "audit": {
+          "abstractParentName": "Arrowhead Colorado Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67785-0",
+      "countyId": "",
+      "lgid": "67785",
+      "subdistrict": null,
+      "name": "Bear Ridge Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Bear Ridge Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66888-0",
+      "countyId": "",
+      "lgid": "66888",
+      "subdistrict": null,
+      "name": "Belford North Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0827013366,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0827013366,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0827013366,
+        "audit": {
+          "abstractParentName": "Belford North Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66709-0",
+      "countyId": "",
+      "lgid": "66709",
+      "subdistrict": null,
+      "name": "Belford South Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0866400543,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0866400543,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0866400543,
+        "audit": {
+          "abstractParentName": "Belford South Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65300-0",
+      "countyId": "",
+      "lgid": "65300",
+      "subdistrict": null,
+      "name": "Bella Mesa Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0771310249,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0771310249,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0771310249,
+        "audit": {
+          "abstractParentName": "Bella Mesa Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68161-0",
+      "countyId": "",
+      "lgid": "68161",
+      "subdistrict": null,
+      "name": "Brickyard Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.01,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.01,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.01,
+        "audit": {
+          "abstractParentName": "Brickyard Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68162-0",
+      "countyId": "",
+      "lgid": "68162",
+      "subdistrict": null,
+      "name": "Brickyard Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0100065402,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0100065402,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0100065402,
+        "audit": {
+          "abstractParentName": "Brickyard Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68163-0",
+      "countyId": "",
+      "lgid": "68163",
+      "subdistrict": null,
+      "name": "Brickyard Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0100209864,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0100209864,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0100209864,
+        "audit": {
+          "abstractParentName": "Brickyard Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18103-0",
+      "countyId": "",
+      "lgid": "18103",
+      "subdistrict": null,
+      "name": "Canterberry Crossing Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0155999918,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0155999918,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0155999918,
+        "audit": {
+          "abstractParentName": "Canterberry Crossing Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18122-0",
+      "countyId": "",
+      "lgid": "18122",
+      "subdistrict": null,
+      "name": "Canterberry Crossing Metropolitan District II",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0257999918,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0257999918,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0257999918,
+        "audit": {
+          "abstractParentName": "Canterberry Crossing Metro District II",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65039-0",
+      "countyId": "",
+      "lgid": "65039",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66230-0",
+      "countyId": "",
+      "lgid": "66230",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 10",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 10",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66231-0",
+      "countyId": "",
+      "lgid": "66231",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 11",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 11",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65040-0",
+      "countyId": "",
+      "lgid": "65040",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0741111065,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0741111065,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0741111065,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65041-0",
+      "countyId": "",
+      "lgid": "65041",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0610319996,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.05086,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0610319996,
+        "debtMills": 0.05086,
+        "otherMills": 0.0,
+        "totalMills": 0.1118919996,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 3",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65042-0",
+      "countyId": "",
+      "lgid": "65042",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0690029433,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0690029433,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0690029433,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66225-0",
+      "countyId": "",
+      "lgid": "66225",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0605979997,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0605979997,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0605979997,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66226-0",
+      "countyId": "",
+      "lgid": "66226",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66227-0",
+      "countyId": "",
+      "lgid": "66227",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0057189991,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0057189991,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0057189991,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66228-0",
+      "countyId": "",
+      "lgid": "66228",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 8",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 8",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66229-0",
+      "countyId": "",
+      "lgid": "66229",
+      "subdistrict": null,
+      "name": "Canyons Metropolitan District No. 9",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Canyons Metro District 9",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66592-0",
+      "countyId": "",
+      "lgid": "66592",
+      "subdistrict": null,
+      "name": "Carousel Farms Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0539399285,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0539399285,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0539399285,
+        "audit": {
+          "abstractParentName": "Carousel Farms Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68124-0",
+      "countyId": "",
+      "lgid": "68124",
+      "subdistrict": null,
+      "name": "Castle Meadows Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0636363636,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0636363636,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0636363636,
+        "audit": {
+          "abstractParentName": "Castle Meadows Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68125-0",
+      "countyId": "",
+      "lgid": "68125",
+      "subdistrict": null,
+      "name": "Castle Meadows Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0638297872,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0638297872,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0638297872,
+        "audit": {
+          "abstractParentName": "Castle Meadows Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68126-0",
+      "countyId": "",
+      "lgid": "68126",
+      "subdistrict": null,
+      "name": "Castle Meadows Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0651162791,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0651162791,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0651162791,
+        "audit": {
+          "abstractParentName": "Castle Meadows Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18124-0",
+      "countyId": "",
+      "lgid": "18124",
+      "subdistrict": null,
+      "name": "Castle Oaks Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0389999995,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0389999995,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0389999995,
+        "audit": {
+          "abstractParentName": "Castle Oaks Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65591-0",
+      "countyId": "",
+      "lgid": "65591",
+      "subdistrict": null,
+      "name": "Castle Oaks Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Castle Oaks Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65592-0",
+      "countyId": "",
+      "lgid": "65592",
+      "subdistrict": null,
+      "name": "Castle Oaks Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0360000143,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0360000143,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0360000143,
+        "audit": {
+          "abstractParentName": "Castle Oaks Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18044-0",
+      "countyId": "",
+      "lgid": "18044",
+      "subdistrict": null,
+      "name": "Castle Pines North Metro",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0034999979,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0034999979,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0034999979,
+        "audit": {
+          "abstractParentName": "Castle Pines North Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66363-0",
+      "countyId": "",
+      "lgid": "66363",
+      "subdistrict": null,
+      "name": "Castle Pines Town Center Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Castle Pines Town Center Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66364-0",
+      "countyId": "",
+      "lgid": "66364",
+      "subdistrict": null,
+      "name": "Castle Pines Town Center Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0648648649,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0648648649,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0648648649,
+        "audit": {
+          "abstractParentName": "Castle Pines Town Center Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66365-0",
+      "countyId": "",
+      "lgid": "66365",
+      "subdistrict": null,
+      "name": "Castle Pines Town Center Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0652968037,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0652968037,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0652968037,
+        "audit": {
+          "abstractParentName": "Castle Pines Town Center Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65799-0",
+      "countyId": "",
+      "lgid": "65799",
+      "subdistrict": null,
+      "name": "Castleview Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0802069426,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0802069426,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0802069426,
+        "audit": {
+          "abstractParentName": "Castleview Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67076-0",
+      "countyId": "",
+      "lgid": "67076",
+      "subdistrict": null,
+      "name": "Castleview Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0690009156,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0690009156,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0690009156,
+        "audit": {
+          "abstractParentName": "Castleview Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18046-0",
+      "countyId": "",
+      "lgid": "18046",
+      "subdistrict": null,
+      "name": "Castlewood Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0298049963,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0298049963,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0298049963,
+        "audit": {
+          "abstractParentName": "Castlewood Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66767-0",
+      "countyId": "",
+      "lgid": "66767",
+      "subdistrict": null,
+      "name": "Chambers Highpoint Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.061209366,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.061209366,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.061209366,
+        "audit": {
+          "abstractParentName": "Chambers Highpoint Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66768-0",
+      "countyId": "",
+      "lgid": "66768",
+      "subdistrict": null,
+      "name": "Chambers Highpoint Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0637030344,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0637030344,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0637030344,
+        "audit": {
+          "abstractParentName": "Chambers Highpoint Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65096-0",
+      "countyId": "",
+      "lgid": "65096",
+      "subdistrict": null,
+      "name": "Cherokee Ridge Estates Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0494439971,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0494439971,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0494439971,
+        "audit": {
+          "abstractParentName": "Cherokee Ridge Estates Metro",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18053-0",
+      "countyId": "",
+      "lgid": "18053",
+      "subdistrict": null,
+      "name": "Cherry Creek South Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0014479965,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0014479965,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0014479965,
+        "audit": {
+          "abstractParentName": "Cherry Creek South Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65344-0",
+      "countyId": "",
+      "lgid": "65344",
+      "subdistrict": null,
+      "name": "Cherry Creek South Metropolitan District No. 11",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Cherry Creek S Metro District 11",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65344-0",
+      "countyId": "",
+      "lgid": "65344",
+      "subdistrict": null,
+      "name": "Cherry Creek South Metropolitan District No. 11",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0215320911,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0215320911,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0215320911,
+        "audit": {
+          "abstractParentName": "Cherry Creek South Metro District 11",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66710-0",
+      "countyId": "",
+      "lgid": "66710",
+      "subdistrict": null,
+      "name": "Cielo Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0749359832,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0749359832,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0749359832,
+        "audit": {
+          "abstractParentName": "Cielo Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18109-0",
+      "countyId": "",
+      "lgid": "18109",
+      "subdistrict": null,
+      "name": "Compark Business Campus Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0223179416,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0186849287,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0410028704,
+        "otherMills": 0.0,
+        "totalMills": 0.0410028704,
+        "audit": {
+          "abstractParentName": "Compark Bus Campus Metro Dist",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18109-0",
+      "countyId": "",
+      "lgid": "18109",
+      "subdistrict": null,
+      "name": "Compark Business Campus Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0438109961,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0438109961,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0438109961,
+        "audit": {
+          "abstractParentName": "Compark Business Campus Metro",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18117-0",
+      "countyId": "",
+      "lgid": "18117",
+      "subdistrict": null,
+      "name": "Concord Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0060000069,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0060000069,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0060000069,
+        "audit": {
+          "abstractParentName": "Concord Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18110-0",
+      "countyId": "",
+      "lgid": "18110",
+      "subdistrict": null,
+      "name": "Consolidated Bell Mountain Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0470280095,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0470280095,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0470280095,
+        "audit": {
+          "abstractParentName": "Consolidated Bell Mountain Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66590-0",
+      "countyId": "",
+      "lgid": "66590",
+      "subdistrict": null,
+      "name": "Cottonwood Highlands Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0510000064,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0510000064,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0510000064,
+        "audit": {
+          "abstractParentName": "Cottonwood Highlands Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66591-0",
+      "countyId": "",
+      "lgid": "66591",
+      "subdistrict": null,
+      "name": "Cottonwood Highlands Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0290130372,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0290130372,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0290130372,
+        "audit": {
+          "abstractParentName": "Cottonwood Highlands Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18036-0",
+      "countyId": "",
+      "lgid": "18036",
+      "subdistrict": null,
+      "name": "Cottonwood Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0083000001,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0083000001,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0083000001,
+        "audit": {
+          "abstractParentName": "Cottonwood Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65094-0",
+      "countyId": "",
+      "lgid": "65094",
+      "subdistrict": null,
+      "name": "Crowfoot Valley Ranch Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0752151463,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0752151463,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0752151463,
+        "audit": {
+          "abstractParentName": "Crowfoot Valley Ranch Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65095-0",
+      "countyId": "",
+      "lgid": "65095",
+      "subdistrict": null,
+      "name": "Crowfoot Valley Ranch Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0833420052,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0833420052,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0833420052,
+        "audit": {
+          "abstractParentName": "Crowfoot Valley Ranch Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65141-0",
+      "countyId": "",
+      "lgid": "65141",
+      "subdistrict": null,
+      "name": "Crystal Crossing Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0529659952,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0529659952,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0529659952,
+        "audit": {
+          "abstractParentName": "Crystal Crossing Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18081-0",
+      "countyId": "",
+      "lgid": "18081",
+      "subdistrict": null,
+      "name": "Crystal Valley Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Crystal Valley Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18082-0",
+      "countyId": "",
+      "lgid": "18082",
+      "subdistrict": null,
+      "name": "Crystal Valley Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.022525,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.022525,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.022525,
+        "audit": {
+          "abstractParentName": "Crystal Valley Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67928-0",
+      "countyId": "",
+      "lgid": "67928",
+      "subdistrict": null,
+      "name": "Crystal Valley Shops Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Crystal Valley Shops Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18070-0",
+      "countyId": "",
+      "lgid": "18070",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0763026261,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0763026261,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0763026261,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18071-0",
+      "countyId": "",
+      "lgid": "18071",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0765079639,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0765079639,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0765079639,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18072-0",
+      "countyId": "",
+      "lgid": "18072",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0764997639,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0764997639,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0764997639,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18073-0",
+      "countyId": "",
+      "lgid": "18073",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0739495798,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0739495798,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0739495798,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18074-0",
+      "countyId": "",
+      "lgid": "18074",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0765121921,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0765121921,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0765121921,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18077-0",
+      "countyId": "",
+      "lgid": "18077",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0765107952,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0765107952,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0765107952,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18078-0",
+      "countyId": "",
+      "lgid": "18078",
+      "subdistrict": null,
+      "name": "Dawson Trails Metropolitan District No. 7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0764797965,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0764797965,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0764797965,
+        "audit": {
+          "abstractParentName": "Dawson Trails Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67103-0",
+      "countyId": "",
+      "lgid": "67103",
+      "subdistrict": null,
+      "name": "Devils Head Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Devils Head Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18114-0",
+      "countyId": "",
+      "lgid": "18114",
+      "subdistrict": null,
+      "name": "E-470 Potomac Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "E-470 Potomac Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67594-0",
+      "countyId": "",
+      "lgid": "67594",
+      "subdistrict": null,
+      "name": "Fields Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0687040124,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0687040124,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0687040124,
+        "audit": {
+          "abstractParentName": "Fields Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67595-0",
+      "countyId": "",
+      "lgid": "67595",
+      "subdistrict": null,
+      "name": "Fields Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Fields Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67596-0",
+      "countyId": "",
+      "lgid": "67596",
+      "subdistrict": null,
+      "name": "Fields Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Fields Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18045-0",
+      "countyId": "",
+      "lgid": "18045",
+      "subdistrict": null,
+      "name": "Founders Village Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0945630045,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0945630045,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0945630045,
+        "audit": {
+          "abstractParentName": "Founders Village Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65578-0",
+      "countyId": "",
+      "lgid": "65578",
+      "subdistrict": null,
+      "name": "Foxhill Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0635330402,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0635330402,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0635330402,
+        "audit": {
+          "abstractParentName": "Foxhill Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18120-0",
+      "countyId": "",
+      "lgid": "18120",
+      "subdistrict": null,
+      "name": "Franktown Business Area Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Franktown Business Area Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68111-0",
+      "countyId": "",
+      "lgid": "68111",
+      "subdistrict": null,
+      "name": "Hawkview Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.06406817,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.06406817,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.06406817,
+        "audit": {
+          "abstractParentName": "Hawkview Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18105-0",
+      "countyId": "",
+      "lgid": "18105",
+      "subdistrict": null,
+      "name": "Heritage Hills Metro",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0330969998,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0330969998,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0330969998,
+        "audit": {
+          "abstractParentName": "Heritage Hills Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66689-0",
+      "countyId": "",
+      "lgid": "66689",
+      "subdistrict": null,
+      "name": "Hess Ranch Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0868449882,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0868449882,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0868449882,
+        "audit": {
+          "abstractParentName": "Hess Ranch Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66690-0",
+      "countyId": "",
+      "lgid": "66690",
+      "subdistrict": null,
+      "name": "Hess Ranch Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0827020084,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0827020084,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0827020084,
+        "audit": {
+          "abstractParentName": "Hess Ranch Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66691-0",
+      "countyId": "",
+      "lgid": "66691",
+      "subdistrict": null,
+      "name": "Hess Ranch Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0827022922,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0827022922,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0827022922,
+        "audit": {
+          "abstractParentName": "Hess Ranch Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66692-0",
+      "countyId": "",
+      "lgid": "66692",
+      "subdistrict": null,
+      "name": "Hess Ranch Metropolitan District No. 7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0827019505,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0827019505,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0827019505,
+        "audit": {
+          "abstractParentName": "Hess Ranch Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66693-0",
+      "countyId": "",
+      "lgid": "66693",
+      "subdistrict": null,
+      "name": "Hess Ranch Metropolitan District No. 8",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.05,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.05,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.05,
+        "audit": {
+          "abstractParentName": "Hess Ranch Metro District 8",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18102-0",
+      "countyId": "",
+      "lgid": "18102",
+      "subdistrict": null,
+      "name": "Hidden Pointe Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0034999728,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0034999728,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0034999728,
+        "audit": {
+          "abstractParentName": "Hidden Pointe Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18083-0",
+      "countyId": "",
+      "lgid": "18083",
+      "subdistrict": null,
+      "name": "High Prairie Farms Metro",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0120000044,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0120000044,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0120000044,
+        "audit": {
+          "abstractParentName": "High Prairie Farms Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65900-0",
+      "countyId": "",
+      "lgid": "65900",
+      "subdistrict": null,
+      "name": "Highfield Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0140000093,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0140000093,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0140000093,
+        "audit": {
+          "abstractParentName": "Highfield Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65783-0",
+      "countyId": "",
+      "lgid": "65783",
+      "subdistrict": null,
+      "name": "Highlands Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.01225,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.01225,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.01225,
+        "audit": {
+          "abstractParentName": "Highlands Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66742-0",
+      "countyId": "",
+      "lgid": "66742",
+      "subdistrict": null,
+      "name": "Hillside at Castle Rock Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0764162608,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0764162608,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0764162608,
+        "audit": {
+          "abstractParentName": "Hillside at Castle Rock Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66853-0",
+      "countyId": "",
+      "lgid": "66853",
+      "subdistrict": null,
+      "name": "Hilltop Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0758820256,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0758820256,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0758820256,
+        "audit": {
+          "abstractParentName": "Hilltop Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65289-0",
+      "countyId": "",
+      "lgid": "65289",
+      "subdistrict": null,
+      "name": "Horse Creek Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0144999782,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0144999782,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0144999782,
+        "audit": {
+          "abstractParentName": "Horse Creek Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65502-0",
+      "countyId": "",
+      "lgid": "65502",
+      "subdistrict": null,
+      "name": "Horseshoe Ridge Metro. District #2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0403519901,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0403519901,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0403519901,
+        "audit": {
+          "abstractParentName": "Horseshoe Ridge Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65503-0",
+      "countyId": "",
+      "lgid": "65503",
+      "subdistrict": null,
+      "name": "Horseshoe Ridge Metro. District #3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0332981361,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0332981361,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0332981361,
+        "audit": {
+          "abstractParentName": "Horseshoe Ridge Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65901-0",
+      "countyId": "",
+      "lgid": "65901",
+      "subdistrict": null,
+      "name": "Hunting Hill Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.055857053,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.055857053,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.055857053,
+        "audit": {
+          "abstractParentName": "Hunting Hill Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65064-0",
+      "countyId": "",
+      "lgid": "65064",
+      "subdistrict": null,
+      "name": "Inspiration Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0502199942,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0502199942,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0502199942,
+        "audit": {
+          "abstractParentName": "Inspiration Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-64079-0",
+      "countyId": "",
+      "lgid": "64079",
+      "subdistrict": null,
+      "name": "Inverness Metropolitan Improvement District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Inverness Metro Imp District",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-64079-0",
+      "countyId": "",
+      "lgid": "64079",
+      "subdistrict": null,
+      "name": "Inverness Metropolitan Improvement District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0045600028,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0045600028,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0045600028,
+        "audit": {
+          "abstractParentName": "Inverness Metro Improvement District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65556-0",
+      "countyId": "",
+      "lgid": "65556",
+      "subdistrict": null,
+      "name": "Jordan Crossing Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0438479826,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0438479826,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0438479826,
+        "audit": {
+          "abstractParentName": "Jordan Crossing Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67938-0",
+      "countyId": "",
+      "lgid": "67938",
+      "subdistrict": null,
+      "name": "Kime Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0729736821,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0729736821,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0729736821,
+        "audit": {
+          "abstractParentName": "Kime Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65122-0",
+      "countyId": "",
+      "lgid": "65122",
+      "subdistrict": null,
+      "name": "Kings Point South Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.075,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.075,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.075,
+        "audit": {
+          "abstractParentName": "Kings Point South Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65123-0",
+      "countyId": "",
+      "lgid": "65123",
+      "subdistrict": null,
+      "name": "Kings Point South Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Kings Point South Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67736-0",
+      "countyId": "",
+      "lgid": "67736",
+      "subdistrict": null,
+      "name": "Kings Point South Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Kings Point South Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65223-0",
+      "countyId": "",
+      "lgid": "65223",
+      "subdistrict": null,
+      "name": "Lanterns Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0576030138,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0576030138,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0576030138,
+        "audit": {
+          "abstractParentName": "Lanterns Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66540-0",
+      "countyId": "",
+      "lgid": "66540",
+      "subdistrict": null,
+      "name": "Lanterns Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0792170544,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0792170544,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0792170544,
+        "audit": {
+          "abstractParentName": "Lanterns Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66541-0",
+      "countyId": "",
+      "lgid": "66541",
+      "subdistrict": null,
+      "name": "Lanterns Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0772100391,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0772100391,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0772100391,
+        "audit": {
+          "abstractParentName": "Lanterns Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67128-0",
+      "countyId": "",
+      "lgid": "67128",
+      "subdistrict": null,
+      "name": "Lanterns Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Lanterns Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67129-0",
+      "countyId": "",
+      "lgid": "67129",
+      "subdistrict": null,
+      "name": "Lanterns Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Lanterns Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65406-0",
+      "countyId": "",
+      "lgid": "65406",
+      "subdistrict": null,
+      "name": "Lincoln Creek Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0301789305,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0301789305,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0301789305,
+        "audit": {
+          "abstractParentName": "Lincoln Creek Metro District",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65118-0",
+      "countyId": "",
+      "lgid": "65118",
+      "subdistrict": null,
+      "name": "Lincoln Meadows Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.05,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.05,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.05,
+        "audit": {
+          "abstractParentName": "Lincoln Meadows Metro District",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65136-0",
+      "countyId": "",
+      "lgid": "65136",
+      "subdistrict": null,
+      "name": "Lincoln Station Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0244830035,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0166580129,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0244830035,
+        "debtMills": 0.0166580129,
+        "otherMills": 0.0,
+        "totalMills": 0.0411410164,
+        "audit": {
+          "abstractParentName": "Lincoln Station Metro District",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18092-0",
+      "countyId": "",
+      "lgid": "18092",
+      "subdistrict": null,
+      "name": "Maher Ranch Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0239000009,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0239000009,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0239000009,
+        "audit": {
+          "abstractParentName": "Maher Ranch Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67101-0",
+      "countyId": "",
+      "lgid": "67101",
+      "subdistrict": null,
+      "name": "Meadowlark Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.054352082,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.054352082,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.054352082,
+        "audit": {
+          "abstractParentName": "Meadowlark Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18056-0",
+      "countyId": "",
+      "lgid": "18056",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0349999993,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0349999993,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0349999993,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18057-0",
+      "countyId": "",
+      "lgid": "18057",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0350000088,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0350000088,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0350000088,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18058-0",
+      "countyId": "",
+      "lgid": "18058",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.035000006,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.035000006,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.035000006,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18059-0",
+      "countyId": "",
+      "lgid": "18059",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0349753695,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0349999394,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0349753695,
+        "debtMills": 0.0349999394,
+        "otherMills": 0.0,
+        "totalMills": 0.0699753089,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 4",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18060-0",
+      "countyId": "",
+      "lgid": "18060",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0349999984,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0349999984,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0349999984,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18061-0",
+      "countyId": "",
+      "lgid": "18061",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0349999977,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0349999977,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0349999977,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18062-0",
+      "countyId": "",
+      "lgid": "18062",
+      "subdistrict": null,
+      "name": "Meadows Metropolitan District No. 7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.035000003,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.035000003,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.035000003,
+        "audit": {
+          "abstractParentName": "Meadows Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65278-0",
+      "countyId": "",
+      "lgid": "65278",
+      "subdistrict": null,
+      "name": "Meridian Village Metro. District #1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0352941176,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0352941176,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0352941176,
+        "audit": {
+          "abstractParentName": "Meridian Village Metro District 1",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65279-0",
+      "countyId": "",
+      "lgid": "65279",
+      "subdistrict": null,
+      "name": "Meridian Village Metro. District #2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0319999993,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0319999993,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0319999993,
+        "audit": {
+          "abstractParentName": "Meridian Village Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65280-0",
+      "countyId": "",
+      "lgid": "65280",
+      "subdistrict": null,
+      "name": "Meridian Village Metro. District #3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Meridian Village Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65281-0",
+      "countyId": "",
+      "lgid": "65281",
+      "subdistrict": null,
+      "name": "Meridian Village Metro. District #4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Meridian Village Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18018-0",
+      "countyId": "",
+      "lgid": "18018",
+      "subdistrict": null,
+      "name": "Mirabelle Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0268491322,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0268491322,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0268491322,
+        "audit": {
+          "abstractParentName": "Mirabelle Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66756-0",
+      "countyId": "",
+      "lgid": "66756",
+      "subdistrict": null,
+      "name": "Mirabelle Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0929269992,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0929269992,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0929269992,
+        "audit": {
+          "abstractParentName": "Mirabelle Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66757-0",
+      "countyId": "",
+      "lgid": "66757",
+      "subdistrict": null,
+      "name": "Mirabelle Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Mirabelle Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66758-0",
+      "countyId": "",
+      "lgid": "66758",
+      "subdistrict": null,
+      "name": "Mirabelle Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Mirabelle Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65362-0",
+      "countyId": "",
+      "lgid": "65362",
+      "subdistrict": null,
+      "name": "Neu Towne Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0365200274,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0365200274,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0365200274,
+        "audit": {
+          "abstractParentName": "Neu Towne Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67542-0",
+      "countyId": "",
+      "lgid": "67542",
+      "subdistrict": null,
+      "name": "Newlin Crossing Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0523039627,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0523039627,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0523039627,
+        "audit": {
+          "abstractParentName": "Newlin Crossing Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18121-0",
+      "countyId": "",
+      "lgid": "18121",
+      "subdistrict": null,
+      "name": "North Meridian Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "North Meridian Metro District",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66359-0",
+      "countyId": "",
+      "lgid": "66359",
+      "subdistrict": null,
+      "name": "North Pine Vistas Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "North Pine Vistas Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66360-0",
+      "countyId": "",
+      "lgid": "66360",
+      "subdistrict": null,
+      "name": "North Pine Vistas Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0429630007,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0429630007,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0429630007,
+        "audit": {
+          "abstractParentName": "North Pine Vistas Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66361-0",
+      "countyId": "",
+      "lgid": "66361",
+      "subdistrict": null,
+      "name": "North Pine Vistas Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0687160124,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0687160124,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0687160124,
+        "audit": {
+          "abstractParentName": "North Pine Vistas Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65311-0",
+      "countyId": "",
+      "lgid": "65311",
+      "subdistrict": null,
+      "name": "Olde Town Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0550000086,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0550000086,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0550000086,
+        "audit": {
+          "abstractParentName": "Olde Town Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18106-0",
+      "countyId": "",
+      "lgid": "18106",
+      "subdistrict": null,
+      "name": "OmniPark Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0060000004,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0060000004,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0060000004,
+        "audit": {
+          "abstractParentName": "Omnipark Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67546-0",
+      "countyId": "",
+      "lgid": "67546",
+      "subdistrict": null,
+      "name": "Overlook at Kings Point South Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0635416667,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0635416667,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0635416667,
+        "audit": {
+          "abstractParentName": "Overlook at Kings Point South Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66600-0",
+      "countyId": "",
+      "lgid": "66600",
+      "subdistrict": null,
+      "name": "Overlook Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0530240409,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0530240409,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0530240409,
+        "audit": {
+          "abstractParentName": "Overlook Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18039-0",
+      "countyId": "",
+      "lgid": "18039",
+      "subdistrict": null,
+      "name": "Park Meadows Metro",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0063870007,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0063870007,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0063870007,
+        "audit": {
+          "abstractParentName": "Park Meadows Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65257-0",
+      "countyId": "",
+      "lgid": "65257",
+      "subdistrict": null,
+      "name": "Parker Automotive Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.054739986,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.054739986,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.054739986,
+        "audit": {
+          "abstractParentName": "Parker Automotive Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66298-0",
+      "countyId": "",
+      "lgid": "66298",
+      "subdistrict": null,
+      "name": "Parker Homestead Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0429999533,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0429999533,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0429999533,
+        "audit": {
+          "abstractParentName": "Parker Homestead Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18029-0",
+      "countyId": "",
+      "lgid": "18029",
+      "subdistrict": null,
+      "name": "Perry Park Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0043830024,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0043830024,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0043830024,
+        "audit": {
+          "abstractParentName": "Perry Park Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65201-0",
+      "countyId": "",
+      "lgid": "65201",
+      "subdistrict": null,
+      "name": "Pine Bluffs Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.012500012,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.012500012,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.012500012,
+        "audit": {
+          "abstractParentName": "Pine Bluffs Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65484-0",
+      "countyId": "",
+      "lgid": "65484",
+      "subdistrict": null,
+      "name": "Pinery Commercial Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0100033014,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0100033014,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0100033014,
+        "audit": {
+          "abstractParentName": "Pinery Commercial Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65485-0",
+      "countyId": "",
+      "lgid": "65485",
+      "subdistrict": null,
+      "name": "Pinery Commercial Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0100000742,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0100000742,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0100000742,
+        "audit": {
+          "abstractParentName": "Pinery Commercial Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18112-0",
+      "countyId": "",
+      "lgid": "18112",
+      "subdistrict": null,
+      "name": "Pinery West Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.013123998,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.013123998,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.013123998,
+        "audit": {
+          "abstractParentName": "Pinery West Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67600-0",
+      "countyId": "",
+      "lgid": "67600",
+      "subdistrict": null,
+      "name": "Piney Lake Trails Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0751840081,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0751840081,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0751840081,
+        "audit": {
+          "abstractParentName": "Piney Lake Trails Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67601-0",
+      "countyId": "",
+      "lgid": "67601",
+      "subdistrict": null,
+      "name": "Piney Lake Trails Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Piney Lake Trails Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66525-0",
+      "countyId": "",
+      "lgid": "66525",
+      "subdistrict": null,
+      "name": "Promenade at Castle Rock Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0634770127,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0634770127,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0634770127,
+        "audit": {
+          "abstractParentName": "Promenade at Castle Rock Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66527-0",
+      "countyId": "",
+      "lgid": "66527",
+      "subdistrict": null,
+      "name": "Promenade at Castle Rock Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0546650051,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0546650051,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0546650051,
+        "audit": {
+          "abstractParentName": "Promenade at Castle Rock Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65475-0",
+      "countyId": "",
+      "lgid": "65475",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District #7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.05,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.05,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.05,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65476-0",
+      "countyId": "",
+      "lgid": "65476",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District #8",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0674959972,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0674959972,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0674959972,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 8",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65477-0",
+      "countyId": "",
+      "lgid": "65477",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District #9",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 9",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18125-0",
+      "countyId": "",
+      "lgid": "18125",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 1",
+          "levyRowCount": 2
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18126-0",
+      "countyId": "",
+      "lgid": "18126",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0499999514,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0499999514,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0499999514,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18127-0",
+      "countyId": "",
+      "lgid": "18127",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0490037071,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0490037071,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0490037071,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18128-0",
+      "countyId": "",
+      "lgid": "18128",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0088690062,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0088690062,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0088690062,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18129-0",
+      "countyId": "",
+      "lgid": "18129",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18130-0",
+      "countyId": "",
+      "lgid": "18130",
+      "subdistrict": null,
+      "name": "Rampart Range Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0604230004,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0604230004,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0604230004,
+        "audit": {
+          "abstractParentName": "Rampart Range Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67771-0",
+      "countyId": "",
+      "lgid": "67771",
+      "subdistrict": null,
+      "name": "Range Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0664411971,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0664411971,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0664411971,
+        "audit": {
+          "abstractParentName": "Range Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67772-0",
+      "countyId": "",
+      "lgid": "67772",
+      "subdistrict": null,
+      "name": "Range Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Range Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67773-0",
+      "countyId": "",
+      "lgid": "67773",
+      "subdistrict": null,
+      "name": "Range Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Range Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65239-0",
+      "countyId": "",
+      "lgid": "65239",
+      "subdistrict": null,
+      "name": "Ravenna Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0630000041,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0630000041,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0630000041,
+        "audit": {
+          "abstractParentName": "Ravenna Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65258-0",
+      "countyId": "",
+      "lgid": "65258",
+      "subdistrict": null,
+      "name": "Reata North Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0132049915,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0132049915,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0132049915,
+        "audit": {
+          "abstractParentName": "Reata North Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66658-0",
+      "countyId": "",
+      "lgid": "66658",
+      "subdistrict": null,
+      "name": "Reata Ridge Village Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0544029912,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0544029912,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0544029912,
+        "audit": {
+          "abstractParentName": "Reata Ridge Village Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65515-0",
+      "countyId": "",
+      "lgid": "65515",
+      "subdistrict": null,
+      "name": "Reata South Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0450000184,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0450000184,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0450000184,
+        "audit": {
+          "abstractParentName": "Reata South Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65557-0",
+      "countyId": "",
+      "lgid": "65557",
+      "subdistrict": null,
+      "name": "Regency Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0320000045,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0320000045,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0320000045,
+        "audit": {
+          "abstractParentName": "Regency Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66070-0",
+      "countyId": "",
+      "lgid": "66070",
+      "subdistrict": null,
+      "name": "Remuda Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0583497313,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0583497313,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0583497313,
+        "audit": {
+          "abstractParentName": "Remuda Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66208-0",
+      "countyId": "",
+      "lgid": "66208",
+      "subdistrict": null,
+      "name": "Robinson Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0254998307,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0254998307,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0254998307,
+        "audit": {
+          "abstractParentName": "Robinson Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67082-0",
+      "countyId": "",
+      "lgid": "67082",
+      "subdistrict": null,
+      "name": "Rock Canyon Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0747917353,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0747917353,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0747917353,
+        "audit": {
+          "abstractParentName": "Rock Canyon Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65063-0",
+      "countyId": "",
+      "lgid": "65063",
+      "subdistrict": null,
+      "name": "RockingHorse Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "RockingHorse Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18055-0",
+      "countyId": "",
+      "lgid": "18055",
+      "subdistrict": null,
+      "name": "Roxborough Village Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.012093005,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.012093005,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.012093005,
+        "audit": {
+          "abstractParentName": "Roxborough Village Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66490-0",
+      "countyId": "",
+      "lgid": "66490",
+      "subdistrict": null,
+      "name": "Salisbury Heights Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0366430174,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0366430174,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0366430174,
+        "audit": {
+          "abstractParentName": "Salisbury Heights Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67944-0",
+      "countyId": "",
+      "lgid": "67944",
+      "subdistrict": null,
+      "name": "Scott Gulch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0644982153,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0644982153,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0644982153,
+        "audit": {
+          "abstractParentName": "Scott Gulch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65461-0",
+      "countyId": "",
+      "lgid": "65461",
+      "subdistrict": null,
+      "name": "Sierra Ridge Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0450350062,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0450350062,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0450350062,
+        "audit": {
+          "abstractParentName": "Sierra Ridge Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65111-0",
+      "countyId": "",
+      "lgid": "65111",
+      "subdistrict": null,
+      "name": "Solitude Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0549999902,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0549999902,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0549999902,
+        "audit": {
+          "abstractParentName": "Solitude Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18116-0",
+      "countyId": "",
+      "lgid": "18116",
+      "subdistrict": null,
+      "name": "South Meridian Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0191850046,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0052850156,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 1
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 2
+        },
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.005284961,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 3
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0191850046,
+        "debtMills": 0.0105699766,
+        "otherMills": 0.0,
+        "totalMills": 0.0297549812,
+        "audit": {
+          "abstractParentName": "South Meridian Metro District",
+          "levyRowCount": 4
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65812-0",
+      "countyId": "",
+      "lgid": "65812",
+      "subdistrict": null,
+      "name": "South Santa Fe Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "South Santa Fe Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65813-0",
+      "countyId": "",
+      "lgid": "65813",
+      "subdistrict": null,
+      "name": "South Santa Fe Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "South Santa Fe Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65232-0",
+      "countyId": "",
+      "lgid": "65232",
+      "subdistrict": null,
+      "name": "Southeast Public Improvement Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0020000004,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0020000004,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0020000004,
+        "audit": {
+          "abstractParentName": "Southeast Public Improv Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66462-0",
+      "countyId": "",
+      "lgid": "66462",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.095522,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.095522,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.095522,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66463-0",
+      "countyId": "",
+      "lgid": "66463",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0955220089,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0955220089,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0955220089,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66464-0",
+      "countyId": "",
+      "lgid": "66464",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.095521994,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.095521994,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.095521994,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66465-0",
+      "countyId": "",
+      "lgid": "66465",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0054921,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0054921,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0054921,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66466-0",
+      "countyId": "",
+      "lgid": "66466",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 5",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.095522,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.095522,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.095522,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 5",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66467-0",
+      "countyId": "",
+      "lgid": "66467",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.095522,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.095522,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.095522,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66468-0",
+      "countyId": "",
+      "lgid": "66468",
+      "subdistrict": null,
+      "name": "Sterling Ranch Colorado Metropolitan District No. 7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.005530025,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.005530025,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.005530025,
+        "audit": {
+          "abstractParentName": "Sterling Ranch Colorado Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65188-0",
+      "countyId": "",
+      "lgid": "65188",
+      "subdistrict": null,
+      "name": "Stone Canon Ranch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0494910879,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0494910879,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0494910879,
+        "audit": {
+          "abstractParentName": "Stone Canon Ranch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66542-0",
+      "countyId": "",
+      "lgid": "66542",
+      "subdistrict": null,
+      "name": "Stone Creek Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0443859866,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0443859866,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0443859866,
+        "audit": {
+          "abstractParentName": "Stone Creek Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18042-0",
+      "countyId": "",
+      "lgid": "18042",
+      "subdistrict": null,
+      "name": "Stonegate North Villages Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0247756014,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0247756014,
+        "otherMills": 0.0,
+        "totalMills": 0.0247756014,
+        "audit": {
+          "abstractParentName": "Stonegate North Villages Metro",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18042-0",
+      "countyId": "",
+      "lgid": "18042",
+      "subdistrict": null,
+      "name": "Stonegate North Villages Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.046999992,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.046999992,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.046999992,
+        "audit": {
+          "abstractParentName": "Stonegate North Villages Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18043-0",
+      "countyId": "",
+      "lgid": "18043",
+      "subdistrict": null,
+      "name": "Stonegate Village Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0006549981,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0006549981,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0006549981,
+        "audit": {
+          "abstractParentName": "Stonegate Village Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65645-0",
+      "countyId": "",
+      "lgid": "65645",
+      "subdistrict": null,
+      "name": "Tallman Gulch Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0605970349,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0605970349,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0605970349,
+        "audit": {
+          "abstractParentName": "Tallman Gulch Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66777-0",
+      "countyId": "",
+      "lgid": "66777",
+      "subdistrict": null,
+      "name": "Timbers Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0295000135,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0295000135,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0295000135,
+        "audit": {
+          "abstractParentName": "Timbers Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66686-0",
+      "countyId": "",
+      "lgid": "66686",
+      "subdistrict": null,
+      "name": "Trails at Crowfoot Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0879999138,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0879999138,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0879999138,
+        "audit": {
+          "abstractParentName": "Trails at Crowfoot Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66687-0",
+      "countyId": "",
+      "lgid": "66687",
+      "subdistrict": null,
+      "name": "Trails at Crowfoot Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0880259385,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0880259385,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0880259385,
+        "audit": {
+          "abstractParentName": "Trails at Crowfoot Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66688-0",
+      "countyId": "",
+      "lgid": "66688",
+      "subdistrict": null,
+      "name": "Trails at Crowfoot Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0858050844,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0858050844,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0858050844,
+        "audit": {
+          "abstractParentName": "Trails at Crowfoot Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67277-0",
+      "countyId": "",
+      "lgid": "67277",
+      "subdistrict": null,
+      "name": "Trails Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0680959647,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0680959647,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0680959647,
+        "audit": {
+          "abstractParentName": "Trails Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-68053-0",
+      "countyId": "",
+      "lgid": "68053",
+      "subdistrict": null,
+      "name": "Twin Mesa Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0075000286,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0075000286,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0075000286,
+        "audit": {
+          "abstractParentName": "Twin Mesa Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66197-0",
+      "countyId": "",
+      "lgid": "66197",
+      "subdistrict": null,
+      "name": "Two Bridges Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0740570972,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0740570972,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0740570972,
+        "audit": {
+          "abstractParentName": "Two Bridges Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67941-0",
+      "countyId": "",
+      "lgid": "67941",
+      "subdistrict": null,
+      "name": "Valley View Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Valley View Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67942-0",
+      "countyId": "",
+      "lgid": "67942",
+      "subdistrict": null,
+      "name": "Valley View Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Valley View Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-67943-0",
+      "countyId": "",
+      "lgid": "67943",
+      "subdistrict": null,
+      "name": "Valley View Metropolitan District No. 3",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Valley View Metro District 3",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66420-0",
+      "countyId": "",
+      "lgid": "66420",
+      "subdistrict": null,
+      "name": "Village on the Green Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0494231577,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0494231577,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0494231577,
+        "audit": {
+          "abstractParentName": "Village on the Green Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18048-0",
+      "countyId": "",
+      "lgid": "18048",
+      "subdistrict": null,
+      "name": "Villages At Castle Rock Metro No. 4",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0051879823,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0051879823,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0051879823,
+        "audit": {
+          "abstractParentName": "Villages at Castle Rock Metro District 4",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18050-0",
+      "countyId": "",
+      "lgid": "18050",
+      "subdistrict": null,
+      "name": "Villages At Castle Rock Metropolitan District No. 6",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0752860034,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0752860034,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0752860034,
+        "audit": {
+          "abstractParentName": "Villages at Castle Rock Metro District 6",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18051-0",
+      "countyId": "",
+      "lgid": "18051",
+      "subdistrict": null,
+      "name": "Villages At Castle Rock Metropolitan District No. 7",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "Debt Service",
+          "purposeCategory": "debt_service",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "Villages at Castle Rock Metro District 7",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-18079-0",
+      "countyId": "",
+      "lgid": "18079",
+      "subdistrict": null,
+      "name": "Villages At Castle Rock Metropolitan District No. 9",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0451412819,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0451412819,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0451412819,
+        "audit": {
+          "abstractParentName": "Villages at Castle Rock Metro District 9",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66721-0",
+      "countyId": "",
+      "lgid": "66721",
+      "subdistrict": null,
+      "name": "Villas Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0767670786,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0767670786,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0767670786,
+        "audit": {
+          "abstractParentName": "Villas Metro District",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65722-0",
+      "countyId": "",
+      "lgid": "65722",
+      "subdistrict": null,
+      "name": "Westcreek Metropolitan District No. 1",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0384130493,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0384130493,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0384130493,
+        "audit": {
+          "abstractParentName": "Westcreek Metro District 1",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-65723-0",
+      "countyId": "",
+      "lgid": "65723",
+      "subdistrict": null,
+      "name": "Westcreek Metropolitan District No. 2",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0457269266,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0457269266,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0457269266,
+        "audit": {
+          "abstractParentName": "Westcreek Metro District 2",
+          "levyRowCount": 1
+        }
+      }
+    },
+    {
+      "districtId": "douglas-66776-0",
+      "countyId": "",
+      "lgid": "66776",
+      "subdistrict": null,
+      "name": "Yard Metropolitan District",
+      "type": "metro",
+      "levies": [
+        {
+          "purposeRaw": "General Operating",
+          "purposeCategory": "operations",
+          "rateMillsCurrent": 0.0,
+          "rateMillsPrevious": null,
+          "taborExempt": null,
+          "rawRowIndex": 0
+        }
+      ],
+      "aggregates": {
+        "opsMills": 0.0,
+        "debtMills": 0.0,
+        "otherMills": 0.0,
+        "totalMills": 0.0,
+        "audit": {
+          "abstractParentName": "The Yard Metro District",
+          "levyRowCount": 1
+        }
+      }
+    }
+  ]
+}

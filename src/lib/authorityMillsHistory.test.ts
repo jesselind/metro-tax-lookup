@@ -20,35 +20,52 @@ import {
   authorityMillsResidentSources,
   normalizeLevyPercentagePdfTag,
 } from "@/lib/authorityMillsHistory";
+import { resolveAuthorityMillsLookup } from "@/lib/crossCountyAuthorityRegistry";
 import { COUNTY_MILLS_YOY_EPS } from "@/lib/metroLevyYearOverYear";
 
 describe("authorityMillsHistory", () => {
-  it("exposes Tax Year 2024 / 2025 from bundled meta", () => {
+  it("exposes Tax Year 2024 / 2025 from bundled Arapahoe meta", () => {
     expect(AUTHORITY_MILLS_PREVIOUS_TAX_YEAR).toBe(2024);
     expect(AUTHORITY_MILLS_CURRENT_TAX_YEAR).toBe(2025);
     expect(countyHasAuthorityMillsBundle("arapahoe")).toBe(true);
     expect(countyHasAuthorityMillsBundle("douglas")).toBe(true);
+    expect(countyHasAuthorityMillsBundle("")).toBe(false);
+    expect(countyHasAuthorityMillsBundle(null)).toBe(false);
+  });
+
+  it("does not silently use Arapahoe when county id is omitted", () => {
+    expect(resolveAuthorityMillsLookup("0101")).toBeNull();
+    expect(authorityMillsSeries("0101")).toEqual([]);
+    expect(authorityMillsForTaxYear("0101", 2025)).toBeNull();
+    expect(authorityTotalMillsYoY("0101")).toBeNull();
+    expect(authorityMillsResidentSources(null)).toEqual([]);
+    expect(authorityMillsResidentSources(undefined)).toEqual([]);
+    expect(authorityRateTablePageForParcel(2024, "0601", "747")).toBeNull();
   });
 
   it("looks up AUTH mills without inventing missing years", () => {
-    expect(authorityMillsForTaxYear("0101", 2025)).toBe(51.071);
-    expect(authorityMillsForTaxYear("0101", 2024)).toBe(50.071);
-    expect(authorityMillsForTaxYear("9999", 2025)).toBeNull();
+    expect(authorityMillsForTaxYear("0101", 2025, "arapahoe")).toBe(51.071);
+    expect(authorityMillsForTaxYear("0101", 2024, "arapahoe")).toBe(50.071);
+    expect(authorityMillsForTaxYear("9999", 2025, "arapahoe")).toBeNull();
   });
 
   it("reports YoY delta when both years exist", () => {
-    const yoy = authorityTotalMillsYoY("0101");
+    const yoy = authorityTotalMillsYoY("0101", "arapahoe");
     expect(yoy).toMatchObject({
       millsPrevious: 50.071,
       millsCurrent: 51.071,
       millsDelta: 1,
     });
-    expect(authorityTotalMillsChanged("0101", COUNTY_MILLS_YOY_EPS)).toBe(true);
-    expect(authorityTotalMillsChanged("9999", COUNTY_MILLS_YOY_EPS)).toBe(false);
+    expect(
+      authorityTotalMillsChanged("0101", COUNTY_MILLS_YOY_EPS, "arapahoe"),
+    ).toBe(true);
+    expect(
+      authorityTotalMillsChanged("9999", COUNTY_MILLS_YOY_EPS, "arapahoe"),
+    ).toBe(false);
   });
 
   it("returns a multi-year AUTH series for modal history chart", () => {
-    const series = authorityMillsSeries("0101");
+    const series = authorityMillsSeries("0101", "arapahoe");
     expect(series.length).toBeGreaterThanOrEqual(AUTHORITY_MILLS_HISTORY_MIN_POINTS);
     expect(series[0]?.taxYear).toBe(2018);
     expect(series[series.length - 1]?.taxYear).toBe(2025);
@@ -56,10 +73,12 @@ describe("authorityMillsHistory", () => {
 
   it("bundles resident Levy % PDF urls for every tax year in meta", () => {
     for (const taxYear of [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]) {
-      expect(levyPercentageResidentUrlForTaxYear(taxYear)).toMatch(/^https:\/\//);
-      expect(levyPercentageResidentLinkForTaxYear(taxYear).text).toContain(
-        String(taxYear),
+      expect(levyPercentageResidentUrlForTaxYear(taxYear, "arapahoe")).toMatch(
+        /^https:\/\//,
       );
+      expect(
+        levyPercentageResidentLinkForTaxYear(taxYear, "arapahoe").text,
+      ).toContain(String(taxYear));
     }
   });
 
@@ -70,12 +89,16 @@ describe("authorityMillsHistory", () => {
   });
 
   it("maps one parcel TAG to the authority-specific page", () => {
-    expect(authorityRateTablePageForParcel(2024, "0601", "747")).toBe(95);
-    expect(authorityRateTablePageForParcel(2024, "4100", "747")).toBe(96);
+    expect(
+      authorityRateTablePageForParcel(2024, "0601", "747", "arapahoe"),
+    ).toBe(95);
+    expect(
+      authorityRateTablePageForParcel(2024, "4100", "747", "arapahoe"),
+    ).toBe(96);
   });
 
   it("deep-links known rate-table sources and preserves honest fallbacks", () => {
-    const rateTable2024 = levyPercentageResidentUrlForTaxYear(2024);
+    const rateTable2024 = levyPercentageResidentUrlForTaxYear(2024, "arapahoe");
     expect(
       deepLinkLevyPercentageUrlForParcel(rateTable2024, "0601", "747"),
     ).toBe(`${rateTable2024}#page=95`);

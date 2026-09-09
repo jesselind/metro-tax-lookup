@@ -64,6 +64,7 @@ import {
 import { countyConfigById } from "@/lib/countyConfig";
 import {
   authorityMillsCodeForRegistryEntry,
+  crossCountyAuthorityById,
   levyLineCodeForCrossCountyAuthority,
 } from "@/lib/crossCountyAuthorityRegistry";
 import type { LevyEntryMatchKeys } from "@/lib/levyEntryMatch";
@@ -446,6 +447,47 @@ function residentCountyShipsAuthorityMillsBundle(
   return countyConfigById(id)?.features.millsHistory === true;
 }
 
+/**
+ * Which county AUTH bundle supplies mills change facts.
+ * Prefer the resident county. When unset (Arapahoe-default build), use the
+ * registry `millsReferenceCountyId`, else Arapahoe-authored non-registry codes.
+ */
+function authMillsBundleCountyId(
+  record: LevyAuthorityChainEntryRecord,
+  residentCountyId?: string | null,
+): string {
+  const resident = residentCountyId?.trim();
+  if (resident) return resident;
+  const registryId = record.match.registryId?.trim();
+  if (registryId) {
+    const ref = crossCountyAuthorityById(registryId)?.millsReferenceCountyId?.trim();
+    if (ref) return ref;
+  }
+  return "arapahoe";
+}
+
+function levyPercentageSourceForYear(
+  taxYear: number,
+  countyId: string,
+): LevyAuthorityChainSourceLink {
+  return levyPercentageResidentLinkForTaxYear(taxYear, countyId);
+}
+
+function buildMetroMillsChangeFact(
+  label: string,
+  change: AuthorityMillsYoYChange,
+  countyId: string,
+): LevyAuthorityChainFact {
+  return {
+    label,
+    value: formatMetroMillsChangeFactValue(change),
+    sources: [
+      levyPercentageSourceForYear(change.fromYear, countyId),
+      levyPercentageSourceForYear(change.toYear, countyId),
+    ],
+  };
+}
+
 function buildWhoSetsStep(
   record: LevyAuthorityChainEntryRecord,
   stackAuthorityLabel?: string,
@@ -462,28 +504,6 @@ function buildWhoSetsStep(
         value: countyListName,
         sources: [],
       },
-    ],
-  };
-}
-
-function levyPercentageSourceForYear(
-  taxYear: number,
-  countyId?: string,
-): LevyAuthorityChainSourceLink {
-  return levyPercentageResidentLinkForTaxYear(taxYear, countyId);
-}
-
-function buildMetroMillsChangeFact(
-  label: string,
-  change: AuthorityMillsYoYChange,
-  countyId?: string,
-): LevyAuthorityChainFact {
-  return {
-    label,
-    value: formatMetroMillsChangeFactValue(change),
-    sources: [
-      levyPercentageSourceForYear(change.fromYear, countyId),
-      levyPercentageSourceForYear(change.toYear, countyId),
     ],
   };
 }
@@ -534,7 +554,7 @@ function buildAuthDerivedMillsStep(
     return millsStepWithTerms({ body, terms, facts: [] });
   }
 
-  const millsCountyId = residentCountyId ?? "arapahoe";
+  const millsCountyId = authMillsBundleCountyId(record, residentCountyId);
   const code = authMillsCodeForRecord(record, residentCountyId);
   const series = authorityMillsSeries(code, millsCountyId);
   const { changeFromLastYear, mostNotableChange } =

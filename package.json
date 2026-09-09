@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.10.0",
+  "version": "5.11.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "validate:levy-explainer": "node tools/validate_levy_explainer_entries.mjs",
     "validate:levy-authority-chain": "vitest run src/lib/levyAuthorityChainValidate.test.ts",
     "validate:app-json": "node tools/validate_app_json.mjs",
-    "prebuild": "node tools/ensure_nov_grid_for_build.mjs && npm run validate:levy-explainer && npm run validate:levy-authority-chain && npm run validate:app-json",
+    "prebuild": "node tools/ensure_nov_grid_for_build.mjs && npm run validate:levy-explainer && npm run validate:levy-authority-chain && npm run validate:app-json -- --all-wired",
     "ci:test:nov-comps-parser": "npm run test:nov-comps-parser",
     "ci:test:parcel-index": "npm run test:parcel-index",
     "ci:test:ingest": "npm run test:ingest",
@@ -38,6 +38,8 @@
     "land:douglas": "cp supporting-data/_ingest-out/douglas/douglas-pin-to-tag.json supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json public/data/ && rm -rf public/data/douglas-parcel-record-by-pin && cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/ && rm -rf public/data/douglas-valuation-history-by-account && cp -R supporting-data/_ingest-out/douglas/douglas-valuation-history-by-account public/data/",
     "diff:ingest": "python3 tools/ingest/compare.py",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
+    "test:douglas-metro-levies": "python3 -m unittest discover -s tools -p test_build_douglas_metro_levies.py -q",
+    "build:douglas-metro-levies": "python3 tools/build_douglas_metro_levies.py --bundled-as-of $(date +%F)",
     "test:authority-mills-extract": "python3 -m unittest discover -s tools -p test_extract_authority_mills_by_tax_year.py -q && python3 -m unittest discover -s tools -p test_extract_douglas_authority_mills_by_tax_year.py -q && python3 -m unittest discover -s tools -p test_extract_douglas_valuation_history.py -q",
     "build:douglas-authority-mills": "python3 tools/extract_douglas_authority_mills_by_tax_year.py",
     "fetch:douglas-realware-detail": "python3 tools/fetch_douglas_realware_detail.py --skip-existing",

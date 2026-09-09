@@ -17,21 +17,26 @@ import {
   validateCountyPinToTagFile,
 } from "@/lib/countyParcelLevyData";
 import { validateCountySitusToPinsPayload } from "@/lib/situsIndexLookup";
+import { CAMPAIGN_DEFAULT_COUNTY_ID } from "@/lib/countyConfig";
 import {
   countyAccountMapFsRelative,
   countyLevyStacksFsRelative,
   countySitusToPinsFsRelative,
 } from "@/lib/countyDataPaths";
 
-/** Required for account-load. Paths from county id + shipping data root. */
+/**
+ * Required for account-load. Paths for the **campaign-default** county
+ * (Arapahoe). Wired multi-county validation uses `validate:app-json --all-wired`
+ * with per-county paths — do not treat these constants as "every county."
+ */
 export const APP_JSON_REQUIRED_RELATIVE_PATHS = {
-  levyStacks: countyLevyStacksFsRelative(),
-  accountMap: countyAccountMapFsRelative(),
+  levyStacks: countyLevyStacksFsRelative(CAMPAIGN_DEFAULT_COUNTY_ID),
+  accountMap: countyAccountMapFsRelative(CAMPAIGN_DEFAULT_COUNTY_ID),
 } as const;
 
 /** Absent is allowed. If present, the matching validator must pass. */
 export const APP_JSON_OPTIONAL_RELATIVE_PATHS = {
-  situs: countySitusToPinsFsRelative(),
+  situs: countySitusToPinsFsRelative(CAMPAIGN_DEFAULT_COUNTY_ID),
   metroPurposes2026: "public/data/metro-levies-2026.json",
   metroPurposes2025: "public/data/metro-levies-2025.json",
 } as const;

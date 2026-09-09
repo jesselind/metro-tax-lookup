@@ -4,8 +4,12 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { CommittedLevyLine } from "@/lib/committedLevyLine";
-import type { LevyDataFile, LevyDistrictFromJson } from "@/lib/levyTypes";
-import levyData from "@/data/metroLevies";
+import {
+  countyFeatureAvailable,
+  type CountyConfig,
+} from "@/lib/countyConfig";
+import type { LevyDistrictFromJson } from "@/lib/levyTypes";
+import { metroPurposesFileForCounty } from "@/lib/metroPurposesBundle";
 
 /** Hint from a PIN-loaded levy stack: metro prefill, or no matching metro LG ID on any line. */
 export type MetroFromLevyStack =
@@ -71,21 +75,45 @@ export function findMetroDistrictIdsFromLevyLines(
 
 export function findMetroDistrictIdsFromCommittedLines(
   lines: CommittedLevyLine[],
+  countyId: string | null | undefined,
 ): string[] {
-  const file = levyData as LevyDataFile;
+  const file = metroPurposesFileForCounty(countyId);
+  if (!file) return [];
   return findMetroDistrictIdsFromLevyLines(lines, file.districts);
 }
 
 /**
  * Derive which metro district IDs appear on the levy stack from LG IDs on committed lines.
+ * Uses the resolved county's metro purpose JSON only (never another county's file).
  * Returns `undefined` when there are no lines yet. When lines exist but none match a metro
- * district in bundled data, returns `no_metro_lgid_match` (PIN load or manual workbench).
+ * district in that county's bundle, returns `no_metro_lgid_match`.
  */
 export function metroFromLevyLines(
   levyLines: CommittedLevyLine[],
+  countyId: string | null | undefined,
 ): MetroFromLevyStack | undefined {
   if (levyLines.length === 0) return undefined;
-  const districtIds = findMetroDistrictIdsFromCommittedLines(levyLines);
+  const districtIds = findMetroDistrictIdsFromCommittedLines(
+    levyLines,
+    countyId,
+  );
   if (districtIds.length > 0) return { kind: "match", districtIds };
   return { kind: "no_metro_lgid_match" };
+}
+
+/**
+ * Whether the home metro purpose-breakdown section should mount.
+ *
+ * Requires the resident county's `features.metroPurposes` flag **and** a levy-stack
+ * LG ID match into the bundled metro purpose JSON. A shared metro LG ID alone is not
+ * enough: counties without purpose-row data must not show another county's breakdown.
+ */
+export function shouldShowMetroPurposesSection(
+  config: CountyConfig,
+  metroFromStack: MetroFromLevyStack | undefined,
+): boolean {
+  return (
+    countyFeatureAvailable("metroPurposes", config) &&
+    metroFromStack?.kind === "match"
+  );
 }
