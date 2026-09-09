@@ -23,7 +23,11 @@ import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSectio
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
-import { COUNTY_CONFIG, countyConfigById, countyFeatureAvailable } from "@/lib/countyConfig";
+import {
+  CAMPAIGN_DEFAULT_COUNTY_CONFIG,
+  countyConfigById,
+  countyFeatureAvailable,
+} from "@/lib/countyConfig";
 import { safeCountyParcelRecordUrl, safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import { levyGovernmentContactKind } from "@/lib/levyGovernmentKind";
 import {
@@ -325,8 +329,8 @@ function MetroYoYYearCompare({
 
 type Props = {
   authorityLabel: string;
-  /** Resident county id for cross-county registry lookup. */
-  countyId?: string;
+  /** Resident county id for registry lookup, mills history, and parcel links. */
+  countyId: string;
   /** Mart levy line code when known (improves explainer matching). */
   levyLineCode?: string;
   /** County TAG / source tag when known. */
@@ -392,7 +396,7 @@ export function LevyLineDistrictDetailDialog({
   onClose,
 }: Props) {
   const countyConfig = useMemo(
-    () => (countyId ? countyConfigById(countyId) : null) ?? COUNTY_CONFIG,
+    () => countyConfigById(countyId) ?? CAMPAIGN_DEFAULT_COUNTY_CONFIG,
     [countyId],
   );
   const priorYearValuesGap = countyFeatureAvailable(

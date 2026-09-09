@@ -90,6 +90,21 @@ describe("metroFromLevyLines county-keyed match", () => {
     );
   });
 
+  it("does not match metro LG IDs when countyId is missing (no silent Arapahoe)", () => {
+    const lines = [lineWithLg("65214")];
+    expect(findMetroDistrictIdsFromCommittedLines(lines, null)).toEqual([]);
+    expect(findMetroDistrictIdsFromCommittedLines(lines, undefined)).toEqual(
+      [],
+    );
+    expect(metroFromLevyLines(lines, null)?.kind).toBe("no_metro_lgid_match");
+    expect(
+      shouldShowMetroPurposesSection(
+        ARAPAHOE_COUNTY_CONFIG,
+        metroFromLevyLines(lines, null),
+      ),
+    ).toBe(false);
+  });
+
   it("matches Douglas Canyons MD 3 against the Douglas bundle with ops+debt", () => {
     const lines = [lineWithLg("65041")];
     const ids = findMetroDistrictIdsFromCommittedLines(lines, "douglas");

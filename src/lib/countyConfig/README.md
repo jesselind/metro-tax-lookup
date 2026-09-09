@@ -32,7 +32,7 @@ Longer product model (three layers, search gate, `/sources`): **[`docs/county-co
 3. Loaders fetch `{countyId}-*` under `public/data/` (see `countyDataPaths.ts`).
 4. `/sources` methodology is a separate content module per county (`src/content/sourcesMethodology/`).
 
-**Rule:** After resolve, do **not** use `COUNTY_CONFIG` / `CAMPAIGN_DEFAULT_COUNTY_CONFIG` (Arapahoe campaign default) for another county’s feature gates, URL builders, or loaders. Pass `countyConfigById(resolvedId)` (or the resolved config object). Helpers and path builders take a **required** `config` / `countyId` — TypeScript rejects omitted args. When a pre-resolve path truly means Arapahoe campaign home, pass `CAMPAIGN_DEFAULT_COUNTY_CONFIG` (or `CAMPAIGN_DEFAULT_COUNTY_ID`) **explicitly** so the default is obvious in review.
+**Rule:** After resolve, do **not** use `COUNTY_CONFIG` / `CAMPAIGN_DEFAULT_COUNTY_CONFIG` (Arapahoe campaign default) for another county’s feature gates, URL builders, or loaders. Pass `countyConfigById(resolvedId)` (or the resolved config object). Helpers and path builders take a **required** `config` / `countyId` — TypeScript rejects omitted args. When a pre-resolve path truly means Arapahoe campaign home, pass `CAMPAIGN_DEFAULT_COUNTY_CONFIG` (or `CAMPAIGN_DEFAULT_COUNTY_ID`) **explicitly** so the default is obvious in review (glossary comps aside, demo property, account-lookup empty/not-found messaging).
 
 ## Adding county N (checklist)
 
