@@ -1235,7 +1235,7 @@ export function LevyStackVisualization({
         <LevyLineDistrictDetailDialog
           key={detailLineId ?? ""}
           authorityLabel={detailContext.authority}
-          countyId={countyConfig.id}
+          countyConfig={countyConfig}
           levyLineCode={detailContext.line.levyLineCode}
           sourceTagId={detailContext.line.sourceTagId}
           taxAreaShortCode={loadedParcelMeta?.tagShortDescr}
