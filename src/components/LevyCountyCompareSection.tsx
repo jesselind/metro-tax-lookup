@@ -14,6 +14,12 @@ import {
   countyParcelRecordLookupValue,
   type CountyConfig,
 } from "@/lib/countyConfig";
+import {
+  HOME_COUNTY_COMPARE_HEADING_ID,
+  HOME_COUNTY_COMPARE_SECTION_ID,
+  HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
+} from "@/lib/homeDashboardJumps";
+import { DASHBOARD_SECTION_ARRIVE_TARGET_CLASS } from "@/lib/toolFlowStyles";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/countyParcelLevyData";
 import {
   safeCountyBppAccountDetailsUrl,
@@ -105,13 +111,15 @@ export function LevyCountyCompareSection({
 
   return (
     <section
-      className="space-y-3 rounded-lg border border-slate-200/90 bg-slate-50/90 px-4 py-4 shadow-sm sm:px-5"
-      aria-labelledby="levy-county-compare-heading"
+      id={HOME_COUNTY_COMPARE_SECTION_ID}
+      className={`space-y-3 rounded-lg border border-slate-200/90 bg-slate-50/90 px-4 py-4 shadow-sm sm:px-5 ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS}`}
+      aria-labelledby={HOME_COUNTY_COMPARE_HEADING_ID}
     >
       <div>
         <h4
-          id="levy-county-compare-heading"
-          className="text-base font-semibold leading-snug text-slate-900 sm:text-lg"
+          id={HOME_COUNTY_COMPARE_HEADING_ID}
+          tabIndex={-1}
+          className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} text-base font-semibold leading-snug text-slate-900 outline-none sm:text-lg`}
         >
           See how {countyConfig.displayName} displays your data
         </h4>
