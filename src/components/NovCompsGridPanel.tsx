@@ -34,8 +34,14 @@ import {
   type NovCompsGridDefinitionEntry,
   type NovCompsGridPayload,
 } from "@/lib/novCompsGridTypes";
+import {
+  HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
+  HOME_NOV_COMPS_HEADING_ID,
+  HOME_NOV_COMPS_SECTION_ID,
+} from "@/lib/homeDashboardJumps";
 import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
 import {
+  DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   TERM_LINK_CLASS,
   TOOL_LINK_UNDERLINE_CLASS,
@@ -359,7 +365,7 @@ export type NovCompsGridPanelProps = {
 
 function CompsGridSectionHeading() {
   return (
-    <h2 id="home-nov-comps-grid-heading" className="mt-6 sm:mt-8">
+    <h2 id={HOME_NOV_COMPS_HEADING_ID} className="mt-6 sm:mt-8">
       <Popover.Root>
         <Popover.Trigger asChild>
           <button type="button" className={COMPS_GRID_HEADING_TRIGGER_CLASS}>
@@ -390,8 +396,10 @@ function CompsGridSectionHeading() {
 function NovCompsGridEmptySection() {
   return (
     <section
-      className="scroll-mt-6 space-y-3"
-      aria-labelledby="home-nov-comps-grid-heading"
+      id={HOME_NOV_COMPS_SECTION_ID}
+      tabIndex={-1}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
+      aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
     >
       <CompsGridSectionHeading />
       <div
@@ -811,8 +819,10 @@ function NovCompsGridFilled(props: NovCompsGridFilledProps) {
 
   return (
     <section
-      className="scroll-mt-6 space-y-3"
-      aria-labelledby="home-nov-comps-grid-heading"
+      id={HOME_NOV_COMPS_SECTION_ID}
+      tabIndex={-1}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
+      aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
     >
       <CompsGridSectionHeading />
       <div className={`${PANEL_SHELL} p-2 sm:p-3`}>

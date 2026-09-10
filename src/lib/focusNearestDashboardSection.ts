@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
+import { dashboardUtilityBarStickyInsetPx } from "@/lib/homeDashboardJumps";
+
 /** How long {@link DASHBOARD_SECTION_ARRIVE_ATTR} stays on the highlight target. */
 export const DASHBOARD_SECTION_ARRIVE_MS = 1800;
 
@@ -24,10 +26,12 @@ let arriveTimer: number | undefined;
 let arriveEl: HTMLElement | undefined;
 
 export type FocusNearestDashboardSectionOptions = {
-  /** Programmatic focus target (`tabIndex={-1}` heading). */
+  /** Programmatic focus target (`tabIndex={-1}` heading or section). */
   focusId: string;
   /** Optional element for the short local ring (e.g. mill levy tile grid). */
   highlightId?: string;
+  /** Override sticky chrome height; default measures the locked-report utility bar when present. */
+  stickyInsetPx?: number;
 };
 
 /** True when the tiles' top is far enough down that nearest-scroll barely moves. */
@@ -40,15 +44,51 @@ export function highlightNeedsStartScroll(
 }
 
 /**
+ * Choose scroll block for a dashboard jump.
+ * - Focus under sticky chrome → {@code start} (clear the bar).
+ * - Highlight mostly below the content fold → {@code start}.
+ * - Otherwise {@code nearest} (no yank when already on screen; arrive ring still runs).
+ */
+export function resolveDashboardJumpScrollBlock(options: {
+  focusTop: number;
+  highlightTop: number | null;
+  viewportHeight: number;
+  stickyInsetPx: number;
+}): ScrollLogicalPosition {
+  const inset = Math.max(0, options.stickyInsetPx);
+  if (options.focusTop < inset + 1) {
+    return "start";
+  }
+  if (options.highlightTop == null) {
+    return "nearest";
+  }
+  const contentTop = options.highlightTop - inset;
+  const contentViewport = Math.max(1, options.viewportHeight - inset);
+  return highlightNeedsStartScroll(contentTop, contentViewport)
+    ? "start"
+    : "nearest";
+}
+
+function measureStickyInsetPx(explicit?: number): number {
+  if (explicit != null && Number.isFinite(explicit)) {
+    return Math.max(0, explicit);
+  }
+  return dashboardUtilityBarStickyInsetPx();
+}
+
+/**
  * Move focus to a dashboard section heading and scroll.
  * Tiles already on screen: {@code nearest} (no yank). Tiles mostly below the
  * fold: {@code start} on the heading so more of the tile grid follows.
+ * Sticky utility bar height is subtracted from the fold test; targets should use
+ * {@link HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} so {@code block: "start"} clears the bar.
  * Sets {@link DASHBOARD_SECTION_ARRIVE_ATTR} on {@link highlightId} (or the
  * focus node) for a short local ring.
  */
 export function focusNearestDashboardSection({
   focusId,
   highlightId,
+  stickyInsetPx,
 }: FocusNearestDashboardSectionOptions): void {
   if (typeof document === "undefined") return;
   const focusEl = document.getElementById(focusId);
@@ -59,14 +99,14 @@ export function focusNearestDashboardSection({
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
-  const block: ScrollLogicalPosition =
-    highlightEl != null &&
-    highlightNeedsStartScroll(
-      highlightEl.getBoundingClientRect().top,
-      window.innerHeight,
-    )
-      ? "start"
-      : "nearest";
+  const inset = measureStickyInsetPx(stickyInsetPx);
+  const block = resolveDashboardJumpScrollBlock({
+    focusTop: focusEl.getBoundingClientRect().top,
+    highlightTop:
+      highlightEl != null ? highlightEl.getBoundingClientRect().top : null,
+    viewportHeight: window.innerHeight,
+    stickyInsetPx: inset,
+  });
 
   focusEl.scrollIntoView({
     behavior: reduceMotion ? "auto" : "smooth",

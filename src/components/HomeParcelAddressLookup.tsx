@@ -64,6 +64,13 @@ import {
   COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
 } from "@/content/countyCompsPdfGuidance";
 import { MILL_LEVY_STACK_HEADING_ID } from "@/content/millLevySummaryCopy";
+import {
+  buildHomeDashboardJumps,
+  HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
+  HOME_FEEDBACK_ASIDE_ID,
+  HOME_PROPERTY_DETAILS_ID,
+  type HomeDashboardJump,
+} from "@/lib/homeDashboardJumps";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import {
   CONTACT_EMAIL,
@@ -192,8 +199,7 @@ import {
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS,
-  PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS,
-  PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS,
+  DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   PARCEL_SUMMARY_ROW_CLASS,
   PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
   PARCEL_SUMMARY_TILE_BODY_CLASS,
@@ -265,9 +271,6 @@ const SITUS_SEARCH_ON = anyCountySitusSearchAvailable();
 const HOME_LEVY_BREAKDOWN_ID = "home-levy-breakdown-heading";
 const HOME_LEVY_BREAKDOWN_ARIA_LABEL = "Property tax breakdown";
 
-/** Property details block (full width below the levy stack). */
-const HOME_PROPERTY_DETAILS_ID = "home-property-details";
-
 const HOME_ADDRESS_LOOKUP_ERROR_ID = "home-address-lookup-error";
 const HOME_ADDRESS_STREET_SUGGESTIONS_ID = "home-address-street-suggestions";
 const HOME_MATCHING_PROPERTIES_ID = "home-matching-properties";
@@ -277,11 +280,17 @@ export type HomeParcelAddressLookupProps = {
   onViewingParcelChange?: (viewingParcel: boolean, reset: () => void) => void;
   /** Fires when Own | Rent changes (landing intro copy follows the lens). */
   onAudienceModeChange?: (mode: AudienceMode) => void;
+  /**
+   * Locked report only: Jump to… destinations for the sticky utility bar.
+   * {@code null} when unlocked (bar hidden). Hero Start over stays on PageHero while viewing.
+   */
+  onLockedUtilityNavChange?: (jumps: HomeDashboardJump[] | null) => void;
 };
 
 export function HomeParcelAddressLookup({
   onViewingParcelChange,
   onAudienceModeChange,
+  onLockedUtilityNavChange,
 }: HomeParcelAddressLookupProps = {}) {
   const [simpleAddressLine, setSimpleAddressLine] = useState("");
   /** After a first-line search returns no match or many matches, show the four-field form. */
@@ -1456,6 +1465,38 @@ export function HomeParcelAddressLookup({
   const showPropertyDetailsColumn =
     levyLoadedMeta != null && levyLoadError == null;
 
+  const showCountyCompareSection =
+    levyLines.length > 0 && levyLoadedMeta != null;
+  const showInAppCompsJump =
+    levyReadyForSummary && isDemoMode && !isRentMode;
+
+  const lockedUtilityJumps = useMemo((): HomeDashboardJump[] | null => {
+    if (!addressSearchLocked) return null;
+    return buildHomeDashboardJumps({
+      showLevies: showHomeLevyBreakdownRegion,
+      showPropertyDetails: showPropertyDetailsColumn,
+      showCountyCompare: showCountyCompareSection,
+      showInAppComps: showInAppCompsJump,
+      showFeedback: showHomeAccuracyFeedbackAside,
+      countyDisplayName: activeCountyConfig.displayName,
+    });
+  }, [
+    addressSearchLocked,
+    showHomeLevyBreakdownRegion,
+    showPropertyDetailsColumn,
+    showCountyCompareSection,
+    showInAppCompsJump,
+    showHomeAccuracyFeedbackAside,
+    activeCountyConfig.displayName,
+  ]);
+
+  useEffect(() => {
+    onLockedUtilityNavChange?.(lockedUtilityJumps);
+    return () => {
+      onLockedUtilityNavChange?.(null);
+    };
+  }, [lockedUtilityJumps, onLockedUtilityNavChange]);
+
   const propertyDetailsBundledLabel = useMemo(() => {
     if (!parcelRecordBundledAsOf) return null;
     return formatLevyBundledAsOf(parcelRecordBundledAsOf.slice(0, 10));
@@ -1474,7 +1515,7 @@ export function HomeParcelAddressLookup({
       <h3
         id={MILL_LEVY_STACK_HEADING_ID}
         tabIndex={-1}
-        className={`${DASHBOARD_SECTION_HEADING_CLASS} scroll-mt-6 outline-none sm:scroll-mt-8`}
+        className={`${DASHBOARD_SECTION_HEADING_CLASS} ${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} outline-none`}
       >
         Where is your money going?
       </h3>
@@ -1674,7 +1715,8 @@ export function HomeParcelAddressLookup({
   const propertyDetailsSection = showPropertyDetailsColumn ? (
     <section
       id={HOME_PROPERTY_DETAILS_ID}
-      className="scroll-mt-6 space-y-3 sm:scroll-mt-8"
+      tabIndex={-1}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
       aria-labelledby="parcel-record-heading"
     >
       <div className="space-y-3">{propertyDetailsHeader}</div>
@@ -2823,35 +2865,6 @@ export function HomeParcelAddressLookup({
                 </div>
               </div>
             ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            showPropertyDetailsColumn ? (
-              <a
-                href={`#${HOME_PROPERTY_DETAILS_ID}`}
-                className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}
-                aria-label="Jump to property details"
-              >
-                <span className={PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS}>
-                  Property details
-                </span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="size-4 shrink-0 text-slate-700"
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
-                  />
-                </svg>
-              </a>
-            ) : null}
               </div>
             </div>
             {showHomeLevyBreakdownRegion ? (
@@ -3065,7 +3078,12 @@ export function HomeParcelAddressLookup({
             <NovCompsGridPanel payload={novCompsGridDemoPayload} />
           ) : null}
           {showHomeAccuracyFeedbackAside ? (
-            <aside aria-label="Accuracy and feedback">
+            <aside
+              id={HOME_FEEDBACK_ASIDE_ID}
+              tabIndex={-1}
+              className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none`}
+              aria-label="Accuracy and feedback"
+            >
               <MailContactCard
                 href={REPORT_PROBLEM_MAILTO_HREF}
                 kicker="Feedback"

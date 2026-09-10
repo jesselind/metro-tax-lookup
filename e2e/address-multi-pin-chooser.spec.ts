@@ -166,10 +166,17 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   ).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Jump to property details" }),
+  ).toHaveCount(0);
+  const onThisPage = page.getByRole("navigation", { name: "On this page" });
+  await expect(onThisPage).toBeVisible();
+  // summary a11y role varies by engine; click the disclosure control directly.
+  await onThisPage.locator("summary").click();
+  await expect(
+    onThisPage.getByRole("button", { name: "Property details" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Jump to property details" }),
-  ).toContainText("Property details");
+    onThisPage.getByRole("button", { name: "START OVER" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Property details cont." }),
   ).toHaveCount(0);

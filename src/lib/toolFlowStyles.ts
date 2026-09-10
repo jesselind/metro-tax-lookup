@@ -43,6 +43,46 @@ export const PAGE_HERO_ACTION_BUTTON_CLASS =
   `inline-flex shrink-0 cursor-pointer items-center justify-center ${RADIUS_CONTROL_CLASS} border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm`;
 
 /**
+ * Locked-report Jump to… navigation bar (`HomeDashboardUtilityBar`): sub-header
+ * under PageHero; sticks at the viewport top after the slate title scrolls away.
+ * Full-bleed without `transform` (transform breaks sticky). `-mt-4` cancels
+ * {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4` so the bar sits flush under the hero.
+ */
+export const HOME_DASHBOARD_UTILITY_BAR_CLASS =
+  "relative sticky top-0 z-40 -mt-4 w-screen max-w-[100vw] ml-[calc(50%-50vw)] bg-slate-600";
+
+/** Inner column: same horizontal inset as {@link PAGE_HERO_INNER_CLASS}; height from the control row. */
+export const HOME_DASHBOARD_UTILITY_BAR_INNER_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} items-center px-4 sm:px-5`;
+
+/** Native `<details className="group">` so the chevron can use `group-open:rotate-180`. */
+export const HOME_DASHBOARD_JUMP_DETAILS_CLASS = "group w-full min-w-0";
+
+/**
+ * Jump to… summary: header chrome, not a form field. Hides the UA marker;
+ * DisclosureChevron provides the caret.
+ */
+export const HOME_DASHBOARD_JUMP_SUMMARY_CLASS =
+  "flex w-full cursor-pointer list-none items-center justify-between gap-3 py-3 text-base font-semibold leading-snug text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-600 sm:text-lg [&::-webkit-details-marker]:hidden";
+
+export const HOME_DASHBOARD_JUMP_CHEVRON_CLASS =
+  "h-5 w-5 shrink-0 text-white transition-transform duration-150 group-open:rotate-180 motion-reduce:transition-none";
+
+export const HOME_DASHBOARD_JUMP_MENU_CLASS =
+  "m-0 list-none border-t border-white/25 p-0";
+
+export const HOME_DASHBOARD_JUMP_ITEM_CLASS =
+  "flex min-h-11 w-full cursor-pointer items-center border-0 bg-transparent py-2.5 text-left text-sm font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 sm:text-base";
+
+/** Start over: stronger type than section jumps (bold vs semibold); extra vertical pad. */
+export const HOME_DASHBOARD_JUMP_START_OVER_ITEM_CLASS =
+  "flex min-h-11 w-full cursor-pointer items-center border-0 bg-transparent py-3.5 text-left text-sm font-bold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 sm:text-base";
+
+/** Hairline above Start over (on the list item, not the button). */
+export const HOME_DASHBOARD_JUMP_START_OVER_LI_CLASS =
+  "border-t border-white/25";
+
+
+/**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
  * Not `flex-1`: root layout uses `flex-1` on the page shell so the site footer stays at the
  * bottom; growing this column would add empty scroll space on short pages.
@@ -363,20 +403,6 @@ export const PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS =
   "text-base font-bold leading-tight tracking-tight text-[#451E18] sm:text-lg";
 
 /**
- * Last jump control in the summary chip row (after comps / Notice of Valuation).
- * Full width of the summary column at every viewport. `min-h-11` is a 44px tap
- * target (same floor as `btn-primary--md`); width stays full column.
- */
-export const PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS =
-  `flex w-full min-h-11 cursor-pointer flex-row items-center justify-center gap-1.5 ${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-300 bg-white px-2.5 py-2.5 text-center shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 active:border-slate-500 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-2`;
-
-/**
- * Label inside {@link PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_CLASS}.
- */
-export const PARCEL_SUMMARY_JUMP_PROPERTY_DETAILS_LABEL_CLASS =
-  "text-center text-sm font-semibold leading-tight text-slate-800";
-
-/**
  * Metro percent cards: wrap into content-sized columns. Default grid `align-items: stretch`
  * keeps tiles on the same row equal height; pair buttons with `flex flex-col items-start h-full`
  * so copy stays top-aligned inside the tile.
@@ -405,9 +431,12 @@ export const DASHBOARD_SECTION_HEADING_CLASS =
 /**
  * Short local ring when {@code focusNearestDashboardSection} sets {@code data-arrive}.
  * Put this on the visual target (e.g. mill levy tile grid), not the focus heading.
+ * Outside ring + offset (not inset): inset paints under child tiles/tables and only
+ * shows in seams. Home lookup uses {@code overflow-x-clip} with matching horizontal
+ * pad so the outside ring is not cropped.
  */
 export const DASHBOARD_SECTION_ARRIVE_TARGET_CLASS =
-  "data-[arrive]:rounded-lg data-[arrive]:ring-2 data-[arrive]:ring-indigo-600 data-[arrive]:ring-offset-2";
+  "data-[arrive]:rounded-lg data-[arrive]:ring-2 data-[arrive]:ring-indigo-600 data-[arrive]:ring-offset-4 data-[arrive]:ring-offset-white";
 
 /**
  * {@link DASHBOARD_SECTION_HEADING_CLASS} plus lead-in margin when the title follows
