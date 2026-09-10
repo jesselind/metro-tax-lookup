@@ -40,7 +40,7 @@ export type HomeDashboardUtilityBarProps = {
 };
 
 /**
- * Sticky locked-report TOC chrome: Jump to… (gated sections + Start over).
+ * Sticky locked-report Jump to… navigation bar (gated sections + Start over).
  * Native {@code <details>} so the chevron can use {@code group-open:rotate-180}.
  * Sub-header under PageHero; sticks at the viewport top after the hero scrolls away.
  */
@@ -52,19 +52,31 @@ export function HomeDashboardUtilityBar({
   const barRef = useRef<HTMLElement>(null);
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
-  useLayoutEffect(() => {
-    const el = barRef.current;
-    if (!el) return;
+  /**
+   * Publish the stuck summary-row height only. An open Jump to… menu must not
+   * inflate scroll-mt (that overscrolled, then closing before jump undershot).
+   */
+  const syncUtilityBarHeight = () => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const summary = detailsRef.current?.querySelector(":scope > summary");
+    const heightEl = summary instanceof HTMLElement ? summary : bar;
+    document.documentElement.style.setProperty(
+      HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
+      `${heightEl.offsetHeight}px`,
+    );
+  };
 
-    const syncHeight = () => {
-      document.documentElement.style.setProperty(
-        HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
-        `${el.offsetHeight}px`,
-      );
-    };
-    syncHeight();
-    const observer = new ResizeObserver(syncHeight);
-    observer.observe(el);
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    const details = detailsRef.current;
+    if (!bar) return;
+
+    syncUtilityBarHeight();
+    const observer = new ResizeObserver(syncUtilityBarHeight);
+    observer.observe(bar);
+    const summary = details?.querySelector(":scope > summary");
+    if (summary instanceof HTMLElement) observer.observe(summary);
     return () => {
       observer.disconnect();
       document.documentElement.style.removeProperty(
@@ -79,6 +91,7 @@ export function HomeDashboardUtilityBar({
 
   const onJump = (jumpId: string) => {
     closeMenu();
+    syncUtilityBarHeight();
     if (jumpId === HOME_DASHBOARD_JUMP_START_OVER_VALUE) {
       onStartOver();
       return;

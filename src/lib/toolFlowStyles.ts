@@ -43,8 +43,8 @@ export const PAGE_HERO_ACTION_BUTTON_CLASS =
   `inline-flex shrink-0 cursor-pointer items-center justify-center ${RADIUS_CONTROL_CLASS} border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm`;
 
 /**
- * Locked-report Jump to… strip (`HomeDashboardUtilityBar`): sub-header under
- * PageHero; sticks as top chrome after the slate title scrolls away.
+ * Locked-report Jump to… navigation bar (`HomeDashboardUtilityBar`): sub-header
+ * under PageHero; sticks at the viewport top after the slate title scrolls away.
  * Full-bleed without `transform` (transform breaks sticky). `-mt-4` cancels
  * {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4` so the bar sits flush under the hero.
  */

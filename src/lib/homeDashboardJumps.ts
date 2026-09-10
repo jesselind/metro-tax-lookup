@@ -17,10 +17,11 @@ export const HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR =
 
 /**
  * scroll-margin-top for jump focus/highlight targets so `scrollIntoView({ block: "start" })`
- * clears the sticky utility bar. Fallback matches a one-row bar (~3.5rem).
+ * clears the sticky utility bar, plus 0.5rem so titles are not flush against the bar.
+ * Fallback matches a one-row bar (~3.5rem) before the gap.
  */
 export const HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS =
-  "scroll-mt-[var(--home-dashboard-utility-bar-height,3.5rem)]";
+  "scroll-mt-[calc(var(--home-dashboard-utility-bar-height,3.5rem)+0.5rem)]";
 
 export const HOME_PROPERTY_DETAILS_ID = "home-property-details";
 

@@ -33,7 +33,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       "Locked-report sticky Jump to a section bar (On this page)",
     highlights: [
       "Home locked report: sticky On this page strip under PageHero (HomeDashboardUtilityBar, slate-600 sub-header; sticks after the blue hero scrolls away). Native details disclosure Jump to a section lists gated destinations that are on the page (levy stack, Property details, county compare, in-app comps when present, Feedback) plus START OVER last (hairline + bold caps). Hero Start over stays on PageHero while locked.",
-      "Jumps use focusNearestDashboardSection with sticky-bar scroll-margin (CSS var from bar ResizeObserver); arrive ring is outside indigo with white offset (inset painted under tiles/tables; overflow-x-clip pad keeps the ring unclipped). Property details summary jump chip removed.",
+      "Jumps use focusNearestDashboardSection with sticky-bar scroll-margin (CSS var = Jump to summary-row height via ResizeObserver, plus 0.5rem so titles are not flush under the bar); arrive ring is outside indigo with white offset (inset painted under tiles/tables; overflow-x-clip pad keeps the ring unclipped). Property details summary jump chip removed.",
       "buildHomeDashboardJumps gates options; e2e address-multi-pin-chooser asserts the disclosure and START OVER. Sticky bar must share the tall TOOL_PAGE_INNER column with the report body (short hero+bar wrapper kills sticky).",
     ],
   },
