@@ -187,7 +187,7 @@ describe("levyAuthorityChainValidate", () => {
     (school.authority as Record<string, unknown>).governmentBillName =
       "Cherry Creek School District";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /authority\.governmentBillName only applies to county, metro, or fire family entries/i,
+      /authority\.governmentBillName only applies to county, metro, fire, or city family entries/i,
     );
   });
 

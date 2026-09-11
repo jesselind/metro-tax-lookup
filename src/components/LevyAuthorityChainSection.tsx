@@ -467,9 +467,11 @@ export function LevyAuthorityChainSection({
               <p className="text-base font-semibold text-slate-900 sm:text-lg">
                 {renderStepTitle(entry, step)}
               </p>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-800 sm:text-base">
-                {renderStepBody(entry, step)}
-              </p>
+              {step.body.trim() ? (
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-800 sm:text-base">
+                  {renderStepBody(entry, step)}
+                </p>
+              ) : null}
               {step.bodyDisclosure ? (
                 <details className="group/ai-translation mt-2">
                   {/*

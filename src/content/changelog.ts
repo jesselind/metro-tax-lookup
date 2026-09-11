@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.14.0",
+    date: "2026-09-11",
+    title:
+      "City of Aurora authority chain; levy modal popovers only; Prior $ missing on mill chart",
+    highlights: [
+      "Authority-chain family pack city (family city) with City of Aurora AUTH 3001: Who gets → What changed? → What the city's budget says (titlePlain Temporary mill rate under TABOR + cited 2026 Adopted Budget; no duplicate trailing budget). Rate-table page map includes 3001 (registry-linked 4100 via extractor). Unlocated hunt: aurora-3001-tax-levy-ordinance in authorityChainUnlocatedSources.",
+      "Levy modal: remove jump-to sky definition panel (LevyModalInlineDefinitionPanel deleted). Mills, purpose labels, Tax entity, LG ID, explainer {{term:}}, and Government type What's this? use GlossaryTermPopover / InfoHintPopover only. Home Rule Municipalities brief: charter covers local/municipal matters; state law may still control or override statewide or mixed concerns. Authoring: jargon = popovers only.",
+      "Mill chart gap badge: Assessed value keeps Prior years missing; AuthorityMillsHistoryChart footer uses Prior $ missing (COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS) with the same COUNTY DATA GAP popover body.",
+      "Docs/README/e2e: city pack + popover contracts; metro YoY purpose brief asserts portaled popover; authority-chain helper skips empty city_authorization step bodies.",
+    ],
+  },
+  {
     version: "5.13.1",
     date: "2026-09-11",
     title:

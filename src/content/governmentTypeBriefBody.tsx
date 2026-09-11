@@ -15,7 +15,7 @@ export function governmentTypeBriefMentionsSpecialDistrict(displayLabel: string)
 
 /**
  * Plain brief for government type in the levy modal. Do not add same-page hash links here;
- * the panel offers "See full definition here" when the brief mentions special districts
+ * the government-type popover offers "More in Glossary" when the brief mentions special districts
  * (see `governmentTypeBriefMentionsSpecialDistrict`).
  */
 export function GovernmentTypeBriefBody({ displayLabel }: { displayLabel: string }) {

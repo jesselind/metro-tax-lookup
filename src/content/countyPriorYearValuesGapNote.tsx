@@ -14,6 +14,13 @@ import { COUNTY_SERVICE_GAP_LINK_CLASS } from "@/lib/toolFlowStyles";
 /** Badge label on the Assessed value summary chip (not COUNTY DATA GAP chrome). */
 export const COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS = "Prior years missing";
 
+/**
+ * Badge on the levy modal mill-history chart footer when mills exist but prior-year
+ * assessed dollars do not. Distinct from {@link COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}
+ * so residents do not read the mills timeline as incomplete.
+ */
+export const COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS = "Prior $ missing";
+
 /** Arapahoe dashboard lead (assessor guidance: no public valuation history). */
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD =
   "County-published sources do not include prior-year assessed values. Per the assessor's office, there is no historical information available on the public website.";

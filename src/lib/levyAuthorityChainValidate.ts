@@ -17,6 +17,7 @@ import { join } from "node:path";
 import { PARCEL_GLOSSARY_TERM_IDS } from "@/content/termDefinitionBodies";
 import {
   AUTHORITY_CHAIN_HEADING,
+  foldsApprovalOntoMeasures,
   getAuthorityChainFamilyPack,
   KNOWN_OPEN_GAP_IDS,
   OPEN_GAP_NO_TEMPORARY_CREDIT_MILL_SPLIT,
@@ -62,6 +63,7 @@ const FAMILIES = new Set<LevyAuthorityChainFamily>([
   "county",
   "metro",
   "fire",
+  "city",
 ]);
 const MEASURE_KINDS = new Set([
   "override",
@@ -71,6 +73,7 @@ const MEASURE_KINDS = new Set([
   "operations_mill",
   "metro_authorization",
   "metro_commitment",
+  "city_authorization",
 ]);
 const BODY_LEADS = new Set(["approved", "also_approved", "earlier_approved"]);
 const BALLOT_TEXT_KINDS = new Set(["notice", "sample_ballot", "unavailable"]);
@@ -78,6 +81,7 @@ const GOVERNING_BODIES = new Set([
   "school_board",
   "board",
   "board_of_county_commissioners",
+  "city_council",
 ]);
 const OPEN_GAP_NO_STABLE_BALLOT_TEXT = "no-stable-ballot-text";
 const OPEN_GAP_BALLOT_TEXT_SPANISH_ONLY_AI =
@@ -268,7 +272,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     byEntryId.set(id, true);
 
     if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
-      fail(`[${id}] family must be school, county, metro, or fire`);
+      fail(`[${id}] family must be school, county, metro, fire, or city`);
     }
     const family = record.family as LevyAuthorityChainFamily;
     const familyPack = getAuthorityChainFamilyPack(family);
@@ -363,7 +367,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     }
     if (!GOVERNING_BODIES.has(record.authority.governingBody)) {
       fail(
-        `[${id}] authority.governingBody must be school_board, board, or board_of_county_commissioners`,
+        `[${id}] authority.governingBody must be school_board, board, board_of_county_commissioners, or city_council`,
       );
     }
     assertNoEmDash(
@@ -382,9 +386,14 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         record.authority.governmentBillName,
         `[${id}].authority.governmentBillName`,
       );
-      if (family !== "county" && family !== "metro" && family !== "fire") {
+      if (
+        family !== "county" &&
+        family !== "metro" &&
+        family !== "fire" &&
+        family !== "city"
+      ) {
         fail(
-          `[${id}] authority.governmentBillName only applies to county, metro, or fire family entries`,
+          `[${id}] authority.governmentBillName only applies to county, metro, fire, or city family entries`,
         );
       }
     }
@@ -442,6 +451,16 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       if (record.summary.headlineIssues !== undefined) {
         fail(`[${id}] metro summary must use headlinePlain, not headlineIssues`);
       }
+    } else if (family === "city") {
+      const hasPlain = isNonEmptyString(record.summary.headlinePlain);
+      const hasIssues =
+        Array.isArray(record.summary.headlineIssues) &&
+        record.summary.headlineIssues.length > 0;
+      if (hasPlain === hasIssues) {
+        fail(
+          `[${id}] city summary must use either headlinePlain (City Council path) or headlineIssues (voter Ballot Issue path), not both or neither`,
+        );
+      }
     } else {
       if (
         !Array.isArray(record.summary.headlineIssues) ||
@@ -450,7 +469,9 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         fail(`[${id}] summary.headlineIssues must be a non-empty array`);
       }
       if (record.summary.headlinePlain !== undefined) {
-        fail(`[${id}] summary.headlinePlain only applies to metro entries`);
+        fail(
+          `[${id}] summary.headlinePlain only applies to metro or city entries`,
+        );
       }
     }
     if (!isNonEmptyString(record.summary.headlineElection)) {
@@ -687,13 +708,14 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         fail(`[${id}] duplicate measure stepId: ${measure.stepId}`);
       }
       stepIds.add(measure.stepId);
-      if (family === "metro") {
+      if (family === "metro" || family === "city") {
         if (
-          measure.kind === "metro_commitment" &&
+          (measure.kind === "metro_commitment" ||
+            measure.kind === "city_authorization") &&
           measure.ballotIssue !== undefined
         ) {
           fail(
-            `[${id}] measure ${measure.stepId} metro_commitment must not set ballotIssue`,
+            `[${id}] measure ${measure.stepId} ${measure.kind} must not set ballotIssue`,
           );
         }
         if (
@@ -701,7 +723,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           !isNonEmptyString(measure.ballotIssue)
         ) {
           fail(
-            `[${id}] metro measure ${measure.stepId} ballotIssue must be non-empty when set`,
+            `[${id}] ${family} measure ${measure.stepId} ballotIssue must be non-empty when set`,
           );
         }
       } else if (!isNonEmptyString(measure.ballotIssue)) {
@@ -720,7 +742,10 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       if (!isNonEmptyString(measure.electionMonthYear)) {
         fail(`[${id}] measure ${measure.stepId} missing electionMonthYear`);
       }
-      if (measure.kind !== "metro_commitment") {
+      if (
+        measure.kind !== "metro_commitment" &&
+        measure.kind !== "city_authorization"
+      ) {
         if (!BALLOT_TEXT_KINDS.has(measure.ballotTextKind)) {
           fail(
             `[${id}] measure ${measure.stepId} ballotTextKind must be notice, sample_ballot, or unavailable`,
@@ -750,7 +775,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         );
       } else if (!isNonEmptyString(measure.detail)) {
         fail(
-          `[${id}] measure ${measure.stepId} metro_commitment requires detail`,
+          `[${id}] measure ${measure.stepId} ${measure.kind} requires detail`,
         );
       }
       if (typeof measure.detail === "string") {
@@ -760,9 +785,9 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         );
       }
       if (measure.ballotTextLanguage !== undefined) {
-        if (family === "metro") {
+        if (family === "metro" || family === "city") {
           fail(
-            `[${id}] measure ${measure.stepId} Spanish/AI ballot fallback does not apply to metro entries`,
+            `[${id}] measure ${measure.stepId} Spanish/AI ballot fallback does not apply to ${family} entries`,
           );
         }
         if (!BALLOT_TEXT_LANGUAGES.has(measure.ballotTextLanguage)) {
@@ -895,8 +920,20 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           );
         }
       }
+      if (measure.kind === "city_authorization") {
+        if (family !== "city") {
+          fail(
+            `[${id}] measure ${measure.stepId} city_authorization only applies to city entries`,
+          );
+        }
+        if (!isNonEmptyString(measure.titlePlain)) {
+          fail(
+            `[${id}] measure ${measure.stepId} city_authorization requires titlePlain`,
+          );
+        }
+      }
       if (
-        (family === "metro" || family === "fire") &&
+        (family === "metro" || family === "fire" || family === "city") &&
         !isNonEmptyString(measure.titlePlain)
       ) {
         fail(
@@ -909,8 +946,10 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           measure.kind !== "operations_mill" &&
           measure.kind !== "metro_authorization" &&
           measure.kind !== "metro_commitment" &&
+          measure.kind !== "city_authorization" &&
           !(family === "metro" && measure.kind === "bond") &&
-          !(family === "fire" && measure.kind === "bond")
+          !(family === "fire" && measure.kind === "bond") &&
+          !(family === "city" && measure.kind === "bond")
         ) {
           fail(
             `[${id}] measure ${measure.stepId} titlePlain is not valid for this family and kind`,
@@ -983,7 +1022,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           });
         });
       }
-      if (family === "metro") {
+      if (foldsApprovalOntoMeasures(family)) {
         const votes = measure.votes;
         const approval = measure.approval;
         const hasVotes = votes !== undefined;
@@ -994,12 +1033,12 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           (!hasApproval && !hasVotes && !hasResultsSource)
         ) {
           fail(
-            `[${id}] metro measure ${measure.stepId} must provide either approval or votes with resultsSource, but not both`,
+            `[${id}] ${family} measure ${measure.stepId} must provide either approval or votes with resultsSource, but not both`,
           );
         }
         if (hasVotes !== hasResultsSource) {
           fail(
-            `[${id}] metro measure ${measure.stepId} votes and resultsSource must appear together`,
+            `[${id}] ${family} measure ${measure.stepId} votes and resultsSource must appear together`,
           );
         }
         if (approval) {
@@ -1026,10 +1065,10 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         }
       } else if (measure.approval !== undefined) {
         fail(
-          `[${id}] measure ${measure.stepId} approval only applies to metro entries`,
+          `[${id}] measure ${measure.stepId} approval only applies to metro or city entries`,
         );
       }
-      if (family !== "metro" || measure.votes !== undefined) {
+      if (!foldsApprovalOntoMeasures(family) || measure.votes !== undefined) {
         const votes = measure.votes;
         assertObject(votes, `[${id}] measure ${measure.stepId} votes`);
         for (const key of ["yes", "yesPct", "no", "noPct"] as const) {
@@ -1049,7 +1088,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
     }
 
-    if (family === "metro") {
+    if (foldsApprovalOntoMeasures(family)) {
       let priorChronologyKey: number | null = null;
       for (const measure of record.measures) {
         let chronologyKey = 0;
@@ -1065,7 +1104,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           chronologyKey < priorChronologyKey
         ) {
           fail(
-            `[${id}] metro measures must be in chronological order by electionMonthYear`,
+            `[${id}] ${family} measures must be in chronological order by electionMonthYear`,
           );
         }
         priorChronologyKey = chronologyKey;

@@ -8,7 +8,9 @@
  * JSON supplies facts only; wording lives here (KISS / DRY).
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
- * `metro`, `fire`) inject nouns, measure kinds, budget labels, and mills takeaways.
+ * `metro`, `fire`, `city`) inject nouns, measure kinds, budget labels, and mills
+ * takeaways. Multiple authorization steps belong in `measures[]` (chronological);
+ * closed summary stays one short who/when line, with optional `also` elections.
  *
  * Ideology (also in `docs/levy-explainer-authoring.md`): always show the
  * next-best official source. Prefer the exact document; when it is missing,
@@ -42,6 +44,9 @@ export const METRO_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 /** Default bill wording for fire-family entries when JSON omits `governmentBillName`. */
 export const FIRE_GOVERNMENT_BILL_NAME_DEFAULT = "the fire district";
 
+/** Default bill wording for city-family entries when JSON omits `governmentBillName`. */
+export const CITY_GOVERNMENT_BILL_NAME_DEFAULT = "the city";
+
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
 export const STEP_TITLE_WHAT_CHANGED = "What changed?";
@@ -62,6 +67,9 @@ export const FACT_VALUE_BALLOT_TEXT_UNAVAILABLE =
 export const FACT_LABEL_METRO_ELECTION_RECORD = "Election record";
 export const FACT_VALUE_METRO_BALLOT_TEXT_UNAVAILABLE =
   "Public ballot wording not located; official district record linked";
+export const FACT_LABEL_CITY_RECORD = "City record";
+export const FACT_VALUE_CITY_AUTHORIZATION_RECORD =
+  "Official city budget or ordinance record linked";
 
 /**
  * Allowed `authority.governingBody` ids in JSON (validation + future trail inject).
@@ -71,6 +79,7 @@ export const GOVERNING_BODY_IDS = [
   "school_board",
   "board",
   "board_of_county_commissioners",
+  "city_council",
 ] as const;
 
 export type LevyAuthorityChainGoverningBody =
@@ -80,7 +89,8 @@ export type LevyAuthorityChainFamily =
   | "school"
   | "county"
   | "metro"
-  | "fire";
+  | "fire"
+  | "city";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -111,6 +121,12 @@ export const OPEN_GAP_BODIES = {
    */
   "no-resident-county-mills-history":
     "We have not yet bundled multi-year mill rates from this county's Levy % PDFs for this authority. The mills on your levy stack still come from this county's published levy data.",
+  /**
+   * City temporary mill reductions under TABOR (council-set billed rate below a
+   * higher historical ceiling). Rate table shows one total only.
+   */
+  "city-temporary-mill-reduction":
+    "The city publishes one total mill rate on your bill. Recent city budgets say City Council has used temporary reductions to stay under TABOR, below a higher historical rate that needs voter approval to raise. From the county rate table alone, we cannot show a separate temporary-reduction line versus that historical ceiling.",
 } as const;
 
 /**
@@ -148,6 +164,7 @@ export const KNOWN_OPEN_GAP_IDS: ReadonlySet<LevyAuthorityChainOpenGapId> =
 
 export const VOTES_STEP_BODY = "County certified totals:";
 export const METRO_AUTHORIZATION_STEP_BODY = "Official district records:";
+export const CITY_AUTHORIZATION_STEP_BODY = "Official city records:";
 
 export type LevyAuthorityChainMeasureKind =
   | "override"
@@ -162,7 +179,22 @@ export type LevyAuthorityChainMeasureKind =
    * District financing / pledge action after elector authorization (not a new
    * elector vote). Body is plain `detail`; do not use eligible-elector lead.
    */
-  | "metro_commitment";
+  | "metro_commitment"
+  /**
+   * City Council authorization documented without a Ballot Issue letter
+   * (for example an annual tax levy ordinance or budget-stated temporary mill
+   * reduction). Bill-first `titlePlain` + `detail` + cited `approval` required.
+   */
+  | "city_authorization";
+
+const CITY_COUNCIL_BODY_LEAD_PHRASES: Record<
+  LevyAuthorityChainBodyLead,
+  string
+> = {
+  approved: "City Council set",
+  also_approved: "City Council also set",
+  earlier_approved: "City Council earlier set",
+};
 
 export type LevyAuthorityChainBodyLead =
   | "approved"
@@ -581,6 +613,113 @@ const FIRE_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Default city "What changed?" chrome. Rate figures are AUTH-derived (same
+ * helper as metro/fire). Entry `mills.stepBody` may replace this takeaway.
+ */
+export const CITY_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this city each year.";
+
+/** Shared city pack step title for budget-cited council mill authorizations. */
+export const CITY_BUDGET_STEP_TITLE = "What the city's budget says";
+
+const CITY_BOND_REPAYMENT_CHANGE_SENTENCE =
+  "Bonds may be sold over time, so the repayment part of your city tax can change.";
+
+const CITY_BOND_CEILING_SENTENCE =
+  "That vote set ceilings. It did not lock in one fixed share of today's total rate.";
+
+/**
+ * Municipal / home-rule city pack. First consumer: City of Aurora (`3001`).
+ * AUTH-derived What changed? Fold approval/votes onto each measure step
+ * (metro-like chronology) so several council actions or Ballot Issues can stack
+ * without a trailing duplicate dump. `city_authorization` uses the pack budget
+ * step title ("What the city's budget says"); `titlePlain` becomes a fact
+ * subhead under that step (same chrome as the cited budget approval fact).
+ * Actor language: City Council for `city_authorization`; Voters for coordinated
+ * Ballot Issue kinds.
+ */
+const CITY_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: CITY_BUDGET_STEP_TITLE,
+  budgetFactLabel: "City budget",
+  millsStepBody: CITY_MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set([
+    "bond",
+    "operations_mill",
+    "tabor_revenue_retention",
+    "city_authorization",
+  ]),
+  approvalStepTitle: STEP_TITLE_HOW_AUTHORIZED,
+  approvalStepBody: CITY_AUTHORIZATION_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_CITY_RECORD,
+  unavailableBallotFactValue: FACT_VALUE_CITY_AUTHORIZATION_RECORD,
+  unavailableMeasureBody(ballotIssue, electionMonthYear) {
+    if (ballotIssue) {
+      return unavailableBallotMeasureBody(ballotIssue, electionMonthYear);
+    }
+    return `City Council authorized this in ${electionMonthYear}. We could not locate a separate public ordinance PDF for the authorization.`;
+  },
+  ballotStepTitle(ballotIssue, kind, options) {
+    switch (kind) {
+      case "bond":
+      case "operations_mill":
+      case "tabor_revenue_retention": {
+        const titlePlain = requireTrimmedBallotTitlePlain(
+          options?.titlePlain,
+          kind,
+        );
+        return ballotIssue
+          ? `Ballot Issue ${ballotIssue}: ${titlePlain}`
+          : titlePlain;
+      }
+      case "city_authorization":
+        // Pack chrome; measure titlePlain is a fact subhead, not this step title.
+        return CITY_BUDGET_STEP_TITLE;
+      default:
+        throw new Error(`city pack does not support measure kind: ${kind}`);
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead, options) {
+    switch (kind) {
+      case "bond": {
+        const lead = BODY_LEAD_PHRASES[bodyLead];
+        return `${lead} borrowing ${detail}. ${CITY_BOND_CEILING_SENTENCE} ${CITY_BOND_REPAYMENT_CHANGE_SENTENCE}`;
+      }
+      case "operations_mill": {
+        const lead = BODY_LEAD_PHRASES[bodyLead];
+        return `${lead} ${detail}.`;
+      }
+      case "tabor_revenue_retention": {
+        const lead = BODY_LEAD_PHRASES[bodyLead];
+        if (options?.maxAuthorizedMills == null) {
+          throw new Error(
+            "tabor_revenue_retention requires maxAuthorizedMills",
+          );
+        }
+        const governmentBillName =
+          options?.governmentBillName?.trim() ||
+          CITY_GOVERNMENT_BILL_NAME_DEFAULT;
+        const max = options.maxAuthorizedMills.toFixed(3);
+        return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+      }
+      case "city_authorization": {
+        const lead = CITY_COUNCIL_BODY_LEAD_PHRASES[bodyLead];
+        const trimmed = detail.trim();
+        if (!trimmed) {
+          throw new Error("city_authorization requires detail");
+        }
+        return `${lead} ${trimmed}${/[.!?]$/.test(trimmed) ? "" : "."}`;
+      }
+      default:
+        throw new Error(`city pack does not support measure kind: ${kind}`);
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
@@ -589,6 +728,7 @@ const FAMILY_PACKS: Record<
   county: COUNTY_PACK,
   metro: METRO_PACK,
   fire: FIRE_PACK,
+  city: CITY_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -598,13 +738,24 @@ export function getAuthorityChainFamilyPack(
 }
 
 /**
- * Metro and fire: What changed? mill figures come from the AUTH series (not
- * hand-authored current/prior fields). School and county still author mills.
+ * Metro, fire, and city: What changed? mill figures come from the AUTH series
+ * (not hand-authored current/prior fields). School and county still author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
 ): boolean {
-  return family === "metro" || family === "fire";
+  return family === "metro" || family === "fire" || family === "city";
+}
+
+/**
+ * Metro and city fold approval / vote facts onto each measure step so several
+ * authorizations stay chronological. School, county, and fire keep a trailing
+ * How people voted step for certified totals.
+ */
+export function foldsApprovalOntoMeasures(
+  family: LevyAuthorityChainFamily,
+): boolean {
+  return family === "metro" || family === "city";
 }
 
 export function capitalizeResidentPhrase(phrase: string): string {
