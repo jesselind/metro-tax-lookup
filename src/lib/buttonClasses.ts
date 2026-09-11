@@ -13,4 +13,7 @@ export const btnOutlinePrimaryMd =
   "btn-outline-primary btn-outline-primary--md";
 export const btnOutlineSecondaryMd =
   "btn-outline-secondary btn-outline-secondary--md";
+/** Home campaign disclosure; dark-green outline + Inter (campaign site). */
+export const btnCampaignOutlineMd =
+  "btn-campaign-outline btn-campaign-outline--md";
 export const btnPrimaryMd = "btn-primary btn-primary--md";

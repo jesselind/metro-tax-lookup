@@ -57,7 +57,7 @@ export const SITE_CONFIG = {
    * Full label for the home landing outline control (entire control is the link).
    */
   campaignHomeDisclosureLabel:
-    "Built by Jesse Lind for his Arapahoe County Assessor campaign.",
+    "Built by Jesse Lind for his Arapahoe County Assessor campaign",
 
   /**
    * FORK REQUIRED with {@link SITE_CONFIG.campaignSiteUrl}.

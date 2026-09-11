@@ -4,7 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import ogImage from "@/assets/images/OG-image.png";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -19,6 +19,14 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+/** Campaign-site Inter for home campaign disclosure only; off critical path. */
+const campaignInter = Inter({
+  variable: "--font-campaign-inter",
+  subsets: ["latin"],
+  weight: ["700"],
+  preload: false,
 });
 
 const SITE_DESCRIPTION = "Follow every cent of your property tax.";
@@ -74,7 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} ${campaignInter.variable} min-h-screen antialiased font-sans`}
       >
         <div className="flex min-h-screen flex-col">
           <div className="flex-1">{children}</div>
