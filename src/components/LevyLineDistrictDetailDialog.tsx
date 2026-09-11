@@ -36,11 +36,15 @@ import {
   TILE_DETAILS_CUE_ON_LIGHT_CLASS,
 } from "@/lib/toolFlowStyles";
 import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
-import { LevyModalInlineDefinitionPanel } from "@/components/LevyModalInlineDefinitionPanel";
-import type { LevyModalInlineDefinitionVariant } from "@/components/LevyModalInlineDefinitionPanel";
+import {
+  GovernmentTypeBriefBody,
+  governmentTypeBriefMentionsSpecialDistrict,
+} from "@/content/governmentTypeBriefBody";
+import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
+import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import { sourcesPageHref } from "@/lib/sourcesPageHref";
-import { isLevyModalTermId, levyModalTermIdForMetroPurpose } from "@/lib/levyModalTermIds";
+import { levyModalTermIdForMetroPurpose } from "@/lib/levyModalTermIds";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 import {
   buildLevyLineYoYViewModel,
@@ -67,6 +71,7 @@ import {
   AUTHORITY_MILLS_HISTORY_MIN_POINTS,
   authorityMillsSeries,
 } from "@/lib/authorityMillsHistory";
+import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
 
 import type { MetroDistrictTileYoYSummary } from "@/lib/metroLevyYearOverYear";
 
@@ -458,7 +463,7 @@ export function LevyLineDistrictDetailDialog({
   });
 
   /**
-   * Government *type* label for the "What's this?" card: prefer DOLA directory export when
+   * Government *type* label for the "What's this?" popover: prefer DOLA directory export when
    * matched; otherwise JSON explainer `origin.level` (government level — not the entity-specific
    * "What is it?" paragraphs).
    */
@@ -477,6 +482,11 @@ export function LevyLineDistrictDetailDialog({
     }
     return null;
   }, [match, levyExplainerEntry]);
+
+  const governmentTypeShowsSpecialDistrictGlossary = Boolean(
+    governmentTypeDisplayLabel &&
+      governmentTypeBriefMentionsSpecialDistrict(governmentTypeDisplayLabel),
+  );
 
   const hasDolaPanel = Boolean(
     dolaMatch &&
@@ -499,8 +509,6 @@ export function LevyLineDistrictDetailDialog({
   const lgIdContactTrusted =
     hasDolaPanel && hasDirectoryMatch && lgIdsAligned && !lgIdConflict;
 
-  const [inlineDefinition, setInlineDefinition] =
-    useState<LevyModalInlineDefinitionVariant | null>(null);
   const [metroYoYBreakdownOpen, setMetroYoYBreakdownOpen] = useState(false);
   const [breakdownForAuthority, setBreakdownForAuthority] =
     useState(authorityLabel);
@@ -508,7 +516,7 @@ export function LevyLineDistrictDetailDialog({
     setBreakdownForAuthority(authorityLabel);
     setMetroYoYBreakdownOpen(false);
   }
-  const inlineDefPanelId = useId();
+  const idPrefix = useId();
   const metroYoYBreakdownPanelId = useId();
   const yoyBreakdownDollarFootnoteId = yoyDollarFootnoteId("breakdown");
   const yoySummaryDollarFootnoteId = yoyDollarFootnoteId("summary");
@@ -522,54 +530,10 @@ export function LevyLineDistrictDetailDialog({
           metroYoYBreakdownOpen &&
           (yoy.showTotalCompare || yoy.showPurposeDetails))),
   );
-  /** Last control that opened the inline definition panel (for focus return on close). */
-  const lastInlineDefTriggerRef = useRef<HTMLElement | null>(null);
-
-  const closeInlineDefinition = useCallback(
-    (options?: { refocusTrigger?: boolean }) => {
-      const refocus = options?.refocusTrigger !== false;
-      setInlineDefinition(null);
-      if (refocus) {
-        queueMicrotask(() => {
-          const el = lastInlineDefTriggerRef.current;
-          if (el && document.body.contains(el)) {
-            el.focus();
-          }
-        });
-      }
-    },
-    [],
-  );
-
-  const openInlineDefinition = useCallback((next: LevyModalInlineDefinitionVariant) => {
-    const ae = document.activeElement;
-    if (ae instanceof HTMLElement && ae !== document.body) {
-      lastInlineDefTriggerRef.current = ae;
-    }
-    setInlineDefinition(next);
-  }, []);
 
   const toggleMetroYoYBreakdown = useCallback(() => {
-    if (metroYoYBreakdownOpen) {
-      // Collapse removes purpose term triggers; drop any open brief without
-      // trying to refocus a node that is about to unmount.
-      closeInlineDefinition({ refocusTrigger: false });
-      lastInlineDefTriggerRef.current = null;
-    }
     setMetroYoYBreakdownOpen(!metroYoYBreakdownOpen);
-  }, [closeInlineDefinition, metroYoYBreakdownOpen]);
-
-  useEffect(() => {
-    if (!inlineDefinition) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape" || e.repeat) return;
-      e.preventDefault();
-      e.stopPropagation();
-      closeInlineDefinition();
-    };
-    document.addEventListener("keydown", onKey, true);
-    return () => document.removeEventListener("keydown", onKey, true);
-  }, [inlineDefinition, closeInlineDefinition]);
+  }, [metroYoYBreakdownOpen]);
 
   const dolaNameWarningPill =
     !lgIdContactTrusted &&
@@ -651,25 +615,12 @@ export function LevyLineDistrictDetailDialog({
             </h3>
             <p className="mt-1 font-mono text-sm tabular-nums text-slate-600">
               <span>{millsLabel}</span>{" "}
-              <button
-                type="button"
-                className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-sm`}
-                aria-expanded={
-                  inlineDefinition?.kind === "term" &&
-                  inlineDefinition.id === "term-mills"
-                }
-                aria-controls={
-                  inlineDefinition?.kind === "term" &&
-                  inlineDefinition.id === "term-mills"
-                    ? inlineDefPanelId
-                    : undefined
-                }
-                onClick={() =>
-                  openInlineDefinition({ kind: "term", id: "term-mills" })
-                }
-              >
-                mills
-              </button>
+              <GlossaryTermPopover
+                termId="term-mills"
+                textTrigger="mills"
+                textTriggerId={`${idPrefix}-mills`}
+                textTriggerClassName={`${TERM_LINK_CLASS} font-sans text-sm`}
+              />
               {" · "}
               {pctLabel}% of your property tax
             </p>
@@ -803,28 +754,14 @@ export function LevyLineDistrictDetailDialog({
                                     className="border-t border-slate-300/70 pt-4 first:border-t-0 first:pt-0"
                                   >
                                     {purposeTermId ? (
-                                      <button
-                                        type="button"
-                                        className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-medium leading-snug sm:text-base`}
-                                        aria-expanded={
-                                          inlineDefinition?.kind === "term" &&
-                                          inlineDefinition.id === purposeTermId
-                                        }
-                                        aria-controls={
-                                          inlineDefinition?.kind === "term" &&
-                                          inlineDefinition.id === purposeTermId
-                                            ? inlineDefPanelId
-                                            : undefined
-                                        }
-                                        onClick={() =>
-                                          openInlineDefinition({
-                                            kind: "term",
-                                            id: purposeTermId,
-                                          })
-                                        }
-                                      >
-                                        {change.purposeRaw}
-                                      </button>
+                                      <p className="text-sm font-medium leading-snug text-slate-800 sm:text-base">
+                                        <GlossaryTermPopover
+                                          termId={purposeTermId}
+                                          textTrigger={change.purposeRaw}
+                                          textTriggerId={`${idPrefix}-purpose-${change.districtId}-${change.rawRowIndex}`}
+                                          textTriggerClassName={`${TERM_LINK_CLASS} text-sm font-medium leading-snug sm:text-base`}
+                                        />
+                                      </p>
                                     ) : (
                                       <p className="text-sm font-medium leading-snug text-slate-800 sm:text-base">
                                         {change.purposeRaw}
@@ -946,44 +883,41 @@ export function LevyLineDistrictDetailDialog({
                         {governmentTypeDisplayLabel}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      className={`shrink-0 border-0 bg-transparent p-0 text-xs ${TERM_LINK_CLASS}`}
-                      aria-expanded={
-                        inlineDefinition?.kind === "gov" &&
-                        inlineDefinition.displayLabel === governmentTypeDisplayLabel
-                      }
-                      aria-controls={
-                        inlineDefinition?.kind === "gov" &&
-                        inlineDefinition.displayLabel === governmentTypeDisplayLabel
-                          ? inlineDefPanelId
-                          : undefined
-                      }
-                      aria-label={`What is ${governmentTypeDisplayLabel}? Colorado government type`}
-                      onClick={() =>
-                        openInlineDefinition({
-                          kind: "gov",
-                          displayLabel: governmentTypeDisplayLabel,
-                        })
-                      }
-                    >
-                      What&apos;s this?
-                    </button>
+                    <span className="shrink-0">
+                      <InfoHintPopover
+                        textTrigger="What's this?"
+                        textTriggerId={`${idPrefix}-gov-type`}
+                        textTriggerClassName={`text-xs ${TERM_LINK_CLASS}`}
+                        textTriggerAriaLabel={`What is ${governmentTypeDisplayLabel}? Colorado government type`}
+                        ariaLabel={`What is ${governmentTypeDisplayLabel}? Colorado government type`}
+                        panelClassName={PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
+                      >
+                        <div
+                          className={
+                            governmentTypeShowsSpecialDistrictGlossary
+                              ? "space-y-3"
+                              : undefined
+                          }
+                        >
+                          <GovernmentTypeBriefBody
+                            displayLabel={governmentTypeDisplayLabel}
+                          />
+                          {governmentTypeShowsSpecialDistrictGlossary ? (
+                            <p className="border-t border-slate-200 pt-2 text-sm leading-snug">
+                              <GlossaryFullDefinitionLink
+                                termId="term-special-districts"
+                                aria-label="Special districts: more in Glossary"
+                              />
+                            </p>
+                          ) : null}
+                        </div>
+                      </InfoHintPopover>
+                    </span>
                   </div>
                 </div>
               ) : null}
               {levyExplainerEntry ? (
-                <LevyExplainerModalSection
-                  entry={levyExplainerEntry}
-                  onNavigateToTerm={(termId) => {
-                    if (!isLevyModalTermId(termId)) return;
-                    openInlineDefinition({ kind: "term", id: termId });
-                  }}
-                  termDefinitionPanelId={inlineDefPanelId}
-                  activeInlineTermId={
-                    inlineDefinition?.kind === "term" ? inlineDefinition.id : null
-                  }
-                />
+                <LevyExplainerModalSection entry={levyExplainerEntry} />
               ) : null}
 
               {dolaMatch && dolaMatch.uraHint && (
@@ -1062,29 +996,13 @@ export function LevyLineDistrictDetailDialog({
                     {dolaMatch && dolaMatch.taxEntityId ? (
                       <div className="flex flex-wrap gap-x-2 gap-y-0.5">
                         <dt className="text-slate-500">
-                          <button
-                            type="button"
-                            className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-xs sm:text-sm`}
-                            aria-expanded={
-                              inlineDefinition?.kind === "term" &&
-                              inlineDefinition.id === "term-tax-entity"
-                            }
-                            aria-controls={
-                              inlineDefinition?.kind === "term" &&
-                              inlineDefinition.id === "term-tax-entity"
-                                ? inlineDefPanelId
-                                : undefined
-                            }
-                            aria-label="Tax entity definition"
-                            onClick={() =>
-                              openInlineDefinition({
-                                kind: "term",
-                                id: "term-tax-entity",
-                              })
-                            }
-                          >
-                            Tax entity
-                          </button>
+                          <GlossaryTermPopover
+                            termId="term-tax-entity"
+                            textTrigger="Tax entity"
+                            textTriggerId={`${idPrefix}-tax-entity`}
+                            textTriggerClassName={`${TERM_LINK_CLASS} text-xs sm:text-sm`}
+                            ariaLabel="Tax entity definition"
+                          />
                         </dt>
                         <dd>{dolaMatch.taxEntityId}</dd>
                       </div>
@@ -1092,26 +1010,13 @@ export function LevyLineDistrictDetailDialog({
                     {dolaLg || dirLg ? (
                       <div className="flex flex-wrap gap-x-2 gap-y-0.5">
                         <dt className="text-slate-500">
-                          <button
-                            type="button"
-                            className={`${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 text-xs sm:text-sm`}
-                            aria-expanded={
-                              inlineDefinition?.kind === "term" &&
-                              inlineDefinition.id === "term-lg-id"
-                            }
-                            aria-controls={
-                              inlineDefinition?.kind === "term" &&
-                              inlineDefinition.id === "term-lg-id"
-                                ? inlineDefPanelId
-                                : undefined
-                            }
-                            aria-label="LG ID definition"
-                            onClick={() =>
-                              openInlineDefinition({ kind: "term", id: "term-lg-id" })
-                            }
-                          >
-                            LG ID
-                          </button>
+                          <GlossaryTermPopover
+                            termId="term-lg-id"
+                            textTrigger="LG ID"
+                            textTriggerId={`${idPrefix}-lg-id`}
+                            textTriggerClassName={`${TERM_LINK_CLASS} text-xs sm:text-sm`}
+                            ariaLabel="LG ID definition"
+                          />
                         </dt>
                         <dd>
                           {lgIdConflict ? (
@@ -1339,14 +1244,6 @@ export function LevyLineDistrictDetailDialog({
                 </PreserveSessionDocLink>
                 .
               </p>
-
-              {inlineDefinition ? (
-                <LevyModalInlineDefinitionPanel
-                  panelId={inlineDefPanelId}
-                  variant={inlineDefinition}
-                  onClose={() => closeInlineDefinition()}
-                />
-              ) : null}
             </div>
           </div>
 

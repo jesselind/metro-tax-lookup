@@ -120,6 +120,24 @@ export const AUTHORITY_CHAIN_UNLOCATED_SOURCES: readonly AuthorityChainUnlocated
       authorNote:
         "Multi-county district (Arapahoe, Douglas, Jefferson). Trail cites Douglas County TABOR booklet for ballot wording (same Ballot Issue 7A text), closed-summary NOTE for Arapahoe Notice not currently available, and Arapahoe Official Summary for Arapahoe-only vote totals + openGap multi-county-arapahoe-votes-only. Prefer Arapahoe Notice/sample when it is currently available again.",
     },
+    {
+      id: "aurora-3001-tax-levy-ordinance",
+      status: "open",
+      notedAsOf: "2026-09",
+      authorityLabel: "City of Aurora",
+      authCode: "3001",
+      measureLabel: "Annual Tax Levy Ordinance (temporary mill under TABOR)",
+      sought:
+        "A durable City of Aurora Tax Levy Ordinance PDF (for example Ordinance 2024-70 for the 2025 collection year, or Ordinance 2025-97 for 2026) that states the mill rate and any temporary property-tax credit.",
+      lookedWhere:
+        "City Council agenda listings name the Tax Levy Ordinances, but the public GetFile agenda packages checked during authoring were agenda text only (not the full ordinance PDFs). The 2026 Adopted Budget discusses the temporary mill reductions.",
+      nextBest: {
+        text: "2026 Operating and Capital Improvement Budget (property tax / TABOR)",
+        url: "https://www.auroragov.org/common/pages/GetFile.ashx?key=1%2f5CAWoA#page=108",
+      },
+      authorNote:
+        "City family entry city-of-aurora-authority-chain uses the adopted budget as the official cite for temporary TABOR mill reductions. Prefer a stable ordinance PDF deep-link when one is currently available.",
+    },
   ];
 
 /** Open blockers shown on `/sources`. */

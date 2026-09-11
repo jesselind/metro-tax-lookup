@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | city). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -474,6 +474,62 @@
         }
       ],
       "openGapIds": []
+    },
+    {
+      "id": "city-of-aurora-authority-chain",
+      "family": "city",
+      "match": {
+        "levyLineCode": "3001"
+      },
+      "authority": {
+        "displayName": "City of Aurora",
+        "countyListName": "CITY OF AURORA",
+        "governingBody": "city_council",
+        "whoGetsBody": "This city's property-tax revenue helps pay for municipal services such as police, parks, roads, and other city operations inside Aurora."
+      },
+      "summarySource": {
+        "text": "According to the City of Aurora's 2026 Adopted Budget",
+        "url": "https://www.auroragov.org/common/pages/GetFile.ashx?key=1%2f5CAWoA#page=108"
+      },
+      "summary": {
+        "headlinePlain": "a temporary lower mill rate under TABOR (below the historical 8.605 mill ceiling that needs voter approval to raise)",
+        "headlineElection": "the 2025 collection year"
+      },
+      "mills": {
+        "stepBody": "City budgets say City Council has used temporary TABOR reductions, so the published city rate can move year to year without a new voter-approved mill increase. The figures below are the county's published city totals.",
+        "bodyTerms": [
+          {
+            "termId": "term-tabor",
+            "match": "TABOR"
+          },
+          {
+            "termId": "term-mill-levy",
+            "match": "rate"
+          }
+        ]
+      },
+      "measures": [
+        {
+          "stepId": "city-2025-temporary-mill-reduction",
+          "kind": "city_authorization",
+          "electionMonthYear": "December 2024",
+          "titlePlain": "Temporary mill rate under TABOR",
+          "detail": "a temporary mill rate of 6.613 mills under TABOR for the 2025 collection year, below the historical 8.605 mill ceiling that needs voter approval to raise",
+          "approval": {
+            "label": "2026 Adopted Budget (property tax / TABOR)",
+            "value": "The 2026 Adopted Budget says the city enacted temporary property-tax reductions in each of the last five years, and most recently lowered the mill levy from its historical rate of 8.605 mills to a one-time rate of 6.613 mills for 2025 so collections stay under TABOR. It says that historical 8.605 mill rate can now only be increased with voter approval.",
+            "source": {
+              "text": "2026 Operating and Capital Improvement Budget",
+              "url": "https://www.auroragov.org/common/pages/GetFile.ashx?key=1%2f5CAWoA#page=108"
+            }
+          },
+          "bodyTermId": "term-tabor",
+          "bodyTermMatch": "TABOR"
+        }
+      ],
+      "openGapIds": [
+        "city-temporary-mill-reduction"
+      ]
     }
   ]
 }

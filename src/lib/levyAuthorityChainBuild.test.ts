@@ -506,6 +506,58 @@ describe("levyAuthorityChainBuild", () => {
     );
   });
 
+  it("builds City of Aurora from AUTH-derived mills and city_authorization", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) => candidate.id === "city-of-aurora-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record);
+    const authorization = entry.steps.find(
+      (step) => step.id === "city-2025-temporary-mill-reduction",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("city");
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(record.measures[0]?.votes).toBeUndefined();
+    expect(entry.summary).toContain("City Council set");
+    expect(entry.summary).toContain("8.605");
+    expect(entry.summary).toContain("2025 collection year");
+    expect(entry.summary).not.toContain("eligible electors");
+    expect(authorization?.title).toBe("What the city's budget says");
+    expect(authorization?.body.trim()).toBe("");
+    expect(authorization?.facts.map((fact) => fact.label)).toEqual([
+      "Temporary mill rate under TABOR",
+      "2026 Adopted Budget (property tax / TABOR)",
+    ]);
+    expect(authorization?.facts[0]?.value).toContain("City Council set");
+    expect(authorization?.facts[0]?.value).toContain("6.613");
+    expect(authorization?.facts[0]?.valueTermId).toBe("term-tabor");
+    expect(
+      authorization?.facts.some(
+        (fact) => fact.label === "2026 Adopted Budget (property tax / TABOR)",
+      ),
+    ).toBe(true);
+    expect(mills?.body).toContain("temporary TABOR reductions");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+      "Most notable change",
+    ]);
+    expect(entry.openGaps.some((g) => g.id === "city-temporary-mill-reduction")).toBe(
+      true,
+    );
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "city-2025-temporary-mill-reduction",
+    ]);
+    expect(
+      entry.steps.some((step) => step.id === "budget-attribution"),
+    ).toBe(false);
+    expect(
+      entry.steps.some((step) => step.id === "county-reported-results"),
+    ).toBe(false);
+  });
+
   it("trimmed summarySource.text matches built summary for link overlay", () => {
     const record = structuredClone(
       LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
@@ -528,7 +580,7 @@ describe("levyAuthorityChainBuild", () => {
     for (const record of LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS) {
       const built = LEVY_AUTHORITY_CHAIN_ENTRIES.find((e) => e.id === record.id);
       expect(built).toBeDefined();
-      expect(built!.steps.length).toBeGreaterThanOrEqual(4);
+      expect(built!.steps.length).toBeGreaterThanOrEqual(3);
     }
   });
 });

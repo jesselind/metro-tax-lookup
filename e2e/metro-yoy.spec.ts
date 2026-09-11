@@ -10,6 +10,7 @@ import { MILL_LEVY_CHANGED_LABEL, MILL_LEVY_TILE_ID } from "../src/content/millL
 import { PARCEL_RECORD_SALE_HISTORY_ID } from "../src/components/ParcelRecordCountyTables";
 import {
   COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
+  COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS,
   COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL,
   COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
   COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
@@ -135,9 +136,15 @@ test.describe("Metro year-over-year UI", () => {
     await expect(millsChart.getByText("Tax Year 2018")).toBeVisible();
 
     const chartGapBadge = millsChart.getByRole("button", {
-      name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
+      name: COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS,
     });
     await expect(chartGapBadge).toBeVisible();
+    // Assessed-value chip keeps "Prior years missing"; chart must not reuse that label.
+    await expect(
+      millsChart.getByRole("button", {
+        name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
+      }),
+    ).toHaveCount(0);
     // Arapahoe always has current assessed × mills on the newest chart year.
     // Gap badge is only honest when that current dollar line is present.
     await expect(millsChart.getByText("$347")).toBeVisible();
@@ -237,17 +244,19 @@ test.describe("Metro year-over-year UI", () => {
     await expect(purposeRow.getByText(/^Difference:/)).toBeVisible();
 
     await dialog.getByRole("button", { name: "General Operating" }).click();
+    // Brief portals to document.body (not clipped inside the dialog).
+    const purposeBrief = page.getByRole("region", { name: "General Operating" });
+    await expect(purposeBrief).toBeVisible();
     await expect(
-      dialog.getByRole("heading", { name: "General operating" }),
+      purposeBrief.getByText(/day-to-day money for the district/i),
     ).toBeVisible();
-    await expect(dialog.getByText(/day-to-day money for the district/i)).toBeVisible();
 
     await dialog
       .getByRole("button", { name: /% higher than last year\. Hide details\./i })
       .click();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(
-      dialog.getByRole("heading", { name: "General operating" }),
+      page.getByRole("region", { name: "General Operating" }),
     ).toHaveCount(0);
   });
 

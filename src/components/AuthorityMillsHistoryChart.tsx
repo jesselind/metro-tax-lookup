@@ -12,7 +12,7 @@
  * provides assessed for that tax year, whole-dollar levy-line amounts appear
  * below the mills in the footer (annual in Own, monthly per-unit in Rent).
  * When `priorYearValuesGap` is on and the oldest year has no assessed, the
- * footer secondary row shows the Prior years missing badge (opt-in per county config).
+ * footer secondary row shows the Prior $ missing badge (opt-in per county config).
  */
 
 import { useMemo, useId } from "react";
@@ -26,6 +26,7 @@ import {
   AUTHORITY_MILLS_HISTORY_CHART_HEADING,
 } from "@/content/levyYoYCopy";
 import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
+import { COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS } from "@/content/countyPriorYearValuesGapNote";
 import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { formatTaxYearLabel } from "@/lib/metroLevyYearOverYear";
@@ -274,6 +275,7 @@ export function AuthorityMillsHistoryChart({
                   hasSaleHistory={hasSaleHistory}
                   parcelRecordHref={parcelRecordHref}
                   textTriggerId={priorYearGapTriggerId}
+                  statusLabel={COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS}
                 />
               ) : displayDollars != null ? (
                 <span className={CHART_FOOTER_DOLLARS_CLASS}>

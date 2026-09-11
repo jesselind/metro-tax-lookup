@@ -9,26 +9,22 @@
  * Levy explainer: entity-specific "What is it?" + citations behind "More detail and sources".
  * Government type lives in the parent dialog (directory / fallback), not here — origin is not rendered.
  * Keep visible copy brief; defer depth to the accordion and links (see docs/levy-explainer-authoring.md).
+ * Jargon in paragraphs uses in-place popovers only (no jump-to-definition panel).
  */
 import type { LevyExplainerEntry } from "@/lib/levyExplainer";
 import { LevyExplainerCitationBlocks } from "@/components/LevyExplainerCitations";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
-import { isLevyModalTermId } from "@/lib/levyModalTermIds";
+import {
+  GlossaryTermPopover,
+  isFlowGlossaryTermId,
+} from "@/components/GlossaryTermPopover";
 import { TERM_LINK_CLASS } from "@/lib/toolFlowStyles";
 import type { ReactNode } from "react";
 
 /** In-app term link: `{{term:term-special-districts|special district}}` */
 const TERM_LINK_TOKEN = /\{\{term:([^|]+)\|([^}]+)\}\}/g;
 
-const TERM_LINK_BTN_CLASS = `${TERM_LINK_CLASS} cursor-pointer border-0 bg-transparent p-0 font-sans text-base leading-relaxed sm:text-lg`;
-
-function paragraphWithTermLinks(
-  text: string,
-  paragraphKey: string,
-  onNavigateToTerm?: (termId: string) => void,
-  termDefinitionPanelId?: string,
-  activeInlineTermId?: string | null,
-): ReactNode {
+function paragraphWithTermLinks(text: string, paragraphKey: string): ReactNode {
   const nodes: ReactNode[] = [];
   let last = 0;
   let tokenIndex = 0;
@@ -40,24 +36,15 @@ function paragraphWithTermLinks(
     }
     const termId = m[1].trim();
     const label = m[2];
-    if (onNavigateToTerm && isLevyModalTermId(termId)) {
-      const expanded = activeInlineTermId === termId;
+    if (isFlowGlossaryTermId(termId)) {
       nodes.push(
-        <button
+        <GlossaryTermPopover
           key={`${paragraphKey}-tl-${tokenIndex}`}
-          type="button"
-          className={TERM_LINK_BTN_CLASS}
-          aria-label={`${label}: definition`}
-          aria-expanded={expanded}
-          aria-controls={
-            expanded && termDefinitionPanelId ? termDefinitionPanelId : undefined
-          }
-          onClick={() => {
-            onNavigateToTerm(termId);
-          }}
-        >
-          {label}
-        </button>,
+          termId={termId}
+          textTrigger={label}
+          textTriggerId={`${paragraphKey}-tl-${tokenIndex}`}
+          textTriggerClassName={TERM_LINK_CLASS}
+        />,
       );
     } else {
       nodes.push(label);
@@ -73,20 +60,9 @@ function paragraphWithTermLinks(
 
 type Props = {
   entry: LevyExplainerEntry;
-  /** When set, `{{term:id|label}}` in paragraphs becomes a button that calls this (opens in-modal brief). */
-  onNavigateToTerm?: (termId: string) => void;
-  /** Stable id for the in-modal definition panel (`useId` from parent). */
-  termDefinitionPanelId?: string;
-  /** Which modal term panel is open, for `aria-expanded` / `aria-controls` on term links. */
-  activeInlineTermId?: string | null;
 };
 
-export function LevyExplainerModalSection({
-  entry,
-  onNavigateToTerm,
-  termDefinitionPanelId,
-  activeInlineTermId,
-}: Props) {
+export function LevyExplainerModalSection({ entry }: Props) {
   const hasCitations = entry.citationBlocks.length > 0;
 
   return (
@@ -99,13 +75,7 @@ export function LevyExplainerModalSection({
           key={`modal-wi-${entry.id}-${i}`}
           className={`text-base leading-relaxed text-slate-800 sm:text-lg ${i === 0 ? "mt-1.5" : "mt-2"}`}
         >
-          {paragraphWithTermLinks(
-            p,
-            `modal-wi-${entry.id}-${i}`,
-            onNavigateToTerm,
-            termDefinitionPanelId,
-            activeInlineTermId,
-          )}
+          {paragraphWithTermLinks(p, `modal-wi-${entry.id}-${i}`)}
         </p>
       ))}
 

@@ -9,7 +9,7 @@
  */
 
 /**
- * Show Prior years missing badge on the oldest endpoint when dollars are
+ * Show Prior $ missing badge on the oldest endpoint when dollars are
  * absent there, but only when the newest endpoint already has dollars (current
  * assessed × mills). A gap badge with no current dollars is noise.
  */

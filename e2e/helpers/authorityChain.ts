@@ -236,8 +236,11 @@ export async function assertAuthorityChainPanel(
     await expect(item.getByText(step.title, { exact: true })).toBeVisible();
     // Body is the second <p> in the step (title, then body). Avoid matching
     // fact <dd> text that shares a short body string (e.g. "Arapahoe County").
-    const bodyProbe = step.body.slice(0, Math.min(40, step.body.length));
-    await expect(item.locator("p").nth(1)).toContainText(bodyProbe);
+    // city_authorization steps keep substance in fact subheads and omit body.
+    if (step.body.trim()) {
+      const bodyProbe = step.body.slice(0, Math.min(40, step.body.length));
+      await expect(item.locator("p").nth(1)).toContainText(bodyProbe);
+    }
     if (step.bodyDisclosure) {
       await expect(
         item.locator("summary", { hasText: step.bodyDisclosure.label }),

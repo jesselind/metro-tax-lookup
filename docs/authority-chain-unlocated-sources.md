@@ -21,5 +21,6 @@ Do **not** put missing-file hunts only in ephemeral working docs.
 | `sky-ranch-4571-2020-ballot-wording` | `4571` | November 2020 district election | 2026-08 | Sky Ranch 2024 audit (see TS) |
 | `sky-ranch-4571-2020-certified-tally` | `4571` | November 2020 district election | 2026-08 | Sky Ranch 2024 audit (see TS) |
 | `smfr-4100-7a-2025-arapahoe-ballot-notice` | `4100` | Ballot Issue 7A (November 2025) | 2026-08 | [Douglas County Ballot Issue Notice (7A)](https://www.douglasco.gov/documents/2025-coordinated-election-ballot-issue-notices-tabor-book.pdf#page=11) |
+| `aurora-3001-tax-levy-ordinance` | `3001` | Annual Tax Levy Ordinance (temporary mill under TABOR) | 2026-09 | [2026 Operating and Capital Improvement Budget](https://www.auroragov.org/common/pages/GetFile.ashx?key=1%2f5CAWoA#page=108) |
 
 Edit the TypeScript file for full sought / looked-where text. This table is a quick mirror only.

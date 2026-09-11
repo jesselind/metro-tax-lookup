@@ -87,12 +87,17 @@ function CountyPriorYearValuesGapPopoverBody({
  * Same InfoHintPopover as tile glossary briefs (width/scroll); `county-data-gap`
  * paints the panel with COUNTY DATA GAP chrome. Header + copy sit inside that
  * panel, not a nested red box.
+ *
+ * Default badge copy is {@link COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}. Pass
+ * `statusLabel` for chart-footer wording (e.g. Prior $ missing) when mills are
+ * present but prior-year dollars are not.
  */
 export function CountyPriorYearValuesGapPopover({
   hasSaleHistory = false,
   countyId,
   parcelRecordHref,
   textTriggerId = "assessed-prior-year-values-gap",
+  statusLabel = COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
 }: {
   hasSaleHistory?: boolean;
   /** Active / resident county for the Sources link (`?county=`). */
@@ -101,18 +106,18 @@ export function CountyPriorYearValuesGapPopover({
   parcelRecordHref?: string | null;
   /** Unique id when multiple gap badges can appear on screen (e.g. levy modal chart). */
   textTriggerId?: string;
+  /** Visible badge + trigger accessible name. */
+  statusLabel?: string;
 }) {
   return (
     <InfoHintPopover
       variant="county-data-gap"
       customTrigger={
-        <CountyServiceGapBadge>
-          {COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}
-        </CountyServiceGapBadge>
+        <CountyServiceGapBadge>{statusLabel}</CountyServiceGapBadge>
       }
       textTriggerId={textTriggerId}
       textTriggerClassName={TRIGGER_CLASS}
-      textTriggerAriaLabel={COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}
+      textTriggerAriaLabel={statusLabel}
       ariaLabel="Why prior-year assessed values from the county are missing"
       panelClassName={PARCEL_GLOSSARY_POPOVER_PANEL_CLASS}
     >

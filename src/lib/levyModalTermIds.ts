@@ -4,7 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Levy-line explainer terms that have in-modal brief copy (`levyModalTermRegistry` in `termDefinitionBodies.tsx`).
+ * Levy-line explainer terms that have popover brief copy (`levyModalTermRegistry` in `termDefinitionBodies.tsx`).
  * Parcel summary tiles use separate ids (`parcelGlossaryTermBriefRegistry`); do not add those to JSON explainers.
  */
 
@@ -25,7 +25,7 @@ export function isLevyModalTermId(id: string): id is LevyModalTermId {
 }
 
 /**
- * Map a county mill-form purpose label to an in-modal brief, when we have one.
+ * Map a county mill-form purpose label to a popover brief, when we have one.
  * Exact match after trim (case-insensitive). Variants like "Bonds Debt Service"
  * stay plain text until we author a matching brief.
  */

@@ -23,6 +23,7 @@ import {
   ballotIssuePhrase,
   buildSummaryAlsoClause,
   buildSummaryVoterClause,
+  CITY_GOVERNMENT_BILL_NAME_DEFAULT,
   COUNTY_GOVERNMENT_BILL_NAME_DEFAULT,
   FIRE_GOVERNMENT_BILL_NAME_DEFAULT,
   METRO_GOVERNMENT_BILL_NAME_DEFAULT,
@@ -30,6 +31,7 @@ import {
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT_SPANISH_ONLY,
+  foldsApprovalOntoMeasures,
   formatVoteTotals,
   getAuthorityChainFamilyPack,
   millsYearLabel,
@@ -81,7 +83,7 @@ export type LevyAuthorityChainSourceLink = LevyAuthorityChainLink;
 
 export type LevyAuthorityChainMeasureRecord = {
   stepId: string;
-  /** County-style ballot label when one is published. Optional for metro records. */
+  /** County-style ballot label when one is published. Optional for metro/city records. */
   ballotIssue?: string;
   kind: LevyAuthorityChainMeasureKind;
   electionMonthYear: string;
@@ -346,6 +348,9 @@ function governmentBillNameForRecord(
   if (record.family === "fire") {
     return FIRE_GOVERNMENT_BILL_NAME_DEFAULT;
   }
+  if (record.family === "city") {
+    return CITY_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
   return "";
 }
 
@@ -371,6 +376,13 @@ function buildSummary(
     }
     return appendSummaryClosingNote(
       `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${record.summary.headlineElection}.`,
+      record.summary.summaryClosingNote,
+    );
+  }
+  if (record.family === "city" && record.summary.headlinePlain?.trim()) {
+    const headlinePlain = record.summary.headlinePlain.trim();
+    return appendSummaryClosingNote(
+      `${summaryAttribution}, City Council set ${headlinePlain} for ${record.summary.headlineElection}.`,
       record.summary.summaryClosingNote,
     );
   }
@@ -511,7 +523,7 @@ function buildWhoSetsStep(
 /**
  * AUTH-derived "What changed?": Change from last year and optional Most notable
  * change from the AUTH series (same numbers as the mills history chart).
- * Used by metro and fire (`usesAuthDerivedMills`).
+ * Used by metro, fire, and city (`usesAuthDerivedMills`).
  */
 function authMillsCodeForRecord(
   record: LevyAuthorityChainEntryRecord,
@@ -687,7 +699,37 @@ function buildMeasureStep(
   let body: string;
   let bodyDisclosure: LevyAuthorityChainStep["bodyDisclosure"];
   let bodyLink: LevyAuthorityChainStep["bodyLink"];
-  if (measure.kind === "metro_commitment") {
+  /** City council budget-cited auth: substance lives in fact subheads, not body. */
+  let cityAuthorizationTakeaway: LevyAuthorityChainFact | undefined;
+  if (measure.kind === "city_authorization") {
+    const titlePlain = measure.titlePlain?.trim();
+    if (!titlePlain) {
+      throw new Error(
+        `[${record.id}] city_authorization ${measure.stepId} requires titlePlain`,
+      );
+    }
+    const takeaway = pack.ballotStepBody(
+      measure.kind,
+      measure.detail ?? "",
+      bodyLead,
+      {
+        maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
+        maxAuthorizedMills: measure.maxAuthorizedMills,
+        governmentBillName,
+      },
+    );
+    body = "";
+    const takeawayFact: LevyAuthorityChainFact = {
+      label: titlePlain,
+      value: takeaway,
+      sources: measure.approval ? [measure.approval.source] : [],
+    };
+    if (measure.bodyTermId && measure.bodyTermMatch) {
+      takeawayFact.valueTermId = measure.bodyTermId;
+      takeawayFact.valueTermMatch = measure.bodyTermMatch;
+    }
+    cityAuthorizationTakeaway = takeawayFact;
+  } else if (measure.kind === "metro_commitment") {
     body = pack.ballotStepBody(measure.kind, measure.detail ?? "", bodyLead, {
       maxMillIncreasePerYear: measure.maxMillIncreasePerYear,
       maxAuthorizedMills: measure.maxAuthorizedMills,
@@ -730,14 +772,17 @@ function buildMeasureStep(
       governmentBillName,
     });
   }
-  const omitDuplicateMetroUnavailableFact =
-    family === "metro" &&
+  const foldApproval = foldsApprovalOntoMeasures(family);
+  const omitDuplicateUnavailableFact =
+    foldApproval &&
     measure.ballotTextKind === "unavailable" &&
     (measure.approval !== undefined ||
       (measure.votes !== undefined && measure.resultsSource !== undefined));
   const facts: LevyAuthorityChainFact[] = [
+    ...(cityAuthorizationTakeaway ? [cityAuthorizationTakeaway] : []),
     ...(measure.kind !== "metro_commitment" &&
-    !omitDuplicateMetroUnavailableFact
+    measure.kind !== "city_authorization" &&
+    !omitDuplicateUnavailableFact
       ? [
           {
             label: pack.ballotFactLabel,
@@ -751,14 +796,14 @@ function buildMeasureStep(
         ]
       : []),
   ];
-  if (family !== "metro") {
+  if (!foldApproval) {
     facts.push(...(measure.supportingFacts ?? []));
   }
-  // Metro: keep approval/votes on the measure step so chronology stays in-trail
-  // (no separate trailing "How this was authorized" dump of the same cites).
-  // Approval comes before supporting facts so an election is not displayed
-  // after a later county action described by those supporting facts.
-  if (family === "metro") {
+  // Metro/city: keep approval/votes on the measure step so chronology stays
+  // in-trail (no separate trailing dump of the same cites). Approval comes
+  // before supporting facts so an election is not displayed after a later
+  // action described by those supporting facts.
+  if (foldApproval) {
     if (measure.votes && measure.resultsSource) {
       facts.push({
         label: metroVoteFactLabel(measure),
@@ -778,7 +823,7 @@ function buildMeasureStep(
       });
     } else {
       throw new Error(
-        `[${record.id}] metro measure ${measure.stepId} needs votes + resultsSource or approval`,
+        `[${record.id}] ${family} measure ${measure.stepId} needs votes + resultsSource or approval`,
       );
     }
     facts.push(...(measure.supportingFacts ?? []));
@@ -794,8 +839,13 @@ function buildMeasureStep(
     body,
     ...(bodyLink ? { bodyLink } : {}),
     ...(bodyDisclosure ? { bodyDisclosure } : {}),
-    bodyTermId: measure.bodyTermId,
-    bodyTermMatch: measure.bodyTermMatch,
+    // city_authorization moves bodyTerm onto the takeaway fact value.
+    ...(measure.kind === "city_authorization"
+      ? {}
+      : {
+          bodyTermId: measure.bodyTermId,
+          bodyTermMatch: measure.bodyTermMatch,
+        }),
     facts,
   };
 }
@@ -838,7 +888,9 @@ function buildApprovalStep(
     };
   });
   return {
-    id: record.family === "metro" ? "official-authorization-record" : "county-reported-results",
+    id: foldsApprovalOntoMeasures(record.family)
+      ? "official-authorization-record"
+      : "county-reported-results",
     title: pack.approvalStepTitle,
     body: pack.approvalStepBody,
     facts,
@@ -953,9 +1005,9 @@ export function buildLevyAuthorityChainEntry(
     buildMillsStep(recordForBuild, options),
     ...recordForBuild.measures.map((m) => buildMeasureStep(recordForBuild, m)),
   ];
-  // School/county: separate certified-results step. Metro folds approval onto
-  // each measure so the trail stays chronological.
-  if (recordForBuild.family !== "metro") {
+  // School/county/fire: separate certified-results step. Metro/city fold
+  // approval onto each measure so several authorizations stay chronological.
+  if (!foldsApprovalOntoMeasures(recordForBuild.family)) {
     steps.push(buildApprovalStep(recordForBuild));
   }
 

@@ -26,8 +26,10 @@ when rates are uniform across PDF TAG groups. TAG+AUTH exceptions use the
 Levy % PDF TAG code (not Levy.aspx tagId); see payload `_meta`.
 
 The companion rate-table page map is filtered to AUTH codes in the curated
-authority-chain JSON. At runtime, the open parcel's short tax-area code is
-zero-padded to the PDF TAG width and joined with tax year + AUTH so links can
+authority-chain JSON plus Arapahoe codes from the cross-county registry (so
+registry-linked entries such as SMFR `4100` keep deep-links). At runtime, the
+open parcel's short tax-area code is zero-padded to the PDF TAG width and joined
+with tax year + AUTH so links can
 open the exact row page instead of page 1.
 """
 
@@ -76,6 +78,7 @@ DEFAULT_PAGE_OUT = Path(
 DEFAULT_AUTHORITY_CHAIN = Path(
   "public/data/levy-authority-chain-entries.json"
 )
+DEFAULT_REGISTRY = Path("public/data/cross-county-authority-registry.json")
 DEFAULT_AUDIT_DIR = Path("supporting-data/authority-mills")
 
 
@@ -403,13 +406,26 @@ def build_shipping_payload(
   }
 
 
-def authority_codes_from_chain_file(path: Path) -> List[str]:
-  """Return unique AUTH codes used by curated authority-chain entries."""
+def authority_codes_from_chain_file(
+  path: Path,
+  registry_path: Path | None = None,
+) -> List[str]:
+  """Return unique AUTH codes used by curated authority-chain + registry rows."""
   payload = json.loads(path.read_text(encoding="utf-8"))
   codes = {
     str(entry.get("match", {}).get("levyLineCode", "")).strip()
     for entry in payload.get("entries", [])
   }
+  reg_path = registry_path or DEFAULT_REGISTRY
+  if reg_path.is_file():
+    registry = json.loads(reg_path.read_text(encoding="utf-8"))
+    for row in registry.get("authorities", []):
+      if not str(row.get("authorityChainEntryId") or "").strip():
+        continue
+      by_county = row.get("levyLineCodeByCounty") or {}
+      code = str(by_county.get("arapahoe") or "").strip()
+      if code:
+        codes.add(code)
   return sorted(code for code in codes if code)
 
 
@@ -547,6 +563,15 @@ def main() -> None:
     help="Curated authority-chain JSON whose AUTH codes need page lookups.",
   )
   parser.add_argument(
+    "--registry",
+    type=Path,
+    default=DEFAULT_REGISTRY,
+    help=(
+      "Cross-county registry (Arapahoe levyLineCodeByCounty AUTH codes "
+      "for page map, e.g. SMFR 4100)."
+    ),
+  )
+  parser.add_argument(
     "--no-audit",
     action="store_true",
     help="Skip writing raw-row audit JSON under supporting-data/.",
@@ -588,7 +613,10 @@ def main() -> None:
     source_files=source_files,
     bundled_as_of=bundled_as_of,
   )
-  authority_codes = authority_codes_from_chain_file(args.authority_chain)
+  authority_codes = authority_codes_from_chain_file(
+    args.authority_chain,
+    args.registry,
+  )
   page_payload = build_rate_table_page_payload(
     raw_by_year,
     authority_codes,
