@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.13.1",
+    date: "2026-09-11",
+    title:
+      "Home campaign disclosure styled to Assessor site outline branding",
+    highlights: [
+      "Home CampaignSiteLink outline control: campaign dark-green border + text (#036b40), Inter bold (next/font preload false), 14pt type, trailing period removed from campaignHomeDisclosureLabel.",
+      "Inline external-link icon at end of label (aria-hidden; existing sr-only opens-in-new-tab). Footer/privacy campaign text links unchanged.",
+    ],
+  },
+  {
     version: "5.13.0",
     date: "2026-09-10",
     title:

@@ -14,6 +14,9 @@
   --font-mono: var(--font-geist-mono);
   /* Debt callouts: visible on large cards, still light; use with slate-600+ text for AA */
   --color-debt-wash: #ffecec;
+  /* Jesse Lind for Assessor campaign site (Website/src/styles/global.css) */
+  --color-campaign-green: #05995c;
+  --color-campaign-green-dark: #036b40;
 }
 
 html {
@@ -71,6 +74,17 @@ summary {
   }
   .btn-outline-secondary--md {
     @apply px-4 py-2 text-base;
+  }
+  /**
+   * Home campaign disclosure: campaign-site outline control with dark green
+   * border + text (#036b40) for AA on white; Inter via --font-campaign-inter.
+   */
+  .btn-campaign-outline {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-md border-2 border-campaign-green-dark bg-white font-bold text-campaign-green-dark no-underline transition-colors hover:bg-campaign-green-dark hover:text-white focus:outline-none focus:ring-2 focus:ring-campaign-green focus:ring-offset-2;
+    font-family: var(--font-campaign-inter), ui-sans-serif, system-ui, sans-serif;
+  }
+  .btn-campaign-outline--md {
+    @apply px-4 py-2 text-[14pt];
   }
   /** Solid primary (hero actions). Pair: btn-primary btn-primary--md */
   .btn-primary {
