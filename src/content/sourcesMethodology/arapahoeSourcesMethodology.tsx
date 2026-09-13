@@ -188,8 +188,8 @@ export function ArapahoeSourcesMethodology() {
           a separate state LG directory filtered to districts on shipping
           county stacks (Arapahoe and Douglas today). Bill LG ID and directory
           LG ID can{" "}
-          <strong className="text-slate-900">differ</strong>
-          . Public mail often reflects administration or management, not a
+          <strong className="text-slate-900">differ</strong>.
+          Public mail often reflects administration or management, not a
           single tidy join. When IDs align, that is the strongest link; when
           only the name is fuzzy or IDs differ, contact still appears with
           that explanation. Contact titles keep the state legal name; when a
