@@ -64,14 +64,16 @@ export function countyAccountMapUrl(
   return cacheBust ? `${base}?v=${cacheBust}` : base;
 }
 
-/** URL: `{dataRoot}/{countyId}-levy-stacks-by-tag-id.json` */
+/** URL: `{dataRoot}/{countyId}-levy-stacks-by-tag-id.json` (optional cache-bust query). */
 export function countyLevyStacksUrl(
   countyId: string,
   dataRoot: string = SHIPPING_DATA_ROOT,
+  cacheBust?: string,
 ): string {
   const root = countyDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
-  return `${root}/${id}-levy-stacks-by-tag-id.json`;
+  const base = `${root}/${id}-levy-stacks-by-tag-id.json`;
+  return cacheBust ? `${base}?v=${encodeURIComponent(cacheBust)}` : base;
 }
 
 /** URL: `{dataRoot}/{countyId}-situs-to-pins.json` (optional cache-bust query). */

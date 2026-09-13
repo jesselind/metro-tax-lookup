@@ -20,9 +20,11 @@ if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
 from build_district_directory_from_lg_export import (  # noqa: E402
+    DEFAULT_WEBSITE_OVERRIDES,
     build_directory_payload,
     collect_lg_ids_from_levy_stack_paths,
     collect_lg_ids_from_levy_stacks,
+    load_website_overrides,
 )
 
 
@@ -168,6 +170,7 @@ class BuildDistrictDirectoryTests(unittest.TestCase):
                 levy_stacks=[ara, doug],
                 property_tax_entities=pt_csv,
                 certifying_counties=["Arapahoe", "Douglas"],
+                website_overrides_path=root / "no-website-overrides.json",
             )
 
             by_lg = {d["lgId"]: d for d in payload["districts"]}
@@ -193,6 +196,118 @@ class BuildDistrictDirectoryTests(unittest.TestCase):
             self.assertEqual(meta["lgIdsFilledFromPropertyTaxEntities"], ["18010"])
             self.assertEqual(meta["missingLgIdsInExport"], ["99999"])
             self.assertEqual(meta["referencedLgIdCount"], 3)
+            self.assertEqual(meta["websiteOverridesApplied"], [])
+            self.assertEqual(meta["websiteOverridesUnusedLgIds"], [])
+
+    def test_website_override_replaces_stale_dola_url(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stacks = root / "arapahoe-levy-stacks-by-tag-id.json"
+            lg_csv = root / "lg-export-all.csv"
+            pt_csv = root / "property-tax-entities-export.csv"
+            ovr = root / "district_directory_website_overrides.json"
+
+            _write_stacks(
+                stacks,
+                {
+                    "1000": [
+                        {
+                            "authorityName": "AURORA SCHOOL DIST # 28J",
+                            "dolaMatch": {"lgId": "64907"},
+                        }
+                    ]
+                },
+            )
+            _write_lg_csv(
+                lg_csv,
+                [
+                    {
+                        "LGID": "64907",
+                        "Local Government Name": "Adams-Arapahoe 28J School District",
+                        "Website URL": "www.aps.k12.co.us",
+                        "Mailing Address": "15701 East 1st Avenue. Suite 206",
+                        "Alternate Address": "",
+                        "Mailing City": "Aurora",
+                        "Mailing State": "CO",
+                        "Mailing Zip": "80011",
+                        "Local Government Type": "School Districts",
+                    }
+                ],
+            )
+            _write_pt_csv(pt_csv, [])
+            ovr.write_text(
+                json.dumps(
+                    {
+                        "byLgId": {
+                            "64907": {
+                                "websiteUrl": "https://www.aurorak12.org",
+                                "note": "test",
+                            },
+                            "99999": {
+                                "websiteUrl": "https://example.com/unused",
+                                "note": "not on stacks",
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            payload = build_directory_payload(
+                lg_csv=lg_csv,
+                levy_stacks=[stacks],
+                property_tax_entities=pt_csv,
+                certifying_counties=["Arapahoe"],
+                website_overrides_path=ovr,
+            )
+            by_lg = {d["lgId"]: d for d in payload["districts"]}
+            self.assertEqual(by_lg["64907"]["websiteUrl"], "https://www.aurorak12.org")
+            self.assertEqual(
+                payload["_meta"]["websiteOverridesApplied"],
+                [
+                    {
+                        "lgId": "64907",
+                        "fromUrl": "https://www.aps.k12.co.us",
+                        "toUrl": "https://www.aurorak12.org",
+                    }
+                ],
+            )
+            self.assertEqual(payload["_meta"]["websiteOverridesUnusedLgIds"], ["99999"])
+            self.assertIn("Curated website URL overrides", payload["snapshot"]["source"])
+
+    def test_load_website_overrides_requires_https(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ovr.json"
+            path.write_text(
+                json.dumps({"byLgId": {"64907": {"websiteUrl": "http://example.com"}}}),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                load_website_overrides(path)
+
+
+class TrackedWebsiteOverridesFileTests(unittest.TestCase):
+    """Safeguard: curated file lives under tools/ and pins Aurora APS public site."""
+
+    def test_shared_overrides_file_exists_and_pins_64907(self) -> None:
+        self.assertTrue(DEFAULT_WEBSITE_OVERRIDES.is_file(), str(DEFAULT_WEBSITE_OVERRIDES))
+        self.assertEqual(
+            DEFAULT_WEBSITE_OVERRIDES.name,
+            "district_directory_website_overrides.json",
+        )
+        self.assertEqual(DEFAULT_WEBSITE_OVERRIDES.parent.name, "tools")
+        loaded = load_website_overrides(DEFAULT_WEBSITE_OVERRIDES)
+        self.assertIn("64907", loaded)
+        self.assertEqual(loaded["64907"]["websiteUrl"], "https://www.aurorak12.org")
+
+    def test_no_duplicate_under_ingest_mappings(self) -> None:
+        dup = (
+            Path(__file__).resolve().parent
+            / "ingest"
+            / "mappings"
+            / "district_directory_website_overrides.json"
+        )
+        self.assertFalse(dup.is_file(), f"duplicate overrides file must not exist: {dup}")
 
 
 if __name__ == "__main__":

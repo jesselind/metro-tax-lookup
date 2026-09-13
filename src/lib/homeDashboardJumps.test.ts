@@ -17,7 +17,7 @@ describe("buildHomeDashboardJumps", () => {
         showFeedback: true,
         countyDisplayName: "Arapahoe",
       }).map((j) => j.id),
-    ).toEqual(["levies", "feedback"]);
+    ).toEqual(["top", "levies", "feedback"]);
   });
 
   it("includes county name in the compare label", () => {
@@ -29,8 +29,8 @@ describe("buildHomeDashboardJumps", () => {
       showFeedback: false,
       countyDisplayName: "Douglas",
     });
-    expect(jumps).toHaveLength(1);
-    expect(jumps[0]?.label).toBe("See how Douglas displays your data");
+    expect(jumps.map((j) => j.id)).toEqual(["top", "county-compare"]);
+    expect(jumps[1]?.label).toBe("See how Douglas displays your data");
   });
 
   it("keeps page order when all sections are present", () => {
@@ -44,11 +44,30 @@ describe("buildHomeDashboardJumps", () => {
         countyDisplayName: "Arapahoe",
       }).map((j) => j.id),
     ).toEqual([
+      "top",
       "levies",
       "property-details",
       "county-compare",
       "comps",
       "feedback",
+    ]);
+  });
+
+  it("always leads with Summary", () => {
+    const jumps = buildHomeDashboardJumps({
+      showLevies: false,
+      showPropertyDetails: false,
+      showCountyCompare: false,
+      showInAppComps: false,
+      showFeedback: false,
+      countyDisplayName: "Arapahoe",
+    });
+    expect(jumps).toEqual([
+      {
+        id: "top",
+        label: "Summary",
+        focusId: "page-top",
+      },
     ]);
   });
 });

@@ -183,16 +183,19 @@ export function ArapahoeSourcesMethodology() {
         <li>
           <strong>District contact vs tax IDs:</strong>{" "}Levy tile mills and
           tax-entity linkage come from one join path (county tags matched to
-          DOLA property-tax entities). Website and mailing contacts come from
+          DOLA property-tax entities; only high-confidence fuzzy identity
+          ships on the bill). Website and mailing contacts come from
           a separate state LG directory filtered to districts on shipping
           county stacks (Arapahoe and Douglas today). Bill LG ID and directory
           LG ID can{" "}
           <strong className="text-slate-900">differ</strong>
-          {" "}
-          — public mail often reflects administration or management, not a
+          . Public mail often reflects administration or management, not a
           single tidy join. When IDs align, that is the strongest link; when
           only the name is fuzzy or IDs differ, contact still appears with
-          that explanation. See{" "}
+          that explanation. Contact titles keep the state legal name; when a
+          curated everyday name differs (for example Aurora Public Schools for
+          Adams-Arapahoe 28J), a short also-known-as line appears under the
+          title. See{" "}
           <Link href={glossaryTermHref("term-lg-id")} className={TERM_LINK_CLASS}>
             LG ID
           </Link>.

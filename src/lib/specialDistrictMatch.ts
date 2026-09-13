@@ -115,11 +115,10 @@ export type SpecialDistrictMatchOptions = {
   countyGeoid?: string;
   /**
    * LG ID from the county/DOLA join on the levy line (e.g. bill-side match).
-   * When set, the directory row for this ID is used first (before parsing the
-   * authority label or fuzzy name matching). If no row exists for that ID (or the
-   * row fails the county filter), we still fall back to fuzzy name matching so
-   * users can see typical registry contact patterns; the UI explains when bill
-   * LG ID and directory LG ID differ (e.g. administrative or management listings).
+   * When set, only the directory row for this ID is used (no fuzzy name fallback).
+   * Missing or county-filtered rows yield `kind: "none"` so Contact does not invent
+   * another district's website or mail. Empty Contact is correct until the directory
+   * includes that LG ID.
    */
   preferredLgId?: string | null;
 };
@@ -180,6 +179,22 @@ function lgIdKeyFromRaw(raw: string): string | null {
   return padLgId(digits);
 }
 
+/**
+ * Bump when rebuilding `public/data/colorado-special-district-directory.json` so
+ * browsers skip a stale `/data` copy (Contact preferredLgId needs new LGIDs).
+ */
+export const SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST = "20260912aurorak12";
+
+/** URL for the bundled Colorado special-district contact directory. */
+export function specialDistrictDirectoryUrl(
+  cacheBust: string = SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST,
+): string {
+  const v = cacheBust.trim();
+  return v
+    ? `/data/colorado-special-district-directory.json?v=${encodeURIComponent(v)}`
+    : "/data/colorado-special-district-directory.json";
+}
+
 function extractLgIdFromLabel(authority: string): string | null {
   const m = authority.match(/\b(\d{4,6})\b/);
   if (!m) return null;
@@ -201,8 +216,8 @@ function buildLgIdIndex(
 ): Map<string, SpecialDistrictRecord> {
   const map = new Map<string, SpecialDistrictRecord>();
   for (const d of districts) {
-    const id = (d.lgId || "").trim();
-    if (id) map.set(id, d);
+    const key = lgIdKeyFromRaw(d.lgId || "");
+    if (key) map.set(key, d);
   }
   return map;
 }
@@ -294,6 +309,8 @@ export function matchSpecialDistrict(
     if (fromBill && countyOk(fromBill)) {
       return { kind: "lgId", record: fromBill, confidence: "high" };
     }
+    // Bill-side LG ID was set but has no usable directory row — do not invent Contact.
+    return { kind: "none" };
   }
 
   const lgGuess = extractLgIdFromLabel(trimmed);

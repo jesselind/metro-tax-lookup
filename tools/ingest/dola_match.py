@@ -36,6 +36,13 @@ DEFAULT_DOLA_XLSX = _REPO_ROOT / "supporting-data" / "dola" / "property-tax-enti
 # Shared with the shipping rebuild: curated mart↔DOLA reconciliation, not engine output.
 DEFAULT_OVERRIDES = _TOOLS_DIR / "arapahoe_dola_authority_overrides.json"
 
+# Fuzzy identity floor: only high-confidence name matches ship lgId / taxEntityId /
+# matchedLegalName (Contact trusts stack lgId). Medium/low guesses become method "none"
+# (score kept for diagnostics). Curated overrides with taxEntityId bypass fuzzy.
+FUZZY_HIGH_MIN = 0.92
+FUZZY_MEDIUM_MIN = 0.78
+FUZZY_ACCEPT_MIN = FUZZY_HIGH_MIN
+
 
 def default_dola_export_path() -> Path:
     if DEFAULT_DOLA_CSV.is_file():
@@ -456,28 +463,28 @@ def match_dola_line(
             best = e
 
     assert best is not None
-    if best_score >= 0.92:
+    if best_score >= FUZZY_HIGH_MIN:
         conf = "high"
-    elif best_score >= 0.78:
+    elif best_score >= FUZZY_MEDIUM_MIN:
         conf = "medium"
     else:
         conf = "low"
 
-    if ovr and ovr.get("legalName") and best_score < 0.78:
+    if ovr and ovr.get("legalName") and best_score < FUZZY_ACCEPT_MIN:
         query2 = normalize_for_match(str(ovr["legalName"]))
         for e in entities:
             score = fuzz.token_sort_ratio(query2, e["norm"]) / 100.0
             if score > best_score:
                 best_score = score
                 best = e
-        if best_score >= 0.92:
+        if best_score >= FUZZY_HIGH_MIN:
             conf = "high"
-        elif best_score >= 0.78:
+        elif best_score >= FUZZY_MEDIUM_MIN:
             conf = "medium"
         else:
             conf = "low"
 
-    if best_score < 0.70:
+    if best_score < FUZZY_ACCEPT_MIN:
         return {
             "method": "none",
             "confidence": "low",

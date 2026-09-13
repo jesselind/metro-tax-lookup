@@ -39,6 +39,11 @@
       "legalName": "Aurora",
       "note": "DOLA LGIS export uses municipality name without City of prefix (TE e.g. 64010/1)."
     },
+    "AURORA SCHOOL DIST # 28J": {
+      "legalName": "Adams-Arapahoe 28J School District",
+      "taxEntityId": "64907/1",
+      "note": "Mart AUTH 0801 uses county brand Aurora; DOLA legal name is Adams-Arapahoe 28J (TE 64907/1, mills 73.186). Pin TE so fuzzy cannot land on Byers 32J (64908/1; bare county label scores ~0.7843)."
+    },
     "CHERRY CREEK BASIN AUTH": {
       "legalName": "Cherry Creek Basin Water Quality Authority",
       "note": "AUTH truncation; full legal name includes Water Quality."

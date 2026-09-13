@@ -621,18 +621,22 @@ export function getLastCountyLevyStacksFetchFailureDetail(): string | null {
 /**
  * Lazy fetch — call only from PIN load (not on page load) to avoid large JSON downloads.
  * `countyId` is required (resolved or campaign-default id passed explicitly).
+ * Bump {@link COUNTY_LEVY_STACKS_CACHE_BUST} when rebuilding levy stacks so browsers
+ * skip a stale `/data` copy (Contact trusts stack-embedded `dolaMatch.lgId`).
  */
+export const COUNTY_LEVY_STACKS_CACHE_BUST = "20260912aurora64907";
+
 export function fetchCountyLevyStacksJson(
   countyId: string,
   dataRoot?: string,
 ): Promise<CountyLevyStacksFile | null> {
   const root = normalizeLoaderDataRoot(dataRoot);
   const id = countyIdForDataPaths(countyId);
-  const cacheKey = loaderCacheKey(root, id);
+  const cacheKey = `${loaderCacheKey(root, id)}:v=${COUNTY_LEVY_STACKS_CACHE_BUST}`;
   const cached = stacksCacheByRoot.get(cacheKey);
   if (cached) return cached;
 
-  const url = countyLevyStacksUrl(id, root);
+  const url = countyLevyStacksUrl(id, root, COUNTY_LEVY_STACKS_CACHE_BUST);
   const pending = (async () => {
     const result = await fetchCountyStaticJson(url);
     if (!result.ok) {
