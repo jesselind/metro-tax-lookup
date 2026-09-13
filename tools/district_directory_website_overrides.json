@@ -1,0 +1,9 @@
+{
+  "_comment": "Curated Contact website corrections for colorado-special-district-directory.json. Same role as arapahoe_dola_authority_overrides.json for mill join: tracked maintainer input, not generated. Keys under byLgId = DOLA LG ID. Each entry requires websiteUrl (https://…). Optional note is maintainer-only. Applied by tools/build_district_directory_from_lg_export.py after LG export + Property Tax Entities fallback. Use when DOLA Website URL is broken, redirects to a dead host, or is not the public district site. Procedure: add/edit entry here → npm run build:district-directory → bump SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST in src/lib/specialDistrictMatch.ts. One file only under tools/; do not duplicate under tools/ingest/mappings/.",
+  "byLgId": {
+    "64907": {
+      "websiteUrl": "https://www.aurorak12.org",
+      "note": "Adams-Arapahoe 28J (Aurora Public Schools). DOLA LG export still lists www.aps.k12.co.us, which fails Cloudflare Error 1000 (DNS points to prohibited IP). Public district site is aurorak12.org (not a staff/student portal)."
+    }
+  }
+}

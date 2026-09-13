@@ -98,6 +98,21 @@ export function HomeDashboardUtilityBar({
     }
     const jump = jumps.find((item) => item.id === jumpId);
     if (jump == null) return;
+    // Summary (page top): same behavior as Back to top (main is full height; nearest
+    // scroll on #page-top would not reliably return to the viewport top).
+    if (jump.id === "top") {
+      let movedFocus = false;
+      const focusPageTop = () => {
+        if (movedFocus) return;
+        movedFocus = true;
+        window.removeEventListener("scrollend", focusPageTop);
+        document.getElementById(jump.focusId)?.focus({ preventScroll: true });
+      };
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.addEventListener("scrollend", focusPageTop);
+      window.setTimeout(focusPageTop, 600);
+      return;
+    }
     focusNearestDashboardSection({
       focusId: jump.focusId,
       highlightId: jump.highlightId,

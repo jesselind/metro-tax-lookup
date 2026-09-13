@@ -45,7 +45,7 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   await expect(page.getByText("Supported Colorado counties")).toHaveCount(0);
 
   // Campaign disclosure follows SITE_CONFIG; forks that clear values must not
-  // assert hardcoded Jesse-Lind copy.
+  // assert hardcoded Jesse-Lind copy. Outline control lives in the site footer.
   const campaignUrl = SITE_CONFIG.campaignSiteUrl?.trim() || null;
   const homeDisclosureLabel =
     SITE_CONFIG.campaignHomeDisclosureLabel?.trim() || null;
@@ -53,7 +53,7 @@ test("home shows address lookup and Try demo", async ({ page }) => {
 
   if (campaignUrl && homeDisclosureLabel) {
     await expect(
-      page.getByRole("link", { name: homeDisclosureLabel }),
+      page.locator("footer").getByRole("link", { name: homeDisclosureLabel }),
     ).toBeVisible();
   } else if (homeDisclosureLabel) {
     await expect(

@@ -27,6 +27,7 @@ import {
 import {
   ARAPAHOE_COUNTY_GEOID,
   matchSpecialDistrict,
+  specialDistrictDirectoryUrl,
 } from "@/lib/specialDistrictMatch";
 import { formatTaxAreaShortDescrDisplay } from "@/lib/countyParcelLevyData";
 import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyLevyMills";
@@ -394,7 +395,7 @@ export function LevyStackVisualization({
     if (!showResults || specialDistrictFetchStartedRef.current) return;
     specialDistrictFetchStartedRef.current = true;
     queueMicrotask(() => setSpecialDistrictLoading(true));
-    fetch("/data/colorado-special-district-directory.json")
+    fetch(specialDistrictDirectoryUrl())
       .then((r) => {
         if (!r.ok) throw new Error(String(r.status));
         return r.json() as Promise<SpecialDistrictDirectoryFile>;
@@ -1251,7 +1252,6 @@ export function LevyStackVisualization({
           hasSaleHistory={parcelHasSaleHistory}
           directoryLoading={specialDistrictLoading && !specialDistrictFile}
           directoryError={specialDistrictError}
-          snapshot={specialDistrictFile?.snapshot ?? null}
           onClose={() => setDetailLineId(null)}
         />
       )}

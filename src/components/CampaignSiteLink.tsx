@@ -44,8 +44,8 @@ export function CampaignSiteLink({
   /** Defaults to {@link SITE_CONFIG.campaignSiteLabel}. */
   children?: ReactNode;
   /**
-   * `outline` = home disclosure control (campaign dark-green outline + Inter).
-   * `link` = inline footer / privacy text link.
+   * `outline` = sitewide footer disclosure control (campaign dark-green outline + Inter).
+   * `link` = inline privacy / text link.
    */
   variant?: "link" | "outline";
 }) {
@@ -84,7 +84,7 @@ export function CampaignSiteLink({
   );
 }
 
-/** True when a campaign URL is configured (home / footer disclosure chrome). */
+/** True when a campaign URL is configured (footer / privacy disclosure chrome). */
 export function hasCampaignSiteLink(): boolean {
   return Boolean(SITE_CONFIG.campaignSiteUrl?.trim());
 }

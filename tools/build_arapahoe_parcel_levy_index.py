@@ -1243,28 +1243,32 @@ def match_dola_line(
             best = e
 
     assert best is not None
-    if best_score >= 0.92:
+    # Keep thresholds aligned with tools/ingest/dola_match.py (canonical ship).
+    fuzzy_high_min = 0.92
+    fuzzy_medium_min = 0.78
+    fuzzy_accept_min = fuzzy_high_min  # only high-confidence fuzzy ships identity
+    if best_score >= fuzzy_high_min:
         conf = "high"
-    elif best_score >= 0.78:
+    elif best_score >= fuzzy_medium_min:
         conf = "medium"
     else:
         conf = "low"
 
-    if ovr and ovr.get("legalName") and best_score < 0.78:
+    if ovr and ovr.get("legalName") and best_score < fuzzy_accept_min:
         query2 = normalize_for_match(str(ovr["legalName"]))
         for e in entities:
             score = fuzz.token_sort_ratio(query2, e["norm"]) / 100.0
             if score > best_score:
                 best_score = score
                 best = e
-        if best_score >= 0.92:
+        if best_score >= fuzzy_high_min:
             conf = "high"
-        elif best_score >= 0.78:
+        elif best_score >= fuzzy_medium_min:
             conf = "medium"
         else:
             conf = "low"
 
-    if best_score < 0.70:
+    if best_score < fuzzy_accept_min:
         return {
             "method": "none",
             "confidence": "low",

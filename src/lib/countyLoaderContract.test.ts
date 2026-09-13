@@ -43,6 +43,7 @@ import {
 } from "@/lib/countyDataPaths";
 import {
   COUNTY_ACCOUNT_MAP_CACHE_BUST,
+  COUNTY_LEVY_STACKS_CACHE_BUST,
   COUNTY_PARCEL_RECORD_CACHE_BUST,
   clearCountyParcelDataCache,
   fetchCountyLevyStacksJson,
@@ -181,7 +182,11 @@ describe("county loader contract", () => {
     it.each(WIRED_COUNTY_IDS)(
       "%s levy stacks fetch uses countyLevyStacksUrl",
       async (countyId) => {
-        const expectedUrl = countyLevyStacksUrl(countyId);
+        const expectedUrl = countyLevyStacksUrl(
+          countyId,
+          undefined,
+          COUNTY_LEVY_STACKS_CACHE_BUST,
+        );
         const fetchMock = vi.fn().mockResolvedValue({
           ok: true,
           json: async () => minimalLevyStacksJson(),

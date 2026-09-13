@@ -21,6 +21,7 @@ if str(_TOOLS) not in sys.path:
 from ingest.dola_match import (  # noqa: E402
     DEFAULT_DOLA_CSV,
     DEFAULT_OVERRIDES,
+    FUZZY_ACCEPT_MIN,
     attach_levy_mills,
     dola_match_for_mart_line,
     load_dola_entities_csv,
@@ -139,7 +140,34 @@ class MatchDolaLineTests(unittest.TestCase):
         self.assertEqual(result["confidence"], "low")
         self.assertIsNone(result["matchedLegalName"])
         self.assertIsNotNone(result["score"])
-        self.assertLess(result["score"], 0.70)
+        self.assertLess(result["score"], FUZZY_ACCEPT_MIN)
+
+    def test_medium_fuzzy_score_does_not_ship_identity(self) -> None:
+        """Bare county labels can score medium against the wrong school district."""
+        entities = [
+            {
+                "legalName": "Byers 32J School District",
+                "norm": normalize_for_match("Byers 32J School District"),
+                "taxEntityId": "64908/1",
+                "lgId": "64908",
+                "levyMills": 30.189,
+            },
+            {
+                "legalName": "Adams-Arapahoe 28J School District",
+                "norm": normalize_for_match("Adams-Arapahoe 28J School District"),
+                "taxEntityId": "64907/1",
+                "lgId": "64907",
+                "levyMills": 73.186,
+            },
+        ]
+        result = match_dola_line("AURORA SCHOOL DIST # 28J", entities, {})
+        self.assertEqual(result["method"], "none")
+        self.assertIsNone(result["lgId"])
+        self.assertIsNone(result["taxEntityId"])
+        self.assertIsNone(result["matchedLegalName"])
+        self.assertIsNotNone(result["score"])
+        self.assertLess(result["score"], FUZZY_ACCEPT_MIN)
+        self.assertGreaterEqual(result["score"], 0.70)
 
     def test_empty_entities_fallback(self) -> None:
         result = match_dola_line("SOME DISTRICT", [], {})
@@ -289,6 +317,52 @@ class WestMetroFireOverrideTests(unittest.TestCase):
         self.assertEqual(result["lgId"], "64108")
 
 
+class AuroraSchoolOverrideTests(unittest.TestCase):
+    """AUTH 0801 must join Adams-Arapahoe 28J, not Byers 32J."""
+
+    def test_override_pins_aurora_school_te_not_byers(self) -> None:
+        self.assertTrue(DEFAULT_DOLA_CSV.is_file(), str(DEFAULT_DOLA_CSV))
+        self.assertTrue(DEFAULT_OVERRIDES.is_file(), str(DEFAULT_OVERRIDES))
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        self.assertIn("64907/1", by_te)
+        self.assertIn("64908/1", by_te)
+        overrides = load_overrides(DEFAULT_OVERRIDES)
+        self.assertEqual(
+            overrides.get("AURORA SCHOOL DIST # 28J", {}).get("taxEntityId"),
+            "64907/1",
+        )
+        result = dola_match_for_mart_line(
+            "0801",
+            "AURORA SCHOOL DIST # 28J",
+            entities=entities,
+            overrides=overrides,
+            entities_by_te_id=by_te,
+        )
+        self.assertEqual(result["method"], "override")
+        self.assertEqual(result["taxEntityId"], "64907/1")
+        self.assertEqual(result["lgId"], "64907")
+        self.assertEqual(
+            result["matchedLegalName"],
+            "Adams-Arapahoe 28J School District",
+        )
+        self.assertNotEqual(result["taxEntityId"], "64908/1")
+        self.assertAlmostEqual(float(result["mills"]), 73.186, places=3)
+
+    def test_bare_label_without_override_does_not_ship_byers(self) -> None:
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        result = match_dola_line("AURORA SCHOOL DIST # 28J", entities, {})
+        self.assertEqual(result["method"], "none")
+        self.assertIsNone(result["lgId"])
+        self.assertNotEqual(result.get("matchedLegalName"), "Byers 32J School District")
+
+
 class OverridesFileTests(unittest.TestCase):
     def test_shared_overrides_file_exists(self) -> None:
         self.assertTrue(DEFAULT_OVERRIDES.is_file(), str(DEFAULT_OVERRIDES))
@@ -301,12 +375,17 @@ class OverridesFileTests(unittest.TestCase):
         loaded = load_overrides(DEFAULT_OVERRIDES)
         self.assertIn("ARAPAHOE COUNTY", loaded)
         self.assertIn("WEST METRO FIRE PROTECTION DISTRICT", loaded)
+        self.assertIn("AURORA SCHOOL DIST # 28J", loaded)
         mills = loaded["ARAPAHOE COUNTY"].get("millsOverride")
         self.assertIsInstance(mills, (int, float))
         self.assertFalse(isinstance(mills, bool))
         self.assertEqual(
             loaded["WEST METRO FIRE PROTECTION DISTRICT"].get("taxEntityId"),
             "64243/1",
+        )
+        self.assertEqual(
+            loaded["AURORA SCHOOL DIST # 28J"].get("taxEntityId"),
+            "64907/1",
         )
 
     def test_no_duplicate_overrides_under_ingest_mappings(self) -> None:

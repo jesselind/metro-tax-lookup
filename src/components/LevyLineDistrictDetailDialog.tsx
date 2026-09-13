@@ -72,6 +72,7 @@ import {
   authorityMillsSeries,
 } from "@/lib/authorityMillsHistory";
 import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
+import { districtCommonNameGloss } from "@/content/districtCommonNames";
 
 import type { MetroDistrictTileYoYSummary } from "@/lib/metroLevyYearOverYear";
 
@@ -352,7 +353,6 @@ type Props = {
   dolaMatch: CountyDolaMatch | null | undefined;
   directoryLoading: boolean;
   directoryError: string | null;
-  snapshot: { bundledAsOf: string; source: string; sourceCsv?: string } | null;
   /**
    * Parcel assessed value for dollar amounts next to mill changes.
    * Omit or non-positive when dollars should not be shown.
@@ -392,7 +392,6 @@ export function LevyLineDistrictDetailDialog({
   dolaMatch,
   directoryLoading,
   directoryError,
-  snapshot,
   totalAssessedForEstimate = null,
   levyDollarAssessedContext = null,
   dollarAudience,
@@ -571,6 +570,14 @@ export function LevyLineDistrictDetailDialog({
     dolaMatch?.matchedLegalName &&
     normalizeLabel(match.record.name) !==
       normalizeLabel(dolaMatch.matchedLegalName);
+
+  const contactLgIdForCommonName =
+    dolaMatch?.lgId ??
+    (match && match.kind !== "none" ? match.record.lgId : null);
+  const contactCommonNameGloss = districtCommonNameGloss({
+    lgId: contactLgIdForCommonName,
+    legalName: primaryDisplayName,
+  });
 
   const contactGovernmentKind = levyGovernmentContactKind(
     authorityLabel,
@@ -983,6 +990,11 @@ export function LevyLineDistrictDetailDialog({
                   <p className="mt-2 font-semibold leading-snug text-slate-900 sm:text-lg">
                     {primaryDisplayName}
                   </p>
+                  {contactCommonNameGloss ? (
+                    <p className="mt-1 text-sm leading-snug text-slate-600">
+                      {contactCommonNameGloss.line}
+                    </p>
+                  ) : null}
                   {directoryNameDiffers && match ? (
                     <p className="mt-1 text-sm text-slate-600">
                       District directory lists: {match.record.name}
@@ -1164,12 +1176,6 @@ export function LevyLineDistrictDetailDialog({
                             ))}
                           </address>
                         </div>
-                      ) : null}
-                      {snapshot ? (
-                        <p className="mt-3 text-xs text-slate-500">
-                          Contact info as of {snapshot.bundledAsOf}
-                          {snapshot.sourceCsv ? ` (${snapshot.sourceCsv})` : ""}
-                        </p>
                       ) : null}
                       {!lgIdConflict && hasDirectoryContactInfo ? (
                         <p className="mt-2 text-xs leading-relaxed text-slate-600">

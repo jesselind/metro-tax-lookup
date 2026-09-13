@@ -269,7 +269,9 @@ export function DouglasSourcesMethodology() {
         is the strongest link to that directory, but Contact can still open when
         only the authority name matches closely enough, or when DOLA
         property-tax entities supply a tax entity or legal name without a
-        directory row yet. Many Douglas authorities (county government, school
+        directory row yet. Contact titles keep the state legal name; when a
+        curated everyday name differs, a short also-known-as line appears under
+        the title. Many Douglas authorities (county government, school
         district funds, and similar) have no LG ID on the join; this site does
         not invent a directory row for them. When a stack LG ID is missing from
         both the LG directory export and the Property Tax Entities fallback, that gap stays

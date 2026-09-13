@@ -172,6 +172,9 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   // summary a11y role varies by engine; click the disclosure control directly.
   await onThisPage.locator("summary").click();
   await expect(
+    onThisPage.getByRole("button", { name: "Summary" }),
+  ).toBeVisible();
+  await expect(
     onThisPage.getByRole("button", { name: "Property details" }),
   ).toBeVisible();
   await expect(

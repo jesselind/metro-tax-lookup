@@ -12,6 +12,7 @@ import {
   type SpecialDistrictDirectoryFile,
   type SpecialDistrictRecord,
 } from "@/lib/specialDistrictMatch";
+import { districtCommonNameGloss } from "@/content/districtCommonNames";
 
 function shippedDirectory(): SpecialDistrictDirectoryFile {
   const path = join(
@@ -25,6 +26,14 @@ function shippedDouglasStacks(): CountyLevyStacksFile {
   const path = join(
     process.cwd(),
     "public/data/douglas-levy-stacks-by-tag-id.json",
+  );
+  return JSON.parse(readFileSync(path, "utf8")) as CountyLevyStacksFile;
+}
+
+function shippedArapahoeStacks(): CountyLevyStacksFile {
+  const path = join(
+    process.cwd(),
+    "public/data/arapahoe-levy-stacks-by-tag-id.json",
   );
   return JSON.parse(readFileSync(path, "utf8")) as CountyLevyStacksFile;
 }
@@ -87,6 +96,15 @@ describe("matchSpecialDistrict preferredLgId", () => {
     if (wrongPreferred.kind === "none") return;
     expect(wrongPreferred.record.lgId).toBe("64108");
     expect(wrongPreferred.record.websiteUrl).toBe("https://www.southmetro.org");
+  });
+
+  it("does not fuzzy-fallback when preferredLgId is set but missing from directory", () => {
+    const match = matchSpecialDistrict(
+      "Aurora School Dist # 28J",
+      FIXTURE_DISTRICTS,
+      { preferredLgId: "64907" },
+    );
+    expect(match.kind).toBe("none");
   });
 
   it("fuzzy-matches West Metro when preferredLgId is absent", () => {
@@ -176,5 +194,85 @@ describe("Phase 16 shipped Douglas West Metro Contact alignment", () => {
       }
     }
     expect(checked).toBeGreaterThan(0);
+  });
+});
+
+describe("Arapahoe Aurora school Contact alignment", () => {
+  it("AUTH 0801 stack lines join Adams-Arapahoe lgId 64907, not Byers 64908", () => {
+    const stacks = shippedArapahoeStacks();
+    const lines0801: Array<{
+      tagId: string;
+      authorityName: string;
+      lgId: string | null | undefined;
+      taxEntityId: string | null | undefined;
+      mills: number | null | undefined;
+    }> = [];
+    for (const stack of Object.values(stacks.stacksByTagId)) {
+      for (const line of stack.lines) {
+        if (line.code !== "0801") continue;
+        lines0801.push({
+          tagId: stack.tagId,
+          authorityName: line.authorityName,
+          lgId: line.dolaMatch?.lgId,
+          taxEntityId: line.dolaMatch?.taxEntityId,
+          mills:
+            typeof line.dolaMatch?.mills === "number"
+              ? line.dolaMatch.mills
+              : null,
+        });
+      }
+    }
+    expect(lines0801.length).toBeGreaterThan(0);
+    for (const row of lines0801) {
+      expect(row.authorityName.toUpperCase()).toContain("AURORA SCHOOL");
+      expect(row.taxEntityId).toBe("64907/1");
+      expect(row.lgId).toBe("64907");
+      expect(row.lgId).not.toBe("64908");
+      expect(row.mills).toBeCloseTo(73.186, 3);
+    }
+  });
+
+  it("Contact directory match for each 0801 line uses Adams-Arapahoe, not Byers", () => {
+    const stacks = shippedArapahoeStacks();
+    const directory = shippedDirectory();
+    const byLg = new Map(
+      directory.districts.map((d) => [d.lgId.trim(), d] as const),
+    );
+    expect(byLg.get("64907")?.name.toLowerCase()).toContain("adams-arapahoe");
+    expect(byLg.get("64908")?.name.toLowerCase()).toContain("byers");
+
+    let checked = 0;
+    for (const stack of Object.values(stacks.stacksByTagId)) {
+      for (const line of stack.lines) {
+        if (line.code !== "0801") continue;
+        const preferred = line.dolaMatch?.lgId ?? null;
+        const match = matchSpecialDistrict(
+          line.authorityName,
+          directory.districts,
+          { preferredLgId: preferred },
+        );
+        expect(match.kind).toBe("lgId");
+        if (match.kind === "none") continue;
+        expect(match.record.lgId).toBe("64907");
+        expect(match.record.lgId).toBe(preferred);
+        expect(match.record.websiteUrl?.toLowerCase()).toContain("aurorak12");
+        expect(match.record.websiteUrl?.toLowerCase()).not.toContain(
+          "byers32j",
+        );
+        expect(match.record.websiteUrl?.toLowerCase()).not.toContain("aps.k12");
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it("curated common-name gloss fires for LG 64907 legal title", () => {
+    const directory = shippedDirectory();
+    const legal =
+      directory.districts.find((d) => d.lgId.trim() === "64907")?.name ?? "";
+    const gloss = districtCommonNameGloss({ lgId: "64907", legalName: legal });
+    expect(legal.toLowerCase()).toContain("adams-arapahoe");
+    expect(gloss?.commonName).toBe("Aurora Public Schools");
+    expect(gloss?.line).toContain("Also known as Aurora Public Schools.");
   });
 });

@@ -39,7 +39,11 @@ export const HOME_NOV_COMPS_SECTION_ID = "home-nov-comps-grid";
 /** Heading inside the comps section (aria / existing id). */
 export const HOME_NOV_COMPS_HEADING_ID = "home-nov-comps-grid-heading";
 
+/** Home `<main id="page-top">` — same focus target as Back to top. */
+export const HOME_PAGE_TOP_ID = "page-top";
+
 export type HomeDashboardJumpId =
+  | "top"
   | "levies"
   | "property-details"
   | "county-compare"
@@ -53,6 +57,9 @@ export const HOME_DASHBOARD_JUMP_START_OVER_LABEL = "START OVER";
 
 /** Visible summary label for the locked-report TOC disclosure. */
 export const HOME_DASHBOARD_JUMP_SUMMARY_LABEL = "Jump to a section";
+
+/** First Jump to… row: summary tiles at the top of the locked report (scroll/focus #page-top). */
+export const HOME_DASHBOARD_JUMP_TOP_LABEL = "Summary";
 
 export type HomeDashboardJump = {
   id: HomeDashboardJumpId;
@@ -72,12 +79,20 @@ export type HomeDashboardJumpFlags = {
 };
 
 /**
- * Build gated Jump to… options in page order. Omit any section that is not mounted.
+ * Build gated Jump to… options in page order. Always leads with Summary
+ * (home {@link HOME_PAGE_TOP_ID}; summary tiles sit at the top of the report).
+ * Omit any section that is not mounted.
  */
 export function buildHomeDashboardJumps(
   flags: HomeDashboardJumpFlags,
 ): HomeDashboardJump[] {
-  const jumps: HomeDashboardJump[] = [];
+  const jumps: HomeDashboardJump[] = [
+    {
+      id: "top",
+      label: HOME_DASHBOARD_JUMP_TOP_LABEL,
+      focusId: HOME_PAGE_TOP_ID,
+    },
+  ];
   if (flags.showLevies) {
     jumps.push({
       id: "levies",

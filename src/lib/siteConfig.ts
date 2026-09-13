@@ -18,7 +18,7 @@ import { safeSiteOrigin } from "@/lib/safeSiteOrigin";
  * Before you ship a fork, you MUST review and either replace or null out every
  * `campaign*` field below. Leaving another candidate's campaign URL, disclosure
  * copy, or "Paid for by" line on a redeployed fork is incorrect and misleading.
- * Home/footer/privacy UI reads these values; do not hardcode a different
+ * Footer/privacy UI reads these values; do not hardcode a different
  * campaign elsewhere. Ephemeral multi-county notes can go in `docs/_working/`
  * (gitignored).
  * ---------------------------------------------------------------------------
@@ -42,7 +42,7 @@ export const SITE_CONFIG = {
 
   /**
    * FORK REQUIRED. Public campaign / candidate site.
-   * Set to `null` to hide home/footer/privacy campaign links.
+   * Set to `null` to hide footer/privacy campaign links.
    */
   campaignSiteUrl: "https://jesselindforassessor.com/" as string | null,
 
@@ -54,17 +54,10 @@ export const SITE_CONFIG = {
 
   /**
    * FORK REQUIRED with {@link SITE_CONFIG.campaignSiteUrl}.
-   * Full label for the home landing outline control (entire control is the link).
+   * Full label for the sitewide footer outline control (entire control is the link).
    */
   campaignHomeDisclosureLabel:
     "Built by Jesse Lind for his Arapahoe County Assessor campaign",
-
-  /**
-   * FORK REQUIRED with {@link SITE_CONFIG.campaignSiteUrl}.
-   * Footer sentence split so the linked phrase stays configurable.
-   */
-  campaignFooterDisclosureBeforeLink: "Built by Jesse Lind for his",
-  campaignFooterDisclosureLinkText: "Arapahoe County Assessor campaign",
 
   /**
    * FORK REQUIRED. Colorado-style "Paid for by..." line at the very bottom of

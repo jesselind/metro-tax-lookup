@@ -21,6 +21,11 @@ Inputs:
     used only when a referenced LGID is missing from the LG directory export (name-only fallback row).
     Use --certifying-county (repeatable) to match that CSV's certifying county column
     (default: Arapahoe and Douglas).
+  - Curated website overrides (default: tools/district_directory_website_overrides.json):
+    LG ID → public https websiteUrl when DOLA's Website URL is broken or wrong.
+    Same role as tools/arapahoe_dola_authority_overrides.json for mill join: tracked curated
+    input, not generated. After editing overrides: npm run build:district-directory, then bump
+    SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST in src/lib/specialDistrictMatch.ts.
 
 Usage:
   python3 tools/build_district_directory_from_lg_export.py
@@ -58,6 +63,76 @@ from dola_lgis_property_tax_entities_csv import (  # noqa: E402
 )
 from website_normalize import normalize_website  # noqa: E402
 
+DEFAULT_WEBSITE_OVERRIDES = _TOOLS / "district_directory_website_overrides.json"
+
+
+def load_website_overrides(path: Path) -> dict[str, dict[str, Any]]:
+    """
+    Load curated Contact website corrections keyed by DOLA LG ID.
+
+    File shape: ``{ "byLgId": { "<lgId>": { "websiteUrl": "...", "note": "..." } } }``.
+    ``note`` is maintainer-only (not copied into shipping district rows).
+    Empty dict if the path is missing (tests may pass a temp file).
+    """
+    if not path.is_file():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    raw = data.get("byLgId") or {}
+    out: dict[str, dict[str, Any]] = {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"{path}: byLgId must be an object")
+    for lg_raw, entry in raw.items():
+        if str(lg_raw).startswith("_"):
+            continue
+        if not isinstance(entry, dict):
+            raise ValueError(f"{path}: byLgId[{lg_raw!r}] must be an object")
+        nid = normalize_lg_id_key(str(lg_raw))
+        if not nid:
+            raise ValueError(f"{path}: invalid LG ID key {lg_raw!r}")
+        if "websiteUrl" not in entry:
+            raise ValueError(f"{path}: byLgId[{nid}] missing websiteUrl")
+        new_url = normalize_website(str(entry.get("websiteUrl") or ""))
+        if not new_url:
+            raise ValueError(f"{path}: byLgId[{nid}] websiteUrl is empty/NA")
+        if not new_url.lower().startswith("https://"):
+            raise ValueError(
+                f"{path}: byLgId[{nid}] websiteUrl must be https:// (got {new_url!r})"
+            )
+        out[nid] = {
+            "websiteUrl": new_url,
+            "note": entry.get("note"),
+        }
+    return out
+
+
+def apply_website_overrides(
+    districts: list[dict[str, Any]],
+    overrides: dict[str, dict[str, Any]],
+) -> tuple[list[dict[str, str | None]], list[str]]:
+    """
+    Apply curated websiteUrl overrides in place.
+
+    Returns ``(applied, unused_lg_ids)`` where each applied row is
+    ``{lgId, fromUrl, toUrl}`` and unused_lg_ids are override keys with no
+    matching directory row (stale override or LG not on shipping stacks).
+    """
+    present = {str(d.get("lgId") or "").strip() for d in districts}
+    unused = sorted(lg for lg in overrides if lg not in present)
+    applied: list[dict[str, str | None]] = []
+    for row in districts:
+        lg = str(row.get("lgId") or "").strip()
+        ovr = overrides.get(lg)
+        if not ovr:
+            continue
+        new_url = str(ovr["websiteUrl"])
+        old_url = row.get("websiteUrl")
+        old_s = str(old_url) if old_url is not None else None
+        if old_s == new_url:
+            continue
+        row["websiteUrl"] = new_url
+        applied.append({"lgId": lg, "fromUrl": old_s, "toUrl": new_url})
+    applied.sort(key=lambda r: str(r["lgId"]))
+    return applied, unused
 
 def normalize_mailing_field(raw: str | None) -> str | None:
     """Trim LG export noise: empty/NA, trailing commas and spaces on addresses."""
@@ -177,12 +252,14 @@ def build_directory_payload(
     levy_stacks: list[Path],
     property_tax_entities: Path,
     certifying_counties: list[str],
+    website_overrides_path: Path | None = None,
 ) -> dict[str, Any]:
     """
     Filter LG export rows to the union of LGIDs on the given levy stacks.
 
     Adds name-only fallback rows from the Property Tax Entities CSV when an LGID
     is referenced on stacks but missing from the LG directory export.
+    Applies curated website overrides last (broken or stale DOLA Website URL cells).
     """
     if not lg_csv.is_file():
         raise FileNotFoundError(f"LG CSV not found: {lg_csv}")
@@ -223,6 +300,16 @@ def build_directory_payload(
     missing = still_missing
     filtered.sort(key=lambda d: (d["lgId"], d["name"]))
 
+    ovr_path = (
+        website_overrides_path
+        if website_overrides_path is not None
+        else DEFAULT_WEBSITE_OVERRIDES
+    )
+    website_overrides = load_website_overrides(ovr_path)
+    website_overrides_applied, website_overrides_unused = apply_website_overrides(
+        filtered, website_overrides
+    )
+
     bundled_date = date.today().isoformat()
     export_stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     stacks_label = ", ".join(stack_names)
@@ -237,6 +324,11 @@ def build_directory_payload(
         snapshot_source = (
             "DOLA LG tabular export, filtered to LGIDs referenced in bundled levy stacks "
             f"({stacks_label})."
+        )
+    if website_overrides_applied:
+        snapshot_source += (
+            " Curated website URL overrides applied for known-bad DOLA Website URL cells "
+            f"({ovr_path.name})."
         )
 
     return {
@@ -258,6 +350,9 @@ def build_directory_payload(
             "directoryRowCount": len(filtered),
             "lgIdsFilledFromPropertyTaxEntities": sorted(filled_from_pt),
             "missingLgIdsInExport": missing,
+            "websiteOverridesFile": ovr_path.name if ovr_path.is_file() else None,
+            "websiteOverridesApplied": website_overrides_applied,
+            "websiteOverridesUnusedLgIds": website_overrides_unused,
         },
         "districtCount": len(filtered),
         "districts": filtered,
@@ -308,6 +403,15 @@ def main() -> None:
             "Default: Arapahoe and Douglas."
         ),
     )
+    ap.add_argument(
+        "--website-overrides",
+        type=Path,
+        default=DEFAULT_WEBSITE_OVERRIDES,
+        help=(
+            "Curated LG-ID → websiteUrl JSON (default: tools/district_directory_website_overrides.json). "
+            "Applied after LG export + Property Tax Entities fallback. Pass a missing path to skip."
+        ),
+    )
     args = ap.parse_args()
 
     levy_stacks = args.levy_stacks if args.levy_stacks else list(DEFAULT_LEVY_STACKS)
@@ -323,6 +427,7 @@ def main() -> None:
             levy_stacks=levy_stacks,
             property_tax_entities=args.property_tax_entities,
             certifying_counties=certifying_counties,
+            website_overrides_path=args.website_overrides,
         )
     except (FileNotFoundError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
@@ -334,6 +439,21 @@ def main() -> None:
             f"{missing[:20]}{'...' if len(missing) > 20 else ''}",
             file=sys.stderr,
         )
+    unused_ovr = out_obj["_meta"].get("websiteOverridesUnusedLgIds") or []
+    if unused_ovr:
+        print(
+            "Warning: website override LGID(s) not present in filtered directory "
+            f"(stale override or LG not on shipping stacks): {unused_ovr}",
+            file=sys.stderr,
+        )
+    applied_ovr = out_obj["_meta"].get("websiteOverridesApplied") or []
+    if applied_ovr:
+        for row in applied_ovr:
+            print(
+                f"Website override LG {row.get('lgId')}: "
+                f"{row.get('fromUrl')!r} → {row.get('toUrl')!r}",
+                file=sys.stderr,
+            )
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out_obj, indent=2) + "\n", encoding="utf-8")

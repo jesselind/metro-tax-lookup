@@ -34,6 +34,14 @@ export function SiteFooter() {
       <div
         className={`mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-6 text-sm text-slate-800 sm:text-base`}
       >
+        {hasCampaignSiteLink() ? (
+          <div className="mb-5 flex justify-center">
+            {/* FORK REQUIRED: SITE_CONFIG.campaignHomeDisclosureLabel + campaignSiteUrl */}
+            <CampaignSiteLink variant="outline">
+              {SITE_CONFIG.campaignHomeDisclosureLabel}
+            </CampaignSiteLink>
+          </div>
+        ) : null}
         <p className="text-center text-sm leading-relaxed text-slate-800 sm:text-base">
           Not affiliated with any county government. This is an independent
           educational tool for taxpayers. It uses publicly available data from
@@ -99,17 +107,6 @@ export function SiteFooter() {
             Privacy
           </Link>{" "}
           page.
-          {hasCampaignSiteLink() ? (
-            <>
-              {" "}
-              {/* FORK REQUIRED: copy from SITE_CONFIG.campaignFooterDisclosure* */}
-              {SITE_CONFIG.campaignFooterDisclosureBeforeLink}{" "}
-              <CampaignSiteLink>
-                {SITE_CONFIG.campaignFooterDisclosureLinkText}
-              </CampaignSiteLink>
-              .
-            </>
-          ) : null}
         </p>
         <GitHubRepoButton />
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
