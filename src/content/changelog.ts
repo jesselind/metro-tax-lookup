@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.14.3",
+    date: "2026-09-14",
+    title:
+      "Douglas KNOWN ISSUE banner; comps Coming soon; honesty on tax-year/estimate issues",
+    highlights: [
+      "Douglas locked report: amber KNOWN ISSUE banner under Jump to a section (not sticky; Jump to stays the only stuck chrome). Reusable KnownIssueBanner / KnownIssueCallout shells; Douglas copy states tax year labels and estimated property tax can disagree with the Assessor site; Sources deep link + county property-page guidance.",
+      "CountyConfig.features.propertyDataAccuracyWarning (Douglas on, Arapahoe off). Matching amber callout on /sources Douglas methodology (#county-property-data-accuracy-warning). Not COUNTY DATA GAP and not sky Coming soon.",
+      "Douglas Comparable properties: compsPdfInProgress Coming soon tile + /sources soft note while comps PDF URL is unwired (compsPdf stays false).",
+      "Known follow-ups (not this release): align Douglas tax-year stamp with shipped values; split-rate estimated tax vs Tax Calculation worksheets; county-parity gates so year/dollar mismatches fail tests.",
+    ],
+  },
+  {
     version: "5.14.2",
     date: "2026-09-13",
     title:

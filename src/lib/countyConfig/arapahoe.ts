@@ -88,6 +88,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     parcelRecordShards: true,
     valuationHistoryShards: false,
     compsPdf: true,
+    compsPdfInProgress: false,
     bpp: true,
     millsHistory: true,
     metroPurposes: true,
@@ -95,6 +96,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     priorYearValuesInProgress: false,
     dataMartRefreshGap: true,
     millPdfTaxDistrictGap: false,
+    propertyDataAccuracyWarning: false,
   },
   knownFailures: {
     compsPdfHostedFiles: true,

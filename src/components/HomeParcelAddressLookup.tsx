@@ -44,6 +44,7 @@ import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
+import { CountyCompsPdfInProgressPopover } from "@/components/CountyCompsPdfInProgressPopover";
 import { CountyPriorYearValuesInProgressPopover } from "@/components/CountyPriorYearValuesInProgressPopover";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
@@ -64,7 +65,7 @@ import {
   HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
   HOME_FEEDBACK_ASIDE_ID,
   HOME_PROPERTY_DETAILS_ID,
-  type HomeDashboardJump,
+  type HomeLockedUtilityNav,
 } from "@/lib/homeDashboardJumps";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import {
@@ -276,10 +277,11 @@ export type HomeParcelAddressLookupProps = {
   /** Fires when Own | Rent changes (landing intro copy follows the lens). */
   onAudienceModeChange?: (mode: AudienceMode) => void;
   /**
-   * Locked report only: Jump to… destinations for the sticky utility bar.
-   * {@code null} when unlocked (bar hidden). Hero Start over stays on PageHero while viewing.
+   * Locked report only: Jump to… destinations (+ Douglas accuracy banner flag)
+   * for the sticky utility chrome. {@code null} when unlocked (bar hidden).
+   * Hero Start over stays on PageHero while viewing.
    */
-  onLockedUtilityNavChange?: (jumps: HomeDashboardJump[] | null) => void;
+  onLockedUtilityNavChange?: (nav: HomeLockedUtilityNav | null) => void;
 };
 
 export function HomeParcelAddressLookup({
@@ -421,6 +423,10 @@ export function HomeParcelAddressLookup({
     activeCountyConfig,
   );
   const activeCompsGap = activeCompsPresentation === "gap";
+  const activeCompsPdfInProgress = countyFeatureAvailable(
+    "compsPdfInProgress",
+    activeCountyConfig,
+  );
   const activePriorYearValuesGap = countyFeatureAvailable(
     "priorYearValuesGap",
     activeCountyConfig,
@@ -1470,16 +1476,23 @@ export function HomeParcelAddressLookup({
   const showInAppCompsJump =
     levyReadyForSummary && isDemoMode && !isRentMode;
 
-  const lockedUtilityJumps = useMemo((): HomeDashboardJump[] | null => {
+  const lockedUtilityNav = useMemo((): HomeLockedUtilityNav | null => {
     if (!addressSearchLocked) return null;
-    return buildHomeDashboardJumps({
-      showLevies: showHomeLevyBreakdownRegion,
-      showPropertyDetails: showPropertyDetailsColumn,
-      showCountyCompare: showCountyCompareSection,
-      showInAppComps: showInAppCompsJump,
-      showFeedback: showHomeAccuracyFeedbackAside,
-      countyDisplayName: activeCountyConfig.displayName,
-    });
+    return {
+      jumps: buildHomeDashboardJumps({
+        showLevies: showHomeLevyBreakdownRegion,
+        showPropertyDetails: showPropertyDetailsColumn,
+        showCountyCompare: showCountyCompareSection,
+        showInAppComps: showInAppCompsJump,
+        showFeedback: showHomeAccuracyFeedbackAside,
+        countyDisplayName: activeCountyConfig.displayName,
+      }),
+      propertyDataAccuracyWarning: countyFeatureAvailable(
+        "propertyDataAccuracyWarning",
+        activeCountyConfig,
+      ),
+      countyId: activeCountyConfig.id,
+    };
   }, [
     addressSearchLocked,
     showHomeLevyBreakdownRegion,
@@ -1487,15 +1500,15 @@ export function HomeParcelAddressLookup({
     showCountyCompareSection,
     showInAppCompsJump,
     showHomeAccuracyFeedbackAside,
-    activeCountyConfig.displayName,
+    activeCountyConfig,
   ]);
 
   useEffect(() => {
-    onLockedUtilityNavChange?.(lockedUtilityJumps);
+    onLockedUtilityNavChange?.(lockedUtilityNav);
     return () => {
       onLockedUtilityNavChange?.(null);
     };
-  }, [lockedUtilityJumps, onLockedUtilityNavChange]);
+  }, [lockedUtilityNav, onLockedUtilityNavChange]);
 
   const propertyDetailsBundledLabel = useMemo(() => {
     if (!parcelRecordBundledAsOf) return null;
@@ -2679,28 +2692,46 @@ export function HomeParcelAddressLookup({
             levyLoadedMeta &&
             !isRentMode &&
             !isBusinessPersonalAccount &&
-            activeCompsPresentation !== "omit" ? (
+            (activeCompsPdfInProgress ||
+              activeCompsPresentation !== "omit") ? (
               <div
                 className={
-                  homeCompsGridPdfHref &&
-                  activeCompsGap
-                    ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
-                    : homeCompsGridPdfHref
-                      ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
-                      : PARCEL_SUMMARY_TILE_CLASS_POPOVER
+                  activeCompsPdfInProgress
+                    ? PARCEL_SUMMARY_TILE_CLASS_POPOVER
+                    : homeCompsGridPdfHref &&
+                        activeCompsGap
+                      ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
+                      : homeCompsGridPdfHref
+                        ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
+                        : PARCEL_SUMMARY_TILE_CLASS_POPOVER
                 }
                 id="home-parcel-comps-pdf"
               >
                 <div
                   className={
+                    !activeCompsPdfInProgress &&
                     homeCompsGridPdfHref &&
                     activeCompsGap
                       ? `${COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS} relative`
                       : PARCEL_SUMMARY_TILE_BODY_CLASS
                   }
                 >
-                  {homeCompsGridPdfHref &&
-                  activeCompsGap ? (
+                  {activeCompsPdfInProgress ? (
+                    <>
+                      <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
+                        <ParcelGlossaryPopoverTrigger
+                          termId="term-comps"
+                          textTrigger="Comparable properties"
+                          textTriggerId="comps-pdf-term-first"
+                          ariaLabel="Brief definition of comparable properties and the county PDF."
+                        />
+                      </div>
+                      <CountyCompsPdfInProgressPopover
+                        countyId={activeCountyConfig.id}
+                      />
+                    </>
+                  ) : homeCompsGridPdfHref &&
+                    activeCompsGap ? (
                     // TODO(comps-pdf-hosted-unavailable): Flip activeCountyConfig.knownFailures.compsPdfHostedFiles to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
                     <CountyCompsPdfHelpPopover
                       ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}

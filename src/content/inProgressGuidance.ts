@@ -18,4 +18,5 @@ export const IN_PROGRESS_CALLOUT_TITLE = "IN PROGRESS";
  */
 export const IN_PROGRESS_SOURCES_ANCHOR = {
   priorYearValues: "county-prior-year-values-in-progress",
+  compsPdf: "county-comps-pdf-in-progress",
 } as const;

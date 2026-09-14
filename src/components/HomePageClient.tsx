@@ -6,6 +6,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DouglasPropertyDataAccuracyKnownIssueBanner } from "@/content/douglasPropertyDataAccuracyKnownIssueBanner";
 import { HomeDashboardUtilityBar } from "@/components/HomeDashboardUtilityBar";
 import { HomeParcelAddressLookup } from "@/components/HomeParcelAddressLookup";
 import { PageHero } from "@/components/PageHero";
@@ -14,7 +15,7 @@ import {
   DEFAULT_AUDIENCE_MODE,
   type AudienceMode,
 } from "@/lib/audienceMode";
-import type { HomeDashboardJump } from "@/lib/homeDashboardJumps";
+import type { HomeLockedUtilityNav } from "@/lib/homeDashboardJumps";
 import {
   HOME_LANDING_INTRO_CLASS,
   HOME_LANDING_INTRO_LINE_CLASS,
@@ -28,9 +29,8 @@ const START_OVER_ARIA_LABEL =
 
 export function HomePageClient() {
   const [viewingParcel, setViewingParcel] = useState(false);
-  const [lockedUtilityJumps, setLockedUtilityJumps] = useState<
-    HomeDashboardJump[] | null
-  >(null);
+  const [lockedUtilityNav, setLockedUtilityNav] =
+    useState<HomeLockedUtilityNav | null>(null);
   const [audienceMode, setAudienceMode] = useState<AudienceMode>(
     DEFAULT_AUDIENCE_MODE,
   );
@@ -47,8 +47,8 @@ export function HomePageClient() {
   );
 
   const handleLockedUtilityNavChange = useCallback(
-    (jumps: HomeDashboardJump[] | null) => {
-      setLockedUtilityJumps(jumps);
+    (nav: HomeLockedUtilityNav | null) => {
+      setLockedUtilityNav(nav);
     },
     [],
   );
@@ -57,7 +57,7 @@ export function HomePageClient() {
     setAudienceMode(mode);
   }, []);
 
-  const showLockedUtilityBar = lockedUtilityJumps != null;
+  const showLockedUtilityBar = lockedUtilityNav != null;
   const showHeroStartOver = viewingParcel;
 
   const prevViewingParcelRef = useRef(false);
@@ -131,11 +131,17 @@ export function HomePageClient() {
             </p>
           ) : null}
         </div>
-        {showLockedUtilityBar ? (
+        {showLockedUtilityBar && lockedUtilityNav ? (
           <HomeDashboardUtilityBar
-            jumps={lockedUtilityJumps}
+            jumps={lockedUtilityNav.jumps}
             onStartOver={onStartOver}
             jumpSummaryRef={jumpSummaryRef}
+          />
+        ) : null}
+        {showLockedUtilityBar &&
+        lockedUtilityNav?.propertyDataAccuracyWarning ? (
+          <DouglasPropertyDataAccuracyKnownIssueBanner
+            countyId={lockedUtilityNav.countyId}
           />
         ) : null}
         {/*
