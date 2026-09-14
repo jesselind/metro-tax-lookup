@@ -54,6 +54,36 @@ export const HOME_DASHBOARD_UTILITY_BAR_CLASS =
 /** Inner column: same horizontal inset as {@link PAGE_HERO_INNER_CLASS}; height from the control row. */
 export const HOME_DASHBOARD_UTILITY_BAR_INNER_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} items-center px-4 sm:px-5`;
 
+/**
+ * Amber KNOWN ISSUE locked-report banner (under Jump to…). Not sticky: scrolls
+ * with the report so mobile keeps Jump to as the only stuck chrome. Reusable
+ * shell; pass incident copy as {@link KnownIssueBanner} children.
+ * `-mt-4` cancels parent {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4` so the
+ * banner sits flush under Jump to (no hairline border; amber fill only).
+ */
+export const KNOWN_ISSUE_BANNER_CLASS =
+  "-mt-4 w-screen max-w-[100vw] ml-[calc(50%-50vw)] bg-amber-300 text-amber-950";
+
+export const KNOWN_ISSUE_BANNER_INNER_CLASS = `mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-2.5 sm:px-5 sm:py-3`;
+
+export const KNOWN_ISSUE_BANNER_BODY_CLASS =
+  "mt-1 text-sm font-medium leading-snug text-amber-950 sm:text-[0.9375rem]";
+
+export const KNOWN_ISSUE_LINK_CLASS =
+  "font-semibold text-amber-950 underline decoration-amber-800/70 underline-offset-2 hover:decoration-amber-950";
+
+/** /sources (and other article) amber KNOWN ISSUE callout surface. */
+export const KNOWN_ISSUE_CALLOUT_SURFACE_CLASS =
+  "rounded-md border border-amber-600/50 bg-amber-50";
+
+export const KNOWN_ISSUE_HEADER_TO_BODY_GAP_CLASS = "mt-2.5";
+
+/** Header + body column for KNOWN ISSUE callouts. */
+export const KNOWN_ISSUE_STACK_CLASS = `flex flex-col ${KNOWN_ISSUE_HEADER_TO_BODY_GAP_CLASS}`;
+
+export const KNOWN_ISSUE_CALLOUT_BODY_CLASS =
+  "text-base font-normal leading-relaxed text-amber-950 sm:text-lg sm:leading-relaxed";
+
 /** Native `<details className="group">` so the chevron can use `group-open:rotate-180`. */
 export const HOME_DASHBOARD_JUMP_DETAILS_CLASS = "group w-full min-w-0";
 

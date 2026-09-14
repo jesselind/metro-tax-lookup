@@ -68,6 +68,15 @@ export type HomeDashboardJump = {
   highlightId?: string;
 };
 
+/** Jump destinations for the locked-report sticky utility chrome. */
+export type HomeLockedUtilityNav = {
+  jumps: HomeDashboardJump[];
+  /** Amber Douglas KNOWN ISSUE banner under Jump to… (scrolls with report). */
+  propertyDataAccuracyWarning: boolean;
+  /** Wired county id when locked (Sources deep link). */
+  countyId: string;
+};
+
 export type HomeDashboardJumpFlags = {
   showLevies: boolean;
   showPropertyDetails: boolean;

@@ -6,8 +6,11 @@
 import Link from "next/link";
 import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
 import { InProgressCallout } from "@/components/InProgressCallout";
+import { KnownIssueCallout } from "@/components/KnownIssueCallout";
 import { CountyPriorYearValuesGapNote } from "@/content/countyPriorYearValuesGapNote";
 import { CountyPriorYearValuesInProgressNote } from "@/content/countyPriorYearValuesInProgressNote";
+import { CountyCompsPdfInProgressNote } from "@/content/countyCompsPdfInProgressNote";
+import { DouglasPropertyDataAccuracyWarningSourcesNote } from "@/content/douglasPropertyDataAccuracyWarningNote";
 import {
   DOUGLAS_ASSESSOR_DATA_DOWNLOADS_URL,
   DOUGLAS_ASSESSOR_TAXING_AUTHORITIES_URL,
@@ -16,6 +19,7 @@ import {
   DouglasMillPdfTaxDistrictGapNote,
 } from "@/content/douglasCountyDataGapNote";
 import { IN_PROGRESS_SOURCES_ANCHOR } from "@/content/inProgressGuidance";
+import { KNOWN_ISSUE_SOURCES_ANCHOR } from "@/content/knownIssueGuidance";
 import { COUNTY_SERVICE_GAP_SOURCES_ANCHOR } from "@/content/countyServiceGapGuidance";
 import {
   DOUGLAS_COUNTY_CONFIG,
@@ -25,6 +29,8 @@ import { DOLA_LGIS_PROPERTY_TAX_ENTITIES } from "@/lib/dataSourceUrls";
 import { glossaryTermHref } from "@/lib/glossary";
 import {
   CODE_INLINE_CLASS,
+  IN_PROGRESS_LINK_CLASS,
+  KNOWN_ISSUE_LINK_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 import { CountyMillHistoryPdfList, millHistoryYearSpan } from "./shared";
@@ -47,6 +53,19 @@ export function DouglasSourcesMethodology() {
       className={`${SOURCES_SECTION_WRAP} scroll-mt-8`}
     >
       <h2 className={SOURCES_SECTION_H2}>Douglas account lookup</h2>
+      {countyFeatureAvailable(
+        "propertyDataAccuracyWarning",
+        DOUGLAS_COUNTY_CONFIG,
+      ) ? (
+        <KnownIssueCallout
+          id={KNOWN_ISSUE_SOURCES_ANCHOR.douglasPropertyDataAccuracy}
+          className="scroll-mt-8"
+        >
+          <DouglasPropertyDataAccuracyWarningSourcesNote
+            linkClassName={KNOWN_ISSUE_LINK_CLASS}
+          />
+        </KnownIssueCallout>
+      ) : null}
       <p className="text-slate-700">
         On the{" "}
         <Link href="/" className={TERM_LINK_CLASS}>
@@ -224,6 +243,34 @@ export function DouglasSourcesMethodology() {
             countyId={DOUGLAS_COUNTY_CONFIG.id}
           />
         </CountyServiceGapCallout>
+      ) : null}
+      <p className="text-slate-700">
+        <strong className="font-semibold text-slate-900">
+          Comparable properties:
+        </strong>
+        {" "}
+        Douglas County publishes a comps PDF for each property. This site has
+        not wired a per-parcel download URL yet (
+        <code className={CODE_INLINE_CLASS}>compsPdf</code>
+        {" "}
+        stays off;
+        {" "}
+        <code className={CODE_INLINE_CLASS}>compsPdfInProgress</code>
+        {" "}
+        shows Coming soon on the home summary tile).
+      </p>
+      {countyFeatureAvailable(
+        "compsPdfInProgress",
+        DOUGLAS_COUNTY_CONFIG,
+      ) ? (
+        <InProgressCallout
+          id={IN_PROGRESS_SOURCES_ANCHOR.compsPdf}
+          className="scroll-mt-8"
+        >
+          <CountyCompsPdfInProgressNote
+            linkClassName={IN_PROGRESS_LINK_CLASS}
+          />
+        </InProgressCallout>
       ) : null}
 
       <h3 className={`${SOURCES_SECTION_H3} !mt-8`}>Levy stacks and mill PDF</h3>

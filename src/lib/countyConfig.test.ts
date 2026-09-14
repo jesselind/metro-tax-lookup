@@ -81,6 +81,7 @@ function scheduleCountyFixture(
       parcelRecordShards: false,
       valuationHistoryShards: false,
       compsPdf: false,
+      compsPdfInProgress: false,
       bpp: false,
       millsHistory: false,
       metroPurposes: false,
@@ -88,6 +89,7 @@ function scheduleCountyFixture(
       priorYearValuesInProgress: false,
       dataMartRefreshGap: false,
       millPdfTaxDistrictGap: false,
+      propertyDataAccuracyWarning: false,
     },
     knownFailures: {
       compsPdfHostedFiles: false,
@@ -132,6 +134,8 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(countyFeaturePresentation("compsPdf", DOUGLAS_COUNTY_CONFIG)).toBe(
       "omit",
     );
+    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfInProgress).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.compsPdfInProgress).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.parcelRecordShards).toBe(true);
     expect(
       countyFeaturePresentation("parcelRecordShards", DOUGLAS_COUNTY_CONFIG),
@@ -143,6 +147,12 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(DOUGLAS_COUNTY_CONFIG.features.valuationHistoryShards).toBe(true);
     expect(DOUGLAS_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.propertyDataAccuracyWarning).toBe(
+      true,
+    );
+    expect(ARAPAHOE_COUNTY_CONFIG.features.propertyDataAccuracyWarning).toBe(
+      false,
+    );
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
       false,
@@ -407,6 +417,27 @@ describe("validateCountyConfig resident-facing required fields", () => {
   it("accepts shipping Douglas config with metro purposes on", () => {
     expect(validateCountyConfig(DOUGLAS_COUNTY_CONFIG)).toBeNull();
     expect(DOUGLAS_COUNTY_CONFIG.features.metroPurposes).toBe(true);
+  });
+
+  it("rejects compsPdf with compsPdfInProgress", () => {
+    expect(
+      validateCountyConfig({
+        ...DOUGLAS_COUNTY_CONFIG,
+        features: {
+          ...DOUGLAS_COUNTY_CONFIG.features,
+          compsPdf: true,
+          compsPdfInProgress: true,
+        },
+        urls: {
+          ...DOUGLAS_COUNTY_CONFIG.urls,
+          compsPdf: {
+            host: "apps.douglas.co.us",
+            path: "/assessor/comps",
+            queryParam: "id",
+          },
+        },
+      }),
+    ).toMatch(/compsPdf and compsPdfInProgress are mutually exclusive/);
   });
 
   it("rejects blank emptyIdentifierMessage", () => {

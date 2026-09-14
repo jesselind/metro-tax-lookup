@@ -162,6 +162,9 @@ export function validateCountyConfig(config: CountyConfig): string | null {
   if (config.knownFailures.compsPdfHostedFiles && !config.features.compsPdf) {
     return "county config: compsPdfHostedFiles failure requires features.compsPdf";
   }
+  if (config.features.compsPdf && config.features.compsPdfInProgress) {
+    return "county config: compsPdf and compsPdfInProgress are mutually exclusive";
+  }
   if (
     config.features.priorYearValuesGap &&
     config.features.priorYearValuesInProgress

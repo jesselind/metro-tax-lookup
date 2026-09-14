@@ -235,9 +235,18 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(
       page.getByRole("button", { name: "Prior years missing" }),
     ).toHaveCount(0);
+    await expect(page.locator("#home-parcel-comps-pdf")).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Coming soon" }),
-    ).toHaveCount(0);
+      page.locator("#home-parcel-comps-pdf").getByRole("button", {
+        name: "Coming soon",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: /KNOWN ISSUE/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/may not match the Assessor site/i),
+    ).toBeVisible();
 
     await page
       .getByRole("button", {
@@ -288,6 +297,10 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(page.locator("#county-prior-year-values-in-progress")).toHaveCount(
       0,
     );
+    await expect(page.locator("#county-comps-pdf-in-progress")).toBeVisible();
+    await expect(
+      page.locator("#county-property-data-accuracy-warning"),
+    ).toBeVisible();
     await expect(page.getByText(/Realware detail JSON/i)).toBeVisible();
     await expect(page.getByText(/valuesByAbstractCode/i)).toBeVisible();
     await expect(

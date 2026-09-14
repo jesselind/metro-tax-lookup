@@ -81,6 +81,13 @@ export type CountyFeatures = {
    */
   valuationHistoryShards: boolean;
   compsPdf: boolean;
+  /**
+   * IN PROGRESS opt-in: sky **Coming soon** on Comparable properties while the
+   * county has a comps PDF product but this site has not wired `urls.compsPdf`
+   * yet. Mutually exclusive with {@link CountyFeatures.compsPdf} (gap hosting
+   * failure requires compsPdf, so it cannot combine with this flag either).
+   */
+  compsPdfInProgress: boolean;
   bpp: boolean;
   millsHistory: boolean;
   /**
@@ -112,6 +119,13 @@ export type CountyFeatures = {
    * COUNTY DATA GAP opt-in: mill PDF missing some tax-district numbers.
    */
   millPdfTaxDistrictGap: boolean;
+  /**
+   * Amber KNOWN ISSUE: locked-report banner (not sticky) under Jump to… +
+   * /sources note when this county's shipped figures can disagree with the
+   * Assessor site (tax year label, estimated property tax, etc.). Temporary
+   * honesty chrome until fixed.
+   */
+  propertyDataAccuracyWarning: boolean;
 };
 
 export type CountyFeatureKey = keyof CountyFeatures;

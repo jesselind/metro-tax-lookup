@@ -18,13 +18,13 @@ Do **not** put county-specific URLs or flags into `types.ts` / `helpers.ts` / `v
 
 | Layer | What it answers | Where it lives | Example |
 | --- | --- | --- | --- |
-| **1. County sources (product)** | Does this county have this *kind* of source at all? | `CountyConfig.features` (and URL templates) | `compsPdf: false` → omit Comparable properties control. `situs: false` → address search stays on screen but id-only path (`situsSearchOffMessage`). |
+| **1. County sources (product)** | Does this county have this *kind* of source at all? | `CountyConfig.features` (and URL templates) | `compsPdf: false` → omit Comparable properties unless `compsPdfInProgress` (sky Coming soon). `situs: false` → address search stays on screen but id-only path (`situsSearchOffMessage`). |
 | **2. County data failures (gap chrome)** | We have (or tried) a source and the county export/hosting failed the taxpayer in a way we must name. | Opt-in gap flags on `features` + `knownFailures` for hosting failures on an existing source | `priorYearValuesGap: true` → Prior years missing. `dataMartRefreshGap: true` → Assessor Data Mart incomplete refresh. `compsPdf` + `knownFailures.compsPdfHostedFiles` → comps tile COUNTY DATA GAP. |
 | **3. Runtime field presence** | Does *this loaded parcel* have a value for a row? | Bundled JSON / parcel-record shards | No owner string → omit that meta row. No assessed total → omit Assessed value chip. |
 
 **Layer 3 is not Layer 2.** Missing a field on one account is ordinary sparse data. COUNTY DATA GAP is a **county-level incident** we intentionally opt into, with dashboard + `/sources` copy that states what we tried and what is still missing.
 
-**Layer 2 is not Layer 1.** “Never had comps PDFs” → omit (`features.compsPdf` false). “Had comps PDFs; county FileDownload is broken” → show gap (`features.compsPdf` true + `knownFailures.compsPdfHostedFiles`).
+**Layer 2 is not Layer 1.** “Never had comps PDFs” → omit (`features.compsPdf` false, `compsPdfInProgress` false). “County has comps PDFs; this site has not wired the URL yet” → sky Coming soon (`compsPdfInProgress`). “Had comps PDFs; county FileDownload is broken” → show gap (`features.compsPdf` true + `knownFailures.compsPdfHostedFiles`).
 
 ## County search gate (locked 2026-08-29; UX refined 2026-08-29)
 
@@ -119,6 +119,8 @@ Defined in `src/lib/countyConfig/types.ts` (`CountyFeatures`). Extend the type w
 | `parcelRecordShards` | Lazy `{countyId}-parcel-record-by-pin` Property details shards |
 | `valuationHistoryShards` | Lazy `{countyId}-valuation-history-by-account` prior-year actual/assessed series (Douglas Realware extract) |
 | `compsPdf` | County comps PDF product |
+| `compsPdfInProgress` | IN PROGRESS (sky chrome, not red): county has comps PDFs but this site has not wired `urls.compsPdf` yet. Douglas on; Arapahoe false. Dashboard **Coming soon** badge + `/sources` soft callout. Module: `countyCompsPdfInProgressNote.tsx`. Mutually exclusive with `compsPdf` (and therefore with `knownFailures.compsPdfHostedFiles`, which requires `compsPdf`). |
+| `propertyDataAccuracyWarning` | Amber **KNOWN ISSUE**: locked-report banner under Jump to… (scrolls away; not sticky) + `/sources` callout when shipped figures can disagree with the Assessor site (tax year label, estimated property tax). Douglas on; Arapahoe false. Reusable chrome: `KnownIssueBanner` / `KnownIssueCallout`; Douglas copy in `douglasPropertyDataAccuracyWarning.ts`. Not COUNTY DATA GAP and not sky Coming soon. |
 | `bpp` | Business personal property URLs / UI |
 | `millsHistory` | Authority mills-over-time product **and** authority-chain mill rate-table cites for that county's bundled AUTH series. **Off** = no rate-table cites in authority-chain What changed?; registry-linked shared entities may still show **Changed / tile YoY numbers** when resident stack mills reconcile to the entity reference series (see **`docs/cross-county-authorities.md`**). Arapahoe and Douglas ship bundles today. Loaders: `src/lib/authorityMillsHistory.ts` `BUNDLES` map keyed by county id (no silent Arapahoe default when county is missing). |
 | `metroPurposes` | Metro purpose-row product (ops/debt/other breakdown from a county extract: Arapahoe Mill Levy Public Information → `metro-levies-*.json`; Douglas Abstract Tax Rates → `douglas-metro-levies-*.json`). Loaded by resolved county via `metroPurposesFileForCounty` (never another county's file). **Off** omits the home metro purpose section even when a levy-stack LG ID would match another county's JSON. When **on**, `residentLinks.millLevyPublicInfoForm`, `millLevyPublicInfoFormLabel`, `millLeviesHub`, and `millLeviesHubLabel` are required (validated). Gate helper: `shouldShowMetroPurposesSection` in `metroDistrictFromLevyLines.ts`; UI passes resolved `countyConfig` into `MetroTaxShareFlow`. |
