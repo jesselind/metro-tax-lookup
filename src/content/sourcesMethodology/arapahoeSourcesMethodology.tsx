@@ -112,9 +112,28 @@ export function ArapahoeSourcesMethodology() {
       <h3 className={`${SOURCES_SECTION_H3} !mt-8`}>How matching works</h3>
       <ul className="list-disc space-y-2 pl-5 text-slate-700">
         <li>
-          <strong>Address and PIN:</strong>{" "}Search uses situs house number
-          (plus optional number suffix), street name with direction and street
-          type stripped for matching, and optional unit. Incomplete or lightly
+          <strong>Address and PIN:</strong>{" "}Search uses the house number
+          (plus optional number suffix), street name, and optional unit from
+          the county situs file. The index groups roads by a short street-name
+          key (directionals and street types are not part of that key), so the same
+          house number can cover more than one real street. Suggestions and
+          match lists still show each distinct street line as its own place
+          (for example the same house number on Wheeling St and on{" "}
+          <strong className="text-slate-900">S</strong>
+          {" "}
+          Wheeling Way, or on Havana St and on{" "}
+          <strong className="text-slate-900">S</strong>
+          {" "}
+          Havana St, where{" "}
+          <strong className="text-slate-900">S</strong>
+          {" "}
+          is a directional). If you type a directional or street type that
+          clearly fits only one of those places, Search locks that place; if you
+          leave them out or the typed line is ambiguous, you see every match so
+          you can choose. When several places stay in Matching properties, the
+          list keeps each street together (place first, then real property vs
+          business personal property within that street) and, if you omitted a
+          directional, lists the no-direction place first. Incomplete or lightly
           misspelled street types (for example{" "}
           <strong className="text-slate-900">stree</strong>
           {" "}

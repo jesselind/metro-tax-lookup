@@ -26,7 +26,11 @@ import {
 import { fetchCountyStaticJson } from "@/lib/fetchCountyStaticJson";
 import { stripTrailingUnitFragmentFromAddressLine } from "@/lib/addressLabelDifference";
 import type { CountyPinToTagFile } from "@/lib/countyParcelLevyData";
-import { pickSitusPlaceSampleLabelForTypeahead } from "@/lib/situsMultiPinChooser";
+import {
+  partitionSitusHitsByPlaceStreet,
+  pickSitusPlaceSampleLabelForTypeahead,
+  streetLineWithoutHouseNumber,
+} from "@/lib/situsMultiPinChooser";
 
 export type CountySitusPinHit = {
   pin: string;
@@ -771,6 +775,243 @@ export function scoreStreetNameMatch(
   return 1 + dist;
 }
 
+/** Canonical short forms for direction tokens (SOUTH → S). */
+const STREET_DIR_CANON = new Map<string, string>([
+  ["N", "N"],
+  ["S", "S"],
+  ["E", "E"],
+  ["W", "W"],
+  ["NE", "NE"],
+  ["NW", "NW"],
+  ["SE", "SE"],
+  ["SW", "SW"],
+  ["NORTH", "N"],
+  ["SOUTH", "S"],
+  ["EAST", "E"],
+  ["WEST", "W"],
+  ["NORTHEAST", "NE"],
+  ["NORTHWEST", "NW"],
+  ["SOUTHEAST", "SE"],
+  ["SOUTHWEST", "SW"],
+]);
+
+/** Canonical short forms for common street-type tokens (STREET → ST). */
+const STREET_TYPE_CANON = new Map<string, string>([
+  ["ST", "ST"],
+  ["STREET", "ST"],
+  ["AVE", "AVE"],
+  ["AVENUE", "AVE"],
+  ["RD", "RD"],
+  ["ROAD", "RD"],
+  ["BLVD", "BLVD"],
+  ["BOULEVARD", "BLVD"],
+  ["DR", "DR"],
+  ["DRIVE", "DR"],
+  ["LN", "LN"],
+  ["LANE", "LN"],
+  ["CT", "CT"],
+  ["COURT", "CT"],
+  ["CIR", "CIR"],
+  ["CIRCLE", "CIR"],
+  ["WAY", "WAY"],
+  ["PL", "PL"],
+  ["PLACE", "PL"],
+  ["PKWY", "PKWY"],
+  ["PARKWAY", "PKWY"],
+  ["TRL", "TRL"],
+  ["TRAIL", "TRL"],
+  ["TER", "TER"],
+  ["TERR", "TER"],
+  ["TERRACE", "TER"],
+  ["HWY", "HWY"],
+  ["HIGHWAY", "HWY"],
+  ["ALY", "ALY"],
+  ["ALLEY", "ALY"],
+  ["PT", "PT"],
+  ["POINT", "PT"],
+  ["XING", "XING"],
+  ["CROSSING", "XING"],
+  ["PLZ", "PLZ"],
+  ["PLAZA", "PLZ"],
+]);
+
+function canonStreetDirToken(token: string): string {
+  return STREET_DIR_CANON.get(token) ?? token;
+}
+
+function canonStreetTypeToken(token: string): string {
+  return STREET_TYPE_CANON.get(token) ?? token;
+}
+
+function isStreetDirToken(token: string): boolean {
+  return STREET_DIR_TOKENS.has(token);
+}
+
+function isStreetTypeToken(token: string): boolean {
+  return STREET_TYPE_TOKENS.has(token);
+}
+
+/**
+ * Tokenize a typed or labeled street for place discrimination.
+ *
+ * Keeps direction and street-type tokens (unlike {@link normalizeStreetNameKey}).
+ * Drops house-number tokens, trailing state/ZIP, and text after a comma when the
+ * first segment already looks like a street (autofill locality). Canonicalizes
+ * SOUTH→S and STREET→ST so short and long forms compare equal.
+ *
+ * County-agnostic: no Denver-metro default direction.
+ */
+export function streetTokensForPlaceDiscrimination(raw: string): string[] {
+  const cleaned = sanitizeSitusStreetNameLineForLookup(raw);
+  if (!cleaned) return [];
+  const upper = cleaned.toUpperCase();
+  let tokens = upper.split(/[^\w]+/).filter(Boolean);
+  while (tokens.length > 0) {
+    const head = tokens[0]!;
+    if (/^\d/.test(head) && !isStreetDirToken(head)) {
+      tokens = tokens.slice(1);
+      continue;
+    }
+    break;
+  }
+  if (tokens.length > 0) {
+    const last = tokens[tokens.length - 1]!;
+    if (US_STATE_ABBREV.has(last) || /^\d{5}(?:-\d{4})?$/.test(last)) {
+      tokens = tokens.slice(0, -1);
+    }
+  }
+  return tokens.map((t) => {
+    if (isStreetDirToken(t)) return canonStreetDirToken(t);
+    if (isStreetTypeToken(t)) return canonStreetTypeToken(t);
+    return t;
+  });
+}
+
+function placeStreetTokensFromGroup(placeStreetKey: string): string[] {
+  const withoutNum =
+    streetLineWithoutHouseNumber(placeStreetKey) || placeStreetKey;
+  return streetTokensForPlaceDiscrimination(withoutNum);
+}
+
+/**
+ * Score how well typed street tokens match a place (lower is better).
+ * Returns null when incompatible (e.g. typed core name missing from the place).
+ */
+function scoreTypedStreetAgainstPlaceTokens(
+  typed: string[],
+  place: string[],
+): number | null {
+  if (typed.length === 0 || place.length === 0) return null;
+
+  const typedDirs = typed.filter(isStreetDirToken);
+  const typedTypes = typed.filter(isStreetTypeToken);
+  const typedCore = typed.filter(
+    (t) => !isStreetDirToken(t) && !isStreetTypeToken(t),
+  );
+  const placeDirs = place.filter(isStreetDirToken);
+  const placeTypes = place.filter(isStreetTypeToken);
+  const placeCore = place.filter(
+    (t) => !isStreetDirToken(t) && !isStreetTypeToken(t),
+  );
+
+  if (typedCore.length === 0) return null;
+  for (const c of typedCore) {
+    if (!placeCore.includes(c)) return null;
+  }
+
+  if (typedDirs.length > 0) {
+    for (const d of typedDirs) {
+      if (!placeDirs.includes(d)) return null;
+    }
+  }
+
+  let score = 0;
+  if (typed.join(" ") === place.join(" ")) return 0;
+
+  if (typedTypes.length > 0) {
+    const allTypesMatch = typedTypes.every((t) => placeTypes.includes(t));
+    if (!allTypesMatch) score += 2;
+  } else if (placeTypes.length > 0) {
+    // Typed omitted type; place has one — still compatible, slight preference gap later.
+    score += 1;
+  }
+
+  if (typedDirs.length === 0 && placeDirs.length > 0) {
+    // Typed omitted direction; place has one — compatible for multi-show, not a lock alone.
+    score += 1;
+  }
+
+  // Prefer fewer extra place tokens when typed was more specific.
+  const extra = place.filter((t) => !typed.includes(t)).length;
+  score += Math.min(extra, 3) * 0.25;
+
+  return score;
+}
+
+/**
+ * When one situs key holds several places, keep only the place the typed street
+ * uniquely identifies (explicit direction and/or street type).
+ *
+ * **Default: return all hits** (show more). Narrows only when:
+ * - typed tokens include at least one direction or street-type token, and
+ * - exactly one place is compatible and clearly best (or the sole compatible place).
+ *
+ * Does not invent a missing directional. Typed direction that matches no place
+ * leaves all hits (avoid blocking the resident). Single-place buckets (same
+ * street after unit strip, including same-street Real+BPP) are unchanged
+ * ({@link partitionSitusHitsByPlaceStreet}).
+ */
+export function narrowSitusHitsToUniqueTypedPlace(
+  hits: readonly CountySitusPinHit[],
+  streetNameRaw: string,
+): CountySitusPinHit[] {
+  if (hits.length < 2) return [...hits];
+
+  const groups = partitionSitusHitsByPlaceStreet(hits);
+  if (groups.length <= 1) return [...hits];
+
+  const typed = streetTokensForPlaceDiscrimination(streetNameRaw);
+  if (typed.length === 0) return [...hits];
+
+  const typedDirs = typed.filter(isStreetDirToken);
+  const typedTypes = typed.filter(isStreetTypeToken);
+  // Bare core name among multi-place collisions → show every place.
+  if (typedDirs.length === 0 && typedTypes.length === 0) {
+    return [...hits];
+  }
+
+  const scored: { hits: CountySitusPinHit[]; score: number }[] = [];
+  for (const group of groups) {
+    const placeToks = placeStreetTokensFromGroup(group.placeStreetKey);
+    const score = scoreTypedStreetAgainstPlaceTokens(typed, placeToks);
+    if (score == null) continue;
+    scored.push({ hits: group.hits, score });
+  }
+
+  // Typed direction/type matched nobody → do not lock; show the full bucket.
+  if (scored.length === 0) return [...hits];
+
+  scored.sort((a, b) => a.score - b.score);
+  const best = scored[0]!;
+  const second = scored[1];
+
+  // Sole compatible place with a strong score.
+  if (scored.length === 1 && best.score <= 2) {
+    return [...best.hits];
+  }
+
+  // Clear winner among several compatible places.
+  if (
+    second != null &&
+    best.score <= 1 &&
+    second.score - best.score >= 1.5
+  ) {
+    return [...best.hits];
+  }
+
+  return [...hits];
+}
+
 /** num → streetNameNorm → full situs keys for that pair (lazy per house number). */
 type SitusByNumberIndex = Map<string, Map<string, string[]>>;
 
@@ -892,6 +1133,37 @@ function streetNameVariantsForLookup(nameRaw: string): string[] {
   return out;
 }
 
+/**
+ * When one index key holds distinct street lines (not unit-only condo),
+ * emit one suggestion per place so typeahead matches the matched-list idea.
+ * Same-street Real+BPP stays one place via street grouping.
+ */
+function expandStreetSuggestionByPlace(
+  suggestion: SitusStreetSuggestion,
+  pinToTag?: CountyPinToTagFile | null,
+): SitusStreetSuggestion[] {
+  const groups = partitionSitusHitsByPlaceStreet(suggestion.hits);
+  if (groups.length <= 1) {
+    return [suggestion];
+  }
+  return groups.map((group) => {
+    const sample =
+      pickSitusPlaceSampleLabelForTypeahead(group.hits, pinToTag) ||
+      group.placeStreetKey ||
+      suggestion.streetNameKey;
+    const placeName =
+      streetLineWithoutHouseNumber(group.placeStreetKey) ||
+      group.placeStreetKey ||
+      suggestion.streetNameKey;
+    return {
+      streetNameKey: placeName,
+      sampleLabel: sample,
+      hits: group.hits,
+      score: suggestion.score,
+    };
+  });
+}
+
 function collectScoredStreetsForNumber(
   file: CountySitusToPinsFile,
   numKey: string,
@@ -919,17 +1191,21 @@ function collectScoredStreetsForNumber(
     if (score == null) continue;
     const hits = hitsForNumberAndStreetName(file, numKey, candName, unit);
     if (hits.length === 0) continue;
-    scored.push({
+    const base: SitusStreetSuggestion = {
       streetNameKey: candName,
       sampleLabel:
         pickSitusPlaceSampleLabelForTypeahead(hits, options?.pinToTag) ||
         candName,
       hits,
       score,
-    });
+    };
+    scored.push(...expandStreetSuggestionByPlace(base, options?.pinToTag));
   }
   scored.sort(
-    (a, b) => a.score - b.score || a.streetNameKey.localeCompare(b.streetNameKey),
+    (a, b) =>
+      a.score - b.score ||
+      a.streetNameKey.localeCompare(b.streetNameKey) ||
+      a.sampleLabel.localeCompare(b.sampleLabel),
   );
   return scored;
 }
@@ -937,6 +1213,10 @@ function collectScoredStreetsForNumber(
 /**
  * Exact key first, then soft street-type cleanup, then fuzzy street names for
  * the same house number. When several streets are close, returns suggestions.
+ *
+ * After a key (or uniquely-best fuzzy) hit, {@link narrowSitusHitsToUniqueTypedPlace}
+ * may shrink multi-place buckets when the typed street uniquely identifies one
+ * place. Ambiguous input still returns every hit (prefer showing more).
  */
 export function lookupPinsBySitusFuzzy(
   file: CountySitusToPinsFile,
@@ -958,7 +1238,7 @@ export function lookupPinsBySitusFuzzy(
     if (hits.length > 0) {
       return {
         kind: "match",
-        hits,
+        hits: narrowSitusHitsToUniqueTypedPlace(hits, streetName),
         approximateStreet: i > 0,
         matchedStreetNameKey: nameNorm,
       };
@@ -982,7 +1262,7 @@ export function lookupPinsBySitusFuzzy(
   if (uniquelyBest) {
     return {
       kind: "match",
-      hits: best.hits,
+      hits: narrowSitusHitsToUniqueTypedPlace(best.hits, streetName),
       approximateStreet: true,
       matchedStreetNameKey: best.streetNameKey,
     };
@@ -998,10 +1278,12 @@ export function lookupPinsBySitusFuzzy(
  * Typeahead: places at this house number whose street prefix- or fuzzy-matches
  * the partial street field.
  *
- * One suggestion per place (number + street name). When several PINs share that
- * situs (condo units, Real + business personal property), all PINs stay on
- * `hits` and the UI shows the multi-match chooser after pick — typeahead must
- * not list duplicate address lines per PIN (Porter/Radiology crack).
+ * One suggestion per place. A place is usually one street-name index key; when
+ * that key holds distinct street lines (not unit-only variants), each street
+ * line is its own suggestion. When several PINs share one place (condo units,
+ * Real + business personal property), all PINs stay on `hits` and the UI shows
+ * the multi-match chooser after pick — typeahead must not list duplicate
+ * address lines per PIN (Porter/Radiology crack).
  *
  * Pass pin-to-tag when available so Real+BPP places keep today's sample label;
  * all-Real multi-unit places get a street-only caption when units differ.

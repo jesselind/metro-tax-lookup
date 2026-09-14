@@ -110,17 +110,17 @@ summary {
     @apply box-border h-12 inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 px-5 text-base font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55;
   }
 
-  /** Outline sibling of Search on the lookup row. Stacked: full width; lg+: content-width. */
+  /** Outline sibling of Search on the lookup row. Stacked: full width; xl+: content-width. */
   .home-address-lookup-demo {
-    @apply box-border h-12 inline-flex w-full shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-slate-300 bg-white px-5 text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:flex-none;
+    @apply box-border h-12 inline-flex w-full shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-slate-300 bg-white px-5 text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 xl:w-auto xl:flex-none;
   }
 
-  /** Stacked: full-width bar; lg+: content-width segments. */
+  /** Stacked: full-width bar; xl+: content-width segments. */
   .home-address-lookup-county-segment {
-    @apply box-border h-12 inline-flex w-full max-w-full overflow-hidden rounded-md border border-slate-300 lg:w-auto;
+    @apply box-border h-12 inline-flex w-full max-w-full overflow-hidden rounded-md border border-slate-300 xl:w-auto;
   }
 
   .home-address-lookup-county-option {
-    @apply flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center px-4 text-base font-semibold leading-none tracking-tight transition-colors focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 lg:flex-none lg:shrink-0 lg:px-8;
+    @apply flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center px-4 text-base font-semibold leading-none tracking-tight transition-colors focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 xl:flex-none xl:shrink-0 xl:px-8;
   }
 }

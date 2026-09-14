@@ -27,6 +27,21 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.14.2",
+    date: "2026-09-13",
+    title:
+      "Typeahead splits distinct streets under one situs key; multi-match help shortens",
+    highlights: [
+      "Address typeahead: when one stripped situs key holds different street lines (not unit-only condo), emit one suggestion per street line so direction/type collisions (e.g. ST vs S … WAY) are both visible; pick sets hits for that place only. Same-street Real+BPP stays one place; a bucket-wide Real+BPP mix does not glue distinct streets.",
+      "Shared partition helper (situsMultiPinChooser) groups hits by street line after unit strip; condo units that differ only by unit stay one row. Typeahead and Search can narrow places independently even when pin-to-tag Real+BPP spans the key; unit regressions cover mixed account kinds on distinct streets.",
+      "Matching properties: sort by place (street) first, then Real / business personal within that place, so one address's BPP is not split by another street under the same key. When the typed street omits a direction, the no-direction place lists first (e.g. HAVANA ST before S HAVANA ST). Unit + e2e lock against shipped Arapahoe 1400 Havana ST vs S Havana ST.",
+      "Multi-match chooser: drop the long on-page county-search paragraph so the list sits higher on mobile; Real vs business personal property glossary popover keeps the pick-your-account guidance. Heading is N accounts that may match (not at this address).",
+      "Refine address: hide Try demo property so the dense field row is less crowded.",
+      "Address lookup: county scope switch stays full-width on its own line through lg; sits beside the form from xl up (was lg). Segment bar, options, and Try demo use the same xl breakpoint.",
+      "Search place discrimination: after a situs key hit, keep all places when the typed street has no direction/type (or is ambiguous); lock to one place only when typed direction and/or street type uniquely identifies it (autofill locality stripped; no metro-grid defaults). Prefer showing more over blocking the resident. Unit + e2e lock against shipped Arapahoe 1201 Wheeling ST vs S Wheeling Way. README, Arapahoe /sources matching narrative, and county-config pointer updated.",
+    ],
+  },
+  {
     version: "5.14.1",
     date: "2026-09-13",
     title:

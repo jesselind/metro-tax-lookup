@@ -4,6 +4,8 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { CountyPinToTagFile } from "./countyParcelLevyData";
 import type { CountySitusPinHit } from "./situsIndexLookup";
 import {
@@ -11,6 +13,7 @@ import {
   enrichSitusPinHitsForChooser,
   formatSitusPinAccountKindLabel,
   isBusinessPersonalPropertyAccount,
+  partitionSitusHitsByPlaceStreet,
   pickSitusPlaceSampleLabel,
   pickSitusPlaceSampleLabelForTypeahead,
   situsAccountKindGlossaryTermId,
@@ -22,6 +25,10 @@ import {
   SYNTHETIC_CONDO_LABEL_B,
   SYNTHETIC_CONDO_PIN_A,
   SYNTHETIC_CONDO_PIN_B,
+  SYNTHETIC_DIR_COLLISION_ST_LABEL,
+  SYNTHETIC_DIR_COLLISION_ST_PIN,
+  SYNTHETIC_DIR_COLLISION_WAY_LABEL,
+  SYNTHETIC_DIR_COLLISION_WAY_PIN,
   SYNTHETIC_MULTI_LABEL_MAJORITY,
   SYNTHETIC_MULTI_LABEL_MINORITY,
   SYNTHETIC_MULTI_PERSONAL_OWNER,
@@ -319,6 +326,127 @@ describe("pickSitusPlaceSampleLabel", () => {
   });
 });
 
+describe("partitionSitusHitsByPlaceStreet", () => {
+  it("keeps same-street Real+BPP as one place", () => {
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
+        label: SYNTHETIC_MULTI_LABEL_MINORITY,
+      },
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+      },
+      {
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+      },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(hits);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.hits).toHaveLength(3);
+    expect(groups[0]?.placeStreetKey).toMatch(/SYNTHETIC HOSPITAL RD/i);
+  });
+
+  it("keeps condo units that differ only by unit as one place", () => {
+    const hits: CountySitusPinHit[] = [
+      { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
+      { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(hits);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.hits).toHaveLength(2);
+  });
+
+  it("splits ST vs S … WAY under one index key", () => {
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: SYNTHETIC_DIR_COLLISION_ST_PIN,
+        label: SYNTHETIC_DIR_COLLISION_ST_LABEL,
+      },
+      {
+        pin: SYNTHETIC_DIR_COLLISION_WAY_PIN,
+        label: SYNTHETIC_DIR_COLLISION_WAY_LABEL,
+      },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(hits);
+    expect(groups).toHaveLength(2);
+    const pins = new Set(groups.flatMap((g) => g.hits.map((h) => h.pin)));
+    expect(pins).toEqual(
+      new Set([
+        SYNTHETIC_DIR_COLLISION_ST_PIN,
+        SYNTHETIC_DIR_COLLISION_WAY_PIN,
+      ]),
+    );
+    expect(groups.every((g) => g.hits.length === 1)).toBe(true);
+  });
+
+  it("splits distinct streets even when Real+BPP spans the bucket", () => {
+    // ST = Real, WAY = BPP: pin-to-tag would formerly glue the whole key into
+    // one place; street grouping must still separate them.
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: SYNTHETIC_DIR_COLLISION_ST_PIN,
+        label: SYNTHETIC_DIR_COLLISION_ST_LABEL,
+      },
+      {
+        pin: SYNTHETIC_DIR_COLLISION_WAY_PIN,
+        label: SYNTHETIC_DIR_COLLISION_WAY_LABEL,
+      },
+    ];
+    const pinToTag: CountyPinToTagFile = {
+      snapshot: { bundledAsOf: "t", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_DIR_COLLISION_ST_PIN]: {
+          tagId: "1",
+          tagShortDescr: "x",
+          propertyClassDescr: "Improvement",
+          totalActual: 100,
+          totalAssessed: 7,
+        },
+        [SYNTHETIC_DIR_COLLISION_WAY_PIN]: {
+          tagId: "2",
+          tagShortDescr: "x",
+          propertyClassDescr: "Personal",
+          totalActual: 1,
+          totalAssessed: 1,
+        },
+      },
+    };
+    expect(situsPlaceHasRealAndBusinessPersonal(hits, pinToTag)).toBe(true);
+    const groups = partitionSitusHitsByPlaceStreet(hits);
+    expect(groups).toHaveLength(2);
+    expect(
+      groups.find((g) =>
+        g.hits.some((h) => h.pin === SYNTHETIC_DIR_COLLISION_ST_PIN),
+      )?.hits,
+    ).toHaveLength(1);
+    expect(
+      groups.find((g) =>
+        g.hits.some((h) => h.pin === SYNTHETIC_DIR_COLLISION_WAY_PIN),
+      )?.hits,
+    ).toHaveLength(1);
+  });
+
+  it("keeps Real+BPP together when they share a street with a condo unit sibling", () => {
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: "7700 S BROADWAY Unit X1, E2E CITY, CO 80000-1111",
+      },
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: "7700 S BROADWAY Unit X2, E2E CITY, CO 80000-2222",
+      },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(hits);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.hits).toHaveLength(2);
+    expect(groups[0]?.placeStreetKey).toBe("7700 S BROADWAY");
+  });
+});
+
 describe("pickSitusPlaceSampleLabelForTypeahead", () => {
   it("strips differing units for all-Real condo places", () => {
     const hits: CountySitusPinHit[] = [
@@ -445,5 +573,111 @@ describe("enrichSitusPinHitsForChooser", () => {
     ]);
     expect(rows[0]?.label).toContain("Unit A01");
     expect(rows[1]?.label).toContain("Unit A02");
+  });
+});
+
+/**
+ * Shipped Arapahoe public situs collision: `1400|HAVANA|` holds HAVANA ST and
+ * S HAVANA ST (Real + several BPP on the south place). Label assertions only.
+ */
+describe("enrichSitusPinHitsForChooser shipped Arapahoe 1400 Havana", () => {
+  const situs = JSON.parse(
+    readFileSync(
+      join(process.cwd(), "public/data/arapahoe-situs-to-pins.json"),
+      "utf8",
+    ),
+  ) as { byKey: Record<string, CountySitusPinHit[]> };
+  const pinToTag = JSON.parse(
+    readFileSync(
+      join(process.cwd(), "public/data/arapahoe-pin-to-tag.json"),
+      "utf8",
+    ),
+  ) as CountyPinToTagFile;
+
+  const hits = situs.byKey["1400|HAVANA|"] ?? [];
+
+  it("ships both HAVANA ST and S HAVANA ST under one stripped key", () => {
+    expect(hits.length).toBeGreaterThanOrEqual(5);
+    expect(hits.some((h) => /^1400 HAVANA ST,/i.test(h.label))).toBe(true);
+    expect(hits.some((h) => /^1400 S HAVANA ST,/i.test(h.label))).toBe(true);
+  });
+
+  it("partition keeps the two Havana street lines as separate places", () => {
+    const groups = partitionSitusHitsByPlaceStreet(hits);
+    expect(groups).toHaveLength(2);
+    const keys = groups.map((g) => g.placeStreetKey).sort();
+    expect(keys).toEqual(["1400 HAVANA ST", "1400 S HAVANA ST"]);
+  });
+
+  it("bare typed Havana: no-dir place first; south Real then its BPP (no interleave)", () => {
+    const rows = enrichSitusPinHitsForChooser([...hits], pinToTag, "Havana");
+    expect(rows.length).toBe(hits.length);
+
+    const firstSouth = rows.findIndex((r) => /S HAVANA ST/i.test(r.label));
+    expect(firstSouth).toBeGreaterThan(0);
+    expect(
+      rows.slice(0, firstSouth).every((r) => /^1400 HAVANA ST,/i.test(r.label)),
+    ).toBe(true);
+    expect(
+      rows.slice(firstSouth).every((r) => /^1400 S HAVANA ST,/i.test(r.label)),
+    ).toBe(true);
+
+    // North place is Real-only in the shipping snapshot.
+    expect(
+      rows.slice(0, firstSouth).every((r) => r.accountKind === "real_property"),
+    ).toBe(true);
+
+    const south = rows.slice(firstSouth);
+    const firstSouthBpp = south.findIndex(
+      (r) => r.accountKind === "business_personal",
+    );
+    expect(firstSouthBpp).toBeGreaterThan(0);
+    expect(
+      south
+        .slice(0, firstSouthBpp)
+        .every((r) => r.accountKind === "real_property"),
+    ).toBe(true);
+    expect(
+      south
+        .slice(firstSouthBpp)
+        .every((r) => r.accountKind === "business_personal"),
+    ).toBe(true);
+
+    // Regression: higher-value south Real must not float above north Real.
+    expect(rows[0]?.label).toMatch(/^1400 HAVANA ST,/i);
+    expect(rows[0]?.accountKind).toBe("real_property");
+  });
+
+  it("without pin-to-tag still keeps places contiguous (kinds unknown)", () => {
+    const rows = enrichSitusPinHitsForChooser([...hits], null, "Havana");
+    const firstSouth = rows.findIndex((r) => /S HAVANA ST/i.test(r.label));
+    expect(firstSouth).toBeGreaterThan(0);
+    expect(
+      rows.slice(0, firstSouth).every((r) => /^1400 HAVANA ST,/i.test(r.label)),
+    ).toBe(true);
+    expect(
+      rows.slice(firstSouth).every((r) => /^1400 S HAVANA ST,/i.test(r.label)),
+    ).toBe(true);
+    expect(rows.every((r) => r.accountKind === "other")).toBe(true);
+  });
+
+  it("typed S Havana: south place block first, then north HAVANA ST", () => {
+    const rows = enrichSitusPinHitsForChooser(
+      [...hits],
+      pinToTag,
+      "S Havana St",
+    );
+    const firstNorth = rows.findIndex((r) =>
+      /^1400 HAVANA ST,/i.test(r.label),
+    );
+    expect(firstNorth).toBeGreaterThan(0);
+    expect(
+      rows.slice(0, firstNorth).every((r) => /^1400 S HAVANA ST,/i.test(r.label)),
+    ).toBe(true);
+    expect(
+      rows.slice(firstNorth).every((r) => /^1400 HAVANA ST,/i.test(r.label)),
+    ).toBe(true);
+    expect(rows[0]?.accountKind).toBe("real_property");
+    expect(rows[0]?.label).toMatch(/^1400 S HAVANA ST,/i);
   });
 });

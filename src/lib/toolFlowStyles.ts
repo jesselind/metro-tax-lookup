@@ -491,7 +491,7 @@ export const HOME_ADDRESS_LOOKUP_SEARCH_CLASS =
 export const HOME_ADDRESS_LOOKUP_DEMO_CLASS = "home-address-lookup-demo";
 
 /**
- * County radiogroup shell. Full width when stacked; content-width on lg+ row.
+ * County radiogroup shell. Full width when stacked; content-width on xl+ row.
  * See `.home-address-lookup-county-segment` in globals.css.
  */
 export const HOME_ADDRESS_LOOKUP_COUNTY_SEGMENT_CLASS =
@@ -499,7 +499,7 @@ export const HOME_ADDRESS_LOOKUP_COUNTY_SEGMENT_CLASS =
 
 /**
  * County segment option button. Mobile: equal columns in full-width bar.
- * lg+: content-sized with lg:px-8 horizontal padding.
+ * xl+: content-sized with xl:px-8 horizontal padding.
  */
 export const HOME_ADDRESS_LOOKUP_COUNTY_OPTION_CLASS =
   "home-address-lookup-county-option";

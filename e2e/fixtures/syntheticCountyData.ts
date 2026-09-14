@@ -54,6 +54,19 @@ export const SYNTHETIC_CONDO_PIN_B = "010000302";
 export const SYNTHETIC_CONDO_OWNER_A = "E2E SYNTHETIC CONDO OWNER A";
 export const SYNTHETIC_CONDO_OWNER_B = "E2E SYNTHETIC CONDO OWNER B";
 
+/**
+ * Direction/type collision under one stripped key (ST vs S … WAY).
+ * Aligned with `SYNTHETIC_DIR_COLLISION_*` in syntheticTestIds.
+ */
+export const SYNTHETIC_DIR_COLLISION_E2E_ADDRESS = "1201 Synthetic Meridian";
+export const SYNTHETIC_DIR_COLLISION_E2E_SITUS_KEY = "1201|SYNTHETIC MERIDIAN|";
+export const SYNTHETIC_DIR_COLLISION_ST_PIN = "010000401";
+export const SYNTHETIC_DIR_COLLISION_WAY_PIN = "010000402";
+export const SYNTHETIC_DIR_COLLISION_ST_LABEL =
+  "1201 SYNTHETIC MERIDIAN ST, E2E CITY, CO 80000-4401";
+export const SYNTHETIC_DIR_COLLISION_WAY_LABEL =
+  "1201 S SYNTHETIC MERIDIAN WAY, E2E CITY, CO 80000-4402";
+
 /** Fake TAG id used only inside e2e mocks (not a real county TAG). */
 export const SYNTHETIC_E2E_TAG_ID = "9090909";
 /** Real PDF TAG shape so authority-chain e2e can assert page deep-links. */
@@ -98,7 +111,7 @@ export const SYNTHETIC_SITUS_TO_PINS = {
     taxYear: "2025",
   },
   lookupVersion: 1,
-  entryCount: 3,
+  entryCount: 4,
   byKey: {
     [SYNTHETIC_E2E_SITUS_KEY]: [
       {
@@ -124,6 +137,16 @@ export const SYNTHETIC_SITUS_TO_PINS = {
       {
         pin: SYNTHETIC_CONDO_PIN_B,
         label: `${SYNTHETIC_CONDO_E2E_ADDRESS} Unit A02, E2E CITY, CO 80000-3334`,
+      },
+    ],
+    [SYNTHETIC_DIR_COLLISION_E2E_SITUS_KEY]: [
+      {
+        pin: SYNTHETIC_DIR_COLLISION_ST_PIN,
+        label: SYNTHETIC_DIR_COLLISION_ST_LABEL,
+      },
+      {
+        pin: SYNTHETIC_DIR_COLLISION_WAY_PIN,
+        label: SYNTHETIC_DIR_COLLISION_WAY_LABEL,
       },
     ],
   },
@@ -191,6 +214,28 @@ export const SYNTHETIC_PIN_TO_TAG = {
       propertyClassDescr: "Real",
       ownerList: SYNTHETIC_CONDO_OWNER_B,
       ain: "1000-00-0-00-302",
+    },
+    [SYNTHETIC_DIR_COLLISION_ST_PIN]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
+      totalActual: 410000,
+      totalAssessed: 27880,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Real",
+      ownerList: "E2E SYNTHETIC MERIDIAN ST OWNER",
+      ain: "1000-00-0-00-401",
+    },
+    [SYNTHETIC_DIR_COLLISION_WAY_PIN]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      tagShortDescr: SYNTHETIC_E2E_TAG_SHORT_DESCR,
+      totalActual: 420000,
+      totalAssessed: 28560,
+      parcelTaxYear: "2025",
+      assessmentYear: "2026",
+      propertyClassDescr: "Real",
+      ownerList: "E2E SYNTHETIC MERIDIAN WAY OWNER",
+      ain: "1000-00-0-00-402",
     },
   },
 };
