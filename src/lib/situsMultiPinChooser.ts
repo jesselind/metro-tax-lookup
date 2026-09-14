@@ -235,6 +235,70 @@ export function situsPlaceHasRealAndBusinessPersonal(
 }
 
 /**
+ * Street line with trailing unit stripped (Apt/Unit/#…), used to group hits
+ * into typeahead places when one situs key merged distinct streets.
+ */
+export function situsHitPlaceStreetKey(hit: CountySitusPinHit): string {
+  const street = splitSitusLabelEnvelopeLines(hit.label).streetLine;
+  return stripTrailingUnitFragmentFromAddressLine(street).line || street;
+}
+
+/**
+ * Drop a leading house-number token from a street line for suggestion captions
+ * (e.g. {@code 1201 S MERIDIAN WAY} → {@code S MERIDIAN WAY}).
+ */
+export function streetLineWithoutHouseNumber(streetLine: string): string {
+  const trimmed = streetLine.trim();
+  if (!trimmed) return "";
+  return trimmed.replace(/^\d+[A-Z0-9/-]*\s+/i, "").trim() || trimmed;
+}
+
+export type SitusPlaceHitGroup = {
+  /** Stripped street line for the place, or empty when Real+BPP stays one place. */
+  placeStreetKey: string;
+  hits: CountySitusPinHit[];
+};
+
+/**
+ * Split situs hits into typeahead places.
+ *
+ * Real+BPP at one situs stays one group. Otherwise group by street line after
+ * stripping a trailing unit fragment so condo units stay one place, while
+ * direction/type collisions (e.g. ST vs S … WAY under one index key) become
+ * separate places.
+ */
+export function partitionSitusHitsByPlaceStreet(
+  hits: ReadonlyArray<CountySitusPinHit>,
+  pinToTag?: CountyPinToTagFile | null,
+): SitusPlaceHitGroup[] {
+  if (hits.length === 0) return [];
+  if (hits.length === 1) {
+    const only = hits[0]!;
+    return [{ placeStreetKey: situsHitPlaceStreetKey(only), hits: [only] }];
+  }
+  if (situsPlaceHasRealAndBusinessPersonal(hits, pinToTag)) {
+    return [{ placeStreetKey: "", hits: [...hits] }];
+  }
+
+  const byStreet = new Map<string, CountySitusPinHit[]>();
+  for (const h of hits) {
+    const key = situsHitPlaceStreetKey(h) || h.label;
+    let bucket = byStreet.get(key);
+    if (!bucket) {
+      bucket = [];
+      byStreet.set(key, bucket);
+    }
+    bucket.push(h);
+  }
+  return [...byStreet.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([placeStreetKey, groupHits]) => ({
+      placeStreetKey,
+      hits: groupHits,
+    }));
+}
+
+/**
  * Pick one typeahead sample label for a place with many PINs.
  * Prefers the most common full label (so a shared ZIP+4 wins over a singleton),
  * then labels without a unit token, then shortest, then first.

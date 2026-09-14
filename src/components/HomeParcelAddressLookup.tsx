@@ -1844,36 +1844,8 @@ export function HomeParcelAddressLookup({
               aria-label="Matching properties"
             >
               <p className="mb-2 text-sm font-semibold text-slate-900">
-                {hits.length} accounts matched at this address. Pick the row that
-                matches your unit, owner, or account type
-              </p>
-              <p className="mb-3 text-sm text-slate-700">
-                One street can have several tax accounts (for example a building
-                plus business personal property). Not sure which PIN is yours?
-                Compare the PIN, owner, or legal description on the{" "}
-                <a
-                  href={activeCountyConfig.residentLinks.propertySearch}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={COUNTY_EXTERNAL_LINK_CLASS}
-                >
-                  county property search<span className="sr-only"> (opens in a new tab)</span>
-                </a>
-                {" "}
-                for buildings and land, or the{" "}
-                <a
-                  href={
-                    activeCountyConfig.residentLinks.bppSearch ??
-                    activeCountyConfig.residentLinks.propertySearch
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={COUNTY_EXTERNAL_LINK_CLASS}
-                >
-                  county business personal property search<span className="sr-only"> (opens in a new tab)</span>
-                </a>
-                {" "}
-                for equipment accounts.
+                {hits.length} accounts that may match. Pick the row that matches
+                your unit, owner, or account type
               </p>
               <div className="mb-3">
                 <SitusRealVsBusinessPersonalHelp idPrefix="multi-match" />
@@ -1905,7 +1877,7 @@ export function HomeParcelAddressLookup({
               </p>
               <ul className="space-y-2 text-sm text-slate-800 sm:text-base">
                 {streetDidYouMean.map((s) => (
-                  <li key={s.streetNameKey}>
+                  <li key={`${s.streetNameKey}-${s.hits[0]?.pin ?? s.sampleLabel}`}>
                     <button
                       type="button"
                       className={`${btnOutlinePrimaryMd} w-full cursor-pointer justify-start px-3 py-2.5 text-left`}
@@ -1945,7 +1917,7 @@ export function HomeParcelAddressLookup({
             </div>
           ) : null}
           <div
-            className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:gap-3"
+            className="flex w-full min-w-0 flex-col gap-3 xl:flex-row xl:items-end xl:gap-3"
           >
             <CountySearchScopeSwitch
               value={countySearchScope}
@@ -1957,7 +1929,7 @@ export function HomeParcelAddressLookup({
                 setStreetTypeaheadActiveIndex(-1);
                 clearIndexProgress();
               }}
-              className="lg:shrink-0"
+              className="xl:shrink-0"
             />
             <form
               className={`min-w-0 flex-1 ${
@@ -2314,16 +2286,18 @@ export function HomeParcelAddressLookup({
               </>
             )}
             </form>
-            <div className="flex w-full min-w-0 flex-col lg:w-auto lg:flex-none lg:shrink-0 lg:justify-end">
-              <button
-                type="button"
-                className={HOME_ADDRESS_LOOKUP_DEMO_CLASS}
-                onClick={() => void onLoadDemoProperty()}
-                disabled={busy || levyLoadBusy}
-              >
-                Try demo property
-              </button>
-            </div>
+            {!showAdvancedAddressFields ? (
+              <div className="flex w-full min-w-0 flex-col xl:w-auto xl:flex-none xl:shrink-0 xl:justify-end">
+                <button
+                  type="button"
+                  className={HOME_ADDRESS_LOOKUP_DEMO_CLASS}
+                  onClick={() => void onLoadDemoProperty()}
+                  disabled={busy || levyLoadBusy}
+                >
+                  Try demo property
+                </button>
+              </div>
+            ) : null}
           </div>
           <p className="mt-3 text-center text-base font-semibold tracking-tight text-slate-900 sm:text-lg">
             We do not save your address. This uses publicly available data. We

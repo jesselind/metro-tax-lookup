@@ -856,7 +856,12 @@ export function TermRealVsBusinessPersonalBriefBody() {
         {" "}
         is equipment and other business property at that location (machinery,
         fixtures, and similar), taxed on a separate account from the building
-        and land. One street can have both; pick the row that matches your bill.
+        and land. One street can have both.
+      </p>
+      <p className={`${BRIEF_P} mt-3`}>
+        Pick the row that matches your bill. Compare the PIN, owner, or legal
+        description on your notice or the county property search if you are not
+        sure which account is yours.
       </p>
     </>
   );

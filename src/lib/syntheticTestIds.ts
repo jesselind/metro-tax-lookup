@@ -83,3 +83,20 @@ export const SYNTHETIC_CONDO_LABEL_A =
   "7777 SYNTHETIC CONDO LN Unit A01, E2E CITY, CO 80000-3333";
 export const SYNTHETIC_CONDO_LABEL_B =
   "7777 SYNTHETIC CONDO LN Unit A02, E2E CITY, CO 80000-3334";
+
+/**
+ * Direction/type collision under one stripped situs key (ST vs S … WAY).
+ * Invented street name; mirrors Denver-metro grid collisions without a real situs.
+ * Key: {@code 1201|SYNTHETIC MERIDIAN|}.
+ */
+export const SYNTHETIC_DIR_COLLISION_STREET_NUMBER = "1201";
+export const SYNTHETIC_DIR_COLLISION_STREET_NAME = "Synthetic Meridian";
+export const SYNTHETIC_DIR_COLLISION_SITUS_KEY = "1201|SYNTHETIC MERIDIAN|";
+export const SYNTHETIC_DIR_COLLISION_ST_PIN = "010000401";
+export const SYNTHETIC_DIR_COLLISION_WAY_PIN = "010000402";
+export const SYNTHETIC_DIR_COLLISION_ST_LABEL =
+  "1201 SYNTHETIC MERIDIAN ST, E2E CITY, CO 80000-4401";
+export const SYNTHETIC_DIR_COLLISION_WAY_LABEL =
+  "1201 S SYNTHETIC MERIDIAN WAY, E2E CITY, CO 80000-4402";
+/** Typed query for typeahead / Search (no direction or street type). */
+export const SYNTHETIC_DIR_COLLISION_E2E_ADDRESS = "1201 Synthetic Meridian";

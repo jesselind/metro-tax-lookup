@@ -27,6 +27,20 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.14.2",
+    date: "2026-09-13",
+    title:
+      "Typeahead splits distinct streets under one situs key; multi-match help shortens",
+    highlights: [
+      "Address typeahead: when one stripped situs key holds different street lines (not unit-only / Real+BPP), emit one suggestion per street line so direction/type collisions (e.g. ST vs S … WAY) are both visible; pick sets hits for that place only.",
+      "Shared partition helper (situsMultiPinChooser) groups hits by street line after unit strip; condo and Real+BPP places stay one row.",
+      "Multi-match chooser: drop the long on-page county-search paragraph so the list sits higher on mobile; Real vs business personal property glossary popover keeps the pick-your-account guidance. Heading is N accounts that may match (not at this address).",
+      "Refine address: hide Try demo property so the dense field row is less crowded.",
+      "Address lookup: county scope switch stays full-width on its own line through lg; sits beside the form from xl up (was lg). Segment bar, options, and Try demo use the same xl breakpoint.",
+      "Search place discrimination: after a situs key hit, keep all places when the typed street has no direction/type (or is ambiguous); lock to one place only when typed direction and/or street type uniquely identifies it (autofill locality stripped; no metro-grid defaults). Prefer showing more over blocking the resident. Unit + e2e lock against shipped Arapahoe 1201 Wheeling ST vs S Wheeling Way. README, Arapahoe /sources matching narrative, and county-config pointer updated.",
+    ],
+  },
+  {
     version: "5.14.1",
     date: "2026-09-13",
     title:

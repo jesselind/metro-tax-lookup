@@ -198,7 +198,7 @@ Shipping filenames stay **`{countyId}-*`** under `public/data/` (for example `ar
 | Module | Role |
 | --- | --- |
 | `countyParcelLevyData.ts` | Levy stacks, account map, parcel-record shard types + `fetchCounty*` loaders |
-| `situsIndexLookup.ts` | Situs index types + address normalization + `fetchCountySitusToPinsJson` |
+| `situsIndexLookup.ts` | Situs index types + address normalization + `fetchCountySitusToPinsJson`; typeahead place split + Search `narrowSitusHitsToUniqueTypedPlace` |
 | `countySitusLookup.ts` | Multi-county situs/account probe (search gate, adjacent try) |
 | `arapahoeParcelLevyData.ts` | **Deprecated** re-export barrel → `countyParcelLevyData.ts` |
 | `arapahoeSitusLookup.ts` | **Deprecated** re-export barrel → `situsIndexLookup.ts` |

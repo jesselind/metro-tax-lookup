@@ -48,7 +48,7 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   const chooser = page.getByRole("region", { name: "Matching properties" });
   await expect(chooser).toBeVisible();
   await expect(
-    chooser.getByText("2 accounts matched at this address"),
+    chooser.getByText("2 accounts that may match"),
   ).toBeVisible();
   await expect(
     chooser.getByRole("button", {
@@ -81,10 +81,9 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   ).toHaveCount(0);
 
   await expect(
-    chooser.getByRole("link", { name: /county property search/i }),
-  ).toBeVisible();
-  await expect(
-    chooser.getByRole("link", { name: /county business personal property search/i }),
+    chooser.getByRole("button", {
+      name: /What is real property vs\. business personal property/i,
+    }),
   ).toBeVisible();
 
   const realRowText = await realRow.innerText();

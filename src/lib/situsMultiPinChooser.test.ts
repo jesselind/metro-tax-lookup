@@ -11,6 +11,7 @@ import {
   enrichSitusPinHitsForChooser,
   formatSitusPinAccountKindLabel,
   isBusinessPersonalPropertyAccount,
+  partitionSitusHitsByPlaceStreet,
   pickSitusPlaceSampleLabel,
   pickSitusPlaceSampleLabelForTypeahead,
   situsAccountKindGlossaryTermId,
@@ -22,6 +23,10 @@ import {
   SYNTHETIC_CONDO_LABEL_B,
   SYNTHETIC_CONDO_PIN_A,
   SYNTHETIC_CONDO_PIN_B,
+  SYNTHETIC_DIR_COLLISION_ST_LABEL,
+  SYNTHETIC_DIR_COLLISION_ST_PIN,
+  SYNTHETIC_DIR_COLLISION_WAY_LABEL,
+  SYNTHETIC_DIR_COLLISION_WAY_PIN,
   SYNTHETIC_MULTI_LABEL_MAJORITY,
   SYNTHETIC_MULTI_LABEL_MINORITY,
   SYNTHETIC_MULTI_PERSONAL_OWNER,
@@ -316,6 +321,64 @@ describe("pickSitusPlaceSampleLabel", () => {
       { pin: "4", label: SYNTHETIC_MULTI_LABEL_MAJORITY },
     ];
     expect(pickSitusPlaceSampleLabel(hits)).toBe(SYNTHETIC_MULTI_LABEL_MAJORITY);
+  });
+});
+
+describe("partitionSitusHitsByPlaceStreet", () => {
+  it("keeps Real+BPP as one place", () => {
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN_B,
+        label: SYNTHETIC_MULTI_LABEL_MINORITY,
+      },
+      {
+        pin: SYNTHETIC_MULTI_PERSONAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+      },
+      {
+        pin: SYNTHETIC_MULTI_REAL_PIN,
+        label: SYNTHETIC_MULTI_LABEL_MAJORITY,
+      },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(
+      hits,
+      multiRealBppPinToTag(),
+    );
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.hits).toHaveLength(3);
+  });
+
+  it("keeps condo units that differ only by unit as one place", () => {
+    const hits: CountySitusPinHit[] = [
+      { pin: SYNTHETIC_CONDO_PIN_A, label: SYNTHETIC_CONDO_LABEL_A },
+      { pin: SYNTHETIC_CONDO_PIN_B, label: SYNTHETIC_CONDO_LABEL_B },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(hits, condoAllRealPinToTag());
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.hits).toHaveLength(2);
+  });
+
+  it("splits ST vs S … WAY under one index key", () => {
+    const hits: CountySitusPinHit[] = [
+      {
+        pin: SYNTHETIC_DIR_COLLISION_ST_PIN,
+        label: SYNTHETIC_DIR_COLLISION_ST_LABEL,
+      },
+      {
+        pin: SYNTHETIC_DIR_COLLISION_WAY_PIN,
+        label: SYNTHETIC_DIR_COLLISION_WAY_LABEL,
+      },
+    ];
+    const groups = partitionSitusHitsByPlaceStreet(hits, null);
+    expect(groups).toHaveLength(2);
+    const pins = new Set(groups.flatMap((g) => g.hits.map((h) => h.pin)));
+    expect(pins).toEqual(
+      new Set([
+        SYNTHETIC_DIR_COLLISION_ST_PIN,
+        SYNTHETIC_DIR_COLLISION_WAY_PIN,
+      ]),
+    );
+    expect(groups.every((g) => g.hits.length === 1)).toBe(true);
   });
 });
 

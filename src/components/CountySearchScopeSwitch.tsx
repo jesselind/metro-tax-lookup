@@ -127,7 +127,7 @@ export function CountySearchScopeSwitch({
   const headingId = `${idPrefix}-heading`;
 
   return (
-    <div className={`w-full min-w-0 lg:w-auto ${className}`.trim()}>
+    <div className={`w-full min-w-0 xl:w-auto ${className}`.trim()}>
       <p id={headingId} className={HOME_ADDRESS_LOOKUP_LABEL_CLASS}>
         Select your Colorado county
       </p>
