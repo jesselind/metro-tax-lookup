@@ -1271,12 +1271,17 @@ export function HomeParcelAddressLookup({
 
   /**
    * Multi-match list: join pin-to-tag for owner / Real vs business personal
-   * property / values, sorted so primary Real accounts surface first.
+   * property / values. Place (street) first, then Real/BPP within each place;
+   * typed street without a direction prefers the no-direction place first.
    */
   const enrichedMultiHits = useMemo(() => {
     if (hits == null || hits.length < 2) return null;
-    return enrichSitusPinHitsForChooser(hits, multiMatchPinToTag);
-  }, [hits, multiMatchPinToTag]);
+    return enrichSitusPinHitsForChooser(
+      hits,
+      multiMatchPinToTag,
+      streetName,
+    );
+  }, [hits, multiMatchPinToTag, streetName]);
 
   /** Pin-to-tag class for the locked PIN when multi-account enrichment is ready. */
   const lockedMultiHitPropertyClass = useMemo(() => {

@@ -121,13 +121,20 @@ export function ArapahoeSourcesMethodology() {
           (for example the same house number on Wheeling St and on{" "}
           <strong className="text-slate-900">S</strong>
           {" "}
-          Wheeling Way, where{" "}
+          Wheeling Way, or on Havana St and on{" "}
+          <strong className="text-slate-900">S</strong>
+          {" "}
+          Havana St, where{" "}
           <strong className="text-slate-900">S</strong>
           {" "}
           is a directional). If you type a directional or street type that
           clearly fits only one of those places, Search locks that place; if you
           leave them out or the typed line is ambiguous, you see every match so
-          you can choose.          Incomplete or lightly misspelled street types (for example{" "}
+          you can choose. When several places stay in Matching properties, the
+          list keeps each street together (place first, then real property vs
+          business personal property within that street) and, if you omitted a
+          directional, lists the no-direction place first. Incomplete or lightly
+          misspelled street types (for example{" "}
           <strong className="text-slate-900">stree</strong>
           {" "}
           for street) and close street-name typos are resolved against other

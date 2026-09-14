@@ -957,17 +957,17 @@ function scoreTypedStreetAgainstPlaceTokens(
  * - exactly one place is compatible and clearly best (or the sole compatible place).
  *
  * Does not invent a missing directional. Typed direction that matches no place
- * leaves all hits (avoid blocking the resident). Real+BPP / single-place buckets
- * are unchanged ({@link partitionSitusHitsByPlaceStreet}).
+ * leaves all hits (avoid blocking the resident). Single-place buckets (same
+ * street after unit strip, including same-street Real+BPP) are unchanged
+ * ({@link partitionSitusHitsByPlaceStreet}).
  */
 export function narrowSitusHitsToUniqueTypedPlace(
   hits: readonly CountySitusPinHit[],
   streetNameRaw: string,
-  pinToTag?: CountyPinToTagFile | null,
 ): CountySitusPinHit[] {
   if (hits.length < 2) return [...hits];
 
-  const groups = partitionSitusHitsByPlaceStreet(hits, pinToTag);
+  const groups = partitionSitusHitsByPlaceStreet(hits);
   if (groups.length <= 1) return [...hits];
 
   const typed = streetTokensForPlaceDiscrimination(streetNameRaw);
@@ -1134,14 +1134,15 @@ function streetNameVariantsForLookup(nameRaw: string): string[] {
 }
 
 /**
- * When one index key holds distinct street lines (not unit-only / Real+BPP),
+ * When one index key holds distinct street lines (not unit-only condo),
  * emit one suggestion per place so typeahead matches the matched-list idea.
+ * Same-street Real+BPP stays one place via street grouping.
  */
 function expandStreetSuggestionByPlace(
   suggestion: SitusStreetSuggestion,
   pinToTag?: CountyPinToTagFile | null,
 ): SitusStreetSuggestion[] {
-  const groups = partitionSitusHitsByPlaceStreet(suggestion.hits, pinToTag);
+  const groups = partitionSitusHitsByPlaceStreet(suggestion.hits);
   if (groups.length <= 1) {
     return [suggestion];
   }
@@ -1237,7 +1238,7 @@ export function lookupPinsBySitusFuzzy(
     if (hits.length > 0) {
       return {
         kind: "match",
-        hits: narrowSitusHitsToUniqueTypedPlace(hits, streetName, pinToTag),
+        hits: narrowSitusHitsToUniqueTypedPlace(hits, streetName),
         approximateStreet: i > 0,
         matchedStreetNameKey: nameNorm,
       };
@@ -1261,7 +1262,7 @@ export function lookupPinsBySitusFuzzy(
   if (uniquelyBest) {
     return {
       kind: "match",
-      hits: narrowSitusHitsToUniqueTypedPlace(best.hits, streetName, pinToTag),
+      hits: narrowSitusHitsToUniqueTypedPlace(best.hits, streetName),
       approximateStreet: true,
       matchedStreetNameKey: best.streetNameKey,
     };

@@ -20,6 +20,15 @@ const WHEELING_BARE_QUERY = "1201 Wheeling";
 const WHEELING_SOUTH_WAY_QUERY = "1201 S Wheeling Way";
 
 /**
+ * Shipped Arapahoe situs + pin-to-tag collision: one stripped key holds
+ * 1400 HAVANA ST (Real) and 1400 S HAVANA ST (Real + business personal).
+ * Matching properties must keep places contiguous and prefer the no-direction
+ * place when the typed street omits S.
+ */
+const HAVANA_BARE_QUERY = "1400 Havana";
+const HAVANA_SOUTH_QUERY = "1400 S Havana St";
+
+/**
  * Typeahead dismiss contract: blur (keyboard Done / scroll-blur) keeps the
  * list open; outside pointer closes it.
  */
@@ -94,5 +103,76 @@ test.describe("shipped Arapahoe Wheeling place collision", () => {
     await expect(chooser).toBeVisible({ timeout: 30_000 });
     await expect(chooser).toContainText("WHEELING ST");
     await expect(chooser).toContainText("S WHEELING WAY");
+  });
+});
+
+/**
+ * Shipped Arapahoe situs + pin-to-tag: `1400|HAVANA|` holds HAVANA ST (Real)
+ * and S HAVANA ST (Real + business personal). Matching properties must keep
+ * places contiguous and prefer the no-direction place when typed omits S.
+ */
+test.describe("shipped Arapahoe 1400 Havana place + Matching properties order", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
+  test("typeahead lists HAVANA ST and S HAVANA ST as separate places", async ({
+    page,
+  }) => {
+    const street = streetAddressField(page);
+    await street.fill(HAVANA_BARE_QUERY);
+
+    const list = page.getByRole("listbox", { name: "Address suggestions" });
+    await expect(list).toBeVisible({ timeout: 30_000 });
+    const options = list.getByRole("option");
+    await expect(options).toHaveCount(2);
+    const texts = await options.allTextContents();
+    expect(
+      texts.some((t) => /HAVANA ST/i.test(t) && !/S HAVANA/i.test(t)),
+    ).toBe(true);
+    expect(texts.some((t) => /S HAVANA ST/i.test(t))).toBe(true);
+  });
+
+  test("bare Havana Matching properties: north place then south Real then BPP", async ({
+    page,
+  }) => {
+    await fillStreetAndSubmitSearch(page, HAVANA_BARE_QUERY);
+
+    const chooser = page.getByRole("region", { name: "Matching properties" });
+    await expect(chooser).toBeVisible({ timeout: 30_000 });
+    // Wait for pin-to-tag enrichment (kind labels) before reading order.
+    await expect(chooser.getByText("Real property").first()).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(
+      chooser.getByText("Business personal property").first(),
+    ).toBeVisible();
+
+    const items = chooser.getByRole("listitem");
+    await expect(items).toHaveCount(5);
+    const texts = await items.allTextContents();
+
+    expect(texts[0]).toMatch(/1400 HAVANA ST/i);
+    expect(texts[0]).not.toMatch(/S HAVANA/i);
+    expect(texts[0]).toMatch(/Real property/i);
+
+    expect(texts[1]).toMatch(/1400 S HAVANA ST/i);
+    expect(texts[1]).toMatch(/Real property/i);
+
+    for (let i = 2; i < texts.length; i++) {
+      expect(texts[i]).toMatch(/1400 S HAVANA ST/i);
+      expect(texts[i]).toMatch(/Business personal property/i);
+    }
+  });
+
+  test("Search with explicit S Havana St locks the south place", async ({
+    page,
+  }) => {
+    await fillStreetAndSubmitSearch(page, HAVANA_SOUTH_QUERY);
+
+    const chooser = page.getByRole("region", { name: "Matching properties" });
+    await expect(chooser).toBeVisible({ timeout: 30_000 });
+    await expect(chooser).toContainText(/1400 S HAVANA ST/i);
+    await expect(chooser).not.toContainText(/1400 HAVANA ST,/i);
   });
 });

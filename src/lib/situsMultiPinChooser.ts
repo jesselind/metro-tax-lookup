@@ -157,15 +157,19 @@ export type EnrichedSitusPinHit = CountySitusPinHit & {
 /**
  * Join situs hits to pin-to-tag for the multi-match list.
  *
- * Sort: account kind (Real, other, BPP). Then:
- * - Real+BPP places: actual value descending (primary building above equipment),
- *   then PIN — same product rule as before.
- * - Otherwise (e.g. all-Real condo units): label ascending, then PIN, so units
- *   read in address order instead of by market value.
+ * Sort:
+ * 1. Place (street line after unit strip) — keep accounts at one physical
+ *    address together. When `typedStreetName` omits a direction, places without
+ *    a direction token come first (e.g. HAVANA ST before S HAVANA ST). When it
+ *    includes a direction, matching places come first.
+ * 2. Account kind (Real, other, BPP).
+ * 3. Within a Real+BPP place: actual value descending, then PIN. Otherwise
+ *    (e.g. all-Real condo): label ascending, then PIN.
  */
 export function enrichSitusPinHitsForChooser(
   hits: CountySitusPinHit[],
   pinToTag: CountyPinToTagFile | null | undefined,
+  typedStreetName?: string | null,
 ): EnrichedSitusPinHit[] {
   const byPin = pinToTag?.byPin;
   const enriched: EnrichedSitusPinHit[] = hits.map((h) => {
@@ -199,13 +203,39 @@ export function enrichSitusPinHitsForChooser(
     return 2;
   };
 
-  /** Same Real+BPP truth as `situsPlaceHasRealAndBusinessPersonal` / account switch. */
-  const sortByValue = situsShouldOfferAccountTypeSwitch(enriched);
+  const placeKeyOf = (h: EnrichedSitusPinHit) =>
+    situsHitPlaceStreetKey(h) || h.label;
+
+  /** Per-place Real+BPP (value sort), not across the whole multi-place bucket. */
+  const sortByValueByPlace = new Map<string, boolean>();
+  {
+    const byPlace = new Map<string, EnrichedSitusPinHit[]>();
+    for (const h of enriched) {
+      const key = placeKeyOf(h);
+      let bucket = byPlace.get(key);
+      if (!bucket) {
+        bucket = [];
+        byPlace.set(key, bucket);
+      }
+      bucket.push(h);
+    }
+    for (const [key, group] of byPlace) {
+      sortByValueByPlace.set(key, situsShouldOfferAccountTypeSwitch(group));
+    }
+  }
 
   enriched.sort((a, b) => {
+    const ka = placeKeyOf(a);
+    const kb = placeKeyOf(b);
+    const ra = placeStreetRankForTypedQuery(ka, typedStreetName);
+    const rb = placeStreetRankForTypedQuery(kb, typedStreetName);
+    if (ra !== rb) return ra - rb;
+    const placeCmp = ka.localeCompare(kb);
+    if (placeCmp !== 0) return placeCmp;
+
     const kr = kindRank(a.accountKind) - kindRank(b.accountKind);
     if (kr !== 0) return kr;
-    if (sortByValue) {
+    if (sortByValueByPlace.get(ka)) {
       const av = a.totalActual ?? -1;
       const bv = b.totalActual ?? -1;
       if (bv !== av) return bv - av;
@@ -217,6 +247,80 @@ export function enrichSitusPinHitsForChooser(
   });
 
   return enriched;
+}
+
+/** Direction tokens used only for Matching-properties place order (not keys). */
+const CHOOSER_PLACE_DIR_TOKENS = new Set([
+  "N",
+  "S",
+  "E",
+  "W",
+  "NE",
+  "NW",
+  "SE",
+  "SW",
+  "NORTH",
+  "SOUTH",
+  "EAST",
+  "WEST",
+  "NORTHEAST",
+  "NORTHWEST",
+  "SOUTHEAST",
+  "SOUTHWEST",
+]);
+
+const CHOOSER_PLACE_DIR_CANON = new Map<string, string>([
+  ["N", "N"],
+  ["S", "S"],
+  ["E", "E"],
+  ["W", "W"],
+  ["NE", "NE"],
+  ["NW", "NW"],
+  ["SE", "SE"],
+  ["SW", "SW"],
+  ["NORTH", "N"],
+  ["SOUTH", "S"],
+  ["EAST", "E"],
+  ["WEST", "W"],
+  ["NORTHEAST", "NE"],
+  ["NORTHWEST", "NW"],
+  ["SOUTHEAST", "SE"],
+  ["SOUTHWEST", "SW"],
+]);
+
+function chooserStreetDirTokens(streetLineOrKey: string): string[] {
+  const line =
+    streetLineWithoutHouseNumber(streetLineOrKey.trim()) ||
+    streetLineOrKey.trim();
+  if (!line) return [];
+  const out: string[] = [];
+  for (const raw of line.toUpperCase().split(/[^\w]+/).filter(Boolean)) {
+    if (!CHOOSER_PLACE_DIR_TOKENS.has(raw)) continue;
+    const canon = CHOOSER_PLACE_DIR_CANON.get(raw) ?? raw;
+    if (!out.includes(canon)) out.push(canon);
+  }
+  return out;
+}
+
+/**
+ * Lower rank sorts earlier in Matching properties.
+ * Omitting a typed direction prefers places without a direction token.
+ * An explicit typed direction prefers places that include it.
+ */
+export function placeStreetRankForTypedQuery(
+  placeStreetKey: string,
+  typedStreetName?: string | null,
+): number {
+  const placeDirs = chooserStreetDirTokens(placeStreetKey);
+  const typed = (typedStreetName ?? "").trim();
+  if (!typed) {
+    return placeDirs.length > 0 ? 1 : 0;
+  }
+  const typedDirs = chooserStreetDirTokens(typed);
+  if (typedDirs.length === 0) {
+    return placeDirs.length > 0 ? 1 : 0;
+  }
+  return typedDirs.every((d) => placeDirs.includes(d)) ? 0 : 1;
 }
 
 /**
@@ -254,7 +358,7 @@ export function streetLineWithoutHouseNumber(streetLine: string): string {
 }
 
 export type SitusPlaceHitGroup = {
-  /** Stripped street line for the place, or empty when Real+BPP stays one place. */
+  /** Stripped street line for the place (unit fragment removed). */
   placeStreetKey: string;
   hits: CountySitusPinHit[];
 };
@@ -262,22 +366,18 @@ export type SitusPlaceHitGroup = {
 /**
  * Split situs hits into typeahead places.
  *
- * Real+BPP at one situs stays one group. Otherwise group by street line after
- * stripping a trailing unit fragment so condo units stay one place, while
- * direction/type collisions (e.g. ST vs S … WAY under one index key) become
- * separate places.
+ * Group by street line after stripping a trailing unit fragment so condo units
+ * and same-street Real+BPP stay one place, while direction/type collisions
+ * (e.g. ST vs S … WAY under one index key) become separate places even when
+ * account kinds mix across those streets.
  */
 export function partitionSitusHitsByPlaceStreet(
   hits: ReadonlyArray<CountySitusPinHit>,
-  pinToTag?: CountyPinToTagFile | null,
 ): SitusPlaceHitGroup[] {
   if (hits.length === 0) return [];
   if (hits.length === 1) {
     const only = hits[0]!;
     return [{ placeStreetKey: situsHitPlaceStreetKey(only), hits: [only] }];
-  }
-  if (situsPlaceHasRealAndBusinessPersonal(hits, pinToTag)) {
-    return [{ placeStreetKey: "", hits: [...hits] }];
   }
 
   const byStreet = new Map<string, CountySitusPinHit[]>();

@@ -329,6 +329,59 @@ describe("suggestSitusStreetsForNumber", () => {
       byPin.get(SYNTHETIC_DIR_COLLISION_WAY_PIN)?.hits.map((h) => h.pin),
     ).toEqual([SYNTHETIC_DIR_COLLISION_WAY_PIN]);
   });
+
+  it("still splits places when Real+BPP spans distinct streets under one key", () => {
+    const file: CountySitusToPinsFile = {
+      snapshot: { bundledAsOf: "2026-01-01", source: "test" },
+      lookupVersion: 1,
+      entryCount: 1,
+      byKey: {
+        [SYNTHETIC_DIR_COLLISION_SITUS_KEY]: [
+          {
+            pin: SYNTHETIC_DIR_COLLISION_ST_PIN,
+            label: SYNTHETIC_DIR_COLLISION_ST_LABEL,
+          },
+          {
+            pin: SYNTHETIC_DIR_COLLISION_WAY_PIN,
+            label: SYNTHETIC_DIR_COLLISION_WAY_LABEL,
+          },
+        ],
+      },
+    };
+    const pinToTag: CountyPinToTagFile = {
+      snapshot: { bundledAsOf: "t", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_DIR_COLLISION_ST_PIN]: {
+          tagId: "1",
+          tagShortDescr: "x",
+          propertyClassDescr: "Improvement",
+          totalActual: 100,
+          totalAssessed: 7,
+        },
+        [SYNTHETIC_DIR_COLLISION_WAY_PIN]: {
+          tagId: "2",
+          tagShortDescr: "x",
+          propertyClassDescr: "Personal",
+          totalActual: 1,
+          totalAssessed: 1,
+        },
+      },
+    };
+    const list = suggestSitusStreetsForNumber(
+      file,
+      SYNTHETIC_DIR_COLLISION_STREET_NUMBER,
+      "",
+      SYNTHETIC_DIR_COLLISION_STREET_NAME,
+      { pinToTag },
+    );
+    expect(list).toHaveLength(2);
+    expect(
+      list.flatMap((s) => s.hits.map((h) => h.pin)).sort(),
+    ).toEqual(
+      [SYNTHETIC_DIR_COLLISION_ST_PIN, SYNTHETIC_DIR_COLLISION_WAY_PIN].sort(),
+    );
+  });
 });
 
 describe("lookupPinsBySitusFuzzy multi-account situs", () => {
@@ -506,6 +559,43 @@ describe("lookupPinsBySitusFuzzy place discrimination", () => {
     }
   });
 
+  it("locks directed place even when Real+BPP pin-to-tag spans both streets", () => {
+    const pinToTag: CountyPinToTagFile = {
+      snapshot: { bundledAsOf: "t", source: "test" },
+      pinDigits: 9,
+      byPin: {
+        [SYNTHETIC_DIR_COLLISION_ST_PIN]: {
+          tagId: "1",
+          tagShortDescr: "x",
+          propertyClassDescr: "Improvement",
+          totalActual: 100,
+          totalAssessed: 7,
+        },
+        [SYNTHETIC_DIR_COLLISION_WAY_PIN]: {
+          tagId: "2",
+          tagShortDescr: "x",
+          propertyClassDescr: "Personal",
+          totalActual: 1,
+          totalAssessed: 1,
+        },
+      },
+    };
+    const result = lookupPinsBySitusFuzzy(
+      dirCollisionSitusFile(),
+      SYNTHETIC_DIR_COLLISION_STREET_NUMBER,
+      "",
+      "S Synthetic Meridian Way",
+      "",
+      pinToTag,
+    );
+    expect(result.kind).toBe("match");
+    if (result.kind === "match") {
+      expect(result.hits.map((h) => h.pin)).toEqual([
+        SYNTHETIC_DIR_COLLISION_WAY_PIN,
+      ]);
+    }
+  });
+
   it("still returns every Real+BPP PIN at a shared situs", () => {
     const file: CountySitusToPinsFile = {
       snapshot: { bundledAsOf: "2026-01-01", source: "test" },
@@ -605,5 +695,62 @@ describe("lookupPinsBySitusFuzzy shipped Arapahoe Wheeling collision", () => {
       true,
     );
     expect(result.hits.some((h) => /WHEELING ST/i.test(h.label))).toBe(false);
+  });
+});
+
+describe("shipped Arapahoe 1400 Havana place collision", () => {
+  const file = JSON.parse(
+    readFileSync(
+      join(process.cwd(), "public/data/arapahoe-situs-to-pins.json"),
+      "utf8",
+    ),
+  ) as CountySitusToPinsFile;
+  const pinToTag = JSON.parse(
+    readFileSync(
+      join(process.cwd(), "public/data/arapahoe-pin-to-tag.json"),
+      "utf8",
+    ),
+  ) as CountyPinToTagFile;
+
+  it("typeahead lists HAVANA ST and S HAVANA ST as separate places", () => {
+    const list = suggestSitusStreetsForNumber(file, "1400", "", "Havana", {
+      pinToTag,
+    });
+    expect(list.length).toBeGreaterThanOrEqual(2);
+    const samples = list.map((s) => s.sampleLabel);
+    expect(samples.some((l) => /HAVANA ST/i.test(l) && !/S HAVANA/i.test(l))).toBe(
+      true,
+    );
+    expect(samples.some((l) => /S HAVANA ST/i.test(l))).toBe(true);
+  });
+
+  it("bare Havana Search keeps both places", () => {
+    const result = lookupPinsBySitusFuzzy(file, "1400", "", "Havana", "");
+    expect(result.kind).toBe("match");
+    if (result.kind !== "match") return;
+    expect(result.hits.some((h) => /^1400 HAVANA ST,/i.test(h.label))).toBe(
+      true,
+    );
+    expect(result.hits.some((h) => /^1400 S HAVANA ST,/i.test(h.label))).toBe(
+      true,
+    );
+  });
+
+  it("explicit S Havana St locks the south place only", () => {
+    const result = lookupPinsBySitusFuzzy(
+      file,
+      "1400",
+      "",
+      "S Havana St",
+      "",
+    );
+    expect(result.kind).toBe("match");
+    if (result.kind !== "match") return;
+    expect(
+      result.hits.every((h) => /^1400 S HAVANA ST,/i.test(h.label)),
+    ).toBe(true);
+    expect(result.hits.some((h) => /^1400 HAVANA ST,/i.test(h.label))).toBe(
+      false,
+    );
   });
 });
