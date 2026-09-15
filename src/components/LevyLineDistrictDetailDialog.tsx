@@ -23,6 +23,7 @@ import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSectio
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
+import { isSchoolAuthorityLevyLine } from "@/lib/levyLineAssessedBase";
 import {
   countyConfigById,
   countyFeatureAvailable,
@@ -412,7 +413,12 @@ export function LevyLineDistrictDetailDialog({
   const yoy = useMemo(
     () =>
       buildLevyLineYoYViewModel(
-        { levyLineCode, dolaMatch, mills: stackMills },
+        {
+          levyLineCode,
+          dolaMatch,
+          mills: stackMills,
+          authority: authorityLabel,
+        },
         totalAssessedForEstimate,
         countyId,
         levyDollarAssessedContext,
@@ -422,6 +428,7 @@ export function LevyLineDistrictDetailDialog({
       levyLineCode,
       dolaMatch,
       stackMills,
+      authorityLabel,
       totalAssessedForEstimate,
       countyId,
       levyDollarAssessedContext,
@@ -851,6 +858,12 @@ export function LevyLineDistrictDetailDialog({
                 <AuthorityMillsHistoryChart
                   series={millsHistory}
                   assessedContext={levyDollarAssessedContext}
+                  lineIsSchoolAuthority={isSchoolAuthorityLevyLine({
+                    authorityName: authorityLabel,
+                    levyLineCode,
+                    countyId,
+                    dolaMatchedLegalName: dolaMatch?.matchedLegalName,
+                  })}
                   dollarAudience={dollarAudience}
                   priorYearValuesGap={priorYearValuesGap}
                   countyId={countyId}

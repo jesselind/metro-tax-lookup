@@ -16,6 +16,13 @@ from extract_douglas_valuation_history import (
   write_shards,
 )
 
+# Invented Realware-shaped detail (split-rate taxDollars). Not a real parcel.
+SYNTHETIC_SPLIT_RATE_DETAIL = (
+  Path(__file__).resolve().parent
+  / "fixtures"
+  / "douglas_realware_detail_synthetic_split_rate.json"
+)
+
 
 class TestAggregateValuesByTaxYear(unittest.TestCase):
   def test_sums_abstract_codes_per_year(self) -> None:
@@ -25,12 +32,18 @@ class TestAggregateValuesByTaxYear(unittest.TestCase):
         "abstractCode": "1212",
         "actualValue": 100.0,
         "assessedValue": 7.0,
+        "alternateAssessedValue": 8.0,
+        "taxDollars": 1.4,
+        "alternateTaxDollars": 1.6,
       },
       {
         "taxYear": 2025.0,
         "abstractCode": "1111",
         "actualValue": 50.0,
         "assessedValue": 3.0,
+        "alternateAssessedValue": 4.0,
+        "taxDollars": 0.6,
+        "alternateTaxDollars": 0.4,
       },
       {
         "taxYear": 2024.0,
@@ -43,11 +56,24 @@ class TestAggregateValuesByTaxYear(unittest.TestCase):
     self.assertEqual(
       out,
       [
-        {"taxYear": 2024, "actualValue": 90, "assessedValue": 6},
-        {"taxYear": 2025, "actualValue": 150, "assessedValue": 10},
+        {
+          "taxYear": 2024,
+          "actualValue": 90,
+          "assessedValue": 6,
+          "alternateAssessedValue": 0,
+          "taxDollars": 0,
+          "alternateTaxDollars": 0,
+        },
+        {
+          "taxYear": 2025,
+          "actualValue": 150,
+          "assessedValue": 10,
+          "alternateAssessedValue": 12,
+          "taxDollars": 2,
+          "alternateTaxDollars": 2,
+        },
       ],
     )
-
 
 class TestParseDetailFile(unittest.TestCase):
   def test_reads_account_and_history(self) -> None:
@@ -79,6 +105,36 @@ class TestParseDetailFile(unittest.TestCase):
       self.assertEqual(account, "R0100001")
       self.assertEqual(len(history), 2)
       self.assertEqual(history[-1]["taxYear"], 2026)
+
+  def test_synthetic_split_rate_detail_golden(self) -> None:
+    """Committed Realware-shaped fixture: split-rate tax totals survive extract."""
+    self.assertTrue(
+      SYNTHETIC_SPLIT_RATE_DETAIL.is_file(),
+      f"missing fixture: {SYNTHETIC_SPLIT_RATE_DETAIL}",
+    )
+    parsed = parse_detail_file(SYNTHETIC_SPLIT_RATE_DETAIL)
+    self.assertIsNotNone(parsed)
+    account, history = parsed
+    self.assertEqual(account, "R0100001")
+    by_year = {row["taxYear"]: row for row in history}
+    self.assertEqual(by_year[2025]["assessedValue"], 25740)
+    self.assertEqual(by_year[2025]["alternateAssessedValue"], 25380)
+    self.assertEqual(
+      by_year[2025]["taxDollars"] + by_year[2025]["alternateTaxDollars"],
+      2300,
+    )
+    self.assertEqual(by_year[2026]["assessedValue"], 27170)
+    self.assertEqual(by_year[2026]["alternateAssessedValue"], 26790)
+    self.assertEqual(
+      by_year[2026]["taxDollars"] + by_year[2026]["alternateTaxDollars"],
+      2500,
+    )
+    # Honesty: Realware face total must not equal assessed × a typical mill product.
+    mills_product_80 = round(by_year[2026]["assessedValue"] * (80 / 1000))
+    self.assertNotEqual(
+      by_year[2026]["taxDollars"] + by_year[2026]["alternateTaxDollars"],
+      mills_product_80,
+    )
 
 
 class TestWriteShards(unittest.TestCase):

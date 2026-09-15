@@ -27,7 +27,17 @@ import {
 export type CountyValuationHistoryPoint = {
   taxYear: number;
   actualValue: number;
+  /** Local / non-school assessed (Realware assessedValue sum). */
   assessedValue: number;
+  /**
+   * School-side assessed (Realware alternateAssessedValue sum).
+   * 0 when the year has no alternate side (pre–split-rate).
+   */
+  alternateAssessedValue?: number;
+  /** Realware taxDollars sum (local side). Whole dollars after extract round. */
+  taxDollars?: number;
+  /** Realware alternateTaxDollars sum (school side). */
+  alternateTaxDollars?: number;
 };
 
 export type CountyValuationHistoryByAccountFile = {
@@ -45,7 +55,7 @@ export type CountyValuationHistoryByAccountFile = {
 const VALUATION_HISTORY_SHARD_FETCH_TIMEOUT_MS = 30_000;
 
 /** Bump when regenerating valuation-history shards (schema or full-county re-ship). */
-export const COUNTY_VALUATION_HISTORY_CACHE_BUST = "20260906fullship";
+export const COUNTY_VALUATION_HISTORY_CACHE_BUST = "20260915splitrate";
 
 const valuationHistoryShardCache = new Map<
   string,
@@ -102,7 +112,39 @@ function isValuationHistoryPoint(
   ) {
     return null;
   }
-  return { taxYear, actualValue, assessedValue };
+  const point: CountyValuationHistoryPoint = {
+    taxYear,
+    actualValue,
+    assessedValue,
+  };
+  const alternateAssessedValue = row.alternateAssessedValue;
+  if (alternateAssessedValue !== undefined) {
+    if (
+      typeof alternateAssessedValue !== "number" ||
+      !Number.isFinite(alternateAssessedValue)
+    ) {
+      return null;
+    }
+    point.alternateAssessedValue = alternateAssessedValue;
+  }
+  const taxDollars = row.taxDollars;
+  if (taxDollars !== undefined) {
+    if (typeof taxDollars !== "number" || !Number.isFinite(taxDollars)) {
+      return null;
+    }
+    point.taxDollars = taxDollars;
+  }
+  const alternateTaxDollars = row.alternateTaxDollars;
+  if (alternateTaxDollars !== undefined) {
+    if (
+      typeof alternateTaxDollars !== "number" ||
+      !Number.isFinite(alternateTaxDollars)
+    ) {
+      return null;
+    }
+    point.alternateTaxDollars = alternateTaxDollars;
+  }
+  return point;
 }
 
 export function validateCountyValuationHistoryByAccountFile(

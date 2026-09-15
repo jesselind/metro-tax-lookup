@@ -45,7 +45,9 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(page.locator("#home-parcel-assessment-year")).toContainText(
       "2026",
     );
-    await expect(page.locator("#home-parcel-tax-year")).toContainText("2025");
+    // Face Realware year matches Assessment year → Tax year tile stays hidden
+    // (only shown when the two years differ).
+    await expect(page.locator("#home-parcel-tax-year")).toHaveCount(0);
     await expect(
       page
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
@@ -61,7 +63,18 @@ test.describe("Douglas county search gate (Phase 13)", () => {
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
         .getByText(SYNTHETIC_DOUGLAS_PIN, { exact: true }),
     ).toBeVisible();
-    await expect(page.locator("#home-parcel-property-tax")).toContainText("$272");
+    // Realware face tax (1300+1200), not assessed × stack mills (single-base).
+    await expect(page.locator("#home-parcel-property-tax")).toContainText(
+      "$2,500",
+    );
+    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
+      "$272",
+    );
+    // Dual-base stack total reconciles to the same face dollar.
+    await expect(
+      page.getByRole("region", { name: "Total mill levy for your stack" }),
+    ).toContainText("$2,500");
+    await expect(page.getByText("SYNTHETIC SCHOOL DIST # 99")).toBeVisible();
   });
 
   test("Douglas address resolve with county scope selected", async ({

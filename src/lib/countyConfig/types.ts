@@ -197,6 +197,18 @@ export type CountyConfig = {
    * Arapahoe: "parcel record". Douglas: "property details".
    */
   hostedPropertyPageName: string;
+  /**
+   * Where the locked-report Property tax tile gets its dollar.
+   * - `singleAssessedTimesTotalMills`: assessed × total stack mills (Arapahoe-shaped).
+   * - `realwareTaxDollars`: Realware `taxDollars` + `alternateTaxDollars` for the face year (Douglas).
+   * - `omit`: never show a face Property tax dollar.
+   * Unknown / missing fields for the chosen mode → omit the dollar (fail closed).
+   * Never silently use mills math when the mode is `realwareTaxDollars`.
+   */
+  propertyTaxEstimateMode:
+    | "singleAssessedTimesTotalMills"
+    | "realwareTaxDollars"
+    | "omit";
   /** Sources this county has. False omits the control (never had a source). */
   features: CountyFeatures;
   /**

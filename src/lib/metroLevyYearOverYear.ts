@@ -21,6 +21,7 @@ import type {
   LevyDollarAudience,
 } from "@/lib/levyDollarAssessedContext";
 import { levyDollarsPairForTaxYears } from "@/lib/levyDollarAssessedContext";
+import { isSchoolAuthorityLevyLine } from "@/lib/levyLineAssessedBase";
 import { STACK_RATE_CHANGE_CALLOUT_MESSAGE } from "@/content/levyYoYCopy";
 import {
   findMetroDistrictIdsFromLevyLines,
@@ -565,6 +566,7 @@ function dollarsPairFromMills(
   assessed: number | null,
   assessedContext: LevyDollarAssessedContext | null | undefined,
   audience?: LevyDollarAudience,
+  lineIsSchoolAuthority: boolean = false,
 ): {
   previousDollars: number | null;
   currentDollars: number | null;
@@ -579,6 +581,7 @@ function dollarsPairFromMills(
       taxYearCurrent,
       assessedContext,
       audience,
+      lineIsSchoolAuthority,
     );
   }
   if (assessed == null) {
@@ -598,8 +601,11 @@ function dollarsPairFromMills(
       currentAssessed: assessed,
       currentTaxYear: taxYearCurrent,
       assessedByTaxYear: new Map(),
+      currentSchoolAssessed: null,
+      schoolAssessedByTaxYear: new Map(),
     },
     audience,
+    lineIsSchoolAuthority,
   );
   return pair;
 }
@@ -611,6 +617,7 @@ function dollarsPairFromMills(
 export function buildLevyLineYoYViewModel(
   line: Pick<CommittedLevyLine, "levyLineCode" | "dolaMatch"> & {
     mills?: number;
+    authority?: string;
   },
   totalAssessedForEstimate: number | null | undefined,
   countyId?: string | null,
@@ -619,6 +626,12 @@ export function buildLevyLineYoYViewModel(
 ): LevyLineYoYViewModel | null {
   const assessed = parcelAssessedForDollarEstimate(totalAssessedForEstimate);
   const lgKey = metroLgIdKeyFromDolaMatch(line.dolaMatch);
+  const lineIsSchool = isSchoolAuthorityLevyLine({
+    authorityName: line.authority ?? "",
+    levyLineCode: line.levyLineCode,
+    countyId,
+    dolaMatchedLegalName: line.dolaMatch?.matchedLegalName,
+  });
 
   if (metroPurposeYoYTrustedForLine(line, METRO_LEVY_RATE_YOY_EPS, countyId)) {
     const purposeChanges = listMetroLevyPurposeChangesForLgId(
@@ -659,6 +672,7 @@ export function buildLevyLineYoYViewModel(
         assessed,
         assessedContext,
         dollarAudience,
+        lineIsSchool,
       );
       deltaDollars = dollars.differenceDollars;
       usesTheoreticalAssessed = dollars.usesTheoreticalAssessed;
@@ -703,6 +717,7 @@ export function buildLevyLineYoYViewModel(
         assessed,
         assessedContext,
         dollarAudience,
+        lineIsSchool,
       );
       usesTheoreticalAssessed = dollars.usesTheoreticalAssessed;
       totalCompare = {
@@ -738,6 +753,7 @@ export function buildLevyLineYoYViewModel(
     countyId,
     assessedContext,
     dollarAudience,
+    lineIsSchool,
   );
 }
 
@@ -911,6 +927,7 @@ function buildAuthLevyLineYoYViewModel(
   countyId?: string | null,
   assessedContext?: LevyDollarAssessedContext | null,
   dollarAudience?: LevyDollarAudience,
+  lineIsSchoolAuthority: boolean = false,
 ): LevyLineYoYViewModel | null {
   const authYoY = authorityTotalMillsYoY(line.levyLineCode, countyId, {
     residentStackMills: line.mills,
@@ -927,6 +944,7 @@ function buildAuthLevyLineYoYViewModel(
     assessed,
     assessedContext,
     dollarAudience,
+    lineIsSchoolAuthority,
   );
   const summary = metroDistrictTileYoYSummary(
     authYoY.millsDelta,

@@ -1,0 +1,41 @@
+{
+  "accountNumber": "R0100001",
+  "valuesByAbstractCode": [
+    {
+      "taxYear": 2025.0,
+      "abstractCode": "1112",
+      "actualValue": 200000.0,
+      "assessedValue": 14000.0,
+      "alternateAssessedValue": 15000.0,
+      "taxDollars": 700.4,
+      "alternateTaxDollars": 650.4
+    },
+    {
+      "taxYear": 2025.0,
+      "abstractCode": "1212",
+      "actualValue": 160000.0,
+      "assessedValue": 11740.0,
+      "alternateAssessedValue": 10380.0,
+      "taxDollars": 499.6,
+      "alternateTaxDollars": 449.6
+    },
+    {
+      "taxYear": 2026.0,
+      "abstractCode": "1112",
+      "actualValue": 210000.0,
+      "assessedValue": 15000.0,
+      "alternateAssessedValue": 15500.0,
+      "taxDollars": 750.4,
+      "alternateTaxDollars": 700.4
+    },
+    {
+      "taxYear": 2026.0,
+      "abstractCode": "1212",
+      "actualValue": 170000.0,
+      "assessedValue": 12170.0,
+      "alternateAssessedValue": 11290.0,
+      "taxDollars": 549.6,
+      "alternateTaxDollars": 499.6
+    }
+  ]
+}

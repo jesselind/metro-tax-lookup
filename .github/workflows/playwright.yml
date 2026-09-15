@@ -66,7 +66,7 @@ jobs:
         run: npm run ci:test:unit
 
   python:
-    name: Python unit tests (ingest + parcel-index)
+    name: Python unit tests (ingest + parcel-index + authority-mills)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -89,6 +89,8 @@ jobs:
         run: npm run ci:test:ingest
       - name: Parcel index tests
         run: npm run ci:test:parcel-index
+      - name: Authority mills + Douglas valuation-history extract
+        run: npm run ci:test:authority-mills-extract
 
   e2e:
     name: Browser e2e (Playwright)
