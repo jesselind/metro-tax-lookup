@@ -4,6 +4,7 @@
 
 import type { CountyConfig } from "@/lib/countyConfig";
 import type { CountyValuationHistoryPoint } from "@/lib/countyValuationHistoryData";
+import { faceValuationHistoryPoint } from "@/lib/propertyTaxEstimate";
 
 export type ParcelSummaryYears = {
   assessmentYear: string | null;
@@ -35,9 +36,11 @@ function latestValuationHistoryTaxYear(
 
 /**
  * Summary-tile and county property-page years from file-backed sources only.
- * Arapahoe: mart columns on pin-to-tag. Douglas bulk lacks those columns — use
- * hashPath maintainer stamp (SPA path year), levy-stack snapshot tax year, and
- * Realware valuation history when loaded.
+ * Arapahoe: mart columns on pin-to-tag (dual Assessment year / Tax year).
+ * Douglas: when Realware valuation history is loaded, Tax year is the face
+ * Realware tax year (coherent with Values / face Property tax) — not the mill
+ * PDF title alone. Assessment year uses the hashPath stamp when present.
+ * Without history, stamp + levy-stack tax year remain (legacy until history loads).
  */
 export function resolveParcelSummaryYears(
   config: CountyConfig,
@@ -46,6 +49,8 @@ export function resolveParcelSummaryYears(
     pinRowTaxYear?: string | null;
     levyStacksTaxYear?: string | null;
     valuationHistory?: readonly CountyValuationHistoryPoint[] | null;
+    /** Pin total assessed; used to pick the Realware face year when history loads. */
+    pinTotalAssessed?: number | null;
   },
 ): ParcelSummaryYears {
   const pinAssess = trimYear(opts.pinRowAssessmentYear);
@@ -62,10 +67,20 @@ export function resolveParcelSummaryYears(
   const stampYear = hashPathParcelRecordStampYear(config);
   const historyLatest = latestValuationHistoryTaxYear(opts.valuationHistory);
   const stacksTax = trimYear(opts.levyStacksTaxYear);
+  const face = faceValuationHistoryPoint(
+    opts.valuationHistory,
+    opts.pinTotalAssessed,
+  );
+  const historyFaceTaxYear = face ? String(face.taxYear) : null;
 
-  const assessmentYear = pinAssess ?? stampYear ?? historyLatest;
-  const taxYear = pinTax ?? stacksTax;
-  const parcelRecordLinkYear = historyLatest ?? pinAssess ?? stampYear;
+  const assessmentYear =
+    pinAssess ?? stampYear ?? historyFaceTaxYear ?? historyLatest;
+  // Once Realware history is loaded, face tax year wins over mill-PDF / pin
+  // synthesis so Values, Property tax, and Tax year stay one coherent set.
+  const taxYear =
+    historyFaceTaxYear ?? pinTax ?? stacksTax ?? historyLatest;
+  const parcelRecordLinkYear =
+    historyFaceTaxYear ?? historyLatest ?? pinAssess ?? stampYear;
 
   return { assessmentYear, taxYear, parcelRecordLinkYear };
 }

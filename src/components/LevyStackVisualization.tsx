@@ -46,10 +46,7 @@ import {
   parseMills,
 } from "@/lib/committedLevyLine";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
-import {
-  annualTaxDollarsFromAssessedMills,
-  parcelAssessedForDollarEstimate,
-} from "@/lib/annualTaxFromAssessedMills";
+import { parcelAssessedForDollarEstimate } from "@/lib/annualTaxFromAssessedMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
   FIRST_CHANGED_LEVY_TILE_DOM_ID,
@@ -58,6 +55,12 @@ import {
   lineIdsWithMillRateChanges,
 } from "@/lib/metroLevyYearOverYear";
 import type { LevyDollarAssessedContext } from "@/lib/levyDollarAssessedContext";
+import {
+  annualTaxDollarsForLevyLine,
+  annualTaxDollarsForLevyStack,
+  assessedBaseForLevyLine,
+  isSchoolAuthorityLevyLine,
+} from "@/lib/levyLineAssessedBase";
 import { levyDisplayDollarsForAudience } from "@/lib/resolveDwellingCount";
 
 const INPUT_FULL = `${INPUT_CLASS} w-full min-w-0 max-w-none`;
@@ -330,12 +333,16 @@ export function LevyStackVisualization({
     [loadedParcelMeta, countyConfig],
   );
 
-  /** Positive assessed value only; omit so we never show a fake $0 from missing data. */
+  /** Positive local assessed only; omit so we never show a fake $0 from missing data. */
   const assessedForLevyDollars = useMemo((): number | null => {
     return parcelAssessedForDollarEstimate(
       loadedParcelMeta?.parcelValues?.totalAssessed,
     );
   }, [loadedParcelMeta]);
+
+  /** School-side assessed when dual-rate context supplies it (may equal local). */
+  const schoolAssessedForLevyDollars =
+    levyDollarAssessedContext?.currentSchoolAssessed ?? null;
 
   const sumMills = useMemo(() => {
     const s = lines.reduce((acc, l) => acc + l.mills, 0);
@@ -344,17 +351,40 @@ export function LevyStackVisualization({
 
   const totalLevyDollarsRounded = useMemo(() => {
     if (assessedForLevyDollars == null || sumMills <= 0) return null;
+    const annual = annualTaxDollarsForLevyStack(
+      lines.map((l) => ({
+        authority: l.authority,
+        mills: l.mills,
+        levyLineCode: l.levyLineCode,
+        dolaMatchedLegalName: l.dolaMatch?.matchedLegalName,
+      })),
+      assessedForLevyDollars,
+      schoolAssessedForLevyDollars,
+      countyConfig.id,
+    );
     return levyDisplayDollarsForAudience(
-      annualTaxDollarsFromAssessedMills(assessedForLevyDollars, sumMills),
+      annual,
       levyDollarUnitCount,
       rentMode,
     );
-  }, [assessedForLevyDollars, sumMills, levyDollarUnitCount, rentMode]);
+  }, [
+    assessedForLevyDollars,
+    schoolAssessedForLevyDollars,
+    lines,
+    sumMills,
+    levyDollarUnitCount,
+    rentMode,
+    countyConfig.id,
+  ]);
 
   const levyDollarPeriodLabel = rentMode ? "monthly" : "annual";
   const levyDollarSuffix = rentMode ? "/mo" : null;
 
-  /** Assessed passed into district detail $ math; per-unit when Rent N is known. */
+  /**
+   * Assessed passed into district detail $ math when dual-base context is
+   * absent; per-unit when Rent N is known. Prefer dual-base context in the
+   * dialog when present.
+   */
   const assessedForDetailEstimate = useMemo(() => {
     if (assessedForLevyDollars == null) return null;
     if (levyDollarUnitCount == null || levyDollarUnitCount < 1) {
@@ -603,9 +633,17 @@ export function LevyStackVisualization({
                 const lineDollarsRounded =
                   assessedForLevyDollars != null
                     ? levyDisplayDollarsForAudience(
-                        annualTaxDollarsFromAssessedMills(
+                        annualTaxDollarsForLevyLine(
+                          {
+                            authority: item.authority,
+                            mills: item.mills,
+                            levyLineCode: sourceLine?.levyLineCode,
+                            dolaMatchedLegalName:
+                              sourceLine?.dolaMatch?.matchedLegalName,
+                          },
                           assessedForLevyDollars,
-                          item.mills,
+                          schoolAssessedForLevyDollars,
+                          countyConfig.id,
                         ),
                         levyDollarUnitCount,
                         rentMode,
@@ -931,9 +969,19 @@ export function LevyStackVisualization({
                     <strong className="font-semibold text-slate-700">
                       estimated {levyDollarPeriodLabel}
                     </strong>{" "}
-                    taxes from your assessed value (mills × assessed ÷ 1000
+                    taxes from your assessed value (each bill entry: mills ×
+                    that entry&apos;s assessed base ÷ 1000
                     {rentMode ? ", then ÷ 12" : ""}, rounded to the nearest
                     dollar)
+                    {schoolAssessedForLevyDollars != null &&
+                    assessedForLevyDollars != null &&
+                    Math.round(schoolAssessedForLevyDollars) !==
+                      Math.round(assessedForLevyDollars) ? (
+                      <>
+                        . School district entries use school assessed; other
+                        entries use local assessed
+                      </>
+                    ) : null}
                     {levyDollarUnitCount != null && levyDollarUnitCount > 1 ? (
                       <>
                         , shown as an equal split across{" "}
@@ -1245,7 +1293,32 @@ export function LevyStackVisualization({
           pctLabel={formatPct(detailContext.pct)}
           match={detailContext.match}
           dolaMatch={detailContext.dolaMatch}
-          totalAssessedForEstimate={assessedForDetailEstimate}
+          totalAssessedForEstimate={(() => {
+            if (assessedForDetailEstimate == null) return null;
+            if (schoolAssessedForLevyDollars == null) {
+              return assessedForDetailEstimate;
+            }
+            const unitScale =
+              levyDollarUnitCount != null && levyDollarUnitCount >= 1
+                ? 1 / levyDollarUnitCount
+                : 1;
+            const local =
+              assessedForLevyDollars != null
+                ? assessedForLevyDollars * unitScale
+                : assessedForDetailEstimate;
+            const school = schoolAssessedForLevyDollars * unitScale;
+            return assessedBaseForLevyLine({
+              localAssessed: local,
+              schoolAssessed: school,
+              lineIsSchoolAuthority: isSchoolAuthorityLevyLine({
+                authorityName: detailContext.authority,
+                levyLineCode: detailContext.line.levyLineCode,
+                countyId: countyConfig.id,
+                dolaMatchedLegalName:
+                  detailContext.line.dolaMatch?.matchedLegalName,
+              }),
+            });
+          })()}
           levyDollarAssessedContext={levyDollarAssessedContext}
           dollarAudience={dollarAudience}
           accountId={loadedParcelMeta?.pin ?? null}

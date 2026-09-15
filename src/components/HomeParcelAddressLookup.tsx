@@ -153,10 +153,11 @@ import {
   safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
 import { formatUsdWhole } from "@/lib/formatUsd";
+import { parcelAssessedForDollarEstimate } from "@/lib/annualTaxFromAssessedMills";
 import {
-  annualTaxDollarsFromAssessedMills,
-  parcelAssessedForDollarEstimate,
-} from "@/lib/annualTaxFromAssessedMills";
+  estimatedAnnualPropertyTaxDollars as resolveEstimatedAnnualPropertyTaxDollars,
+  faceValuationHistoryPoint,
+} from "@/lib/propertyTaxEstimate";
 import {
   DEFAULT_AUDIENCE_MODE,
   type AudienceMode,
@@ -771,18 +772,21 @@ export function HomeParcelAddressLookup({
     return Math.round(s * 1000) / 1000;
   }, [levyLines]);
 
-  /** Same estimated annual $ as the levy stack Total row (mills × assessed ÷ 1000). */
+  /** Face Property tax $ — county estimate mode (never silent mills for Douglas). */
   const estimatedAnnualPropertyTaxDollars = useMemo(() => {
-    if (levyAwaitingTemplateMills) return null;
-    const assessed = parcelAssessedForDollarEstimate(
-      levyLoadedMeta?.parcelValues?.totalAssessed,
-    );
-    if (assessed == null || sumMills <= 0) return null;
-    return annualTaxDollarsFromAssessedMills(assessed, sumMills);
+    return resolveEstimatedAnnualPropertyTaxDollars({
+      mode: activeCountyConfig.propertyTaxEstimateMode,
+      totalAssessed: levyLoadedMeta?.parcelValues?.totalAssessed,
+      sumMills,
+      valuationHistory,
+      levyAwaitingTemplateMills,
+    });
   }, [
+    activeCountyConfig.propertyTaxEstimateMode,
     levyAwaitingTemplateMills,
     levyLoadedMeta?.parcelValues?.totalAssessed,
     sumMills,
+    valuationHistory,
   ]);
 
   const homeCompsGridPdfHref = useMemo(
@@ -1405,8 +1409,55 @@ export function HomeParcelAddressLookup({
       pinRowTaxYear: levyLoadedMeta.parcelTaxYear,
       levyStacksTaxYear: levyLoadedMeta.levyStacksTaxYear,
       valuationHistory,
+      pinTotalAssessed: levyLoadedMeta.parcelValues.totalAssessed,
     });
   }, [levyLoadedMeta, activeCountyConfig, valuationHistory]);
+
+  /**
+   * Douglas: overlay Realware school assessed onto the parcel-record values
+   * table so residential dual-rate rows appear (shared Colorado shape).
+   */
+  const parcelRecordForDisplay = useMemo(() => {
+    if (!parcelRecord) return null;
+    if (
+      activeCountyConfig.propertyTaxEstimateMode !== "realwareTaxDollars" ||
+      !valuationHistory?.length
+    ) {
+      return parcelRecord;
+    }
+    const face = faceValuationHistoryPoint(
+      valuationHistory,
+      levyLoadedMeta?.parcelValues?.totalAssessed,
+    );
+    if (
+      !face ||
+      face.alternateAssessedValue == null ||
+      !Number.isFinite(face.alternateAssessedValue) ||
+      face.alternateAssessedValue <= 0
+    ) {
+      return parcelRecord;
+    }
+    return {
+      ...parcelRecord,
+      assessmentYear:
+        parcelRecord.assessmentYear ??
+        parcelSummaryYears?.assessmentYear ??
+        String(face.taxYear),
+      parcelTaxYear:
+        parcelRecord.parcelTaxYear ??
+        parcelSummaryYears?.taxYear ??
+        String(face.taxYear),
+      taxRollDescr: parcelRecord.taxRollDescr ?? "Real",
+      schoolAssessedTotal: face.alternateAssessedValue,
+    };
+  }, [
+    parcelRecord,
+    activeCountyConfig.propertyTaxEstimateMode,
+    valuationHistory,
+    levyLoadedMeta?.parcelValues?.totalAssessed,
+    parcelSummaryYears?.assessmentYear,
+    parcelSummaryYears?.taxYear,
+  ]);
 
   /** Bill tax year — pairs current assessed with mill-history AUTH years. */
   const parcelBillTaxYear = useMemo(
@@ -1428,12 +1479,17 @@ export function HomeParcelAddressLookup({
     const assessed = parcelAssessedForDollarEstimate(
       levyLoadedMeta.parcelValues.totalAssessed,
     );
+    const schoolFromParcel = parcelAssessedForDollarEstimate(
+      parcelRecordForDisplay?.schoolAssessedTotal ??
+        parcelRecord?.schoolAssessedTotal,
+    );
     // Mill AUTH series and levy YoY dollars use bill tax year, not assessment
     // year (Arapahoe: assessment 2026 + tax 2025; mills end at 2025).
     const base = buildLevyDollarAssessedContext(
       valuationHistory,
       assessed,
       parcelBillTaxYear,
+      schoolFromParcel,
     );
     if (!base) return null;
     if (isRentMode && rentDwellingCount != null && rentDwellingCount.n >= 1) {
@@ -1444,6 +1500,8 @@ export function HomeParcelAddressLookup({
     valuationHistory,
     levyLoadedMeta,
     parcelBillTaxYear,
+    parcelRecordForDisplay?.schoolAssessedTotal,
+    parcelRecord?.schoolAssessedTotal,
     isRentMode,
     rentDwellingCount,
   ]);
@@ -1680,7 +1738,7 @@ export function HomeParcelAddressLookup({
     <ParcelRecordExtendedSection
       loading={parcelRecordLoading}
       loadFailed={parcelRecordLoadFailed}
-      record={parcelRecord}
+      record={parcelRecordForDisplay}
       pin={trimmedParcelPin}
       demoMode={isDemoMode}
       businessPersonal={isBusinessPersonalAccount}

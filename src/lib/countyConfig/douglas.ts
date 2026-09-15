@@ -58,6 +58,7 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     millLevyPublicInfoFormLabel: "Abstract of Assessment",
   },
   hostedPropertyPageName: "property details",
+  propertyTaxEstimateMode: "realwareTaxDollars",
   features: {
     situs: true,
     parcelRecordShards: true,

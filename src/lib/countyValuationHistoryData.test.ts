@@ -58,19 +58,29 @@ describe("countyValuationHistoryData", () => {
   });
 
   it("loads a shipped Douglas history shard (full-county extract)", () => {
-    const shardNames = readdirSync(SHIPPED_HISTORY_DIR).filter((name) =>
-      name.endsWith(".json"),
-    );
+    const shardNames = readdirSync(SHIPPED_HISTORY_DIR)
+      .filter((name) => name.endsWith(".json"))
+      .sort();
     // Spot-check era had 367 shards; full retain ship is thousands.
     expect(shardNames.length).toBeGreaterThan(1000);
 
+    const shardName = shardNames[0]!;
     const raw = JSON.parse(
-      readFileSync(join(SHIPPED_HISTORY_DIR, "R03990.json"), "utf8"),
-    ) as unknown;
+      readFileSync(join(SHIPPED_HISTORY_DIR, shardName), "utf8"),
+    ) as {
+      byAccount?: Record<string, unknown>;
+    };
     expect(validateCountyValuationHistoryByAccountFile(raw)).toBeNull();
-    const series = lookupValuationHistorySeries("R0399058", raw as never, "douglas");
+    const accountIds = Object.keys(raw.byAccount ?? {}).sort();
+    expect(accountIds.length).toBeGreaterThan(0);
+    const series = lookupValuationHistorySeries(
+      accountIds[0]!,
+      raw as never,
+      "douglas",
+    );
     expect(series).not.toBeNull();
     expect(series!.length).toBeGreaterThanOrEqual(2);
     expect(series![0]?.taxYear).toBeLessThan(series!.at(-1)!.taxYear);
   });
 });
+

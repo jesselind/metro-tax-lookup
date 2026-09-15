@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.15.0",
+    date: "2026-09-15",
+    title:
+      "Douglas Realware face tax + county-agnostic dual-rate levy dollars",
+    highlights: [
+      "Douglas face Property tax uses Realware taxDollars + alternateTaxDollars for the face year (propertyTaxEstimateMode: realwareTaxDollars); fail closed when those fields are missing - never silent mills fallback. Arapahoe keeps singleAssessedTimesTotalMills for the face tile.",
+      "County-agnostic levy-line dollars: school authorities use school assessed when it differs from local assessed; other lines use local. Stack total rounds each assessed side once (Realware-style buckets). Classifier covers SCHOOL DIST / School District / School(s) labels (e.g. Schools - Debt Service).",
+      "Tax year tile follows Realware face year matching pin assessed when valuation history loads; school assessed overlays into the values table. Re-shipped douglas-valuation-history-by-account shards with alternate assessed + tax dollar fields; cache bust 20260915splitrate.",
+      "CI: synthetic Realware-shaped extract golden (no real situs); Vitest face ≠ mills product + stack↔face dual-base goldens; Douglas e2e asserts face and mill-stack total both $2,500 on the split-rate fixture. Arapahoe authority-mills extract imports pdfplumber only when opening a PDF so synthetic unit tests run under the CI rapidfuzz-only Python env.",
+    ],
+  },
+  {
     version: "5.14.3",
     date: "2026-09-14",
     title:
