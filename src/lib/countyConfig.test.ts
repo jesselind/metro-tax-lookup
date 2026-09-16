@@ -47,7 +47,12 @@ import {
   safeCountyLevyAspxUrl,
   safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
-import { SYNTHETIC_AIN, SYNTHETIC_PIN, SYNTHETIC_SCHEDULE_10 } from "@/lib/syntheticTestIds";
+import {
+  SYNTHETIC_AIN,
+  SYNTHETIC_DOUGLAS_PIN,
+  SYNTHETIC_PIN,
+  SYNTHETIC_SCHEDULE_10,
+} from "@/lib/syntheticTestIds";
 
 function scheduleCountyFixture(
   overrides: Partial<CountyConfig> = {},
@@ -76,6 +81,7 @@ function scheduleCountyFixture(
       propertySearch: "https://parcel.example.test/search",
     },
     hostedPropertyPageName: "parcel record",
+    propertyTaxEstimateMode: "omit",
     features: {
       situs: false,
       parcelRecordShards: false,
@@ -145,10 +151,18 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
       false,
     );
     expect(DOUGLAS_COUNTY_CONFIG.features.valuationHistoryShards).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.propertyTaxEstimateMode).toBe(
+      "realwareTaxDollars",
+    );
+    // Track B (C3): Arapahoe Assessor publishes mills + dual assessed bases, not
+    // an estimated-tax dollar; face stays single local × total mills.
+    expect(ARAPAHOE_COUNTY_CONFIG.propertyTaxEstimateMode).toBe(
+      "singleAssessedTimesTotalMills",
+    );
     expect(DOUGLAS_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(true);
     expect(DOUGLAS_COUNTY_CONFIG.features.propertyDataAccuracyWarning).toBe(
-      true,
+      false,
     );
     expect(ARAPAHOE_COUNTY_CONFIG.features.propertyDataAccuracyWarning).toBe(
       false,
@@ -256,13 +270,17 @@ describe("URL templates and host allowlist", () => {
 
   it("builds Douglas hash-path property details URLs from the template", () => {
     expect(
-      safeCountyParcelRecordUrl("R0399058", DOUGLAS_COUNTY_CONFIG),
-    ).toBe("https://apps.douglas.co.us/assessor/web/#/details/2026/R0399058");
+      safeCountyParcelRecordUrl(SYNTHETIC_DOUGLAS_PIN, DOUGLAS_COUNTY_CONFIG),
+    ).toBe(
+      `https://apps.douglas.co.us/assessor/web/#/details/2026/${SYNTHETIC_DOUGLAS_PIN}`,
+    );
     expect(
-      safeCountyParcelRecordUrl("R0399058", DOUGLAS_COUNTY_CONFIG, {
+      safeCountyParcelRecordUrl(SYNTHETIC_DOUGLAS_PIN, DOUGLAS_COUNTY_CONFIG, {
         year: "2025",
       }),
-    ).toBe("https://apps.douglas.co.us/assessor/web/#/details/2025/R0399058");
+    ).toBe(
+      `https://apps.douglas.co.us/assessor/web/#/details/2025/${SYNTHETIC_DOUGLAS_PIN}`,
+    );
     expect(
       countyHostedPropertyPageOpenLabel(DOUGLAS_COUNTY_CONFIG),
     ).toBe("Open county property details");

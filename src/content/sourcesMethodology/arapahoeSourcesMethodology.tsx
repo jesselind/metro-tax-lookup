@@ -97,7 +97,8 @@ export function ArapahoeSourcesMethodology() {
           Open{" "}
           <strong className="text-slate-900">Tax District Levies</strong>{" "}for
           that parcel. Compare each taxing authority and its mills to the app
-          after you load by PIN — they should align.
+          after you load by PIN — they should align. That county table lists
+          mills only (no dollar column).
         </li>
         <li>
           The tool may omit one{" "}
@@ -329,13 +330,36 @@ export function ArapahoeSourcesMethodology() {
           <strong>Department of Property Taxation</strong>
           {" "}
           (DPT) school assessment rate (7.05% for 2026) on appraised building
-          and land, rounded the way the county parcel page does. Residential
-          parcels use a
+          and land, rounded the way the county parcel page usually does. On
+          many homes that matches the county
+          {" "}
+          <strong>Assessed School Value</strong>
+          {" "}
+          row; on some parcels the county figure differs (often closer to local
+          assessed), so treat the app school row as DPT-rate math unless you
+          confirm the county page. Residential parcels use a
           {" "}
           <strong>state use code</strong>
           {" "}
           starting with 1 (a county classification for how land is used).
           Non-residential property does not show a school assessed row.
+        </li>
+        <li>
+          <strong>Property tax dollars:</strong>
+          {" "}
+          The locked-report
+          {" "}
+          <strong>Est. property tax</strong>
+          {" "}
+          tile multiplies
+          {" "}
+          <strong>local assessed</strong>
+          {" "}
+          by the total mill levy (the county does not publish an estimated-tax
+          dollar on Tax District Levies). When school assessed differs from
+          local assessed, each mill-levy bill entry uses the assessed base that
+          authority type uses (school vs local), so the mill-levy total can
+          differ from that face tile on some homes.
         </li>
         <li>
           <strong>Assessed value</strong>{" "}totals come from the mart total

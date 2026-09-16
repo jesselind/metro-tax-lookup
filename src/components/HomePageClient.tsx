@@ -35,7 +35,6 @@ export function HomePageClient() {
     DEFAULT_AUDIENCE_MODE,
   );
   const startOverHeroRef = useRef<HTMLButtonElement>(null);
-  const jumpSummaryRef = useRef<HTMLElement>(null);
   const resetRef = useRef<() => void>(() => {});
 
   const handleViewingParcelChange = useCallback(
@@ -60,24 +59,23 @@ export function HomePageClient() {
   const showLockedUtilityBar = lockedUtilityNav != null;
   const showHeroStartOver = viewingParcel;
 
+  /**
+   * When the locked report appears without the Jump to… bar yet, move focus to
+   * hero Start over. Do not autofocus Jump to… — HomeParcelAddressLookup already
+   * focuses #page-top on lock; focusing the summary looks like a selected TOC.
+   */
   const prevViewingParcelRef = useRef(false);
-  const prevLockedUtilityRef = useRef(false);
   useEffect(() => {
-    const lockedJustAppeared =
-      showLockedUtilityBar && !prevLockedUtilityRef.current;
     const unlockedViewingJustAppeared =
       viewingParcel &&
       !prevViewingParcelRef.current &&
       !showLockedUtilityBar;
 
-    if (lockedJustAppeared) {
-      jumpSummaryRef.current?.focus();
-    } else if (unlockedViewingJustAppeared) {
+    if (unlockedViewingJustAppeared) {
       startOverHeroRef.current?.focus();
     }
 
     prevViewingParcelRef.current = viewingParcel;
-    prevLockedUtilityRef.current = showLockedUtilityBar;
   }, [viewingParcel, showLockedUtilityBar]);
 
   const landingLine =
@@ -135,7 +133,6 @@ export function HomePageClient() {
           <HomeDashboardUtilityBar
             jumps={lockedUtilityNav.jumps}
             onStartOver={onStartOver}
-            jumpSummaryRef={jumpSummaryRef}
           />
         ) : null}
         {showLockedUtilityBar &&

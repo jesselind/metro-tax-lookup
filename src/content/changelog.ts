@@ -27,6 +27,22 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.15.0",
+    date: "2026-09-15",
+    title:
+      "Douglas Realware face tax + county-agnostic dual-rate levy dollars",
+    highlights: [
+      "Douglas face Property tax uses Realware taxDollars + alternateTaxDollars for the face year (propertyTaxEstimateMode: realwareTaxDollars); fail closed when those fields are missing - never silent mills fallback. Arapahoe keeps singleAssessedTimesTotalMills for the face tile.",
+      "County-agnostic levy-line dollars: school authorities use school assessed when it differs from local assessed; other lines use local. Stack total rounds each assessed side once (Realware-style buckets). Classifier covers SCHOOL DIST / School District / School(s) labels (e.g. Schools - Debt Service).",
+      "Tax year tile follows Realware face year matching pin assessed when valuation history loads; school assessed overlays into the values table. Re-shipped douglas-valuation-history-by-account shards with alternate assessed + tax dollar fields; cache bust 20260915splitrate.",
+      "CI: synthetic Realware-shaped extract golden (no real situs); Vitest face ≠ mills product + stack↔face dual-base goldens; Douglas e2e asserts face and mill-stack total both $2,500 on the split-rate fixture. Arapahoe authority-mills extract imports pdfplumber only when opening a PDF so synthetic unit tests run under the CI rapidfuzz-only Python env.",
+      "Track B (Arapahoe Assessor UI): Levy.aspx is mills-only (C3) - Arapahoe face mode stays singleAssessedTimesTotalMills; dual-base levy-line dollars remain. Docs + synthetic Vitest lock intentional face≠stack when school ≠ local; /sources notes county mills-only table and DPT school-assessed caveats.",
+      "Home locked report: do not autofocus Jump to a section when a property loads (focus stays on #page-top from lock); avoids a highlighted TOC summary on every lookup.",
+      "Douglas propertyDataAccuracyWarning cleared (KNOWN ISSUE banner and /sources callout off) after Realware face tax + dual-rate stack honesty. Maintainer contract: .cursor/rules/property-tax-estimate-honesty.mdc. Arapahoe school-assessed / missing-mills fidelity parked for follow-up (primary county).",
+      "Summary tile label Est. property tax (not Est. on every $); popover: estimate vs tax statement, and why mill-levy total can differ when school assessed differs from local.",
+    ],
+  },
+  {
     version: "5.14.3",
     date: "2026-09-14",
     title:

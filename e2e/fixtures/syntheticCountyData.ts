@@ -268,6 +268,48 @@ export const SYNTHETIC_LEVY_STACKS = {
   },
 };
 
+/**
+ * Douglas default e2e stack: school + local lines whose dual-base bucket total
+ * matches Realware face tax on {@link SYNTHETIC_DOUGLAS_VALUATION_HISTORY_SHARD}
+ * ($1,300 + $1,200 = $2,500). Invented mills only; not a real TAG.
+ */
+export const SYNTHETIC_LEVY_STACKS_DOUGLAS_SPLIT_RATE = {
+  snapshot: SYNTHETIC_LEVY_STACKS.snapshot,
+  stacksByTagId: {
+    [SYNTHETIC_E2E_TAG_ID]: {
+      tagId: SYNTHETIC_E2E_TAG_ID,
+      taxYear: "2026",
+      levyAspxUrl: `https://www.douglasco.gov/assessor/taxing-authorities/${SYNTHETIC_E2E_TAG_ID}`,
+      lines: [
+        {
+          code: "2001",
+          authorityName: "SYNTHETIC SCHOOL DIST # 99",
+          effectiveYear: "2026",
+          status: "A",
+          dolaMatch: {
+            method: "none" as const,
+            confidence: "low" as const,
+            // 1200 = round(26790 × mills / 1000)
+            mills: (1200 * 1000) / 26790,
+          },
+        },
+        {
+          code: "9999",
+          authorityName: SYNTHETIC_E2E_AUTHORITY,
+          effectiveYear: "2026",
+          status: "A",
+          dolaMatch: {
+            method: "none" as const,
+            confidence: "low" as const,
+            // 1300 = round(27170 × mills / 1000)
+            mills: (1300 * 1000) / 27170,
+          },
+        },
+      ],
+    },
+  },
+};
+
 /** Same as {@link SYNTHETIC_LEVY_STACKS} but with a metro LG ID that exists in bundled mill JSON. */
 export const SYNTHETIC_LEVY_STACKS_WITH_METRO = {
   ...SYNTHETIC_LEVY_STACKS,
@@ -555,6 +597,13 @@ export const SYNTHETIC_DOUGLAS_PARCEL_RECORD_SHARD = {
       ain: "2000-00-0-00-001",
       totalActual: 380_000,
       totalAssessed: 27_170,
+      improvementActual: 300_000,
+      landActual: 80_000,
+      stateUseCd: "1212",
+      propertyClassDescr: "Residential",
+      taxRollDescr: null,
+      assessmentYear: null,
+      parcelTaxYear: null,
     },
   },
 };
@@ -570,8 +619,22 @@ export const SYNTHETIC_DOUGLAS_VALUATION_HISTORY_SHARD = {
   shardPrefix: SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX,
   byAccount: {
     [SYNTHETIC_DOUGLAS_PIN]: [
-      { taxYear: 2025, actualValue: 360000, assessedValue: 25740 },
-      { taxYear: 2026, actualValue: 380000, assessedValue: 27170 },
+      {
+        taxYear: 2025,
+        actualValue: 360000,
+        assessedValue: 25740,
+        alternateAssessedValue: 25380,
+        taxDollars: 1200,
+        alternateTaxDollars: 1100,
+      },
+      {
+        taxYear: 2026,
+        actualValue: 380000,
+        assessedValue: 27170,
+        alternateAssessedValue: 26790,
+        taxDollars: 1300,
+        alternateTaxDollars: 1200,
+      },
     ],
   },
 };

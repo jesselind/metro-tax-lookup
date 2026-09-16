@@ -21,7 +21,7 @@ import {
   safeCountyParcelRecordUrl,
   safeHttpOrHttpsUrl,
 } from "./safeExternalHref";
-import { SYNTHETIC_AIN } from "./syntheticTestIds";
+import { SYNTHETIC_AIN, SYNTHETIC_DOUGLAS_PIN } from "./syntheticTestIds";
 
 describe("safeHttpOrHttpsUrl", () => {
   it("accepts https URLs", () => {
@@ -101,8 +101,10 @@ describe("safeCountyParcelRecordUrl", () => {
     );
   });
   it("builds Douglas hash-path property details URL", () => {
-    expect(safeCountyParcelRecordUrl("R0399058", DOUGLAS_COUNTY_CONFIG)).toBe(
-      "https://apps.douglas.co.us/assessor/web/#/details/2026/R0399058",
+    expect(
+      safeCountyParcelRecordUrl(SYNTHETIC_DOUGLAS_PIN, DOUGLAS_COUNTY_CONFIG),
+    ).toBe(
+      `https://apps.douglas.co.us/assessor/web/#/details/2026/${SYNTHETIC_DOUGLAS_PIN}`,
     );
   });
 });

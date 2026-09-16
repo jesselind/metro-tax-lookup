@@ -99,6 +99,7 @@ export function resolveParcelAssessmentProfile(
     | "propertyClassDescr"
     | "assessmentYear"
     | "improvementActual"
+    | "schoolAssessedTotal"
   >,
 ): ParcelAssessmentProfile {
   const year = parseAssessmentYear(record.assessmentYear);
@@ -113,6 +114,10 @@ export function resolveParcelAssessmentProfile(
   const isImprovement =
     (record.propertyClassDescr ?? "").trim() === "Improvement";
   const residential = isResidentialStateUseCode(record.stateUseCd);
+  const hasCountySchoolAssessed =
+    record.schoolAssessedTotal != null &&
+    Number.isFinite(record.schoolAssessedTotal) &&
+    record.schoolAssessedTotal > 0;
 
   // Business personal property: flat DPT personal-property rate by year (not
   // the Real state-use chart). Totals stay mart totals; no building/land split.
@@ -121,6 +126,17 @@ export function resolveParcelAssessmentProfile(
       mode: "single_rate",
       assessedRateLabel: coloradoPersonalPropertyAssessedRateLabel(year),
       showSchoolAssessedRow: false,
+    };
+  }
+
+  // County-shipped school assessed (e.g. Douglas Realware alternateAssessed):
+  // show the dual-rate values table even when mart-style taxRoll / year gates
+  // are incomplete.
+  if (hasCountySchoolAssessed && residential) {
+    return {
+      mode: "residential_dual",
+      assessedRateLabel: COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
+      showSchoolAssessedRow: true,
     };
   }
 
@@ -220,9 +236,32 @@ export function nonResidentialAssessedSplit(
 function residentialSchoolAssessedSplit(
   record: Pick<
     CountyParcelRecordRow,
-    "improvementActual" | "landActual" | "totalActual"
+    | "improvementActual"
+    | "landActual"
+    | "totalActual"
+    | "schoolAssessedTotal"
+    | "schoolAssessedBuilding"
+    | "schoolAssessedLand"
   >,
 ): ParcelValueColumn {
+  if (
+    record.schoolAssessedTotal != null &&
+    Number.isFinite(record.schoolAssessedTotal)
+  ) {
+    return {
+      total: Math.round(record.schoolAssessedTotal),
+      building:
+        record.schoolAssessedBuilding != null &&
+        Number.isFinite(record.schoolAssessedBuilding)
+          ? Math.round(record.schoolAssessedBuilding)
+          : null,
+      land:
+        record.schoolAssessedLand != null &&
+        Number.isFinite(record.schoolAssessedLand)
+          ? Math.round(record.schoolAssessedLand)
+          : null,
+    };
+  }
   const building = roundSchoolComponent(record.improvementActual);
   const land = roundSchoolComponent(record.landActual);
   if (building != null || land != null) {

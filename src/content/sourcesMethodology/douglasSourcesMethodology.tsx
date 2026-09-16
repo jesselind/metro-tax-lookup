@@ -187,16 +187,14 @@ export function DouglasSourcesMethodology() {
         </strong>
         {" "}
         Douglas Assessor text downloads do not include separate assessment-year
-        and tax-year columns on each account. Summary tiles use the county SPA
-        path year from{" "}
+        and tax-year columns on each account. When valuation history is loaded,
+        the Tax year tile uses the Realware face tax year that matches the pin
+        Values assessed total (same year as the Est. property tax tile), not the
+        mill PDF title alone. Assessment year uses the county SPA path year from{" "}
         <code className={CODE_INLINE_CLASS}>tools/douglas-realware-detail-stamp.txt</code>
         {" "}
-        (same year segment as the county property details page) and the tax
-        year on the bundled mill PDF / levy stack snapshot. When valuation
-        history is loaded, outbound property-page links prefer the latest{" "}
-        <code className={CODE_INLINE_CLASS}>taxYear</code>
-        {" "}
-        from the Realware detail extract.
+        when present. The mill PDF year remains the levy-stack source vintage.
+        Outbound property-page links prefer that Realware face year.
       </p>
       <p className="text-slate-700">
         <strong className="font-semibold text-slate-900">
@@ -207,18 +205,43 @@ export function DouglasSourcesMethodology() {
         assessed figures from{" "}
         <code className={CODE_INLINE_CLASS}>Property_Values.txt</code>
         {" "}
-        (current-year snapshot; no tax-year column). Multi-year actual and
-        assessed values come from Douglas Assessor Realware detail JSON the
-        county SPA already publishes (
+        (current-year snapshot; no tax-year column; local assessed only). Multi-year
+        actual, local assessed, school assessed (
+        <code className={CODE_INLINE_CLASS}>alternateAssessedValue</code>
+        ),{" "}
+        and estimated tax dollars (
+        <code className={CODE_INLINE_CLASS}>taxDollars</code>
+        {" "}
+        +{" "}
+        <code className={CODE_INLINE_CLASS}>alternateTaxDollars</code>
+        ){" "}
+        come from Douglas Assessor Realware detail JSON the county SPA already
+        publishes (
         <code className={CODE_INLINE_CLASS}>
           /realware/DATA/&#123;year&#125;/detail/&#123;account&#125;.json
         </code>
         ). We retain those files at build time, sum{" "}
         <code className={CODE_INLINE_CLASS}>valuesByAbstractCode</code>
         {" "}
-        per tax year, and ship valuation history on this site (Assessed value
-        summary tile modal). Compare any year on the Assessor property details page when you want the county
-        view side by side.
+        per tax year, and ship valuation history on this site. The locked-report
+        {" "}
+        <strong className="font-semibold text-slate-900">
+          Est. property tax
+        </strong>
+        {" "}
+        tile uses those Realware tax totals for the face year (not assessed ×
+        total mills). Mill levy tile dollars and the stack total use Colorado
+        dual-rate bases when school assessed differs from local assessed: school
+        district entries (including Schools debt / reserve labels) use school
+        assessed; other entries use local assessed. The stack total rounds each
+        assessed side once so it matches the Realware face buckets; individual
+        tiles may differ by a dollar or two from rounding. The Appraised and
+        assessed values table shows school assessed from the same Realware
+        alternate fields when history is loaded. Compare any year on the Assessor
+        property details page when you want the county view side by side.
+        Realware notes that current-year taxes are estimates; the county
+        Estimated Taxes worksheet can still differ when it applies legislative
+        adjustment not present in Realware.
       </p>
       {countyFeatureAvailable(
         "priorYearValuesInProgress",

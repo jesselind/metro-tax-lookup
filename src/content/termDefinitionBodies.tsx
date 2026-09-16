@@ -890,9 +890,11 @@ export function TermTaxYearBriefBody() {
 export function TermPropertyTaxBriefBody() {
   return (
     <p className={BRIEF_P}>
-      Yearly dollars from your county mills and assessed value (mills × assessed
-      ÷ 1000, rounded). Same total as under the mill stack. Your treasurer bill
-      can differ a little after rounding.
+      An estimate of yearly property tax from county assessed values and mill
+      rates. It may not match your tax statement exactly (credits, timing, and
+      rounding can change the bill). The mill levy breakdown total can also
+      differ a little from this tile when schools use a different assessed
+      amount than other districts.
     </p>
   );
 }

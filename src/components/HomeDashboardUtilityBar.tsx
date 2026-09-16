@@ -8,7 +8,6 @@
 import {
   useLayoutEffect,
   useRef,
-  type Ref,
 } from "react";
 import { DisclosureChevron } from "@/components/DisclosureChevron";
 import { focusNearestDashboardSection } from "@/lib/focusNearestDashboardSection";
@@ -35,8 +34,6 @@ import {
 export type HomeDashboardUtilityBarProps = {
   jumps: HomeDashboardJump[];
   onStartOver: () => void;
-  /** Focus target when the locked report first appears. */
-  jumpSummaryRef?: Ref<HTMLElement>;
 };
 
 /**
@@ -47,7 +44,6 @@ export type HomeDashboardUtilityBarProps = {
 export function HomeDashboardUtilityBar({
   jumps,
   onStartOver,
-  jumpSummaryRef,
 }: HomeDashboardUtilityBarProps) {
   const barRef = useRef<HTMLElement>(null);
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -129,7 +125,6 @@ export function HomeDashboardUtilityBar({
       <div className={HOME_DASHBOARD_UTILITY_BAR_INNER_CLASS}>
         <details ref={detailsRef} className={HOME_DASHBOARD_JUMP_DETAILS_CLASS}>
           <summary
-            ref={jumpSummaryRef}
             className={HOME_DASHBOARD_JUMP_SUMMARY_CLASS}
           >
             <span>{HOME_DASHBOARD_JUMP_SUMMARY_LABEL}</span>

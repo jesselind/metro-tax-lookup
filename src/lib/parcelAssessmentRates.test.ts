@@ -220,6 +220,28 @@ describe("buildParcelValueTableRows", () => {
     expect(assessed?.values.land).toBe(porterHospital.assessedLand);
   });
 
+  it("shows school assessed from county-shipped totals without mart taxRoll gates", () => {
+    const rows = buildParcelValueTableRows({
+      stateUseCd: "1212",
+      taxRollDescr: null,
+      propertyClassDescr: "Residential",
+      assessmentYear: null,
+      totalActual: 641560,
+      improvementActual: 502266,
+      landActual: 139294,
+      totalAssessed: 43620,
+      schoolAssessedTotal: 45230,
+    });
+    expect(rows.map((r) => r.kind)).toEqual([
+      "appraised",
+      "assessed",
+      "assessed-school",
+    ]);
+    expect(rows.find((r) => r.kind === "assessed-school")?.values.total).toBe(
+      45230,
+    );
+  });
+
   it("labels personal-property assessed with the DPT year rate", () => {
     const rows = buildParcelValueTableRows({
       ...porterHospital,

@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.14.3",
+  "version": "5.15.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -14,6 +14,7 @@
     "ci:test:parcel-index": "npm run test:parcel-index",
     "ci:test:ingest": "npm run test:ingest",
     "ci:test:ingest-reader": "npm run test:ingest-reader",
+    "ci:test:authority-mills-extract": "npm run test:authority-mills-extract",
     "ci:test:unit": "npm run test:unit",
     "ci:typecheck": "npm run typecheck",
     "typecheck": "next typegen && tsc --noEmit",
@@ -57,7 +58,7 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

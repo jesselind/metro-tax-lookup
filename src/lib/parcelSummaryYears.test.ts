@@ -38,18 +38,31 @@ describe("resolveParcelSummaryYears", () => {
     });
   });
 
-  it("prefers Realware history latest tax year for Douglas property-page links", () => {
+  it("prefers Realware face tax year over mill-PDF stack year when history loads", () => {
     expect(
       resolveParcelSummaryYears(DOUGLAS_COUNTY_CONFIG, {
         levyStacksTaxYear: "2025",
+        pinTotalAssessed: 27170,
         valuationHistory: [
-          { taxYear: 2025, actualValue: 1, assessedValue: 2 },
-          { taxYear: 2026, actualValue: 3, assessedValue: 4 },
+          {
+            taxYear: 2025,
+            actualValue: 360000,
+            assessedValue: 25740,
+            taxDollars: 1200,
+            alternateTaxDollars: 1100,
+          },
+          {
+            taxYear: 2026,
+            actualValue: 380000,
+            assessedValue: 27170,
+            taxDollars: 1300,
+            alternateTaxDollars: 1200,
+          },
         ],
       }),
     ).toEqual({
       assessmentYear: "2026",
-      taxYear: "2025",
+      taxYear: "2026",
       parcelRecordLinkYear: "2026",
     });
   });

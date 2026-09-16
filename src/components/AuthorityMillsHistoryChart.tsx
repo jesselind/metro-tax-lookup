@@ -31,7 +31,7 @@ import { InfoHintPopover } from "@/components/InfoHintPopover";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { formatTaxYearLabel } from "@/lib/metroLevyYearOverYear";
 import {
-  assessedForLevyTaxYear,
+  assessedBaseForLevyTaxYear,
   levyLineDisplayDollars,
   type LevyDollarAssessedContext,
   type LevyDollarAudience,
@@ -45,6 +45,8 @@ import {
 type Props = {
   series: AuthorityMillsSeriesPoint[];
   assessedContext?: LevyDollarAssessedContext | null;
+  /** When true, chart dollars use school assessed for years that have it. */
+  lineIsSchoolAuthority?: boolean;
   dollarAudience?: LevyDollarAudience;
   /** Opt-in county config: confirmed no public prior-year assessed (not hardcoded). */
   priorYearValuesGap?: boolean;
@@ -78,6 +80,7 @@ const CHART_FOOTER_SECONDARY_CLASS = "flex min-w-0 items-center pt-1.5";
 export function AuthorityMillsHistoryChart({
   series,
   assessedContext = null,
+  lineIsSchoolAuthority = false,
   dollarAudience,
   priorYearValuesGap = false,
   countyId = null,
@@ -94,7 +97,11 @@ export function AuthorityMillsHistoryChart({
   const dollarsForPoint = useMemo(() => {
     const map = new Map<number, number>();
     for (const point of series) {
-      const assessed = assessedForLevyTaxYear(assessedContext, point.taxYear);
+      const assessed = assessedBaseForLevyTaxYear(
+        assessedContext,
+        point.taxYear,
+        lineIsSchoolAuthority,
+      );
       const dollars = levyLineDisplayDollars(
         assessed,
         point.mills,
@@ -103,7 +110,7 @@ export function AuthorityMillsHistoryChart({
       if (dollars != null) map.set(point.taxYear, dollars);
     }
     return map;
-  }, [series, assessedContext, dollarAudience]);
+  }, [series, assessedContext, dollarAudience, lineIsSchoolAuthority]);
 
   if (!layout || series.length < 2) return null;
 

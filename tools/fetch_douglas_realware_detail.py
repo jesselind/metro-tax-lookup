@@ -15,7 +15,7 @@ Does not run in CI by default. See docs/county-build-inputs.md.
 
 Usage (from repo root):
   python3 tools/fetch_douglas_realware_detail.py --meta-only
-  python3 tools/fetch_douglas_realware_detail.py --accounts R0399058
+  python3 tools/fetch_douglas_realware_detail.py --accounts R0100001
   python3 tools/fetch_douglas_realware_detail.py --skip-existing
 """
 

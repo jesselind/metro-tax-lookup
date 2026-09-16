@@ -44,8 +44,6 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-import pdfplumber
-
 # PDF TAG column is the zero-padded parcel `tagShortDescr` tax-area code
 # (e.g. "747" -> "0747"). Levy.aspx TAGId (e.g. "1243330") is unrelated.
 DEFAULT_PDF_BY_YEAR: Dict[int, Path] = {
@@ -186,6 +184,14 @@ def parse_levy_percentage_table_rows(
 
 def extract_rows_from_pdf(pdf_path: Path, tax_year: int) -> List[AuthorityLevyRow]:
   """Extract all TAG+AUTH levy rows from one Levy % PDF."""
+  try:
+    import pdfplumber
+  except ImportError as exc:
+    raise SystemExit(
+      "pdfplumber is required to read Levy % PDFs "
+      "(pip install -r tools/requirements.txt)"
+    ) from exc
+
   extracted: List[AuthorityLevyRow] = []
   current_tag: Optional[str] = None
 

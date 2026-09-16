@@ -5,11 +5,18 @@
 # See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 """
-Aggregate Douglas Realware detail JSON into slim valuation-history shards.
+Aggregate Douglas Realware detail JSON into valuation-history shards.
 
 Reads retained detail files under supporting-data/douglas/realware-detail/{year}/.
 Writes {county}-valuation-history-by-account/{prefix}.json for ship under
 public/data/ (or --out-dir for prove-out).
+
+Per tax year, sums valuesByAbstractCode:
+  actualValue, assessedValue (local), alternateAssessedValue (school),
+  taxDollars, alternateTaxDollars.
+
+Source of truth for Douglas face Property tax and school assessed is these
+Realware fields — do not invent DPT / legislative-adjustment dollars here.
 
 Usage (from repo root):
   python3 tools/extract_douglas_valuation_history.py
@@ -41,9 +48,27 @@ def read_text_file(path: Path) -> str:
   return path.read_text(encoding="utf-8").strip()
 
 
+_SUM_FIELDS = (
+  "actualValue",
+  "assessedValue",
+  "alternateAssessedValue",
+  "taxDollars",
+  "alternateTaxDollars",
+)
+
+
+def _add_rounded(bucket: dict[str, int], key: str, raw: Any) -> None:
+  if raw is None:
+    return
+  try:
+    bucket[key] += int(round(float(raw)))
+  except (TypeError, ValueError):
+    return
+
+
 def aggregate_values_by_tax_year(rows: list[dict[str, Any]]) -> list[dict[str, int]]:
   by_year: dict[int, dict[str, int]] = defaultdict(
-    lambda: {"actualValue": 0, "assessedValue": 0},
+    lambda: {field: 0 for field in _SUM_FIELDS},
   )
   for row in rows:
     year_raw = row.get("taxYear")
@@ -53,20 +78,17 @@ def aggregate_values_by_tax_year(rows: list[dict[str, Any]]) -> list[dict[str, i
       year = int(float(year_raw))
     except (TypeError, ValueError):
       continue
-    actual = row.get("actualValue")
-    assessed = row.get("assessedValue")
-    try:
-      if actual is not None:
-        by_year[year]["actualValue"] += int(round(float(actual)))
-      if assessed is not None:
-        by_year[year]["assessedValue"] += int(round(float(assessed)))
-    except (TypeError, ValueError):
-      continue
+    bucket = by_year[year]
+    for field in _SUM_FIELDS:
+      _add_rounded(bucket, field, row.get(field))
   return [
     {
       "taxYear": year,
       "actualValue": totals["actualValue"],
       "assessedValue": totals["assessedValue"],
+      "alternateAssessedValue": totals["alternateAssessedValue"],
+      "taxDollars": totals["taxDollars"],
+      "alternateTaxDollars": totals["alternateTaxDollars"],
     }
     for year, totals in sorted(by_year.items())
   ]
@@ -188,7 +210,9 @@ def write_shards(
     "bundledAsOf": bundled_as_of,
     "source": (
       f"Douglas Assessor Realware detail JSON ({stamp_year} stamp); "
-      "valuesByAbstractCode summed per taxYear"
+      "valuesByAbstractCode summed per taxYear "
+      "(actual, local assessed, school alternateAssessed, "
+      "taxDollars, alternateTaxDollars)"
     ),
     "stampYear": stamp_year,
   }

@@ -1,0 +1,31 @@
+---
+description: Property tax face tile, tax year provenance, and dual-base levy dollars
+alwaysApply: true
+---
+
+# Property tax estimate honesty
+
+When changing face Property tax dollars, tax year tiles, mill-levy line dollars, Realware / valuation-history extracts, or `propertyTaxEstimateMode`, keep these contracts. Do not invent county estimate totals the Assessor UI does not publish.
+
+## Face tile (`propertyTaxEstimateMode`)
+
+- **Douglas:** `realwareTaxDollars` — Realware `taxDollars` + `alternateTaxDollars` for the face year. Fail closed if missing. **Never** silent fallback to assessed × total mills.
+- **Arapahoe:** `singleAssessedTimesTotalMills` — local assessed × total stack mills. Assessor Levy.aspx is mills-only (no estimate $); do not claim face $ is a county-published total.
+- **Resident face label (all counties that show the tile):** **Est. property tax** (not Est. on every `$`). Popover explains estimate vs bill and why mill-levy total can differ when school assessed ≠ local.
+- Helper: `src/lib/propertyTaxEstimate.ts`. Mode lives on `CountyConfig`, not a feature flag.
+
+## Tax year provenance
+
+When valuation history is loaded, Tax year follows the Realware face year that matches pin assessed (not mill-PDF title alone). See `src/lib/parcelSummaryYears.ts`.
+
+## Levy-line dollars (county-agnostic)
+
+- Dual-base when school assessed is known and differs from local: school authorities × school assessed; other lines × local. Equal or missing school → single local base.
+- Classifier: authority-chain `family === "school"` or name match (`SCHOOL DIST` / `School District` / `School`/`Schools`). Helper: `src/lib/levyLineAssessedBase.ts`.
+- Douglas: when history loads, stack total must reconcile to Realware face (± whole-dollar bucket rounding). Synthetic goldens only in CI (no real situs/accounts).
+- Arapahoe: face (single-base) and stack (dual-base) may diverge when school ≠ local — intentional. Mart `schoolAssessedTotal` is DPT-computed and usually matches PPI; mismatches and missing DOLA mill lines are primary-county follow-ups (working tracker: `docs/_working/arapahoe-assessed-and-mills-fidelity.md`).
+
+## Gates
+
+- Synthetic Realware extract + Vitest face ≠ mills product + stack↔face dual-base goldens; Douglas e2e face/stack on synthetic fixture.
+- Do not drive third-party Assessor SPAs in merge-gate Playwright.
