@@ -189,8 +189,8 @@ export function DouglasSourcesMethodology() {
         Douglas Assessor text downloads do not include separate assessment-year
         and tax-year columns on each account. When valuation history is loaded,
         the Tax year tile uses the Realware face tax year that matches the pin
-        Values assessed total (same year as face Property tax), not the mill
-        PDF title alone. Assessment year uses the county SPA path year from{" "}
+        Values assessed total (same year as the Est. property tax tile), not the
+        mill PDF title alone. Assessment year uses the county SPA path year from{" "}
         <code className={CODE_INLINE_CLASS}>tools/douglas-realware-detail-stamp.txt</code>
         {" "}
         when present. The mill PDF year remains the levy-stack source vintage.
@@ -223,20 +223,25 @@ export function DouglasSourcesMethodology() {
         ). We retain those files at build time, sum{" "}
         <code className={CODE_INLINE_CLASS}>valuesByAbstractCode</code>
         {" "}
-        per tax year, and ship valuation history on this site. Face Property tax
-        uses those Realware tax totals for the face year (not assessed × total
-        mills). Mill levy tile dollars and the stack total use Colorado dual-rate
-        bases when school assessed differs from local assessed: school district
-        entries (including Schools debt / reserve labels) use school assessed;
-        other entries use local assessed. The stack total rounds each assessed
-        side once so it matches the Realware face buckets; individual tiles may
-        differ by a dollar or two from rounding. The Appraised and assessed
-        values table shows school assessed from the same Realware alternate
-        fields when history is loaded. Compare any year on the Assessor property
-        details page when you want the county view side by side. Realware notes
-        that current-year taxes are estimates; the county Estimated Taxes
-        worksheet can still differ when it applies legislative adjustment not
-        present in Realware.
+        per tax year, and ship valuation history on this site. The locked-report
+        {" "}
+        <strong className="font-semibold text-slate-900">
+          Est. property tax
+        </strong>
+        {" "}
+        tile uses those Realware tax totals for the face year (not assessed ×
+        total mills). Mill levy tile dollars and the stack total use Colorado
+        dual-rate bases when school assessed differs from local assessed: school
+        district entries (including Schools debt / reserve labels) use school
+        assessed; other entries use local assessed. The stack total rounds each
+        assessed side once so it matches the Realware face buckets; individual
+        tiles may differ by a dollar or two from rounding. The Appraised and
+        assessed values table shows school assessed from the same Realware
+        alternate fields when history is loaded. Compare any year on the Assessor
+        property details page when you want the county view side by side.
+        Realware notes that current-year taxes are estimates; the county
+        Estimated Taxes worksheet can still differ when it applies legislative
+        adjustment not present in Realware.
       </p>
       {countyFeatureAvailable(
         "priorYearValuesInProgress",

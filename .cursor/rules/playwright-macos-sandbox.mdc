@@ -1,5 +1,5 @@
 ---
-description: Playwright macOS: PLAYWRIGHT_BROWSERS_PATH + all; do not misdiagnose browsers
+description: Playwright macOS: PLAYWRIGHT_BROWSERS_PATH + all; skip local Firefox on macOS 27
 alwaysApply: true
 ---
 
@@ -10,9 +10,20 @@ Vitest and `next dev` do **not** run the production TypeScript gate (`tsconfig` 
 Use `required_permissions: ["all"]` and:
 
 ```bash
-PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:e2e
+PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" CI=1 npm run test:e2e -- --project=chromium --project=webkit
 ```
 
-Same prefix for `npx playwright test ...`. Cursor's sandbox path under `cursor-sandbox-cache` is empty: that is not a missing install. Only suggest `npx playwright install` if failure is against `$HOME/Library/Caches/ms-playwright`. Inspect the first launch failure before cross-browser retries. Run chromium, firefox, and webkit unless the user scoped to one.
+Same prefix for `npx playwright test ...`. Cursor's sandbox path under `cursor-sandbox-cache` is empty: that is not a missing install. Only suggest `npx playwright install` if failure is against `$HOME/Library/Caches/ms-playwright`. Inspect the first launch failure before cross-browser retries.
+
+## Local Firefox (macOS 27) — do not run until fixed
+
+On **macOS 27** (darwin 27), Playwright **Firefox fails locally** (often **0ms** launch / immediate fail) even after updating Playwright and reinstalling browsers under `$HOME/Library/Caches/ms-playwright`. **CI Linux Firefox still runs and is the Firefox signal.**
+
+Until this host issue is resolved:
+
+- **Do not** run `--project=firefox` or a full three-browser local suite on this machine.
+- Local CI-style / final-checks e2e: **chromium + webkit only** (command above).
+- Do **not** treat local Firefox failure as a product regression or as a reason to `npx playwright install` again.
+- When the user asks for full browser e2e locally, run chromium+webkit and note that Firefox is deferred to CI.
 
 Default `test:e2e` excludes `@live-sources` (third-party URL probes). For cite health only: `CI=1 npm run test:e2e:live-sources` (Chromium request-only; no app build required).

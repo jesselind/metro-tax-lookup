@@ -2638,7 +2638,7 @@ export function HomeParcelAddressLookup({
                         <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
                           <ParcelGlossaryPopoverTrigger
                             termId="term-property-tax"
-                            textTrigger="Property tax"
+                            textTrigger="Est. property tax"
                             textTriggerId="property-tax-term-first"
                           />
                         </div>

@@ -53,6 +53,9 @@ test("synthetic address loads levy stack and property details", async ({
   // Single-PIN situs: no account switcher on the dashboard.
   await expect(page.locator("#home-parcel-account-type")).toHaveCount(0);
   // Synthetic mills × assessed: known fixture contract, not a live county snapshot.
+  await expect(page.locator("#home-parcel-property-tax")).toContainText(
+    "Est. property tax",
+  );
   await expect(page.locator("#home-parcel-property-tax")).toContainText("$68");
 
   // Locked levy-ready report: one Back to top (below Feedback), not a second

@@ -65,6 +65,9 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
     // Realware face tax (1300+1200), not assessed × stack mills (single-base).
     await expect(page.locator("#home-parcel-property-tax")).toContainText(
+      "Est. property tax",
+    );
+    await expect(page.locator("#home-parcel-property-tax")).toContainText(
       "$2,500",
     );
     await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
@@ -256,10 +259,7 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
     await expect(
       page.getByRole("status", { name: /KNOWN ISSUE/i }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/may not match the Assessor site/i),
-    ).toBeVisible();
+    ).toHaveCount(0);
 
     await page
       .getByRole("button", {
@@ -313,7 +313,7 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(page.locator("#county-comps-pdf-in-progress")).toBeVisible();
     await expect(
       page.locator("#county-property-data-accuracy-warning"),
-    ).toBeVisible();
+    ).toHaveCount(0);
     await expect(page.getByText(/Realware detail JSON/i)).toBeVisible();
     await expect(page.getByText(/valuesByAbstractCode/i)).toBeVisible();
     await expect(
