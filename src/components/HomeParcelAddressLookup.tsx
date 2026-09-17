@@ -772,23 +772,6 @@ export function HomeParcelAddressLookup({
     return Math.round(s * 1000) / 1000;
   }, [levyLines]);
 
-  /** Face Property tax $ — county estimate mode (never silent mills for Douglas). */
-  const estimatedAnnualPropertyTaxDollars = useMemo(() => {
-    return resolveEstimatedAnnualPropertyTaxDollars({
-      mode: activeCountyConfig.propertyTaxEstimateMode,
-      totalAssessed: levyLoadedMeta?.parcelValues?.totalAssessed,
-      sumMills,
-      valuationHistory,
-      levyAwaitingTemplateMills,
-    });
-  }, [
-    activeCountyConfig.propertyTaxEstimateMode,
-    levyAwaitingTemplateMills,
-    levyLoadedMeta?.parcelValues?.totalAssessed,
-    sumMills,
-    valuationHistory,
-  ]);
-
   const homeCompsGridPdfHref = useMemo(
     () =>
       activeCompsPresentation === "omit"
@@ -1327,25 +1310,6 @@ export function HomeParcelAddressLookup({
     [isRentMode, parcelRecord],
   );
 
-  const rentEqualSplit = useMemo(() => {
-    if (
-      !isRentMode ||
-      estimatedAnnualPropertyTaxDollars == null ||
-      rentDwellingCount == null
-    ) {
-      return null;
-    }
-    return equalSplitFromAnnualTax(
-      estimatedAnnualPropertyTaxDollars,
-      rentDwellingCount.n,
-    );
-  }, [isRentMode, estimatedAnnualPropertyTaxDollars, rentDwellingCount]);
-
-  const rentWholePropertyMonthly = useMemo(() => {
-    if (!isRentMode || estimatedAnnualPropertyTaxDollars == null) return null;
-    return monthlyFromAnnualTax(estimatedAnnualPropertyTaxDollars);
-  }, [isRentMode, estimatedAnnualPropertyTaxDollars]);
-
   /** Envelope rows for multi-match pick list (street + city, difference marks). */
   const multiHitEnvelopeRows = useMemo(() => {
     if (enrichedMultiHits == null) return null;
@@ -1458,6 +1422,60 @@ export function HomeParcelAddressLookup({
     parcelSummaryYears?.assessmentYear,
     parcelSummaryYears?.taxYear,
   ]);
+
+  /**
+   * Face Property tax $ — same recipe as mill-levy stack dollars unless the
+   * county ships Realware face tax (Douglas). Uses whole-property assessed, not
+   * Rent per-unit scaling (rent panels split the annual face).
+   */
+  const estimatedAnnualPropertyTaxDollars = useMemo(() => {
+    const levyLinesForFace = levyLines.map((l) => ({
+      authority: l.authority,
+      mills: l.mills,
+      levyLineCode: l.levyLineCode,
+      dolaMatchedLegalName: l.dolaMatch?.matchedLegalName,
+    }));
+    const schoolAssessed =
+      parcelRecordForDisplay?.schoolAssessedTotal ??
+      parcelRecord?.schoolAssessedTotal;
+    return resolveEstimatedAnnualPropertyTaxDollars({
+      mode: activeCountyConfig.propertyTaxEstimateMode,
+      totalAssessed: levyLoadedMeta?.parcelValues?.totalAssessed,
+      levyLines: levyLinesForFace,
+      schoolAssessed,
+      countyId: resolvedCountyId,
+      valuationHistory,
+      levyAwaitingTemplateMills,
+    });
+  }, [
+    activeCountyConfig.propertyTaxEstimateMode,
+    levyAwaitingTemplateMills,
+    levyLines,
+    levyLoadedMeta?.parcelValues?.totalAssessed,
+    parcelRecord?.schoolAssessedTotal,
+    parcelRecordForDisplay?.schoolAssessedTotal,
+    resolvedCountyId,
+    valuationHistory,
+  ]);
+
+  const rentEqualSplit = useMemo(() => {
+    if (
+      !isRentMode ||
+      estimatedAnnualPropertyTaxDollars == null ||
+      rentDwellingCount == null
+    ) {
+      return null;
+    }
+    return equalSplitFromAnnualTax(
+      estimatedAnnualPropertyTaxDollars,
+      rentDwellingCount.n,
+    );
+  }, [isRentMode, estimatedAnnualPropertyTaxDollars, rentDwellingCount]);
+
+  const rentWholePropertyMonthly = useMemo(() => {
+    if (!isRentMode || estimatedAnnualPropertyTaxDollars == null) return null;
+    return monthlyFromAnnualTax(estimatedAnnualPropertyTaxDollars);
+  }, [isRentMode, estimatedAnnualPropertyTaxDollars]);
 
   /** Bill tax year — pairs current assessed with mill-history AUTH years. */
   const parcelBillTaxYear = useMemo(

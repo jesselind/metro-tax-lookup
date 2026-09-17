@@ -5,17 +5,19 @@
 /**
  * Face Property tax estimate modes.
  *
- * Source of truth is county-produced figures when available. Do not invent
- * Colorado DPT / legislative-adjustment dollars for the face tile.
- * Fail closed (null) when the configured mode lacks usable fields.
+ * Default path: face $ === mill-levy stack $ (`annualTaxDollarsForLevyStack`).
+ * Do not invent a second “simple” mills product that can disagree with the stack.
+ * County-published face totals (`realwareTaxDollars`) override; fail closed when
+ * those fields are missing — never silent mills fallback.
  */
 
-import {
-  annualTaxDollarsFromAssessedMills,
-  parcelAssessedForDollarEstimate,
-} from "@/lib/annualTaxFromAssessedMills";
+import { parcelAssessedForDollarEstimate } from "@/lib/annualTaxFromAssessedMills";
 import type { CountyConfig } from "@/lib/countyConfig";
 import type { CountyValuationHistoryPoint } from "@/lib/countyValuationHistoryData";
+import {
+  annualTaxDollarsForLevyStack,
+  type LevyLineForDualBaseDollars,
+} from "@/lib/levyLineAssessedBase";
 
 /** How the locked-report Property tax tile gets its dollar. */
 export type PropertyTaxEstimateMode = CountyConfig["propertyTaxEstimateMode"];
@@ -62,9 +64,12 @@ export function faceValuationHistoryPoint(
 export function estimatedAnnualPropertyTaxDollars(opts: {
   mode: PropertyTaxEstimateMode;
   totalAssessed: number | null | undefined;
-  sumMills: number;
+  /** Required for `levyStackDollars` (same lines as the mill-levy stack). */
+  levyLines?: readonly LevyLineForDualBaseDollars[];
+  schoolAssessed?: number | null | undefined;
+  countyId?: string | null;
   valuationHistory?: readonly CountyValuationHistoryPoint[] | null;
-  /** When true, levy mills are not ready — omit mills-based estimates. */
+  /** When true, levy mills are not ready — omit stack-based estimates. */
   levyAwaitingTemplateMills?: boolean;
 }): number | null {
   const { mode } = opts;
@@ -79,10 +84,23 @@ export function estimatedAnnualPropertyTaxDollars(opts: {
     return realwareTaxDollarsTotal(face);
   }
 
-  if (opts.levyAwaitingTemplateMills) return null;
-  const assessed = parcelAssessedForDollarEstimate(opts.totalAssessed);
-  if (assessed == null || opts.sumMills <= 0) return null;
-  return annualTaxDollarsFromAssessedMills(assessed, opts.sumMills);
+  if (mode === "levyStackDollars") {
+    if (opts.levyAwaitingTemplateMills) return null;
+    const assessed = parcelAssessedForDollarEstimate(opts.totalAssessed);
+    if (assessed == null) return null;
+    const lines = opts.levyLines ?? [];
+    if (lines.length === 0) return null;
+    const sumMills = lines.reduce((acc, line) => acc + line.mills, 0);
+    if (!(sumMills > 0)) return null;
+    return annualTaxDollarsForLevyStack(
+      lines,
+      assessed,
+      opts.schoolAssessed,
+      opts.countyId,
+    );
+  }
+
+  return null;
 }
 
 export function propertyTaxEstimateModeForCounty(

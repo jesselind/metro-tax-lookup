@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import { annualTaxDollarsFromAssessedMills } from "@/lib/annualTaxFromAssessedMills";
+import { annualTaxDollarsForLevyStack } from "@/lib/levyLineAssessedBase";
 import {
   estimatedAnnualPropertyTaxDollars,
   faceValuationHistoryPoint,
@@ -29,6 +30,14 @@ const SYNTHETIC_SPLIT_RATE_HISTORY = [
     alternateTaxDollars: 1200,
   },
 ] as const;
+
+/** Huron-shaped synthetic: school ≠ local (not a real situs in tests). */
+const HURON_SHAPED_LINES = [
+  { authority: "SYNTHETIC SCHOOL DIST # 1", mills: 51.071 },
+  { authority: "SYNTHETIC COUNTY", mills: 27.695 },
+] as const;
+const HURON_LOCAL = 23183;
+const HURON_SCHOOL = 26705;
 
 describe("realwareTaxDollarsTotal", () => {
   it("sums local and school Realware tax dollars", () => {
@@ -70,7 +79,6 @@ describe("estimatedAnnualPropertyTaxDollars", () => {
       estimatedAnnualPropertyTaxDollars({
         mode: "realwareTaxDollars",
         totalAssessed: 27170,
-        sumMills: 98.821,
         valuationHistory: SYNTHETIC_SPLIT_RATE_HISTORY,
       }),
     ).toBe(2500);
@@ -81,7 +89,6 @@ describe("estimatedAnnualPropertyTaxDollars", () => {
     const face = estimatedAnnualPropertyTaxDollars({
       mode: "realwareTaxDollars",
       totalAssessed: 27170,
-      sumMills,
       valuationHistory: SYNTHETIC_SPLIT_RATE_HISTORY,
     });
     const millsProduct = annualTaxDollarsFromAssessedMills(27170, sumMills);
@@ -95,7 +102,8 @@ describe("estimatedAnnualPropertyTaxDollars", () => {
       estimatedAnnualPropertyTaxDollars({
         mode: "realwareTaxDollars",
         totalAssessed: 27170,
-        sumMills: 98.821,
+        levyLines: [...HURON_SHAPED_LINES],
+        schoolAssessed: HURON_SCHOOL,
         valuationHistory: [
           {
             taxYear: 2026,
@@ -107,13 +115,53 @@ describe("estimatedAnnualPropertyTaxDollars", () => {
     ).toBeNull();
   });
 
-  it("keeps singleAssessedTimesTotalMills for Arapahoe-shaped mode", () => {
+  it("levyStackDollars equals annualTaxDollarsForLevyStack (dual-base)", () => {
+    const face = estimatedAnnualPropertyTaxDollars({
+      mode: "levyStackDollars",
+      totalAssessed: HURON_LOCAL,
+      schoolAssessed: HURON_SCHOOL,
+      levyLines: [...HURON_SHAPED_LINES],
+    });
+    const stack = annualTaxDollarsForLevyStack(
+      [...HURON_SHAPED_LINES],
+      HURON_LOCAL,
+      HURON_SCHOOL,
+    );
+    expect(stack).toBe(2006);
+    expect(face).toBe(stack);
+    const naiveSingle = annualTaxDollarsFromAssessedMills(
+      HURON_LOCAL,
+      51.071 + 27.695,
+    );
+    expect(naiveSingle).toBe(1826);
+    expect(face).not.toBe(naiveSingle);
+  });
+
+  it("levyStackDollars equals stack when school equals local (single-base)", () => {
+    const assessed = 10000;
+    const lines = [
+      { authority: "SYNTHETIC SCHOOL DIST # 1", mills: 40 },
+      { authority: "SYNTHETIC COUNTY", mills: 10 },
+    ];
+    const face = estimatedAnnualPropertyTaxDollars({
+      mode: "levyStackDollars",
+      totalAssessed: assessed,
+      schoolAssessed: assessed,
+      levyLines: lines,
+    });
+    expect(face).toBe(annualTaxDollarsForLevyStack(lines, assessed, assessed));
+    expect(face).toBe(annualTaxDollarsFromAssessedMills(assessed, 50));
+  });
+
+  it("levyStackDollars omits when mills are awaiting", () => {
     expect(
       estimatedAnnualPropertyTaxDollars({
-        mode: "singleAssessedTimesTotalMills",
-        totalAssessed: 10000,
-        sumMills: 100,
+        mode: "levyStackDollars",
+        totalAssessed: HURON_LOCAL,
+        schoolAssessed: HURON_SCHOOL,
+        levyLines: [...HURON_SHAPED_LINES],
+        levyAwaitingTemplateMills: true,
       }),
-    ).toBe(1000);
+    ).toBeNull();
   });
 });

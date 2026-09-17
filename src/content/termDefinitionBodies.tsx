@@ -891,10 +891,9 @@ export function TermPropertyTaxBriefBody() {
   return (
     <p className={BRIEF_P}>
       An estimate of yearly property tax from county assessed values and mill
-      rates. It may not match your tax statement exactly (credits, timing, and
-      rounding can change the bill). The mill levy breakdown total can also
-      differ a little from this tile when schools use a different assessed
-      amount than other districts.
+      rates - the same math as the mill levy breakdown total. It may not match
+      your tax statement exactly (credits, timing, and rounding can change the
+      bill).
     </p>
   );
 }

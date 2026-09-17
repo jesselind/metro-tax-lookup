@@ -199,14 +199,19 @@ export type CountyConfig = {
   hostedPropertyPageName: string;
   /**
    * Where the locked-report Property tax tile gets its dollar.
-   * - `singleAssessedTimesTotalMills`: assessed × total stack mills (Arapahoe-shaped).
-   * - `realwareTaxDollars`: Realware `taxDollars` + `alternateTaxDollars` for the face year (Douglas).
+   * - `levyStackDollars`: same dual-base (or single-base) math as the mill-levy
+   *   stack total (`annualTaxDollarsForLevyStack`). Default for counties without
+   *   a published face tax total. Face must equal stack when inputs match.
+   * - `realwareTaxDollars`: Realware `taxDollars` + `alternateTaxDollars` for the
+   *   face year (Douglas). Stack must reconcile to that face when history loads.
    * - `omit`: never show a face Property tax dollar.
    * Unknown / missing fields for the chosen mode → omit the dollar (fail closed).
-   * Never silently use mills math when the mode is `realwareTaxDollars`.
+   * Never silently use a second “local × total mills” product that can disagree
+   * with the stack. Never silently use mills math when the mode is
+   * `realwareTaxDollars`.
    */
   propertyTaxEstimateMode:
-    | "singleAssessedTimesTotalMills"
+    | "levyStackDollars"
     | "realwareTaxDollars"
     | "omit";
   /** Sources this county has. False omits the control (never had a source). */

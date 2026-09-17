@@ -185,11 +185,10 @@ describe("annualTaxDollarsForLevyStack dual-base reconciliation", () => {
   });
 
   /**
-   * Arapahoe Track B (C3): Assessor Levy.aspx has no dollar column, so the face
-   * tile stays local × total mills. Levy-line stack still uses dual-base when
-   * school ≠ local — face and stack can diverge by design (synthetic only).
+   * Face tile must use the same dual-base stack total when school ≠ local —
+   * never a separate local × total mills product (Huron-shaped synthetic).
    */
-  it("Arapahoe-shaped: dual stack total differs from single-base face when bases differ", () => {
+  it("levyStackDollars face equals dual stack (not naive single-base)", () => {
     const local = 23183;
     const school = 26705;
     const schoolMills = 51.071;
@@ -198,14 +197,14 @@ describe("annualTaxDollarsForLevyStack dual-base reconciliation", () => {
       { authority: "SYNTHETIC SCHOOL DIST # 1", mills: schoolMills },
       { authority: "SYNTHETIC COUNTY", mills: localMills },
     ];
-    const faceSingle = annualTaxDollarsFromAssessedMills(
+    const naiveSingle = annualTaxDollarsFromAssessedMills(
       local,
       schoolMills + localMills,
     );
     const stackDual = annualTaxDollarsForLevyStack(lines, local, school);
-    expect(faceSingle).toBe(1826);
+    expect(naiveSingle).toBe(1826);
     expect(stackDual).toBe(2006);
-    expect(stackDual).not.toBe(faceSingle);
+    expect(stackDual).not.toBe(naiveSingle);
   });
 
   it("uses school base for one school line", () => {

@@ -351,15 +351,11 @@ export function ArapahoeSourcesMethodology() {
           {" "}
           <strong>Est. property tax</strong>
           {" "}
-          tile multiplies
-          {" "}
-          <strong>local assessed</strong>
-          {" "}
-          by the total mill levy (the county does not publish an estimated-tax
-          dollar on Tax District Levies). When school assessed differs from
-          local assessed, each mill-levy bill entry uses the assessed base that
-          authority type uses (school vs local), so the mill-levy total can
-          differ from that face tile on some homes.
+          tile uses the same mill→dollar math as the mill-levy stack total
+          (school authorities × school assessed when that figure differs from
+          local assessed; other lines × local). Arapahoe Tax District Levies is
+          mills-only, so this dollar is app-derived, not a county-published
+          estimate total.
         </li>
         <li>
           <strong>Assessed value</strong>{" "}totals come from the mart total

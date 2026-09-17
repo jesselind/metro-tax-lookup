@@ -40,12 +40,12 @@ Phrases: "Do final checks" / "Run final checks". Touched or named scope only. No
    - Test or logic in scope: `npm run test:unit` (or a targeted `vitest run` path)
    - JSON/templates, Next config, or app code that ships in the Next bundle: `npm run build` (same TypeScript + bundle gate as production deploy and CI e2e)
    - UI contract changed: local e2e per `.cursor/rules/playwright-macos-sandbox.mdc` (chromium + webkit on macOS 27; Firefox deferred to CI until that host issue is fixed) — fresh `npm run typecheck`, `npm run build`, then `CI=1` Playwright with `PLAYWRIGHT_BROWSERS_PATH` (`next start`, not `next dev`). Match current UI.
-5. Triage: `docs/_working/` for deferred research (optional handoff). `locked-decisions.md` survives topic cleanup; not a whitelist.
+5. Triage: `docs/_working/` urgency backlog (`00-backlog.md`; lower number = higher urgency; delete when done). Lasting product/UX calls: tracked `docs/locked-decisions.md` (not a whitelist).
 6. Report per **Review responses**.
 
 ### Working docs (`docs/_working/`)
 
-Gitignored scratch; delete topic files when done. Not for `/sources` narrative or shipped `docs/*.md`. Open review findings must stay in the review response (or another visible durable tracker); `_working/` must not be the sole record.
+Gitignored scratch backlog only; see `00-backlog.md` (urgency numbers). Delete topic files when done. Not for `/sources` narrative or shipped `docs/*.md`. Lasting decisions: tracked `docs/locked-decisions.md` (not a whitelist). Open review findings must stay in the review response (or another visible durable tracker); `_working/` must not be the sole record.
 
 ### Review responses
 

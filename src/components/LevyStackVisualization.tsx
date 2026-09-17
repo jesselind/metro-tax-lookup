@@ -1015,8 +1015,9 @@ export function LevyStackVisualization({
                       )
                     ) : (
                       <>
-                        . Your county notice may differ slightly due to rounding
-                        or line-item rules.
+                        . This is an estimate: it may not match your tax
+                        statement exactly (credits, timing, and rounding can
+                        change the bill).
                       </>
                     )}
                   </>

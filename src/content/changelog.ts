@@ -27,19 +27,31 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.16.0",
+    date: "2026-09-17",
+    title:
+      "Est. property tax face equals mill-levy stack dollars (levyStackDollars)",
+    highlights: [
+      "County-agnostic default: propertyTaxEstimateMode levyStackDollars - face tile uses annualTaxDollarsForLevyStack (same dual-base math as the mill-levy total). Removes singleAssessedTimesTotalMills so face can no longer disagree with the stack when school assessed differs from local.",
+      "Douglas unchanged: realwareTaxDollars face; stack still reconciles to Realware. Arapahoe Assessor Levy.aspx remains mills-only; face $ stays labeled Est. property tax (app-derived).",
+      "Popover and Arapahoe /sources: drop face-vs-stack divergence copy; Vitest locks face === stack on Huron-shaped synthetic and rejects naive local x total mills.",
+      "Levy stack Own-mode dollar note: stronger estimate disclaimer under the breakdown (credits, timing, rounding vs tax statement), parallel to Rent equal-split caveats - no ~ or Est. prefixes on tile or total dollars.",
+    ],
+  },
+  {
     version: "5.15.0",
     date: "2026-09-15",
     title:
       "Douglas Realware face tax + county-agnostic dual-rate levy dollars",
     highlights: [
-      "Douglas face Property tax uses Realware taxDollars + alternateTaxDollars for the face year (propertyTaxEstimateMode: realwareTaxDollars); fail closed when those fields are missing - never silent mills fallback. Arapahoe keeps singleAssessedTimesTotalMills for the face tile.",
+      "Douglas face Property tax uses Realware taxDollars + alternateTaxDollars for the face year (propertyTaxEstimateMode: realwareTaxDollars); fail closed when those fields are missing - never silent mills fallback. Arapahoe kept singleAssessedTimesTotalMills for the face tile (superseded in 5.16.0 by levyStackDollars).",
       "County-agnostic levy-line dollars: school authorities use school assessed when it differs from local assessed; other lines use local. Stack total rounds each assessed side once (Realware-style buckets). Classifier covers SCHOOL DIST / School District / School(s) labels (e.g. Schools - Debt Service).",
       "Tax year tile follows Realware face year matching pin assessed when valuation history loads; school assessed overlays into the values table. Re-shipped douglas-valuation-history-by-account shards with alternate assessed + tax dollar fields; cache bust 20260915splitrate.",
       "CI: synthetic Realware-shaped extract golden (no real situs); Vitest face ≠ mills product + stack↔face dual-base goldens; Douglas e2e asserts face and mill-stack total both $2,500 on the split-rate fixture. Arapahoe authority-mills extract imports pdfplumber only when opening a PDF so synthetic unit tests run under the CI rapidfuzz-only Python env.",
-      "Track B (Arapahoe Assessor UI): Levy.aspx is mills-only (C3) - Arapahoe face mode stays singleAssessedTimesTotalMills; dual-base levy-line dollars remain. Docs + synthetic Vitest lock intentional face≠stack when school ≠ local; /sources notes county mills-only table and DPT school-assessed caveats.",
+      "Track B (Arapahoe Assessor UI): Levy.aspx is mills-only (C3) - Arapahoe face mode stayed singleAssessedTimesTotalMills with intentional face≠stack when school ≠ local (superseded in 5.16.0). Docs + /sources noted county mills-only table and DPT school-assessed caveats.",
       "Home locked report: do not autofocus Jump to a section when a property loads (focus stays on #page-top from lock); avoids a highlighted TOC summary on every lookup.",
       "Douglas propertyDataAccuracyWarning cleared (KNOWN ISSUE banner and /sources callout off) after Realware face tax + dual-rate stack honesty. Maintainer contract: .cursor/rules/property-tax-estimate-honesty.mdc. Arapahoe school-assessed / missing-mills fidelity parked for follow-up (primary county).",
-      "Summary tile label Est. property tax (not Est. on every $); popover: estimate vs tax statement, and why mill-levy total can differ when school assessed differs from local.",
+      "Summary tile label Est. property tax (not Est. on every $); popover: estimate vs tax statement (face≠stack note removed in 5.16.0).",
     ],
   },
   {
