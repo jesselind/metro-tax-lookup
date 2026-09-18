@@ -23,7 +23,7 @@ When valuation history is loaded, Tax year follows the Realware face year that m
 - Dual-base when school assessed is known and differs from local: school authorities × school assessed; other lines × local. Equal or missing school → single local base.
 - Classifier: authority-chain `family === "school"` or name match (`SCHOOL DIST` / `School District` / `School`/`Schools`). Helper: `src/lib/levyLineAssessedBase.ts`.
 - Face and stack share that helper under `levyStackDollars`. Never ship local × total mills as a competing face total.
-- Arapahoe mart `schoolAssessedTotal` is DPT-computed and usually matches Assessor parcel-page school assessed; remaining fidelity follow-ups: `docs/_working/01-arapahoe-school-assessed-and-mills-fidelity.md`.
+- Arapahoe `schoolAssessedTotal` is DPT-computed at build (not a Main Parcel column). Treat unreproduced Assessor mismatch claims as not a bug until a concrete PIN shows Assessor Assessed School Value ≠ that figure.
 
 ## Gates
 

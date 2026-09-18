@@ -36,6 +36,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       "Douglas unchanged: realwareTaxDollars face; stack still reconciles to Realware. Arapahoe Assessor Levy.aspx remains mills-only; face $ stays labeled Est. property tax (app-derived).",
       "Popover and Arapahoe /sources: drop face-vs-stack divergence copy; Vitest locks face === stack on Huron-shaped synthetic and rejects naive local x total mills.",
       "Levy stack Own-mode dollar note: stronger estimate disclaimer under the breakdown (credits, timing, rounding vs tax statement), parallel to Rent equal-split caveats - no ~ or Est. prefixes on tile or total dollars.",
+      "Arapahoe /sources: drop unreproduced 'some parcels Assessor school differs' caveat; school assessed stays DPT-rate math matching the parcel-page pattern. Closed working 01 without a mismatch PIN.",
     ],
   },
   {

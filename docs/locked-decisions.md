@@ -10,6 +10,7 @@ Tracked maintainer memory (`docs/locked-decisions.md`). **Not** under gitignored
 
 | Date | Decision | Notes |
 |------|----------|-------|
+| 2026-09-18 | Arapahoe school assessed: unreproduced Assessor ≠ DPT-math claim is not a bug. Face=stack (`levyStackDollars`) closed the real product issue. Do not keep an open fidelity ticket or `/sources` “some parcels differ” caveat without a concrete PIN. | `/sources` Arapahoe methodology; killed `docs/_working/01-arapahoe-school-assessed-and-mills-fidelity.md` |
 | 2026-09-17 | Face Est. property tax $ === mill-levy stack $ under `levyStackDollars` (dual-base when school ≠ local). Never a separate local × total mills face. Douglas keeps `realwareTaxDollars`; stack reconciles to Realware face. | `.cursor/rules/property-tax-estimate-honesty.mdc` |
 | 2026-09-16 | Semver: at most one `package.json` bump per branch; fold close-out into the same changelog entry. | `.cursor/rules/base-rule.mdc` |
 | 2026-09-15 | Douglas face $: Realware `taxDollars` + `alternateTaxDollars` only; never silent `assessed × total mills`. Resident label **Est. property tax** (not Est. on every `$`). Dual-rate school/local bases county-agnostic. (Arapahoe face mode superseded 2026-09-17 → `levyStackDollars`.) | `.cursor/rules/property-tax-estimate-honesty.mdc` |
