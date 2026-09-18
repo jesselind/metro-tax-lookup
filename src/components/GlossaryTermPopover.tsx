@@ -32,6 +32,7 @@ import {
   TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
 import type { FC, ReactNode } from "react";
+import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
 
 /** Extra flow briefs not already in parcel or levy-modal registries. */
 type ExtraFlowGlossaryTermId =
@@ -114,6 +115,8 @@ type GlossaryTermPopoverProps = {
   variant?: "inline" | "summary-tile" | "parcel-record";
   /** Extra brief copy after the registry body (e.g. this property's mill example). */
   afterBrief?: ReactNode;
+  /** Face-tile mode for `term-property-tax` (Douglas `realwareTaxDollars` vs default stack). */
+  propertyTaxEstimateMode?: PropertyTaxEstimateMode;
 };
 
 /**
@@ -129,6 +132,7 @@ export function GlossaryTermPopover({
   disabled,
   variant = "inline",
   afterBrief,
+  propertyTaxEstimateMode,
 }: GlossaryTermPopoverProps) {
   const { title, Brief } = resolveBrief(termId);
   const defaultTriggerClass =
@@ -140,7 +144,12 @@ export function GlossaryTermPopover({
 
   let body: ReactNode;
   if (termId in parcelGlossaryTermBriefRegistry) {
-    body = <ParcelTermPopoverPanel termId={termId as ParcelGlossaryTermId} />;
+    body = (
+      <ParcelTermPopoverPanel
+        termId={termId as ParcelGlossaryTermId}
+        propertyTaxEstimateMode={propertyTaxEstimateMode}
+      />
+    );
   } else {
     body = <Brief />;
   }

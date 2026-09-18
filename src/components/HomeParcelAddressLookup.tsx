@@ -2658,6 +2658,9 @@ export function HomeParcelAddressLookup({
                             termId="term-property-tax"
                             textTrigger="Est. property tax"
                             textTriggerId="property-tax-term-first"
+                            propertyTaxEstimateMode={
+                              activeCountyConfig.propertyTaxEstimateMode
+                            }
                           />
                         </div>
                         <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>

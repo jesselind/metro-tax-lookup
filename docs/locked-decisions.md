@@ -4,7 +4,7 @@ Tracked maintainer memory (`docs/locked-decisions.md`). **Not** under gitignored
 
 **Purpose:** Durable record of author product / UX / copy calls across chats. Helps agents avoid re-litigating settled choices.
 
-**Not a whitelist:** Final checks and reviews already **forbid any UI/UX change without the author's explicit permission** (see `.cursor/rules/base-rule.mdc`). Missing a row here does **not** mean the agent may change the UI. When in doubt, ask.
+**Not a whitelist:** Final checks and reviews follow `.cursor/rules/base-rule.mdc`: **ask first** for UI/UX that changes layout, visual design, disclosure, column order, labels/copy/voice, or how residents move; **fix without asking** for same-product engineering and in-place accessibility that does not change the resident experience. Missing a row here does **not** mean the agent may redesign the UI. When in doubt, ask.
 
 **How to use:** Short rows only. No secrets. No private personal data. Prefer code paths over essays. Urgency backlog index: `docs/_working/00-backlog.md`.
 

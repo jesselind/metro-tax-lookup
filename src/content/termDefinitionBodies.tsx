@@ -16,6 +16,7 @@ import {
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
   COLORADO_LEG_TABOR_URL,
 } from "@/lib/arapahoeCountyUrls";
+import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   TERM_LINK_CLASS,
@@ -887,7 +888,21 @@ export function TermTaxYearBriefBody() {
   );
 }
 
-export function TermPropertyTaxBriefBody() {
+export function TermPropertyTaxBriefBody({
+  estimateMode = "levyStackDollars",
+}: {
+  /** Face-tile mode from the active county config. */
+  estimateMode?: PropertyTaxEstimateMode;
+} = {}) {
+  if (estimateMode === "realwareTaxDollars") {
+    return (
+      <p className={BRIEF_P}>
+        An estimate of yearly property tax from the county Assessor&apos;s
+        published tax total for the year. It may not match your tax statement
+        exactly (credits, timing, and rounding can change the bill).
+      </p>
+    );
+  }
   return (
     <p className={BRIEF_P}>
       An estimate of yearly property tax from county assessed values and mill
@@ -1233,7 +1248,16 @@ export const parcelGlossaryTermBriefRegistry: Record<
 
 export function ParcelTermPopoverPanel(props: {
   termId: ParcelGlossaryTermId;
+  /** Required for accurate `term-property-tax` copy under `realwareTaxDollars`. */
+  propertyTaxEstimateMode?: PropertyTaxEstimateMode;
 }) {
+  if (props.termId === "term-property-tax") {
+    return (
+      <TermPropertyTaxBriefBody
+        estimateMode={props.propertyTaxEstimateMode ?? "levyStackDollars"}
+      />
+    );
+  }
   const { Brief } = parcelGlossaryTermBriefRegistry[props.termId];
   return <Brief />;
 }

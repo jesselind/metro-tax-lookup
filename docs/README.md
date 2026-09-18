@@ -2,7 +2,7 @@
 
 Tracked guides for fork/contributors. Setup, npm scripts, data layout, and security notes stay in the root **[README.md](../README.md)**. Resident-facing methodology stays on in-app **`/sources`**.
 
-Ephemeral checklists and multi-session handoff notes go in **`docs/_working/`** (gitignored). Delete those when the work ships.
+**`docs/_working/`** (gitignored) is reserved for the numbered urgency backlog only (`00-backlog.md`; lower number = higher urgency). Delete topic files when the work ships. Not for general checklists, handoff essays, `/sources` narrative, or lasting decisions (use [`locked-decisions.md`](./locked-decisions.md)).
 
 ## Tracked guides
 
