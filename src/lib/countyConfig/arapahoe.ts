@@ -83,7 +83,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     millLevyPublicInfoFormLabel: "Mill Levy Public Information Form",
   },
   hostedPropertyPageName: "parcel record",
-  propertyTaxEstimateMode: "singleAssessedTimesTotalMills",
+  propertyTaxEstimateMode: "levyStackDollars",
   features: {
     situs: true,
     parcelRecordShards: true,

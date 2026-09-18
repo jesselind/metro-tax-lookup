@@ -10,6 +10,7 @@ import {
   type FlowGlossaryTermId,
 } from "@/components/GlossaryTermPopover";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
+import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
 import {
   PARCEL_RECORD_SECTION_TITLE_GLOSSARY_LINK_CLASS,
   PARCEL_RECORD_TABLE_HEADER_GLOSSARY_LINK_CLASS,
@@ -26,6 +27,8 @@ export type ParcelGlossaryPopoverTriggerProps = {
   ariaLabel?: string;
   panelClassName?: string;
   disabled?: boolean;
+  /** Face-tile mode for `term-property-tax` only. */
+  propertyTaxEstimateMode?: PropertyTaxEstimateMode;
 };
 
 /**
@@ -40,6 +43,7 @@ export function ParcelGlossaryPopoverTrigger({
   ariaLabel,
   panelClassName,
   disabled,
+  propertyTaxEstimateMode,
 }: ParcelGlossaryPopoverTriggerProps) {
   const flowVariant =
     variant === "summary-tile" || variant === "parcel-record"
@@ -62,6 +66,7 @@ export function ParcelGlossaryPopoverTrigger({
       panelClassName={panelClassName}
       disabled={disabled}
       variant={flowVariant}
+      propertyTaxEstimateMode={propertyTaxEstimateMode}
     />
   );
 }

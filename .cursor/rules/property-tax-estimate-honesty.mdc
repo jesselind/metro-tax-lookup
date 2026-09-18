@@ -5,13 +5,13 @@ alwaysApply: true
 
 # Property tax estimate honesty
 
-When changing face Property tax dollars, tax year tiles, mill-levy line dollars, Realware / valuation-history extracts, or `propertyTaxEstimateMode`, keep these contracts. Do not invent county estimate totals the Assessor UI does not publish.
+When changing face Property tax dollars, tax year tiles, mill-levy line dollars, Realware / valuation-history extracts, or `propertyTaxEstimateMode`, keep these contracts. Do not invent county estimate totals the Assessor UI does not publish. Do not invent a second face formula that can disagree with the mill-levy stack.
 
 ## Face tile (`propertyTaxEstimateMode`)
 
-- **Douglas:** `realwareTaxDollars` — Realware `taxDollars` + `alternateTaxDollars` for the face year. Fail closed if missing. **Never** silent fallback to assessed × total mills.
-- **Arapahoe:** `singleAssessedTimesTotalMills` — local assessed × total stack mills. Assessor Levy.aspx is mills-only (no estimate $); do not claim face $ is a county-published total.
-- **Resident face label (all counties that show the tile):** **Est. property tax** (not Est. on every `$`). Popover explains estimate vs bill and why mill-levy total can differ when school assessed ≠ local.
+- **Default (`levyStackDollars`):** Face $ === mill-levy stack $ via `annualTaxDollarsForLevyStack` (dual-base when school ≠ local; else single local base). Arapahoe and any county without a published face tax total use this. Assessor Levy.aspx may be mills-only — still label **Est. property tax**; do not claim face $ is county-published.
+- **Douglas (`realwareTaxDollars`):** Realware `taxDollars` + `alternateTaxDollars` for the face year. Fail closed if missing. **Never** silent fallback to assessed × total mills. Stack must reconcile to that face (± whole-dollar bucket rounding) when history loads.
+- **Resident face label (all counties that show the tile):** **Est. property tax** (not Est. on every `$`). Popover: estimate vs tax statement (not face vs stack divergence).
 - Helper: `src/lib/propertyTaxEstimate.ts`. Mode lives on `CountyConfig`, not a feature flag.
 
 ## Tax year provenance
@@ -22,10 +22,10 @@ When valuation history is loaded, Tax year follows the Realware face year that m
 
 - Dual-base when school assessed is known and differs from local: school authorities × school assessed; other lines × local. Equal or missing school → single local base.
 - Classifier: authority-chain `family === "school"` or name match (`SCHOOL DIST` / `School District` / `School`/`Schools`). Helper: `src/lib/levyLineAssessedBase.ts`.
-- Douglas: when history loads, stack total must reconcile to Realware face (± whole-dollar bucket rounding). Synthetic goldens only in CI (no real situs/accounts).
-- Arapahoe: face (single-base) and stack (dual-base) may diverge when school ≠ local — intentional. Mart `schoolAssessedTotal` is DPT-computed and usually matches PPI; mismatches and missing DOLA mill lines are primary-county follow-ups (working tracker: `docs/_working/arapahoe-assessed-and-mills-fidelity.md`).
+- Face and stack share that helper under `levyStackDollars`. Never ship local × total mills as a competing face total.
+- Arapahoe `schoolAssessedTotal` is DPT-computed at build (not a Main Parcel column). Treat unreproduced Assessor mismatch claims as not a bug until a concrete PIN shows Assessor Assessed School Value ≠ that figure.
 
 ## Gates
 
-- Synthetic Realware extract + Vitest face ≠ mills product + stack↔face dual-base goldens; Douglas e2e face/stack on synthetic fixture.
+- Vitest: `levyStackDollars` face === stack (dual-base golden); naive single-base ≠ dual when school ≠ local; Realware face ≠ mills product + stack↔Realware face; Douglas e2e face/stack on synthetic fixture.
 - Do not drive third-party Assessor SPAs in merge-gate Playwright.

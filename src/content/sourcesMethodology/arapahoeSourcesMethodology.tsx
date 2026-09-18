@@ -321,7 +321,7 @@ export function ArapahoeSourcesMethodology() {
           <strong>Assessed school value</strong>
           {" "}
           is the taxable value school districts use for the school portion of
-          your property tax bill. It is not a mart column. For improved
+          your property tax bill. It is not a Main Parcel column. For improved
           {" "}
           <strong>residential</strong>
           {" "}
@@ -330,14 +330,11 @@ export function ArapahoeSourcesMethodology() {
           <strong>Department of Property Taxation</strong>
           {" "}
           (DPT) school assessment rate (7.05% for 2026) on appraised building
-          and land, rounded the way the county parcel page usually does. On
-          many homes that matches the county
+          and land, rounded the same way the county parcel page shows
           {" "}
           <strong>Assessed School Value</strong>
-          {" "}
-          row; on some parcels the county figure differs (often closer to local
-          assessed), so treat the app school row as DPT-rate math unless you
-          confirm the county page. Residential parcels use a
+          , so school mill lines can use that school assessed base. Residential
+          parcels use a
           {" "}
           <strong>state use code</strong>
           {" "}
@@ -351,15 +348,11 @@ export function ArapahoeSourcesMethodology() {
           {" "}
           <strong>Est. property tax</strong>
           {" "}
-          tile multiplies
-          {" "}
-          <strong>local assessed</strong>
-          {" "}
-          by the total mill levy (the county does not publish an estimated-tax
-          dollar on Tax District Levies). When school assessed differs from
-          local assessed, each mill-levy bill entry uses the assessed base that
-          authority type uses (school vs local), so the mill-levy total can
-          differ from that face tile on some homes.
+          tile uses the same mill→dollar math as the mill-levy stack total
+          (school authorities × school assessed when that figure differs from
+          local assessed; other lines × local). Arapahoe Tax District Levies is
+          mills-only, so this dollar is app-derived, not a county-published
+          estimate total.
         </li>
         <li>
           <strong>Assessed value</strong>{" "}totals come from the mart total

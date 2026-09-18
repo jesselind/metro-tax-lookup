@@ -154,10 +154,10 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(DOUGLAS_COUNTY_CONFIG.propertyTaxEstimateMode).toBe(
       "realwareTaxDollars",
     );
-    // Track B (C3): Arapahoe Assessor publishes mills + dual assessed bases, not
-    // an estimated-tax dollar; face stays single local × total mills.
+    // Arapahoe Assessor Levy.aspx is mills-only (C3): publishes mills + dual
+    // assessed bases, not an estimated-tax dollar; face is levyStackDollars.
     expect(ARAPAHOE_COUNTY_CONFIG.propertyTaxEstimateMode).toBe(
-      "singleAssessedTimesTotalMills",
+      "levyStackDollars",
     );
     expect(DOUGLAS_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(true);
