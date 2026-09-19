@@ -11,18 +11,17 @@ import {
   ParcelRecordPermitTable,
   ParcelRecordSaleTable,
   ParcelRecordValueSection,
+  type ParcelValueHistoryAffordance,
 } from "@/components/ParcelRecordCountyTables";
 import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingValue";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import {
-  countyFeatureAvailable,
   type CountyConfig,
 } from "@/lib/countyConfig";
 import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedMessage";
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
-import { VALUATION_HISTORY_PROPERTY_DETAILS_LINK } from "@/content/valuationHistoryCopy";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
@@ -65,9 +64,18 @@ export type ParcelRecordExtendedSectionProps = {
   rentMode?: boolean;
   /** Resolved county for hosted record / clerk links. */
   countyConfig: CountyConfig;
-  /** When set, show a link that opens the valuation history modal. */
-  onOpenValuationHistory?: () => void;
-  showValuationHistoryLink?: boolean;
+  /**
+   * Transferred Actual / Assessed summary-tile affordances (Changed, YoY chart
+   * openers, prior-year gap). When set, the old single "View valuation history"
+   * link is omitted — each value row opens its own chart.
+   */
+  actualValueAffordance?: ParcelValueHistoryAffordance | null;
+  assessedValueAffordance?: ParcelValueHistoryAffordance | null;
+  /**
+   * When TaxYear and AssessmentYear differ but the shard omitted them, pass the
+   * locked-report note so Appraised and assessed values still explain the gap.
+   */
+  taxYearNoteOverride?: string | null;
 };
 
 /**
@@ -87,8 +95,9 @@ export function ParcelRecordExtendedSection({
   omitContinuationHeading = false,
   rentMode = false,
   countyConfig,
-  onOpenValuationHistory,
-  showValuationHistoryLink = false,
+  actualValueAffordance = null,
+  assessedValueAffordance = null,
+  taxYearNoteOverride = null,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
   const isBusinessPersonal =
@@ -111,11 +120,6 @@ export function ParcelRecordExtendedSection({
   ) {
     return null;
   }
-
-  const valuationHistoryLinkVisible =
-    showValuationHistoryLink &&
-    onOpenValuationHistory != null &&
-    countyFeatureAvailable("valuationHistoryShards", countyConfig);
 
   const saleBuildingLandTables =
     displayRecord != null && !isBusinessPersonal ? (
@@ -161,7 +165,7 @@ export function ParcelRecordExtendedSection({
 
       {loading || loadFailed || displayRecord == null ? (
         <div
-          className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
+          className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6`}
           aria-live={loading ? "polite" : undefined}
         >
           {loading ? (
@@ -182,12 +186,13 @@ export function ParcelRecordExtendedSection({
         </div>
       ) : (
         <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
-          <div
-            className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6 overflow-x-auto`}
-          >
+          <div className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-8`}>
             <ParcelRecordValueSection
               record={displayRecord}
               totalOnly={isBusinessPersonal}
+              actualAffordance={actualValueAffordance}
+              assessedAffordance={assessedValueAffordance}
+              taxYearNoteOverride={taxYearNoteOverride}
             />
             {!isBusinessPersonal && !rentMode ? saleBuildingLandTables : null}
           </div>
@@ -213,7 +218,7 @@ export function ParcelRecordExtendedSection({
                 id={saleBuildingLandPanelId}
                 hidden={!showSaleBuildingLand}
                 aria-labelledby={saleBuildingLandToggleId}
-                className="space-y-6 overflow-x-auto border-t border-slate-200 pt-4"
+                className="space-y-6 border-t border-slate-200 pt-4"
               >
                 {saleBuildingLandTables}
               </div>
@@ -221,16 +226,6 @@ export function ParcelRecordExtendedSection({
           ) : null}
         </ParcelRecordReportIdsProvider>
       )}
-      {valuationHistoryLinkVisible ? (
-        <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
-          <ToolOutlinedToggleButton
-            type="button"
-            onClick={onOpenValuationHistory}
-          >
-            {VALUATION_HISTORY_PROPERTY_DETAILS_LINK}
-          </ToolOutlinedToggleButton>
-        </div>
-      ) : null}
     </section>
   );
 }

@@ -6,68 +6,121 @@
 import { describe, expect, it } from "vitest";
 import { buildHomeDashboardJumps } from "@/lib/homeDashboardJumps";
 
+const baseFlags = {
+  showRentPressure: false,
+  showLevies: false,
+  showPropertyDetails: false,
+  showAppraisedAssessed: false,
+  showSaleHistory: false,
+  showBuildings: false,
+  showArea: false,
+  showLandLine: false,
+  showPermits: false,
+  showCountyCompare: false,
+  showInAppComps: false,
+  showFeedback: false,
+  countyDisplayName: "Arapahoe",
+};
+
 describe("buildHomeDashboardJumps", () => {
   it("omits sections that are not on the page", () => {
     expect(
       buildHomeDashboardJumps({
+        ...baseFlags,
         showLevies: true,
-        showPropertyDetails: false,
-        showCountyCompare: false,
-        showInAppComps: false,
         showFeedback: true,
-        countyDisplayName: "Arapahoe",
       }).map((j) => j.id),
-    ).toEqual(["top", "levies", "feedback"]);
+    ).toEqual(["levies", "feedback"]);
   });
 
   it("includes county name in the compare label", () => {
     const jumps = buildHomeDashboardJumps({
-      showLevies: false,
-      showPropertyDetails: false,
+      ...baseFlags,
       showCountyCompare: true,
-      showInAppComps: false,
-      showFeedback: false,
       countyDisplayName: "Douglas",
     });
-    expect(jumps.map((j) => j.id)).toEqual(["top", "county-compare"]);
-    expect(jumps[1]?.label).toBe("See how Douglas displays your data");
+    expect(jumps.map((j) => j.id)).toEqual(["county-compare"]);
+    expect(jumps[0]?.label).toBe("See how Douglas displays your data");
   });
 
-  it("keeps page order when all sections are present", () => {
+  it("keeps page order for Own Real with all subsections", () => {
     expect(
       buildHomeDashboardJumps({
+        ...baseFlags,
         showLevies: true,
         showPropertyDetails: true,
+        showAppraisedAssessed: true,
+        showSaleHistory: true,
+        showBuildings: true,
+        showArea: true,
+        showLandLine: true,
+        showPermits: true,
         showCountyCompare: true,
         showInAppComps: true,
         showFeedback: true,
-        countyDisplayName: "Arapahoe",
       }).map((j) => j.id),
     ).toEqual([
-      "top",
       "levies",
       "property-details",
+      "appraised-assessed",
+      "sale-history",
+      "buildings",
+      "area",
+      "land-line",
+      "permits",
       "county-compare",
       "comps",
       "feedback",
     ]);
   });
 
-  it("always leads with Summary", () => {
+  it("leads with levy when present (no Summary jump)", () => {
     const jumps = buildHomeDashboardJumps({
-      showLevies: false,
-      showPropertyDetails: false,
-      showCountyCompare: false,
-      showInAppComps: false,
-      showFeedback: false,
-      countyDisplayName: "Arapahoe",
+      ...baseFlags,
+      showLevies: true,
     });
     expect(jumps).toEqual([
       {
-        id: "top",
-        label: "Summary",
-        focusId: "page-top",
+        id: "levies",
+        label: "Where is your money going?",
+        focusId: "home-levy-stack-subheading",
+        highlightId: "home-levy-stack-tiles",
       },
     ]);
+  });
+
+  it("curates Rent jumps: pressure, levy, compare, feedback", () => {
+    expect(
+      buildHomeDashboardJumps({
+        ...baseFlags,
+        showRentPressure: true,
+        showLevies: true,
+        showCountyCompare: true,
+        showFeedback: true,
+      }).map((j) => j.id),
+    ).toEqual(["rent-pressure", "levies", "county-compare", "feedback"]);
+  });
+
+  it("curates BPP jumps without real-property-only subsections", () => {
+    expect(
+      buildHomeDashboardJumps({
+        ...baseFlags,
+        showLevies: true,
+        showPropertyDetails: true,
+        showAppraisedAssessed: true,
+        showCountyCompare: true,
+        showFeedback: true,
+      }).map((j) => j.id),
+    ).toEqual([
+      "levies",
+      "property-details",
+      "appraised-assessed",
+      "county-compare",
+      "feedback",
+    ]);
+  });
+
+  it("returns an empty list when nothing is mounted", () => {
+    expect(buildHomeDashboardJumps(baseFlags)).toEqual([]);
   });
 });

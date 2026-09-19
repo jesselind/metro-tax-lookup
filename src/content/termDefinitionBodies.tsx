@@ -600,9 +600,7 @@ export function TermCompsBriefBody() {
       value. People often call them{" "}
       <strong className="font-semibold text-slate-900">comps</strong>
       {" "}
-      (short for comparables). Same idea as when people buy or sell a house, but
-      this list is the county&apos;s. The control opens the county PDF for your
-      parcel.
+      (short for comparables).
     </p>
   );
 }

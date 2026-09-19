@@ -26,8 +26,9 @@ export type AudienceModeSwitchProps = {
 };
 
 /**
- * Large Own | Rent segmented control (radio group under the hood).
- * Visible chrome is just Own | Rent; group name is aria-label only (no extra sentence).
+ * Large I Own | I Rent segmented control (radio group under the hood).
+ * Visible chrome is first-person lens labels; group name is aria-label only
+ * (no extra sentence above the control).
  */
 export function AudienceModeSwitch({
   value,
@@ -75,7 +76,7 @@ export function AudienceModeSwitch({
     <div
       className={`w-full min-w-0 ${className}`.trim()}
       role="radiogroup"
-      aria-label="Own or rent"
+      aria-label="I own or I rent"
     >
       <div
         className={`${DASHBOARD_TILE_RADIUS_CLASS} flex w-full overflow-hidden border-2 border-slate-900`}
@@ -90,7 +91,7 @@ export function AudienceModeSwitch({
           onClick={() => selectMode("own")}
           onKeyDown={onRadioKeyDown}
         >
-          Own
+          I Own
         </button>
         <button
           type="button"
@@ -102,7 +103,7 @@ export function AudienceModeSwitch({
           onClick={() => selectMode("rent")}
           onKeyDown={onRadioKeyDown}
         >
-          Rent
+          I Rent
         </button>
       </div>
     </div>

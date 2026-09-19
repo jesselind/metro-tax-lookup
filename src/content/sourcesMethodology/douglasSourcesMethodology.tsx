@@ -280,7 +280,7 @@ export function DouglasSourcesMethodology() {
         {" "}
         <code className={CODE_INLINE_CLASS}>compsPdfInProgress</code>
         {" "}
-        shows Coming soon on the home summary tile).
+        shows Coming soon under the Comparable properties heading).
       </p>
       {countyFeatureAvailable(
         "compsPdfInProgress",

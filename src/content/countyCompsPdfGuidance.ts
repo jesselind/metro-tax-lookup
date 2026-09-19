@@ -55,4 +55,4 @@ export const COUNTY_COMPS_PDF_ASIDE_WHEN_UNAVAILABLE_AFTER_HOST =
   ". The county hosts this file. The link often returns no file found. ";
 
 export const COUNTY_COMPS_PDF_ASIDE_WHEN_AVAILABLE_AFTER_HOST =
-  ". The county hosts this file. The link opens the county's download for your property.";
+  ". The county hosts this file for each property.";

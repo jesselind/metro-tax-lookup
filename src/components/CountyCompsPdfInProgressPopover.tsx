@@ -37,8 +37,9 @@ function CountyCompsPdfInProgressPopoverBody({
 }
 
 /**
- * Sky Coming soon badge on Comparable properties while comps PDF is unwired
- * (`compsPdfInProgress`). Same InfoHintPopover family as prior-year IN PROGRESS.
+ * Sky Coming soon badge under the Comparable properties heading while comps PDF
+ * is unwired (`compsPdfInProgress`). Same InfoHintPopover family as prior-year
+ * IN PROGRESS.
  */
 export function CountyCompsPdfInProgressPopover({
   countyId,

@@ -314,8 +314,7 @@ export function ArapahoeSourcesMethodology() {
           {" "}
           (as on the county parcel page), not the tax year used for the levy
           roll (the county&apos;s certified mill rates for that billing year).
-          When those two years differ, the values section notes both, and the
-          assessment-year summary tile shows the tax year as a secondary line.
+          When those two years differ, the values section notes both.
         </li>
         <li>
           <strong>Assessed school value</strong>
@@ -409,11 +408,14 @@ export function ArapahoeSourcesMethodology() {
         <li>
           <strong>Comparable properties</strong>{" "}
           (often called comps) uses the parcel&apos;s AIN when available.{" "}
-          When county hosting is limited, the home summary tile shows{" "}
-          <strong className="text-slate-900">COUNTY DATA GAP</strong>{" "}
-          with a
-          short status; the whole tile opens the full explanation (the PDF
-          icon is a visual cue), and includes a link to try the county
+          When county hosting is limited, the{" "}
+          <strong className="text-slate-900">Comparable properties</strong>
+          {" "}
+          section shows{" "}
+          <strong className="text-slate-900">COUNTY DATA GAP</strong>
+          {" "}
+          under the section title, with a short status and an icon help
+          control for the full explanation, plus a link to try the county
           download if your value changed.
           The in-page comps grid is
           demo-only today (

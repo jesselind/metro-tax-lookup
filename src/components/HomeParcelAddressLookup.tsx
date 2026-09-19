@@ -13,15 +13,9 @@ import {
   useState,
 } from "react";
 import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
-import { CountyServiceGapHeader } from "@/components/CountyServiceGapHeader";
 import { CountyDataMartRefreshAttemptNote } from "@/content/countyDataMartRefreshNote";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { CountyAssessorMillLevyFigures } from "@/components/CountyAssessorMillLevyFigures";
-import { CountyCompsPdfUnavailablePopoverBody } from "@/components/CountyCompsPdfGuidance";
-import {
-  CountyCompsPdfHelpPopover,
-  COMPS_PDF_ICON_CONTROL_CLASS,
-} from "@/components/CountyCompsPdfHelpPopover";
 import { CountyParcelPinLookupHelp } from "@/components/CountyParcelPinLookupHelp";
 import {
   CountyScopeTopLine,
@@ -39,26 +33,19 @@ import {
 import { ParcelRecordPanel } from "@/components/ParcelRecordPanel";
 import { ParcelRecordExtendedSection, shouldShowParcelRecordExtendedSection } from "@/components/ParcelRecordExtendedSection";
 import { AudienceModeSwitch } from "@/components/AudienceModeSwitch";
+import { ComparablePropertiesSection } from "@/components/ComparablePropertiesSection";
 import { CountySearchScopeSwitch } from "@/components/CountySearchScopeSwitch";
+import { HomeDashboardSectionNav } from "@/components/HomeDashboardSectionNav";
+import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
-import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
 import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
-import { CountyCompsPdfInProgressPopover } from "@/components/CountyCompsPdfInProgressPopover";
 import { CountyPriorYearValuesInProgressPopover } from "@/components/CountyPriorYearValuesInProgressPopover";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
-import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
-import { sourcesPageHref } from "@/lib/sourcesPageHref";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
 import { SitusMultiAccountChooserList, SitusRealVsBusinessPersonalHelp } from "@/components/SitusMultiAccountChooserList";
 import { SitusMultiAccountSwitcherDialog } from "@/components/SitusMultiAccountSwitcherDialog";
-import { MillLevySummaryTile } from "@/components/MillLevySummaryTile";
 import { ValuationHistoryDialog } from "@/components/ValuationHistoryDialog";
-import { ValuationValueSummaryTile } from "@/components/ValuationValueSummaryTile";
-import {
-  COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL,
-  COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS,
-} from "@/content/countyCompsPdfGuidance";
 import { MILL_LEVY_STACK_HEADING_ID } from "@/content/millLevySummaryCopy";
 import {
   buildHomeDashboardJumps,
@@ -67,6 +54,7 @@ import {
   HOME_PROPERTY_DETAILS_ID,
   type HomeLockedUtilityNav,
 } from "@/lib/homeDashboardJumps";
+import { parcelRecordSubsectionPresence } from "@/lib/parcelRecordSubsectionPresence";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import {
   CONTACT_EMAIL,
@@ -119,11 +107,6 @@ import {
   situsShouldOfferAccountTypeSwitch,
 } from "@/lib/situsMultiPinChooser";
 import { metroFromLevyLines, shouldShowMetroPurposesSection } from "@/lib/metroDistrictFromLevyLines";
-import {
-  COUNTY_MILLS_YOY_EPS,
-  METRO_LEVY_RATE_YOY_EPS,
-  levyStackTotalMillsDelta,
-} from "@/lib/metroLevyYearOverYear";
 import { buildSitusEnvelopeDisplayRows, situsLabelForTypeaheadDisplay } from "@/lib/addressLabelDifference";
 import { novCompsGridDemoPayload } from "@/lib/novCompsGridSamplePayload";
 import { looksLikeParcelIdInputAnyCounty } from "@/lib/countyAccountLookup";
@@ -148,11 +131,9 @@ import {
   countyFeaturePresentation,
 } from "@/lib/countyConfig";
 import {
-  safeCountyBppNoticeOfValuationPdfUrl,
   safeCountyCompsGridPdfUrl,
   safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
-import { formatUsdWhole } from "@/lib/formatUsd";
 import { parcelAssessedForDollarEstimate } from "@/lib/annualTaxFromAssessedMills";
 import {
   estimatedAnnualPropertyTaxDollars as resolveEstimatedAnnualPropertyTaxDollars,
@@ -170,7 +151,7 @@ import {
 import { formatLevyBundledAsOf } from "@/lib/formatLevyBundledAsOf";
 import {
   parcelTaxAndAssessmentYearsDiffer,
-  summaryOwnerOfRecord,
+  parcelTaxAssessmentYearNote,
 } from "@/lib/parcelRecordDisplay";
 import {
   parseSummaryYearNumber,
@@ -188,24 +169,12 @@ import {
   HOME_ADDRESS_LOOKUP_LABEL_CLASS,
   HOME_ADDRESS_LOOKUP_SEARCH_CLASS,
   INPUT_CLASS,
-  COUNTY_SERVICE_GAP_STACK_CLASS,
-  COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS,
-  COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS,
-  COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
-  COUNTY_SERVICE_GAP_TILE_STATUS_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS,
   PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
-  PARCEL_SUMMARY_ROW_CLASS,
-  PARCEL_SUMMARY_TILE_ADDRESS_CLASS,
-  PARCEL_SUMMARY_TILE_BODY_CLASS,
-  PARCEL_SUMMARY_TILE_CLASS,
-  PARCEL_SUMMARY_TILE_CLASS_POPOVER,
-  PARCEL_SUMMARY_TILE_LABEL_CLASS,
-  PARCEL_SUMMARY_TILE_VALUE_CLASS,
-  PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS,
-  PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER,
+  HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS,
+  HOME_DASHBOARD_MAIN_COLUMN_LOCKED_PB_CLASS,
   TERM_LINK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
   TOOL_LINK_UNDERLINE_CLASS,
@@ -418,7 +387,6 @@ export function HomeParcelAddressLookup({
       CAMPAIGN_DEFAULT_COUNTY_CONFIG,
     [resolvedCountyId],
   );
-  const activeBppOn = countyFeatureAvailable("bpp", activeCountyConfig);
   const activeCompsPresentation = countyFeaturePresentation(
     "compsPdf",
     activeCountyConfig,
@@ -780,17 +748,6 @@ export function HomeParcelAddressLookup({
     [activeCompsPresentation, levyLoadedMeta?.ain, activeCountyConfig],
   );
 
-  const homeBppNovPdfHref = useMemo(
-    () =>
-      activeBppOn
-        ? safeCountyBppNoticeOfValuationPdfUrl(
-            levyLoadedMeta?.ain,
-            activeCountyConfig,
-          )
-        : null,
-    [activeBppOn, levyLoadedMeta?.ain, activeCountyConfig],
-  );
-
   const metroPrefillTotalMills = useMemo(() => {
     if (levyAwaitingTemplateMills) return null;
     if (sumMills <= 0) return null;
@@ -806,15 +763,6 @@ export function HomeParcelAddressLookup({
     homeMetroFromLevyStack,
   );
 
-  const millLevyTotalDelta = useMemo(() => {
-    const delta = levyStackTotalMillsDelta(
-      levyLines,
-      METRO_LEVY_RATE_YOY_EPS,
-      resolvedCountyId,
-    );
-    if (delta == null || Math.abs(delta) <= COUNTY_MILLS_YOY_EPS) return null;
-    return delta;
-  }, [levyLines, resolvedCountyId]);
 
   function clearParcelTemplateExtended() {
     clearLevyStackOnly();
@@ -1255,12 +1203,18 @@ export function HomeParcelAddressLookup({
 
   /** County situs line for the matched or chosen row — not the raw typed search. */
   const lockedAddressHeadline = useMemo((): string | null => {
-    if (hits == null || hits.length === 0) return null;
-    if (hits.length === 1) return hits[0]?.label ?? null;
-    const pin = trimmedParcelPin;
-    if (pin.length === 0) return null;
-    return hits.find((h) => h.pin === pin)?.label ?? null;
-  }, [hits, trimmedParcelPin]);
+    if (hits != null && hits.length === 1) return hits[0]?.label ?? null;
+    if (hits != null && hits.length > 1) {
+      const pin = trimmedParcelPin;
+      if (pin.length > 0) {
+        const fromHits = hits.find((h) => h.pin === pin)?.label ?? null;
+        if (fromHits) return fromHits;
+      }
+    }
+    // PIN-only / empty hits: fall back to parcel-record situs when present.
+    const situs = (parcelRecord?.situsAddress ?? "").trim();
+    return situs.length > 0 ? situs : null;
+  }, [hits, trimmedParcelPin, parcelRecord?.situsAddress]);
 
   /**
    * Multi-match list: join pin-to-tag for owner / Real vs business personal
@@ -1545,19 +1499,59 @@ export function HomeParcelAddressLookup({
   };
 
   const showPropertyDetailsColumn =
-    levyLoadedMeta != null && levyLoadError == null;
+    levyLoadedMeta != null &&
+    levyLoadError == null &&
+    !isRentMode;
 
   const showCountyCompareSection =
     levyLines.length > 0 && levyLoadedMeta != null;
+  /** Own Real only — always-on comps section (empty / gap states still mount). */
   const showInAppCompsJump =
-    levyReadyForSummary && isDemoMode && !isRentMode;
+    levyReadyForSummary &&
+    !isRentMode &&
+    !isBusinessPersonalAccount;
+
+  const parcelSubsections = useMemo(
+    () =>
+      parcelRecordSubsectionPresence(parcelRecordForDisplay, {
+        businessPersonal: isBusinessPersonalAccount,
+      }),
+    [parcelRecordForDisplay, isBusinessPersonalAccount],
+  );
 
   const lockedUtilityNav = useMemo((): HomeLockedUtilityNav | null => {
     if (!addressSearchLocked) return null;
+    const showPropertyDetails = showPropertyDetailsColumn;
     return {
       jumps: buildHomeDashboardJumps({
+        showRentPressure:
+          isRentMode &&
+          estimatedAnnualPropertyTaxDollars != null &&
+          rentWholePropertyMonthly != null,
         showLevies: showHomeLevyBreakdownRegion,
-        showPropertyDetails: showPropertyDetailsColumn,
+        showPropertyDetails,
+        showAppraisedAssessed:
+          showPropertyDetails && parcelSubsections.appraisedAssessed,
+        showSaleHistory:
+          showPropertyDetails &&
+          !isBusinessPersonalAccount &&
+          parcelSubsections.saleHistory,
+        showBuildings:
+          showPropertyDetails &&
+          !isBusinessPersonalAccount &&
+          parcelSubsections.buildings,
+        showArea:
+          showPropertyDetails &&
+          !isBusinessPersonalAccount &&
+          parcelSubsections.area,
+        showLandLine:
+          showPropertyDetails &&
+          !isBusinessPersonalAccount &&
+          parcelSubsections.landLine,
+        showPermits:
+          showPropertyDetails &&
+          !isBusinessPersonalAccount &&
+          parcelSubsections.permits,
         showCountyCompare: showCountyCompareSection,
         showInAppComps: showInAppCompsJump,
         showFeedback: showHomeAccuracyFeedbackAside,
@@ -1571,8 +1565,13 @@ export function HomeParcelAddressLookup({
     };
   }, [
     addressSearchLocked,
+    isRentMode,
+    estimatedAnnualPropertyTaxDollars,
+    rentWholePropertyMonthly,
     showHomeLevyBreakdownRegion,
     showPropertyDetailsColumn,
+    parcelSubsections,
+    isBusinessPersonalAccount,
     showCountyCompareSection,
     showInAppCompsJump,
     showHomeAccuracyFeedbackAside,
@@ -1593,7 +1592,13 @@ export function HomeParcelAddressLookup({
 
   const levyStackIntro = (
     <p id="home-levy-stack-intro" className={DASHBOARD_SECTION_META_CLASS}>
-      Select a mill levy tile for more details.
+      Select a{" "}
+      <GlossaryTermPopover
+        termId="term-mill-levy"
+        textTrigger="mill levy"
+        textTriggerId="home-levy-stack-intro-mill-levy"
+      />{" "}
+      tile for more details.
     </p>
   );
 
@@ -1752,22 +1757,6 @@ export function HomeParcelAddressLookup({
     setValuationHistoryDialogKind(null);
   }, []);
 
-  const parcelRecordExtended = showParcelRecordExtended ? (
-    <ParcelRecordExtendedSection
-      loading={parcelRecordLoading}
-      loadFailed={parcelRecordLoadFailed}
-      record={parcelRecordForDisplay}
-      pin={trimmedParcelPin}
-      demoMode={isDemoMode}
-      businessPersonal={isBusinessPersonalAccount}
-      omitContinuationHeading
-      rentMode={isRentMode}
-      countyConfig={activeCountyConfig}
-      showValuationHistoryLink={hasValuationHistory}
-      onOpenValuationHistory={() => openValuationHistory("assessed")}
-    />
-  ) : null;
-
   const assessedValueDelta = useMemo(() => {
     if (!valuationHistory?.length || !levyLoadedMeta) return null;
     return assessedValueDeltaFromHistory(
@@ -1786,17 +1775,86 @@ export function HomeParcelAddressLookup({
     );
   }, [valuationHistory, levyLoadedMeta, parcelTaxYearForHistory]);
 
-  const showTaxYearSummaryTile =
-    !!parcelSummaryYears &&
-    parcelTaxAndAssessmentYearsDiffer(
-      parcelSummaryYears.taxYear,
-      parcelSummaryYears.assessmentYear,
-    );
-
-  const summaryOwnerList = summaryOwnerOfRecord(
-    levyLoadedMeta?.parcelValues.ownerList,
-    parcelRecord?.ownerList,
-  );
+  const parcelRecordExtended = showParcelRecordExtended ? (
+    <ParcelRecordExtendedSection
+      loading={parcelRecordLoading}
+      loadFailed={parcelRecordLoadFailed}
+      record={parcelRecordForDisplay}
+      pin={trimmedParcelPin}
+      demoMode={isDemoMode}
+      businessPersonal={isBusinessPersonalAccount}
+      omitContinuationHeading
+      rentMode={isRentMode}
+      countyConfig={activeCountyConfig}
+      actualValueAffordance={
+        hasValuationHistory || actualValueDelta != null
+          ? {
+              valueDelta: actualValueDelta,
+              hasHistory: hasValuationHistory,
+              onOpen: () => openValuationHistory("actual"),
+            }
+          : null
+      }
+      assessedValueAffordance={
+        hasValuationHistory ||
+        assessedValueDelta != null ||
+        activePriorYearValuesGap ||
+        activePriorYearValuesInProgress
+          ? {
+              valueDelta: assessedValueDelta,
+              hasHistory: hasValuationHistory,
+              onOpen: () => openValuationHistory("assessed"),
+              statusChrome: (
+                <>
+                  {activePriorYearValuesGap ? (
+                    <CountyPriorYearValuesGapPopover
+                      countyId={activeCountyConfig.id}
+                      parcelRecordHref={safeCountyParcelRecordUrl(
+                        levyLoadedMeta?.pin,
+                        activeCountyConfig,
+                        {
+                          year: parcelSummaryYears?.parcelRecordLinkYear,
+                        },
+                      )}
+                      hasSaleHistory={
+                        !isBusinessPersonalAccount && parcelRecord != null
+                      }
+                    />
+                  ) : null}
+                  {activePriorYearValuesInProgress ? (
+                    <CountyPriorYearValuesInProgressPopover
+                      countyId={activeCountyConfig.id}
+                      parcelRecordHref={safeCountyParcelRecordUrl(
+                        levyLoadedMeta?.pin,
+                        activeCountyConfig,
+                        {
+                          year: parcelSummaryYears?.parcelRecordLinkYear,
+                        },
+                      )}
+                      hasSaleHistory={
+                        !isBusinessPersonalAccount && parcelRecord != null
+                      }
+                    />
+                  ) : null}
+                </>
+              ),
+            }
+          : null
+      }
+      taxYearNoteOverride={
+        parcelSummaryYears != null &&
+        parcelTaxAndAssessmentYearsDiffer(
+          parcelSummaryYears.taxYear,
+          parcelSummaryYears.assessmentYear,
+        )
+          ? parcelTaxAssessmentYearNote(
+              parcelSummaryYears.taxYear,
+              parcelSummaryYears.assessmentYear,
+            )
+          : null
+      }
+    />
+  ) : null;
 
   const propertyDetailsSection = showPropertyDetailsColumn ? (
     <section
@@ -1861,14 +1919,16 @@ export function HomeParcelAddressLookup({
       <h2 id="home-tool-heading" className="sr-only">
         Property tax lookup and breakdown
       </h2>
-      {/* Own | Rent stays mounted across search ↔ locked Real so the lens flip stays familiar. Hidden on BPP (Rent does not apply). */}
-      {!isBusinessPersonalAccount ? (
+      {/*
+        Search: Own | Rent stays above the address form. Locked report: move into
+        the main column below the sticky Jump/address strip so mobile sticky chrome
+        is first (see locked branch). Hidden on BPP (Rent does not apply).
+      */}
+      {!isBusinessPersonalAccount && !addressSearchLocked ? (
         <AudienceModeSwitch
           value={audienceMode}
           onChange={setAudienceMode}
-          idPrefix={
-            addressSearchLocked ? "audience-mode-report" : "audience-mode-search"
-          }
+          idPrefix="audience-mode-search"
         />
       ) : null}
       {!addressSearchLocked && indexLoadProgress ? (
@@ -2428,532 +2488,177 @@ export function HomeParcelAddressLookup({
               </InlineErrorCallout>
             )
           ) : null}
-          {isRentMode &&
-          estimatedAnnualPropertyTaxDollars != null &&
-          rentWholePropertyMonthly != null ? (
-            <>
-              <RentTaxPressurePanel
-                estimatedAnnualDollars={estimatedAnnualPropertyTaxDollars}
-                estimatedMonthlyDollars={rentWholePropertyMonthly}
-                dwelling={rentDwellingCount}
-                equalSplit={rentEqualSplit}
-                dwellingPending={parcelRecordLoading}
-              />
-              {/* Separate rent payoff from owner-style summary / levy stack below. */}
-              <div className="py-2 sm:py-3" aria-hidden>
-                <hr className="border-0 border-t border-slate-300" />
-              </div>
-            </>
-          ) : null}
-          <div className="grid grid-cols-1 gap-x-3 gap-y-6 sm:gap-y-8 lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:gap-y-3">
-            <div
-              className="min-w-0"
-              role="region"
-              aria-label="Property search result summary"
-            >
-              <div className={PARCEL_SUMMARY_ROW_CLASS}>
-            {busy ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS}
-                aria-live="polite"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Status</p>
-                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>Searching…</p>
-                </div>
-              </div>
-            ) : null}
-            {/* Keep Switch available after levy load failure so another PIN can be tried. */}
-            {!busy &&
-            canSwitchSitusAccounts &&
-            (levyReadyForSummary || levyLoadError != null) ? (
-              <button
-                type="button"
-                id="home-parcel-account-type"
-                className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS}
-                onClick={openAccountSwitcher}
-                aria-haspopup="dialog"
-                aria-expanded={accountSwitcherOpen}
-                aria-label={`Switch account type. Currently ${accountKindLabel}.`}
-              >
-                <span className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS}>
-                  Switch account type ›
-                </span>
-                <span className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS}>
-                  {accountKindLabel}
-                </span>
-              </button>
-            ) : null}
-            {!busy &&
-            lockedAddressHeadline &&
-            (!levyReadyForSummary || levyLoadedMeta) ? (
-              <div className={PARCEL_SUMMARY_TILE_CLASS}>
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <p className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>Address</p>
-                  <p className={PARCEL_SUMMARY_TILE_ADDRESS_CLASS}>
-                    <span className="inline">{lockedAddressHeadline}</span>
-                    {showCountyScopeTopLine() ? (
-                      <>
-                        <span
-                          className="px-1.5 text-slate-400"
-                          aria-hidden
-                        >
-                          ·
-                        </span>
-                        <span className="font-semibold text-indigo-800">
-                          {activeCountyConfig.displayName}
-                        </span>
-                      </>
-                    ) : null}
-                  </p>
-                  {!levyReadyForSummary &&
-                  hits != null &&
-                  hits.length === 1 &&
-                  levyLoadBusy ? (
-                    <p className="text-sm text-slate-600" aria-live="polite">
-                      Loading your levy breakdown…
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            summaryOwnerList != null ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
-                id="home-parcel-owner-list"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <ParcelGlossaryPopoverTrigger
-                      termId="term-owner-list"
-                      textTrigger="Owner of record"
-                      textTriggerId="owner-list-term-first"
-                    />
-                  </div>
-                  <p className="max-w-full break-words text-base font-semibold leading-snug text-slate-900 sm:text-lg">
-                    {summaryOwnerList}
-                  </p>
-                </div>
-              </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            parcelSummaryYears?.assessmentYear != null ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
-                id="home-parcel-assessment-year"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <ParcelGlossaryPopoverTrigger
-                      termId="term-assessment-year"
-                      textTrigger="Assessment year"
-                      textTriggerId="assessment-year-term-first"
-                    />
-                  </div>
-                  <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                    {parcelSummaryYears.assessmentYear}
-                  </p>
-                </div>
-              </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            showTaxYearSummaryTile &&
-            parcelSummaryYears?.taxYear ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
-                id="home-parcel-tax-year"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <ParcelGlossaryPopoverTrigger
-                      termId="term-tax-year"
-                      textTrigger="Tax year"
-                      textTriggerId="tax-year-term-first"
-                    />
-                  </div>
-                  <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                    {parcelSummaryYears.taxYear}
-                  </p>
-                </div>
-              </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            (levyLoadedMeta.parcelValues.totalActual != null ||
-              levyLoadedMeta.parcelValues.totalAssessed != null ||
-              estimatedAnnualPropertyTaxDollars != null ||
-              sumMills > 0) ? (
-                <div className={PARCEL_SUMMARY_VALUE_PAIR_ROW_CLASS}>
-                  {levyLoadedMeta.parcelValues.totalActual != null ? (
-                    <ValuationValueSummaryTile
-                      valueKind="actual"
-                      termId="term-actual-value"
-                      textTrigger="Actual value"
-                      textTriggerId="actual-value-term-first"
-                      value={levyLoadedMeta.parcelValues.totalActual}
-                      valueDelta={actualValueDelta}
-                      hasHistory={hasValuationHistory}
-                      onOpen={() => openValuationHistory("actual")}
-                    />
-                  ) : null}
-                  {levyLoadedMeta.parcelValues.totalAssessed != null ? (
-                    <ValuationValueSummaryTile
-                      valueKind="assessed"
-                      termId="term-assessed-value"
-                      textTrigger="Assessed value"
-                      textTriggerId="assessed-value-term-first"
-                      value={levyLoadedMeta.parcelValues.totalAssessed}
-                      valueDelta={assessedValueDelta}
-                      hasHistory={hasValuationHistory}
-                      onOpen={() => openValuationHistory("assessed")}
-                    >
-                      {activePriorYearValuesGap ? (
-                        <CountyPriorYearValuesGapPopover
-                          countyId={activeCountyConfig.id}
-                          parcelRecordHref={safeCountyParcelRecordUrl(
-                            levyLoadedMeta.pin,
-                            activeCountyConfig,
-                            {
-                              year: parcelSummaryYears?.parcelRecordLinkYear,
-                            },
-                          )}
-                          hasSaleHistory={
-                            !isBusinessPersonalAccount && parcelRecord != null
-                          }
-                        />
-                      ) : null}
-                      {activePriorYearValuesInProgress ? (
-                        <CountyPriorYearValuesInProgressPopover
-                          countyId={activeCountyConfig.id}
-                          parcelRecordHref={safeCountyParcelRecordUrl(
-                            levyLoadedMeta.pin,
-                            activeCountyConfig,
-                            {
-                              year: parcelSummaryYears?.parcelRecordLinkYear,
-                            },
-                          )}
-                          hasSaleHistory={
-                            !isBusinessPersonalAccount && parcelRecord != null
-                          }
-                        />
-                      ) : null}
-                    </ValuationValueSummaryTile>
-                  ) : null}
-                  {estimatedAnnualPropertyTaxDollars != null ? (
-                    <div
-                      className={PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER}
-                      id="home-parcel-property-tax"
-                    >
-                      <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                        <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                          <ParcelGlossaryPopoverTrigger
-                            termId="term-property-tax"
-                            textTrigger="Est. property tax"
-                            textTriggerId="property-tax-term-first"
-                            propertyTaxEstimateMode={
-                              activeCountyConfig.propertyTaxEstimateMode
-                            }
-                          />
-                        </div>
-                        <p className={PARCEL_SUMMARY_TILE_VALUE_CLASS}>
-                          {formatUsdWhole(estimatedAnnualPropertyTaxDollars)}
-                        </p>
-                      </div>
-                    </div>
-                  ) : null}
-                  {sumMills > 0 ? (
-                    <MillLevySummaryTile
-                      mills={sumMills}
-                      millsDelta={millLevyTotalDelta}
-                      assessed={levyLoadedMeta.parcelValues.totalAssessed}
-                    />
-                  ) : null}
-                </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            !isRentMode &&
-            isBusinessPersonalAccount &&
-            activeBppOn ? (
-              <div
-                className={PARCEL_SUMMARY_TILE_CLASS_POPOVER}
-                id="home-parcel-notice-of-valuation"
-              >
-                <div className={PARCEL_SUMMARY_TILE_BODY_CLASS}>
-                  <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                    <ParcelGlossaryPopoverTrigger
-                      termId="term-notice-of-valuation"
-                      textTrigger="Notice of Valuation"
-                      textTriggerId="notice-of-valuation-term-first"
-                      ariaLabel="Brief definition of Notice of Valuation."
-                    />
-                  </div>
-                  {homeBppNovPdfHref ? (
-                    <a
-                      href={homeBppNovPdfHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={COMPS_PDF_ICON_CONTROL_CLASS}
-                      aria-label="Open county Notice of Valuation PDF for this account (opens in a new tab)"
-                    >
-                      {compsIcon}
-                    </a>
-                  ) : (
-                    <div
-                      className="space-y-2"
-                      role="status"
-                      aria-live="polite"
-                    >
-                      <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
-                        No Notice of Valuation PDF from here: this PIN is missing
-                        an assessor id (AIN) in the bundled parcel index.
-                      </p>
-                      <div className="flex justify-center sm:justify-start">
-                        <CountyCompsPdfHelpPopover
-                          ariaLabel="Why there is no Notice of Valuation link for this account"
-                          icon={compsIcon}
-                        >
-                          <>
-                            <p className="text-sm leading-relaxed text-slate-800">
-                              We build the county link from your account&apos;s
-                              assessor id (AIN) in the bundled parcel index. If
-                              that field is empty, we cannot form{" "}
-                              <span className="whitespace-nowrap">
-                                FileDownload.ashx?AIN=…
-                              </span>{" "}
-                              on the business personal property site safely.
-                            </p>
-                            <p className="mt-3 text-sm leading-relaxed text-slate-800">
-                              Open{" "}
-                              <a
-                                href={
-                                  activeCountyConfig.residentLinks.bppSearch ??
-                                  activeCountyConfig.residentLinks.propertySearch
-                                }
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={COUNTY_EXTERNAL_LINK_CLASS}
-                              >
-                                {activeCountyConfig.displayName} business personal
-                                property search<span className="sr-only"> (opens in a new tab)</span>
-                              </a>
-                              {" "}
-                              to reach your account from the county. For how the
-                              bundle is built, see{" "}
-                              <PreserveSessionDocLink
-                                href={sourcesPageHref({
-                                  countyId: activeCountyConfig.id,
-                                })}
-                              >
-                                Sources
-                              </PreserveSessionDocLink>
-                              .
-                            </p>
-                          </>
-                        </CountyCompsPdfHelpPopover>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : null}
-            {!busy &&
-            levyReadyForSummary &&
-            levyLoadedMeta &&
-            !isRentMode &&
-            !isBusinessPersonalAccount &&
-            (activeCompsPdfInProgress ||
-              activeCompsPresentation !== "omit") ? (
-              <div
-                className={
-                  activeCompsPdfInProgress
-                    ? PARCEL_SUMMARY_TILE_CLASS_POPOVER
-                    : homeCompsGridPdfHref &&
-                        activeCompsGap
-                      ? COUNTY_SERVICE_GAP_SUMMARY_TILE_CLASS
-                      : homeCompsGridPdfHref
-                        ? `${PARCEL_SUMMARY_TILE_CLASS_POPOVER} has-[a:hover]:bg-slate-100 has-[a:focus-visible]:bg-slate-100`
-                        : PARCEL_SUMMARY_TILE_CLASS_POPOVER
+          {/*
+            Mobile: flex column so sticky TOC shares one tall parent with the report
+            (a short wrapper around the aside kills sticky). Desktop: same children
+            become a 4-col grid; aside is a direct grid item with self-start sticky.
+            Own | Rent + mobile Switch live in the main column so they sit under the
+            sticky Jump/address strip (not above it).
+          */}
+          <div className="flex flex-col gap-y-6 lg:grid lg:grid-cols-12 lg:gap-x-0 lg:gap-y-3">
+            {lockedUtilityNav != null ? (
+              <HomeDashboardSectionNav
+                className="lg:col-span-3"
+                jumps={lockedUtilityNav.jumps}
+                onStartOver={resetAddressForm}
+                addressLine={lockedAddressHeadline}
+                countyScopeLabel={
+                  showCountyScopeTopLine()
+                    ? activeCountyConfig.displayName
+                    : null
                 }
-                id="home-parcel-comps-pdf"
-              >
-                <div
-                  className={
-                    !activeCompsPdfInProgress &&
-                    homeCompsGridPdfHref &&
-                    activeCompsGap
-                      ? `${COUNTY_SERVICE_GAP_SUMMARY_TILE_BODY_CLASS} relative`
-                      : PARCEL_SUMMARY_TILE_BODY_CLASS
-                  }
-                >
-                  {activeCompsPdfInProgress ? (
-                    <>
-                      <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                        <ParcelGlossaryPopoverTrigger
-                          termId="term-comps"
-                          textTrigger="Comparable properties"
-                          textTriggerId="comps-pdf-term-first"
-                          ariaLabel="Brief definition of comparable properties and the county PDF."
-                        />
-                      </div>
-                      <CountyCompsPdfInProgressPopover
-                        countyId={activeCountyConfig.id}
-                      />
-                    </>
-                  ) : homeCompsGridPdfHref &&
-                    activeCompsGap ? (
-                    // TODO(comps-pdf-hosted-unavailable): Flip activeCountyConfig.knownFailures.compsPdfHostedFiles to false once county-hosted comps PDFs work reliably again (assessor's office: expected after 2027 revaluation notices post).
-                    <CountyCompsPdfHelpPopover
-                      ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}
-                      icon={compsIcon}
-                      tileTrigger={{
-                        labelClassName: PARCEL_SUMMARY_TILE_LABEL_CLASS,
-                        statusRowClassName:
-                          COUNTY_SERVICE_GAP_SUMMARY_TILE_STATUS_ROW_CLASS,
-                        label: (
-                          <ParcelGlossaryPopoverTrigger
-                            termId="term-comps"
-                            textTrigger="Comparable properties"
-                            textTriggerId="comps-pdf-term-first"
-                            ariaLabel="Brief definition of comparable properties and the county PDF."
-                          />
-                        ),
-                        status: (
-                          <div className={`${COUNTY_SERVICE_GAP_STACK_CLASS} min-w-0 flex-1`}>
-                            <CountyServiceGapHeader density="compact" />
-                            <p className={COUNTY_SERVICE_GAP_TILE_STATUS_CLASS}>
-                              {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
-                            </p>
-                          </div>
-                        ),
-                      }}
+                accountSwitch={
+                  !busy &&
+                  canSwitchSitusAccounts &&
+                  (levyReadyForSummary || levyLoadError != null) ? (
+                    <button
+                      type="button"
+                      id="home-parcel-account-type"
+                      className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS}
+                      onClick={openAccountSwitcher}
+                      aria-haspopup="dialog"
+                      aria-expanded={accountSwitcherOpen}
+                      aria-label={`Switch account type. Currently ${accountKindLabel}.`}
                     >
-                      <CountyCompsPdfUnavailablePopoverBody
-                        countyHref={homeCompsGridPdfHref}
-                      />
-                    </CountyCompsPdfHelpPopover>
-                  ) : (
-                    <>
-                      <div className={PARCEL_SUMMARY_TILE_LABEL_CLASS}>
-                        <ParcelGlossaryPopoverTrigger
-                          termId="term-comps"
-                          textTrigger="Comparable properties"
-                          textTriggerId="comps-pdf-term-first"
-                          ariaLabel="Brief definition of comparable properties and the county PDF."
-                        />
-                      </div>
-                      {homeCompsGridPdfHref ? (
-                        <a
-                          href={homeCompsGridPdfHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`${COMPS_PDF_ICON_CONTROL_CLASS} mt-0.5`}
-                          aria-label="Open county comparable properties PDF for this property (opens in a new tab)"
-                        >
-                          {compsIcon}
-                        </a>
-                      ) : isDemoMode ? (
-                        <div className="flex justify-center">
-                          <CountyCompsPdfHelpPopover
-                            ariaLabel="Comparable properties PDF is unavailable for this property"
-                            icon={compsIcon}
-                          >
-                            <>
-                              Demo mode does not include a comparable properties
-                              PDF. Select{" "}
-                              <strong className="font-semibold text-slate-900">
-                                Start over
-                              </strong>
-                              {", "}
-                              then enter your address to open your county
-                              comparable properties PDF.
-                            </>
-                          </CountyCompsPdfHelpPopover>
-                        </div>
-                      ) : (
-                        <div
-                          className="space-y-2"
-                          role="status"
-                          aria-live="polite"
-                        >
-                          <p className="text-center text-sm leading-snug text-slate-600 sm:text-left">
-                            No county comparable properties PDF from here: this
-                            PIN is missing an assessor parcel id (AIN) in the
-                            bundled parcel index.
-                          </p>
-                          <div className="flex justify-center sm:justify-start">
-                            <CountyCompsPdfHelpPopover
-                              ariaLabel="Why there is no comparable properties PDF link for this property"
-                              icon={compsIcon}
-                            >
-                              <>
-                                <p className="text-sm leading-relaxed text-slate-800">
-                                  We build the county link from your account&apos;s
-                                  assessor parcel id (AIN) in the bundled parcel
-                                  index. If that field is empty, we cannot form{" "}
-                                  <span className="whitespace-nowrap">
-                                    FileDownload.ashx?AIN=…
-                                  </span>{" "}
-                                  safely.
-                                </p>
-                                <p className="mt-3 text-sm leading-relaxed text-slate-800">
-                                  Open{" "}
-                                  <a
-                                    href={activeCountyConfig.residentLinks.propertySearch}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={COUNTY_EXTERNAL_LINK_CLASS}
-                                  >
-                                    {activeCountyConfig.displayName} property search<span className="sr-only"> (opens in a new tab)</span>
-                                  </a>
-                                  {" "}
-                                  to reach your parcel and comparable properties
-                                  from the county. For how the bundle is built,
-                                  see{" "}
-                                  <PreserveSessionDocLink
-                                    href={sourcesPageHref({
-                                      countyId: activeCountyConfig.id,
-                                    })}
-                                  >
-                                    Sources
-                                  </PreserveSessionDocLink>
-                                  .
-                                </p>
-                              </>
-                            </CountyCompsPdfHelpPopover>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
+                      <span
+                        className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS}
+                      >
+                        Switch account type ›
+                      </span>
+                      <span
+                        className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS}
+                      >
+                        {accountKindLabel}
+                      </span>
+                    </button>
+                  ) : undefined
+                }
+              />
+            ) : null}
+            <div
+              className={`${HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS} ${
+                lockedUtilityNav != null
+                  ? `lg:col-span-9 ${HOME_DASHBOARD_MAIN_COLUMN_LOCKED_PB_CLASS}`
+                  : "lg:col-span-12"
+              }`}
+            >
+              {!isBusinessPersonalAccount ? (
+                <AudienceModeSwitch
+                  value={audienceMode}
+                  onChange={setAudienceMode}
+                  idPrefix="audience-mode-report"
+                />
+              ) : null}
+              {/* Mobile: Switch under Own|Rent (desktop Switch lives in the sidenav). */}
+              {!busy &&
+              canSwitchSitusAccounts &&
+              (levyReadyForSummary || levyLoadError != null) ? (
+                <div className="lg:hidden">
+                  <button
+                    type="button"
+                    className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_CLASS}
+                    onClick={openAccountSwitcher}
+                    aria-haspopup="dialog"
+                    aria-expanded={accountSwitcherOpen}
+                    aria-label={`Switch account type. Currently ${accountKindLabel}.`}
+                  >
+                    <span
+                      className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_TITLE_CLASS}
+                    >
+                      Switch account type ›
+                    </span>
+                    <span
+                      className={PARCEL_SUMMARY_ACCOUNT_SWITCH_BUTTON_META_CLASS}
+                    >
+                      {accountKindLabel}
+                    </span>
+                  </button>
                 </div>
-              </div>
-            ) : null}
-              </div>
+              ) : null}
+              {isRentMode &&
+              estimatedAnnualPropertyTaxDollars != null &&
+              rentWholePropertyMonthly != null ? (
+                <>
+                  <RentTaxPressurePanel
+                    estimatedAnnualDollars={estimatedAnnualPropertyTaxDollars}
+                    estimatedMonthlyDollars={rentWholePropertyMonthly}
+                    dwelling={rentDwellingCount}
+                    equalSplit={rentEqualSplit}
+                    dwellingPending={parcelRecordLoading}
+                  />
+                  <div className="py-2 sm:py-3" aria-hidden>
+                    <hr className="border-0 border-t border-slate-300" />
+                  </div>
+                </>
+              ) : null}
+              {busy ? (
+                <p className="text-sm text-slate-600" aria-live="polite">
+                  Searching…
+                </p>
+              ) : null}
+              {!busy &&
+              lockedAddressHeadline &&
+              !levyReadyForSummary &&
+              hits != null &&
+              hits.length === 1 &&
+              levyLoadBusy ? (
+                <p className="text-sm text-slate-600" aria-live="polite">
+                  Loading your levy breakdown…
+                </p>
+              ) : null}
+              {showHomeLevyBreakdownRegion ? (
+                <div
+                  id={HOME_LEVY_BREAKDOWN_ID}
+                  className="min-w-0 space-y-3 scroll-mt-6 sm:scroll-mt-8"
+                  role="region"
+                  aria-label={HOME_LEVY_BREAKDOWN_ARIA_LABEL}
+                >
+                  {levySectionLead}
+                  {levyBreakdownMain}
+                </div>
+              ) : null}
+              {propertyDetailsSection}
+              {propertyDetailsBelowPanel}
+              {showInAppCompsJump ? (
+                <ComparablePropertiesSection
+                  countyConfig={activeCountyConfig}
+                  compsPdfHref={homeCompsGridPdfHref}
+                  compsGap={activeCompsGap}
+                  compsPdfInProgress={activeCompsPdfInProgress}
+                  compsPresentationOmit={activeCompsPresentation === "omit"}
+                  demoMode={isDemoMode}
+                  demoGridPayload={
+                    isDemoMode ? novCompsGridDemoPayload : null
+                  }
+                  propertySearchHref={
+                    activeCountyConfig.residentLinks.propertySearch
+                  }
+                  compsIcon={compsIcon}
+                />
+              ) : null}
+              {showHomeAccuracyFeedbackAside ? (
+                <aside
+                  id={HOME_FEEDBACK_ASIDE_ID}
+                  tabIndex={-1}
+                  className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none`}
+                  aria-label="Accuracy and feedback"
+                >
+                  <MailContactCard
+                    href={REPORT_PROBLEM_MAILTO_HREF}
+                    kicker="Feedback"
+                    primaryLine={CONTACT_EMAIL}
+                    secondary="We aim for accuracy and are constantly updating and making corrections to this app. If something looks wrong, let us know. This link opens your mail app with a short form ready to fill in."
+                    fullWidth
+                  />
+                </aside>
+              ) : null}
+              {levyReadyForSummary ? (
+                <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
+                  <BackToTopButton />
+                </div>
+              ) : null}
             </div>
-            {showHomeLevyBreakdownRegion ? (
-              <div
-                id={HOME_LEVY_BREAKDOWN_ID}
-                className="min-w-0 space-y-3 scroll-mt-6 sm:scroll-mt-8 lg:col-span-2"
-                role="region"
-                aria-label={HOME_LEVY_BREAKDOWN_ARIA_LABEL}
-              >
-                {levySectionLead}
-                {levyBreakdownMain}
-              </div>
-            ) : null}
           </div>
-          {propertyDetailsSection}
-          {propertyDetailsBelowPanel}
         </div>
       )}
       {showParcelPinSection ? (
@@ -3143,33 +2848,6 @@ export function HomeParcelAddressLookup({
           </>
           ) : null}
         </div>
-      ) : null}
-
-      {levyReadyForSummary ? (
-        <>
-          {isDemoMode && !isRentMode ? (
-            <NovCompsGridPanel payload={novCompsGridDemoPayload} />
-          ) : null}
-          {showHomeAccuracyFeedbackAside ? (
-            <aside
-              id={HOME_FEEDBACK_ASIDE_ID}
-              tabIndex={-1}
-              className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none`}
-              aria-label="Accuracy and feedback"
-            >
-              <MailContactCard
-                href={REPORT_PROBLEM_MAILTO_HREF}
-                kicker="Feedback"
-                primaryLine={CONTACT_EMAIL}
-                secondary="We aim for accuracy and are constantly updating and making corrections to this app. If something looks wrong, let us know. This link opens your mail app with a short form ready to fill in."
-                fullWidth
-              />
-            </aside>
-          ) : null}
-          <div className={TOOL_DISCLOSURE_ROW_ALIGN_CLASS}>
-            <BackToTopButton />
-          </div>
-        </>
       ) : null}
 
       {accountSwitcherOpen &&

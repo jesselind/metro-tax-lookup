@@ -42,12 +42,10 @@ test.describe("Douglas county search gate (Phase 13)", () => {
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
     await expect(page.getByText(authorityLabel)).toBeVisible();
-    await expect(page.locator("#home-parcel-assessment-year")).toContainText(
-      "2026",
-    );
-    // Face Realware year matches Assessment year → Tax year tile stays hidden
-    // (only shown when the two years differ).
-    await expect(page.locator("#home-parcel-tax-year")).toHaveCount(0);
+    // Assessment year lives on Appraised and assessed values row labels (no summary tile).
+    await expect(
+      page.getByRole("table", { name: /Appraised and assessed values/i }),
+    ).toContainText("2026");
     await expect(
       page
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
@@ -63,20 +61,13 @@ test.describe("Douglas county search gate (Phase 13)", () => {
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
         .getByText(SYNTHETIC_DOUGLAS_PIN, { exact: true }),
     ).toBeVisible();
-    // Realware face tax (1300+1200), not assessed × stack mills (single-base).
-    await expect(page.locator("#home-parcel-property-tax")).toContainText(
-      "Est. property tax",
-    );
-    await expect(page.locator("#home-parcel-property-tax")).toContainText(
-      "$2,500",
-    );
-    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
-      "$272",
-    );
-    // Dual-base stack total reconciles to the same face dollar.
-    await expect(
-      page.getByRole("region", { name: "Total mill levy for your stack" }),
-    ).toContainText("$2,500");
+    // Realware face tax (1300+1200) on stack Total (Est. property tax glossary).
+    const levyTotal = page.getByRole("region", {
+      name: "Total mill levy for your stack",
+    });
+    await expect(levyTotal).toContainText("Est. property tax");
+    await expect(levyTotal).toContainText("$2,500");
+    await expect(levyTotal).not.toContainText("$272");
     await expect(page.getByText("SYNTHETIC SCHOOL DIST # 99")).toBeVisible();
   });
 
@@ -251,9 +242,9 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(
       page.getByRole("button", { name: "Prior years missing" }),
     ).toHaveCount(0);
-    await expect(page.locator("#home-parcel-comps-pdf")).toBeVisible();
+    await expect(page.locator("#home-nov-comps-grid")).toBeVisible();
     await expect(
-      page.locator("#home-parcel-comps-pdf").getByRole("button", {
+      page.locator("#home-nov-comps-grid").getByRole("button", {
         name: "Coming soon",
       }),
     ).toBeVisible();
@@ -261,11 +252,11 @@ test.describe("Douglas county search gate (Phase 13)", () => {
       page.getByRole("status", { name: /KNOWN ISSUE/i }),
     ).toHaveCount(0);
 
-    await page
-      .getByRole("button", {
-        name: /Assessed value\. View valuation history/i,
-      })
-      .click();
+    const openAssessedHistory = page.getByRole("button", {
+      name: /Assessed value\. View valuation history/i,
+    });
+    await openAssessedHistory.scrollIntoViewIfNeeded();
+    await openAssessedHistory.click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -285,10 +276,12 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await dialog.getByRole("button", { name: "Close" }).click();
     await expect(dialog).toBeHidden();
 
-    await page
-      .getByRole("region", { name: "Appraised and assessed values" })
-      .getByRole("button", { name: "View valuation history", exact: true })
-      .click();
+    // Re-open from the Actual value row opener (separate YoY chart).
+    const openActualHistory = page.getByRole("button", {
+      name: /Actual value\. View valuation history/i,
+    });
+    await openActualHistory.scrollIntoViewIfNeeded();
+    await openActualHistory.click();
     await expect(page.getByRole("dialog")).toBeVisible();
   });
 

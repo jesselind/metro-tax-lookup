@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.17.0",
+    date: "2026-09-19",
+    title:
+      "Locked report: levy-first layout, sticky section nav, no summary tile cluster",
+    highlights: [
+      "Desktop locked report: sticky left rail (3/12) with permanent address + Switch account type + section nav on a full-height slate-50 column flush to hero and footer; main column (9/12) holds I Own|I Rent then Where is your money going? Content max-width 84rem. Mobile: sticky full-bleed slate Jump strip with address inside the disclosure summary (either row toggles the menu; closed = one truncated line, open = postage street / city-state-ZIP / county stack); I Own|I Rent (and Switch) sit under that strip, not above it. Drop Summary / Value summary and the summary-tile cluster.",
+      "One Jump to a section list curated by Own|Rent|BPP and what is mounted (levy first; Property details parent + flat subsections; county compare and Feedback always; comps always-on for Own Real only). Outside click/tap and Escape collapse the mobile TOC; scroll-spy sets aria-current from curated focus ids. Sticky aside is a direct child of the tall flex/grid parent so mobile stick works. Audience switch labels are first-person (I Own / I Rent). Section jumps use Heroicons outline glyphs beside each label.",
+      "Transfer: Est. property tax glossary onto levy stack Total dollars; Actual/Assessed Changed + Year over year openers + prior-year gap into Appraised and assessed values; comps PDF/gap/Coming soon into always-on Comparable properties under the section title (Property details-style h3 + What is this?; no transferred summary tile). Drop BPP Notice of Valuation chip and Mill levy total Changed.",
+      "Rent locked report stays lean (pressure + levy + county compare + Feedback; no Property details / comps). Address chrome falls back to parcel-record situs when hits lack a label. Docs + e2e updated for the new homes.",
+    ],
+  },
+  {
     version: "5.16.0",
     date: "2026-09-17",
     title:

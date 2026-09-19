@@ -514,6 +514,8 @@ export const SYNTHETIC_PARCEL_RECORD_SHARD = {
         },
       ],
       stateUseCd: "2112",
+      assessmentYear: "2026",
+      parcelTaxYear: "2025",
     },
     [SYNTHETIC_MULTI_REAL_PIN]: {
       ain: "1000-00-0-00-201",

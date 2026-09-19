@@ -110,33 +110,24 @@ test("business personal property: thin fields, levy stack, notice of valuation",
 
   await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
   await expect(
-    page.getByLabel("Property search result summary").getByText(
+    page.locator("#home-property-details").getByText(
       SYNTHETIC_MULTI_PERSONAL_OWNER,
     ),
   ).toBeVisible();
-  await expect(page.locator("#home-parcel-comps-pdf")).toHaveCount(0);
-  await expect(page.locator("#home-parcel-notice-of-valuation")).toBeVisible();
+  // BPP: no comps section; NOV summary chip dropped (not transferred).
+  await expect(page.locator("#home-nov-comps-grid")).toHaveCount(0);
+  await expect(page.locator("#home-parcel-notice-of-valuation")).toHaveCount(0);
   // BPP: Own|Rent and rent pressure do not apply (equipment, not a renter lens).
-  await expect(page.getByRole("radio", { name: "Own" })).toHaveCount(0);
-  await expect(page.getByRole("radio", { name: "Rent" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "I Own" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "I Rent" })).toHaveCount(0);
   await expect(page.locator("#home-parcel-rent-tax-pressure")).toHaveCount(0);
-  await expect(
-    page.getByRole("link", {
-      name: /Open county Notice of Valuation PDF for this account/i,
-    }),
-  ).toHaveAttribute(
-    "href",
-    "https://personalpropertysearch.arapahoegov.com/FileDownload.ashx?AIN=1000-00-0-00-202",
-  );
-  await expect(page.locator("#home-parcel-account-type")).toBeVisible();
-  await expect(page.locator("#home-parcel-account-type")).toContainText(
-    "Switch account type",
-  );
-  await expect(
-    page.getByRole("button", {
-      name: /Switch account type\. Currently Business personal property/i,
-    }),
-  ).toBeVisible();
+  // Prefer role over #home-parcel-account-type: that id is only on the lg+ sidenav
+  // Switch; mobile mounts a separate control under Own|Rent without the id.
+  const switchAccount = page.getByRole("button", {
+    name: /Switch account type\. Currently Business personal property/i,
+  });
+  await expect(switchAccount).toBeVisible();
+  await expect(switchAccount).toContainText("Switch account type");
   await expect(
     page.getByRole("link", {
       name: /Open county business personal property record/i,
@@ -168,10 +159,9 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   ).toHaveCount(0);
   const onThisPage = page.getByRole("navigation", { name: "On this page" });
   await expect(onThisPage).toBeVisible();
-  // summary a11y role varies by engine; click the disclosure control directly.
-  await onThisPage.locator("summary").click();
+  // summary a11y role varies by engine; list is open on lg+ (desktop CI default).
   await expect(
-    onThisPage.getByRole("button", { name: "Summary" }),
+    onThisPage.getByRole("button", { name: "Where is your money going?" }),
   ).toBeVisible();
   await expect(
     onThisPage.getByRole("button", { name: "Property details" }),
@@ -223,7 +213,7 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     .click();
   await expect(switchDialog).toHaveCount(0);
   await expect(
-    page.getByLabel("Property search result summary").getByText(
+    page.locator("#home-property-details").getByText(
       SYNTHETIC_MULTI_REAL_OWNER,
     ),
   ).toBeVisible();
@@ -239,8 +229,8 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     page.getByRole("link", { name: /Open county parcel record/i }),
   ).toBeVisible();
   // Real again: Own|Rent returns; Rent stays suppressed only while on BPP.
-  const ownRadio = page.getByRole("radio", { name: "Own" });
-  const rentRadio = page.getByRole("radio", { name: "Rent" });
+  const ownRadio = page.getByRole("radio", { name: "I Own" });
+  const rentRadio = page.getByRole("radio", { name: "I Rent" });
   await expect(ownRadio).toBeVisible();
   await rentRadio.click();
   await expect(page.locator("#home-parcel-rent-tax-pressure")).toBeVisible();
@@ -255,8 +245,8 @@ test("business personal property: thin fields, levy stack, notice of valuation",
       name: /Switch to Business personal property/i,
     })
     .click();
-  await expect(page.getByRole("radio", { name: "Own" })).toHaveCount(0);
-  await expect(page.getByRole("radio", { name: "Rent" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "I Own" })).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "I Rent" })).toHaveCount(0);
   await expect(page.locator("#home-parcel-rent-tax-pressure")).toHaveCount(0);
 });
 
@@ -336,7 +326,7 @@ test("dashboard Switch account type: modal stays on report; dismiss and switch",
   await expect(switchDialog).toHaveCount(0);
   await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
   await expect(
-    page.getByLabel("Property search result summary").getByText(
+    page.locator("#home-property-details").getByText(
       SYNTHETIC_MULTI_REAL_OWNER,
     ),
   ).toBeVisible();
@@ -356,7 +346,7 @@ test("dashboard Switch account type: modal stays on report; dismiss and switch",
     .click();
   await expect(switchDialog).toHaveCount(0);
   await expect(
-    page.getByLabel("Property search result summary").getByText(
+    page.locator("#home-property-details").getByText(
       SYNTHETIC_MULTI_PERSONAL_OWNER,
     ),
   ).toBeVisible();
@@ -405,7 +395,7 @@ test("all-Real multi-unit situs: chooser works; no Switch account type", async (
 
   await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
   await expect(
-    page.getByLabel("Property search result summary").getByText(
+    page.locator("#home-property-details").getByText(
       SYNTHETIC_CONDO_OWNER_A,
     ),
   ).toBeVisible();

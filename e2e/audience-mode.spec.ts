@@ -8,17 +8,17 @@ import { searchSyntheticAddress } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 /**
- * Own | Rent audience lens: default Own; Rent shows equal-split when synthetic UB N is known.
+ * I Own | I Rent audience lens: default I Own; I Rent shows equal-split when synthetic UB N is known.
  */
-test.describe("audience mode Own / Rent", () => {
-  test("default Own keeps comps path; Rent shows equal-split and hides comps", async ({
+test.describe("audience mode I Own / I Rent", () => {
+  test("default I Own keeps comps path; I Rent shows equal-split and hides comps", async ({
     page,
   }) => {
     await installSyntheticCountyData(page);
     await page.goto("/");
 
-    const ownRadio = page.getByRole("radio", { name: "Own" });
-    const rentRadio = page.getByRole("radio", { name: "Rent" });
+    const ownRadio = page.getByRole("radio", { name: "I Own" });
+    const rentRadio = page.getByRole("radio", { name: "I Rent" });
     await expect(ownRadio).toBeChecked();
     await expect(rentRadio).not.toBeChecked();
     await expect(
@@ -44,8 +44,8 @@ test.describe("audience mode Own / Rent", () => {
 
     await searchSyntheticAddress(page);
 
-    // Own lens: comps tile remains (may be unavailable-status chrome).
-    await expect(page.locator("#home-parcel-comps-pdf")).toBeVisible();
+    // Own lens: Comparable properties section remains (may be Coming soon / gap chrome).
+    await expect(page.locator("#home-nov-comps-grid")).toBeVisible();
     await expect(page.locator("#home-parcel-rent-tax-pressure")).toHaveCount(0);
     const levyTotal = page.getByRole("region", {
       name: "Total mill levy for your stack",
@@ -85,11 +85,11 @@ test.describe("audience mode Own / Rent", () => {
     await expect(levyTotal).not.toContainText("$68");
     await expect(levyTotal).not.toContainText("$17");
 
-    await expect(page.locator("#home-parcel-comps-pdf")).toHaveCount(0);
+    await expect(page.locator("#home-nov-comps-grid")).toHaveCount(0);
 
     // Flip back to Own without Start over: comps return, rent panel clears.
     await ownRadio.click();
-    await expect(page.locator("#home-parcel-comps-pdf")).toBeVisible();
+    await expect(page.locator("#home-nov-comps-grid")).toBeVisible();
     await expect(page.locator("#home-parcel-rent-tax-pressure")).toHaveCount(0);
   });
 });

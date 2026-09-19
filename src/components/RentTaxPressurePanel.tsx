@@ -54,7 +54,8 @@ export function RentTaxPressurePanel({
     <div className={`w-full min-w-0 max-w-full ${HOME_AUDIENCE_STACK_GAP_CLASS}`}>
       <h2
         id="home-parcel-rent-tax-pressure-heading"
-        className="text-center text-balance text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl"
+        tabIndex={-1}
+        className="text-center text-balance text-2xl font-bold leading-tight tracking-tight text-slate-900 outline-none sm:text-3xl"
       >
         You&apos;re still paying property tax if you rent.
       </h2>

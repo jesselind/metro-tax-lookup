@@ -49,14 +49,16 @@ test("synthetic address loads levy stack and property details", async ({
       .getByRole("region", { name: "See how Arapahoe County displays your data" })
       .getByText(SYNTHETIC_PIN, { exact: true }),
   ).toBeVisible();
-  await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
+  // Tax year note when years differ (no separate Tax year summary tile).
+  await expect(page.getByText(/Tax year is 2025/)).toBeVisible();
   // Single-PIN situs: no account switcher on the dashboard.
   await expect(page.locator("#home-parcel-account-type")).toHaveCount(0);
-  // Synthetic mills × assessed: known fixture contract, not a live county snapshot.
-  await expect(page.locator("#home-parcel-property-tax")).toContainText(
-    "Est. property tax",
-  );
-  await expect(page.locator("#home-parcel-property-tax")).toContainText("$68");
+  // Synthetic mills × assessed on stack Total (Est. property tax glossary).
+  const levyTotal = page.getByRole("region", {
+    name: "Total mill levy for your stack",
+  });
+  await expect(levyTotal).toContainText("Est. property tax");
+  await expect(levyTotal).toContainText("$68");
 
   // Locked levy-ready report: one Back to top (below Feedback), not a second
   // under county compare.
