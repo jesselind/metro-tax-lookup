@@ -143,31 +143,29 @@ export function ArapahoeSourcesAfterGap({
         When any authority&apos;s rate changed, the app shows a{" "}
         <strong className="font-semibold text-slate-900">Changed</strong>
         {" "}
-        cue on that tile. A summary tile{" "}
+        cue on that tile (including the up or down arrow). The levy stack{" "}
+        <strong className="font-semibold text-slate-900">Total</strong>
+        {" "}
+        carries{" "}
         <strong className="font-semibold text-slate-900">
-          Mill levy
+          Est. property tax
         </strong>
         {" "}
-        sits with actual value, assessed value, and property tax. It shows
-        this bill&apos;s total mill levy (same total as the levy stack).{" "}
-        <strong className="font-semibold text-slate-900">Changed</strong>
-        {" "}
-        on that chip means the total moved, not that the property-tax dollar
-        moved; the badge matches the levy tiles (including the up or down
-        arrow). Tap the Mill levy chip to jump to those tiles. Property tax
-        stays this year&apos;s estimated dollar with no Changed badge. Assessed
-        value carries a red{" "}
+        on the dollars row (the same estimated total the stack adds up to).
+        There is no separate Mill levy total chip. In{" "}
+        <strong className="font-semibold text-slate-900">
+          Appraised and assessed values
+        </strong>
+        , assessed value can show a red{" "}
         <strong className="font-semibold text-slate-900">
           Prior years missing
         </strong>
         {" "}
-        badge that opens a COUNTY DATA GAP note in place (not red chrome on
-        that chip). How we searched for those figures is on this page. This
-        tool does not
-        compare your prior-year treasurer bill total, and it does not claim
-        the bill went up or down overall. In tile details, a short
-        percent summary appears when we know last year&apos;s mill rate (for
-        example{" "}
+        badge that opens a COUNTY DATA GAP note in place. How we searched for
+        those figures is on this page. This tool does not compare your
+        prior-year treasurer bill total, and it does not claim the bill went up
+        or down overall. In tile details, a short percent summary appears when
+        we know last year&apos;s mill rate (for example{" "}
         <strong className="font-semibold text-slate-900">
           2.0% higher than last year
         </strong>). Tap anywhere on that colored summary box to open the year-by-year

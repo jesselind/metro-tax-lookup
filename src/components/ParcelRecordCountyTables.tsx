@@ -4,10 +4,22 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { ReactNode } from "react";
+import {
+  LEVY_CHANGED_BADGE_ON_LIGHT_CLASS,
+  LevyChangedBadge,
+} from "@/components/LevyChangedBadge";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { ParcelRecordMissingValue } from "@/components/ParcelRecordMissingValue";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecordBuildingAttributeTerms";
+import {
+  VALUATION_HISTORY_ACTUAL_CHANGED_HIGHER_SR,
+  VALUATION_HISTORY_ACTUAL_CHANGED_LOWER_SR,
+  VALUATION_HISTORY_CHANGED_HIGHER_SR,
+  VALUATION_HISTORY_CHANGED_LOWER_SR,
+  VALUATION_HISTORY_OPEN_ARIA_ACTUAL,
+  VALUATION_HISTORY_OPEN_ARIA_ASSESSED,
+} from "@/content/valuationHistoryCopy";
 import type {
   CountyParcelRecordRow,
   ParcelRecordBuilding,
@@ -15,6 +27,15 @@ import type {
   ParcelRecordTransfer,
 } from "@/lib/countyParcelLevyData";
 import { formatUsdWhole } from "@/lib/formatUsd";
+import {
+  HOME_APPRAISED_ASSESSED_ID,
+  HOME_AREA_ID,
+  HOME_BUILDINGS_ID,
+  HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
+  HOME_LAND_LINE_ID,
+  HOME_PERMITS_ID,
+  HOME_SALE_HISTORY_ID,
+} from "@/lib/homeDashboardJumps";
 import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
@@ -29,7 +50,84 @@ import {
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
+  PARCEL_RECORD_TABLE_SCROLL_CLASS,
+  TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import type { ValuationValueKind } from "@/lib/valuationHistoryYoY";
+
+/** Arrive + focus shell for a county table section (ring outside overflow scrollport). */
+function ParcelRecordTableArriveSection({
+  id,
+  className = "",
+  heading = null,
+  beforeTable = null,
+  children,
+}: {
+  id: string;
+  className?: string;
+  /** Large dashboard section title (TOC siblings of Property details). */
+  heading?: ReactNode;
+  /** Optional note above the scrollport (kept outside overflow-x-auto). */
+  beforeTable?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      id={id}
+      tabIndex={-1}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none ${className}`}
+    >
+      {heading}
+      {beforeTable}
+      <div className={PARCEL_RECORD_TABLE_SCROLL_CLASS}>{children}</div>
+    </div>
+  );
+}
+
+/**
+ * Same chrome as Property details / Comparable properties: plain large h3, optional
+ * "What is this?" when a parcel glossary brief exists.
+ */
+function ParcelDashboardSectionHeading({
+  title,
+  termId,
+  helpTriggerId,
+  ariaLabel,
+  spaced = false,
+}: {
+  title: string;
+  termId?: ParcelGlossaryTermId;
+  helpTriggerId?: string;
+  ariaLabel?: string;
+  /** Lead-in margin when this is the first block under Property details. */
+  spaced?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <h3
+        className={
+          spaced
+            ? DASHBOARD_SECTION_HEADING_SPACED_CLASS
+            : DASHBOARD_SECTION_HEADING_CLASS
+        }
+      >
+        {title}
+      </h3>
+      {termId != null && helpTriggerId != null ? (
+        <ParcelGlossaryPopoverTrigger
+          termId={termId}
+          textTrigger="What is this?"
+          textTriggerId={helpTriggerId}
+          variant="parcel-record"
+          textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
+          ariaLabel={ariaLabel ?? `What ${title} means.`}
+        />
+      ) : null}
+    </div>
+  );
+}
 
 const TABLE_CLASS =
   "w-full max-w-full table-auto border-collapse text-sm leading-snug text-slate-900 sm:text-base";
@@ -118,14 +216,6 @@ const VALUE_COLUMN_GLOSSARY: Record<
 const SECTION_TITLE_GLOSSARY: Partial<
   Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
 > = {
-  "Land Line": {
-    termId: "term-parcel-land-line",
-    triggerIdSuffix: "section-land-line",
-  },
-  Sale: {
-    termId: "term-parcel-sale",
-    triggerIdSuffix: "section-sale",
-  },
   Permits: {
     termId: "term-parcel-permit",
     triggerIdSuffix: "section-permits",
@@ -159,7 +249,7 @@ const SALE_TABLE_COLUMN_GLOSSARY: Partial<
   },
 };
 
-/** In-table section title (Values, Sale, Building, Area, Land Line, Permits): label only, no cell chrome. */
+/** In-table section title for follow-on blocks (extra Building/Area) and Permits. */
 const SECTION_TITLE_ROW_CLASS =
   "border-0 bg-transparent px-0 pb-2 text-left text-base font-semibold leading-snug text-slate-800 sm:text-lg";
 /**
@@ -194,15 +284,12 @@ function SectionTitleRow({
   colSpan?: number;
 }) {
   const glossary = SECTION_TITLE_GLOSSARY[title];
+  const titleClass = `${SECTION_TITLE_ROW_CLASS} ${
+    isFirst ? SECTION_TITLE_FIRST_PT_CLASS : SECTION_TITLE_FOLLOWING_PT_CLASS
+  }`;
   return (
     <tr>
-      <th
-        colSpan={colSpan}
-        scope="colgroup"
-        className={`${SECTION_TITLE_ROW_CLASS} ${
-          isFirst ? SECTION_TITLE_FIRST_PT_CLASS : SECTION_TITLE_FOLLOWING_PT_CLASS
-        }`}
-      >
+      <th colSpan={colSpan} scope="colgroup" className={titleClass}>
         {glossary ? (
           <ParcelRecordTableGlossaryLabel
             text={title}
@@ -356,16 +443,29 @@ function formatValueCell(
 function ParcelValueTable({
   record,
   totalOnly = false,
+  actualAffordance = null,
+  assessedAffordance = null,
+  taxYearNoteOverride = null,
 }: {
   record: CountyParcelRecordRow;
   /** Business personal property: totals only (no Building / Land columns). */
   totalOnly?: boolean;
+  /** Transferred Actual value summary-tile affordances (Changed + YoY opener). */
+  actualAffordance?: ParcelValueHistoryAffordance | null;
+  /** Transferred Assessed value summary-tile affordances (Changed + YoY + gap). */
+  assessedAffordance?: ParcelValueHistoryAffordance | null;
+  /**
+   * When the parcel-record row lacks TaxYear/AssessmentYear but the locked report
+   * still knows they differ (e.g. from valuation / levy summary years), show that note.
+   */
+  taxYearNoteOverride?: string | null;
 }) {
   const year = (record.assessmentYear ?? "").trim();
-  const yearNote = parcelTaxAssessmentYearNote(
-    record.parcelTaxYear,
-    record.assessmentYear,
-  );
+  const yearNote =
+    parcelTaxAssessmentYearNote(
+      record.parcelTaxYear,
+      record.assessmentYear,
+    ) ?? taxYearNoteOverride;
   const rows = buildParcelValueTableRows(record);
 
   const hasAnyValue = rows.some(
@@ -388,15 +488,27 @@ function ParcelValueTable({
     );
   }
 
-  const colSpan = totalOnly ? 2 : 4;
-
   return (
-    <div className="space-y-2">
-      {yearNote ? (
-        <p className="text-sm leading-relaxed text-slate-600 sm:text-base" role="note">
-          {yearNote}
-        </p>
-      ) : null}
+    <ParcelRecordTableArriveSection
+      id={HOME_APPRAISED_ASSESSED_ID}
+      className="space-y-3"
+      heading={
+        <ParcelDashboardSectionHeading
+          title="Appraised and assessed values"
+          spaced
+        />
+      }
+      beforeTable={
+        yearNote ? (
+          <p
+            className="text-sm leading-relaxed text-slate-600 sm:text-base"
+            role="note"
+          >
+            {yearNote}
+          </p>
+        ) : null
+      }
+    >
       <table className={TABLE_CLASS}>
       <caption className="sr-only">
         {totalOnly
@@ -404,11 +516,6 @@ function ParcelValueTable({
           : "Appraised and assessed values by total, building, and land"}
       </caption>
       <tbody>
-        <SectionTitleRow
-          title="Appraised and assessed values"
-          isFirst
-          colSpan={colSpan}
-        />
         <ColumnHeaderRow
           labels={valueColumnHeaderLabels(totalOnly)}
           blankHeader="hidden"
@@ -416,6 +523,12 @@ function ParcelValueTable({
         />
         {rowsToShow.map((row) => {
           const rowLabel = valueRowDisplayLabel(year, row.kind, row.rateLabel);
+          const affordance =
+            row.kind === "appraised"
+              ? actualAffordance
+              : row.kind === "assessed"
+                ? assessedAffordance
+                : null;
           return (
             <tr key={row.kind}>
               <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
@@ -426,11 +539,22 @@ function ParcelValueTable({
                 />
               </th>
               <td className={MONEY_TD_CLASS}>
-                {formatValueCell(
-                  row.values.total,
-                  `${rowLabel} (Total)`,
-                  `${row.kind}-total`,
-                )}
+                <div className="flex flex-col items-end gap-1">
+                  {formatValueCell(
+                    row.values.total,
+                    `${rowLabel} (Total)`,
+                    `${row.kind}-total`,
+                  )}
+                  {affordance != null && row.values.total != null ? (
+                    <ValueHistoryAffordanceRow
+                      valueKind={
+                        row.kind === "appraised" ? "actual" : "assessed"
+                      }
+                      value={row.values.total}
+                      affordance={affordance}
+                    />
+                  ) : null}
+                </div>
               </td>
               {!totalOnly ? (
                 <>
@@ -455,6 +579,85 @@ function ParcelValueTable({
         })}
       </tbody>
       </table>
+    </ParcelRecordTableArriveSection>
+  );
+}
+
+/**
+ * Summary-tile affordances transferred into Appraised and assessed values rows:
+ * Changed badge, valuation-history opener, optional prior-year gap / in-progress.
+ */
+export type ParcelValueHistoryAffordance = {
+  valueDelta: number | null;
+  hasHistory: boolean;
+  onOpen: () => void;
+  statusChrome?: ReactNode;
+};
+
+const VALUE_HISTORY_OPEN_BTN_CLASS =
+  "cursor-pointer rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-indigo-800 hover:border-indigo-400 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-1";
+
+function valueHistoryOpenAriaLabel(
+  valueKind: ValuationValueKind,
+  formattedValue: string,
+  valueDelta: number | null,
+): string {
+  const base =
+    valueKind === "assessed"
+      ? VALUATION_HISTORY_OPEN_ARIA_ASSESSED
+      : VALUATION_HISTORY_OPEN_ARIA_ACTUAL;
+  const parts = [`${base} ${formattedValue}.`];
+  if (valueDelta != null && valueDelta > 0) {
+    parts.push(
+      valueKind === "assessed"
+        ? VALUATION_HISTORY_CHANGED_HIGHER_SR
+        : VALUATION_HISTORY_ACTUAL_CHANGED_HIGHER_SR,
+    );
+  } else if (valueDelta != null && valueDelta < 0) {
+    parts.push(
+      valueKind === "assessed"
+        ? VALUATION_HISTORY_CHANGED_LOWER_SR
+        : VALUATION_HISTORY_ACTUAL_CHANGED_LOWER_SR,
+    );
+  }
+  return parts.join(" ");
+}
+
+function ValueHistoryAffordanceRow({
+  valueKind,
+  value,
+  affordance,
+}: {
+  valueKind: ValuationValueKind;
+  value: number;
+  affordance: ParcelValueHistoryAffordance;
+}) {
+  const formattedValue = formatUsdWhole(value);
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-1.5">
+      {affordance.valueDelta != null ? (
+        <span aria-hidden>
+          <LevyChangedBadge
+            millsDelta={affordance.valueDelta}
+            className={LEVY_CHANGED_BADGE_ON_LIGHT_CLASS}
+          />
+        </span>
+      ) : null}
+      {affordance.statusChrome}
+      {affordance.hasHistory ? (
+        <button
+          type="button"
+          className={VALUE_HISTORY_OPEN_BTN_CLASS}
+          aria-label={valueHistoryOpenAriaLabel(
+            valueKind,
+            formattedValue,
+            affordance.valueDelta,
+          )}
+          onClick={affordance.onOpen}
+        >
+          Year over year
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -467,7 +670,8 @@ function buildingHasDetail(building: ParcelRecordBuilding): boolean {
   );
 }
 
-/** One county-style table: Building, Area, and Land Line share column widths. */
+/** One county-style table family: Building, Area, and Land Line as separate
+ * arrive targets (ring on a block wrapper; overflow-x-auto only around each table). */
 export function ParcelRecordBuildingAndLandTable({
   buildings,
   landLines,
@@ -491,19 +695,9 @@ export function ParcelRecordBuildingAndLandTable({
     );
   }
 
-  const rows: ReactNode[] = [];
-  let isFirstTitle = true;
-
-  const pushTitle = (title: string) => {
-    rows.push(
-      <SectionTitleRow
-        key={`title-${title}-${rows.length}`}
-        title={title}
-        isFirst={isFirstTitle}
-      />,
-    );
-    isFirstTitle = false;
-  };
+  const sections: ReactNode[] = [];
+  let buildingsSectionIdAssigned = false;
+  let areaSectionIdAssigned = false;
 
   for (const building of buildingsWithDetail) {
     const buildingNum = building.buildingNum || "1";
@@ -513,13 +707,11 @@ export function ParcelRecordBuildingAndLandTable({
       areas.length > 0 || Boolean((building.totalArea ?? "").trim());
 
     if (attributes.length > 0) {
-      pushTitle("Building");
-      rows.push(
-        <ColumnHeaderRow
-          key={`hdr-building-${buildingNum}`}
-          labels={["Building", "Attributes", "Recorded"]}
-        />,
-      );
+      const sectionId = buildingsSectionIdAssigned
+        ? undefined
+        : HOME_BUILDINGS_ID;
+      buildingsSectionIdAssigned = true;
+      const attrRows: ReactNode[] = [];
       for (const [index, attr] of attributes.entries()) {
         const attrTermId = PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS[attr.label];
         const attrLabelSpec: GlossaryLabelSpec | null = attrTermId
@@ -529,9 +721,11 @@ export function ParcelRecordBuildingAndLandTable({
               triggerIdSuffix: `attr-${attr.label.replace(/\s+/g, "-").toLowerCase()}`,
             }
           : null;
-        rows.push(
+        attrRows.push(
           <tr key={`${buildingNum}-attr-${attr.label}`}>
-            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>{index === 0 ? buildingNum : ""}</td>
+            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>
+              {index === 0 ? buildingNum : ""}
+            </td>
             <td className={TD_CLASS}>
               {glossaryLabelOrText(attrLabelSpec, attr.label)}
             </td>
@@ -548,21 +742,54 @@ export function ParcelRecordBuildingAndLandTable({
           </tr>,
         );
       }
+      const table = (
+        <table className={TABLE_CLASS}>
+          <caption className="sr-only">
+            Building {buildingNum} attributes
+          </caption>
+          <tbody>
+            {sectionId == null ? (
+              <SectionTitleRow title="Building" isFirst />
+            ) : null}
+            <ColumnHeaderRow labels={["Building", "Attributes", "Recorded"]} />
+            {attrRows}
+          </tbody>
+        </table>
+      );
+      sections.push(
+        sectionId != null ? (
+          <ParcelRecordTableArriveSection
+            key={`building-${buildingNum}`}
+            id={sectionId}
+            className="space-y-3"
+            heading={<ParcelDashboardSectionHeading title="Building(s)" />}
+          >
+            {table}
+          </ParcelRecordTableArriveSection>
+        ) : (
+          <div
+            key={`building-${buildingNum}`}
+            className={PARCEL_RECORD_TABLE_SCROLL_CLASS}
+          >
+            {table}
+          </div>
+        ),
+      );
     }
 
     if (showAreaSection) {
-      pushTitle("Area");
-      rows.push(
-        <ColumnHeaderRow
-          key={`hdr-area-${buildingNum}`}
-          labels={["Building", "Description", "SqFt"]}
-        />,
-      );
+      const sectionId = areaSectionIdAssigned ? undefined : HOME_AREA_ID;
+      areaSectionIdAssigned = true;
+      const areaRows: ReactNode[] = [];
       for (const [index, area] of areas.entries()) {
-        rows.push(
+        areaRows.push(
           <tr key={`${buildingNum}-area-${area.description}-${index}`}>
-            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>{index === 0 ? buildingNum : ""}</td>
-            <td className={TD_CLASS}>{parcelRecordCellText(area.description)}</td>
+            <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`}>
+              {index === 0 ? buildingNum : ""}
+            </td>
+            <td className={TD_CLASS}>
+              {parcelRecordCellText(area.description)}
+            </td>
             <td className={TD_CLASS}>
               {area.sqFt ? (
                 area.sqFt
@@ -577,7 +804,7 @@ export function ParcelRecordBuildingAndLandTable({
         );
       }
       if (building.totalArea) {
-        rows.push(
+        areaRows.push(
           <tr key={`${buildingNum}-total-area`}>
             <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`} />
             <td className={`${TD_CLASS} font-semibold text-slate-800`}>
@@ -589,24 +816,42 @@ export function ParcelRecordBuildingAndLandTable({
           </tr>,
         );
       }
+      const table = (
+        <table className={TABLE_CLASS}>
+          <caption className="sr-only">Building {buildingNum} area</caption>
+          <tbody>
+            {sectionId == null ? <SectionTitleRow title="Area" isFirst /> : null}
+            <ColumnHeaderRow labels={["Building", "Description", "SqFt"]} />
+            {areaRows}
+          </tbody>
+        </table>
+      );
+      sections.push(
+        sectionId != null ? (
+          <ParcelRecordTableArriveSection
+            key={`area-${buildingNum}`}
+            id={sectionId}
+            className="space-y-3"
+            heading={<ParcelDashboardSectionHeading title="Area" />}
+          >
+            {table}
+          </ParcelRecordTableArriveSection>
+        ) : (
+          <div
+            key={`area-${buildingNum}`}
+            className={PARCEL_RECORD_TABLE_SCROLL_CLASS}
+          >
+            {table}
+          </div>
+        ),
+      );
     }
   }
 
   if (landLineList.length > 0) {
-    pushTitle("Land Line");
-    rows.push(
-      <ColumnHeaderRow
-        key="hdr-land-line"
-        labels={[
-          "",
-          buildingTableHeaderLabel("Units"),
-          buildingTableHeaderLabel("Land Use"),
-        ]}
-        blankHeader="hidden"
-      />,
-    );
+    const landRows: ReactNode[] = [];
     for (const [index, line] of landLineList.entries()) {
-      rows.push(
+      landRows.push(
         <tr key={`land-line-${index}`}>
           <td className={`${TD_CLASS} ${INDEX_COL_CLASS}`} />
           <td className={TD_CLASS}>
@@ -632,16 +877,39 @@ export function ParcelRecordBuildingAndLandTable({
         </tr>,
       );
     }
+    sections.push(
+      <ParcelRecordTableArriveSection
+        key="land-line"
+        id={HOME_LAND_LINE_ID}
+        className="space-y-3"
+        heading={
+          <ParcelDashboardSectionHeading
+            title="Land Line"
+            termId="term-parcel-land-line"
+            helpTriggerId="parcel-land-line-heading-help"
+            ariaLabel="What Land Line means."
+          />
+        }
+      >
+        <table className={TABLE_CLASS}>
+          <caption className="sr-only">Land line</caption>
+          <tbody>
+            <ColumnHeaderRow
+              labels={[
+                "",
+                buildingTableHeaderLabel("Units"),
+                buildingTableHeaderLabel("Land Use"),
+              ]}
+              blankHeader="hidden"
+            />
+            {landRows}
+          </tbody>
+        </table>
+      </ParcelRecordTableArriveSection>,
+    );
   }
 
-  return (
-    <table className={TABLE_CLASS}>
-      <caption className="sr-only">
-        Building attributes, area breakdown, and land line
-      </caption>
-      <tbody>{rows}</tbody>
-    </table>
-  );
+  return <div className="space-y-8">{sections}</div>;
 }
 
 function textOrMissing(
@@ -662,7 +930,7 @@ function textOrMissing(
 }
 
 /** Focus target for dashboard jumps to this table (Assessed value gap popover). */
-export const PARCEL_RECORD_SALE_HISTORY_ID = "home-parcel-sale-history";
+export const PARCEL_RECORD_SALE_HISTORY_ID = HOME_SALE_HISTORY_ID;
 
 /** County-style Sale history (Book Page / Date / Price / Type). */
 export function ParcelRecordSaleTable({
@@ -705,99 +973,110 @@ export function ParcelRecordSaleTable({
     <div
       id={PARCEL_RECORD_SALE_HISTORY_ID}
       tabIndex={-1}
-      className={`scroll-mt-6 space-y-2 sm:scroll-mt-8 ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS}`}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} space-y-3 ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none`}
     >
-      <table className={TABLE_CLASS}>
-        <caption className="sr-only">
-          Sale history from county transfer records
-        </caption>
-        <tbody>
-          <SectionTitleRow title="Sale" isFirst colSpan={columnCount} />
-          <ColumnHeaderRow
-            labels={headerLabels.map(saleTableHeaderLabel)}
-            shrinkFirstColumn={false}
-          />
-          {rows.length === 0 ? (
-            <tr>
-              <td colSpan={columnCount} className={TD_CLASS}>
-                <ParcelRecordMissingValue
-                  fieldLabel="Sale"
-                  triggerIdSuffix="sale-empty"
-                />
-              </td>
-            </tr>
-          ) : (
-            rows.map((sale, index) => {
-              const typeText = (sale.type ?? "").trim();
-              const bookPage = (sale.bookPage ?? "").trim();
-              const clerkHref =
-                linkClerkRecorder && bookPage
-                  ? safeCountyClerkRecorderSearchUrl(bookPage, countyConfig)
-                  : null;
-              return (
-                <tr key={`sale-${sale.bookPage}-${sale.date ?? ""}-${index}`}>
-                  <td className={TD_CLASS}>
-                    {bookPage ? (
-                      clerkHref ? (
-                        <a
-                          href={clerkHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={COUNTY_EXTERNAL_LINK_CLASS}
-                        >
-                          {parcelRecordCellText(bookPage)}
-                          <span className="sr-only">
-                            {" "}
-                            (Clerk and Recorder search, opens in a new tab)
-                          </span>
-                        </a>
+      <ParcelDashboardSectionHeading
+        title="Sale history"
+        termId="term-parcel-sale"
+        helpTriggerId="parcel-sale-history-heading-help"
+        ariaLabel="What sale history means."
+      />
+      <div className={PARCEL_RECORD_TABLE_SCROLL_CLASS}>
+        <table className={TABLE_CLASS}>
+          <caption className="sr-only">
+            Sale history from county transfer records
+          </caption>
+          <tbody>
+            <ColumnHeaderRow
+              labels={headerLabels.map(saleTableHeaderLabel)}
+              shrinkFirstColumn={false}
+            />
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columnCount} className={TD_CLASS}>
+                  <ParcelRecordMissingValue
+                    fieldLabel="Sale"
+                    triggerIdSuffix="sale-empty"
+                  />
+                </td>
+              </tr>
+            ) : (
+              rows.map((sale, index) => {
+                const typeText = (sale.type ?? "").trim();
+                const bookPage = (sale.bookPage ?? "").trim();
+                const clerkHref =
+                  linkClerkRecorder && bookPage
+                    ? safeCountyClerkRecorderSearchUrl(bookPage, countyConfig)
+                    : null;
+                return (
+                  <tr key={`sale-${sale.bookPage}-${sale.date ?? ""}-${index}`}>
+                    <td className={TD_CLASS}>
+                      {bookPage ? (
+                        clerkHref ? (
+                          <a
+                            href={clerkHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={COUNTY_EXTERNAL_LINK_CLASS}
+                          >
+                            {parcelRecordCellText(bookPage)}
+                            <span className="sr-only">
+                              {" "}
+                              (Clerk and Recorder search, opens in a new tab)
+                            </span>
+                          </a>
+                        ) : (
+                          parcelRecordCellText(bookPage)
+                        )
                       ) : (
-                        parcelRecordCellText(bookPage)
-                      )
-                    ) : (
-                      <ParcelRecordMissingValue
-                        fieldLabel="Book Page"
-                        triggerIdSuffix={`sale-book-page-${index}`}
-                      />
-                    )}
-                  </td>
-                  <td className={`${TD_CLASS} whitespace-nowrap`}>
-                    {textOrMissing(sale.date, "Sale Date", `sale-date-${index}`)}
-                  </td>
-                  <td className={MONEY_TD_CLASS}>
-                    {formatValueCell(
-                      sale.price,
-                      "Sale Price",
-                      `sale-price-${index}`,
-                    )}
-                  </td>
-                  <td className={TD_CLASS}>
-                    {typeText ? parcelRecordCellText(typeText) : null}
-                  </td>
-                  {showParties ? (
-                    <>
-                      <td className={TD_CLASS}>
-                        {textOrMissing(
-                          sale.grantor,
-                          "Grantor",
-                          `sale-grantor-${index}`,
-                        )}
-                      </td>
-                      <td className={TD_CLASS}>
-                        {textOrMissing(
-                          sale.grantee,
-                          "Grantee",
-                          `sale-grantee-${index}`,
-                        )}
-                      </td>
-                    </>
-                  ) : null}
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+                        <ParcelRecordMissingValue
+                          fieldLabel="Book Page"
+                          triggerIdSuffix={`sale-book-page-${index}`}
+                        />
+                      )}
+                    </td>
+                    <td className={`${TD_CLASS} whitespace-nowrap`}>
+                      {textOrMissing(
+                        sale.date,
+                        "Sale Date",
+                        `sale-date-${index}`,
+                      )}
+                    </td>
+                    <td className={MONEY_TD_CLASS}>
+                      {formatValueCell(
+                        sale.price,
+                        "Sale Price",
+                        `sale-price-${index}`,
+                      )}
+                    </td>
+                    <td className={TD_CLASS}>
+                      {typeText ? parcelRecordCellText(typeText) : null}
+                    </td>
+                    {showParties ? (
+                      <>
+                        <td className={TD_CLASS}>
+                          {textOrMissing(
+                            sale.grantor,
+                            "Grantor",
+                            `sale-grantor-${index}`,
+                          )}
+                        </td>
+                        <td className={TD_CLASS}>
+                          {textOrMissing(
+                            sale.grantee,
+                            "Grantee",
+                            `sale-grantee-${index}`,
+                          )}
+                        </td>
+                      </>
+                    ) : null}
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
       {countyParcelRecordUrl && linkClerkRecorder ? (
         <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
           If a Book Page search finds no document, check the same sale list on your{" "}
@@ -827,7 +1106,8 @@ export function ParcelRecordPermitTable({
     return null;
   }
   return (
-    <table className={TABLE_CLASS}>
+    <ParcelRecordTableArriveSection id={HOME_PERMITS_ID}>
+      <table className={TABLE_CLASS}>
       <caption className="sr-only">Building permits from county permit records</caption>
       <tbody>
         <SectionTitleRow title="Permits" isFirst colSpan={6} />
@@ -889,7 +1169,8 @@ export function ParcelRecordPermitTable({
           </tr>
         ))}
       </tbody>
-    </table>
+      </table>
+    </ParcelRecordTableArriveSection>
   );
 }
 
@@ -897,10 +1178,24 @@ export function ParcelRecordPermitTable({
 export function ParcelRecordValueSection({
   record,
   totalOnly = false,
+  actualAffordance = null,
+  assessedAffordance = null,
+  taxYearNoteOverride = null,
 }: {
   record: CountyParcelRecordRow;
   /** Business personal property: totals only (no Building / Land columns). */
   totalOnly?: boolean;
+  actualAffordance?: ParcelValueHistoryAffordance | null;
+  assessedAffordance?: ParcelValueHistoryAffordance | null;
+  taxYearNoteOverride?: string | null;
 }) {
-  return <ParcelValueTable record={record} totalOnly={totalOnly} />;
+  return (
+    <ParcelValueTable
+      record={record}
+      totalOnly={totalOnly}
+      actualAffordance={actualAffordance}
+      assessedAffordance={assessedAffordance}
+      taxYearNoteOverride={taxYearNoteOverride}
+    />
+  );
 }

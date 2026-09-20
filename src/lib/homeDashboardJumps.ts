@@ -8,22 +8,53 @@ import {
   MILL_LEVY_TILES_ID,
 } from "@/content/millLevySummaryCopy";
 
-/** Sticky locked-report utility bar (`HomeDashboardUtilityBar`). */
+/**
+ * Sticky locked-report section nav chrome (`HomeDashboardSectionNav`).
+ * On `<lg` this is the one sticky strip (TOC + one-line address). On `lg+`
+ * the same element is the left-rail sidenav (address + optional Switch + jumps);
+ * it does not cover the main column, so scroll-mt inset is 0 on large screens.
+ */
 export const HOME_DASHBOARD_UTILITY_BAR_ID = "home-dashboard-utility-bar";
 
-/** CSS variable set to the utility bar's height while the bar is mounted. */
+/** CSS variable set to the sticky section-nav strip height while mounted (`<lg` only). */
 export const HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR =
   "--home-dashboard-utility-bar-height";
 
 /**
  * scroll-margin-top for jump focus/highlight targets so `scrollIntoView({ block: "start" })`
- * clears the sticky utility bar, plus 0.5rem so titles are not flush against the bar.
- * Fallback matches a one-row bar (~3.5rem) before the gap.
+ * clears the sticky mobile TOC+address strip, plus 0.5rem so titles are not flush.
+ * On `lg+` the left rail does not cover the main column — use a small fixed offset.
+ * Fallback matches a one-row sticky strip (~3.5rem) before the CSS variable is set.
  */
 export const HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS =
-  "scroll-mt-[calc(var(--home-dashboard-utility-bar-height,3.5rem)+0.5rem)]";
+  "scroll-mt-[calc(var(--home-dashboard-utility-bar-height,3.5rem)+0.5rem)] lg:scroll-mt-4";
 
 export const HOME_PROPERTY_DETAILS_ID = "home-property-details";
+
+/** Appraised and assessed values table (Property details subsection). */
+export const HOME_APPRAISED_ASSESSED_ID = "home-parcel-appraised-assessed";
+
+/** Sale history table (Property details subsection). */
+export const HOME_SALE_HISTORY_ID = "home-parcel-sale-history";
+
+/** Building(s) section title target inside Building/Area/Land Line table. */
+export const HOME_BUILDINGS_ID = "home-parcel-buildings";
+
+/** Area section title target inside Building/Area/Land Line table. */
+export const HOME_AREA_ID = "home-parcel-area";
+
+/** Land Line section title target inside Building/Area/Land Line table. */
+export const HOME_LAND_LINE_ID = "home-parcel-land-line";
+
+/** Permits table (Property details subsection). */
+export const HOME_PERMITS_ID = "home-parcel-permits";
+
+/** Rent tax pressure pierce heading (Rent lens only). */
+export const HOME_RENT_PRESSURE_HEADING_ID =
+  "home-parcel-rent-tax-pressure-heading";
+
+/** Rent tax pressure tiles region (highlight / scroll-spy). */
+export const HOME_RENT_PRESSURE_ID = "home-parcel-rent-tax-pressure";
 
 /** Focus target for {@link LevyCountyCompareSection} (existing heading id). */
 export const HOME_COUNTY_COMPARE_HEADING_ID = "levy-county-compare-heading";
@@ -33,7 +64,7 @@ export const HOME_COUNTY_COMPARE_SECTION_ID = "home-county-compare";
 
 export const HOME_FEEDBACK_ASIDE_ID = "home-accuracy-feedback";
 
-/** Section root for in-app comps grid (`NovCompsGridPanel`). */
+/** Section root for in-app comps grid (`NovCompsGridPanel` / comps chrome). */
 export const HOME_NOV_COMPS_SECTION_ID = "home-nov-comps-grid";
 
 /** Heading inside the comps section (aria / existing id). */
@@ -42,10 +73,21 @@ export const HOME_NOV_COMPS_HEADING_ID = "home-nov-comps-grid-heading";
 /** Home `<main id="page-top">` — same focus target as Back to top. */
 export const HOME_PAGE_TOP_ID = "page-top";
 
+/**
+ * Jump destinations for the locked-report section nav.
+ * Order matches the main-column scroll order for the active lens.
+ * No "Summary" / `#page-top` lead — levy (or Rent pressure) is first.
+ */
 export type HomeDashboardJumpId =
-  | "top"
+  | "rent-pressure"
   | "levies"
   | "property-details"
+  | "appraised-assessed"
+  | "sale-history"
+  | "buildings"
+  | "area"
+  | "land-line"
+  | "permits"
   | "county-compare"
   | "comps"
   | "feedback";
@@ -55,11 +97,8 @@ export const HOME_DASHBOARD_JUMP_START_OVER_VALUE = "start-over";
 
 export const HOME_DASHBOARD_JUMP_START_OVER_LABEL = "START OVER";
 
-/** Visible summary label for the locked-report TOC disclosure. */
+/** Visible summary label for the locked-report TOC disclosure (`<lg`). */
 export const HOME_DASHBOARD_JUMP_SUMMARY_LABEL = "Jump to a section";
-
-/** First Jump to… row: summary tiles at the top of the locked report (scroll/focus #page-top). */
-export const HOME_DASHBOARD_JUMP_TOP_LABEL = "Summary";
 
 export type HomeDashboardJump = {
   id: HomeDashboardJumpId;
@@ -68,19 +107,34 @@ export type HomeDashboardJump = {
   highlightId?: string;
 };
 
-/** Jump destinations for the locked-report sticky utility chrome. */
+/**
+ * Locked-report chrome signal for the home shell (KNOWN ISSUE banner, etc.).
+ * Section nav renders inside the locked report, not in the hero stack.
+ */
 export type HomeLockedUtilityNav = {
   jumps: HomeDashboardJump[];
-  /** Amber Douglas KNOWN ISSUE banner under Jump to… (scrolls with report). */
+  /** Amber Douglas KNOWN ISSUE banner under hero (scrolls with report). */
   propertyDataAccuracyWarning: boolean;
   /** Wired county id when locked (Sources deep link). */
   countyId: string;
 };
 
+/**
+ * Flags for which locked-report sections are mounted for the active lens
+ * (Own | Rent | BPP) and account. Only list jumps whose targets exist.
+ */
 export type HomeDashboardJumpFlags = {
+  showRentPressure: boolean;
   showLevies: boolean;
   showPropertyDetails: boolean;
+  showAppraisedAssessed: boolean;
+  showSaleHistory: boolean;
+  showBuildings: boolean;
+  showArea: boolean;
+  showLandLine: boolean;
+  showPermits: boolean;
   showCountyCompare: boolean;
+  /** Own Real only; always-on section (empty / gap states still mount). */
   showInAppComps: boolean;
   showFeedback: boolean;
   /** County display name for the compare jump label. */
@@ -88,20 +142,23 @@ export type HomeDashboardJumpFlags = {
 };
 
 /**
- * Build gated Jump to… options in page order. Always leads with Summary
- * (home {@link HOME_PAGE_TOP_ID}; summary tiles sit at the top of the report).
- * Omit any section that is not mounted.
+ * Build gated Jump to… options in main-column order for the active lens.
+ * Leads with levy (or Rent pressure when that panel mounts). Omits any section
+ * that is not on the report. Property details parent stays when the panel
+ * mounts; subsection jumps are flat siblings (no nested submenu).
  */
 export function buildHomeDashboardJumps(
   flags: HomeDashboardJumpFlags,
 ): HomeDashboardJump[] {
-  const jumps: HomeDashboardJump[] = [
-    {
-      id: "top",
-      label: HOME_DASHBOARD_JUMP_TOP_LABEL,
-      focusId: HOME_PAGE_TOP_ID,
-    },
-  ];
+  const jumps: HomeDashboardJump[] = [];
+  if (flags.showRentPressure) {
+    jumps.push({
+      id: "rent-pressure",
+      label: "Your estimated property tax",
+      focusId: HOME_RENT_PRESSURE_HEADING_ID,
+      highlightId: HOME_RENT_PRESSURE_ID,
+    });
+  }
   if (flags.showLevies) {
     jumps.push({
       id: "levies",
@@ -116,6 +173,54 @@ export function buildHomeDashboardJumps(
       label: "Property details",
       focusId: HOME_PROPERTY_DETAILS_ID,
       highlightId: HOME_PROPERTY_DETAILS_ID,
+    });
+  }
+  if (flags.showAppraisedAssessed) {
+    jumps.push({
+      id: "appraised-assessed",
+      label: "Appraised and assessed values",
+      focusId: HOME_APPRAISED_ASSESSED_ID,
+      highlightId: HOME_APPRAISED_ASSESSED_ID,
+    });
+  }
+  if (flags.showSaleHistory) {
+    jumps.push({
+      id: "sale-history",
+      label: "Sale history",
+      focusId: HOME_SALE_HISTORY_ID,
+      highlightId: HOME_SALE_HISTORY_ID,
+    });
+  }
+  if (flags.showBuildings) {
+    jumps.push({
+      id: "buildings",
+      label: "Building(s)",
+      focusId: HOME_BUILDINGS_ID,
+      highlightId: HOME_BUILDINGS_ID,
+    });
+  }
+  if (flags.showArea) {
+    jumps.push({
+      id: "area",
+      label: "Area",
+      focusId: HOME_AREA_ID,
+      highlightId: HOME_AREA_ID,
+    });
+  }
+  if (flags.showLandLine) {
+    jumps.push({
+      id: "land-line",
+      label: "Land Line",
+      focusId: HOME_LAND_LINE_ID,
+      highlightId: HOME_LAND_LINE_ID,
+    });
+  }
+  if (flags.showPermits) {
+    jumps.push({
+      id: "permits",
+      label: "Permits",
+      focusId: HOME_PERMITS_ID,
+      highlightId: HOME_PERMITS_ID,
     });
   }
   if (flags.showCountyCompare) {
@@ -145,9 +250,21 @@ export function buildHomeDashboardJumps(
   return jumps;
 }
 
-/** Height of the sticky utility bar when mounted; 0 when absent. */
+/** Matches Tailwind `lg` — section nav sticky/layout breakpoint. */
+export const HOME_DASHBOARD_LG_MIN_MQ = "(min-width: 1024px)";
+
+/**
+ * Height of sticky chrome that covers the main column when jumping.
+ * On `lg+` the left rail sits beside the main column (inset 0). On smaller
+ * viewports, measure the sticky TOC+address strip.
+ */
 export function dashboardUtilityBarStickyInsetPx(): number {
-  if (typeof document === "undefined") return 0;
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return 0;
+  }
+  if (window.matchMedia(HOME_DASHBOARD_LG_MIN_MQ).matches) {
+    return 0;
+  }
   const el = document.getElementById(HOME_DASHBOARD_UTILITY_BAR_ID);
   if (!(el instanceof HTMLElement)) return 0;
   return el.getBoundingClientRect().height;

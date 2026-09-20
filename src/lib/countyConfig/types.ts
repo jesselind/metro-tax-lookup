@@ -218,7 +218,7 @@ export type CountyConfig = {
   features: CountyFeatures;
   /**
    * Known county hosting/export failures for features that exist.
-   * compsPdfHostedFiles: COUNTY DATA GAP on the comps tile (not omit).
+   * compsPdfHostedFiles: COUNTY DATA GAP under Comparable properties (not omit).
    */
   knownFailures: CountyKnownFailures;
   /**

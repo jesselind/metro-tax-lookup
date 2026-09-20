@@ -189,8 +189,9 @@ export function DouglasSourcesMethodology() {
         Douglas Assessor text downloads do not include separate assessment-year
         and tax-year columns on each account. When valuation history is loaded,
         the Tax year tile uses the Realware face tax year that matches the pin
-        Values assessed total (same year as the Est. property tax tile), not the
-        mill PDF title alone. Assessment year uses the county SPA path year from{" "}
+        Values assessed total (same year as the Est. property tax total on the
+        levy stack), not the mill PDF title alone. Assessment year uses the
+        county SPA path year from{" "}
         <code className={CODE_INLINE_CLASS}>tools/douglas-realware-detail-stamp.txt</code>
         {" "}
         when present. The mill PDF year remains the levy-stack source vintage.
@@ -223,13 +224,15 @@ export function DouglasSourcesMethodology() {
         ). We retain those files at build time, sum{" "}
         <code className={CODE_INLINE_CLASS}>valuesByAbstractCode</code>
         {" "}
-        per tax year, and ship valuation history on this site. The locked-report
+        per tax year, and ship valuation history on this site. The levy stack{" "}
+        <strong className="font-semibold text-slate-900">Total</strong>
         {" "}
+        dollars row carries{" "}
         <strong className="font-semibold text-slate-900">
           Est. property tax
         </strong>
         {" "}
-        tile uses those Realware tax totals for the face year (not assessed ×
+        and uses those Realware tax totals for the face year (not assessed ×
         total mills). Mill levy tile dollars and the stack total use Colorado
         dual-rate bases when school assessed differs from local assessed: school
         district entries (including Schools debt / reserve labels) use school
@@ -280,7 +283,7 @@ export function DouglasSourcesMethodology() {
         {" "}
         <code className={CODE_INLINE_CLASS}>compsPdfInProgress</code>
         {" "}
-        shows Coming soon on the home summary tile).
+        shows Coming soon under the Comparable properties heading).
       </p>
       {countyFeatureAvailable(
         "compsPdfInProgress",

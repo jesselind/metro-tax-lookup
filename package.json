@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.16.0",
+  "version": "5.17.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -51,6 +51,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@radix-ui/react-popover": "^1.1.15",
     "@tanstack/react-table": "^8.21.3",
     "next": "^16.2.7",

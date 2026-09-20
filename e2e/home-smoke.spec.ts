@@ -18,10 +18,10 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   ).toBeVisible();
   await expect(
     page.getByRole("radiogroup", {
-      name: "Own or rent",
+      name: "I own or I rent",
     }),
   ).toBeVisible();
-  await expect(page.getByRole("radio", { name: "Own" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "I Own" })).toBeChecked();
   await expect(
     page.getByRole("radiogroup", { name: "Select your Colorado county" }),
   ).toBeVisible();

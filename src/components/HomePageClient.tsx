@@ -7,7 +7,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DouglasPropertyDataAccuracyKnownIssueBanner } from "@/content/douglasPropertyDataAccuracyKnownIssueBanner";
-import { HomeDashboardUtilityBar } from "@/components/HomeDashboardUtilityBar";
 import { HomeParcelAddressLookup } from "@/components/HomeParcelAddressLookup";
 import { PageHero } from "@/components/PageHero";
 import { SiteBrandHeroTitle } from "@/components/SiteBrandHeroTitle";
@@ -22,6 +21,7 @@ import {
   HOME_PAGE_HERO_INTRO_GROUP_CLASS,
   PAGE_HERO_ACTION_BUTTON_CLASS,
   TOOL_PAGE_INNER_CLASS_HUB,
+  TOOL_PAGE_INNER_CLASS_HUB_LOCKED_REPORT,
 } from "@/lib/toolFlowStyles";
 
 const START_OVER_ARIA_LABEL =
@@ -56,27 +56,26 @@ export function HomePageClient() {
     setAudienceMode(mode);
   }, []);
 
-  const showLockedUtilityBar = lockedUtilityNav != null;
   const showHeroStartOver = viewingParcel;
+  const showKnownIssueBanner =
+    lockedUtilityNav?.propertyDataAccuracyWarning === true;
 
   /**
-   * When the locked report appears without the Jump to… bar yet, move focus to
-   * hero Start over. Do not autofocus Jump to… — HomeParcelAddressLookup already
-   * focuses #page-top on lock; focusing the summary looks like a selected TOC.
+   * When the locked report appears, move focus to hero Start over if needed.
+   * Section nav lives inside the report (not under the hero); lock focus stays
+   * on #page-top from HomeParcelAddressLookup.
    */
   const prevViewingParcelRef = useRef(false);
   useEffect(() => {
     const unlockedViewingJustAppeared =
-      viewingParcel &&
-      !prevViewingParcelRef.current &&
-      !showLockedUtilityBar;
+      viewingParcel && !prevViewingParcelRef.current && lockedUtilityNav == null;
 
     if (unlockedViewingJustAppeared) {
       startOverHeroRef.current?.focus();
     }
 
     prevViewingParcelRef.current = viewingParcel;
-  }, [viewingParcel, showLockedUtilityBar]);
+  }, [viewingParcel, lockedUtilityNav]);
 
   const landingLine =
     audienceMode === "rent"
@@ -93,18 +92,14 @@ export function HomePageClient() {
       tabIndex={-1}
       className="flex flex-col bg-white text-slate-900"
     >
-      <div className={TOOL_PAGE_INNER_CLASS_HUB}>
-        {/*
-          Sticky utility bar must share this tall column with the report body.
-          Do not wrap hero+bar alone: sticky only lasts through its parent height.
-        */}
-        <div
-          className={
-            showLockedUtilityBar
-              ? undefined
-              : HOME_PAGE_HERO_INTRO_GROUP_CLASS
-          }
-        >
+      <div
+        className={
+          lockedUtilityNav
+            ? TOOL_PAGE_INNER_CLASS_HUB_LOCKED_REPORT
+            : TOOL_PAGE_INNER_CLASS_HUB
+        }
+      >
+        <div className={HOME_PAGE_HERO_INTRO_GROUP_CLASS}>
           <PageHero
             title={<SiteBrandHeroTitle />}
             actions={
@@ -129,23 +124,17 @@ export function HomePageClient() {
             </p>
           ) : null}
         </div>
-        {showLockedUtilityBar && lockedUtilityNav ? (
-          <HomeDashboardUtilityBar
-            jumps={lockedUtilityNav.jumps}
-            onStartOver={onStartOver}
-          />
-        ) : null}
-        {showLockedUtilityBar &&
-        lockedUtilityNav?.propertyDataAccuracyWarning ? (
+        {showKnownIssueBanner && lockedUtilityNav ? (
           <DouglasPropertyDataAccuracyKnownIssueBanner
             countyId={lockedUtilityNav.countyId}
           />
         ) : null}
         {/*
-          Horizontal pad matches arrive-ring clearance (ring-2 + ring-offset-4).
-          overflow-x-clip stays for sticky; -mx keeps column width with TOOL_PAGE_INNER px.
+          Do not put overflow-x-clip here: it becomes a sticky containing block and
+          clips the mobile full-bleed section nav. Arrive-ring clearance lives on the
+          locked-report main column (HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS).
         */}
-        <div className="min-w-0 overflow-x-clip px-2 -mx-2">
+        <div className="min-w-0">
           <HomeParcelAddressLookup
             onViewingParcelChange={handleViewingParcelChange}
             onAudienceModeChange={handleAudienceModeChange}

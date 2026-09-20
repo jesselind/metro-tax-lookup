@@ -495,7 +495,7 @@ export function TermCompsAside() {
       </p>
       {compsPdfPresentation === "omit" ? null : (
         <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
-          The summary control links to the county comparables file on{" "}
+          The county publishes that comparison list as a PDF on{" "}
           <span className="whitespace-nowrap">
             {COUNTY_COMPS_PDF_HOST_PARCELSEARCH_HOST}
           </span>

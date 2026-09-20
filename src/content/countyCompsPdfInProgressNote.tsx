@@ -9,7 +9,7 @@ import { DOUGLAS_COUNTY_CONFIG } from "@/lib/countyConfig";
 import { sourcesPageHref } from "@/lib/sourcesPageHref";
 import { IN_PROGRESS_LINK_CLASS } from "@/lib/toolFlowStyles";
 
-/** Badge label on the Comparable properties summary tile (IN PROGRESS chrome). */
+/** Badge label under the Comparable properties section title (IN PROGRESS chrome). */
 export const COUNTY_COMPS_PDF_IN_PROGRESS_TILE_STATUS = "Coming soon";
 
 /** Dashboard popover lead (no property-page deep link required). */
@@ -72,7 +72,7 @@ export function CountyCompsPdfInProgressNote({
     <>
       Each Douglas County property has a comparable properties PDF at the
       county. This site has not wired a per-parcel download URL yet, so the
-      home Comparable properties tile shows{" "}
+      home Comparable properties section shows{" "}
       <strong className="font-semibold text-sky-950">Coming soon</strong>
       {" "}
       (sky IN PROGRESS chrome, not a COUNTY DATA GAP). Until the link ships

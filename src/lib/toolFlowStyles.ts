@@ -43,27 +43,90 @@ export const PAGE_HERO_ACTION_BUTTON_CLASS =
   `inline-flex shrink-0 cursor-pointer items-center justify-center ${RADIUS_CONTROL_CLASS} border border-white/45 bg-transparent px-3 py-2 text-xs font-semibold leading-snug text-indigo-100 shadow-none transition-colors hover:border-white/70 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700 md:px-4 md:py-2.5 md:text-sm`;
 
 /**
- * Locked-report Jump to… navigation bar (`HomeDashboardUtilityBar`): sub-header
- * under PageHero; sticks at the viewport top after the slate title scrolls away.
- * Full-bleed without `transform` (transform breaks sticky). `-mt-4` cancels
- * {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4` so the bar sits flush under the hero.
+ * Locked-report section nav (`HomeDashboardSectionNav`): sticky strip below `lg`
+ * (TOC + one-line address) and left-rail column on `lg+` (address + Switch + jumps).
+ *
+ * Must be a **direct** child of the tall locked-report flex/grid parent. A short
+ * wrapper around this node kills sticky (the stick range equals the parent height).
+ *
+ * Mobile: this node is sticky; full-bleed slate under PageHero (`-mt` cancels
+ * {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4`; upward box-shadow covers the 1–2px
+ * stuck seam). Desktop: this node **stretches** the grid row with footer-matched
+ * `bg-slate-50` (true sidenav column, not a card); stickiness moves to
+ * {@link HOME_DASHBOARD_SECTION_NAV_STICKY_INNER_CLASS}. No side border — color
+ * does the separation.
  */
-export const HOME_DASHBOARD_UTILITY_BAR_CLASS =
-  "relative sticky top-0 z-40 -mt-4 w-screen max-w-[100vw] ml-[calc(50%-50vw)] bg-slate-600";
-
-/** Inner column: same horizontal inset as {@link PAGE_HERO_INNER_CLASS}; height from the control row. */
-export const HOME_DASHBOARD_UTILITY_BAR_INNER_CLASS = `mx-auto flex w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} items-center px-4 sm:px-5`;
+export const HOME_DASHBOARD_SECTION_NAV_ASIDE_CLASS =
+  "sticky top-0 z-40 -mt-[calc(1rem+2px)] flex w-screen max-w-[100vw] min-w-0 flex-col bg-slate-600 text-white shadow-[0_-2px_0_0_#475569] ml-[calc(50%-50vw)] lg:static lg:z-auto lg:mt-0 lg:ml-0 lg:w-full lg:max-w-none lg:self-stretch lg:shadow-none lg:bg-slate-50 lg:text-slate-900";
 
 /**
- * Amber KNOWN ISSUE locked-report banner (under Jump to…). Not sticky: scrolls
- * with the report so mobile keeps Jump to as the only stuck chrome. Reusable
- * shell; pass incident copy as {@link KnownIssueBanner} children.
- * `-mt-4` cancels parent {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4` so the
- * banner sits flush under Jump to (no hairline border; amber fill only).
+ * Desktop: sticky scrollport inside the full-height rail. Mobile: plain flow
+ * (the aside itself is sticky). `top-0` so the stuck rail meets the viewport
+ * under a scrolled-away hero (no floating inset gap).
+ */
+export const HOME_DASHBOARD_SECTION_NAV_STICKY_INNER_CLASS =
+  "flex min-h-0 min-w-0 flex-1 flex-col lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto";
+
+/**
+ * Locked-report main column: clip + horizontal pad so outside arrive rings
+ * (`ring-offset-4`) are not cropped. Pad must be ≥ ring offset. Section nav stays
+ * outside this wrapper so mobile full-bleed sticky is not clipped.
+ */
+export const HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS =
+  "min-w-0 space-y-3 overflow-x-clip px-4 -mx-4 sm:px-5 sm:-mx-5";
+
+/** Desktop-only address atop the sidenav. */
+/** Desktop-only permanent address atop the sidenav (postage envelope). Extra top pad so stuck rail is not flush to the viewport edge. */
+export const HOME_DASHBOARD_SECTION_NAV_DESKTOP_ADDRESS_CLASS =
+  "hidden min-w-0 border-b border-slate-200 px-3 pb-3 pt-5 lg:block";
+
+/** Desktop-only Switch account type slot under address. */
+export const HOME_DASHBOARD_SECTION_NAV_SWITCH_CLASS =
+  "hidden min-w-0 border-b border-slate-200 px-3 py-3 lg:block";
+
+/**
+ * Address chrome type: one-line truncate on the mobile Jump summary when closed.
+ * Open Jump menu and desktop rail use envelope stacks (see envelope classes).
+ */
+export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_CLASS =
+  "truncate text-sm font-semibold leading-snug text-white sm:text-base";
+
+/** Desktop sidenav: postage-style street / city-state-ZIP / county stack. */
+export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_ENVELOPE_CLASS =
+  "min-w-0 space-y-0.5 text-sm font-semibold leading-snug text-slate-900 sm:text-base";
+
+/**
+ * Mobile Jump summary when open: same postage stack as the desktop rail, on the
+ * dark slate strip (white type).
+ */
+export const HOME_DASHBOARD_JUMP_SUMMARY_ADDRESS_ENVELOPE_CLASS =
+  "min-w-0 space-y-0.5 text-sm font-semibold leading-snug text-white sm:text-base";
+
+export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_ENVELOPE_LINE_CLASS =
+  "min-w-0 break-words";
+
+/** County scope separator / label after the situs line (mobile one-liner only). */
+export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_SEP_CLASS =
+  "px-1.5 text-white/50";
+
+export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_COUNTY_CLASS =
+  "font-semibold text-amber-100";
+
+/** County on its own envelope line (desktop slate-50 rail). */
+export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_COUNTY_ENVELOPE_CLASS =
+  "font-semibold text-amber-800";
+
+/** County on its own envelope line (mobile Jump summary, dark strip). */
+export const HOME_DASHBOARD_JUMP_SUMMARY_ADDRESS_COUNTY_ENVELOPE_CLASS =
+  "font-semibold text-amber-100";
+/**
+ * Amber KNOWN ISSUE locked-report banner (under hero when the report is locked).
+ * Not sticky: scrolls with the report so mobile keeps section nav as the only
+ * stuck chrome. Reusable shell; pass incident copy as {@link KnownIssueBanner} children.
+ * `-mt-4` cancels parent {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4`.
  */
 export const KNOWN_ISSUE_BANNER_CLASS =
   "-mt-4 w-screen max-w-[100vw] ml-[calc(50%-50vw)] bg-amber-300 text-amber-950";
-
 export const KNOWN_ISSUE_BANNER_INNER_CLASS = `mx-auto w-full ${SITE_CONTENT_MAX_WIDTH_CLASS} px-4 py-2.5 sm:px-5 sm:py-3`;
 
 export const KNOWN_ISSUE_BANNER_BODY_CLASS =
@@ -88,29 +151,39 @@ export const KNOWN_ISSUE_CALLOUT_BODY_CLASS =
 export const HOME_DASHBOARD_JUMP_DETAILS_CLASS = "group w-full min-w-0";
 
 /**
- * Jump to… summary: header chrome, not a form field. Hides the UA marker;
- * DisclosureChevron provides the caret.
+ * Jump to… summary: header chrome, not a form field. Includes the one-line address
+ * so the whole sticky strip toggles the menu on mobile. Hides the UA marker;
+ * DisclosureChevron provides the caret. Hidden on `lg+` where the list stays open.
  */
 export const HOME_DASHBOARD_JUMP_SUMMARY_CLASS =
-  "flex w-full cursor-pointer list-none items-center justify-between gap-3 py-3 text-base font-semibold leading-snug text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-600 sm:text-lg [&::-webkit-details-marker]:hidden";
+  "flex w-full cursor-pointer list-none flex-col gap-0 px-3 py-2.5 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-600 lg:hidden [&::-webkit-details-marker]:hidden";
+
+/** Equal pad above/below so the hairline sits between Jump and address. */
+export const HOME_DASHBOARD_JUMP_SUMMARY_LABEL_ROW_CLASS =
+  "flex w-full items-center justify-between gap-3 border-b border-white/25 pb-2 text-lg font-semibold leading-snug";
+
+export const HOME_DASHBOARD_JUMP_SUMMARY_ADDRESS_CLASS = "pt-2";
 
 export const HOME_DASHBOARD_JUMP_CHEVRON_CLASS =
   "h-5 w-5 shrink-0 text-white transition-transform duration-150 group-open:rotate-180 motion-reduce:transition-none";
 
 export const HOME_DASHBOARD_JUMP_MENU_CLASS =
-  "m-0 list-none border-t border-white/25 p-0";
+  "m-0 list-none border-t border-white/25 p-0 lg:border-slate-200";
 
+/**
+ * Section jump buttons. Same readable `text-base` on mobile slate and desktop
+ * slate-50 rail; desktop stays medium weight so the main column stays primary.
+ */
 export const HOME_DASHBOARD_JUMP_ITEM_CLASS =
-  "flex min-h-11 w-full cursor-pointer items-center border-0 bg-transparent py-2.5 text-left text-sm font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 sm:text-base";
+  "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-3 py-2.5 text-left text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 aria-[current=location]:bg-white/15 lg:py-2.5 lg:font-medium lg:text-slate-800 lg:hover:bg-slate-200/70 lg:focus-visible:ring-indigo-700/40 lg:aria-[current=location]:bg-slate-200/80 lg:aria-[current=location]:font-semibold lg:aria-[current=location]:text-slate-900";
 
-/** Start over: stronger type than section jumps (bold vs semibold); extra vertical pad. */
+/** Start over: stronger type than section jumps (bold vs medium); extra vertical pad. */
 export const HOME_DASHBOARD_JUMP_START_OVER_ITEM_CLASS =
-  "flex min-h-11 w-full cursor-pointer items-center border-0 bg-transparent py-3.5 text-left text-sm font-bold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 sm:text-base";
+  "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-3 py-3.5 text-left text-base font-bold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 lg:py-3 lg:text-slate-900 lg:hover:bg-slate-200/70 lg:focus-visible:ring-indigo-700/40";
 
 /** Hairline above Start over (on the list item, not the button). */
 export const HOME_DASHBOARD_JUMP_START_OVER_LI_CLASS =
-  "border-t border-white/25";
-
+  "border-t border-white/25 lg:border-slate-200";
 
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
@@ -128,6 +201,23 @@ export const TOOL_PAGE_INNER_CLASS_TOOL = `${TOOL_PAGE_INNER_BASE_CLASS} ${TOOL_
 
 /** Home hub + static articles (roomier bottom padding). */
 export const TOOL_PAGE_INNER_CLASS_HUB = `${TOOL_PAGE_INNER_BASE_CLASS} ${TOOL_PAGE_INNER_PB_ROOMY}`;
+
+/**
+ * Home hub shell when a locked report is showing: on `lg+`, no column gap under
+ * the hero and no bottom pad so the slate-50 rail meets hero and footer. Mobile
+ * keeps the usual gap (TOC pull still cancels it).
+ */
+export const TOOL_PAGE_INNER_CLASS_HUB_LOCKED_REPORT =
+  `${TOOL_PAGE_INNER_BASE_CLASS} gap-4 lg:gap-0 pb-6 sm:pb-10 lg:pb-0 lg:px-0`;
+
+/**
+ * Locked-report main column on `lg+`: top pad replaces the hub `gap-4` we drop
+ * so the rail can meet the hero (Own|Rent needs that air); drop arrive-clip
+ * negative margins when the hub is `lg:px-0`; bottom pad so content still clears
+ * the footer after the hub drops outer `pb`.
+ */
+export const HOME_DASHBOARD_MAIN_COLUMN_LOCKED_PB_CLASS =
+  "lg:mx-0 lg:px-5 lg:pt-4 lg:pb-10";
 
 /** Sources / methodology: same main column as hub + tools (see {@link SITE_CONTENT_MAX_WIDTH_CLASS}). */
 export const SOURCES_PAGE_INNER_CLASS = TOOL_PAGE_INNER_CLASS_HUB;
@@ -460,13 +550,17 @@ export const DASHBOARD_SECTION_HEADING_CLASS =
 
 /**
  * Short local ring when {@code focusNearestDashboardSection} sets {@code data-arrive}.
- * Put this on the visual target (e.g. mill levy tile grid), not the focus heading.
- * Outside ring + offset (not inset): inset paints under child tiles/tables and only
- * shows in seams. Home lookup uses {@code overflow-x-clip} with matching horizontal
- * pad so the outside ring is not cropped.
+ * Put this on a **block** visual target (tile grid, section wrapper), not a table
+ * cell — box-shadow rings on {@code th}/{@code td} paint under neighboring cells.
+ * Outside ring + offset (not inset). Locked-report main column uses
+ * {@link HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS}; table sections keep
+ * {@code overflow-x-auto} **inside** the arrive wrapper so the ring is not clipped.
  */
 export const DASHBOARD_SECTION_ARRIVE_TARGET_CLASS =
   "data-[arrive]:rounded-lg data-[arrive]:ring-2 data-[arrive]:ring-indigo-600 data-[arrive]:ring-offset-4 data-[arrive]:ring-offset-white";
+
+/** Horizontal scrollport for wide county tables — nest inside arrive wrappers only. */
+export const PARCEL_RECORD_TABLE_SCROLL_CLASS = "max-w-full overflow-x-auto";
 
 /**
  * {@link DASHBOARD_SECTION_HEADING_CLASS} plus lead-in margin when the title follows

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "../src/content/levyYoYCopy";
-import { MILL_LEVY_CHANGED_LABEL, MILL_LEVY_TILE_ID } from "../src/content/millLevySummaryCopy";
+import { MILL_LEVY_CHANGED_LABEL } from "../src/content/millLevySummaryCopy";
 import { PARCEL_RECORD_SALE_HISTORY_ID } from "../src/components/ParcelRecordCountyTables";
 import {
   COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
@@ -29,12 +29,8 @@ import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData
 const nonMetroAuthorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_AUTHORITY);
 const metroAuthorityLabel = displayMartAuthorityName(SYNTHETIC_E2E_METRO_AUTHORITY);
 
-function millLevyTile(page: Page) {
-  return page.locator(`#${MILL_LEVY_TILE_ID}`);
-}
-
 test.describe("Metro year-over-year UI", () => {
-  test("non-metro synthetic parcel has no Changed badge; mill levy tile is a white chip", async ({
+  test("non-metro synthetic parcel has no Changed badge on levy tiles", async ({
     page,
   }) => {
     await installSyntheticCountyData(page);
@@ -49,12 +45,9 @@ test.describe("Metro year-over-year UI", () => {
     await expect(
       page.getByRole("button", { name: /^Property tax change/ }),
     ).toHaveCount(0);
-    const tile = millLevyTile(page);
-    await expect(tile).toBeVisible();
-    await expect(tile).not.toContainText(MILL_LEVY_CHANGED_LABEL);
-    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
-      MILL_LEVY_CHANGED_LABEL,
-    );
+    await expect(
+      page.getByRole("region", { name: "Total mill levy for your stack" }),
+    ).not.toContainText(MILL_LEVY_CHANGED_LABEL);
     const priorYearTrigger = page.getByRole("button", {
       name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
     });
@@ -84,7 +77,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeFocused();
   });
 
-  test("AUTH history change shows Changed on mill levy and levy tiles", async ({
+  test("AUTH history change shows Changed on levy tiles", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { includeAuthYoY: true });
@@ -93,23 +86,16 @@ test.describe("Metro year-over-year UI", () => {
 
     await expect(page.getByText(nonMetroAuthorityLabel)).toBeVisible();
     await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
-    const tile = millLevyTile(page);
-    await expect(tile).toBeVisible();
-    await expect(tile).toContainText(MILL_LEVY_CHANGED_LABEL);
-    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
-      MILL_LEVY_CHANGED_LABEL,
-    );
+    // Mill levy total Changed is intentionally not transferred; levy tiles keep Changed.
     await expect(
       page.getByText("Your property tax bill changed from last year."),
     ).toHaveCount(0);
 
-    // Rent keeps mill levy and levy Changed cues (not an owner-only control).
-    await page.getByRole("radio", { name: "Rent" }).click();
-    await expect(millLevyTile(page)).toBeVisible();
+    // Rent keeps levy-tile Changed cues (not an owner-only control).
+    await page.getByRole("radio", { name: "I Rent" }).click();
     await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
-    await page.getByRole("radio", { name: "Own" }).click();
-    await expect(millLevyTile(page)).toBeVisible();
-    await expect(millLevyTile(page)).toContainText(MILL_LEVY_CHANGED_LABEL);
+    await page.getByRole("radio", { name: "I Own" }).click();
+    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
 
     await viewDistrictDetailsButton(page, nonMetroAuthorityLabel).click();
     const dialog = page.getByRole("dialog");
@@ -178,7 +164,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(dialog.getByText("Each part that changed")).toHaveCount(0);
   });
 
-  test("metro-matched synthetic parcel shows YoY chrome and dashboard tiles", async ({
+  test("metro-matched synthetic parcel shows YoY chrome and stack total dollars", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { includeMetro: true });
@@ -191,19 +177,17 @@ test.describe("Metro year-over-year UI", () => {
       page.getByText("Your property tax bill changed from last year."),
     ).toHaveCount(0);
 
-    const tile = millLevyTile(page);
-    await expect(tile).toBeVisible();
-    await expect(tile).toContainText(MILL_LEVY_CHANGED_LABEL);
-    await expect(page.locator("#home-parcel-property-tax")).not.toContainText(
-      MILL_LEVY_CHANGED_LABEL,
-    );
     const firstChangedTile = page.locator("#levy-tile-first-rate-change");
     await expect(firstChangedTile).toBeVisible();
+    await expect(firstChangedTile).toContainText(MILL_LEVY_CHANGED_LABEL);
 
-    await expect(page.locator("#home-parcel-tax-year")).toBeVisible();
-    await expect(page.locator("#home-parcel-property-tax")).toBeVisible();
-    // Synthetic metro mills × assessed: known fixture contract.
-    await expect(page.locator("#home-parcel-property-tax")).toContainText("$413");
+    // Tax year note when years differ; Est. property tax on stack Total.
+    await expect(page.getByText(/Tax year is 2025/)).toBeVisible();
+    const levyTotal = page.getByRole("region", {
+      name: "Total mill levy for your stack",
+    });
+    await expect(levyTotal).toContainText("Est. property tax");
+    await expect(levyTotal).toContainText("$413");
   });
 
   test("metro tile details show headline only until breakdown is expanded", async ({
@@ -260,14 +244,17 @@ test.describe("Metro year-over-year UI", () => {
     ).toHaveCount(0);
   });
 
-  test("mill levy chip jumps to mill levy tiles and marks the tile grid", async ({
+  test("mill levy section nav jumps to mill levy tiles and marks the tile grid", async ({
     page,
   }) => {
     await installSyntheticCountyData(page);
     await page.goto("/");
     await searchSyntheticAddress(page);
 
-    const jump = page.getByRole("button", { name: /Jump to mill levy tiles/i });
+    const onThisPage = page.getByRole("navigation", { name: "On this page" });
+    const jump = onThisPage.getByRole("button", {
+      name: "Where is your money going?",
+    });
     await expect(jump).toBeVisible();
     await jump.click();
     await expect(page.locator("#home-levy-stack-subheading")).toBeFocused();
