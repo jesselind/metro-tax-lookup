@@ -343,11 +343,13 @@ export function ArapahoeSourcesMethodology() {
         <li>
           <strong>Property tax dollars:</strong>
           {" "}
-          The locked-report
+          The levy stack{" "}
+          <strong>Total</strong>
           {" "}
+          dollars row carries{" "}
           <strong>Est. property tax</strong>
           {" "}
-          tile uses the same mill→dollar math as the mill-levy stack total
+          and uses the same mill→dollar math as the mill-levy stack total
           (school authorities × school assessed when that figure differs from
           local assessed; other lines × local). Arapahoe Tax District Levies is
           mills-only, so this dollar is app-derived, not a county-published
