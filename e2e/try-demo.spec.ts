@@ -173,15 +173,31 @@ test.describe("Try demo property", () => {
     await expect
       .poll(async () => menu.evaluate((el) => (el as HTMLElement).style.maxHeight))
       .not.toBe("");
-    const metrics = await menu.evaluate((el) => ({
-      scrollHeight: el.scrollHeight,
-      clientHeight: el.clientHeight,
-      overflowY: getComputedStyle(el).overflowY,
-      maxHeight: (el as HTMLElement).style.maxHeight,
-    }));
+    // Cap must equal remaining space under the list (no min floor that can
+    // overshoot the viewport). Inner scroll when content is taller.
+    const metrics = await menu.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const viewportBottom =
+        viewport != null
+          ? viewport.offsetTop + viewport.height
+          : window.innerHeight;
+      const available = Math.floor(viewportBottom - rect.top - 8);
+      return {
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+        overflowY: getComputedStyle(el).overflowY,
+        maxHeightPx: Number.parseFloat((el as HTMLElement).style.maxHeight),
+        available,
+        bottom: rect.bottom,
+        viewportBottom,
+      };
+    });
     expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
     expect(["auto", "scroll", "overlay"]).toContain(metrics.overflowY);
-    expect(Number.parseFloat(metrics.maxHeight)).toBeGreaterThan(0);
+    expect(metrics.maxHeightPx).toBeGreaterThan(0);
+    expect(metrics.maxHeightPx).toBeLessThanOrEqual(metrics.available);
+    expect(metrics.bottom).toBeLessThanOrEqual(metrics.viewportBottom + 1);
 
     const feedback = sectionNav.getByRole("button", {
       name: "Feedback",
@@ -189,7 +205,9 @@ test.describe("Try demo property", () => {
     });
     await feedback.scrollIntoViewIfNeeded();
     await feedback.click();
-    await expect(page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`)).toBeFocused();
+    const feedbackAside = page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`);
+    await expect(feedbackAside).toBeFocused();
+    await expect(feedbackAside).toBeInViewport();
     await expect(details).not.toHaveAttribute("open", "");
   });
 
@@ -236,7 +254,9 @@ test.describe("Try demo property", () => {
     await sectionNav
       .getByRole("button", { name: "Property details", exact: true })
       .click();
-    await expect(page.locator(`#${HOME_PROPERTY_DETAILS_ID}`)).toBeFocused();
+    const propertyDetails = page.locator(`#${HOME_PROPERTY_DETAILS_ID}`);
+    await expect(propertyDetails).toBeFocused();
+    await expect(propertyDetails).toBeInViewport();
     await expect(details).not.toHaveAttribute("open", "");
 
     await jumpSummary.click();
@@ -244,7 +264,9 @@ test.describe("Try demo property", () => {
     await sectionNav
       .getByRole("button", { name: "Feedback", exact: true })
       .click();
-    await expect(page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`)).toBeFocused();
+    const feedbackAside = page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`);
+    await expect(feedbackAside).toBeFocused();
+    await expect(feedbackAside).toBeInViewport();
     await expect(details).not.toHaveAttribute("open", "");
   });
 

@@ -33,8 +33,8 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       "Mobile Jump TOC: disable scroll-spy; keep sequential section jumps reliable",
     highlights: [
       "Mobile Jump disclosure (`<lg`): no scroll-spy / no `aria-current` highlighting. Spy stays on the desktop sidenav only (`lg+`). Open-menu height was poisoning sticky scroll-mt and re-rendering the jump list mid-tap so the first Jump worked and later taps failed (Safari and Chromium, including Try demo property).",
-      "Mobile open Jump list: measured max-height to the viewport bottom with internal scroll; sticky CSS var keeps the closed-strip height while open. After a Jump tap, collapse then instant scroll (smooth scroll after sticky collapse was often cancelled).",
-      "E2e: short-viewport list scroll + Feedback jump; second Jump after the first; assert no mobile `aria-current`. Docs: README + locked-decisions.",
+      "Mobile open Jump list: measured max-height to the remaining viewport space under the list (no minimum floor that can push the menu past the fold) with internal scroll; sticky CSS var keeps the closed-strip height while open. After a Jump tap, collapse then instant scroll (smooth scroll after sticky collapse was often cancelled).",
+      "E2e: short-viewport list scroll capped to available space + Feedback jump in view; second Jump after the first lands focused and in viewport; assert no mobile `aria-current`. Docs: README + locked-decisions.",
     ],
   },
   {

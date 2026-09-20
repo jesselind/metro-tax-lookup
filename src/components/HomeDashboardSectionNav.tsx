@@ -234,7 +234,7 @@ export function HomeDashboardSectionNav({
         : window.innerHeight;
     // 8px breathing room above the home indicator / browser chrome edge.
     const available = Math.floor(viewportBottom - top - 8);
-    menu.style.maxHeight = `${Math.max(8 * 16, available)}px`;
+    menu.style.maxHeight = `${Math.max(0, available)}px`;
   }, [isLargeScreen]);
 
   useLayoutEffect(() => {
