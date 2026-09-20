@@ -10,6 +10,7 @@ Tracked maintainer memory (`docs/locked-decisions.md`). **Not** under gitignored
 
 | Date | Decision | Notes |
 |------|----------|-------|
+| 2026-09-19 | Section-nav scroll-spy (`aria-current`) is **desktop sidenav only** (`lg+`). Mobile Jump disclosure never spies. | `HomeDashboardSectionNav`; 5.17.1 |
 | 2026-09-18 | Locked report layout: levy-first; sticky left rail on `lg+` (address + Switch + section nav); mobile one sticky strip (TOC + one-line address); no summary-tile cluster / no Value summary; Jump list curated by Own\|Rent\|BPP; comps always-on Own Real; drop BPP NOV chip and Mill levy total Changed; Est. property tax glossary on stack Total; valuation history from Actual and Assessed rows. | `docs/_working/05-dashboard-layout-levy-first.md`; `HomeDashboardSectionNav` |
 | 2026-09-18 | Arapahoe school assessed: unreproduced Assessor ≠ DPT-math claim is not a bug. Face=stack (`levyStackDollars`) closed the real product issue. Do not keep an open fidelity ticket or `/sources` “some parcels differ” caveat without a concrete PIN. | `/sources` Arapahoe methodology; killed `docs/_working/01-arapahoe-school-assessed-and-mills-fidelity.md` |
 | 2026-09-17 | Face Est. property tax $ === mill-levy stack $ under `levyStackDollars` (dual-base when school ≠ local). Never a separate local × total mills face. Douglas keeps `realwareTaxDollars`; stack reconciles to Realware face. | `.cursor/rules/property-tax-estimate-honesty.mdc` |

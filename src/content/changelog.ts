@@ -27,13 +27,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.17.1",
+    date: "2026-09-19",
+    title:
+      "Mobile Jump TOC: disable scroll-spy; keep sequential section jumps reliable",
+    highlights: [
+      "Mobile Jump disclosure (`<lg`): no scroll-spy / no `aria-current` highlighting. Spy stays on the desktop sidenav only (`lg+`). Open-menu height was poisoning sticky scroll-mt and re-rendering the jump list mid-tap so the first Jump worked and later taps failed (Safari and Chromium, including Try demo property).",
+      "Mobile open Jump list: measured max-height to the remaining viewport space under the list (no minimum floor that can push the menu past the fold) with internal scroll; sticky CSS var keeps the closed-strip height while open. After a Jump tap, collapse then instant scroll (smooth scroll after sticky collapse was often cancelled).",
+      "E2e: short-viewport list scroll capped to available space + Feedback jump in view; second Jump after the first lands focused and in viewport; assert no mobile `aria-current`. Docs: README + locked-decisions.",
+    ],
+  },
+  {
     version: "5.17.0",
     date: "2026-09-19",
     title:
       "Locked report: levy-first layout, sticky section nav, no summary tile cluster",
     highlights: [
       "Desktop locked report: sticky left rail (3/12) with permanent address + Switch account type + section nav on a full-height slate-50 column flush to hero and footer; main column (9/12) holds I Own|I Rent then Where is your money going? Content max-width 84rem. Mobile: sticky full-bleed slate Jump strip with address inside the disclosure summary (either row toggles the menu; closed = one truncated line, open = postage street / city-state-ZIP / county stack); I Own|I Rent (and Switch) sit under that strip, not above it. Drop Summary / Value summary and the summary-tile cluster.",
-      "One Jump to a section list curated by Own|Rent|BPP and what is mounted (levy first; Property details parent + flat subsections; county compare and Feedback always; comps always-on for Own Real only). Outside click/tap and Escape collapse the mobile TOC; scroll-spy sets aria-current from curated focus ids. Sticky aside is a direct child of the tall flex/grid parent so mobile stick works. Audience switch labels are first-person (I Own / I Rent). Section jumps use Heroicons outline glyphs beside each label.",
+      "One Jump to a section list curated by Own|Rent|BPP and what is mounted (levy first; Property details parent + flat subsections; county compare and Feedback always; comps always-on for Own Real only). Outside click/tap and Escape collapse the mobile TOC; desktop sidenav scroll-spy sets aria-current from curated focus ids (mobile Jump does not spy as of 5.17.1). Sticky aside is a direct child of the tall flex/grid parent so mobile stick works. Audience switch labels are first-person (I Own / I Rent). Section jumps use Heroicons outline glyphs beside each label.",
       "Transfer: Est. property tax glossary onto levy stack Total dollars; Actual/Assessed Changed + Year over year openers + prior-year gap into Appraised and assessed values; comps PDF/gap/Coming soon into always-on Comparable properties under the section title (Property details-style h3 + What is this?; no transferred summary tile). Drop BPP Notice of Valuation chip and Mill levy total Changed.",
       "Rent locked report stays lean (pressure + levy + county compare + Feedback; no Property details / comps). Address chrome falls back to parcel-record situs when hits lack a label. Docs + e2e updated for the new report layout.",
     ],

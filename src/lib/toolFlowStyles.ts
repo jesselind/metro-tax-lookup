@@ -167,8 +167,15 @@ export const HOME_DASHBOARD_JUMP_SUMMARY_ADDRESS_CLASS = "pt-2";
 export const HOME_DASHBOARD_JUMP_CHEVRON_CLASS =
   "h-5 w-5 shrink-0 text-white transition-transform duration-150 group-open:rotate-180 motion-reduce:transition-none";
 
+/**
+ * Jump list. On `<lg`, {@link HomeDashboardSectionNav} sets an inline max-height to
+ * the remaining space under the list (viewport bottom minus list top; no minimum
+ * floor) so a full curated list (Try demo property) can scroll inside the sticky
+ * strip; without that, sticky pins the top and lower taps never land (common on
+ * iOS Safari). `overscroll-contain` limits scroll chaining.
+ */
 export const HOME_DASHBOARD_JUMP_MENU_CLASS =
-  "m-0 list-none border-t border-white/25 p-0 lg:border-slate-200";
+  "m-0 list-none overflow-y-auto overscroll-contain border-t border-white/25 p-0 lg:max-h-none lg:overflow-visible lg:border-slate-200";
 
 /**
  * Section jump buttons. Same readable `text-base` on mobile slate and desktop

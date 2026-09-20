@@ -14,7 +14,12 @@ import {
 import { splitSitusLabelEnvelopeLines } from "../src/lib/addressLabelDifference";
 import { PARCEL_RECORD_NO_DATA } from "../src/lib/parcelRecordNoData";
 import { COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS } from "../src/content/countyPriorYearValuesGapNote";
-import { HOME_DASHBOARD_UTILITY_BAR_ID } from "../src/lib/homeDashboardJumps";
+import {
+  HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
+  HOME_DASHBOARD_UTILITY_BAR_ID,
+  HOME_FEEDBACK_ASIDE_ID,
+  HOME_PROPERTY_DETAILS_ID,
+} from "../src/lib/homeDashboardJumps";
 
 /**
  * Try demo: PIN-less fixture → levy stack + property details + missing-data mailto.
@@ -50,6 +55,12 @@ test.describe("Try demo property", () => {
         return getComputedStyle(inner).position;
       }),
     ).toBe("sticky");
+
+    // Desktop sidenav still scroll-spies (mobile Jump does not).
+    await page.evaluate(() => window.scrollBy(0, 500));
+    await expect(
+      onThisPage.locator('button[aria-current="location"]'),
+    ).toHaveCount(1);
 
     await page
       .getByRole("navigation", { name: "On this page" })
@@ -139,6 +150,124 @@ test.describe("Try demo property", () => {
     expect(after.top).toBeLessThanOrEqual(1);
     expect(after.left).toBeLessThanOrEqual(1);
     expect(after.width).toBeGreaterThanOrEqual(388);
+  });
+
+  test("mobile TOC list scrolls when taller than the viewport, then jumps", async ({
+    page,
+  }) => {
+    // Short phone chrome: full demo jump list + open postage address exceed svh.
+    await page.setViewportSize({ width: 390, height: 560 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const sectionNav = page.locator(`#${HOME_DASHBOARD_UTILITY_BAR_ID}`);
+    const details = sectionNav.locator("details");
+    const jumpSummary = sectionNav.locator("summary");
+    if (await details.evaluate((el) => (el as HTMLDetailsElement).open)) {
+      await jumpSummary.click();
+    }
+    await jumpSummary.click();
+    await expect(details).toHaveAttribute("open", "");
+
+    const menu = details.locator("ul").first();
+    await expect
+      .poll(async () => menu.evaluate((el) => (el as HTMLElement).style.maxHeight))
+      .not.toBe("");
+    // Cap must equal remaining space under the list (no min floor that can
+    // overshoot the viewport). Inner scroll when content is taller.
+    const metrics = await menu.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const viewportBottom =
+        viewport != null
+          ? viewport.offsetTop + viewport.height
+          : window.innerHeight;
+      const available = Math.floor(viewportBottom - rect.top - 8);
+      return {
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+        overflowY: getComputedStyle(el).overflowY,
+        maxHeightPx: Number.parseFloat((el as HTMLElement).style.maxHeight),
+        available,
+        bottom: rect.bottom,
+        viewportBottom,
+      };
+    });
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+    expect(["auto", "scroll", "overlay"]).toContain(metrics.overflowY);
+    expect(metrics.maxHeightPx).toBeGreaterThan(0);
+    expect(metrics.maxHeightPx).toBeLessThanOrEqual(metrics.available);
+    expect(metrics.bottom).toBeLessThanOrEqual(metrics.viewportBottom + 1);
+
+    const feedback = sectionNav.getByRole("button", {
+      name: "Feedback",
+      exact: true,
+    });
+    await feedback.scrollIntoViewIfNeeded();
+    await feedback.click();
+    const feedbackAside = page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`);
+    await expect(feedbackAside).toBeFocused();
+    await expect(feedbackAside).toBeInViewport();
+    await expect(details).not.toHaveAttribute("open", "");
+  });
+
+  test("mobile TOC second jump still works after the first", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const sectionNav = page.locator(`#${HOME_DASHBOARD_UTILITY_BAR_ID}`);
+    const details = sectionNav.locator("details");
+    const jumpSummary = sectionNav.locator("summary");
+    if (await details.evaluate((el) => (el as HTMLDetailsElement).open)) {
+      await jumpSummary.click();
+    }
+    await jumpSummary.click();
+    await expect(details).toHaveAttribute("open", "");
+
+    // Open menu must not inflate the closed-strip CSS var used for scroll-mt.
+    const heights = await page.evaluate((ids) => {
+      const bar = document.getElementById(ids.barId);
+      const varPx = Number.parseFloat(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue(ids.heightVar)
+          .trim(),
+      );
+      return {
+        aside: bar?.getBoundingClientRect().height ?? 0,
+        cssVar: varPx,
+      };
+    }, {
+      barId: HOME_DASHBOARD_UTILITY_BAR_ID,
+      heightVar: HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
+    });
+    expect(heights.cssVar).toBeGreaterThan(0);
+    expect(heights.cssVar).toBeLessThan(heights.aside * 0.75);
+
+    // Mobile Jump list must not use scroll-spy aria-current.
+    await expect(
+      sectionNav.locator('button[aria-current="location"]'),
+    ).toHaveCount(0);
+
+    await sectionNav
+      .getByRole("button", { name: "Property details", exact: true })
+      .click();
+    const propertyDetails = page.locator(`#${HOME_PROPERTY_DETAILS_ID}`);
+    await expect(propertyDetails).toBeFocused();
+    await expect(propertyDetails).toBeInViewport();
+    await expect(details).not.toHaveAttribute("open", "");
+
+    await jumpSummary.click();
+    await expect(details).toHaveAttribute("open", "");
+    await sectionNav
+      .getByRole("button", { name: "Feedback", exact: true })
+      .click();
+    const feedbackAside = page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`);
+    await expect(feedbackAside).toBeFocused();
+    await expect(feedbackAside).toBeInViewport();
+    await expect(details).not.toHaveAttribute("open", "");
   });
 
   test("missing-data mailto includes field, demo PIN, and AIN", async ({

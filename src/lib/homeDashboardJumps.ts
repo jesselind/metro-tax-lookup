@@ -256,7 +256,8 @@ export const HOME_DASHBOARD_LG_MIN_MQ = "(min-width: 1024px)";
 /**
  * Height of sticky chrome that covers the main column when jumping.
  * On `lg+` the left rail sits beside the main column (inset 0). On smaller
- * viewports, measure the sticky TOC+address strip.
+ * viewports, prefer the closed-strip CSS variable (open Jump menu height must
+ * not inflate scroll-mt). Fall back to measuring the utility bar element.
  */
 export function dashboardUtilityBarStickyInsetPx(): number {
   if (typeof document === "undefined" || typeof window === "undefined") {
@@ -264,6 +265,14 @@ export function dashboardUtilityBarStickyInsetPx(): number {
   }
   if (window.matchMedia(HOME_DASHBOARD_LG_MIN_MQ).matches) {
     return 0;
+  }
+  const fromVar = Number.parseFloat(
+    getComputedStyle(document.documentElement)
+      .getPropertyValue(HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR)
+      .trim(),
+  );
+  if (Number.isFinite(fromVar) && fromVar >= 0) {
+    return fromVar;
   }
   const el = document.getElementById(HOME_DASHBOARD_UTILITY_BAR_ID);
   if (!(el instanceof HTMLElement)) return 0;
