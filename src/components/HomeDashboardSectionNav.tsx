@@ -150,7 +150,10 @@ function AddressChrome({
  * One locked-report section nav with **one** jump list in the document.
  * Placement changes by viewport via CSS (left rail vs top sticky strip), not by
  * cloning the TOC. Outside click/tap and Escape collapse the mobile disclosure;
- * on `lg+` the list stays open. Scroll-spy sets `aria-current="location"`.
+ * on `lg+` the list stays open. Scroll-spy (`aria-current="location"`) runs on
+ * the desktop sidenav only — never on the mobile Jump disclosure.
+ * Open mobile jump list gets a measured max-height (list top → viewport bottom) so
+ * a full curated list stays tappable on short phone viewports.
  *
  * Address chrome is rendered twice (desktop atop / mobile inside the Jump
  * summary) from the same props — intentional placement, not a second TOC tree.
@@ -173,6 +176,9 @@ export function HomeDashboardSectionNav({
 }: HomeDashboardSectionNavProps) {
   const asideRef = useRef<HTMLElement>(null);
   const detailsRef = useRef<HTMLDetailsElement>(null);
+  const jumpMenuRef = useRef<HTMLUListElement>(null);
+  /** Last closed mobile strip height — open menu must not inflate scroll-mt / spy inset. */
+  const closedStripHeightRef = useRef(56);
   const [activeJumpId, setActiveJumpId] = useState<HomeDashboardJumpId | null>(
     null,
   );
@@ -190,11 +196,46 @@ export function HomeDashboardSectionNav({
     }
     const bar = asideRef.current;
     if (!bar) return;
+    // Open Jump menu makes the sticky aside as tall as the list. Publishing that
+    // height into scroll-mt would inflate jump offsets; keep the closed-strip value.
+    if (detailsRef.current?.open) {
+      document.documentElement.style.setProperty(
+        HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
+        `${closedStripHeightRef.current}px`,
+      );
+      return;
+    }
+    const height = bar.offsetHeight;
+    closedStripHeightRef.current = height;
     document.documentElement.style.setProperty(
       HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
-      `${bar.offsetHeight}px`,
+      `${height}px`,
     );
   }, []);
+
+  /**
+   * Cap the mobile jump list to the space under the summary down to the visible
+   * viewport bottom. Sticky + a tall open `<details>` otherwise leaves lower
+   * buttons below the fold with no way to reach them (page scroll keeps the
+   * sticky top pinned). Flex on `<details>` does not reliably shrink the list.
+   */
+  const syncJumpMenuMaxHeight = useCallback(() => {
+    const menu = jumpMenuRef.current;
+    if (!menu) return;
+    if (isLargeScreen || !detailsRef.current?.open) {
+      menu.style.maxHeight = "";
+      return;
+    }
+    const top = menu.getBoundingClientRect().top;
+    const viewport = window.visualViewport;
+    const viewportBottom =
+      viewport != null
+        ? viewport.offsetTop + viewport.height
+        : window.innerHeight;
+    // 8px breathing room above the home indicator / browser chrome edge.
+    const available = Math.floor(viewportBottom - top - 8);
+    menu.style.maxHeight = `${Math.max(8 * 16, available)}px`;
+  }, [isLargeScreen]);
 
   useLayoutEffect(() => {
     const mq = window.matchMedia(HOME_DASHBOARD_LG_MIN_MQ);
@@ -205,11 +246,12 @@ export function HomeDashboardSectionNav({
         details.open = true;
       }
       syncStickyStripHeight();
+      syncJumpMenuMaxHeight();
     };
     syncMq();
     mq.addEventListener("change", syncMq);
     return () => mq.removeEventListener("change", syncMq);
-  }, [syncStickyStripHeight]);
+  }, [syncJumpMenuMaxHeight, syncStickyStripHeight]);
 
   useLayoutEffect(() => {
     const bar = asideRef.current;
@@ -226,9 +268,37 @@ export function HomeDashboardSectionNav({
     };
   }, [syncStickyStripHeight]);
 
+  useLayoutEffect(() => {
+    syncJumpMenuMaxHeight();
+    syncStickyStripHeight();
+    if (!jumpMenuOpen || isLargeScreen) return;
+
+    const onViewportChange = () => {
+      syncJumpMenuMaxHeight();
+      syncStickyStripHeight();
+    };
+    window.addEventListener("resize", onViewportChange);
+    window.visualViewport?.addEventListener("resize", onViewportChange);
+    window.visualViewport?.addEventListener("scroll", onViewportChange);
+    return () => {
+      window.removeEventListener("resize", onViewportChange);
+      window.visualViewport?.removeEventListener("resize", onViewportChange);
+      window.visualViewport?.removeEventListener("scroll", onViewportChange);
+    };
+  }, [
+    addressLine,
+    isLargeScreen,
+    jumpMenuOpen,
+    jumps,
+    syncJumpMenuMaxHeight,
+    syncStickyStripHeight,
+  ]);
+
   const closeMenu = useCallback(() => {
     if (isLargeScreen) return;
     if (detailsRef.current) detailsRef.current.open = false;
+    setJumpMenuOpen(false);
+    if (jumpMenuRef.current) jumpMenuRef.current.style.maxHeight = "";
     syncStickyStripHeight();
   }, [isLargeScreen, syncStickyStripHeight]);
 
@@ -238,6 +308,9 @@ export function HomeDashboardSectionNav({
       details.open = true;
     }
     setJumpMenuOpen(details.open);
+    if (!details.open && jumpMenuRef.current) {
+      jumpMenuRef.current.style.maxHeight = "";
+    }
     syncStickyStripHeight();
   };
 
@@ -270,20 +343,19 @@ export function HomeDashboardSectionNav({
   }, [closeMenu, isLargeScreen]);
 
   /**
-   * Scroll-spy: last jump whose focus target has crossed the sticky inset.
-   * Uses curated jump focusIds only (no user-controlled selectors).
+   * Scroll-spy (desktop sidenav only): last jump whose focus target has crossed
+   * a small top inset. Curated jump focusIds only. Mobile Jump disclosure does
+   * not spy — open-menu height + scroll re-renders were breaking subsequent taps.
    */
   useEffect(() => {
-    if (jumps.length === 0) {
+    if (!isLargeScreen || jumps.length === 0) {
       return;
     }
 
     let frame = 0;
     const updateActive = () => {
       frame = 0;
-      const inset = isLargeScreen
-        ? 16
-        : (asideRef.current?.getBoundingClientRect().height ?? 56) + 8;
+      const inset = 16;
       let current: HomeDashboardJumpId | null = jumps[0]?.id ?? null;
       for (const jump of jumps) {
         const el = document.getElementById(jump.focusId);
@@ -310,17 +382,31 @@ export function HomeDashboardSectionNav({
     };
   }, [isLargeScreen, jumps]);
 
+  /** `aria-current` only on the desktop rail; mobile Jump never highlights via spy. */
+  const spyCurrentJumpId = isLargeScreen ? activeJumpId : null;
+
   const onJump = (jumpId: string) => {
-    closeMenu();
     if (jumpId === HOME_DASHBOARD_JUMP_START_OVER_VALUE) {
+      closeMenu();
       onStartOver();
       return;
     }
     const jump = jumps.find((item) => item.id === jumpId);
     if (jump == null) return;
-    focusNearestDashboardSection({
-      focusId: jump.focusId,
-      highlightId: jump.highlightId,
+    // Collapse first so sticky inset / scroll-mt match the closed strip. Defer
+    // two frames for details layout + height sync. Mobile: instant scroll —
+    // smooth scroll after sticky collapse is often cancelled. Desktop rail can
+    // keep the default smooth behavior.
+    closeMenu();
+    window.requestAnimationFrame(() => {
+      syncStickyStripHeight();
+      window.requestAnimationFrame(() => {
+        focusNearestDashboardSection({
+          focusId: jump.focusId,
+          highlightId: jump.highlightId,
+          ...(isLargeScreen ? {} : { behavior: "auto" as const }),
+        });
+      });
     });
   };
 
@@ -367,9 +453,9 @@ export function HomeDashboardSectionNav({
                 />
               </span>
             </summary>
-            <ul className={HOME_DASHBOARD_JUMP_MENU_CLASS}>
+            <ul ref={jumpMenuRef} className={HOME_DASHBOARD_JUMP_MENU_CLASS}>
               {jumps.map((jump) => {
-                const isCurrent = activeJumpId === jump.id;
+                const isCurrent = spyCurrentJumpId === jump.id;
                 return (
                   <li key={jump.id}>
                     <button

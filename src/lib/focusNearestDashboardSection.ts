@@ -32,6 +32,12 @@ export type FocusNearestDashboardSectionOptions = {
   highlightId?: string;
   /** Override sticky chrome height; default measures the locked-report utility bar when present. */
   stickyInsetPx?: number;
+  /**
+   * Scroll behavior. Default follows prefers-reduced-motion (smooth vs auto).
+   * Pass {@code "auto"} after collapsing the mobile Jump menu — sticky chrome
+   * height changes often cancel in-flight smooth scrolls.
+   */
+  behavior?: ScrollBehavior;
 };
 
 /** True when the tiles' top is far enough down that nearest-scroll barely moves. */
@@ -89,6 +95,7 @@ export function focusNearestDashboardSection({
   focusId,
   highlightId,
   stickyInsetPx,
+  behavior: behaviorOption,
 }: FocusNearestDashboardSectionOptions): void {
   if (typeof document === "undefined") return;
   const focusEl = document.getElementById(focusId);
@@ -108,8 +115,11 @@ export function focusNearestDashboardSection({
     stickyInsetPx: inset,
   });
 
+  const behavior =
+    behaviorOption ?? (reduceMotion ? "auto" : "smooth");
+
   focusEl.scrollIntoView({
-    behavior: reduceMotion ? "auto" : "smooth",
+    behavior,
     block,
     inline: "nearest",
   });
