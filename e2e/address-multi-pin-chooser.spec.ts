@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { expect, test } from "@playwright/test";
+import { HOME_APPRAISED_ASSESSED_ID } from "../src/lib/homeDashboardJumps";
 import {
   SYNTHETIC_CONDO_E2E_ADDRESS,
   SYNTHETIC_CONDO_OWNER_A,
@@ -144,10 +145,7 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   );
   await expect(page.getByRole("columnheader", { name: "Land" })).toHaveCount(0);
   await expect(
-    page.getByRole("table", { name: "Appraised and assessed values" }),
-  ).toBeVisible();
-  await expect(
-    page.locator("#home-property-details").getByRole("table", {
+    page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`).getByRole("table", {
       name: "Appraised and assessed values",
     }),
   ).toBeVisible();

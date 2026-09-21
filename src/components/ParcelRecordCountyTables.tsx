@@ -654,17 +654,21 @@ function valueHistoryOpenAriaLabel(
       ? VALUATION_HISTORY_OPEN_ARIA_ASSESSED
       : VALUATION_HISTORY_OPEN_ARIA_ACTUAL;
   const parts = [`${base} ${formattedValue}.`];
-  if (valueDelta != null && valueDelta > 0) {
+  // Visual delta is aria-hidden; announce signed $ with direction for SR.
+  if (
+    valueDelta != null &&
+    Number.isFinite(valueDelta) &&
+    valueDelta !== 0
+  ) {
+    parts.push(`${formatValueDeltaInline(valueDelta)}.`);
     parts.push(
-      valueKind === "assessed"
-        ? VALUATION_HISTORY_CHANGED_HIGHER_SR
-        : VALUATION_HISTORY_ACTUAL_CHANGED_HIGHER_SR,
-    );
-  } else if (valueDelta != null && valueDelta < 0) {
-    parts.push(
-      valueKind === "assessed"
-        ? VALUATION_HISTORY_CHANGED_LOWER_SR
-        : VALUATION_HISTORY_ACTUAL_CHANGED_LOWER_SR,
+      valueDelta > 0
+        ? valueKind === "assessed"
+          ? VALUATION_HISTORY_CHANGED_HIGHER_SR
+          : VALUATION_HISTORY_ACTUAL_CHANGED_HIGHER_SR
+        : valueKind === "assessed"
+          ? VALUATION_HISTORY_CHANGED_LOWER_SR
+          : VALUATION_HISTORY_ACTUAL_CHANGED_LOWER_SR,
     );
   }
   return parts.join(" ");

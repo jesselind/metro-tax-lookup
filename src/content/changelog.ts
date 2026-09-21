@@ -35,7 +35,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       "Locked-report order: levies → Appraised and assessed values (own section) → Property details. Jump list matches DOM. Values table chrome: quieter rows, larger Total figure, prior-year gap / Coming soon badge under the section title; soft Year over year opener under Total when history exists.",
       "Levy stack Total bar: `$` / mills / `%` only (drop Est. property tax glossary from the bar; breakdown paragraph above already covers estimate honesty). TOC section rhythm: shared stack gap above titles, tighter heading→body lead stack (no compounding heading mt).",
       "ValuationHistoryDialog YoY matches levy-tile disclosure: chart always visible; YoY summary starts collapsed (headline + Details ›); prior|current|Difference and tax-impact line on expand; table stays behind See data in table form.",
-      "Docs: README + locked-decisions. E2e: Douglas valuation modal asserts collapsed-then-expand; levy Total no longer expects Est. property tax in the bar.",
+      "Docs: README + locked-decisions. E2e: Douglas valuation modal asserts collapsed-then-expand and chart region caption (not heading); BPP values table under Appraised and assessed section id; levy Total no longer expects Est. property tax in the bar. Year over year opener aria-label includes the signed dollar delta (visual delta stays aria-hidden).",
     ],
   },
   {

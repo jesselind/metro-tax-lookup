@@ -6,7 +6,10 @@
 import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import { SYNTHETIC_DOUGLAS_PIN } from "../src/lib/syntheticTestIds";
-import { VALUATION_HISTORY_MODAL_TITLE_ASSESSED } from "../src/content/valuationHistoryCopy";
+import {
+  VALUATION_HISTORY_CHART_HEADING_ASSESSED,
+  VALUATION_HISTORY_MODAL_TITLE_ASSESSED,
+} from "../src/content/valuationHistoryCopy";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_OWNER,
@@ -276,8 +279,11 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     });
     await expect(yoyDetails).toHaveAttribute("aria-expanded", "false");
     await expect(yoyRegion.getByText(/\$25,740/)).toHaveCount(0);
+    // Chart caption is a region label (<p>), not a heading; modal h3 is "Assessed value".
     await expect(
-      dialog.getByRole("heading", { name: /Assessed value over time/i }),
+      dialog.getByRole("region", {
+        name: VALUATION_HISTORY_CHART_HEADING_ASSESSED,
+      }),
     ).toBeVisible();
 
     await yoyDetails.click();
