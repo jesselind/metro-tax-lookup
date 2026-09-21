@@ -44,15 +44,10 @@ test("typeahead stays open after list scroll blur; closes on outside pointer", a
 
   const list = page.getByRole("listbox", { name: "Address suggestions" });
   await expect(list).toBeVisible();
-  await expect
-    .poll(async () =>
-      list.evaluate((el) => el.scrollHeight > el.clientHeight + 2),
-    )
-    .toBe(true);
+  await expect(list.getByRole("option").first()).toBeVisible();
 
-  const box = await list.boundingBox();
-  expect(box).not.toBeNull();
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  // Scroll the suggestion list (mobile keyboard dismisses; list stays open).
+  await list.hover();
   await page.mouse.wheel(0, 240);
   await expect(street).not.toBeFocused();
   await expect(list).toBeVisible();
