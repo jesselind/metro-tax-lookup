@@ -32,6 +32,7 @@ import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_LEAD_STACK_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 
@@ -182,7 +183,7 @@ export function ComparablePropertiesSection({
     <section
       id={HOME_NOV_COMPS_SECTION_ID}
       tabIndex={-1}
-      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} outline-none`}
       aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
     >
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">

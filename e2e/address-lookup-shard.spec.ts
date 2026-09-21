@@ -53,11 +53,11 @@ test("synthetic address loads levy stack and property details", async ({
   await expect(page.getByText(/Tax year is 2025/)).toBeVisible();
   // Single-PIN situs: no account switcher on the dashboard.
   await expect(page.locator("#home-parcel-account-type")).toHaveCount(0);
-  // Synthetic mills × assessed on stack Total (Est. property tax glossary).
+  // Synthetic mills × assessed on stack Total (estimate copy lives in the
+  // breakdown paragraph above the bar, not a glossary on Total).
   const levyTotal = page.getByRole("region", {
     name: "Total mill levy for your stack",
   });
-  await expect(levyTotal).toContainText("Est. property tax");
   await expect(levyTotal).toContainText("$68");
 
   // Locked levy-ready report: one Back to top (below Feedback), not a second

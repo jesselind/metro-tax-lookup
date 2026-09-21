@@ -146,22 +146,20 @@ export function ArapahoeSourcesAfterGap({
         cue on that tile (including the up or down arrow). The levy stack{" "}
         <strong className="font-semibold text-slate-900">Total</strong>
         {" "}
-        carries{" "}
-        <strong className="font-semibold text-slate-900">
-          Est. property tax
-        </strong>
-        {" "}
-        on the dollars row (the same estimated total the stack adds up to).
+        shows the same estimated dollar total the stack adds up to (plus mills and
+        percent), without a separate Est. property tax label on the bar. The
+        paragraph above the breakdown already explains estimate vs tax statement.
         There is no separate Mill levy total chip. In{" "}
         <strong className="font-semibold text-slate-900">
           Appraised and assessed values
         </strong>
-        , assessed value can show a red{" "}
+        , a red{" "}
         <strong className="font-semibold text-slate-900">
           Prior years missing
         </strong>
         {" "}
-        badge that opens a COUNTY DATA GAP note in place. How we searched for
+        badge can sit under the section title and opens a COUNTY DATA GAP note in
+        place. How we searched for
         those figures is on this page. This tool does not compare your
         prior-year treasurer bill total, and it does not claim the bill went up
         or down overall. In tile details, a short percent summary appears when
@@ -175,7 +173,8 @@ export function ArapahoeSourcesAfterGap({
         </strong>
         {" "}
         cue on the same line as the percent headline signals that more is
-        available. Each tax year shows
+        available. Assessed and actual value history dialogs use the same
+        collapsed-then-Details pattern above an always-visible chart. Each tax year shows
         county mills first, then{" "}
         <strong className="font-semibold text-slate-900">About $X</strong>
         {" "}

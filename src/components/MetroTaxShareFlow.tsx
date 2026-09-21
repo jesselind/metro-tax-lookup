@@ -30,7 +30,8 @@ import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton"
 import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
-  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_LEAD_STACK_CLASS,
   DASHBOARD_TILE_RADIUS_CLASS,
   METRO_PERCENT_TILES_GRID_CLASS,
   TILE_DETAILS_CUE_ON_DARK_CLASS,
@@ -654,12 +655,12 @@ export function MetroTaxShareFlow({
                       id={metroBreakdownPanelId}
                       role="region"
                       aria-labelledby={`${p}tax-rate-split-heading`}
-                      className="scroll-mt-6 space-y-6 text-sm text-slate-800 sm:text-base"
+                      className="scroll-mt-6 space-y-4 text-sm text-slate-800 sm:space-y-5 sm:text-base"
                     >
-                      <div className="space-y-3">
+                      <div className={DASHBOARD_SECTION_LEAD_STACK_CLASS}>
                         <h3
                           id={`${p}tax-rate-split-heading`}
-                          className={DASHBOARD_SECTION_HEADING_SPACED_CLASS}
+                          className={DASHBOARD_SECTION_HEADING_CLASS}
                         >
                           Metro districts in relation to your bill
                         </h3>

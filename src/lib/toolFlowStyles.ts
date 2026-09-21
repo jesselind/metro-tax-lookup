@@ -71,9 +71,12 @@ export const HOME_DASHBOARD_SECTION_NAV_STICKY_INNER_CLASS =
  * Locked-report main column: clip + horizontal pad so outside arrive rings
  * (`ring-offset-4`) are not cropped. Pad must be ≥ ring offset. Section nav stays
  * outside this wrapper so mobile full-bleed sticky is not clipped.
+ * Column children use explicit stacks ({@link HOME_AUDIENCE_STACK_GAP_CLASS} for
+ * Own|Rent chrome, {@link DASHBOARD_SECTION_STACK_CLASS} for TOC sections) —
+ * do not put a second `space-y-*` here or gaps compound.
  */
 export const HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS =
-  "min-w-0 space-y-3 overflow-x-clip px-4 -mx-4 sm:px-5 sm:-mx-5";
+  "min-w-0 overflow-x-clip px-4 -mx-4 sm:px-5 sm:-mx-5";
 
 /** Desktop-only address atop the sidenav. */
 /** Desktop-only permanent address atop the sidenav (postage envelope). Extra top pad so stuck rail is not flush to the viewport edge. */
@@ -428,6 +431,14 @@ export const LEVY_CHANGED_BADGE_TONE_CLASS =
 export const COUNTY_SERVICE_GAP_BADGE_TONE_CLASS =
   "border-red-950 bg-red-200 text-red-950";
 
+/** Signed dollar delta under the Total figure (replaces the thick Changed badge). */
+export const PARCEL_VALUE_DELTA_INLINE_CLASS =
+  "text-xs font-semibold tabular-nums text-amber-900 sm:text-sm";
+
+/** Year over year opener under Total: text link, not a bordered chip. */
+export const PARCEL_VALUE_HISTORY_LINK_CLASS =
+  "cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-indigo-800 underline decoration-indigo-700/70 decoration-2 underline-offset-2 hover:text-indigo-950 hover:decoration-indigo-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-1 sm:text-sm";
+
 /**
  * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale;
  * inherit the parent label's color/weight/size. Flex row keeps the hint icon on the same
@@ -550,10 +561,26 @@ export const TILE_DETAILS_CUE_ON_LIGHT_CLASS =
 
 /**
  * Major section headings on the home metro + levy flow (e.g. levy stack, metro breakdown).
- * Typography only — no top margin so a heading can top-align with adjacent tiles.
+ * Typography only — vertical separation lives on
+ * {@link DASHBOARD_SECTION_STACK_CLASS} / {@link DASHBOARD_SECTION_LEAD_STACK_CLASS},
+ * not margin on the heading (avoids compounding with parent `space-y`).
  */
 export const DASHBOARD_SECTION_HEADING_CLASS =
   "text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl";
+
+/**
+ * Gap between major locked-report TOC sections (and Own|Rent chrome → first
+ * section). Owns "air above" the title. Pair with
+ * {@link DASHBOARD_SECTION_LEAD_STACK_CLASS} inside each section.
+ */
+export const DASHBOARD_SECTION_STACK_CLASS = "space-y-6 sm:space-y-8";
+
+/**
+ * Heading → meta / badge / body inside one TOC section. Tighter than
+ * {@link DASHBOARD_SECTION_STACK_CLASS} so titles sit closer to their content
+ * (no empty-looking band under the h3).
+ */
+export const DASHBOARD_SECTION_LEAD_STACK_CLASS = "space-y-2 sm:space-y-3";
 
 /**
  * Short local ring when {@code focusNearestDashboardSection} sets {@code data-arrive}.
@@ -604,8 +631,10 @@ export const DASHBOARD_HSCROLL_TABLE_FADE_RIGHT_CLASS =
 export const PARCEL_RECORD_TABLE_SCROLL_CLASS =
   DASHBOARD_HSCROLL_TABLE_SCROLL_CLASS;
 /**
- * {@link DASHBOARD_SECTION_HEADING_CLASS} plus lead-in margin when the title follows
- * other content in a vertical stack (not when top-aligned beside summary tiles).
+ * Standalone section title outside {@link DASHBOARD_SECTION_STACK_CLASS}
+ * (e.g. valuation history block that is not a locked-report TOC sibling).
+ * Locked-report TOC headings use {@link DASHBOARD_SECTION_HEADING_CLASS} only —
+ * parent stack gap supplies the lead-in.
  */
 export const DASHBOARD_SECTION_HEADING_SPACED_CLASS =
   `${DASHBOARD_SECTION_HEADING_CLASS} mt-6 sm:mt-8`;

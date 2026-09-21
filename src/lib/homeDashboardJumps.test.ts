@@ -61,8 +61,8 @@ describe("buildHomeDashboardJumps", () => {
       }).map((j) => j.id),
     ).toEqual([
       "levies",
-      "property-details",
       "appraised-assessed",
+      "property-details",
       "sale-history",
       "buildings",
       "area",
@@ -113,8 +113,8 @@ describe("buildHomeDashboardJumps", () => {
       }).map((j) => j.id),
     ).toEqual([
       "levies",
-      "property-details",
       "appraised-assessed",
+      "property-details",
       "county-compare",
       "feedback",
     ]);

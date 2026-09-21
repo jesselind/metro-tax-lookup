@@ -181,12 +181,11 @@ test.describe("Metro year-over-year UI", () => {
     await expect(firstChangedTile).toBeVisible();
     await expect(firstChangedTile).toContainText(MILL_LEVY_CHANGED_LABEL);
 
-    // Tax year note when years differ; Est. property tax on stack Total.
+    // Tax year note when years differ; stack Total shows estimated dollars.
     await expect(page.getByText(/Tax year is 2025/)).toBeVisible();
     const levyTotal = page.getByRole("region", {
       name: "Total mill levy for your stack",
     });
-    await expect(levyTotal).toContainText("Est. property tax");
     await expect(levyTotal).toContainText("$413");
   });
 
