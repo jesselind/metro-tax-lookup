@@ -31,10 +31,10 @@ export const HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS =
 
 export const HOME_PROPERTY_DETAILS_ID = "home-property-details";
 
-/** Appraised and assessed values table (Property details subsection). */
+/** Appraised and assessed values (own locked-report section after levies). */
 export const HOME_APPRAISED_ASSESSED_ID = "home-parcel-appraised-assessed";
 
-/** Sale history table (Property details subsection). */
+/** Sale history table (under Property details). */
 export const HOME_SALE_HISTORY_ID = "home-parcel-sale-history";
 
 /** Building(s) section title target inside Building/Area/Land Line table. */
@@ -144,8 +144,9 @@ export type HomeDashboardJumpFlags = {
 /**
  * Build gated Jump to… options in main-column order for the active lens.
  * Leads with levy (or Rent pressure when that panel mounts). Omits any section
- * that is not on the report. Property details parent stays when the panel
- * mounts; subsection jumps are flat siblings (no nested submenu).
+ * that is not on the report. Appraised and assessed sits after levies (before
+ * Property details). Property details parent stays when the panel mounts;
+ * remaining subsections are flat siblings (no nested submenu).
  */
 export function buildHomeDashboardJumps(
   flags: HomeDashboardJumpFlags,
@@ -167,20 +168,20 @@ export function buildHomeDashboardJumps(
       highlightId: MILL_LEVY_TILES_ID,
     });
   }
-  if (flags.showPropertyDetails) {
-    jumps.push({
-      id: "property-details",
-      label: "Property details",
-      focusId: HOME_PROPERTY_DETAILS_ID,
-      highlightId: HOME_PROPERTY_DETAILS_ID,
-    });
-  }
   if (flags.showAppraisedAssessed) {
     jumps.push({
       id: "appraised-assessed",
       label: "Appraised and assessed values",
       focusId: HOME_APPRAISED_ASSESSED_ID,
       highlightId: HOME_APPRAISED_ASSESSED_ID,
+    });
+  }
+  if (flags.showPropertyDetails) {
+    jumps.push({
+      id: "property-details",
+      label: "Property details",
+      focusId: HOME_PROPERTY_DETAILS_ID,
+      highlightId: HOME_PROPERTY_DETAILS_ID,
     });
   }
   if (flags.showSaleHistory) {

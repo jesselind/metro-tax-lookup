@@ -1047,28 +1047,17 @@ export function LevyStackVisualization({
               </span>
               <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 {totalLevyDollarsRounded != null ? (
-                  <span className="flex flex-col items-start gap-0.5 sm:items-end">
-                    <GlossaryTermPopover
-                      termId="term-property-tax"
-                      textTrigger="Est. property tax"
-                      textTriggerId="levy-stack-total-property-tax-term"
-                      propertyTaxEstimateMode={
-                        countyConfig.propertyTaxEstimateMode
-                      }
-                      textTriggerClassName="text-xs font-semibold uppercase tracking-wide text-amber-100/90 underline decoration-amber-200/70 underline-offset-2 hover:decoration-amber-100 sm:text-sm"
-                    />
-                    <span className="text-xl font-bold tabular-nums text-white sm:text-2xl">
-                      <span className="sr-only">
-                        Estimated total {levyDollarPeriodLabel} levy from assessed
-                        value:{" "}
-                      </span>
-                      {formatUsdWhole(totalLevyDollarsRounded)}
-                      {levyDollarSuffix ? (
-                        <span className="ml-1.5 text-base font-semibold text-white/85 sm:text-lg">
-                          {levyDollarSuffix}
-                        </span>
-                      ) : null}
+                  <span className="text-xl font-bold tabular-nums text-white sm:text-2xl">
+                    <span className="sr-only">
+                      Estimated total {levyDollarPeriodLabel} levy from assessed
+                      value:{" "}
                     </span>
+                    {formatUsdWhole(totalLevyDollarsRounded)}
+                    {levyDollarSuffix ? (
+                      <span className="ml-1.5 text-base font-semibold text-white/85 sm:text-lg">
+                        {levyDollarSuffix}
+                      </span>
+                    ) : null}
                   </span>
                 ) : null}
                 <span

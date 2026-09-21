@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import { ValuationHistoryChart } from "@/components/ValuationHistoryChart";
@@ -24,7 +24,10 @@ import type { CountyValuationHistoryPoint } from "@/lib/countyValuationHistoryDa
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import { levyYoYSurfaceClasses } from "@/lib/metroLevyYearOverYear";
-import { TOOL_DISCLOSURE_ROW_ALIGN_CLASS } from "@/lib/toolFlowStyles";
+import {
+  TILE_DETAILS_CUE_ON_LIGHT_CLASS,
+  TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
+} from "@/lib/toolFlowStyles";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 import {
   buildValuationYoYSummary,
@@ -96,8 +99,11 @@ export function ValuationHistoryDialog({
   onClose,
 }: ValuationHistoryDialogProps) {
   const [showTable, setShowTable] = useState(false);
+  /** Same as levy-tile YoY: headline + Details › by default; year compare on expand. */
+  const [yoyBreakdownOpen, setYoyBreakdownOpen] = useState(false);
   const tableToggleId = useId();
   const tablePanelId = useId();
+  const yoyBreakdownPanelId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const tablePanelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -140,6 +146,14 @@ export function ValuationHistoryDialog({
 
   const yoySurface = levyYoYSurfaceClasses(yoySummary?.direction ?? "neutral");
 
+  const toggleYoyBreakdown = useCallback(() => {
+    setYoyBreakdownOpen((open) => !open);
+  }, []);
+
+  const taxImpactDollars = yoySummary?.taxImpactDollars ?? null;
+  const showTaxImpact =
+    taxImpactDollars != null && totalMills != null && totalMills > 0;
+
   return (
     <ModalPortal>
       <div className="fixed inset-0 z-[100] flex min-h-[100dvh] w-full items-end justify-center sm:items-center sm:p-4">
@@ -172,36 +186,69 @@ export function ValuationHistoryDialog({
 
             {yoySummary ? (
               <div
-                className={`mt-4 rounded-lg border-2 px-3 py-3 sm:px-4 sm:py-3.5 ${yoySurface.box}`}
+                className={`mt-4 overflow-hidden rounded-lg border-2 ${yoySurface.box}`}
                 role="region"
                 aria-labelledby="valuation-history-yoy-heading"
               >
-                <p
-                  id="valuation-history-yoy-heading"
-                  className={`text-lg font-bold leading-snug tracking-tight text-balance sm:text-xl ${yoySurface.headline}`}
+                <button
+                  type="button"
+                  className="group w-full cursor-pointer border-0 bg-transparent px-3 py-3 text-left transition-colors hover:bg-black/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50 sm:px-4 sm:py-3.5"
+                  aria-expanded={yoyBreakdownOpen}
+                  aria-controls={yoyBreakdownPanelId}
+                  aria-label={
+                    yoyBreakdownOpen
+                      ? `${yoySummary.headline}. Hide details.`
+                      : `${yoySummary.headline}. Details.`
+                  }
+                  onClick={toggleYoyBreakdown}
                 >
-                  {yoySummary.headline}
-                </p>
-                <ValuationYoYYearCompare
-                  previousYearLabel={yoySummary.previousYearLabel}
-                  currentYearLabel={yoySummary.currentYearLabel}
-                  priorValueLabel={yoySummary.priorValueLabel}
-                  currentValueLabel={yoySummary.currentValueLabel}
-                  differenceLabel={yoySummary.differenceLabel}
-                  diffClassName={yoySurface.diff}
-                />
-                {yoySummary.taxImpactDollars != null &&
-                totalMills != null &&
-                totalMills > 0 ? (
-                  <p className="mt-3 text-sm font-medium leading-snug text-slate-800 sm:text-base">
-                    {VALUATION_HISTORY_TAX_IMPACT_LEAD}{" "}
-                    {formatUsdWhole(Math.abs(yoySummary.taxImpactDollars))}{" "}
-                    {yoySummary.taxImpactDollars > 0
-                      ? VALUATION_HISTORY_TAX_IMPACT_MORE
-                      : VALUATION_HISTORY_TAX_IMPACT_LESS}{" "}
-                    ({formatCountyLevyMillsDisplay(totalMills)} mills)
-                  </p>
-                ) : null}
+                  <span
+                    id="valuation-history-yoy-heading"
+                    className={`text-lg font-bold leading-snug tracking-tight text-balance sm:text-xl ${yoySurface.headline}`}
+                  >
+                    {yoySummary.headline}
+                    <span
+                      aria-hidden
+                      className={`${TILE_DETAILS_CUE_ON_LIGHT_CLASS} ml-3 whitespace-nowrap sm:ml-4`}
+                    >
+                      Details ›
+                    </span>
+                  </span>
+                </button>
+                <div
+                  id={yoyBreakdownPanelId}
+                  hidden={!yoyBreakdownOpen}
+                  className={
+                    yoyBreakdownOpen
+                      ? "border-t border-slate-300/60 px-3 pb-3 pt-4 sm:px-4 sm:pb-3.5"
+                      : undefined
+                  }
+                >
+                  {yoyBreakdownOpen ? (
+                    <>
+                      <ValuationYoYYearCompare
+                        previousYearLabel={yoySummary.previousYearLabel}
+                        currentYearLabel={yoySummary.currentYearLabel}
+                        priorValueLabel={yoySummary.priorValueLabel}
+                        currentValueLabel={yoySummary.currentValueLabel}
+                        differenceLabel={yoySummary.differenceLabel}
+                        diffClassName={yoySurface.diff}
+                      />
+                      {showTaxImpact &&
+                      taxImpactDollars != null &&
+                      totalMills != null ? (
+                        <p className="mt-3 text-sm font-medium leading-snug text-slate-800 sm:text-base">
+                          {VALUATION_HISTORY_TAX_IMPACT_LEAD}{" "}
+                          {formatUsdWhole(Math.abs(taxImpactDollars))}{" "}
+                          {taxImpactDollars > 0
+                            ? VALUATION_HISTORY_TAX_IMPACT_MORE
+                            : VALUATION_HISTORY_TAX_IMPACT_LESS}{" "}
+                          ({formatCountyLevyMillsDisplay(totalMills)} mills)
+                        </p>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
               </div>
             ) : null}
 

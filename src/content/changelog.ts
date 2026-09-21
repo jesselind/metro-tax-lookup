@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.18.1",
+    date: "2026-09-21",
+    title:
+      "Locked report: values after levies; quieter Total bar; valuation YoY matches levy tiles",
+    highlights: [
+      "Locked-report order: levies → Appraised and assessed values (own section) → Property details. Jump list matches DOM. Values table chrome: quieter rows, larger Total figure, prior-year gap / Coming soon badge under the section title; soft Year over year opener under Total when history exists.",
+      "Levy stack Total bar: `$` / mills / `%` only (drop Est. property tax glossary from the bar; breakdown paragraph above already covers estimate honesty). TOC section rhythm: shared stack gap above titles, tighter heading→body lead stack (no compounding heading mt).",
+      "ValuationHistoryDialog YoY matches levy-tile disclosure: chart always visible; YoY summary starts collapsed (headline + Details ›); prior|current|Difference and tax-impact line on expand; table stays behind See data in table form.",
+      "Docs: README + locked-decisions. E2e: Douglas valuation modal asserts collapsed-then-expand; levy Total no longer expects Est. property tax in the bar.",
+    ],
+  },
+  {
     version: "5.18.0",
     date: "2026-09-20",
     title:

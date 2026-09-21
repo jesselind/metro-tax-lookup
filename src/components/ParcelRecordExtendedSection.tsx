@@ -24,7 +24,8 @@ import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedM
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
-  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  DASHBOARD_SECTION_LEAD_STACK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 
@@ -76,14 +77,20 @@ export type ParcelRecordExtendedSectionProps = {
    * locked-report note so Appraised and assessed values still explain the gap.
    */
   taxYearNoteOverride?: string | null;
+  /**
+   * When false, skip the values table (parent renders Appraised and assessed
+   * above Property details). Sale / building / land / permits still mount here.
+   */
+  includeValueSection?: boolean;
 };
 
 /**
- * Extended county tables: Values → Sale → Building/Area/Land Line → Permits.
- * Renders inside the full-width Property details block below the levy stack.
- * Business personal property keeps Values (totals only). When
- * `omitContinuationHeading` is set (home report), the parent section heading
- * covers the block — no "Property details cont." label.
+ * Extended county tables after Appraised and assessed values: Sale → Building /
+ * Area / Land Line → Permits. On the locked report, values render as their own
+ * section above Property details; pass {@link includeValueSection}`={false}`.
+ * Business personal property keeps Values (totals only) when included here.
+ * When `omitContinuationHeading` is set (home report), the parent section
+ * heading covers the block — no "Property details cont." label.
  */
 export function ParcelRecordExtendedSection({
   loading,
@@ -98,6 +105,7 @@ export function ParcelRecordExtendedSection({
   actualValueAffordance = null,
   assessedValueAffordance = null,
   taxYearNoteOverride = null,
+  includeValueSection = true,
 }: ParcelRecordExtendedSectionProps) {
   const displayRecord = useDisplayParcelRecord(record, demoMode);
   const isBusinessPersonal =
@@ -143,21 +151,23 @@ export function ParcelRecordExtendedSection({
     <section
       id={PARCEL_RECORD_EXTENDED_SECTION_ID}
       tabIndex={-1}
-      className="scroll-mt-6 space-y-3 sm:scroll-mt-8"
+      className={`scroll-mt-6 ${DASHBOARD_SECTION_LEAD_STACK_CLASS} sm:scroll-mt-8`}
       aria-labelledby={
         omitContinuationHeading
           ? undefined
           : "parcel-record-extended-heading"
       }
       aria-label={
-        omitContinuationHeading ? "Appraised and assessed values" : undefined
+        omitContinuationHeading && includeValueSection
+          ? "Appraised and assessed values"
+          : undefined
       }
       aria-busy={loading}
     >
       {!omitContinuationHeading ? (
         <h3
           id="parcel-record-extended-heading"
-          className={`${DASHBOARD_SECTION_HEADING_SPACED_CLASS} hidden lg:block`}
+          className={`${DASHBOARD_SECTION_HEADING_CLASS} hidden lg:block`}
         >
           Property details cont.
         </h3>
@@ -170,7 +180,9 @@ export function ParcelRecordExtendedSection({
         >
           {loading ? (
             <>
-              <div className={TABLE_SKELETON} />
+              {includeValueSection ? (
+                <div className={TABLE_SKELETON} />
+              ) : null}
               {!isBusinessPersonal && !rentMode ? (
                 <div className={`${TABLE_SKELETON} h-48`} />
               ) : null}
@@ -187,13 +199,15 @@ export function ParcelRecordExtendedSection({
       ) : (
         <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
           <div className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-8`}>
-            <ParcelRecordValueSection
-              record={displayRecord}
-              totalOnly={isBusinessPersonal}
-              actualAffordance={actualValueAffordance}
-              assessedAffordance={assessedValueAffordance}
-              taxYearNoteOverride={taxYearNoteOverride}
-            />
+            {includeValueSection ? (
+              <ParcelRecordValueSection
+                record={displayRecord}
+                totalOnly={isBusinessPersonal}
+                actualAffordance={actualValueAffordance}
+                assessedAffordance={assessedValueAffordance}
+                taxYearNoteOverride={taxYearNoteOverride}
+              />
+            ) : null}
             {!isBusinessPersonal && !rentMode ? saleBuildingLandTables : null}
           </div>
           {/*

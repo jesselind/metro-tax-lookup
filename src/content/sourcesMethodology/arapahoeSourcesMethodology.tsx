@@ -346,14 +346,13 @@ export function ArapahoeSourcesMethodology() {
           The levy stack{" "}
           <strong>Total</strong>
           {" "}
-          dollars row carries{" "}
-          <strong>Est. property tax</strong>
-          {" "}
-          and uses the same mill→dollar math as the mill-levy stack total
+          dollars use the same mill→dollar math as the mill-levy stack total
           (school authorities × school assessed when that figure differs from
-          local assessed; other lines × local). Arapahoe Tax District Levies is
-          mills-only, so this dollar is app-derived, not a county-published
-          estimate total.
+          local assessed; other lines × local). The bar shows that estimated
+          total without a separate Est. property tax label (the breakdown
+          paragraph above already covers estimate vs tax statement). Arapahoe
+          Tax District Levies is mills-only, so this dollar is app-derived, not
+          a county-published estimate total.
         </li>
         <li>
           <strong>Assessed value</strong>{" "}totals come from the mart total

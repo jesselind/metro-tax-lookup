@@ -61,11 +61,11 @@ test.describe("Douglas county search gate (Phase 13)", () => {
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
         .getByText(SYNTHETIC_DOUGLAS_PIN, { exact: true }),
     ).toBeVisible();
-    // Realware face tax (1300+1200) on stack Total (Est. property tax glossary).
+    // Realware face tax (1300+1200) on stack Total (estimate disclaimer is the
+    // breakdown paragraph, not a glossary on the bar).
     const levyTotal = page.getByRole("region", {
       name: "Total mill levy for your stack",
     });
-    await expect(levyTotal).toContainText("Est. property tax");
     await expect(levyTotal).toContainText("$2,500");
     await expect(levyTotal).not.toContainText("$272");
     await expect(page.getByText("SYNTHETIC SCHOOL DIST # 99")).toBeVisible();
@@ -270,6 +270,18 @@ test.describe("Douglas county search gate (Phase 13)", () => {
       name: /higher than last year/i,
     });
     await expect(yoyRegion).toBeVisible();
+    // Collapsed by default (levy-tile pattern): headline + Details ›; year pair hidden.
+    const yoyDetails = yoyRegion.getByRole("button", {
+      name: /higher than last year.*Details/i,
+    });
+    await expect(yoyDetails).toHaveAttribute("aria-expanded", "false");
+    await expect(yoyRegion.getByText(/\$25,740/)).toHaveCount(0);
+    await expect(
+      dialog.getByRole("heading", { name: /Assessed value over time/i }),
+    ).toBeVisible();
+
+    await yoyDetails.click();
+    await expect(yoyDetails).toHaveAttribute("aria-expanded", "true");
     await expect(yoyRegion.getByText(/\$25,740/)).toBeVisible();
     await expect(yoyRegion.getByText(/\$27,170/)).toBeVisible();
 

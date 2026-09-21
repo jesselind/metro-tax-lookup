@@ -4,10 +4,6 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import type { ReactNode } from "react";
-import {
-  LEVY_CHANGED_BADGE_ON_LIGHT_CLASS,
-  LevyChangedBadge,
-} from "@/components/LevyChangedBadge";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { ParcelRecordMissingValue } from "@/components/ParcelRecordMissingValue";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
@@ -51,7 +47,9 @@ import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
-  DASHBOARD_SECTION_HEADING_SPACED_CLASS,
+  DASHBOARD_SECTION_LEAD_STACK_CLASS,
+  PARCEL_VALUE_DELTA_INLINE_CLASS,
+  PARCEL_VALUE_HISTORY_LINK_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
 import {
@@ -109,26 +107,15 @@ function ParcelDashboardSectionHeading({
   termId,
   helpTriggerId,
   ariaLabel,
-  spaced = false,
 }: {
   title: string;
   termId?: ParcelGlossaryTermId;
   helpTriggerId?: string;
   ariaLabel?: string;
-  /** Lead-in margin when this is the first block under Property details. */
-  spaced?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <h3
-        className={
-          spaced
-            ? DASHBOARD_SECTION_HEADING_SPACED_CLASS
-            : DASHBOARD_SECTION_HEADING_CLASS
-        }
-      >
-        {title}
-      </h3>
+      <h3 className={DASHBOARD_SECTION_HEADING_CLASS}>{title}</h3>
       {termId != null && helpTriggerId != null ? (
         <ParcelGlossaryPopoverTrigger
           termId={termId}
@@ -160,18 +147,28 @@ const VALUE_ROW_LABEL_CLASS =
   `w-[1%] min-w-0 break-words sm:w-auto sm:whitespace-nowrap`;
 /**
  * Frozen field-name column while Total / Building / Land scroll (same cue as
- * comps last-pinned shadow). Opaque bg (`!` beats TH_CLASS `bg-slate-100/90`)
- * so scrolling cells do not show through.
+ * comps last-pinned shadow). Opaque bg so scrolling cells do not show through.
  */
-const VALUE_TABLE_STICKY_FIRST_COL_CLASS =
-  "sticky left-0 z-20 !bg-slate-100 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.24)]";
-const TH_CLASS = `border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-left font-medium text-slate-700 ${WRAP_CELL_CLASS}`;
-const TD_CLASS = `border border-slate-200 px-2 py-1.5 align-top text-slate-900 ${WRAP_CELL_CLASS}`;
+const VALUE_TABLE_STICKY_HEADER_CLASS =
+  "sticky left-0 z-20 !bg-slate-50 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.18)]";
+const VALUE_TABLE_STICKY_BODY_CLASS =
+  "sticky left-0 z-20 !bg-white shadow-[2px_0_6px_-2px_rgba(15,23,42,0.18)]";
+/** Quiet hairline chrome (no full grid boxes). */
+const TH_CLASS = `border-0 border-b border-slate-200 bg-slate-50 px-2.5 py-2 text-left text-xs font-semibold tracking-wide text-slate-600 sm:text-sm ${WRAP_CELL_CLASS}`;
+/** Body row labels (Appraised / Assessed): readable sentence case, not header chrome. */
+const ROW_LABEL_TH_CLASS = `border-0 border-b border-slate-100 bg-white px-2.5 py-2.5 text-left text-sm font-medium leading-snug text-slate-800 sm:text-base ${WRAP_CELL_CLASS}`;
+const TD_CLASS = `border-0 border-b border-slate-100 px-2.5 py-2.5 align-top text-slate-900 ${WRAP_CELL_CLASS}`;
 /** Money cells hug dollar text (like Permits Est. value). */
 const MONEY_TH_CLASS =
-  "w-[1%] whitespace-nowrap border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-right font-medium tabular-nums text-slate-700";
+  "w-[1%] whitespace-nowrap border-0 border-b border-slate-200 bg-slate-50 px-2.5 py-2 text-right text-xs font-semibold tracking-wide text-slate-600 tabular-nums sm:text-sm";
+const MONEY_TH_TOTAL_CLASS =
+  "w-[1%] whitespace-nowrap border-0 border-b border-slate-200 bg-slate-50 px-2.5 py-2 text-right text-xs font-bold tracking-wide text-slate-800 tabular-nums sm:text-sm";
 const MONEY_TD_CLASS =
-  "w-[1%] whitespace-nowrap border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
+  "w-[1%] whitespace-nowrap border-0 border-b border-slate-100 px-2.5 py-2.5 text-right align-top tabular-nums text-slate-700";
+const MONEY_TD_TOTAL_CLASS =
+  "w-[1%] whitespace-nowrap border-0 border-b border-slate-100 px-2.5 py-2.5 text-right align-top tabular-nums text-slate-900";
+const MONEY_TOTAL_FIGURE_CLASS =
+  "text-base font-semibold tabular-nums tracking-tight text-slate-900 sm:text-lg";
 type GlossaryLabelSpec = {
   text: string;
   termId: ParcelGlossaryTermId;
@@ -286,7 +283,7 @@ function columnHeaderClass(
   shrinkFirstColumn: boolean,
 ): string {
   if (moneyColumns && index > 0) {
-    return MONEY_TH_CLASS;
+    return index === 1 ? MONEY_TH_TOTAL_CLASS : MONEY_TH_CLASS;
   }
   if (index === 0 && shrinkFirstColumn) {
     return `${TH_CLASS} ${INDEX_COL_CLASS}`;
@@ -340,7 +337,7 @@ function ColumnHeaderRow({
         const labelText = typeof label === "string" ? label : label.text;
         const stickyClass =
           stickyFirstColumn && index === 0
-            ? ` ${VALUE_TABLE_STICKY_FIRST_COL_CLASS}`
+            ? ` ${VALUE_TABLE_STICKY_HEADER_CLASS}`
             : "";
         return (
           <th
@@ -445,6 +442,7 @@ function formatValueCell(
   value: number | null | undefined,
   fieldLabel: string,
   triggerIdSuffix: string,
+  emphasize = false,
 ): ReactNode {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return (
@@ -454,7 +452,18 @@ function formatValueCell(
       />
     );
   }
-  return formatUsdWhole(value);
+  const formatted = formatUsdWhole(value);
+  if (!emphasize) {
+    return formatted;
+  }
+  return <span className={MONEY_TOTAL_FIGURE_CLASS}>{formatted}</span>;
+}
+
+function formatValueDeltaInline(delta: number): string {
+  if (delta > 0) {
+    return `+${formatUsdWhole(delta)}`;
+  }
+  return formatUsdWhole(delta);
 }
 
 function ParcelValueTable({
@@ -467,9 +476,9 @@ function ParcelValueTable({
   record: CountyParcelRecordRow;
   /** Business personal property: totals only (no Building / Land columns). */
   totalOnly?: boolean;
-  /** Transferred Actual value summary-tile affordances (Changed + YoY opener). */
+  /** Transferred Actual value summary-tile affordances (delta + YoY opener). */
   actualAffordance?: ParcelValueHistoryAffordance | null;
-  /** Transferred Assessed value summary-tile affordances (Changed + YoY + gap). */
+  /** Transferred Assessed value summary-tile affordances (delta + YoY + gap). */
   assessedAffordance?: ParcelValueHistoryAffordance | null;
   /**
    * When the parcel-record row lacks TaxYear/AssessmentYear but the locked report
@@ -484,6 +493,7 @@ function ParcelValueTable({
       record.assessmentYear,
     ) ?? taxYearNoteOverride;
   const rows = buildParcelValueTableRows(record);
+  const sectionStatusChrome = assessedAffordance?.statusChrome ?? null;
 
   const hasAnyValue = rows.some(
     (row) =>
@@ -505,26 +515,35 @@ function ParcelValueTable({
     );
   }
 
-  return (
-    <ParcelRecordTableArriveSection
-      id={HOME_APPRAISED_ASSESSED_ID}
-      className="space-y-3"
-      heading={
-        <ParcelDashboardSectionHeading
-          title="Appraised and assessed values"
-          spaced
-        />
-      }
-      beforeTable={
-        yearNote ? (
+  const beforeTableNotes =
+    yearNote != null || sectionStatusChrome != null ? (
+      <div className="space-y-2">
+        {yearNote ? (
           <p
             className="text-sm leading-relaxed text-slate-600 sm:text-base"
             role="note"
           >
             {yearNote}
           </p>
-        ) : null
+        ) : null}
+        {sectionStatusChrome ? (
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            {sectionStatusChrome}
+          </div>
+        ) : null}
+      </div>
+    ) : null;
+
+  return (
+    <ParcelRecordTableArriveSection
+      id={HOME_APPRAISED_ASSESSED_ID}
+      className={DASHBOARD_SECTION_LEAD_STACK_CLASS}
+      heading={
+        <ParcelDashboardSectionHeading
+          title="Appraised and assessed values"
+        />
       }
+      beforeTable={beforeTableNotes}
       scrollClassName={DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS}
       scrollProps={{
         role: "region",
@@ -559,7 +578,7 @@ function ParcelValueTable({
             <tr key={row.kind}>
               <th
                 scope="row"
-                className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} ${VALUE_TABLE_STICKY_FIRST_COL_CLASS} font-medium`}
+                className={`${ROW_LABEL_TH_CLASS} ${VALUE_ROW_LABEL_CLASS} ${VALUE_TABLE_STICKY_BODY_CLASS}`}
               >
                 <ValueRowLabel
                   year={year}
@@ -567,12 +586,13 @@ function ParcelValueTable({
                   rateLabel={row.rateLabel}
                 />
               </th>
-              <td className={MONEY_TD_CLASS}>
-                <div className="inline-flex flex-col items-end gap-1">
+              <td className={MONEY_TD_TOTAL_CLASS}>
+                <div className="inline-flex flex-col items-end gap-0.5">
                   {formatValueCell(
                     row.values.total,
                     `${rowLabel} (Total)`,
                     `${row.kind}-total`,
+                    true,
                   )}
                   {affordance != null && row.values.total != null ? (
                     <ValueHistoryAffordanceRow
@@ -613,8 +633,9 @@ function ParcelValueTable({
 }
 
 /**
- * Summary-tile affordances transferred into Appraised and assessed values rows:
- * Changed badge, valuation-history opener, optional prior-year gap / in-progress.
+ * Affordances transferred into Appraised and assessed Total cells:
+ * signed dollar delta + valuation-history opener. Prior-year gap / in-progress
+ * sit under the section title (see {@link ParcelValueTable} beforeTable).
  */
 export type ParcelValueHistoryAffordance = {
   valueDelta: number | null;
@@ -622,9 +643,6 @@ export type ParcelValueHistoryAffordance = {
   onOpen: () => void;
   statusChrome?: ReactNode;
 };
-
-const VALUE_HISTORY_OPEN_BTN_CLASS =
-  "cursor-pointer rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-indigo-800 hover:border-indigo-400 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-1";
 
 function valueHistoryOpenAriaLabel(
   valueKind: ValuationValueKind,
@@ -662,21 +680,25 @@ function ValueHistoryAffordanceRow({
   affordance: ParcelValueHistoryAffordance;
 }) {
   const formattedValue = formatUsdWhole(value);
+  const showDelta =
+    affordance.valueDelta != null &&
+    Number.isFinite(affordance.valueDelta) &&
+    affordance.valueDelta !== 0;
+  const showHistory = affordance.hasHistory;
+  if (!showDelta && !showHistory) {
+    return null;
+  }
   return (
-    <div className="flex flex-col items-end gap-1.5">
-      {affordance.valueDelta != null ? (
-        <span aria-hidden>
-          <LevyChangedBadge
-            millsDelta={affordance.valueDelta}
-            className={LEVY_CHANGED_BADGE_ON_LIGHT_CLASS}
-          />
+    <div className="flex max-w-[12rem] flex-wrap items-baseline justify-end gap-x-2 gap-y-0.5 sm:max-w-none">
+      {showDelta ? (
+        <span className={PARCEL_VALUE_DELTA_INLINE_CLASS} aria-hidden>
+          {formatValueDeltaInline(affordance.valueDelta!)}
         </span>
       ) : null}
-      {affordance.statusChrome}
-      {affordance.hasHistory ? (
+      {showHistory ? (
         <button
           type="button"
-          className={VALUE_HISTORY_OPEN_BTN_CLASS}
+          className={PARCEL_VALUE_HISTORY_LINK_CLASS}
           aria-label={valueHistoryOpenAriaLabel(
             valueKind,
             formattedValue,
@@ -996,7 +1018,7 @@ export function ParcelRecordSaleTable({
     <div
       id={PARCEL_RECORD_SALE_HISTORY_ID}
       tabIndex={-1}
-      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} space-y-3 ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none`}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none`}
     >
       <ParcelDashboardSectionHeading
         title="Sale history"
