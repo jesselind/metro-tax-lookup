@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.18.0",
+    date: "2026-09-20",
+    title:
+      "Comparable properties: one sticky comps table everywhere; TOC polish",
+    highlights: [
+      "In-app comps grid uses the same TanStack table on every viewport (field-name + subject sticky left; sale columns scroll horizontally). Sticky field-name and subject columns keep fixed floors (no mobile shrink of the label column; subject is not sized like a narrow sale column). Dropped the mobile field-card stack. No outer panel shell; scrollport max-height 50vh below sm (min(600px, 70vh) from sm up). Mobile tip: swipe sideways.",
+      "Locked-report wide tables (comps, parcel record, levy data table) share DashboardHScrollTable: below lg the scrollport bleeds the main-column right gutter; trailing pad inside the scrollport matches the left page inset so far-right scroll still clears a thick phone case. Soft slate fade on the right edge only when more columns sit past that edge (no left fade: it washed out sticky / first-column labels). End-pad uses inline-block min-w-full (not w-max) so columns hug content instead of desktop preferred widths; tables may still h-scroll when content is wider (e.g. Total chrome under the dollar). Appraised and assessed values freezes the field-name column while Total / Building / Land scroll; values and comps scrollports are keyboard regions (arrow / Page / Home / End). Comps scrollport keeps a 1px bottom pad and overscroll-y containment so the last row border stays visible.",
+      "When a grid is present (Try demo property today), Comparable properties keeps one h3 + What is this? and the grid is the body - no nested Comps grid heading and no PDF / COUNTY DATA GAP / demo-PDF chrome under the title. Without a grid, Coming soon / gap / PDF under that same title is unchanged.",
+      "Permits TOC sibling uses the same large h3 + What is this? chrome as other parcel subsections. Locked-report page and Jump order: Comparable properties (Own Real) then county compare then Feedback.",
+    ],
+  },
+  {
     version: "5.17.1",
     date: "2026-09-19",
     title:

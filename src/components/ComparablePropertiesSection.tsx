@@ -51,9 +51,9 @@ export type ComparablePropertiesSectionProps = {
 
 /**
  * Own Real comparable-properties section (always mounted when the jump shows).
- * Same section chrome as Property details (plain h3 + "What is this?"). Coming
- * soon / COUNTY DATA GAP / PDF link sit under that title (no summary tile).
- * Prefer honest empty + gap UI over hiding the section.
+ * One heading (plain h3 + "What is this?"). When an in-app grid is present, that
+ * is the body (no PDF / COUNTY DATA GAP chrome, no nested "Comps grid" title).
+ * Without a grid, Coming soon / gap / PDF link sit under the title.
  */
 export function ComparablePropertiesSection({
   countyConfig,
@@ -66,145 +66,116 @@ export function ComparablePropertiesSection({
   propertySearchHref,
   compsIcon,
 }: ComparablePropertiesSectionProps) {
+  const inAppGridPayload =
+    demoMode && demoGridPayload != null ? demoGridPayload : null;
+  const showInAppGrid = inAppGridPayload != null;
   const showPdfChrome = compsPdfInProgress || !compsPresentationOmit;
 
-  /** Demo grid owns {@link HOME_NOV_COMPS_HEADING_ID}; omit the id when that panel mounts. */
-  const sectionHeading = (headingId: string | null) => (
-    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <h3
-        id={headingId ?? undefined}
-        className={DASHBOARD_SECTION_HEADING_CLASS}
-      >
-        Comparable properties
-      </h3>
-      <ParcelGlossaryPopoverTrigger
-        termId="term-comps"
-        textTrigger="What is this?"
-        textTriggerId="comps-section-heading-help"
-        variant="parcel-record"
-        textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
-        ariaLabel="What comparable properties means."
-      />
-    </div>
-  );
-
   let pdfBody: ReactNode = null;
-  if (!showPdfChrome) {
-    pdfBody = (
-      <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
-        This county does not publish a comparable properties PDF link here yet.
-      </p>
-    );
-  } else if (compsPdfInProgress) {
-    pdfBody = (
-      <CountyCompsPdfInProgressPopover countyId={countyConfig.id} />
-    );
-  } else if (compsPdfHref && compsGap) {
-    pdfBody = (
-      <CountyServiceGapCallout density="compact">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <p className="min-w-0 flex-1">
-            {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
-          </p>
-          <CountyCompsPdfHelpPopover
-            ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}
-            icon={compsIcon}
-          >
-            <CountyCompsPdfUnavailablePopoverBody countyHref={compsPdfHref} />
-          </CountyCompsPdfHelpPopover>
-        </div>
-      </CountyServiceGapCallout>
-    );
-  } else if (compsPdfHref) {
-    pdfBody = (
-      <a
-        href={compsPdfHref}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={COMPS_PDF_ICON_CONTROL_CLASS}
-        aria-label="Open county comparable properties PDF for this property (opens in a new tab)"
-      >
-        {compsIcon}
-      </a>
-    );
-  } else if (demoMode) {
-    pdfBody = (
-      <div className="flex justify-start">
-        <CountyCompsPdfHelpPopover
-          ariaLabel="Comparable properties PDF is unavailable for this property"
-          icon={compsIcon}
-        >
-          <>
-            Demo mode does not include a comparable properties PDF. Select{" "}
-            <strong className="font-semibold text-slate-900">Start over</strong>
-            {", "}
-            then enter your address to open your county comparable properties
-            PDF.
-          </>
-        </CountyCompsPdfHelpPopover>
-      </div>
-    );
-  } else {
-    pdfBody = (
-      <div className="space-y-2" role="status" aria-live="polite">
-        <p className="text-sm leading-snug text-slate-600">
-          No county comparable properties PDF from here: this PIN is missing an
-          assessor parcel id (AIN) in the bundled parcel index.
+  if (!showInAppGrid) {
+    if (!showPdfChrome) {
+      pdfBody = (
+        <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
+          This county does not publish a comparable properties PDF link here yet.
         </p>
+      );
+    } else if (compsPdfInProgress) {
+      pdfBody = (
+        <CountyCompsPdfInProgressPopover countyId={countyConfig.id} />
+      );
+    } else if (compsPdfHref && compsGap) {
+      pdfBody = (
+        <CountyServiceGapCallout density="compact">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <p className="min-w-0 flex-1">
+              {COUNTY_COMPS_PDF_TILE_UNAVAILABLE_STATUS}
+            </p>
+            <CountyCompsPdfHelpPopover
+              ariaLabel={COUNTY_COMPS_PDF_TILE_UNAVAILABLE_ARIA_LABEL}
+              icon={compsIcon}
+            >
+              <CountyCompsPdfUnavailablePopoverBody countyHref={compsPdfHref} />
+            </CountyCompsPdfHelpPopover>
+          </div>
+        </CountyServiceGapCallout>
+      );
+    } else if (compsPdfHref) {
+      pdfBody = (
+        <a
+          href={compsPdfHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COMPS_PDF_ICON_CONTROL_CLASS}
+          aria-label="Open county comparable properties PDF for this property (opens in a new tab)"
+        >
+          {compsIcon}
+        </a>
+      );
+    } else if (demoMode) {
+      pdfBody = (
         <div className="flex justify-start">
           <CountyCompsPdfHelpPopover
-            ariaLabel="Why there is no comparable properties PDF link for this property"
+            ariaLabel="Comparable properties PDF is unavailable for this property"
             icon={compsIcon}
           >
             <>
-              <p className="text-sm leading-relaxed text-slate-800">
-                We build the county link from your account&apos;s assessor parcel
-                id (AIN) in the bundled parcel index. If that field is empty, we
-                cannot form{" "}
-                <span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>{" "}
-                safely.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-slate-800">
-                Open{" "}
-                <a
-                  href={propertySearchHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={COUNTY_EXTERNAL_LINK_CLASS}
-                >
-                  {countyConfig.displayName} property search
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>{" "}
-                to reach your parcel and comparable properties from the county.
-                For how the bundle is built, see{" "}
-                <PreserveSessionDocLink
-                  href={sourcesPageHref({
-                    countyId: countyConfig.id,
-                  })}
-                >
-                  Sources
-                </PreserveSessionDocLink>
-                .
-              </p>
+              Demo mode does not include a comparable properties PDF. Select{" "}
+              <strong className="font-semibold text-slate-900">Start over</strong>
+              {", "}
+              then enter your address to open your county comparable properties
+              PDF.
             </>
           </CountyCompsPdfHelpPopover>
         </div>
-      </div>
-    );
-  }
-
-  /**
-   * Demo grid owns {@link HOME_NOV_COMPS_SECTION_ID}; PDF chrome sits above it.
-   * Without the grid, this section is the jump target.
-   */
-  if (demoMode && demoGridPayload != null) {
-    return (
-      <div className="space-y-3">
-        {sectionHeading(null)}
-        {pdfBody}
-        <NovCompsGridPanel payload={demoGridPayload} />
-      </div>
-    );
+      );
+    } else {
+      pdfBody = (
+        <div className="space-y-2" role="status" aria-live="polite">
+          <p className="text-sm leading-snug text-slate-600">
+            No county comparable properties PDF from here: this PIN is missing an
+            assessor parcel id (AIN) in the bundled parcel index.
+          </p>
+          <div className="flex justify-start">
+            <CountyCompsPdfHelpPopover
+              ariaLabel="Why there is no comparable properties PDF link for this property"
+              icon={compsIcon}
+            >
+              <>
+                <p className="text-sm leading-relaxed text-slate-800">
+                  We build the county link from your account&apos;s assessor parcel
+                  id (AIN) in the bundled parcel index. If that field is empty, we
+                  cannot form{" "}
+                  <span className="whitespace-nowrap">FileDownload.ashx?AIN=…</span>{" "}
+                  safely.
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-800">
+                  Open{" "}
+                  <a
+                    href={propertySearchHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={COUNTY_EXTERNAL_LINK_CLASS}
+                  >
+                    {countyConfig.displayName} property search
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>{" "}
+                  to reach your parcel and comparable properties from the county.
+                  For how the bundle is built, see{" "}
+                  <PreserveSessionDocLink
+                    href={sourcesPageHref({
+                      countyId: countyConfig.id,
+                    })}
+                  >
+                    Sources
+                  </PreserveSessionDocLink>
+                  .
+                </p>
+              </>
+            </CountyCompsPdfHelpPopover>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (
@@ -214,8 +185,27 @@ export function ComparablePropertiesSection({
       className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
       aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
     >
-      {sectionHeading(HOME_NOV_COMPS_HEADING_ID)}
-      {pdfBody}
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <h3
+          id={HOME_NOV_COMPS_HEADING_ID}
+          className={DASHBOARD_SECTION_HEADING_CLASS}
+        >
+          Comparable properties
+        </h3>
+        <ParcelGlossaryPopoverTrigger
+          termId="term-comps"
+          textTrigger="What is this?"
+          textTriggerId="comps-section-heading-help"
+          variant="parcel-record"
+          textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
+          ariaLabel="What comparable properties means."
+        />
+      </div>
+      {showInAppGrid ? (
+        <NovCompsGridPanel payload={inAppGridPayload} />
+      ) : (
+        pdfBody
+      )}
     </section>
   );
 }

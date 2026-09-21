@@ -42,7 +42,7 @@ test("synthetic address loads levy stack and property details", async ({
   await expect(
     details.getByText(SYNTHETIC_E2E_NEIGHBORHOOD_CODE, { exact: true }),
   ).toBeVisible();
-  // Matched PIN lives in the county-compare strip (below the details column), not
+  // Matched PIN lives in the county-compare strip (above Feedback; after comps when present), not
   // inside #home-property-details.
   await expect(
     page

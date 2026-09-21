@@ -422,7 +422,9 @@ export function ArapahoeSourcesMethodology() {
           The in-page comps grid is
           demo-only today (
           <strong className="text-slate-900">Try demo property</strong>
-          ); row help is grounded in the county{" "}
+          ); when that grid is on the page it is the section body (no
+          nested Comps grid title and no PDF / COUNTY DATA GAP chrome under
+          the Comparable properties heading). Row help is grounded in the county{" "}
           <a
             href={ARAPAHOE_COMP_SHEET_PDF_URL}
             target="_blank"

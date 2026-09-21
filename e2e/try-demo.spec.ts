@@ -15,6 +15,7 @@ import { splitSitusLabelEnvelopeLines } from "../src/lib/addressLabelDifference"
 import { PARCEL_RECORD_NO_DATA } from "../src/lib/parcelRecordNoData";
 import { COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS } from "../src/content/countyPriorYearValuesGapNote";
 import {
+  HOME_APPRAISED_ASSESSED_ID,
   HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
   HOME_DASHBOARD_UTILITY_BAR_ID,
   HOME_FEEDBACK_ASIDE_ID,
@@ -268,6 +269,127 @@ test.describe("Try demo property", () => {
     await expect(feedbackAside).toBeFocused();
     await expect(feedbackAside).toBeInViewport();
     await expect(details).not.toHaveAttribute("open", "");
+  });
+
+  test("Comparable properties: one heading, sticky table grid, no PDF gap under title", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const comps = page.locator("#home-nov-comps-grid");
+    await expect(comps).toBeVisible();
+    await expect(
+      comps.getByRole("heading", { name: "Comparable properties", level: 3 }),
+    ).toBeVisible();
+    await expect(
+      comps.getByRole("heading", { name: "Comps grid" }),
+    ).toHaveCount(0);
+    await expect(comps.getByRole("button", { name: "Coming soon" })).toHaveCount(
+      0,
+    );
+    await expect(comps.getByText(/COUNTY DATA GAP/i)).toHaveCount(0);
+    await expect(
+      comps.getByRole("table", {
+        name: /Comparable sales and subject fields/i,
+      }),
+    ).toBeVisible();
+    await expect(
+      comps.getByRole("region", {
+        name: /Field names and your property stay fixed/i,
+      }),
+    ).toBeVisible();
+
+    // Jump order: desktop sidenav list (mobile Jump keeps the same curated order).
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const onThisPage = page.getByRole("navigation", { name: "On this page" });
+    const jumpLabels = await onThisPage.getByRole("button").allTextContents();
+    const compsIdx = jumpLabels.findIndex((t) =>
+      t.includes("Comparable properties"),
+    );
+    const compareIdx = jumpLabels.findIndex((t) =>
+      t.includes("See how Arapahoe County displays your data"),
+    );
+    const feedbackIdx = jumpLabels.findIndex((t) => t.includes("Feedback"));
+    expect(compsIdx).toBeGreaterThanOrEqual(0);
+    expect(compareIdx).toBeGreaterThan(compsIdx);
+    expect(feedbackIdx).toBeGreaterThan(compareIdx);
+  });
+
+  test("Appraised and assessed values: content-hugging money cols, may h-scroll", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const section = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
+    await expect(section).toBeVisible();
+    const table = section.getByRole("table", {
+      name: /Appraised and assessed values/i,
+    });
+    await expect(table).toBeVisible();
+    await table.scrollIntoViewIfNeeded();
+
+    const metrics = await section.evaluate((root) => {
+      const scrollport = root.querySelector(".overflow-x-auto");
+      const valueTable = root.querySelector("table");
+      if (
+        !(scrollport instanceof HTMLElement) ||
+        !(valueTable instanceof HTMLTableElement)
+      ) {
+        return null;
+      }
+      const totalHeader = Array.from(valueTable.querySelectorAll("th")).find(
+        (th) => th.textContent?.trim() === "Total",
+      );
+      const buildingHeader = Array.from(valueTable.querySelectorAll("th")).find(
+        (th) => th.textContent?.trim() === "Building",
+      );
+      const firstRowLabel = valueTable.querySelector("tbody tr th[scope='row']");
+      const labelPosition =
+        firstRowLabel instanceof HTMLElement
+          ? getComputedStyle(firstRowLabel).position
+          : null;
+      const portRect = scrollport.getBoundingClientRect();
+      const firstMoneyCell = valueTable.querySelector("tbody tr td");
+      const moneyRect = firstMoneyCell?.getBoundingClientRect();
+      const moneyText = (firstMoneyCell?.textContent ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+      const leftFade = root.querySelector(".left-0.bg-gradient-to-r");
+      return {
+        portWidth: portRect.width,
+        totalHeaderWidth: totalHeader?.getBoundingClientRect().width ?? 0,
+        buildingHeaderWidth:
+          buildingHeader?.getBoundingClientRect().width ?? 0,
+        moneyFullyVisible:
+          moneyRect != null &&
+          moneyRect.left >= portRect.left - 1 &&
+          moneyRect.right <= portRect.right + 1,
+        moneyText,
+        canScrollX: scrollport.scrollWidth > scrollport.clientWidth + 2,
+        rowLabelSticky: labelPosition === "sticky",
+        leftFadePresent: leftFade != null,
+      };
+    });
+    expect(metrics).not.toBeNull();
+    // Guard w-max preferred-width inflation (Total was ~half the phone empty).
+    // Gap badge under the dollar may widen Total to ~chip width; that is OK and
+    // may require h-scroll (same as Permits / comps when content is wide).
+    expect(metrics!.totalHeaderWidth).toBeLessThan(260);
+    expect(metrics!.buildingHeaderWidth).toBeLessThan(120);
+    expect(metrics!.moneyText).toMatch(/^\$[\d,]+/);
+    expect(metrics!.moneyFullyVisible).toBe(true);
+    expect(metrics!.rowLabelSticky).toBe(true);
+    expect(metrics!.leftFadePresent).toBe(false);
+
+    await expect(
+      section.getByRole("region", {
+        name: /Field names stay fixed on the left/i,
+      }),
+    ).toBeVisible();
   });
 
   test("missing-data mailto includes field, demo PIN, and AIN", async ({

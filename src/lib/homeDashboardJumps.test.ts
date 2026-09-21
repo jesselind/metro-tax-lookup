@@ -68,8 +68,8 @@ describe("buildHomeDashboardJumps", () => {
       "area",
       "land-line",
       "permits",
-      "county-compare",
       "comps",
+      "county-compare",
       "feedback",
     ]);
   });

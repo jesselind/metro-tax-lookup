@@ -28,7 +28,7 @@ Prototype extraction around **Arapahoe county-provided comps** context. The app 
 **Presentation:**
 
 - **Static** mirror of what the county printed for this notice cycle (no sort, filter, or row hide that would change meaning vs the PDF). Wrong or misleading views are a bigger risk than a dense table. **Primary interactions:** scrolling (horizontal + vertical scrollport for sticky header); row-label **Radix Popover** term help where definitions exist.
-- **Pinned columns:** TanStack column pinning for the label column plus the first data column, inside the same scrollport as sticky `thead` (see `NovCompsGridPanel` layout checklist).
+- **Pinned columns:** TanStack column pinning for the label column plus the first data column (subject), inside the same scrollport as sticky `thead`. Sticky pair keeps fixed width floors; scrolling sale columns share leftover width. Shared `DashboardHScrollTable` right-edge fade only (no left fade over sticky labels). See `NovCompsGridPanel`.
 - **Do not** recreate PDF **asterisk band** separators as UI chrome; use normal typography and spacing.
 
 **Rows and columns:**
@@ -43,8 +43,8 @@ Prototype extraction around **Arapahoe county-provided comps** context. The app 
 
 **Copy / empty states:**
 
-- Section heading: **Comps grid**; when the grid renders, a **short intro line** states provenance (county notice / linked comps PDF) and that underlined labels open explanations.
-- If there is **no comps grid payload** for the parcel/session, show a **compact placeholder card** (e.g. no comps grid found). Initial development can use **sample JSON**; implement the fallback so non-grid cases can be tested later.
+- Section heading: **Comparable properties** (h3 + What is this?). When an in-app grid is present it is the body — no nested **Comps grid** title and no PDF / COUNTY DATA GAP chrome under the title. Without a grid, Coming soon / gap / PDF sit under that same heading.
+- If there is **no comps grid payload** for the parcel/session, show PDF / Coming soon / gap chrome (or honest empty) under Comparable properties — not a separate nested Comps grid placeholder.
 
 **Out of scope for this branch:** print stylesheet for the grid.
 

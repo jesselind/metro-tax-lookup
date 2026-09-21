@@ -23,8 +23,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
-  type KeyboardEvent,
   type ReactNode,
 } from "react";
 import {
@@ -34,44 +32,33 @@ import {
   type NovCompsGridDefinitionEntry,
   type NovCompsGridPayload,
 } from "@/lib/novCompsGridTypes";
-import {
-  HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
-  HOME_NOV_COMPS_HEADING_ID,
-  HOME_NOV_COMPS_SECTION_ID,
-} from "@/lib/homeDashboardJumps";
 import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionLink";
 import {
-  DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
-  DASHBOARD_TILE_RADIUS_CLASS,
+  DashboardHScrollTable,
+  DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS,
+  dashboardHScrollTableKeyDown,
+} from "@/components/DashboardHScrollTable";
+import {
   TERM_LINK_CLASS,
   TOOL_LINK_UNDERLINE_CLASS,
 } from "@/lib/toolFlowStyles";
 
-const PANEL_SHELL = `${DASHBOARD_TILE_RADIUS_CLASS} border border-slate-200 bg-slate-50/80`;
-/** Bounded height + both axes scroll = scrollport for sticky thead (see layout checklist). */
-const TABLE_SCROLLPORT =
-  "max-w-full max-h-[min(600px,70vh)] overflow-x-auto overflow-y-auto";
-/** Fade hint when more horizontal content exists (pointer-events-none). */
-const SCROLL_FADE_EDGE =
-  "pointer-events-none absolute inset-y-0 z-10 w-9 sm:w-10";
-const SCROLL_FADE_RIGHT =
-  `${SCROLL_FADE_EDGE} right-0 bg-gradient-to-l from-slate-100 via-slate-100/85 to-transparent`;
-const SCROLL_FADE_LEFT =
-  `${SCROLL_FADE_EDGE} left-0 bg-gradient-to-r from-slate-100 via-slate-100/85 to-transparent`;
+/** Bounded height + both axes scroll = scrollport for sticky thead (see layout checklist).
+ * `pb-px` keeps the last row’s bottom border from being clipped by overflow.
+ * `overscroll-y-contain` reduces nested scroll chaining that can nudge the page
+ * a pixel when the grid’s bottom edge is brought into view. */
+const TABLE_SCROLLPORT_EXTRA =
+  "max-h-[50vh] overflow-y-auto overscroll-y-contain pb-px sm:max-h-[min(600px,70vh)]";
 const TABLE_CLASS =
   "min-w-max border-separate border-spacing-0 text-left text-sm text-slate-900";
-/** Same width breakpoint as Tailwind `sm` (640px); keep media queries aligned. */
-const COMPS_GRID_LAYOUT_SM_PX = 640;
-const COMPS_GRID_MOBILE_VIEWPORT_MQ = `(max-width: ${COMPS_GRID_LAYOUT_SM_PX - 1}px)`;
-const COMPS_GRID_MIN_SM_MQ = `(min-width: ${COMPS_GRID_LAYOUT_SM_PX}px)`;
 const TH_LABEL_COL_SHARED =
-  "min-w-[6rem] border border-slate-200 px-2 py-2 break-words leading-relaxed sm:min-w-0 sm:max-w-none sm:px-3 sm:py-2.5 sm:w-auto";
+  "min-w-[7.5rem] border border-slate-200 px-2 py-2 break-words leading-relaxed sm:px-3 sm:py-2.5";
 const TH_LABEL =
   `${TH_LABEL_COL_SHARED} bg-slate-100 text-sm font-medium text-slate-800`;
 const TH_SECTION_LABEL =
   `${TH_LABEL_COL_SHARED} bg-slate-200 text-sm font-semibold uppercase tracking-wide text-slate-800`;
 const TH_COL =
-  "w-16 border border-slate-200 bg-slate-100 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-700 sm:w-auto sm:px-3 sm:py-2.5 sm:text-sm";
+  "min-w-16 border border-slate-200 bg-slate-100 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-700 sm:px-3 sm:py-2.5 sm:text-sm";
 const TD =
   "border border-slate-200 bg-white px-2 py-2 align-top text-left text-slate-800 sm:px-3 sm:py-2.5";
 const TD_MONEY =
@@ -80,9 +67,6 @@ const TD_SECTION =
   "border border-slate-200 bg-slate-100 px-2 py-2 align-top text-slate-700 sm:px-3 sm:py-2.5";
 const POPOVER_TRIGGER_CLASS =
   `cursor-pointer border-0 bg-transparent p-0 text-left text-inherit ${TOOL_LINK_UNDERLINE_CLASS} outline-none whitespace-normal break-words focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1`;
-/** Section title: same trigger treatment as row-definition labels, with dashboard heading scale. */
-const COMPS_GRID_HEADING_TRIGGER_CLASS =
-  `${POPOVER_TRIGGER_CLASS} text-xl font-bold leading-tight tracking-tight sm:text-2xl`;
 const POPOVER_CONTENT_CLASS =
   "z-50 max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 text-left shadow-lg";
 const POPOVER_LINK_CLASS = `mt-3 inline-flex items-center text-xs ${TERM_LINK_CLASS}`;
@@ -128,11 +112,12 @@ const AREA_ROW_KEYS = new Set([
   "deck_terrace",
 ]);
 const ROW_LABEL_MIN_WIDTH = 120;
-/** Matches Tailwind `sm` (640px): phones in portrait use a tighter row-label column. */
-const ROW_LABEL_MIN_WIDTH_MOBILE = 96;
+/** Subject (first data) column: sticky with field names; needs room for money text. */
+const SUBJECT_COL_MIN_WIDTH = 112;
+/** Scrolling sale columns only — keep narrow so more sales fit before h-scroll. */
 const DATA_COL_MIN_WIDTH = 64;
 const ROW_LABEL_MAX_WIDTH = 180;
-const TABLE_LAYOUT_GUTTER_PX = 16;
+const TABLE_LAYOUT_GUTTER_PX = 0;
 /** Popover overflow: full glossary term id for matching row keys. */
 const NOV_COMPS_GLOSSARY_TERM_BY_ROW: Record<string, string> = {
   luc: "term-nov-comps-luc",
@@ -153,52 +138,6 @@ type CompsRow = {
 };
 
 const compsRowColumnHelper = createColumnHelper<CompsRow>();
-
-function subscribeMinSm(onChange: () => void) {
-  if (typeof window === "undefined") return () => {};
-  const mq = window.matchMedia(COMPS_GRID_MIN_SM_MQ);
-  if (typeof mq.addEventListener === "function") {
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }
-  mq.addListener(onChange);
-  return () => mq.removeListener(onChange);
-}
-
-function getMinSmSnapshot() {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia(COMPS_GRID_MIN_SM_MQ).matches;
-}
-
-/**
- * `false` on the server matches mobile markup first; after hydration, snapshot updates for desktop.
- */
-function getMinSmServerSnapshot() {
-  return false;
-}
-
-function useMinWidthSm(): boolean {
-  return useSyncExternalStore(subscribeMinSm, getMinSmSnapshot, getMinSmServerSnapshot);
-}
-
-/** Safe segment for mobile `dt` ids; keeps ids HTML-friendly and stable vs parser column keys. */
-function sanitizeColumnKeyForMobileDtIds(columnKey: string): string {
-  const lower = columnKey.toLowerCase();
-  const dashed = lower.replace(/[^a-z0-9_-]/g, "-");
-  const collapsed = dashed.replace(/-+/g, "-").replace(/^-+|-+$/g, "");
-  if (collapsed.length === 0) {
-    return "c";
-  }
-  if (/^\d/.test(collapsed)) {
-    return `c-${collapsed}`;
-  }
-  return collapsed;
-}
-
-function mobileFieldColumnDtId(rowKey: string, columnKey: string) {
-  const sanitizedKey = sanitizeColumnKeyForMobileDtIds(columnKey);
-  return `${novCompsGridRowFragmentId(rowKey)}-f-${sanitizedKey}`;
-}
 
 function padCells(cells: NovCompsGridCell[], colCount: number): NovCompsGridCell[] {
   const out = cells.slice(0, colCount);
@@ -359,59 +298,9 @@ function getPinnedCellStyles<T>(
 }
 
 export type NovCompsGridPanelProps = {
-  /** When null or missing grid, show a compact empty state. */
+  /** Valid grid payload; returns null when missing or empty. */
   payload: NovCompsGridPayload | null;
 };
-
-function CompsGridSectionHeading() {
-  return (
-    <h2 id={HOME_NOV_COMPS_HEADING_ID} className="mt-6 sm:mt-8">
-      <Popover.Root>
-        <Popover.Trigger asChild>
-          <button type="button" className={COMPS_GRID_HEADING_TRIGGER_CLASS}>
-            Comps grid
-          </button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            side="bottom"
-            align="start"
-            sideOffset={6}
-            className={POPOVER_CONTENT_CLASS}
-          >
-            <p className="text-sm leading-relaxed text-slate-700">
-              This matches the comparable-sales worksheet on your county notice or in the linked
-              comps PDF.
-            </p>
-            <p className="mb-0 mt-2 text-sm leading-relaxed text-slate-700">
-              Underlined field names open short explanations.
-            </p>
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
-    </h2>
-  );
-}
-
-function NovCompsGridEmptySection() {
-  return (
-    <section
-      id={HOME_NOV_COMPS_SECTION_ID}
-      tabIndex={-1}
-      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
-      aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
-    >
-      <CompsGridSectionHeading />
-      <div
-        className={`${PANEL_SHELL} px-4 py-5 text-sm text-slate-700 sm:px-5 sm:text-base`}
-        role="status"
-      >
-        No comps grid is available for this property yet. When your notice data is connected, the
-        county comparable worksheet will appear here.
-      </div>
-    </section>
-  );
-}
 
 type NovCompsGridFilledProps = {
   payload: NovCompsGridPayload;
@@ -420,80 +309,12 @@ type NovCompsGridFilledProps = {
   rows: NovCompsGridPayload["grid"]["rows"];
 };
 
-function NovCompsGridMobileCards({
-  rowsForTable,
-  columns,
-}: {
-  rowsForTable: CompsRow[];
-  columns: NovCompsGridPayload["grid"]["columns"];
-}) {
-  return (
-    <ul
-      className="m-0 max-h-[min(600px,70vh)] list-none space-y-3 overflow-y-auto p-0 pr-0.5"
-      aria-label="Comparable sales worksheet, one field per card, with your property and each sale."
-    >
-      {rowsForTable.map((compsRow) => {
-        const rowHeaderId = novCompsGridRowFragmentId(compsRow.rowKey);
-        if (compsRow.isSectionRow) {
-          return (
-            <li key={compsRow.rowKey} className="scroll-mt-24">
-              <h3
-                id={rowHeaderId}
-                className="rounded-lg border border-slate-200 bg-slate-200 px-3 py-2.5 text-sm font-semibold uppercase tracking-wide text-slate-800"
-              >
-                {compsRow.rowLabel}
-              </h3>
-            </li>
-          );
-        }
-        return (
-          <li key={compsRow.rowKey} className="scroll-mt-24">
-            <article
-              className={`overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm ${compsRow.isLastThreeRows ? "font-semibold text-slate-900" : ""}`}
-              aria-labelledby={rowHeaderId}
-            >
-              <header className="border-b border-slate-200 bg-slate-100 px-3 py-3">
-                <h3
-                  id={rowHeaderId}
-                  className="text-base font-semibold leading-snug text-slate-900"
-                >
-                  <CompsRowLabelCell compsRow={compsRow} />
-                </h3>
-              </header>
-              <dl className="m-0 px-3">
-                {columns.map((col, colIndex) => {
-                  const dtId = mobileFieldColumnDtId(compsRow.rowKey, col.key);
-                  return (
-                    <div
-                      key={col.key}
-                      className={`py-3 text-left ${colIndex > 0 ? "border-t border-slate-200" : ""}`}
-                    >
-                      <dt id={dtId} className="text-sm font-semibold text-slate-600">
-                        <span className="text-slate-800">{plainLanguageColumnLabel(col.key)}</span>
-                        {" "}
-                        <span className="ml-1 font-normal normal-case text-slate-500">
-                          ({col.label})
-                        </span>
-                      </dt>
-                      <dd
-                        className={`mt-1 text-left text-sm leading-relaxed text-slate-900 ${compsRow.isMoneyRow ? "tabular-nums" : ""}`}
-                        aria-labelledby={`${rowHeaderId} ${dtId}`}
-                      >
-                        {compsFormattedDataCell(compsRow, col.key)}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
-            </article>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function NovCompsGridDesktopTable({
+/**
+ * County comps worksheet table only (no section heading). Parent
+ * {@link ComparablePropertiesSection} owns Comparable properties chrome.
+ * Field-name + subject stay sticky left; sale columns scroll horizontally.
+ */
+function NovCompsGridTable({
   columns,
   rowsForTable,
 }: {
@@ -519,7 +340,7 @@ function NovCompsGridDesktopTable({
           size: ROW_LABEL_MIN_WIDTH,
           cell: ({ row }) => <CompsRowLabelCell compsRow={row.original} />,
         }),
-        ...columns.map((colMeta) =>
+        ...columns.map((colMeta, index) =>
           compsRowColumnHelper.display({
             id: colMeta.key,
             header: () => (
@@ -532,7 +353,7 @@ function NovCompsGridDesktopTable({
                 </span>
               </span>
             ),
-            size: DATA_COL_MIN_WIDTH,
+            size: index === 0 ? SUBJECT_COL_MIN_WIDTH : DATA_COL_MIN_WIDTH,
             cell: ({ row }) => compsFormattedDataCell(row.original, colMeta.key),
           }),
         ),
@@ -551,34 +372,45 @@ function NovCompsGridDesktopTable({
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollFadeLeft, setScrollFadeLeft] = useState(false);
-  const [scrollFadeRight, setScrollFadeRight] = useState(false);
 
   const updateColumnSizing = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const isMobileViewport =
-      typeof window !== "undefined" &&
-      window.matchMedia(COMPS_GRID_MOBILE_VIEWPORT_MQ).matches;
-    const rowLabelMin = isMobileViewport ? ROW_LABEL_MIN_WIDTH_MOBILE : ROW_LABEL_MIN_WIDTH;
     const availableWidth = Math.max(0, el.clientWidth - TABLE_LAYOUT_GUTTER_PX);
-    const dataBaseTotal = columns.length * DATA_COL_MIN_WIDTH;
-    const baseTotal = rowLabelMin + dataBaseTotal;
+    const subjectKey = columns[0]?.key;
+    const saleColumns = subjectKey != null ? columns.slice(1) : columns;
+    const stickyDataBase =
+      subjectKey != null ? SUBJECT_COL_MIN_WIDTH : 0;
+    const saleBaseTotal = saleColumns.length * DATA_COL_MIN_WIDTH;
+    const baseTotal =
+      ROW_LABEL_MIN_WIDTH + stickyDataBase + saleBaseTotal;
     const extraSpace = Math.max(0, availableWidth - baseTotal);
 
-    const rowLabelGrowthCap = ROW_LABEL_MAX_WIDTH - rowLabelMin;
-    const rowLabelExtra = Math.min(rowLabelGrowthCap, Math.floor(extraSpace * 0.25));
-    const rowLabelWidth = rowLabelMin + rowLabelExtra;
+    // Grow field-name a bit when there is room; never drop below ROW_LABEL_MIN_WIDTH.
+    const rowLabelGrowthCap = ROW_LABEL_MAX_WIDTH - ROW_LABEL_MIN_WIDTH;
+    const rowLabelExtra = Math.min(
+      rowLabelGrowthCap,
+      Math.floor(extraSpace * 0.25),
+    );
+    const rowLabelWidth = ROW_LABEL_MIN_WIDTH + rowLabelExtra;
 
-    const dataExtra = Math.max(0, extraSpace - rowLabelExtra);
-    const perDataExtra = columns.length > 0 ? Math.floor(dataExtra / columns.length) : 0;
-    let remainder = columns.length > 0 ? dataExtra - perDataExtra * columns.length : 0;
+    // Remaining extra goes to sale columns only (subject stays at its floor).
+    const saleExtra = Math.max(0, extraSpace - rowLabelExtra);
+    const perSaleExtra =
+      saleColumns.length > 0 ? Math.floor(saleExtra / saleColumns.length) : 0;
+    let remainder =
+      saleColumns.length > 0
+        ? saleExtra - perSaleExtra * saleColumns.length
+        : 0;
 
     const next: ColumnSizingState = { rowLabel: rowLabelWidth };
-    for (const col of columns) {
+    if (subjectKey != null) {
+      next[subjectKey] = SUBJECT_COL_MIN_WIDTH;
+    }
+    for (const col of saleColumns) {
       const bump = remainder > 0 ? 1 : 0;
       if (remainder > 0) remainder -= 1;
-      next[col.key] = DATA_COL_MIN_WIDTH + perDataExtra + bump;
+      next[col.key] = DATA_COL_MIN_WIDTH + perSaleExtra + bump;
     }
 
     setColumnSizing((prev) => {
@@ -592,85 +424,36 @@ function NovCompsGridDesktopTable({
     });
   }, [columns]);
 
-  const updateHorizontalScrollFades = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    const epsilon = 2;
-    const canScrollX = scrollWidth > clientWidth + epsilon;
-    setScrollFadeLeft(canScrollX && scrollLeft > epsilon);
-    setScrollFadeRight(canScrollX && scrollLeft + clientWidth < scrollWidth - epsilon);
-  }, []);
-
-  const handleScrollRegionKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const step = Math.round(el.clientWidth * 0.5) || 48;
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        el.scrollBy({ left: -step, behavior: "smooth" });
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        el.scrollBy({ left: step, behavior: "smooth" });
-      } else if (event.key === "Home") {
-        event.preventDefault();
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else if (event.key === "End") {
-        event.preventDefault();
-        el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
-      } else if (event.key === "PageUp") {
-        event.preventDefault();
-        el.scrollBy({ left: -el.clientWidth, behavior: "smooth" });
-      } else if (event.key === "PageDown") {
-        event.preventDefault();
-        el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
-      }
-    },
-    [],
-  );
-
   useLayoutEffect(() => {
     updateColumnSizing();
-    updateHorizontalScrollFades();
-  }, [rowsForTable, updateColumnSizing, updateHorizontalScrollFades]);
+  }, [rowsForTable, updateColumnSizing]);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || typeof window === "undefined") return;
     const run = () => {
       updateColumnSizing();
-      updateHorizontalScrollFades();
     };
     const ro =
       typeof ResizeObserver !== "undefined" ? new ResizeObserver(run) : null;
     ro?.observe(el);
-    const mq = window.matchMedia(COMPS_GRID_MOBILE_VIEWPORT_MQ);
-    if (typeof mq.addEventListener === "function") {
-      mq.addEventListener("change", run);
-      return () => {
-        ro?.disconnect();
-        mq.removeEventListener("change", run);
-      };
-    }
-    mq.addListener(run);
     return () => {
       ro?.disconnect();
-      mq.removeListener(run);
     };
-  }, [updateColumnSizing, updateHorizontalScrollFades]);
+  }, [updateColumnSizing]);
 
   return (
-    <div className="relative">
-      <div
-        ref={scrollRef}
-        role="region"
-        tabIndex={0}
-        aria-label="Comparable sales worksheet table. Use arrow keys, Page Up, Page Down, Home, or End to scroll horizontally when columns extend past the screen."
-        className={`${TABLE_SCROLLPORT} outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2`}
-        onScroll={updateHorizontalScrollFades}
-        onKeyDown={handleScrollRegionKeyDown}
-      >
+    <DashboardHScrollTable
+      scrollClassName={`${TABLE_SCROLLPORT_EXTRA} ${DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS}`}
+      scrollProps={{
+        ref: scrollRef,
+        role: "region",
+        tabIndex: 0,
+        "aria-label":
+          "Comparable sales worksheet table. Field names and your property stay fixed on the left. Use arrow keys, Page Up, Page Down, Home, or End to scroll other sales horizontally when columns extend past the screen.",
+        onKeyDown: dashboardHScrollTableKeyDown,
+      }}
+    >
         <table className={TABLE_CLASS}>
           <caption className="sr-only">
             Comparable sales and subject fields from the county notice worksheet
@@ -760,21 +543,13 @@ function NovCompsGridDesktopTable({
             ))}
           </tbody>
         </table>
-      </div>
-      {scrollFadeLeft ? (
-        <div aria-hidden className={SCROLL_FADE_LEFT} />
-      ) : null}
-      {scrollFadeRight ? (
-        <div aria-hidden className={SCROLL_FADE_RIGHT} />
-      ) : null}
-    </div>
+    </DashboardHScrollTable>
   );
 }
 
 function NovCompsGridFilled(props: NovCompsGridFilledProps) {
   const { payload, columns, canonicalRowOrder: order, rows } = props;
   const colCount = columns.length;
-  const isDesktop = useMinWidthSm();
 
   const rowsForTable = useMemo<CompsRow[]>(
     () =>
@@ -818,28 +593,19 @@ function NovCompsGridFilled(props: NovCompsGridFilledProps) {
   );
 
   return (
-    <section
-      id={HOME_NOV_COMPS_SECTION_ID}
-      tabIndex={-1}
-      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} space-y-3 outline-none`}
-      aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
-    >
-      <CompsGridSectionHeading />
-      <div className={`${PANEL_SHELL} p-2 sm:p-3`}>
-        {isDesktop ? (
-          <NovCompsGridDesktopTable columns={columns} rowsForTable={rowsForTable} />
-        ) : (
-          <NovCompsGridMobileCards rowsForTable={rowsForTable} columns={columns} />
-        )}
-      </div>
+    <div className="space-y-3">
+      <NovCompsGridTable columns={columns} rowsForTable={rowsForTable} />
       <p className="m-0 max-w-prose text-xs leading-snug text-slate-500 sm:hidden">
-        Tip: For the full worksheet table with every column side by side, try landscape or a
-        larger screen.
+        Swipe sideways to compare other sales. Field names and your property stay on the left.
       </p>
-    </section>
+    </div>
   );
 }
 
+/**
+ * In-app comps worksheet table. Section title lives on
+ * {@link ComparablePropertiesSection}; this panel is table + mobile tip only.
+ */
 export function NovCompsGridPanel(props: NovCompsGridPanelProps) {
   const { payload } = props;
   const grid = payload?.grid;
@@ -855,7 +621,7 @@ export function NovCompsGridPanel(props: NovCompsGridPanelProps) {
     order.length === 0 ||
     !rows
   ) {
-    return <NovCompsGridEmptySection />;
+    return null;
   }
 
   return (

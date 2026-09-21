@@ -52,9 +52,14 @@ import {
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_HEADING_SPACED_CLASS,
-  PARCEL_RECORD_TABLE_SCROLL_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import {
+  DashboardHScrollTable,
+  DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS,
+  dashboardHScrollTableKeyDown,
+  type DashboardHScrollTableProps,
+} from "@/components/DashboardHScrollTable";
 import type { ValuationValueKind } from "@/lib/valuationHistoryYoY";
 
 /** Arrive + focus shell for a county table section (ring outside overflow scrollport). */
@@ -63,6 +68,8 @@ function ParcelRecordTableArriveSection({
   className = "",
   heading = null,
   beforeTable = null,
+  scrollClassName,
+  scrollProps,
   children,
 }: {
   id: string;
@@ -71,6 +78,8 @@ function ParcelRecordTableArriveSection({
   heading?: ReactNode;
   /** Optional note above the scrollport (kept outside overflow-x-auto). */
   beforeTable?: ReactNode;
+  scrollClassName?: string;
+  scrollProps?: DashboardHScrollTableProps["scrollProps"];
   children: ReactNode;
 }) {
   return (
@@ -81,7 +90,12 @@ function ParcelRecordTableArriveSection({
     >
       {heading}
       {beforeTable}
-      <div className={PARCEL_RECORD_TABLE_SCROLL_CLASS}>{children}</div>
+      <DashboardHScrollTable
+        scrollClassName={scrollClassName}
+        scrollProps={scrollProps}
+      >
+        {children}
+      </DashboardHScrollTable>
     </div>
   );
 }
@@ -129,20 +143,35 @@ function ParcelDashboardSectionHeading({
   );
 }
 
+/** `min-w-full` (not `w-full`): fill the scrollport when narrow; hug content when wide. */
 const TABLE_CLASS =
-  "w-full max-w-full table-auto border-collapse text-sm leading-snug text-slate-900 sm:text-base";
+  "min-w-full table-auto border-collapse text-sm leading-snug text-slate-900 sm:text-base";
+/**
+ * Appraised/assessed uses border-separate so sticky first-column left pin works
+ * reliably (border-collapse breaks sticky in common browsers).
+ */
+const VALUE_TABLE_CLASS =
+  "min-w-full table-auto border-separate border-spacing-0 text-sm leading-snug text-slate-900 sm:text-base";
 const WRAP_CELL_CLASS = "min-w-0 break-words";
 /** Shrink-to-fit index column: as narrow as content allows, still wraps when needed. */
 const INDEX_COL_CLASS = `w-[1%] ${WRAP_CELL_CLASS}`;
-/** Value row labels: shrink on small screens; one line when there is room (sm+). */
+/** Value row labels: wrap on small screens; one line when there is room (sm+). */
 const VALUE_ROW_LABEL_CLASS =
   `w-[1%] min-w-0 break-words sm:w-auto sm:whitespace-nowrap`;
+/**
+ * Frozen field-name column while Total / Building / Land scroll (same cue as
+ * comps last-pinned shadow). Opaque bg (`!` beats TH_CLASS `bg-slate-100/90`)
+ * so scrolling cells do not show through.
+ */
+const VALUE_TABLE_STICKY_FIRST_COL_CLASS =
+  "sticky left-0 z-20 !bg-slate-100 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.24)]";
 const TH_CLASS = `border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-left font-medium text-slate-700 ${WRAP_CELL_CLASS}`;
 const TD_CLASS = `border border-slate-200 px-2 py-1.5 align-top text-slate-900 ${WRAP_CELL_CLASS}`;
+/** Money cells hug dollar text (like Permits Est. value). */
 const MONEY_TH_CLASS =
-  "whitespace-nowrap border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-right font-medium tabular-nums text-slate-700";
+  "w-[1%] whitespace-nowrap border border-slate-200 bg-slate-100/90 px-2 py-1.5 text-right font-medium tabular-nums text-slate-700";
 const MONEY_TD_CLASS =
-  "border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
+  "w-[1%] whitespace-nowrap border border-slate-200 px-2 py-1.5 text-right align-top tabular-nums text-slate-900";
 type GlossaryLabelSpec = {
   text: string;
   termId: ParcelGlossaryTermId;
@@ -213,15 +242,6 @@ const VALUE_COLUMN_GLOSSARY: Record<
   Land: { termId: "term-parcel-value-land", triggerIdSuffix: "col-land" },
 };
 
-const SECTION_TITLE_GLOSSARY: Partial<
-  Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
-> = {
-  Permits: {
-    termId: "term-parcel-permit",
-    triggerIdSuffix: "section-permits",
-  },
-};
-
 const BUILDING_TABLE_COLUMN_GLOSSARY: Partial<
   Record<string, { termId: ParcelGlossaryTermId; triggerIdSuffix: string }>
 > = {
@@ -249,7 +269,7 @@ const SALE_TABLE_COLUMN_GLOSSARY: Partial<
   },
 };
 
-/** In-table section title for follow-on blocks (extra Building/Area) and Permits. */
+/** In-table section title for follow-on blocks (extra Building/Area). */
 const SECTION_TITLE_ROW_CLASS =
   "border-0 bg-transparent px-0 pb-2 text-left text-base font-semibold leading-snug text-slate-800 sm:text-lg";
 /**
@@ -283,23 +303,13 @@ function SectionTitleRow({
   isFirst?: boolean;
   colSpan?: number;
 }) {
-  const glossary = SECTION_TITLE_GLOSSARY[title];
   const titleClass = `${SECTION_TITLE_ROW_CLASS} ${
     isFirst ? SECTION_TITLE_FIRST_PT_CLASS : SECTION_TITLE_FOLLOWING_PT_CLASS
   }`;
   return (
     <tr>
       <th colSpan={colSpan} scope="colgroup" className={titleClass}>
-        {glossary ? (
-          <ParcelRecordTableGlossaryLabel
-            text={title}
-            termId={glossary.termId}
-            triggerIdSuffix={glossary.triggerIdSuffix}
-            variant="section-title"
-          />
-        ) : (
-          title
-        )}
+        {title}
       </th>
     </tr>
   );
@@ -313,6 +323,7 @@ function ColumnHeaderRow({
   blankHeaderSrOnly = "Row",
   moneyColumns = false,
   shrinkFirstColumn = true,
+  stickyFirstColumn = false,
 }: {
   labels: ColumnHeaderLabel[];
   blankHeader?: "sr-only" | "hidden";
@@ -320,16 +331,22 @@ function ColumnHeaderRow({
   moneyColumns?: boolean;
   /** Building/land index columns shrink; sale/permit tables keep equal headers. */
   shrinkFirstColumn?: boolean;
+  /** Appraised/assessed: freeze the blank field-name header with the row labels. */
+  stickyFirstColumn?: boolean;
 }) {
   return (
     <tr>
       {labels.map((label, index) => {
         const labelText = typeof label === "string" ? label : label.text;
+        const stickyClass =
+          stickyFirstColumn && index === 0
+            ? ` ${VALUE_TABLE_STICKY_FIRST_COL_CLASS}`
+            : "";
         return (
           <th
             key={`${labelText}-${index}`}
             scope="col"
-            className={columnHeaderClass(index, moneyColumns, shrinkFirstColumn)}
+            className={`${columnHeaderClass(index, moneyColumns, shrinkFirstColumn)}${stickyClass}`}
             aria-hidden={!labelText && blankHeader === "hidden" ? true : undefined}
           >
             {labelText ? (
@@ -508,8 +525,16 @@ function ParcelValueTable({
           </p>
         ) : null
       }
+      scrollClassName={DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS}
+      scrollProps={{
+        role: "region",
+        tabIndex: 0,
+        "aria-label":
+          "Appraised and assessed values table. Field names stay fixed on the left. Use arrow keys, Page Up, Page Down, Home, or End to scroll other columns horizontally when they extend past the screen.",
+        onKeyDown: dashboardHScrollTableKeyDown,
+      }}
     >
-      <table className={TABLE_CLASS}>
+      <table className={VALUE_TABLE_CLASS}>
       <caption className="sr-only">
         {totalOnly
           ? "Appraised and assessed values"
@@ -520,6 +545,7 @@ function ParcelValueTable({
           labels={valueColumnHeaderLabels(totalOnly)}
           blankHeader="hidden"
           moneyColumns
+          stickyFirstColumn
         />
         {rowsToShow.map((row) => {
           const rowLabel = valueRowDisplayLabel(year, row.kind, row.rateLabel);
@@ -531,7 +557,10 @@ function ParcelValueTable({
                 : null;
           return (
             <tr key={row.kind}>
-              <th scope="row" className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} font-medium`}>
+              <th
+                scope="row"
+                className={`${TH_CLASS} ${VALUE_ROW_LABEL_CLASS} ${VALUE_TABLE_STICKY_FIRST_COL_CLASS} font-medium`}
+              >
                 <ValueRowLabel
                   year={year}
                   kind={row.kind}
@@ -539,7 +568,7 @@ function ParcelValueTable({
                 />
               </th>
               <td className={MONEY_TD_CLASS}>
-                <div className="flex flex-col items-end gap-1">
+                <div className="inline-flex flex-col items-end gap-1">
                   {formatValueCell(
                     row.values.total,
                     `${rowLabel} (Total)`,
@@ -634,7 +663,7 @@ function ValueHistoryAffordanceRow({
 }) {
   const formattedValue = formatUsdWhole(value);
   return (
-    <div className="flex flex-wrap items-center justify-end gap-1.5">
+    <div className="flex flex-col items-end gap-1.5">
       {affordance.valueDelta != null ? (
         <span aria-hidden>
           <LevyChangedBadge
@@ -767,12 +796,9 @@ export function ParcelRecordBuildingAndLandTable({
             {table}
           </ParcelRecordTableArriveSection>
         ) : (
-          <div
-            key={`building-${buildingNum}`}
-            className={PARCEL_RECORD_TABLE_SCROLL_CLASS}
-          >
+          <DashboardHScrollTable key={`building-${buildingNum}`}>
             {table}
-          </div>
+          </DashboardHScrollTable>
         ),
       );
     }
@@ -837,12 +863,9 @@ export function ParcelRecordBuildingAndLandTable({
             {table}
           </ParcelRecordTableArriveSection>
         ) : (
-          <div
-            key={`area-${buildingNum}`}
-            className={PARCEL_RECORD_TABLE_SCROLL_CLASS}
-          >
+          <DashboardHScrollTable key={`area-${buildingNum}`}>
             {table}
-          </div>
+          </DashboardHScrollTable>
         ),
       );
     }
@@ -981,7 +1004,7 @@ export function ParcelRecordSaleTable({
         helpTriggerId="parcel-sale-history-heading-help"
         ariaLabel="What sale history means."
       />
-      <div className={PARCEL_RECORD_TABLE_SCROLL_CLASS}>
+      <DashboardHScrollTable>
         <table className={TABLE_CLASS}>
           <caption className="sr-only">
             Sale history from county transfer records
@@ -1076,7 +1099,7 @@ export function ParcelRecordSaleTable({
             )}
           </tbody>
         </table>
-      </div>
+      </DashboardHScrollTable>
       {countyParcelRecordUrl && linkClerkRecorder ? (
         <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
           If a Book Page search finds no document, check the same sale list on your{" "}
@@ -1106,69 +1129,81 @@ export function ParcelRecordPermitTable({
     return null;
   }
   return (
-    <ParcelRecordTableArriveSection id={HOME_PERMITS_ID}>
-      <table className={TABLE_CLASS}>
-      <caption className="sr-only">Building permits from county permit records</caption>
-      <tbody>
-        <SectionTitleRow title="Permits" isFirst colSpan={6} />
-        <ColumnHeaderRow
-          labels={[
-            "Permit #",
-            "Status",
-            "Description",
-            "Issue date",
-            "Final date",
-            "Est. value",
-          ]}
-          shrinkFirstColumn={false}
+    <ParcelRecordTableArriveSection
+      id={HOME_PERMITS_ID}
+      className="space-y-3"
+      heading={
+        <ParcelDashboardSectionHeading
+          title="Permits"
+          termId="term-parcel-permit"
+          helpTriggerId="parcel-permits-heading-help"
+          ariaLabel="What permits means."
         />
-        {rows.map((permit, index) => (
-          <tr key={`permit-${permit.permitNum ?? "row"}-${index}`}>
-            <td className={TD_CLASS}>
-              {textOrMissing(
-                permit.permitNum,
-                "Permit #",
-                `permit-num-${index}`,
-              )}
-            </td>
-            <td className={TD_CLASS}>
-              {textOrMissing(
-                permit.status,
-                "Permit Status",
-                `permit-status-${index}`,
-              )}
-            </td>
-            <td className={TD_CLASS}>
-              {textOrMissing(
-                permit.description,
-                "Permit Description",
-                `permit-desc-${index}`,
-              )}
-            </td>
-            <td className={`${TD_CLASS} whitespace-nowrap`}>
-              {textOrMissing(
-                permit.issueDate,
-                "Permit Issue date",
-                `permit-issue-${index}`,
-              )}
-            </td>
-            <td className={`${TD_CLASS} whitespace-nowrap`}>
-              {textOrMissing(
-                permit.finalDate,
-                "Permit Final date",
-                `permit-final-${index}`,
-              )}
-            </td>
-            <td className={MONEY_TD_CLASS}>
-              {formatValueCell(
-                permit.estimatedValue,
-                "Permit Est. value",
-                `permit-value-${index}`,
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
+      }
+    >
+      <table className={TABLE_CLASS}>
+        <caption className="sr-only">
+          Building permits from county permit records
+        </caption>
+        <tbody>
+          <ColumnHeaderRow
+            labels={[
+              "Permit #",
+              "Status",
+              "Description",
+              "Issue date",
+              "Final date",
+              "Est. value",
+            ]}
+            shrinkFirstColumn={false}
+          />
+          {rows.map((permit, index) => (
+            <tr key={`permit-${permit.permitNum ?? "row"}-${index}`}>
+              <td className={TD_CLASS}>
+                {textOrMissing(
+                  permit.permitNum,
+                  "Permit #",
+                  `permit-num-${index}`,
+                )}
+              </td>
+              <td className={TD_CLASS}>
+                {textOrMissing(
+                  permit.status,
+                  "Permit Status",
+                  `permit-status-${index}`,
+                )}
+              </td>
+              <td className={TD_CLASS}>
+                {textOrMissing(
+                  permit.description,
+                  "Permit Description",
+                  `permit-desc-${index}`,
+                )}
+              </td>
+              <td className={`${TD_CLASS} whitespace-nowrap`}>
+                {textOrMissing(
+                  permit.issueDate,
+                  "Permit Issue date",
+                  `permit-issue-${index}`,
+                )}
+              </td>
+              <td className={`${TD_CLASS} whitespace-nowrap`}>
+                {textOrMissing(
+                  permit.finalDate,
+                  "Permit Final date",
+                  `permit-final-${index}`,
+                )}
+              </td>
+              <td className={MONEY_TD_CLASS}>
+                {formatValueCell(
+                  permit.estimatedValue,
+                  "Permit Est. value",
+                  `permit-value-${index}`,
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </ParcelRecordTableArriveSection>
   );

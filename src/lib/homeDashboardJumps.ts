@@ -64,7 +64,7 @@ export const HOME_COUNTY_COMPARE_SECTION_ID = "home-county-compare";
 
 export const HOME_FEEDBACK_ASIDE_ID = "home-accuracy-feedback";
 
-/** Section root for in-app comps grid (`NovCompsGridPanel` / comps chrome). */
+/** Section root for Comparable properties (`ComparablePropertiesSection` / in-app grid). */
 export const HOME_NOV_COMPS_SECTION_ID = "home-nov-comps-grid";
 
 /** Heading inside the comps section (aria / existing id). */
@@ -223,20 +223,20 @@ export function buildHomeDashboardJumps(
       highlightId: HOME_PERMITS_ID,
     });
   }
-  if (flags.showCountyCompare) {
-    jumps.push({
-      id: "county-compare",
-      label: `See how ${flags.countyDisplayName} displays your data`,
-      focusId: HOME_COUNTY_COMPARE_HEADING_ID,
-      highlightId: HOME_COUNTY_COMPARE_SECTION_ID,
-    });
-  }
   if (flags.showInAppComps) {
     jumps.push({
       id: "comps",
       label: "Comparable properties",
       focusId: HOME_NOV_COMPS_SECTION_ID,
       highlightId: HOME_NOV_COMPS_SECTION_ID,
+    });
+  }
+  if (flags.showCountyCompare) {
+    jumps.push({
+      id: "county-compare",
+      label: `See how ${flags.countyDisplayName} displays your data`,
+      focusId: HOME_COUNTY_COMPARE_HEADING_ID,
+      highlightId: HOME_COUNTY_COMPARE_SECTION_ID,
     });
   }
   if (flags.showFeedback) {
