@@ -246,7 +246,7 @@ export function novCompsGridRowFragmentId(rowKey: string): string {
   return `${PREFIX}${safe}`;
 }
 
-/** Stable `id` for comps grid column headers (`headers` linkage, mobile `dt`); same slug rules as row fragments. */
+/** Stable `id` for comps grid column headers (`headers` linkage); same slug rules as row fragments. */
 export function novCompsGridColumnHeaderId(columnKey: string): string {
   const PREFIX = "nov-comps-col-";
   const trimmed = columnKey.trim();

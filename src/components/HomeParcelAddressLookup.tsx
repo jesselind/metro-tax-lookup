@@ -1720,21 +1720,19 @@ export function HomeParcelAddressLookup({
     ? "Business personal property"
     : "Real property";
 
-  const propertyDetailsBelowPanel =
+  const countyCompareSection =
     levyLines.length > 0 && levyLoadedMeta ? (
-      <>
-        <LevyCountyCompareSection
-          countyConfig={activeCountyConfig}
-          pin={levyLoadedMeta.pin}
-          tagId={levyLoadedMeta.tagId}
-          tagShortDescr={levyLoadedMeta.tagShortDescr}
-          levyAspxUrl={levyLoadedMeta.levyAspxUrl}
-          ain={levyLoadedMeta.ain}
-          demoMode={isDemoMode}
-          businessPersonal={isBusinessPersonalAccount}
-          parcelRecordLinkYear={parcelSummaryYears?.parcelRecordLinkYear ?? null}
-        />
-      </>
+      <LevyCountyCompareSection
+        countyConfig={activeCountyConfig}
+        pin={levyLoadedMeta.pin}
+        tagId={levyLoadedMeta.tagId}
+        tagShortDescr={levyLoadedMeta.tagShortDescr}
+        levyAspxUrl={levyLoadedMeta.levyAspxUrl}
+        ain={levyLoadedMeta.ain}
+        demoMode={isDemoMode}
+        businessPersonal={isBusinessPersonalAccount}
+        parcelRecordLinkYear={parcelSummaryYears?.parcelRecordLinkYear ?? null}
+      />
     ) : null;
 
   const showParcelRecordExtended =
@@ -1887,7 +1885,7 @@ export function HomeParcelAddressLookup({
         {levyBreakdownMain}
       </div>
       {propertyDetailsSection}
-      {propertyDetailsBelowPanel}
+      {countyCompareSection}
     </div>
   );
 
@@ -2618,7 +2616,6 @@ export function HomeParcelAddressLookup({
                 </div>
               ) : null}
               {propertyDetailsSection}
-              {propertyDetailsBelowPanel}
               {showInAppCompsJump ? (
                 <ComparablePropertiesSection
                   countyConfig={activeCountyConfig}
@@ -2636,6 +2633,7 @@ export function HomeParcelAddressLookup({
                   compsIcon={compsIcon}
                 />
               ) : null}
+              {countyCompareSection}
               {showHomeAccuracyFeedbackAside ? (
                 <aside
                   id={HOME_FEEDBACK_ASIDE_ID}

@@ -111,7 +111,7 @@ export const SYNTHETIC_SITUS_TO_PINS = {
     taxYear: "2025",
   },
   lookupVersion: 1,
-  entryCount: 4,
+  entryCount: 16,
   byKey: {
     [SYNTHETIC_E2E_SITUS_KEY]: [
       {
@@ -149,6 +149,34 @@ export const SYNTHETIC_SITUS_TO_PINS = {
         label: SYNTHETIC_DIR_COLLISION_WAY_LABEL,
       },
     ],
+    // Enough distinct places at one house number for the typeahead list to
+    // overflow max-h so scroll-blur e2e can use a real wheel (not a fake event).
+    ...Object.fromEntries(
+      (
+        [
+          "ALPHA",
+          "BRAVO",
+          "CHARLIE",
+          "DELTA",
+          "ECHO",
+          "FOXTROT",
+          "GOLF",
+          "HOTEL",
+          "INDIA",
+          "JULIET",
+          "KILO",
+          "LIMA",
+        ] as const
+      ).map((name, i) => [
+        `5000|SYNTHETIC ${name}|`,
+        [
+          {
+            pin: `01099${String(i).padStart(4, "0")}`,
+            label: `5000 SYNTHETIC ${name} ST, E2E CITY, CO 80000`,
+          },
+        ],
+      ]),
+    ),
   },
 };
 
@@ -472,6 +500,7 @@ export const SYNTHETIC_DOUGLAS_PIN_TO_TAG = {
 
 export const SYNTHETIC_DOUGLAS_SITUS_TO_PINS = {
   ...SYNTHETIC_SITUS_TO_PINS,
+  entryCount: 1,
   byKey: {
     [SYNTHETIC_E2E_SITUS_KEY]: [
       {

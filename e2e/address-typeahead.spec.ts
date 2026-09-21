@@ -4,7 +4,6 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { expect, test } from "@playwright/test";
-import { SYNTHETIC_E2E_ADDRESS } from "./fixtures/syntheticCountyData";
 import {
   fillStreetAndSubmitSearch,
   streetAddressField,
@@ -29,29 +28,27 @@ const HAVANA_BARE_QUERY = "1400 Havana";
 const HAVANA_SOUTH_QUERY = "1400 S Havana St";
 
 /**
- * Typeahead dismiss contract: blur (keyboard Done / scroll-blur) keeps the
- * list open; outside pointer closes it.
+ * Typeahead dismiss contract: scrolling the open suggestion list blurs the
+ * field (mobile keyboard dismiss) but keeps the list open; outside pointer
+ * closes it.
  */
-test("typeahead stays open after blur; closes on outside pointer", async ({
+test("typeahead stays open after list scroll blur; closes on outside pointer", async ({
   page,
 }) => {
   await installSyntheticCountyData(page);
   await page.goto("/");
 
   const street = streetAddressField(page);
-  await street.fill(SYNTHETIC_E2E_ADDRESS);
+  // Many synthetic places at house 5000 so the list overflows max-h.
+  await street.fill("5000 Synthetic");
 
   const list = page.getByRole("listbox", { name: "Address suggestions" });
   await expect(list).toBeVisible();
+  await expect(list.getByRole("option").first()).toBeVisible();
 
-  await street.evaluate((el) => (el as HTMLInputElement).blur());
-  await expect(list).toBeVisible();
-
-  // Refocus so the list onScroll active-element branch runs (blur while focused).
-  await street.focus();
-  await list.evaluate((el) => {
-    el.dispatchEvent(new Event("scroll", { bubbles: true }));
-  });
+  // Scroll the suggestion list (mobile keyboard dismisses; list stays open).
+  await list.hover();
+  await page.mouse.wheel(0, 240);
   await expect(street).not.toBeFocused();
   await expect(list).toBeVisible();
 

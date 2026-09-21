@@ -561,14 +561,48 @@ export const DASHBOARD_SECTION_HEADING_CLASS =
  * cell — box-shadow rings on {@code th}/{@code td} paint under neighboring cells.
  * Outside ring + offset (not inset). Locked-report main column uses
  * {@link HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS}; table sections keep
- * {@code overflow-x-auto} **inside** the arrive wrapper so the ring is not clipped.
+ * horizontal scroll **inside** the arrive wrapper so the ring is not clipped
+ * (see {@link DashboardHScrollTable}).
  */
 export const DASHBOARD_SECTION_ARRIVE_TARGET_CLASS =
   "data-[arrive]:rounded-lg data-[arrive]:ring-2 data-[arrive]:ring-indigo-600 data-[arrive]:ring-offset-4 data-[arrive]:ring-offset-white";
 
-/** Horizontal scrollport for wide county tables — nest inside arrive wrappers only. */
-export const PARCEL_RECORD_TABLE_SCROLL_CLASS = "max-w-full overflow-x-auto";
+/**
+ * Right-edge bleed below `lg` only (same 1rem / 1.25rem as arrive-clip `px-4` /
+ * `sm:px-5`). Left inset stays aligned with section titles.
+ */
+export const DASHBOARD_HSCROLL_TABLE_BLEED_CLASS =
+  "-mr-4 w-[calc(100%+1rem)] sm:-mr-5 sm:w-[calc(100%+1.25rem)] lg:mr-0 lg:w-full";
 
+/** Scrollport that fills the bleed wrapper. */
+export const DASHBOARD_HSCROLL_TABLE_SCROLL_CLASS =
+  "max-w-full overflow-x-auto";
+
+/**
+ * Trailing inset inside the scrollport so far-right scroll still clears the
+ * phone edge (matches left page pad). `inline-block min-w-full` grows with wide
+ * tables without `w-max` + `width:100%` table preferred-width inflation.
+ * Pair with tables that use `min-w-full` (not `w-full`) so columns hug content.
+ */
+export const DASHBOARD_HSCROLL_TABLE_END_PAD_CLASS =
+  "inline-block min-w-full align-top pr-4 sm:pr-5 lg:pr-0";
+
+/**
+ * Soft slate cue when more columns sit past the right scroll edge.
+ * No left-edge fade: it overlaid sticky / first-column labels and made them fuzzy.
+ */
+export const DASHBOARD_HSCROLL_TABLE_FADE_EDGE_CLASS =
+  "pointer-events-none absolute inset-y-0 z-20 w-5 sm:w-6";
+
+export const DASHBOARD_HSCROLL_TABLE_FADE_RIGHT_CLASS =
+  `${DASHBOARD_HSCROLL_TABLE_FADE_EDGE_CLASS} right-0 bg-gradient-to-l from-slate-100/95 via-white/70 to-transparent`;
+
+/**
+ * Alias for {@link DASHBOARD_HSCROLL_TABLE_SCROLL_CLASS}. Prefer
+ * {@link DashboardHScrollTable} for locked-report tables (bleed + end pad).
+ */
+export const PARCEL_RECORD_TABLE_SCROLL_CLASS =
+  DASHBOARD_HSCROLL_TABLE_SCROLL_CLASS;
 /**
  * {@link DASHBOARD_SECTION_HEADING_CLASS} plus lead-in margin when the title follows
  * other content in a vertical stack (not when top-aligned beside summary tiles).

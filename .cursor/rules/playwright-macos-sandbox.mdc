@@ -27,3 +27,5 @@ Until this host issue is resolved:
 - When the user asks for full browser e2e locally, run chromium+webkit and note that Firefox is deferred to CI.
 
 Default `test:e2e` excludes `@live-sources` (third-party URL probes). For cite health only: `CI=1 npm run test:e2e:live-sources` (Chromium request-only; no app build required).
+
+Resident-path e2e (must act like a resident: see/do; one viewport per test; no mid-test resize; no fake UI events; no px / DevTools geometry gates): `.cursor/rules/playwright-real-user-behavior.mdc`.

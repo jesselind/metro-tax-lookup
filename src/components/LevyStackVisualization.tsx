@@ -15,6 +15,7 @@ import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { LevyLineDistrictDetailDialog } from "@/components/LevyLineDistrictDetailDialog";
 import { ModalPortal } from "@/components/ModalPortal";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
+import { DashboardHScrollTable } from "@/components/DashboardHScrollTable";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
@@ -1100,8 +1101,8 @@ export function LevyStackVisualization({
 
           {showLevyDetails && tilesSorted.length > 0 ? (
             <div className="border-t border-slate-200">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[20rem] border-collapse text-left text-sm text-slate-900">
+              <DashboardHScrollTable>
+                <table className="min-w-[max(100%,20rem)] border-collapse text-left text-sm text-slate-900">
                   <thead>
                     <tr className="border-b border-slate-400 bg-slate-100">
                       <th
@@ -1154,7 +1155,7 @@ export function LevyStackVisualization({
                     </tr>
                   </tfoot>
                 </table>
-              </div>
+              </DashboardHScrollTable>
             </div>
           ) : null}
         </div>

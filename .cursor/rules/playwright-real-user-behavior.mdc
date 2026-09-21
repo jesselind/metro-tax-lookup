@@ -1,0 +1,54 @@
+---
+description: Playwright e2e must act like a real resident — see/do only; no DevTools geometry or px gates
+alwaysApply: true
+---
+
+# Playwright: real user behavior
+
+E2e is worthless unless it acts like a real resident on a phone or laptop. If a human would not notice or do it, do not assert it.
+
+## Hard bar (non-negotiable)
+
+Every test step is something a resident **sees** or **does**:
+
+- Click, tap, type, Tab, Escape, Enter, arrows (where the UI supports them), `mouse.wheel` / touch scroll, open/close disclosures.
+- Assert with roles, labels, visible text, focus, `toBeVisible` / `toBeHidden` / `toBeInViewport` / `toBeFocused`, enabled vs disabled, list order the resident reads.
+
+**Do not write or keep** asserts that measure layout like a DevTools panel. That includes:
+
+- Absolute or near-absolute pixel clamps (`top <= 1`, `width >= 388`, `headerWidth < 260`, `bottom <= viewportBottom + 1`)
+- CSS custom properties / inline `maxHeight` / rem→px math as the gate
+- `getBoundingClientRect` / `boundingBox` **dimensions** as expect targets (including “relative” `y` / `width` comparisons used as the product proof)
+- `getComputedStyle(…).position === "sticky"` (or similar) as the product proof — prove stick by: after scroll, control still visible and still usable
+- Implementation class selectors as product proof (e.g. fade utility classes)
+
+If sticky, full-bleed, stacking, or column freeze matters, prove it the resident way: scroll (wheel), then still see and still interact. **14px is not a bug** unless the control is gone, clipped, or unusable.
+
+## Interactions
+
+- Prefer roles, labels, visible text, keyboard a resident uses.
+- **Do not** fake UI with `dispatchEvent`, synthetic `blur()`, or invented scroll events when a real gesture exists (click outside, Tab away, `mouse.wheel` / touch scroll).
+- **Do not** `page.evaluate(() => window.scrollBy(…))` when wheel / keyboard / Jump exists.
+- `boundingBox` / `hover()` may aim a gesture (e.g. wheel over a list). Never `expect` on those numbers.
+- `page.evaluate` is OK for **fixture setup** (route fulfill) and reading **a11y state** only when no locator API exists — not for layout metrics as the gate.
+
+## Viewport and device
+
+- **One size per test.** Set viewport (or a Playwright `devices[…]` profile) once at the start of the test, before `goto` / the first user action.
+- **Never change viewport mid-test** to cover another layout (mobile then desktop, narrow then wide). That is not a resident path; it races layout/`matchMedia` and invents a DevTools resize session.
+- Need both phone and desktop coverage? **Two tests**, each starting at the right size (or separate projects). Same curated Jump order on both is fine; assert it on each path the way a user would (open Jump on mobile; read the sidenav on desktop).
+
+## Allowed (not violations)
+
+- Synthetic county JSON / route mocks so CI does not hit live Assessors.
+- Waiting for UI that appears after Search or Try demo (auto-wait / `expect` visibility).
+- HTTP status probes in live-sources helpers (not UI geometry).
+
+## When editing or adding e2e
+
+Before merging a new or changed test, ask: “Would a resident do this, and would they care about this outcome?” If either answer is no, rewrite or delete. Do not add “just this once” px / computed-style gates.
+
+## Related
+
+- Host / browser command: `.cursor/rules/playwright-macos-sandbox.mdc`
+- Final-checks e2e: `.cursor/rules/base-rule.mdc`

@@ -15,7 +15,7 @@ import { splitSitusLabelEnvelopeLines } from "../src/lib/addressLabelDifference"
 import { PARCEL_RECORD_NO_DATA } from "../src/lib/parcelRecordNoData";
 import { COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS } from "../src/content/countyPriorYearValuesGapNote";
 import {
-  HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
+  HOME_APPRAISED_ASSESSED_ID,
   HOME_DASHBOARD_UTILITY_BAR_ID,
   HOME_FEEDBACK_ASIDE_ID,
   HOME_PROPERTY_DETAILS_ID,
@@ -47,17 +47,10 @@ test.describe("Try demo property", () => {
     await expect(
       onThisPage.getByRole("button", { name: "Summary", exact: true }),
     ).toHaveCount(0);
-    await expect(
-      await sectionNav.evaluate((el) => {
-        // Desktop: aside stretches the column (static); stickiness is on the inner wrapper.
-        const inner = el.firstElementChild;
-        if (!(inner instanceof HTMLElement)) return getComputedStyle(el).position;
-        return getComputedStyle(inner).position;
-      }),
-    ).toBe("sticky");
 
-    // Desktop sidenav still scroll-spies (mobile Jump does not).
-    await page.evaluate(() => window.scrollBy(0, 500));
+    // Desktop sidenav scroll-spies (mobile Jump does not): after scroll, one current jump.
+    await page.locator("#home-levy-stack-tiles").hover();
+    await page.mouse.wheel(0, 500);
     await expect(
       onThisPage.locator('button[aria-current="location"]'),
     ).toHaveCount(1);
@@ -109,14 +102,10 @@ test.describe("Try demo property", () => {
     // Closed: one truncated line (full label string).
     await expect(jumpSummary).toContainText(DEMO_ADDRESS_LABEL);
 
-    // I Own | I Rent must sit under the sticky Jump/address strip, not above it.
+    // I Own | I Rent sits with the report under the Jump strip (both must be usable).
     const ownRent = page.getByRole("radiogroup", { name: "I own or I rent" });
     await expect(ownRent).toBeVisible();
-    const navBox = await sectionNav.boundingBox();
-    const rentBox = await ownRent.boundingBox();
-    expect(navBox).not.toBeNull();
-    expect(rentBox).not.toBeNull();
-    expect(rentBox!.y).toBeGreaterThan(navBox!.y);
+    await expect(ownRent.getByRole("radio", { name: "I Own" })).toBeVisible();
 
     const details = sectionNav.locator("details");
     const demoEnvelope = splitSitusLabelEnvelopeLines(DEMO_ADDRESS_LABEL);
@@ -135,21 +124,19 @@ test.describe("Try demo property", () => {
     await page.keyboard.press("Escape");
     await expect(details).not.toHaveAttribute("open", "");
     await expect(jumpSummary).toContainText(DEMO_ADDRESS_LABEL);
-    await sectionNav.scrollIntoViewIfNeeded();
-    const topBefore = await sectionNav.evaluate(
-      (el) => el.getBoundingClientRect().top,
-    );
-    expect(topBefore).toBeGreaterThan(0);
-    await page.evaluate(() => window.scrollBy(0, 700));
-    const after = await sectionNav.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return { top: r.top, left: r.left, width: r.width };
-    });
-    // Real stick: clamped near 0 — not scrolled away (negative) or mid-page.
-    expect(after.top).toBeGreaterThanOrEqual(-1);
-    expect(after.top).toBeLessThanOrEqual(1);
-    expect(after.left).toBeLessThanOrEqual(1);
-    expect(after.width).toBeGreaterThanOrEqual(388);
+    // Wheel the report; Jump strip stays on screen and usable (sticky).
+    await page.locator("#home-levy-stack-subheading").hover();
+    await page.mouse.wheel(0, 900);
+    await page.mouse.wheel(0, 900);
+    await expect(sectionNav).toBeVisible();
+    await expect(sectionNav).toBeInViewport();
+    await expect(
+      jumpSummary.getByText("Jump to a section", { exact: true }),
+    ).toBeVisible();
+    await jumpSummary.click();
+    await expect(details).toHaveAttribute("open", "");
+    await page.keyboard.press("Escape");
+    await expect(details).not.toHaveAttribute("open", "");
   });
 
   test("mobile TOC list scrolls when taller than the viewport, then jumps", async ({
@@ -170,40 +157,14 @@ test.describe("Try demo property", () => {
     await expect(details).toHaveAttribute("open", "");
 
     const menu = details.locator("ul").first();
-    await expect
-      .poll(async () => menu.evaluate((el) => (el as HTMLElement).style.maxHeight))
-      .not.toBe("");
-    // Cap must equal remaining space under the list (no min floor that can
-    // overshoot the viewport). Inner scroll when content is taller.
-    const metrics = await menu.evaluate((el) => {
-      const rect = el.getBoundingClientRect();
-      const viewport = window.visualViewport;
-      const viewportBottom =
-        viewport != null
-          ? viewport.offsetTop + viewport.height
-          : window.innerHeight;
-      const available = Math.floor(viewportBottom - rect.top - 8);
-      return {
-        scrollHeight: el.scrollHeight,
-        clientHeight: el.clientHeight,
-        overflowY: getComputedStyle(el).overflowY,
-        maxHeightPx: Number.parseFloat((el as HTMLElement).style.maxHeight),
-        available,
-        bottom: rect.bottom,
-        viewportBottom,
-      };
-    });
-    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
-    expect(["auto", "scroll", "overlay"]).toContain(metrics.overflowY);
-    expect(metrics.maxHeightPx).toBeGreaterThan(0);
-    expect(metrics.maxHeightPx).toBeLessThanOrEqual(metrics.available);
-    expect(metrics.bottom).toBeLessThanOrEqual(metrics.viewportBottom + 1);
-
     const feedback = sectionNav.getByRole("button", {
       name: "Feedback",
       exact: true,
     });
-    await feedback.scrollIntoViewIfNeeded();
+    // Wheel the open Jump list like a phone, then tap Feedback.
+    await menu.hover();
+    await page.mouse.wheel(0, 400);
+    await page.mouse.wheel(0, 400);
     await feedback.click();
     const feedbackAside = page.locator(`#${HOME_FEEDBACK_ASIDE_ID}`);
     await expect(feedbackAside).toBeFocused();
@@ -227,25 +188,6 @@ test.describe("Try demo property", () => {
     await jumpSummary.click();
     await expect(details).toHaveAttribute("open", "");
 
-    // Open menu must not inflate the closed-strip CSS var used for scroll-mt.
-    const heights = await page.evaluate((ids) => {
-      const bar = document.getElementById(ids.barId);
-      const varPx = Number.parseFloat(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue(ids.heightVar)
-          .trim(),
-      );
-      return {
-        aside: bar?.getBoundingClientRect().height ?? 0,
-        cssVar: varPx,
-      };
-    }, {
-      barId: HOME_DASHBOARD_UTILITY_BAR_ID,
-      heightVar: HOME_DASHBOARD_UTILITY_BAR_HEIGHT_VAR,
-    });
-    expect(heights.cssVar).toBeGreaterThan(0);
-    expect(heights.cssVar).toBeLessThan(heights.aside * 0.75);
-
     // Mobile Jump list must not use scroll-spy aria-current.
     await expect(
       sectionNav.locator('button[aria-current="location"]'),
@@ -268,6 +210,95 @@ test.describe("Try demo property", () => {
     await expect(feedbackAside).toBeFocused();
     await expect(feedbackAside).toBeInViewport();
     await expect(details).not.toHaveAttribute("open", "");
+  });
+
+  test("Comparable properties: one heading, sticky table grid, no PDF gap under title", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const comps = page.locator("#home-nov-comps-grid");
+    await expect(comps).toBeVisible();
+    await expect(
+      comps.getByRole("heading", { name: "Comparable properties", level: 3 }),
+    ).toBeVisible();
+    await expect(
+      comps.getByRole("heading", { name: "Comps grid" }),
+    ).toHaveCount(0);
+    await expect(comps.getByRole("button", { name: "Coming soon" })).toHaveCount(
+      0,
+    );
+    await expect(comps.getByText(/COUNTY DATA GAP/i)).toHaveCount(0);
+    await expect(
+      comps.getByRole("table", {
+        name: /Comparable sales and subject fields/i,
+      }),
+    ).toBeVisible();
+    await expect(
+      comps.getByRole("region", {
+        name: /Field names and your property stay fixed/i,
+      }),
+    ).toBeVisible();
+  });
+
+  test("Comparable properties Jump order: comps, then county compare, then Feedback", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const onThisPage = page.getByRole("navigation", { name: "On this page" });
+    await expect(
+      onThisPage.getByRole("button", { name: /Comparable properties/ }),
+    ).toBeVisible();
+    const jumpLabels = await onThisPage.getByRole("button").allTextContents();
+    const compsIdx = jumpLabels.findIndex((t) =>
+      t.includes("Comparable properties"),
+    );
+    const compareIdx = jumpLabels.findIndex((t) =>
+      t.includes("See how Arapahoe County displays your data"),
+    );
+    const feedbackIdx = jumpLabels.findIndex((t) => t.includes("Feedback"));
+    expect(compsIdx).toBeGreaterThanOrEqual(0);
+    expect(compareIdx).toBeGreaterThan(compsIdx);
+    expect(feedbackIdx).toBeGreaterThan(compareIdx);
+  });
+
+  test("Appraised and assessed values: money visible; field names stay after h-scroll", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
+    const section = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
+    await expect(section).toBeVisible();
+    const table = section.getByRole("table", {
+      name: /Appraised and assessed values/i,
+    });
+    await expect(table).toBeVisible();
+
+    const scrollRegion = section.getByRole("region", {
+      name: /Field names stay fixed on the left/i,
+    });
+    await expect(scrollRegion).toBeVisible();
+    await scrollRegion.hover();
+    // Nudge into view like a resident scrolling the report, then read dollars.
+    await page.mouse.wheel(0, 200);
+
+    const firstMoney = table.locator("tbody tr td").first();
+    const rowLabel = table.locator("tbody tr th[scope='row']").first();
+    await expect(firstMoney).toBeVisible();
+    await expect(firstMoney).toHaveText(/^\$[\d,]+/);
+    await expect(rowLabel).toBeVisible();
+
+    // H-scroll the values grid; field-name column stays usable on screen.
+    await page.mouse.wheel(280, 0);
+    await expect(rowLabel).toBeVisible();
+    await expect(rowLabel).toBeInViewport();
   });
 
   test("missing-data mailto includes field, demo PIN, and AIN", async ({
