@@ -14,7 +14,7 @@ Public static-data tool for Arapahoe-focused property tax and metro-district con
 
 **Semver (once per branch):** Bump `package.json` version **at most once** on a given branch, in the commit that introduces the release. Add or extend the matching `src/content/changelog.ts` entry for that same version; do **not** bump again for follow-up commits on the same branch (fold close-out notes into the existing entry). Owner runs git.
 
-**Also:** `.cursor/rules/jsx-whitespace.mdc` (TSX/JSX), `.cursor/rules/playwright-macos-sandbox.mdc` (e2e), `.cursor/rules/literal-technical-terms.mdc` (no coined nicknames or metaphors for technical objects), `.cursor/rules/property-tax-estimate-honesty.mdc` (face Property tax mode, tax year provenance, dual-base levy dollars).
+**Also:** `.cursor/rules/jsx-whitespace.mdc` (TSX/JSX), `.cursor/rules/playwright-macos-sandbox.mdc` (e2e host/browsers), `.cursor/rules/playwright-real-user-behavior.mdc` (e2e: one plausible resident path; no mid-test viewport resize), `.cursor/rules/literal-technical-terms.mdc` (no coined nicknames or metaphors for technical objects), `.cursor/rules/property-tax-estimate-honesty.mdc` (face Property tax mode, tax year provenance, dual-base levy dollars).
 
 ### Resident-facing copy
 

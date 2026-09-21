@@ -1,0 +1,31 @@
+---
+description: Playwright e2e must emulate one plausible resident path — no DevTools-style viewport hacks
+alwaysApply: true
+---
+
+# Playwright: real user behavior
+
+E2e exercises what a resident can do with a phone or a laptop, not what a developer can do in Chrome DevTools.
+
+## Viewport and device
+
+- **One size per test.** Set viewport (or a Playwright `devices[…]` profile) once at the start of the test, before `goto` / the first user action.
+- **Never change viewport mid-test** to cover another layout (mobile then desktop, narrow then wide). That is not a resident path; it races layout/`matchMedia` and invents a DevTools resize session.
+- Need both phone and desktop coverage? **Two tests**, each starting at the right size (or separate projects). Same curated Jump order on both is fine; assert it on each path the way a user would (open Jump on mobile; read the sidenav on desktop).
+
+## Interactions
+
+- Prefer roles, labels, visible text, keyboard a resident uses (Tab, Escape, Enter, arrows where the UI supports them).
+- **Do not** fake UI with `dispatchEvent`, synthetic `blur()`, or invented scroll events when a real gesture exists (click outside, Tab away, `mouse.wheel` / touch scroll).
+- `page.evaluate` is OK for **assertions** (geometry, computed style, a11y state) and for **fixture setup** (route fulfill). It is not a substitute for clicking, typing, or scrolling the page when the test is claiming user behavior.
+
+## Allowed (not violations)
+
+- Synthetic county JSON / route mocks so CI does not hit live Assessors.
+- Waiting for UI that appears after Search or Try demo (auto-wait / `expect` visibility).
+- Reading `getComputedStyle` or layout metrics after a real scroll or Jump.
+
+## Related
+
+- Host / browser command: `.cursor/rules/playwright-macos-sandbox.mdc`
+- Final-checks e2e: `.cursor/rules/base-rule.mdc`

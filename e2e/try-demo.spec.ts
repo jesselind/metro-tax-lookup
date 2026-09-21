@@ -58,7 +58,8 @@ test.describe("Try demo property", () => {
     ).toBe("sticky");
 
     // Desktop sidenav still scroll-spies (mobile Jump does not).
-    await page.evaluate(() => window.scrollBy(0, 500));
+    await page.locator("#home-levy-stack-tiles").hover();
+    await page.mouse.wheel(0, 500);
     await expect(
       onThisPage.locator('button[aria-current="location"]'),
     ).toHaveCount(1);
@@ -141,7 +142,10 @@ test.describe("Try demo property", () => {
       (el) => el.getBoundingClientRect().top,
     );
     expect(topBefore).toBeGreaterThan(0);
-    await page.evaluate(() => window.scrollBy(0, 700));
+    // Wheel the main column (not the sticky Jump strip) like a phone trackpad.
+    await page.locator("#home-levy-stack-subheading").hover();
+    await page.mouse.wheel(0, 900);
+    await page.mouse.wheel(0, 900);
     const after = await sectionNav.evaluate((el) => {
       const r = el.getBoundingClientRect();
       return { top: r.top, left: r.left, width: r.width };
@@ -300,10 +304,19 @@ test.describe("Try demo property", () => {
         name: /Field names and your property stay fixed/i,
       }),
     ).toBeVisible();
+  });
 
-    // Jump order: desktop sidenav list (mobile Jump keeps the same curated order).
+  test("Comparable properties Jump order: comps, then county compare, then Feedback", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try demo property" }).click();
+
     const onThisPage = page.getByRole("navigation", { name: "On this page" });
+    await expect(
+      onThisPage.getByRole("button", { name: /Comparable properties/ }),
+    ).toBeVisible();
     const jumpLabels = await onThisPage.getByRole("button").allTextContents();
     const compsIdx = jumpLabels.findIndex((t) =>
       t.includes("Comparable properties"),

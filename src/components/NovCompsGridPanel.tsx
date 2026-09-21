@@ -36,7 +36,7 @@ import { GlossaryFullDefinitionLink } from "@/components/GlossaryFullDefinitionL
 import {
   DashboardHScrollTable,
   DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS,
-  dashboardHScrollTableKeyDown,
+  dashboardHScrollTableArrowsHomeEndKeyDown,
 } from "@/components/DashboardHScrollTable";
 import {
   TERM_LINK_CLASS,
@@ -450,8 +450,8 @@ function NovCompsGridTable({
         role: "region",
         tabIndex: 0,
         "aria-label":
-          "Comparable sales worksheet table. Field names and your property stay fixed on the left. Use arrow keys, Page Up, Page Down, Home, or End to scroll other sales horizontally when columns extend past the screen.",
-        onKeyDown: dashboardHScrollTableKeyDown,
+          "Comparable sales worksheet table. Field names and your property stay fixed on the left. Use arrow keys, Home, or End to scroll other sales horizontally when columns extend past the screen. Page Up and Page Down scroll the table vertically.",
+        onKeyDown: dashboardHScrollTableArrowsHomeEndKeyDown,
       }}
     >
         <table className={TABLE_CLASS}>

@@ -40,12 +40,11 @@ export type DashboardHScrollTableProps = {
 export const DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS =
   "outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2";
 
-/**
- * Arrow / Page / Home / End horizontal scroll for a focusable scrollport.
- * Pair with `role="region"`, `tabIndex={0}`, and a clear `aria-label`.
- */
-export function dashboardHScrollTableKeyDown(
+type DashboardHScrollTableKeyMode = "arrows-home-end" | "arrows-home-end-page";
+
+function handleDashboardHScrollTableKeyDown(
   event: KeyboardEvent<HTMLDivElement>,
+  mode: DashboardHScrollTableKeyMode,
 ): void {
   const el = event.currentTarget;
   const step = Math.round(el.clientWidth * 0.5) || 48;
@@ -61,13 +60,36 @@ export function dashboardHScrollTableKeyDown(
   } else if (event.key === "End") {
     event.preventDefault();
     el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
-  } else if (event.key === "PageUp") {
+  } else if (mode === "arrows-home-end-page" && event.key === "PageUp") {
     event.preventDefault();
     el.scrollBy({ left: -el.clientWidth, behavior: "smooth" });
-  } else if (event.key === "PageDown") {
+  } else if (mode === "arrows-home-end-page" && event.key === "PageDown") {
     event.preventDefault();
     el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
   }
+}
+
+/**
+ * Arrow / Page / Home / End horizontal scroll for a focusable scrollport.
+ * Pair with `role="region"`, `tabIndex={0}`, and a clear `aria-label`.
+ * Prefer {@link dashboardHScrollTableArrowsHomeEndKeyDown} when the scrollport
+ * also scrolls vertically (PageUp/PageDown must stay native).
+ */
+export function dashboardHScrollTableKeyDown(
+  event: KeyboardEvent<HTMLDivElement>,
+): void {
+  handleDashboardHScrollTableKeyDown(event, "arrows-home-end-page");
+}
+
+/**
+ * ArrowLeft/Right, Home, and End horizontal scroll only. Leaves PageUp/PageDown
+ * unhandled so a max-height overflow-y scrollport (comps) keeps native vertical
+ * paging.
+ */
+export function dashboardHScrollTableArrowsHomeEndKeyDown(
+  event: KeyboardEvent<HTMLDivElement>,
+): void {
+  handleDashboardHScrollTableKeyDown(event, "arrows-home-end");
 }
 
 function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
