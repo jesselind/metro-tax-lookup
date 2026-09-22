@@ -12,7 +12,8 @@ import { fillStreetAndSubmitSearch } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
 /**
- * Non-residential ParcelValueTable: proportional assessed split, no school row.
+ * Non-residential values face: proportional assessed split in dive-deeper,
+ * no school assessed board.
  */
 test("non-residential parcel shows proportional assessed split without school row", async ({
   page,
@@ -31,19 +32,29 @@ test("non-residential parcel shows proportional assessed split without school ro
 
   await expect(page.locator("#parcel-record-heading")).toBeVisible();
 
-  const valuesTable = page.getByRole("table", {
-    name: "Appraised and assessed values by total, building, and land",
-  });
-  await expect(valuesTable).toBeVisible();
+  const valuesSection = page.locator("#home-parcel-appraised-assessed");
+  await expect(valuesSection).toBeVisible();
   // Exempt 9xxx (synthetic hospital): no invented chart percent parenthetical.
-  const assessedRow = valuesTable.getByRole("row", {
+  await expect(
+    valuesSection.getByText(/2026 Assessed Value/, { exact: false }),
+  ).toBeVisible();
+  await expect(valuesSection.getByText(/\(\d+(\.\d+)?%\)/)).toHaveCount(0);
+  await expect(
+    valuesSection.getByText(/Assessed School Value/),
+  ).toHaveCount(0);
+  await expect(valuesSection.getByText("$12,500,000")).toBeVisible();
+
+  await valuesSection
+    .getByRole("button", { name: "Building and land breakdown" })
+    .click();
+  const breakdownTable = valuesSection.getByRole("table", {
+    name: /Building and land breakdown/i,
+  });
+  await expect(breakdownTable).toBeVisible();
+  const assessedRow = breakdownTable.getByRole("row", {
     name: /2026 Assessed Value/,
   });
   await expect(assessedRow).toBeVisible();
-  await expect(assessedRow).not.toContainText(/\(\d+(\.\d+)?%\)/);
-  await expect(
-    valuesTable.getByRole("row", { name: /Assessed School Value/ }),
-  ).toHaveCount(0);
   await expect(assessedRow.getByRole("cell", { name: "$12,500,000" })).toBeVisible();
   await expect(assessedRow.getByRole("cell", { name: "$10,000,000" })).toBeVisible();
   await expect(assessedRow.getByRole("cell", { name: "$2,500,000" })).toBeVisible();

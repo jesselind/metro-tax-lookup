@@ -25,6 +25,10 @@ import {
 type Props = {
   series: ValuationHistoryChartSeriesPoint[];
   valueKind: ValuationValueKind;
+  /**
+   * Inside a values kind card: heading + SVG only (no second bordered frame).
+   */
+  embedded?: boolean;
 };
 
 function chartHeading(kind: ValuationValueKind): string {
@@ -33,7 +37,11 @@ function chartHeading(kind: ValuationValueKind): string {
     : VALUATION_HISTORY_CHART_HEADING_ACTUAL;
 }
 
-export function ValuationHistoryChart({ series, valueKind }: Props) {
+export function ValuationHistoryChart({
+  series,
+  valueKind,
+  embedded = false,
+}: Props) {
   const headingId = useId();
   const pointTriggerIdBase = useId().replace(/:/g, "");
   const gradientId = useId().replace(/:/g, "");
@@ -51,13 +59,17 @@ export function ValuationHistoryChart({ series, valueKind }: Props) {
 
   return (
     <div
-      className="rounded-lg border border-slate-200/95 bg-gradient-to-b from-white to-slate-50/80 p-3 shadow-sm sm:p-4"
+      className={
+        embedded
+          ? undefined
+          : "rounded-lg border border-slate-200/95 bg-gradient-to-b from-white to-slate-50/80 p-3 shadow-sm sm:p-4"
+      }
       role="region"
       aria-labelledby={headingId}
     >
       <p
         id={headingId}
-        className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-xs"
+        className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 sm:text-sm"
       >
         {chartHeading(valueKind)}
       </p>

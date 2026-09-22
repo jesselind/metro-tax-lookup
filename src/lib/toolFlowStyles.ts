@@ -354,6 +354,33 @@ export const LEVY_STACK_TILE_GRID_CLASS =
   "grid w-full min-w-0 gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr))]";
 
 /**
+ * Appraised / Assessed peer cards: at most two columns so charts keep width.
+ * High min track (~28rem) stacks cards sooner so in-card Tax Year columns are
+ * not squeezed (avoids label wrap misaligning dollar rows). School assessed uses
+ * {@link VALUES_KIND_CARD_FULL_ROW_CLASS}.
+ */
+export const VALUES_KIND_GRID_CLASS =
+  "grid w-full min-w-0 items-stretch gap-3 sm:gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,max(28rem,calc(50%-0.5rem))),1fr))]";
+
+/**
+ * One value-kind box (Appraised, Assessed, or School assessed). Holds the field
+ * label plus Total $ (no history) or always-visible YoY year-compare + chart.
+ */
+export const VALUES_KIND_CARD_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} flex h-full min-w-0 flex-col gap-3 border border-slate-200 bg-white p-4 shadow-sm sm:gap-3.5 sm:p-5`;
+
+/** School assessed (and any non-peer card): full grid width under Appraised | Assessed. */
+export const VALUES_KIND_CARD_FULL_ROW_CLASS = "col-span-full";
+
+/** Hero dollar inside a values kind card. */
+export const VALUES_FACE_FIGURE_CLASS =
+  "text-2xl font-semibold tabular-nums leading-none tracking-tight text-slate-900 sm:text-3xl";
+
+/** @deprecated Prefer {@link VALUES_KIND_GRID_CLASS}. */
+export const VALUES_FACE_GRID_CLASS = VALUES_KIND_GRID_CLASS;
+
+/** @deprecated Prefer {@link VALUES_KIND_CARD_CLASS}. */
+export const VALUES_FACE_BOARD_CLASS = VALUES_KIND_CARD_CLASS;
+/**
  * Summary tiles wrap into content-sized chips. `items-stretch` makes every chip
  * on a wrap line as tall as the tallest chip on that line (top and bottom edges
  * line up). Same wrap behavior in the lg dashboard column: chips stay max-content
@@ -430,14 +457,6 @@ export const LEVY_CHANGED_BADGE_TONE_CLASS =
 /** Red county-gap badge (e.g. Prior years missing on Assessed value). Light fill + dark text, same recipe as Changed. */
 export const COUNTY_SERVICE_GAP_BADGE_TONE_CLASS =
   "border-red-950 bg-red-200 text-red-950";
-
-/** Signed dollar delta under the Total figure (replaces the thick Changed badge). */
-export const PARCEL_VALUE_DELTA_INLINE_CLASS =
-  "text-xs font-semibold tabular-nums text-amber-900 sm:text-sm";
-
-/** Year over year opener under Total: text link, not a bordered chip. */
-export const PARCEL_VALUE_HISTORY_LINK_CLASS =
-  "cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-indigo-800 underline decoration-indigo-700/70 decoration-2 underline-offset-2 hover:text-indigo-950 hover:decoration-indigo-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/35 focus-visible:ring-offset-1 sm:text-sm";
 
 /**
  * Glossary control inside {@link PARCEL_SUMMARY_TILE_LABEL_CLASS}: match label caps + scale;

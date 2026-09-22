@@ -43,7 +43,7 @@ function valueForKind(
 }
 
 function valueLabelForKind(kind: ValuationValueKind): string {
-  return kind === "assessed" ? "Assessed value" : "Actual value";
+  return kind === "assessed" ? "Assessed value" : "Appraised value";
 }
 
 /** Prior tax year pair when history has at least two years. */

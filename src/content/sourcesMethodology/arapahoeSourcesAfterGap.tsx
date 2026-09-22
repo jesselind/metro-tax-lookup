@@ -173,8 +173,24 @@ export function ArapahoeSourcesAfterGap({
         </strong>
         {" "}
         cue on the same line as the percent headline signals that more is
-        available. Assessed and actual value history dialogs use the same
-        collapsed-then-Details pattern above an always-visible chart. Each tax year shows
+        available.         When a county ships valuation history shards,{" "}
+        <strong className="font-semibold text-slate-900">
+          Appraised and assessed values
+        </strong>
+        {" "}
+        shows one card per value type. Appraised and Assessed show prior and
+        current tax years, a colored{" "}
+        <strong className="font-semibold text-slate-900">Difference</strong>
+        {" "}
+        line, and a chart on the face (no separate dialog). School assessed
+        stays this year&apos;s Total only. Arapahoe has no prior-year figures in
+        our mart today, so every card shows this year&apos;s Total only and the
+        gap badge under the section title.{" "}
+        <strong className="font-semibold text-slate-900">
+          See data in table form
+        </strong>
+        {" "}
+        opens the year-by-year table when history exists. Each tax year shows
         county mills first, then{" "}
         <strong className="font-semibold text-slate-900">About $X</strong>
         {" "}
