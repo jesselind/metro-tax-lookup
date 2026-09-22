@@ -1,7 +1,16 @@
 # CodeRabbit review config (repo root). JSX prose spacing is gated by ESLint
 # `local/jsx-inline-prose-spacing` (`npm run lint`). Do not request {" "} sweeps
 # for patterns that lint already allows.
+#
+# path_filters: Free plan caps PR reviews at 100 files *after* filters
+# (docs.coderabbit.ai/management/plans#rate-limits). Arapahoe/Douglas parcel
+# and valuation shards are thousands of generated files; exclude them so
+# override/TE-pin ships still get reviewed. GitHub still shows the full PR.
 reviews:
+  path_filters:
+    - "!public/data/arapahoe-parcel-record-by-pin/**"
+    - "!public/data/douglas-parcel-record-by-pin/**"
+    - "!public/data/douglas-valuation-history-by-account/**"
   path_instructions:
     - path: "**/*.{tsx,jsx}"
       instructions: |
