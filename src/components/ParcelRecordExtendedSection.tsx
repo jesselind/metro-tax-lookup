@@ -5,17 +5,17 @@
 
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import {
   ParcelRecordBuildingAndLandTable,
   ParcelRecordPermitTable,
   ParcelRecordSaleTable,
   ParcelRecordValueSection,
-  type ParcelValueHistoryAffordance,
 } from "@/components/ParcelRecordCountyTables";
 import { ParcelRecordReportIdsProvider } from "@/components/ParcelRecordMissingValue";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import type { CountyParcelRecordRow } from "@/lib/countyParcelLevyData";
+import type { CountyValuationHistoryPoint } from "@/lib/countyValuationHistoryData";
 import { useDisplayParcelRecord } from "@/hooks/useDisplayParcelRecord";
 import {
   type CountyConfig,
@@ -66,19 +66,20 @@ export type ParcelRecordExtendedSectionProps = {
   /** Resolved county for hosted record / clerk links. */
   countyConfig: CountyConfig;
   /**
-   * Transferred Actual / Assessed summary-tile affordances (Changed, YoY chart
-   * openers, prior-year gap). When set, the old single "View valuation history"
-   * link is omitted — each value row opens its own chart.
+   * Prior-year gap / Coming soon under Appraised and assessed (when values
+   * render inside this section).
    */
-  actualValueAffordance?: ParcelValueHistoryAffordance | null;
-  assessedValueAffordance?: ParcelValueHistoryAffordance | null;
+  sectionStatusChrome?: ReactNode;
+  valuationHistory?: CountyValuationHistoryPoint[] | null;
+  currentTaxYear?: number | null;
+  totalMills?: number | null;
   /**
    * When TaxYear and AssessmentYear differ but the shard omitted them, pass the
    * locked-report note so Appraised and assessed values still explain the gap.
    */
   taxYearNoteOverride?: string | null;
   /**
-   * When false, skip the values table (parent renders Appraised and assessed
+   * When false, skip the values section (parent renders Appraised and assessed
    * above Property details). Sale / building / land / permits still mount here.
    */
   includeValueSection?: boolean;
@@ -102,8 +103,10 @@ export function ParcelRecordExtendedSection({
   omitContinuationHeading = false,
   rentMode = false,
   countyConfig,
-  actualValueAffordance = null,
-  assessedValueAffordance = null,
+  sectionStatusChrome = null,
+  valuationHistory = null,
+  currentTaxYear = null,
+  totalMills = null,
   taxYearNoteOverride = null,
   includeValueSection = true,
 }: ParcelRecordExtendedSectionProps) {
@@ -203,9 +206,11 @@ export function ParcelRecordExtendedSection({
               <ParcelRecordValueSection
                 record={displayRecord}
                 totalOnly={isBusinessPersonal}
-                actualAffordance={actualValueAffordance}
-                assessedAffordance={assessedValueAffordance}
+                sectionStatusChrome={sectionStatusChrome}
                 taxYearNoteOverride={taxYearNoteOverride}
+                valuationHistory={valuationHistory}
+                currentTaxYear={currentTaxYear}
+                totalMills={totalMills}
               />
             ) : null}
             {!isBusinessPersonal && !rentMode ? saleBuildingLandTables : null}

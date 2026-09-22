@@ -3,25 +3,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
-import type { ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { ParcelRecordMissingValue } from "@/components/ParcelRecordMissingValue";
+import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
+import { ValuationHistoryYoYFace } from "@/components/ValuationHistoryYoYFace";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
 import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecordBuildingAttributeTerms";
-import {
-  VALUATION_HISTORY_ACTUAL_CHANGED_HIGHER_SR,
-  VALUATION_HISTORY_ACTUAL_CHANGED_LOWER_SR,
-  VALUATION_HISTORY_CHANGED_HIGHER_SR,
-  VALUATION_HISTORY_CHANGED_LOWER_SR,
-  VALUATION_HISTORY_OPEN_ARIA_ACTUAL,
-  VALUATION_HISTORY_OPEN_ARIA_ASSESSED,
-} from "@/content/valuationHistoryCopy";
 import type {
   CountyParcelRecordRow,
   ParcelRecordBuilding,
   ParcelRecordPermit,
   ParcelRecordTransfer,
 } from "@/lib/countyParcelLevyData";
+import type { CountyValuationHistoryPoint } from "@/lib/countyValuationHistoryData";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import {
   HOME_APPRAISED_ASSESSED_ID,
@@ -32,7 +27,10 @@ import {
   HOME_PERMITS_ID,
   HOME_SALE_HISTORY_ID,
 } from "@/lib/homeDashboardJumps";
-import { buildParcelValueTableRows } from "@/lib/parcelAssessmentRates";
+import {
+  buildParcelValueTableRows,
+  type ParcelValueTableRow,
+} from "@/lib/parcelAssessmentRates";
 import { parcelRecordCellText } from "@/lib/parcelRecordCellText";
 import { parcelTaxAssessmentYearNote } from "@/lib/parcelRecordDisplay";
 import {
@@ -48,9 +46,11 @@ import {
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
-  PARCEL_VALUE_DELTA_INLINE_CLASS,
-  PARCEL_VALUE_HISTORY_LINK_CLASS,
   TERM_LINK_CLASS,
+  VALUES_FACE_FIGURE_CLASS,
+  VALUES_KIND_CARD_CLASS,
+  VALUES_KIND_CARD_FULL_ROW_CLASS,
+  VALUES_KIND_GRID_CLASS,
 } from "@/lib/toolFlowStyles";
 import {
   DashboardHScrollTable,
@@ -58,7 +58,11 @@ import {
   dashboardHScrollTableKeyDown,
   type DashboardHScrollTableProps,
 } from "@/components/DashboardHScrollTable";
-import type { ValuationValueKind } from "@/lib/valuationHistoryYoY";
+import { ValuationHistoryTable } from "@/components/ValuationHistoryTable";
+import {
+  VALUATION_HISTORY_TABLE_HIDE,
+  VALUATION_HISTORY_TABLE_SHOW,
+} from "@/content/valuationHistoryCopy";
 
 /** Arrive + focus shell for a county table section (ring outside overflow scrollport). */
 function ParcelRecordTableArriveSection({
@@ -459,32 +463,29 @@ function formatValueCell(
   return <span className={MONEY_TOTAL_FIGURE_CLASS}>{formatted}</span>;
 }
 
-function formatValueDeltaInline(delta: number): string {
-  if (delta > 0) {
-    return `+${formatUsdWhole(delta)}`;
-  }
-  return formatUsdWhole(delta);
-}
-
 function ParcelValueTable({
   record,
   totalOnly = false,
-  actualAffordance = null,
-  assessedAffordance = null,
+  sectionStatusChrome = null,
   taxYearNoteOverride = null,
+  valuationHistory = null,
+  currentTaxYear = null,
+  totalMills = null,
 }: {
   record: CountyParcelRecordRow;
-  /** Business personal property: totals only (no Building / Land columns). */
+  /** Business personal property: totals only (no Building / Land dive-deeper). */
   totalOnly?: boolean;
-  /** Transferred Actual value summary-tile affordances (delta + YoY opener). */
-  actualAffordance?: ParcelValueHistoryAffordance | null;
-  /** Transferred Assessed value summary-tile affordances (delta + YoY + gap). */
-  assessedAffordance?: ParcelValueHistoryAffordance | null;
+  /** Prior-year gap / Coming soon under the section title. */
+  sectionStatusChrome?: ReactNode;
   /**
    * When the parcel-record row lacks TaxYear/AssessmentYear but the locked report
    * still knows they differ (e.g. from valuation / levy summary years), show that note.
    */
   taxYearNoteOverride?: string | null;
+  /** Douglas (and others with shards): in-flow YoY + chart when length ≥ 2. */
+  valuationHistory?: CountyValuationHistoryPoint[] | null;
+  currentTaxYear?: number | null;
+  totalMills?: number | null;
 }) {
   const year = (record.assessmentYear ?? "").trim();
   const yearNote =
@@ -493,7 +494,12 @@ function ParcelValueTable({
       record.assessmentYear,
     ) ?? taxYearNoteOverride;
   const rows = buildParcelValueTableRows(record);
-  const sectionStatusChrome = assessedAffordance?.statusChrome ?? null;
+  const buildingLandToggleId = useId();
+  const buildingLandPanelId = useId();
+  const historyTableToggleId = useId();
+  const historyTablePanelId = useId();
+  const [showBuildingLand, setShowBuildingLand] = useState(false);
+  const [showHistoryTable, setShowHistoryTable] = useState(false);
 
   const hasAnyValue = rows.some(
     (row) =>
@@ -506,74 +512,229 @@ function ParcelValueTable({
     : rows.filter((row) => row.kind === "appraised");
   if (rowsToShow.length === 0) {
     return (
-      <p>
-        <ParcelRecordMissingValue
-          fieldLabel="Appraised and assessed values"
-          triggerIdSuffix="values-empty"
-        />
-      </p>
+      <div
+        id={HOME_APPRAISED_ASSESSED_ID}
+        tabIndex={-1}
+        className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} outline-none`}
+      >
+        <ParcelDashboardSectionHeading title="Appraised and assessed values" />
+        <p>
+          <ParcelRecordMissingValue
+            fieldLabel="Appraised and assessed values"
+            triggerIdSuffix="values-empty"
+          />
+        </p>
+      </div>
     );
   }
 
-  const beforeTableNotes =
-    yearNote != null || sectionStatusChrome != null ? (
-      <div className="space-y-2">
-        {yearNote ? (
-          <p
-            className="text-sm leading-relaxed text-slate-600 sm:text-base"
-            role="note"
-          >
-            {yearNote}
-          </p>
-        ) : null}
-        {sectionStatusChrome ? (
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            {sectionStatusChrome}
-          </div>
-        ) : null}
-      </div>
-    ) : null;
+  const faceRows = rowsToShow.filter(
+    (row) =>
+      row.values.total != null && Number.isFinite(row.values.total),
+  );
+  const faceRowsOrFallback =
+    faceRows.length > 0 ? faceRows : rowsToShow.slice(0, 1);
+
+  const hasBuildingOrLand = rowsToShow.some(
+    (row) =>
+      (row.values.building != null && Number.isFinite(row.values.building)) ||
+      (row.values.land != null && Number.isFinite(row.values.land)),
+  );
+  const showBuildingLandDisclosure = !totalOnly && hasBuildingOrLand;
+
+  const historyReady =
+    valuationHistory != null && valuationHistory.length >= 2;
 
   return (
-    <ParcelRecordTableArriveSection
+    <div
       id={HOME_APPRAISED_ASSESSED_ID}
-      className={DASHBOARD_SECTION_LEAD_STACK_CLASS}
-      heading={
-        <ParcelDashboardSectionHeading
-          title="Appraised and assessed values"
-        />
-      }
-      beforeTable={beforeTableNotes}
-      scrollClassName={DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS}
-      scrollProps={{
-        role: "region",
-        tabIndex: 0,
-        "aria-label":
-          "Appraised and assessed values table. Field names stay fixed on the left. Use arrow keys, Page Up, Page Down, Home, or End to scroll other columns horizontally when they extend past the screen.",
-        onKeyDown: dashboardHScrollTableKeyDown,
-      }}
+      tabIndex={-1}
+      className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} outline-none`}
     >
-      <table className={VALUE_TABLE_CLASS}>
+      <ParcelDashboardSectionHeading title="Appraised and assessed values" />
+      {yearNote != null || sectionStatusChrome != null ? (
+        <div className="space-y-2">
+          {yearNote ? (
+            <p
+              className="text-sm leading-relaxed text-slate-600 sm:text-base"
+              role="note"
+            >
+              {yearNote}
+            </p>
+          ) : null}
+          {sectionStatusChrome ? (
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              {sectionStatusChrome}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className={VALUES_KIND_GRID_CLASS} role="list">
+        {faceRowsOrFallback.map((row) => {
+          const historyKind =
+            row.kind === "appraised"
+              ? "actual"
+              : row.kind === "assessed"
+                ? "assessed"
+                : null;
+          const total = row.values.total;
+          const showHistory =
+            historyReady &&
+            historyKind != null &&
+            typeof total === "number" &&
+            Number.isFinite(total);
+          return (
+            <div
+              key={row.kind}
+              className={
+                row.kind === "assessed-school"
+                  ? `${VALUES_KIND_CARD_CLASS} ${VALUES_KIND_CARD_FULL_ROW_CLASS}`
+                  : VALUES_KIND_CARD_CLASS
+              }
+              role="listitem"
+            >
+              <ValueKindTotalHeader year={year} row={row} showFigure={!showHistory} />
+              {showHistory ? (
+                <ValuationHistoryYoYFace
+                  valueKind={historyKind}
+                  series={valuationHistory}
+                  currentValue={total}
+                  currentTaxYear={currentTaxYear}
+                  totalMills={totalMills}
+                />
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      {(historyReady || showBuildingLandDisclosure) ? (
+        <div className="space-y-3">
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-start sm:gap-3">
+            {historyReady ? (
+              <ToolOutlinedToggleButton
+                id={historyTableToggleId}
+                aria-expanded={showHistoryTable}
+                aria-controls={historyTablePanelId}
+                onClick={() => setShowHistoryTable((open) => !open)}
+              >
+                {showHistoryTable
+                  ? VALUATION_HISTORY_TABLE_HIDE
+                  : VALUATION_HISTORY_TABLE_SHOW}
+              </ToolOutlinedToggleButton>
+            ) : null}
+            {showBuildingLandDisclosure ? (
+              <ToolOutlinedToggleButton
+                id={buildingLandToggleId}
+                aria-expanded={showBuildingLand}
+                aria-controls={buildingLandPanelId}
+                onClick={() => setShowBuildingLand((open) => !open)}
+              >
+                {showBuildingLand
+                  ? "Hide building and land breakdown"
+                  : "Building and land breakdown"}
+              </ToolOutlinedToggleButton>
+            ) : null}
+          </div>
+          {historyReady ? (
+            <div
+              id={historyTablePanelId}
+              hidden={!showHistoryTable}
+              aria-labelledby={historyTableToggleId}
+            >
+              {showHistoryTable ? (
+                <ValuationHistoryTable series={valuationHistory} embedded />
+              ) : null}
+            </div>
+          ) : null}
+          {showBuildingLandDisclosure ? (
+            <div
+              id={buildingLandPanelId}
+              hidden={!showBuildingLand}
+              aria-labelledby={buildingLandToggleId}
+            >
+              {showBuildingLand ? (
+                <DashboardHScrollTable
+                  scrollClassName={DASHBOARD_HSCROLL_TABLE_FOCUS_RING_CLASS}
+                  scrollProps={{
+                    role: "region",
+                    tabIndex: 0,
+                    "aria-label":
+                      "Building and land breakdown table. Field names stay fixed on the left. Use arrow keys, Page Up, Page Down, Home, or End to scroll other columns horizontally when they extend past the screen.",
+                    onKeyDown: dashboardHScrollTableKeyDown,
+                  }}
+                >
+                  <ParcelValueBreakdownTable
+                    year={year}
+                    rows={rowsToShow}
+                  />
+                </DashboardHScrollTable>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Field label; Total $ when there is no history (history face shows prior|current instead). */
+function ValueKindTotalHeader({
+  year,
+  row,
+  showFigure = true,
+}: {
+  year: string;
+  row: ParcelValueTableRow;
+  showFigure?: boolean;
+}) {
+  const rowLabel = valueRowDisplayLabel(year, row.kind, row.rateLabel);
+  const total = row.values.total;
+
+  return (
+    <div className="min-w-0 space-y-2">
+      <div className="text-sm font-medium leading-snug text-slate-800 sm:text-base">
+        <ValueRowLabel year={year} kind={row.kind} rateLabel={row.rateLabel} />
+      </div>
+      {showFigure ? (
+        <p className={VALUES_FACE_FIGURE_CLASS}>
+          {typeof total === "number" && Number.isFinite(total) ? (
+            formatUsdWhole(total)
+          ) : (
+            <ParcelRecordMissingValue
+              fieldLabel={`${rowLabel} (Total)`}
+              triggerIdSuffix={`${row.kind}-face-total`}
+            />
+          )}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Dive-deeper grid: Total / Building / Land for each value row. */
+function ParcelValueBreakdownTable({
+  year,
+  rows,
+}: {
+  year: string;
+  rows: ParcelValueTableRow[];
+}) {
+  return (
+    <table className={VALUE_TABLE_CLASS}>
       <caption className="sr-only">
-        {totalOnly
-          ? "Appraised and assessed values"
-          : "Appraised and assessed values by total, building, and land"}
+        Building and land breakdown by total, building, and land
       </caption>
       <tbody>
         <ColumnHeaderRow
-          labels={valueColumnHeaderLabels(totalOnly)}
+          labels={valueColumnHeaderLabels(false)}
           blankHeader="hidden"
           moneyColumns
           stickyFirstColumn
         />
-        {rowsToShow.map((row) => {
+        {rows.map((row) => {
           const rowLabel = valueRowDisplayLabel(year, row.kind, row.rateLabel);
-          const affordance =
-            row.kind === "appraised"
-              ? actualAffordance
-              : row.kind === "assessed"
-                ? assessedAffordance
-                : null;
           return (
             <tr key={row.kind}>
               <th
@@ -587,133 +748,32 @@ function ParcelValueTable({
                 />
               </th>
               <td className={MONEY_TD_TOTAL_CLASS}>
-                <div className="inline-flex flex-col items-end gap-0.5">
-                  {formatValueCell(
-                    row.values.total,
-                    `${rowLabel} (Total)`,
-                    `${row.kind}-total`,
-                    true,
-                  )}
-                  {affordance != null && row.values.total != null ? (
-                    <ValueHistoryAffordanceRow
-                      valueKind={
-                        row.kind === "appraised" ? "actual" : "assessed"
-                      }
-                      value={row.values.total}
-                      affordance={affordance}
-                    />
-                  ) : null}
-                </div>
+                {formatValueCell(
+                  row.values.total,
+                  `${rowLabel} (Total)`,
+                  `${row.kind}-total`,
+                  true,
+                )}
               </td>
-              {!totalOnly ? (
-                <>
-                  <td className={MONEY_TD_CLASS}>
-                    {formatValueCell(
-                      row.values.building,
-                      `${rowLabel} (Building)`,
-                      `${row.kind}-building`,
-                    )}
-                  </td>
-                  <td className={MONEY_TD_CLASS}>
-                    {formatValueCell(
-                      row.values.land,
-                      `${rowLabel} (Land)`,
-                      `${row.kind}-land`,
-                    )}
-                  </td>
-                </>
-              ) : null}
+              <td className={MONEY_TD_CLASS}>
+                {formatValueCell(
+                  row.values.building,
+                  `${rowLabel} (Building)`,
+                  `${row.kind}-building`,
+                )}
+              </td>
+              <td className={MONEY_TD_CLASS}>
+                {formatValueCell(
+                  row.values.land,
+                  `${rowLabel} (Land)`,
+                  `${row.kind}-land`,
+                )}
+              </td>
             </tr>
           );
         })}
       </tbody>
-      </table>
-    </ParcelRecordTableArriveSection>
-  );
-}
-
-/**
- * Affordances transferred into Appraised and assessed Total cells:
- * signed dollar delta + valuation-history opener. Prior-year gap / in-progress
- * sit under the section title (see {@link ParcelValueTable} beforeTable).
- */
-export type ParcelValueHistoryAffordance = {
-  valueDelta: number | null;
-  hasHistory: boolean;
-  onOpen: () => void;
-  statusChrome?: ReactNode;
-};
-
-function valueHistoryOpenAriaLabel(
-  valueKind: ValuationValueKind,
-  formattedValue: string,
-  valueDelta: number | null,
-): string {
-  const base =
-    valueKind === "assessed"
-      ? VALUATION_HISTORY_OPEN_ARIA_ASSESSED
-      : VALUATION_HISTORY_OPEN_ARIA_ACTUAL;
-  const parts = [`${base} ${formattedValue}.`];
-  // Visual delta is aria-hidden; announce signed $ with direction for SR.
-  if (
-    valueDelta != null &&
-    Number.isFinite(valueDelta) &&
-    valueDelta !== 0
-  ) {
-    parts.push(`${formatValueDeltaInline(valueDelta)}.`);
-    parts.push(
-      valueDelta > 0
-        ? valueKind === "assessed"
-          ? VALUATION_HISTORY_CHANGED_HIGHER_SR
-          : VALUATION_HISTORY_ACTUAL_CHANGED_HIGHER_SR
-        : valueKind === "assessed"
-          ? VALUATION_HISTORY_CHANGED_LOWER_SR
-          : VALUATION_HISTORY_ACTUAL_CHANGED_LOWER_SR,
-    );
-  }
-  return parts.join(" ");
-}
-
-function ValueHistoryAffordanceRow({
-  valueKind,
-  value,
-  affordance,
-}: {
-  valueKind: ValuationValueKind;
-  value: number;
-  affordance: ParcelValueHistoryAffordance;
-}) {
-  const formattedValue = formatUsdWhole(value);
-  const showDelta =
-    affordance.valueDelta != null &&
-    Number.isFinite(affordance.valueDelta) &&
-    affordance.valueDelta !== 0;
-  const showHistory = affordance.hasHistory;
-  if (!showDelta && !showHistory) {
-    return null;
-  }
-  return (
-    <div className="flex max-w-[12rem] flex-wrap items-baseline justify-end gap-x-2 gap-y-0.5 sm:max-w-none">
-      {showDelta ? (
-        <span className={PARCEL_VALUE_DELTA_INLINE_CLASS} aria-hidden>
-          {formatValueDeltaInline(affordance.valueDelta!)}
-        </span>
-      ) : null}
-      {showHistory ? (
-        <button
-          type="button"
-          className={PARCEL_VALUE_HISTORY_LINK_CLASS}
-          aria-label={valueHistoryOpenAriaLabel(
-            valueKind,
-            formattedValue,
-            affordance.valueDelta,
-          )}
-          onClick={affordance.onOpen}
-        >
-          Year over year
-        </button>
-      ) : null}
-    </div>
+    </table>
   );
 }
 
@@ -1235,28 +1295,35 @@ export function ParcelRecordPermitTable({
   );
 }
 
-/** County-style value grid (Total / Building / Land columns). */
+/** Peer Total boards (Actual / Assessed / School) with optional Building/Land dive-deeper. */
 export function ParcelRecordValueSection({
   record,
   totalOnly = false,
-  actualAffordance = null,
-  assessedAffordance = null,
+  sectionStatusChrome = null,
   taxYearNoteOverride = null,
+  valuationHistory = null,
+  currentTaxYear = null,
+  totalMills = null,
 }: {
   record: CountyParcelRecordRow;
-  /** Business personal property: totals only (no Building / Land columns). */
+  /** Business personal property: totals only (no Building / Land dive-deeper). */
   totalOnly?: boolean;
-  actualAffordance?: ParcelValueHistoryAffordance | null;
-  assessedAffordance?: ParcelValueHistoryAffordance | null;
+  /** Prior-year gap / Coming soon under the section title. */
+  sectionStatusChrome?: ReactNode;
   taxYearNoteOverride?: string | null;
+  valuationHistory?: CountyValuationHistoryPoint[] | null;
+  currentTaxYear?: number | null;
+  totalMills?: number | null;
 }) {
   return (
     <ParcelValueTable
       record={record}
       totalOnly={totalOnly}
-      actualAffordance={actualAffordance}
-      assessedAffordance={assessedAffordance}
+      sectionStatusChrome={sectionStatusChrome}
       taxYearNoteOverride={taxYearNoteOverride}
+      valuationHistory={valuationHistory}
+      currentTaxYear={currentTaxYear}
+      totalMills={totalMills}
     />
   );
 }

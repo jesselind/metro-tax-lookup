@@ -239,7 +239,7 @@ export function DouglasSourcesMethodology() {
         assessed; other entries use local assessed. The stack total rounds each
         assessed side once so it matches the Realware face buckets; individual
         tiles may differ by a dollar or two from rounding. The Appraised and
-        assessed values table shows school assessed from the same Realware
+        assessed values section shows school assessed from the same Realware
         alternate fields when history is loaded. Compare any year on the Assessor
         property details page when you want the county view side by side.
         Realware notes that current-year taxes are estimates; the county

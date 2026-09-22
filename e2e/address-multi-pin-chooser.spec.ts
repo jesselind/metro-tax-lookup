@@ -144,11 +144,11 @@ test("business personal property: thin fields, levy stack, notice of valuation",
     0,
   );
   await expect(page.getByRole("columnheader", { name: "Land" })).toHaveCount(0);
+  const valuesSection = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
+  await expect(valuesSection).toBeVisible();
   await expect(
-    page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`).getByRole("table", {
-      name: "Appraised and assessed values",
-    }),
-  ).toBeVisible();
+    valuesSection.getByRole("button", { name: "Building and land breakdown" }),
+  ).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: /More property details/i }),
   ).toHaveCount(0);
@@ -170,13 +170,8 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   await expect(
     page.getByRole("heading", { name: "Property details cont." }),
   ).toHaveCount(0);
-  await expect(page.getByText(/2026 Assessed Value \(26%\)/i)).toBeVisible();
-  await expect(
-    page
-      .getByRole("table", { name: "Appraised and assessed values" })
-      .getByRole("row", { name: /2026 Assessed Value \(26%\)/i })
-      .getByText("$6,240"),
-  ).toBeVisible();
+  await expect(valuesSection.getByText(/2026 Assessed Value \(26%\)/i)).toBeVisible();
+  await expect(valuesSection.getByText("$6,240")).toBeVisible();
   await expect(
     page.getByRole("link", {
       name: /County business personal property search/i,

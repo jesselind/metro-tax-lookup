@@ -267,7 +267,7 @@ test.describe("Try demo property", () => {
     expect(feedbackIdx).toBeGreaterThan(compareIdx);
   });
 
-  test("Appraised and assessed values: money visible; field names stay after h-scroll", async ({
+  test("Appraised and assessed values: Total boards visible; Building and land behind disclosure", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -276,29 +276,35 @@ test.describe("Try demo property", () => {
 
     const section = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
     await expect(section).toBeVisible();
-    const table = section.getByRole("table", {
-      name: /Appraised and assessed values/i,
-    });
-    await expect(table).toBeVisible();
-
-    const scrollRegion = section.getByRole("region", {
-      name: /Field names stay fixed on the left/i,
-    });
-    await expect(scrollRegion).toBeVisible();
-    await scrollRegion.hover();
-    // Nudge into view like a resident scrolling the report, then read dollars.
     await page.mouse.wheel(0, 200);
 
-    const firstMoney = table.locator("tbody tr td").first();
-    const rowLabel = table.locator("tbody tr th[scope='row']").first();
-    await expect(firstMoney).toBeVisible();
-    await expect(firstMoney).toHaveText(/^\$[\d,]+/);
-    await expect(rowLabel).toBeVisible();
+    const faceList = section.getByRole("list").first();
+    await expect(faceList).toBeVisible();
+    const firstBoard = faceList.getByRole("listitem").first();
+    await expect(firstBoard).toBeVisible();
+    await expect(firstBoard.getByText(/^\$[\d,]+/)).toBeVisible();
 
-    // H-scroll the values grid; field-name column stays usable on screen.
-    await page.mouse.wheel(280, 0);
-    await expect(rowLabel).toBeVisible();
-    await expect(rowLabel).toBeInViewport();
+    const breakdownToggle = section.getByRole("button", {
+      name: "Building and land breakdown",
+    });
+    await expect(breakdownToggle).toBeVisible();
+    await expect(
+      section.getByRole("table", {
+        name: /Building and land breakdown/i,
+      }),
+    ).toHaveCount(0);
+
+    await breakdownToggle.click();
+    const breakdownTable = section.getByRole("table", {
+      name: /Building and land breakdown/i,
+    });
+    await expect(breakdownTable).toBeVisible();
+    await expect(
+      breakdownTable.getByRole("columnheader", { name: "Building" }),
+    ).toBeVisible();
+    await expect(
+      breakdownTable.getByRole("columnheader", { name: "Land" }),
+    ).toBeVisible();
   });
 
   test("missing-data mailto includes field, demo PIN, and AIN", async ({

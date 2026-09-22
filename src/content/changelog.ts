@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.19.0",
+    date: "2026-09-21",
+    title:
+      "Appraised and assessed values: kind cards, always-visible YoY, in-flow charts",
+    highlights: [
+      "Appraised and assessed values: one kind card per value type (Appraised, Assessed, School assessed). When valuation history shards exist: always-visible prior|current tax years, colored Difference (red up / green down / slate flat), assessed tax-impact line at current mills, and embedded chart; no YoY badge, no duplicate hero Total $, no ValuationHistoryDialog. Peer Appraised|Assessed cap at two columns; School assessed full-width below. Charts pin to the card bottom so side-by-side peers stay aligned when only one card has tax-impact copy.",
+      "Section disclosures: See data in table form and Building and land breakdown share one toggle row (stacked full-width below sm, side-by-side from sm). Wording in this section stays Appraised (not Actual). Arapahoe without history: current-year Total on the card plus Prior years missing under the section title.",
+      "Removed ValuationHistoryDialog and unused values YoY badge styles. README, locked-decisions, /sources Arapahoe gap narrative, and e2e (Douglas in-flow YoY, try-demo kind cards, BPP/non-res values section) updated.",
+    ],
+  },
+  {
     version: "5.18.1",
     date: "2026-09-21",
     title:

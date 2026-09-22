@@ -7,8 +7,8 @@ import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
 import { SYNTHETIC_DOUGLAS_PIN } from "../src/lib/syntheticTestIds";
 import {
+  VALUATION_HISTORY_CHART_HEADING_ACTUAL,
   VALUATION_HISTORY_CHART_HEADING_ASSESSED,
-  VALUATION_HISTORY_MODAL_TITLE_ASSESSED,
 } from "../src/content/valuationHistoryCopy";
 import {
   SYNTHETIC_E2E_AUTHORITY,
@@ -45,10 +45,10 @@ test.describe("Douglas county search gate (Phase 13)", () => {
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
     await expect(page.getByText(authorityLabel)).toBeVisible();
-    // Assessment year lives on Appraised and assessed values row labels (no summary tile).
-    await expect(
-      page.getByRole("table", { name: /Appraised and assessed values/i }),
-    ).toContainText("2026");
+    // Assessment year lives on Appraised and assessed values face boards (no summary tile).
+    await expect(page.locator("#home-parcel-appraised-assessed")).toContainText(
+      "2026",
+    );
     await expect(
       page
         .getByRole("region", { name: DOUGLAS_COMPARE_REGION })
@@ -234,7 +234,7 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     ).toBeVisible();
   });
 
-  test("Douglas assessed value opens valuation history modal", async ({
+  test("Douglas values section shows in-flow valuation YoY and chart", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { countyId: "douglas" });
@@ -255,52 +255,47 @@ test.describe("Douglas county search gate (Phase 13)", () => {
       page.getByRole("status", { name: /KNOWN ISSUE/i }),
     ).toHaveCount(0);
 
-    const openAssessedHistory = page.getByRole("button", {
-      name: /Assessed value\. View valuation history/i,
-    });
-    await openAssessedHistory.scrollIntoViewIfNeeded();
-    await openAssessedHistory.click();
+    const valuesSection = page.locator("#home-parcel-appraised-assessed");
+    await expect(valuesSection).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Year over year/i }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
 
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await expect(
-      dialog.getByRole("heading", {
-        name: VALUATION_HISTORY_MODAL_TITLE_ASSESSED,
-        level: 3,
-      }),
-    ).toBeVisible();
-    const yoyRegion = dialog.getByRole("region", {
-      name: /higher than last year/i,
+    const assessedYoy = valuesSection.getByRole("region", {
+      name: /\$1,430 higher than last year/i,
     });
-    await expect(yoyRegion).toBeVisible();
-    // Collapsed by default (levy-tile pattern): headline + Details ›; year pair hidden.
-    const yoyDetails = yoyRegion.getByRole("button", {
-      name: /higher than last year.*Details/i,
-    });
-    await expect(yoyDetails).toHaveAttribute("aria-expanded", "false");
-    await expect(yoyRegion.getByText(/\$25,740/)).toHaveCount(0);
-    // Chart caption is a region label (<p>), not a heading; modal h3 is "Assessed value".
+    await expect(assessedYoy).toBeVisible();
+    // Prior|current|Difference always on the face (no YoY badge disclosure).
+    await expect(assessedYoy.getByText(/\$25,740/)).toBeVisible();
+    await expect(assessedYoy.getByText(/\$27,170/)).toBeVisible();
+    await expect(assessedYoy.getByText(/Difference:\s*\+\$1,430/)).toBeVisible();
     await expect(
-      dialog.getByRole("region", {
+      assessedYoy.getByRole("button", { name: /Details/i }),
+    ).toHaveCount(0);
+    await expect(
+      valuesSection.getByRole("region", {
         name: VALUATION_HISTORY_CHART_HEADING_ASSESSED,
       }),
     ).toBeVisible();
+    await expect(
+      valuesSection.getByRole("region", {
+        name: VALUATION_HISTORY_CHART_HEADING_ACTUAL,
+      }),
+    ).toBeVisible();
 
-    await yoyDetails.click();
-    await expect(yoyDetails).toHaveAttribute("aria-expanded", "true");
-    await expect(yoyRegion.getByText(/\$25,740/)).toBeVisible();
-    await expect(yoyRegion.getByText(/\$27,170/)).toBeVisible();
-
-    await dialog.getByRole("button", { name: "Close" }).click();
-    await expect(dialog).toBeHidden();
-
-    // Re-open from the Actual value row opener (separate YoY chart).
-    const openActualHistory = page.getByRole("button", {
-      name: /Actual value\. View valuation history/i,
+    // Shared year-by-year table sits after both kind cards, not inside Assessed.
+    const historyTableToggle = valuesSection.getByRole("button", {
+      name: "See data in table form",
     });
-    await openActualHistory.scrollIntoViewIfNeeded();
-    await openActualHistory.click();
-    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(historyTableToggle).toBeVisible();
+    await historyTableToggle.click();
+    await expect(
+      valuesSection.getByRole("columnheader", { name: "Appraised value" }),
+    ).toBeVisible();
+    await expect(
+      valuesSection.getByRole("columnheader", { name: "Assessed value" }),
+    ).toBeVisible();
   });
 
   test("/sources?county=douglas preselects Douglas methodology", async ({
