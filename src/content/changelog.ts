@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.19.2",
+    date: "2026-09-22",
+    title:
+      "Arapahoe Antelope Hills TAG: TE-pinned GID, fire, and groundwater mills",
+    highlights: [
+      "Curated TE pins in `tools/arapahoe_dola_authority_overrides.json` for mart labels that fuzzy-failed under the 0.92 floor: `ANTELOPE HLS GEN IMP DIST` → `64265/1` (36.71), `BENNETT FIRE PROTECTION` → `64018/1` (10.898), `NORTH KIOWA BIJOU WATER` → `64099/1` (0.02; legalName corrected to DOLA Groundwater Mgmt). Rebuilt Arapahoe levy stacks + district directory so reporter TAG `1258496` / PIN `034147241` matches the county Levy.aspx total (107.016). Contact can resolve LGID `64265`.",
+      "Pre-ship gate: `npm run assert:ingest-levy-stack-scope` (allowlist fixture) must exit 0 before `--ship-allow-diff`. Line identity is `(code, authorityName)` so mart rename/history rows that reuse one AUTH code do not false-fail. Bumped `COUNTY_LEVY_STACKS_CACHE_BUST` and `SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST` so `/data` max-age does not keep a pre-pin stacks/directory copy.",
+      "Regression: `tools/test_ingest_dola_match.py` AntelopeHillsTagOverrideTests; Vitest locks shipped TAG `1258496` mills + Contact LGID; assert unit tests cover shared-AUTH rename history. Docs: README, county-ingest, /sources (curated TE pins when labels truncate).",
+    ],
+  },
+  {
     version: "5.19.1",
     date: "2026-09-21",
     title:

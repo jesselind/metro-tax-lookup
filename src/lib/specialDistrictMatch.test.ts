@@ -197,6 +197,58 @@ describe("Phase 16 shipped Douglas West Metro Contact alignment", () => {
   });
 });
 
+describe("Arapahoe Antelope Hills TAG TE pins", () => {
+  /** Reporter TAG (PIN 034147241); county Levy.aspx total 107.016. */
+  const ANTELOPE_TAG = "1258496";
+
+  it("TAG 1258496 pins GID, Bennett Fire, and North Kiowa groundwater mills", () => {
+    const stack = shippedArapahoeStacks().stacksByTagId[ANTELOPE_TAG];
+    expect(stack).toBeDefined();
+    const byCode = new Map(
+      stack.lines.map((line) => [line.code, line] as const),
+    );
+    const expectPin = (
+      code: string,
+      namePart: string,
+      te: string,
+      lgId: string,
+      mills: number,
+    ) => {
+      const line = byCode.get(code);
+      expect(line, `missing AUTH ${code}`).toBeDefined();
+      expect(line!.authorityName.toUpperCase()).toContain(namePart);
+      expect(line!.dolaMatch?.method).toBe("override");
+      expect(line!.dolaMatch?.taxEntityId).toBe(te);
+      expect(line!.dolaMatch?.lgId).toBe(lgId);
+      expect(line!.dolaMatch?.mills).toBeCloseTo(mills, 3);
+    };
+    expectPin("4042", "ANTELOPE HLS", "64265/1", "64265", 36.71);
+    expectPin("4060", "BENNETT FIRE", "64018/1", "64018", 10.898);
+    expectPin("4483", "NORTH KIOWA", "64099/1", "64099", 0.02);
+
+    const matchedSum = stack.lines.reduce((acc, line) => {
+      const m = line.dolaMatch?.mills;
+      return typeof m === "number" && Number.isFinite(m) ? acc + m : acc;
+    }, 0);
+    expect(matchedSum).toBeCloseTo(107.016, 3);
+  });
+
+  it("Contact directory has Antelope Hills GID LG 64265 for TAG 1258496", () => {
+    const stack = shippedArapahoeStacks().stacksByTagId[ANTELOPE_TAG];
+    const gid = stack.lines.find((line) => line.code === "4042");
+    expect(gid?.dolaMatch?.lgId).toBe("64265");
+    const directory = shippedDirectory();
+    const match = matchSpecialDistrict(gid!.authorityName, directory.districts, {
+      preferredLgId: gid!.dolaMatch?.lgId ?? null,
+    });
+    expect(match.kind).toBe("lgId");
+    if (match.kind === "none") return;
+    expect(match.record.lgId).toBe("64265");
+    expect(match.record.name.toLowerCase()).toContain("antelope hills");
+    expect(match.record.name.toLowerCase()).toContain("general improvement");
+  });
+});
+
 describe("Arapahoe Aurora school Contact alignment", () => {
   it("AUTH 0801 stack lines join Adams-Arapahoe lgId 64907, not Byers 64908", () => {
     const stacks = shippedArapahoeStacks();

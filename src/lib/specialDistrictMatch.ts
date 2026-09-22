@@ -183,7 +183,7 @@ function lgIdKeyFromRaw(raw: string): string | null {
  * Bump when rebuilding `public/data/colorado-special-district-directory.json` so
  * browsers skip a stale `/data` copy (Contact preferredLgId needs new LGIDs).
  */
-export const SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST = "20260912aurorak12";
+export const SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST = "20260922antelopegid";
 
 /** URL for the bundled Colorado special-district contact directory. */
 export function specialDistrictDirectoryUrl(

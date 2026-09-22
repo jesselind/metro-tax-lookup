@@ -192,10 +192,10 @@ Canonical Arapahoe shipping rebuild is **`npm run build:ingest:ship`** (engine v
 
 | Engine | npm | Output |
 | --- | --- | --- |
-| Ingest (v2, canonical) | `build:ingest`, `build:ingest:ship`, `build:ingest:douglas`, `land:douglas`, `diff:ingest`, `classify:ingest`, `test:ingest` | `_ingest-out/` (compare) or staging + atomic land into `public/data/` with `--ship` |
+| Ingest (v2, canonical) | `build:ingest`, `build:ingest:ship`, `build:ingest:douglas`, `land:douglas`, `diff:ingest`, `assert:ingest-levy-stack-scope`, `classify:ingest`, `test:ingest` | `_ingest-out/` (compare) or staging + atomic land into `public/data/` with `--ship` |
 | Old (emergency) | `build:arapahoe-index`, `test:parcel-index` | `public/data/arapahoe-*.json` |
 
-County JSON fetch URLs use `src/lib/countyDataPaths.ts` (`{dataRoot}/{countyId}-*`). Shipping UI loads `/data/`. Before a careful land, compare with `npm run diff:ingest`. Use `--ship-allow-diff` only for intentional mart refreshes when bill data should change.
+County JSON fetch URLs use `src/lib/countyDataPaths.ts` (`{dataRoot}/{countyId}-*`). Shipping UI loads `/data/`. Before a careful land, compare with `npm run diff:ingest`. Use `--ship-allow-diff` only for intentional mart refreshes or curated TE-pin ships when bill data should change. For override-only Arapahoe TE-pin lands, run **`npm run assert:ingest-levy-stack-scope`** (exit 0 required) before `--ship-allow-diff` — see **`docs/county-ingest.md`**. After rebuilding levy stacks, bump `COUNTY_LEVY_STACKS_CACHE_BUST` in `src/lib/countyParcelLevyData.ts` so browsers skip a stale `/data` copy (`max-age` applies even on localhost).
 ### Levy detail modal (`levy-explainer-entries.json`)
 
 Plain JSON drives the levy tile detail modal (government level, what it is, citations). Use **`developmental-disability-levy`** as the reference shape for new entries. Examples in the file include Mart line **`2999`** (developmental disability) and **`4026`** (Arapahoe Library District).
@@ -244,7 +244,7 @@ Hand-curated **Who authorized this?** trail for selected stack rows (Cherry Cree
 
    Build behavior notes:
    - Within each TAG, repeated authority rows are collapsed to one canonical row per `code + authority`: active (`A`) rows are preferred over inactive (`I`), then newest `effectiveYear`.
-   - Name matching normalizes common county abbreviations (for example `VLG` -> `VILLAGE`, `MD` -> `METROPOLITAN DISTRICT`) before fuzzy matching to DOLA legal names. Only **high-confidence** fuzzy matches (score ≥ 0.92) ship `lgId` / tax entity identity on stack lines; medium/low guesses become `method: "none"` (score kept for diagnostics). Curated pins live in `tools/arapahoe_dola_authority_overrides.json` (for example AUTH `0801` Aurora school → Adams-Arapahoe 28J TE `64907/1`).
+   - Name matching normalizes common county abbreviations (for example `VLG` -> `VILLAGE`, `MD` -> `METROPOLITAN DISTRICT`) before fuzzy matching to DOLA legal names. Only **high-confidence** fuzzy matches (score ≥ 0.92) ship `lgId` / tax entity identity on stack lines; medium/low guesses become `method: "none"` (score kept for diagnostics). Curated pins live in `tools/arapahoe_dola_authority_overrides.json` (prefer `taxEntityId` over legalName-only). Examples: AUTH `0801` Aurora school → Adams-Arapahoe 28J TE `64907/1`; AUTH `4042` Antelope Hills GID → TE `64265/1`; AUTH `4060` Bennett Fire → TE `64018/1`; AUTH `4483` North Kiowa Bijou Water → TE `64099/1` (Groundwater Mgmt). Do not lower the global fuzzy floor to “fix” truncated labels.
    - Optional `--dola-certifying-county` (default `Arapahoe`) filters DOLA export rows; JSON snapshot records the value in `dolaCertifyingCounty`.
    - `snapshot.bundledAsOf` in mart-built JSON comes from `tools/county-mart-data-as-of.txt` (county download date: update only when the mart is new, not on every rebuild). Override with `--bundled-as-of` if needed.
 

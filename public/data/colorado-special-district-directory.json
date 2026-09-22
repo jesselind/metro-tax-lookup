@@ -1,12 +1,12 @@
 {
   "snapshot": {
-    "bundledAsOf": "2026-09-12",
+    "bundledAsOf": "2026-09-22",
     "source": "DOLA LG tabular export, filtered to bundled levy stacks (arapahoe-levy-stacks-by-tag-id.json, douglas-levy-stacks-by-tag-id.json); fallback rows from DOLA LGIS Property Tax Entities when an LGID is absent from the LG directory. Curated website URL overrides applied for known-bad DOLA Website URL cells (district_directory_website_overrides.json).",
     "sourceCsv": "lg-export-all.csv"
   },
   "_meta": {
     "lgExportSourceCsv": "lg-export-all.csv",
-    "lgExportBundledAt": "2026-09-12T17:05:31Z",
+    "lgExportBundledAt": "2026-09-22T15:32:22Z",
     "levyStacksReferences": [
       "arapahoe-levy-stacks-by-tag-id.json",
       "douglas-levy-stacks-by-tag-id.json"
@@ -17,8 +17,8 @@
       "Arapahoe",
       "Douglas"
     ],
-    "referencedLgIdCount": 504,
-    "directoryRowCount": 504,
+    "referencedLgIdCount": 507,
+    "directoryRowCount": 507,
     "lgIdsFilledFromPropertyTaxEntities": [
       "03133",
       "18002",
@@ -41,7 +41,7 @@
     ],
     "websiteOverridesUnusedLgIds": []
   },
-  "districtCount": 504,
+  "districtCount": 507,
   "districts": [
     {
       "lgId": "03001",
@@ -1884,6 +1884,22 @@
       "lastUpdate": null
     },
     {
+      "lgId": "64018",
+      "name": "Bennett Fire Protection District",
+      "abbrevName": null,
+      "websiteUrl": "https://bennettfirerescue.org",
+      "mailAddress": "Box 349",
+      "altAddress": null,
+      "mailCity": "Bennett",
+      "mailState": "CO",
+      "mailZip": "80102",
+      "lgTypeId": null,
+      "localGovernmentType": "Fire Protection Districts",
+      "prevName": null,
+      "source": "DOLA LG tabular export (Local Government directory)",
+      "lastUpdate": null
+    },
+    {
       "lgId": "64067",
       "name": "Goldsmith Metropolitan District",
       "abbrevName": null,
@@ -1943,6 +1959,22 @@
       "mailZip": "80120",
       "lgTypeId": null,
       "localGovernmentType": "Home Rule Municipalities",
+      "prevName": null,
+      "source": "DOLA LG tabular export (Local Government directory)",
+      "lastUpdate": null
+    },
+    {
+      "lgId": "64099",
+      "name": "North Kiowa Bijou Groundwater Management District",
+      "abbrevName": null,
+      "websiteUrl": null,
+      "mailAddress": "PO Box 597",
+      "altAddress": "c/o Epperson, McClary, Et Al",
+      "mailCity": "Fort Morgan",
+      "mailState": "CO",
+      "mailZip": "80701",
+      "lgTypeId": null,
+      "localGovernmentType": "Ground Water Management Districts",
       "prevName": null,
       "source": "DOLA LG tabular export (Local Government directory)",
       "lastUpdate": null
@@ -2263,6 +2295,22 @@
       "mailZip": "80106",
       "lgTypeId": null,
       "localGovernmentType": "Conservation Districts (Soil)",
+      "prevName": null,
+      "source": "DOLA LG tabular export (Local Government directory)",
+      "lastUpdate": null
+    },
+    {
+      "lgId": "64265",
+      "name": "Antelope Hills General Improvement District, Town of Bennett, CO",
+      "abbrevName": null,
+      "websiteUrl": "https://www.townofbennett.org",
+      "mailAddress": "355 Fourth Street",
+      "altAddress": "c/o Town of Bennett",
+      "mailCity": "Bennett",
+      "mailState": "CO",
+      "mailZip": "80102-7806",
+      "lgTypeId": null,
+      "localGovernmentType": "General Improvement Districts (Municipal)",
       "prevName": null,
       "source": "DOLA LG tabular export (Local Government directory)",
       "lastUpdate": null

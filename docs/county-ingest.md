@@ -199,6 +199,16 @@ npm run build:ingest:ship -- --ship-allow-diff
 
 (`--ship-allow-diff` skips the pre-swap IDENTICAL gate only; staging + atomic land + re-preflight still run.)
 
+**Curated TE-pin / override-only Arapahoe lands (narrow mill-join changes):**
+
+1. Compare build first (`npm run build:ingest` → `supporting-data/_ingest-out/`), live `public/data/` still clean.
+2. **`npm run assert:ingest-levy-stack-scope`** — exit **0** required before land. Compares live `public/data/arapahoe-levy-stacks-by-tag-id.json` to the candidate (`_ingest-out` by default; after a staging-only build pass `--candidate supporting-data/_ingest-ship-staging/arapahoe-levy-stacks-by-tag-id.json`). Allowlist: `tools/fixtures/antelope_gid_levy_stack_allowlist.json` (or `--allowlist` / repeatable `--allow-authority` for other TE-pin ships).
+3. Line identity is **`(code, authorityName)`**. Arapahoe TAG CSV sometimes keeps rename/history rows under the same AUTH code (inactive old label + active new label). Code alone is not unique; the gate must not false-fail those stacks when only an allowlisted label’s `dolaMatch` changed.
+4. If assert fails: **stop**; do not run `--ship-allow-diff`. Fix overrides or widen the allowlist only with an explicit owner call.
+5. Then: `npm run build:ingest:ship -- --ship-allow-diff`, `npm run build:district-directory`, bump `COUNTY_LEVY_STACKS_CACHE_BUST` (and `SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST` when Contact rows change).
+
+Script: `tools/ingest/assert_levy_stack_diff_scope.py`. Tests: `tools/test_ingest_assert_levy_stack_diff_scope.py` (in `test:ingest`).
+
 **What `--ship` does:**
 
 1. Preflight (mart stamp + clean `git status public/data/`).
@@ -238,6 +248,7 @@ Production deploys **one** `public/data/` tree. Staging, `_ingest-out`, and loca
 | `--ship` preflight + land gates | `ship_preflight`; `land_ship_from_staging`; `land_arapahoe_shipping` |
 | Compare builds default to `_ingest-out/` | Default `--out-dir`; gitignored |
 | Parity gate | `compare.py` exit 0 = IDENTICAL |
+| Override-only levy-stack scope | `assert_levy_stack_diff_scope.py` / `npm run assert:ingest-levy-stack-scope` |
 | App JSON validator | `tools/validate_app_json.mjs` |
 | Situs contract vs shipping | `tools/test_situs_lookup_contract.py` (in `test:ingest` + CI) |
 
