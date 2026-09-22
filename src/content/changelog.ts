@@ -27,6 +27,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.19.3",
+    date: "2026-09-22",
+    title: "CodeRabbit: exclude parcel and valuation shards from PR review",
+    highlights: [
+      "`.coderabbit.yaml` `path_filters` exclude `public/data/arapahoe-parcel-record-by-pin/**`, `douglas-parcel-record-by-pin/**`, and `douglas-valuation-history-by-account/**`. Free-plan reviews cap at 100 files after filters; full Arapahoe ship PRs were ~3000 files and skipped. GitHub still shows the full PR file list.",
+    ],
+  },
+  {
     version: "5.19.2",
     date: "2026-09-22",
     title:
