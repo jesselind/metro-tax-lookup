@@ -66,10 +66,20 @@ export type ParcelRecordExtendedSectionProps = {
   /** Resolved county for hosted record / clerk links. */
   countyConfig: CountyConfig;
   /**
-   * Prior-year gap / Coming soon under Appraised and assessed (when values
-   * render inside this section).
+   * Coming soon (IN PROGRESS) under Appraised and assessed (when values
+   * render inside this section). Prior-year COUNTY DATA GAP uses
+   * {@link priorYearValuesGap} inside kind cards instead.
    */
   sectionStatusChrome?: ReactNode;
+  /**
+   * Always-visible prior-year COUNTY DATA GAP in Appraised / Assessed cards
+   * when values render inside this section.
+   */
+  priorYearValuesGap?: {
+    countyId: string;
+    parcelRecordHref?: string | null;
+    hasSaleHistory: boolean;
+  } | null;
   valuationHistory?: CountyValuationHistoryPoint[] | null;
   currentTaxYear?: number | null;
   totalMills?: number | null;
@@ -104,6 +114,7 @@ export function ParcelRecordExtendedSection({
   rentMode = false,
   countyConfig,
   sectionStatusChrome = null,
+  priorYearValuesGap = null,
   valuationHistory = null,
   currentTaxYear = null,
   totalMills = null,
@@ -207,6 +218,7 @@ export function ParcelRecordExtendedSection({
                 record={displayRecord}
                 totalOnly={isBusinessPersonal}
                 sectionStatusChrome={sectionStatusChrome}
+                priorYearValuesGap={priorYearValuesGap}
                 taxYearNoteOverride={taxYearNoteOverride}
                 valuationHistory={valuationHistory}
                 currentTaxYear={currentTaxYear}

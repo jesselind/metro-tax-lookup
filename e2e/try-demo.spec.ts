@@ -13,7 +13,11 @@ import {
 } from "../src/lib/demoProperty";
 import { splitSitusLabelEnvelopeLines } from "../src/lib/addressLabelDifference";
 import { PARCEL_RECORD_NO_DATA } from "../src/lib/parcelRecordNoData";
-import { COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS } from "../src/content/countyPriorYearValuesGapNote";
+import {
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
+} from "../src/content/countyPriorYearValuesGapNote";
+import { COUNTY_SERVICE_GAP_CALLOUT_TITLE } from "../src/content/countyServiceGapGuidance";
 import {
   HOME_APPRAISED_ASSESSED_ID,
   HOME_DASHBOARD_UTILITY_BAR_ID,
@@ -31,9 +35,17 @@ test.describe("Try demo property", () => {
     await page.getByRole("button", { name: "Try demo property" }).click();
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS }),
-    ).toBeVisible();
+    const valuesSection = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
+    const appraisedGap = valuesSection.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
+    });
+    const assessedGap = valuesSection.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
+    });
+    await expect(appraisedGap).toHaveCount(1);
+    await expect(assessedGap).toHaveCount(1);
+    await expect(appraisedGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(assessedGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
 
     const sectionNav = page.locator(`#${HOME_DASHBOARD_UTILITY_BAR_ID}`);
     await expect(sectionNav).toBeVisible();

@@ -52,12 +52,12 @@ export const PAGE_HERO_ACTION_BUTTON_CLASS =
  * Mobile: this node is sticky; full-bleed slate under PageHero (`-mt` cancels
  * {@link TOOL_PAGE_INNER_BASE_CLASS} `gap-4`; upward box-shadow covers the 1–2px
  * stuck seam). Desktop: this node **stretches** the grid row with footer-matched
- * `bg-slate-50` (true sidenav column, not a card); stickiness moves to
+ * `bg-slate-200` (true sidenav column, not a card); stickiness moves to
  * {@link HOME_DASHBOARD_SECTION_NAV_STICKY_INNER_CLASS}. No side border — color
  * does the separation.
  */
 export const HOME_DASHBOARD_SECTION_NAV_ASIDE_CLASS =
-  "sticky top-0 z-40 -mt-[calc(1rem+2px)] flex w-screen max-w-[100vw] min-w-0 flex-col bg-slate-600 text-white shadow-[0_-2px_0_0_#475569] ml-[calc(50%-50vw)] lg:static lg:z-auto lg:mt-0 lg:ml-0 lg:w-full lg:max-w-none lg:self-stretch lg:shadow-none lg:bg-slate-50 lg:text-slate-900";
+  "sticky top-0 z-40 -mt-[calc(1rem+2px)] flex w-screen max-w-[100vw] min-w-0 flex-col bg-slate-600 text-white shadow-[0_-2px_0_0_#475569] ml-[calc(50%-50vw)] lg:static lg:z-auto lg:mt-0 lg:ml-0 lg:w-full lg:max-w-none lg:self-stretch lg:shadow-none lg:bg-slate-200 lg:text-slate-900";
 
 /**
  * Desktop: sticky scrollport inside the full-height rail. Mobile: plain flow
@@ -81,11 +81,11 @@ export const HOME_DASHBOARD_MAIN_COLUMN_ARRIVE_CLIP_CLASS =
 /** Desktop-only address atop the sidenav. */
 /** Desktop-only permanent address atop the sidenav (postage envelope). Extra top pad so stuck rail is not flush to the viewport edge. */
 export const HOME_DASHBOARD_SECTION_NAV_DESKTOP_ADDRESS_CLASS =
-  "hidden min-w-0 border-b border-slate-200 px-3 pb-3 pt-5 lg:block";
+  "hidden min-w-0 border-b-2 border-slate-300 px-3 pb-3 pt-5 lg:block";
 
 /** Desktop-only Switch account type slot under address. */
 export const HOME_DASHBOARD_SECTION_NAV_SWITCH_CLASS =
-  "hidden min-w-0 border-b border-slate-200 px-3 py-3 lg:block";
+  "hidden min-w-0 border-b-2 border-slate-300 px-3 py-3 lg:block";
 
 /**
  * Address chrome type: one-line truncate on the mobile Jump summary when closed.
@@ -115,7 +115,7 @@ export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_SEP_CLASS =
 export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_COUNTY_CLASS =
   "font-semibold text-amber-100";
 
-/** County on its own envelope line (desktop slate-50 rail). */
+/** County on its own envelope line (desktop slate-200 rail). */
 export const HOME_DASHBOARD_SECTION_NAV_ADDRESS_COUNTY_ENVELOPE_CLASS =
   "font-semibold text-amber-800";
 
@@ -178,22 +178,23 @@ export const HOME_DASHBOARD_JUMP_CHEVRON_CLASS =
  * iOS Safari). `overscroll-contain` limits scroll chaining.
  */
 export const HOME_DASHBOARD_JUMP_MENU_CLASS =
-  "m-0 list-none overflow-y-auto overscroll-contain border-t border-white/25 p-0 lg:max-h-none lg:overflow-visible lg:border-slate-200";
+  "m-0 list-none overflow-y-auto overscroll-contain border-t border-white/25 p-0 lg:max-h-none lg:overflow-visible lg:border-t-0";
 
 /**
  * Section jump buttons. Same readable `text-base` on mobile slate and desktop
- * slate-50 rail; desktop stays medium weight so the main column stays primary.
+ * slate-200 rail; desktop stays medium weight so the main column stays primary.
+ * Desktop hover / scroll-spy use inverted slate (dark fill, light text).
  */
 export const HOME_DASHBOARD_JUMP_ITEM_CLASS =
-  "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-3 py-2.5 text-left text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 aria-[current=location]:bg-white/15 lg:py-2.5 lg:font-medium lg:text-slate-800 lg:hover:bg-slate-200/70 lg:focus-visible:ring-indigo-700/40 lg:aria-[current=location]:bg-slate-200/80 lg:aria-[current=location]:font-semibold lg:aria-[current=location]:text-slate-900";
+  "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-3 py-2.5 text-left text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 aria-[current=location]:bg-white/15 lg:py-2.5 lg:font-medium lg:text-slate-800 lg:hover:bg-slate-800 lg:hover:text-white lg:focus-visible:ring-indigo-700/40 lg:aria-[current=location]:bg-slate-800 lg:aria-[current=location]:font-semibold lg:aria-[current=location]:text-white";
 
 /** Start over: stronger type than section jumps (bold vs medium); extra vertical pad. */
 export const HOME_DASHBOARD_JUMP_START_OVER_ITEM_CLASS =
-  "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-3 py-3.5 text-left text-base font-bold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 lg:py-3 lg:text-slate-900 lg:hover:bg-slate-200/70 lg:focus-visible:ring-indigo-700/40";
+  "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-3 py-3.5 text-left text-base font-bold text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/80 lg:py-3 lg:text-slate-900 lg:hover:bg-slate-800 lg:hover:text-white lg:focus-visible:ring-indigo-700/40";
 
 /** Hairline above Start over (on the list item, not the button). */
 export const HOME_DASHBOARD_JUMP_START_OVER_LI_CLASS =
-  "border-t border-white/25 lg:border-slate-200";
+  "border-t border-white/25 lg:border-t-2 lg:border-slate-300";
 
 /**
  * Max-width column + flex gap between major blocks (hero block, steps, footer actions).
@@ -363,6 +364,33 @@ export const VALUES_KIND_GRID_CLASS =
   "grid w-full min-w-0 items-stretch gap-3 sm:gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,max(28rem,calc(50%-0.5rem))),1fr))]";
 
 /**
+ * Kind-card grid plus section disclosures (See data in table form, Building and
+ * land). Same gutter as {@link VALUES_KIND_GRID_CLASS} so school card → toggles
+ * match card-to-card spacing.
+ */
+export const VALUES_KIND_STACK_CLASS =
+  "flex w-full min-w-0 flex-col gap-3 sm:gap-4";
+
+/**
+ * Values section disclosures: mobile stacks toggle → panel → next toggle.
+ * From `sm`, both toggles share row 1; open panels span full width below
+ * (`sm:row-start-1` keeps toggles side-by-side even when a panel is open).
+ */
+export const VALUES_KIND_DISCLOSURE_GRID_CLASS =
+  "grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4";
+
+/** Pin disclosure toggle to desktop row 1 (left / right via col-start). */
+export const VALUES_KIND_DISCLOSURE_TOGGLE_HISTORY_CLASS =
+  "min-w-0 sm:col-start-1 sm:row-start-1";
+
+export const VALUES_KIND_DISCLOSURE_TOGGLE_BUILDING_CLASS =
+  "min-w-0 sm:col-start-2 sm:row-start-1";
+
+/** Full-width panel under the toggle row from `sm`. */
+export const VALUES_KIND_DISCLOSURE_PANEL_CLASS =
+  "min-w-0 sm:col-span-2";
+
+/**
  * One value-kind box (Appraised, Assessed, or School assessed). Holds the field
  * label plus Total $ (no history) or always-visible YoY year-compare + chart.
  */
@@ -454,7 +482,7 @@ export const SUMMARY_TILE_STATUS_BADGE_BASE_CLASS =
 export const LEVY_CHANGED_BADGE_TONE_CLASS =
   "border-amber-950 bg-amber-300 text-amber-950";
 
-/** Red county-gap badge (e.g. Prior years missing on Assessed value). Light fill + dark text, same recipe as Changed. */
+/** Red county-gap badge (e.g. Prior $ missing on mill chart). Light fill + dark text, same recipe as Changed. */
 export const COUNTY_SERVICE_GAP_BADGE_TONE_CLASS =
   "border-red-950 bg-red-200 text-red-950";
 
@@ -668,9 +696,17 @@ export const CODE_INLINE_CLASS =
 /**
  * Single disclosure toggle for show/hide controls: county help screenshots, levy table view,
  * metro "Check the math", etc. Pair with {@link TOOL_DISCLOSURE_ROW_ALIGN_CLASS}.
+ * Width: full on small screens, shrink-to-content from `sm` (see stretch variant).
  */
+const TOOL_OUTLINED_TOGGLE_BUTTON_CHROME_CLASS =
+  `inline-flex cursor-pointer items-center gap-2 ${RADIUS_CONTROL_CLASS} border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2`;
+
 export const TOOL_OUTLINED_TOGGLE_BUTTON_CLASS =
-  `inline-flex w-full cursor-pointer items-center justify-center gap-2 ${RADIUS_CONTROL_CLASS} border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 sm:w-auto sm:justify-start`;
+  `${TOOL_OUTLINED_TOGGLE_BUTTON_CHROME_CLASS} w-full justify-center sm:w-auto sm:justify-start`;
+
+/** Full-width at every breakpoint (values-section peer disclosure toggles). */
+export const TOOL_OUTLINED_TOGGLE_BUTTON_STRETCH_CLASS =
+  `${TOOL_OUTLINED_TOGGLE_BUTTON_CHROME_CLASS} w-full justify-center`;
 
 /** Wrapper so outlined toggles span the card column on mobile and stay left-aligned. */
 export const TOOL_DISCLOSURE_ROW_ALIGN_CLASS = "flex w-full justify-start";

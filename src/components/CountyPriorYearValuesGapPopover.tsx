@@ -12,41 +12,15 @@ import {
   InfoHintPopover,
   useInfoHintPopoverDismiss,
 } from "@/components/InfoHintPopover";
-import { PARCEL_RECORD_SALE_HISTORY_ID } from "@/components/ParcelRecordCountyTables";
 import { PARCEL_GLOSSARY_POPOVER_PANEL_CLASS } from "@/content/termDefinitionBodies";
 import {
   COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
   CountyPriorYearValuesGapDashboardNote,
 } from "@/content/countyPriorYearValuesGapNote";
-import { focusNearestDashboardSection } from "@/lib/focusNearestDashboardSection";
+import { jumpToParcelSaleHistory } from "@/lib/jumpToParcelSaleHistory";
 import { COUNTY_SERVICE_GAP_STACK_CLASS } from "@/lib/toolFlowStyles";
 
 const TRIGGER_CLASS = "inline-flex cursor-pointer items-center";
-
-function jumpToParcelSaleHistory(): void {
-  if (typeof document === "undefined") return;
-  const saleEl = document.getElementById(PARCEL_RECORD_SALE_HISTORY_ID);
-  if (!(saleEl instanceof HTMLElement)) return;
-
-  const hiddenAncestor = saleEl.closest("[hidden]");
-  if (hiddenAncestor instanceof HTMLElement && hiddenAncestor.id) {
-    const toggle = document.querySelector(
-      `[aria-controls="${CSS.escape(hiddenAncestor.id)}"]`,
-    );
-    if (toggle instanceof HTMLElement) toggle.click();
-  }
-
-  const run = () =>
-    focusNearestDashboardSection({
-      focusId: PARCEL_RECORD_SALE_HISTORY_ID,
-      highlightId: PARCEL_RECORD_SALE_HISTORY_ID,
-    });
-  if (hiddenAncestor) {
-    requestAnimationFrame(run);
-  } else {
-    run();
-  }
-}
 
 function CountyPriorYearValuesGapPopoverBody({
   hasSaleHistory,
@@ -83,10 +57,13 @@ function CountyPriorYearValuesGapPopoverBody({
 }
 
 /**
- * Red status badge on Assessed value and the levy modal mill-history chart footer.
+ * Red status badge on the levy modal mill-history chart footer (Prior $ missing).
  * Same InfoHintPopover as tile glossary briefs (width/scroll); `county-data-gap`
  * paints the panel with COUNTY DATA GAP chrome. Header + copy sit inside that
  * panel, not a nested red box.
+ *
+ * Appraised / Assessed kind cards use always-visible
+ * {@link CountyPriorYearValuesGapCallout} instead of this badge.
  *
  * Default badge copy is {@link COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS}. Pass
  * `statusLabel` for chart-footer wording (e.g. Prior $ missing) when mills are

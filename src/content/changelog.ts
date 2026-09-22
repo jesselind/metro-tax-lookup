@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.19.1",
+    date: "2026-09-21",
+    title:
+      "Arapahoe values: always-visible prior-year COUNTY DATA GAP in Appraised and Assessed cards",
+    highlights: [
+      "When `priorYearValuesGap` is on and valuation history is missing: Appraised and Assessed kind cards show a compact always-visible COUNTY DATA GAP callout (`CountyPriorYearValuesGapCallout`) in the YoY/chart slot. Appraised lead says prior-year appraised values; Assessed lead says prior-year assessed values. Removes the Prior years missing badge under the section title. School assessed unchanged. Mill-chart footer keeps Prior $ missing badge + assessed popover. /sources hub + Arapahoe methodology red box name both series (still one callout). Sale history jumps in the two callouts use distinct accessible names.",
+      "Values section disclosures: each toggle owns its panel on mobile (See data in table form, then Building and land breakdown) so opening a table pushes the next control down. From `sm`, both toggles sit side-by-side (stretch width); open panels span full width below. Kind cards and disclosures share the same column gutter.",
+      "Desktop sidenav: rail `slate-200`; inverted hover/scroll-spy (`slate-800` + white text); single `border-*-2` dividers (no stacked hairlines). Mobile Jump strip unchanged.",
+      "Docs: county-service-gap-callouts, county-config, locked-decisions, README, /sources Arapahoe narrative. E2e: try-demo and metro-yoy assert kind-specific in-card callouts and Sale history jump; mill-chart popover still covered.",
+    ],
+  },
+  {
     version: "5.19.0",
     date: "2026-09-21",
     title:

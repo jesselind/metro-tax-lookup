@@ -160,7 +160,7 @@ function AddressChrome({
  * Desktop uses a postage-style stack (street / city-state-ZIP / county). Mobile
  * Jump summary: one truncated line when closed; same postage stack when open.
  * The whole summary (label + address) toggles the disclosure. Desktop rail
- * stretches the grid row (`bg-slate-50`); stickiness lives on an inner wrapper
+ * stretches the grid row (`bg-slate-200`); stickiness lives on an inner wrapper
  * so the column fill is not a short white card.
  *
  * Sticky (mobile aside / desktop inner) requires a tall locked-report flex/grid

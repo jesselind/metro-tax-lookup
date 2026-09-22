@@ -11,7 +11,7 @@ import { ARAPAHOE_COUNTY_CONFIG } from "@/lib/countyConfig";
 import { sourcesPageHref } from "@/lib/sourcesPageHref";
 import { COUNTY_SERVICE_GAP_LINK_CLASS } from "@/lib/toolFlowStyles";
 
-/** Badge label on the Assessed value summary chip (not COUNTY DATA GAP chrome). */
+/** Former values-section badge label; mill chart uses {@link COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS}. */
 export const COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS = "Prior years missing";
 
 /**
@@ -21,9 +21,31 @@ export const COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS = "Prior years missing";
  */
 export const COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS = "Prior $ missing";
 
-/** Arapahoe dashboard lead (assessor guidance: no public valuation history). */
-export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD =
+/** Which values kind card (or mill-chart assessed dollars) the gap note is sitting in. */
+export type PriorYearValuesGapValueKind = "appraised" | "assessed";
+
+/** Arapahoe dashboard lead on the Appraised kind card. */
+export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED =
+  "County-published sources do not include prior-year appraised values. Per the assessor's office, there is no historical information available on the public website.";
+
+/** Arapahoe dashboard lead on the Assessed kind card (and mill-chart popover). */
+export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED =
   "County-published sources do not include prior-year assessed values. Per the assessor's office, there is no historical information available on the public website.";
+
+/**
+ * @deprecated Prefer {@link COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED} or
+ * {@link countyPriorYearValuesDashboardLead}. Alias kept for mill-chart / older tests.
+ */
+export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD =
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED;
+
+export function countyPriorYearValuesDashboardLead(
+  valueKind: PriorYearValuesGapValueKind = "assessed",
+): string {
+  return valueKind === "appraised"
+    ? COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED
+    : COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED;
+}
 
 /**
  * Douglas dashboard lead when no property-page URL is available.
@@ -35,8 +57,14 @@ export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD =
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS =
   "You can see prior-year assessed values on each Assessor property details page. We have not yet found a free multi-year bulk download for use here and are still looking into that.";
 
+export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS_APPRAISED =
+  "You can see prior-year appraised values on each Assessor property details page. We have not yet found a free multi-year bulk download for use here and are still looking into that.";
+
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK =
   "You can see prior-year assessed values on";
+
+export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK_APPRAISED =
+  "You can see prior-year appraised values on";
 
 export const COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL =
   "this property's Assessor property details";
@@ -48,6 +76,24 @@ export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_LABEL = "Sale history";
 
 export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL =
   "Jump to sale history for this parcel";
+
+export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL_APPRAISED =
+  "Jump to sale history for this parcel from the appraised values note";
+
+export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL_ASSESSED =
+  "Jump to sale history for this parcel from the assessed values note";
+
+export function countyPriorYearValuesSaleHistoryJumpAriaLabel(
+  valueKind?: PriorYearValuesGapValueKind,
+): string {
+  if (valueKind === "appraised") {
+    return COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL_APPRAISED;
+  }
+  if (valueKind === "assessed") {
+    return COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL_ASSESSED;
+  }
+  return COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL;
+}
 
 export const COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_AFTER =
   "for this parcel is still on the record.";
@@ -83,16 +129,18 @@ function PriorYearValuesSourcesSentence({
 function PriorYearValuesSaleHistorySentence({
   linkClassName,
   onSaleHistoryJump,
+  valueKind,
 }: {
   linkClassName: string;
   onSaleHistoryJump: () => void;
+  valueKind?: PriorYearValuesGapValueKind;
 }) {
   return (
     <p className="mt-3">
       <button
         type="button"
         className={`${linkClassName} cursor-pointer border-0 bg-transparent p-0 text-left leading-snug`}
-        aria-label={COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL}
+        aria-label={countyPriorYearValuesSaleHistoryJumpAriaLabel(valueKind)}
         onClick={onSaleHistoryJump}
       >
         {COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_LABEL}
@@ -107,18 +155,21 @@ function ArapahoePriorYearValuesGapDashboardNote({
   linkClassName,
   onSaleHistoryJump,
   countyId,
+  valueKind,
 }: {
   linkClassName: string;
   onSaleHistoryJump?: () => void;
   countyId: string;
+  valueKind: PriorYearValuesGapValueKind;
 }) {
   return (
     <div className="text-sm font-normal leading-snug text-red-950">
-      <p>{COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD}</p>
+      <p>{countyPriorYearValuesDashboardLead(valueKind)}</p>
       {onSaleHistoryJump ? (
         <PriorYearValuesSaleHistorySentence
           linkClassName={linkClassName}
           onSaleHistoryJump={onSaleHistoryJump}
+          valueKind={valueKind}
         />
       ) : null}
       <PriorYearValuesSourcesSentence
@@ -134,17 +185,27 @@ function DouglasPriorYearValuesGapDashboardNote({
   onSaleHistoryJump,
   countyId,
   parcelRecordHref,
+  valueKind,
 }: {
   linkClassName: string;
   onSaleHistoryJump?: () => void;
   countyId: string;
   parcelRecordHref?: string | null;
+  valueKind: PriorYearValuesGapValueKind;
 }) {
+  const beforeLink =
+    valueKind === "appraised"
+      ? COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK_APPRAISED
+      : COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK;
+  const noHrefLead =
+    valueKind === "appraised"
+      ? COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS_APPRAISED
+      : COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS;
   return (
     <div className="text-sm font-normal leading-snug text-red-950">
       {parcelRecordHref ? (
         <p>
-          {COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LEAD_BEFORE_LINK}
+          {beforeLink}
           {" "}
           <a
             href={parcelRecordHref}
@@ -158,12 +219,13 @@ function DouglasPriorYearValuesGapDashboardNote({
           {COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_AFTER_LINK}
         </p>
       ) : (
-        <p>{COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS}</p>
+        <p>{noHrefLead}</p>
       )}
       {onSaleHistoryJump ? (
         <PriorYearValuesSaleHistorySentence
           linkClassName={linkClassName}
           onSaleHistoryJump={onSaleHistoryJump}
+          valueKind={valueKind}
         />
       ) : null}
       <PriorYearValuesSourcesSentence
@@ -175,14 +237,16 @@ function DouglasPriorYearValuesGapDashboardNote({
 }
 
 /**
- * Dashboard popover body: what the missing prior-year figure means.
- * Methodology stays in {@link CountyPriorYearValuesGapNote} on /sources.
+ * Dashboard callout / popover body: what the missing prior-year figure means
+ * for this kind card (or mill-chart assessed dollars). Methodology stays in
+ * {@link CountyPriorYearValuesGapNote} on /sources.
  */
 export function CountyPriorYearValuesGapDashboardNote({
   linkClassName = COUNTY_SERVICE_GAP_LINK_CLASS,
   onSaleHistoryJump,
   countyId = ARAPAHOE_COUNTY_CONFIG.id,
   parcelRecordHref,
+  valueKind = "assessed",
 }: {
   linkClassName?: string;
   /** When set, the sale-history sentence jumps to the parcel sale table. */
@@ -194,6 +258,8 @@ export function CountyPriorYearValuesGapDashboardNote({
    * (Douglas prefers linking here over a generic hub).
    */
   parcelRecordHref?: string | null;
+  /** Appraised vs Assessed card (mill chart stays assessed). */
+  valueKind?: PriorYearValuesGapValueKind;
 }) {
   const id = String(countyId).trim().toLowerCase();
   if (id === "douglas") {
@@ -203,6 +269,7 @@ export function CountyPriorYearValuesGapDashboardNote({
         onSaleHistoryJump={onSaleHistoryJump}
         countyId={id}
         parcelRecordHref={parcelRecordHref}
+        valueKind={valueKind}
       />
     );
   }
@@ -211,6 +278,7 @@ export function CountyPriorYearValuesGapDashboardNote({
       linkClassName={linkClassName}
       onSaleHistoryJump={onSaleHistoryJump}
       countyId={id || ARAPAHOE_COUNTY_CONFIG.id}
+      valueKind={valueKind}
     />
   );
 }
@@ -222,7 +290,7 @@ function ArapahoePriorYearValuesGapNote({
 }) {
   return (
     <>
-      We searched published county and state sources for prior-year actual and
+      We searched published county and state sources for prior-year appraised and
       assessed values, including the Assessor Data Mart{" "}
       <a
         href={ARAPAHOE_ASSESSOR_DATA_MART_EXPORT}
@@ -232,14 +300,14 @@ function ArapahoePriorYearValuesGapNote({
       >
         Main Parcel Table<span className="sr-only"> (opens in a new tab)</span>
       </a>. That table has this assessment year&apos;s figures only. None of
-      those sources include prior-year assessed history in a bulk table we can
-      obtain. Per the assessor&apos;s office, there is no historical information
-      available on the public website. Individual prior-year figures may be
-      available only by contacting the assessor&apos;s office directly. Without
-      those figures, there is no valuation trend to show. Subject sale history on
-      the parcel record still comes from Parcel Transfer Information. Mill-rate
-      year-over-year dollar lines still use this year&apos;s assessed value for both
-      years when last year&apos;s mills are known.
+      those sources include prior-year appraised or assessed history in a bulk
+      table we can obtain. Per the assessor&apos;s office, there is no historical
+      information available on the public website. Individual prior-year figures
+      may be available only by contacting the assessor&apos;s office directly.
+      Without those figures, there is no valuation trend to show. Subject sale
+      history on the parcel record still comes from Parcel Transfer Information.
+      Mill-rate year-over-year dollar lines still use this year&apos;s assessed
+      value for both years when last year&apos;s mills are known.
     </>
   );
 }
@@ -275,7 +343,7 @@ function DouglasPriorYearValuesGapNote({
 }
 
 /**
- * /sources county-gap callout: no free bulk prior-year assessed history.
+ * /sources county-gap callout: no free bulk prior-year appraised/assessed history.
  * Arapahoe and Douglas share the flag and hub anchor; copy is county-keyed.
  * Remove when a trusted multi-year bulk table ships. Pattern:
  * docs/county-service-gap-callouts.md
