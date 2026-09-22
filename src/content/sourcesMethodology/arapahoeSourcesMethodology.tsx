@@ -376,9 +376,9 @@ export function ArapahoeSourcesMethodology() {
           script (bundled shards).
         </li>
         <li>
-          <strong>Prior-year assessed value:</strong>{" "}
+          <strong>Prior-year appraised and assessed values:</strong>{" "}
           Property details and the values table use the mart for this
-          assessment year&apos;s actual and assessed figures.
+          assessment year&apos;s appraised and assessed figures.
           {countyFeatureAvailable(
             "priorYearValuesGap",
             ARAPAHOE_COUNTY_CONFIG,

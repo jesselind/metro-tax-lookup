@@ -46,7 +46,6 @@ import { HomeDashboardSectionNav } from "@/components/HomeDashboardSectionNav";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
-import { CountyPriorYearValuesGapPopover } from "@/components/CountyPriorYearValuesGapPopover";
 import { CountyPriorYearValuesInProgressPopover } from "@/components/CountyPriorYearValuesInProgressPopover";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { SitusEnvelopeAddress } from "@/components/SitusEnvelopeAddress";
@@ -1752,41 +1751,34 @@ export function HomeParcelAddressLookup({
         )
       : null;
 
-  const valuesSectionStatusChrome =
-    activePriorYearValuesGap || activePriorYearValuesInProgress ? (
-      <>
-        {activePriorYearValuesGap ? (
-          <CountyPriorYearValuesGapPopover
-            countyId={activeCountyConfig.id}
-            parcelRecordHref={safeCountyParcelRecordUrl(
-              levyLoadedMeta?.pin,
-              activeCountyConfig,
-              {
-                year: parcelSummaryYears?.parcelRecordLinkYear,
-              },
-            )}
-            hasSaleHistory={
-              !isBusinessPersonalAccount && parcelRecord != null
-            }
-          />
-        ) : null}
-        {activePriorYearValuesInProgress ? (
-          <CountyPriorYearValuesInProgressPopover
-            countyId={activeCountyConfig.id}
-            parcelRecordHref={safeCountyParcelRecordUrl(
-              levyLoadedMeta?.pin,
-              activeCountyConfig,
-              {
-                year: parcelSummaryYears?.parcelRecordLinkYear,
-              },
-            )}
-            hasSaleHistory={
-              !isBusinessPersonalAccount && parcelRecord != null
-            }
-          />
-        ) : null}
-      </>
-    ) : null;
+  const valuesSectionStatusChrome = activePriorYearValuesInProgress ? (
+    <CountyPriorYearValuesInProgressPopover
+      countyId={activeCountyConfig.id}
+      parcelRecordHref={safeCountyParcelRecordUrl(
+        levyLoadedMeta?.pin,
+        activeCountyConfig,
+        {
+          year: parcelSummaryYears?.parcelRecordLinkYear,
+        },
+      )}
+      hasSaleHistory={!isBusinessPersonalAccount && parcelRecord != null}
+    />
+  ) : null;
+
+  const valuesPriorYearGap =
+    activePriorYearValuesGap
+      ? {
+          countyId: activeCountyConfig.id,
+          parcelRecordHref: safeCountyParcelRecordUrl(
+            levyLoadedMeta?.pin,
+            activeCountyConfig,
+            {
+              year: parcelSummaryYears?.parcelRecordLinkYear,
+            },
+          ),
+          hasSaleHistory: !isBusinessPersonalAccount && parcelRecord != null,
+        }
+      : null;
 
   /** Values section sits after levies, above Property details (own Jump target). */
   const appraisedAssessedSection =
@@ -1810,6 +1802,7 @@ export function HomeParcelAddressLookup({
             record={parcelRecordForDisplay}
             totalOnly={isBusinessPersonalAccount}
             sectionStatusChrome={valuesSectionStatusChrome}
+            priorYearValuesGap={valuesPriorYearGap}
             taxYearNoteOverride={valueTaxYearNoteOverride}
             valuationHistory={
               !valuationHistoryLoading ? valuationHistory : null

@@ -153,13 +153,9 @@ export function ArapahoeSourcesAfterGap({
         <strong className="font-semibold text-slate-900">
           Appraised and assessed values
         </strong>
-        , a red{" "}
-        <strong className="font-semibold text-slate-900">
-          Prior years missing
-        </strong>
-        {" "}
-        badge can sit under the section title and opens a COUNTY DATA GAP note in
-        place. How we searched for
+        , when the county has no valuation history, a COUNTY DATA GAP note sits
+        inside the Appraised and Assessed cards where year-over-year change would
+        go. How we searched for
         those figures is on this page. This tool does not compare your
         prior-year treasurer bill total, and it does not claim the bill went up
         or down overall. In tile details, a short percent summary appears when

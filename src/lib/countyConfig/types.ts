@@ -98,7 +98,8 @@ export type CountyFeatures = {
    */
   metroPurposes: boolean;
   /**
-   * COUNTY DATA GAP opt-in: Prior years missing badge + /sources prior-year note.
+   * COUNTY DATA GAP opt-in: always-visible prior-year gap callouts on Appraised /
+   * Assessed kind cards + mill-chart Prior $ missing badge + /sources prior-year note.
    * False: omit (do not reuse another county's story). Copy is county-keyed in
    * `countyPriorYearValuesGapNote.tsx` (Arapahoe vs Douglas differ).
    * Mutually exclusive with {@link CountyFeatures.priorYearValuesInProgress}.

@@ -54,7 +54,7 @@ export const COUNTY_SERVICE_GAP_SOURCES_INDEX_COMPS_PDF_LABEL =
   "Comparable properties PDF (county FileDownload.ashx)";
 
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_PRIOR_YEAR_VALUES_LABEL =
-  "Prior-year assessed value (valuation history)";
+  "Prior-year appraised and assessed values (valuation history)";
 
 export const COUNTY_SERVICE_GAP_SOURCES_INDEX_DOUGLAS_MILL_PDF_LABEL =
   "Douglas County mill PDF tax district coverage";

@@ -9,13 +9,15 @@ import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "../src/content/levyYoYCop
 import { MILL_LEVY_CHANGED_LABEL } from "../src/content/millLevySummaryCopy";
 import { PARCEL_RECORD_SALE_HISTORY_ID } from "../src/components/ParcelRecordCountyTables";
 import {
-  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
   COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS,
-  COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL,
+  COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL_ASSESSED,
   COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
   COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
 } from "../src/content/countyPriorYearValuesGapNote";
 import { COUNTY_SERVICE_GAP_CALLOUT_TITLE } from "../src/content/countyServiceGapGuidance";
+import { HOME_APPRAISED_ASSESSED_ID } from "../src/lib/homeDashboardJumps";
 import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_METRO_AUTHORITY,
@@ -48,32 +50,37 @@ test.describe("Metro year-over-year UI", () => {
     await expect(
       page.getByRole("region", { name: "Total mill levy for your stack" }),
     ).not.toContainText(MILL_LEVY_CHANGED_LABEL);
-    const priorYearTrigger = page.getByRole("button", {
-      name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
-    });
-    await expect(priorYearTrigger).toBeVisible();
-    await expect(priorYearTrigger).not.toContainText(
-      COUNTY_SERVICE_GAP_CALLOUT_TITLE,
-    );
-    await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeVisible();
 
-    await priorYearTrigger.click();
-    const priorYearGap = page.getByRole("note").filter({
-      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
-    });
-    await expect(priorYearGap).toBeVisible();
-    await expect(priorYearGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    const valuesSection = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
+    await expect(valuesSection).toBeVisible();
+    // Arapahoe: always-visible COUNTY DATA GAP in Appraised + Assessed (kind-specific).
     await expect(
-      priorYearGap.getByRole("link", {
+      valuesSection.getByRole("button", {
+        name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
+      }),
+    ).toHaveCount(0);
+    const appraisedGap = valuesSection.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
+    });
+    const assessedGap = valuesSection.getByRole("note").filter({
+      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
+    });
+    await expect(appraisedGap).toHaveCount(1);
+    await expect(assessedGap).toHaveCount(1);
+    await expect(appraisedGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(assessedGap).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(
+      assessedGap.getByRole("link", {
         name: COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,
       }),
     ).toBeVisible();
-    await page
+    await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeVisible();
+
+    await assessedGap
       .getByRole("button", {
-        name: COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL,
+        name: COUNTY_PRIOR_YEAR_VALUES_SALE_HISTORY_JUMP_ARIA_LABEL_ASSESSED,
       })
       .click();
-    await expect(priorYearGap).toHaveCount(0);
     await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeFocused();
   });
 
@@ -125,7 +132,7 @@ test.describe("Metro year-over-year UI", () => {
       name: COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS,
     });
     await expect(chartGapBadge).toBeVisible();
-    // Assessed-value chip keeps "Prior years missing"; chart must not reuse that label.
+    // Values section uses always-visible callouts (not Prior years missing badge).
     await expect(
       millsChart.getByRole("button", {
         name: COUNTY_PRIOR_YEAR_VALUES_TILE_STATUS,
@@ -136,11 +143,16 @@ test.describe("Metro year-over-year UI", () => {
     await expect(millsChart.getByText("$347")).toBeVisible();
     await expect(millsChart.getByText("Tax Year 2025")).toBeVisible();
     await chartGapBadge.click();
-    const chartGapPanel = page.getByRole("note").filter({
-      hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
-    });
+    // Floating panel is labelled by the Prior $ missing trigger (values callouts
+    // are also notes and may sit under other regions).
+    const chartGapPanel = page
+      .getByRole("region", { name: COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS })
+      .getByRole("note");
     await expect(chartGapPanel).toBeVisible();
     await expect(chartGapPanel).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(chartGapPanel).toContainText(
+      COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
+    );
     await expect(
       chartGapPanel.getByRole("link", {
         name: COUNTY_PRIOR_YEAR_VALUES_SOURCES_LINK_LABEL,

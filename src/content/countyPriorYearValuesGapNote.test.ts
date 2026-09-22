@@ -5,9 +5,12 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD,
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
+  COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
   COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_DOUGLAS,
   COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_DOUGLAS_LINK_LABEL,
+  countyPriorYearValuesDashboardLead,
+  countyPriorYearValuesSaleHistoryJumpAriaLabel,
 } from "@/content/countyPriorYearValuesGapNote";
 import { DOUGLAS_ASSESSOR_REAL_ESTATE_DATA_CENTER_URL } from "@/content/douglasCountyDataGapNote";
 import {
@@ -19,8 +22,32 @@ import { safeCountyParcelRecordUrl } from "@/lib/safeExternalHref";
 
 describe("countyPriorYearValuesGap copy", () => {
   it("keeps Arapahoe assessor guidance that the public site has no history", () => {
-    expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD).toMatch(
+    expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED).toMatch(
+      /prior-year appraised values/i,
+    );
+    expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED).toMatch(
       /no historical information available on the public website/i,
+    );
+    expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED).toMatch(
+      /prior-year assessed values/i,
+    );
+    expect(COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED).toMatch(
+      /no historical information available on the public website/i,
+    );
+    expect(countyPriorYearValuesDashboardLead("appraised")).toBe(
+      COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
+    );
+    expect(countyPriorYearValuesDashboardLead("assessed")).toBe(
+      COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_ASSESSED,
+    );
+    expect(countyPriorYearValuesSaleHistoryJumpAriaLabel("appraised")).toMatch(
+      /appraised values note/i,
+    );
+    expect(countyPriorYearValuesSaleHistoryJumpAriaLabel("assessed")).toMatch(
+      /assessed values note/i,
+    );
+    expect(countyPriorYearValuesSaleHistoryJumpAriaLabel()).toMatch(
+      /Jump to sale history for this parcel$/i,
     );
   });
 
