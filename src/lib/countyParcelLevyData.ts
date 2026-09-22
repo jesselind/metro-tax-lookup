@@ -624,7 +624,7 @@ export function getLastCountyLevyStacksFetchFailureDetail(): string | null {
  * Bump {@link COUNTY_LEVY_STACKS_CACHE_BUST} when rebuilding levy stacks so browsers
  * skip a stale `/data` copy (Contact trusts stack-embedded `dolaMatch.lgId`).
  */
-export const COUNTY_LEVY_STACKS_CACHE_BUST = "20260912aurora64907";
+export const COUNTY_LEVY_STACKS_CACHE_BUST = "20260922antelopegid";
 
 export function fetchCountyLevyStacksJson(
   countyId: string,

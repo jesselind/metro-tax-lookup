@@ -204,7 +204,10 @@ export function ArapahoeSourcesMethodology() {
           <strong>District contact vs tax IDs:</strong>{" "}Levy tile mills and
           tax-entity linkage come from one join path (county tags matched to
           DOLA property-tax entities; only high-confidence fuzzy identity
-          ships on the bill). Website and mailing contacts come from
+          ships on the bill). When a county label is truncated or otherwise too
+          short for a safe fuzzy match, maintainers pin the DOLA Tax Entity ID
+          so mills and the bill LG ID still ship (same curated override file as
+          other hard cases). Website and mailing contacts come from
           a separate state LG directory filtered to districts on shipping
           county stacks (Arapahoe and Douglas today). Bill LG ID and directory
           LG ID can{" "}

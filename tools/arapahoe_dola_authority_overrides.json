@@ -61,8 +61,19 @@
       "note": "STHEST = Southeast; PUB IMP = Public Improvement."
     },
     "NORTH KIOWA BIJOU WATER": {
-      "legalName": "North Kiowa Bijou Water Management District",
-      "note": "Truncated; multi-county possible."
+      "legalName": "North Kiowa Bijou Groundwater Mgmt",
+      "taxEntityId": "64099/1",
+      "note": "Mart AUTH 4483 truncates; prior legalName override used wrong 'Water Management District' string and still fuzzy-failed (score ~0.675). Pin TE 64099/1 (DOLA Groundwater Mgmt, 0.02 mills). Antelope Hills TAG ship."
+    },
+    "ANTELOPE HLS GEN IMP DIST": {
+      "legalName": "Antelope Hills General Improvement District, Town of Bennett, CO",
+      "taxEntityId": "64265/1",
+      "note": "Mart AUTH 4042 truncates vs long DOLA legal name (fuzzy ~0.637). Pin TE 64265/1 (36.71 mills). Municipal GID; Town of Bennett board ex officio. Not Antelope Water System GID (4020) or Antelope Heights Metro."
+    },
+    "BENNETT FIRE PROTECTION": {
+      "legalName": "Bennett Fire Protection District",
+      "taxEntityId": "64018/1",
+      "note": "Mart AUTH 4060 truncates DISTRICT (fuzzy ~0.836 < 0.92). Pin TE 64018/1 (10.898 mills). Same TAG as Antelope Hills GID."
     },
     "CHERRY HILLS FIRE BOND": {
       "legalName": "Cherry Hills Village Fire Protection District",

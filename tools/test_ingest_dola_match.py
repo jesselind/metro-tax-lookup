@@ -363,6 +363,106 @@ class AuroraSchoolOverrideTests(unittest.TestCase):
         self.assertNotEqual(result.get("matchedLegalName"), "Byers 32J School District")
 
 
+class AntelopeHillsTagOverrideTests(unittest.TestCase):
+    """TAG 1258496 (Antelope Hills): three fail-closed mart labels need TE pins."""
+
+    def test_override_pins_antelope_gid_te(self) -> None:
+        self.assertTrue(DEFAULT_DOLA_CSV.is_file(), str(DEFAULT_DOLA_CSV))
+        self.assertTrue(DEFAULT_OVERRIDES.is_file(), str(DEFAULT_OVERRIDES))
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        self.assertIn("64265/1", by_te)
+        overrides = load_overrides(DEFAULT_OVERRIDES)
+        self.assertEqual(
+            overrides.get("ANTELOPE HLS GEN IMP DIST", {}).get("taxEntityId"),
+            "64265/1",
+        )
+        result = dola_match_for_mart_line(
+            "4042",
+            "ANTELOPE HLS GEN IMP DIST",
+            entities=entities,
+            overrides=overrides,
+            entities_by_te_id=by_te,
+        )
+        self.assertEqual(result["method"], "override")
+        self.assertEqual(result["taxEntityId"], "64265/1")
+        self.assertEqual(result["lgId"], "64265")
+        self.assertAlmostEqual(float(result["mills"]), 36.71, places=3)
+
+    def test_override_pins_bennett_fire_te(self) -> None:
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        self.assertIn("64018/1", by_te)
+        overrides = load_overrides(DEFAULT_OVERRIDES)
+        self.assertEqual(
+            overrides.get("BENNETT FIRE PROTECTION", {}).get("taxEntityId"),
+            "64018/1",
+        )
+        result = dola_match_for_mart_line(
+            "4060",
+            "BENNETT FIRE PROTECTION",
+            entities=entities,
+            overrides=overrides,
+            entities_by_te_id=by_te,
+        )
+        self.assertEqual(result["method"], "override")
+        self.assertEqual(result["taxEntityId"], "64018/1")
+        self.assertEqual(result["lgId"], "64018")
+        self.assertAlmostEqual(float(result["mills"]), 10.898, places=3)
+
+    def test_override_pins_north_kiowa_groundwater_te(self) -> None:
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        by_te = {
+            str(e.get("taxEntityId") or "").strip(): e
+            for e in entities
+            if e.get("taxEntityId")
+        }
+        self.assertIn("64099/1", by_te)
+        overrides = load_overrides(DEFAULT_OVERRIDES)
+        self.assertEqual(
+            overrides.get("NORTH KIOWA BIJOU WATER", {}).get("taxEntityId"),
+            "64099/1",
+        )
+        result = dola_match_for_mart_line(
+            "4483",
+            "NORTH KIOWA BIJOU WATER",
+            entities=entities,
+            overrides=overrides,
+            entities_by_te_id=by_te,
+        )
+        self.assertEqual(result["method"], "override")
+        self.assertEqual(result["taxEntityId"], "64099/1")
+        self.assertEqual(result["lgId"], "64099")
+        self.assertEqual(
+            result["matchedLegalName"],
+            "North Kiowa Bijou Groundwater Mgmt",
+        )
+        self.assertAlmostEqual(float(result["mills"]), 0.02, places=3)
+
+    def test_bare_labels_without_override_fail_closed(self) -> None:
+        entities, _, filtered = load_dola_entities_csv(DEFAULT_DOLA_CSV, "Arapahoe")
+        self.assertTrue(filtered)
+        for label in (
+            "ANTELOPE HLS GEN IMP DIST",
+            "BENNETT FIRE PROTECTION",
+            "NORTH KIOWA BIJOU WATER",
+        ):
+            result = match_dola_line(label, entities, {})
+            self.assertEqual(result["method"], "none", label)
+            self.assertIsNone(result["lgId"], label)
+
+
 class OverridesFileTests(unittest.TestCase):
     def test_shared_overrides_file_exists(self) -> None:
         self.assertTrue(DEFAULT_OVERRIDES.is_file(), str(DEFAULT_OVERRIDES))
@@ -376,6 +476,18 @@ class OverridesFileTests(unittest.TestCase):
         self.assertIn("ARAPAHOE COUNTY", loaded)
         self.assertIn("WEST METRO FIRE PROTECTION DISTRICT", loaded)
         self.assertIn("AURORA SCHOOL DIST # 28J", loaded)
+        self.assertEqual(
+            loaded["ANTELOPE HLS GEN IMP DIST"].get("taxEntityId"),
+            "64265/1",
+        )
+        self.assertEqual(
+            loaded["BENNETT FIRE PROTECTION"].get("taxEntityId"),
+            "64018/1",
+        )
+        self.assertEqual(
+            loaded["NORTH KIOWA BIJOU WATER"].get("taxEntityId"),
+            "64099/1",
+        )
         mills = loaded["ARAPAHOE COUNTY"].get("millsOverride")
         self.assertIsInstance(mills, (int, float))
         self.assertFalse(isinstance(mills, bool))

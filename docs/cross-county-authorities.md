@@ -123,6 +123,8 @@ Optional: `--only-complete` on the Python builder omits `partial` and `dola_only
 
 **West Metro Fire (AUTH 4402):** Douglas stacks join DOLA Tax Entity ID **64243/1** (`lgId` **64243**) via curated override in `tools/arapahoe_dola_authority_overrides.json`. Do not map **4402** to SMFR (**64108** / Douglas AUTH **4014**) in the cross-county registry. A thin Douglas DOLA load (historical `dolaRowCount` 24) fuzzy-matched West Metro to SMFR; the override + `test_ingest_dola_match.py` regression keep **64243/1**.
 
+**Antelope Hills TAG (Arapahoe AUTH 4042 / 4060 / 4483):** Truncated mart labels failed the 0.92 fuzzy floor (`method: "none"`). TE pins: **64265/1** (GID, 36.71), **64018/1** (Bennett Fire, 10.898), **64099/1** (North Kiowa Bijou Groundwater Mgmt, 0.02). Pre-ship allowlist assert: `npm run assert:ingest-levy-stack-scope`. Vitest locks shipped TAG `1258496`.
+
 ### `countyOverlays` keys (authority-chain JSON)
 
 Per wired county id, optional:
