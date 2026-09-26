@@ -10,7 +10,9 @@ import {
 } from "@/content/levyAuthorityChainTemplates";
 import {
   findLevyAuthorityChainEntry,
+  HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT,
   isLevyAuthorityChainInlineTermId,
+  latestArapahoeAuthorityChainCardsForHome,
   LEVY_AUTHORITY_CHAIN_ENTRIES,
   LEVY_AUTHORITY_CHAIN_INLINE_TERM_IDS,
   type LevyAuthorityChainFact,
@@ -36,6 +38,24 @@ describe("levyAuthorityChain", () => {
     expect(entry?.summary).toContain("Ballot Issue 7A");
     expect(entry?.summary).toContain("November 2025");
     expect(entry?.summary).not.toContain("eligible electors");
+  });
+
+  it("lists the latest three Arapahoe-related home authority-chain cards", () => {
+    const cards = latestArapahoeAuthorityChainCardsForHome();
+    expect(cards).toHaveLength(HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT);
+    expect(cards.map((c) => c.entry.id)).toEqual([
+      "arapahoe-library-authority-chain",
+      "city-of-aurora-authority-chain",
+      "south-metro-fire-authority-chain",
+    ]);
+    expect(cards[0]?.authorityDisplayName).toBe("Arapahoe Library District");
+    expect(cards[0]?.lastYearPercentLabel).toBe("Up 0.07% from last year");
+    expect(cards[0]?.lastYearDirection).toBe("more");
+    expect(cards[1]?.lastYearPercentLabel).toBe("Up 7.2% from last year");
+    expect(cards[1]?.lastYearDirection).toBe("more");
+    expect(cards[2]?.lastYearPercentLabel).toBe("Up 32% from last year");
+    expect(cards[2]?.lastYearDirection).toBe("more");
+    expect(cards[2]?.levyLineCode).toBe("4100");
   });
 
   it("matches Douglas SMFR AUTH 4014 via cross-county registry", () => {

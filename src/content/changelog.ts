@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.20.0",
+    date: "2026-09-26",
+    title: "Arapahoe Library District authority chain (AUTH 4026 / Ballot Issue 4A)",
+    highlights: [
+      "Library authority-chain family pack (Voters + Ballot Issue + certified votes; AUTH-derived What changed?, same trail shape as fire).",
+      "Curated Arapahoe Library District AUTH 4026: November 2015 Ballot Issue 4A (mill levy 4.2→5.4 + TABOR keep; Notice purpose includes replenishing reserves spent in recent years) with 2015 Notice and Official Results cites; rate-table page map includes 4026. Closed summary includes the same Raise the mill levy from 4.2 to 5.4 for library services phrase as the measure title.",
+      "AUTH-derived What changed? second block is Most notable increase (largest positive adjacent mill Δ; omit if same as Change from last year or no increase; decreases no longer win). Shared helper for metro/fire/library/city. Measure bodies that say voters approved are prefixed with the entry summarySource attribution (same as the closed summary).",
+      "Home address search: latest three Arapahoe-related Who authorized this? panels under the privacy line (blog-style lead; authority name then same-size Up/Down mill % in levy YoY red/green box). Shared authority-chain panel chrome is slate (bg-slate-100 / border-slate-500) on home and levy modal. Campaign outline under the privacy line (footer copy kept).",
+    ],
+  },
+  {
     version: "5.19.3",
     date: "2026-09-22",
     title: "CodeRabbit: exclude parcel and valuation shards from PR review",

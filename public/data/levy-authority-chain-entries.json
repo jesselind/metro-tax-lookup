@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | city). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -529,6 +529,62 @@
       ],
       "openGapIds": [
         "city-temporary-mill-reduction"
+      ]
+    },
+    {
+      "id": "arapahoe-library-authority-chain",
+      "family": "library",
+      "match": {
+        "levyLineCode": "4026"
+      },
+      "authority": {
+        "displayName": "Arapahoe Library District",
+        "countyListName": "ARAPAHOE LIBRARY DISTRICT",
+        "governingBody": "board",
+        "governmentBillName": "the library district",
+        "whoGetsBody": "This district's property-tax revenue pays for public library services in its service area, including branches, collections, technology, literacy programs, and staff. Some cities in Arapahoe County run separate city library systems; this levy is for the library district shown above, not those city systems."
+      },
+      "summarySource": {
+        "text": "According to Arapahoe County's certified election results",
+        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2015/2015CoordinatedElection_OfficialResults.pdf#page=6"
+      },
+      "summary": {
+        "headlineIssues": [
+          "4A"
+        ],
+        "headlineElection": "November 2015",
+        "headlineNote": ": Raise the mill levy from 4.2 to 5.4 for library services"
+      },
+      "mills": {},
+      "measures": [
+        {
+          "stepId": "ballot-4a-operations-mill",
+          "ballotIssue": "4A",
+          "kind": "operations_mill",
+          "electionMonthYear": "November 2015",
+          "titlePlain": "Raise the mill levy from 4.2 to 5.4 for library services",
+          "detail": "raising the Arapahoe Library District mill levy from 4.2 to 5.4 mills (about $6 million more in estimated 2016 revenue, and more later as values change) to replenish reserves spent in recent years and to maintain library services such as books, technology, literacy programs, and staff, and letting the district keep and spend that revenue without TABOR refund limits",
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "2015 County Notice of Election (Ballot Issue 4A)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2015/2015CoordinatedElection_TABORNotice_0.pdf#page=16"
+          },
+          "bodyTermId": "term-tabor",
+          "bodyTermMatch": "TABOR",
+          "votes": {
+            "yes": "31,915",
+            "yesPct": "55.64%",
+            "no": "25,447",
+            "noPct": "44.36%"
+          },
+          "resultsSource": {
+            "text": "2015 Official Results",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2015/2015CoordinatedElection_OfficialResults.pdf#page=6"
+          }
+        }
+      ],
+      "openGapIds": [
+        "no-fund-level-mill-split"
       ]
     }
   ]

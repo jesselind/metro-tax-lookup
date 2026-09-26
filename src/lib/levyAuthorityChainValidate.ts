@@ -63,6 +63,7 @@ const FAMILIES = new Set<LevyAuthorityChainFamily>([
   "county",
   "metro",
   "fire",
+  "library",
   "city",
 ]);
 const MEASURE_KINDS = new Set([
@@ -272,7 +273,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     byEntryId.set(id, true);
 
     if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
-      fail(`[${id}] family must be school, county, metro, fire, or city`);
+      fail(`[${id}] family must be school, county, metro, fire, library, or city`);
     }
     const family = record.family as LevyAuthorityChainFamily;
     const familyPack = getAuthorityChainFamilyPack(family);
@@ -390,10 +391,11 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         family !== "county" &&
         family !== "metro" &&
         family !== "fire" &&
+        family !== "library" &&
         family !== "city"
       ) {
         fail(
-          `[${id}] authority.governmentBillName only applies to county, metro, fire, or city family entries`,
+          `[${id}] authority.governmentBillName only applies to county, metro, fire, library, or city family entries`,
         );
       }
     }
@@ -933,7 +935,10 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         }
       }
       if (
-        (family === "metro" || family === "fire" || family === "city") &&
+        (family === "metro" ||
+          family === "fire" ||
+          family === "library" ||
+          family === "city") &&
         !isNonEmptyString(measure.titlePlain)
       ) {
         fail(
@@ -949,6 +954,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           measure.kind !== "city_authorization" &&
           !(family === "metro" && measure.kind === "bond") &&
           !(family === "fire" && measure.kind === "bond") &&
+          !(family === "library" && measure.kind === "bond") &&
           !(family === "city" && measure.kind === "bond")
         ) {
           fail(
