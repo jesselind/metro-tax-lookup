@@ -445,7 +445,7 @@ export function LevyAuthorityChainSection({
 
   return (
     <div
-      className="rounded-lg border border-amber-200/90 bg-gradient-to-b from-amber-50 to-amber-50/60 p-4 shadow-sm sm:p-5"
+      className="rounded-lg border-2 border-slate-500 bg-slate-100 p-4 shadow-sm sm:p-5"
       role="region"
       aria-labelledby={headingId}
     >
@@ -459,9 +459,9 @@ export function LevyAuthorityChainSection({
         {renderSummary(entry)}
       </p>
 
-      <details className="group mt-3 border-t border-amber-200/80 pt-3">
+      <details className="group mt-3 border-t border-slate-300 pt-3">
         <DisclosureSummary label={AUTHORITY_CHAIN_STEPS_DISCLOSURE} />
-        <ol className="mt-3 list-decimal space-y-4 pl-5 marker:font-semibold marker:text-amber-900/80">
+        <ol className="mt-3 list-decimal space-y-4 pl-5 marker:font-semibold marker:text-slate-700">
           {entry.steps.map((step) => (
             <li key={step.id} className="pl-1">
               <p className="text-base font-semibold text-slate-900 sm:text-lg">
@@ -486,7 +486,7 @@ export function LevyAuthorityChainSection({
                     <span className="min-w-0 flex-1">{step.bodyDisclosure.label}</span>
                     <DisclosureChevron className="h-4 w-4 shrink-0 text-slate-600 transition-transform duration-150 group-open/ai-translation:rotate-180" />
                   </summary>
-                  <blockquote className="mt-2 whitespace-pre-line border-l-2 border-amber-300/90 pl-3 text-sm leading-relaxed text-slate-800 sm:text-base">
+                  <blockquote className="mt-2 whitespace-pre-line border-l-2 border-slate-400 pl-3 text-sm leading-relaxed text-slate-800 sm:text-base">
                     {step.bodyDisclosure.body}
                   </blockquote>
                 </details>
@@ -532,7 +532,7 @@ export function LevyAuthorityChainSection({
       </details>
 
       {entry.openGaps.length > 0 ? (
-        <details className="group mt-3 border-t border-amber-200/80 pt-3">
+        <details className="group mt-3 border-t border-slate-300 pt-3">
           <DisclosureSummary label={AUTHORITY_CHAIN_GAPS_DISCLOSURE} />
           <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-800 sm:text-base">
             {entry.openGaps.map((gap) => (

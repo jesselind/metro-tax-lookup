@@ -21,6 +21,11 @@ import {
   CountyScopeTopLine,
   showCountyScopeTopLine,
 } from "@/components/CountyScopeTopLine";
+import { HomeLatestAuthorityChainCards } from "@/components/HomeLatestAuthorityChainCards";
+import {
+  CampaignSiteLink,
+  hasCampaignSiteLink,
+} from "@/components/CampaignSiteLink";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
 import { DataLoadErrorCallout } from "@/components/DataLoadErrorCallout";
 import { MailContactCard } from "@/components/MailContactCard";
@@ -135,6 +140,7 @@ import {
   safeCountyCompsGridPdfUrl,
   safeCountyParcelRecordUrl,
 } from "@/lib/safeExternalHref";
+import { SITE_CONFIG } from "@/lib/siteConfig";
 import { parcelAssessedForDollarEstimate } from "@/lib/annualTaxFromAssessedMills";
 import {
   estimatedAnnualPropertyTaxDollars as resolveEstimatedAnnualPropertyTaxDollars,
@@ -2433,6 +2439,16 @@ export function HomeParcelAddressLookup({
             We do not save your address. This uses publicly available data. We
             do not track you.
           </p>
+          {hasCampaignSiteLink() ? (
+            <div className="mt-4 flex justify-center">
+              {/* FORK REQUIRED: SITE_CONFIG.campaignHomeDisclosureLabel + campaignSiteUrl */}
+              <CampaignSiteLink variant="outline">
+                {SITE_CONFIG.campaignHomeDisclosureLabel}
+              </CampaignSiteLink>
+            </div>
+          ) : null}
+          <hr className="mt-8 border-0 border-t border-slate-300" />
+          <HomeLatestAuthorityChainCards />
         </div>
       ) : (
         <div className="min-w-0 space-y-3">

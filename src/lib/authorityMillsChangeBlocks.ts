@@ -4,18 +4,19 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Derive metro authority-chain "What changed?" blocks from the same AUTH
- * mills-over-time series the modal chart consumes
+ * Derive metro / fire / library / city authority-chain "What changed?" blocks
+ * from the same AUTH mills-over-time series the modal chart consumes
  * ({@link authorityMillsSeries}). Numbers are never hand-copied into the
- * authority-chain JSON for metro entries.
+ * authority-chain JSON for those entries.
  *
- * Rules (metro pack):
+ * Rules (AUTH-derived packs):
  * - Always show **Change from last year** when the series has at least two
  *   adjacent published years (latest pair).
- * - Also show **Most notable change** when another adjacent pair has a larger
- *   absolute mill move than last year. Ties prefer the more recent pair
- *   (higher `toYear`). If the largest move *is* last year, omit the second
- *   block (no duplicate).
+ * - Also show **Most notable increase** when another adjacent pair has a
+ *   larger positive mill move (`delta > 0`) than last year. Ties prefer the
+ *   more recent pair (higher `toYear`). If the largest increase *is* last
+ *   year, or there is no positive increase in the series, omit the second
+ *   block (no absolute-value / decrease fallback; no duplicate of last year).
  */
 
 import type { AuthorityMillsSeriesPoint } from "@/lib/authorityMillsHistory";
@@ -36,11 +37,11 @@ export type AuthorityMillsYoYChange = {
 };
 
 /**
- * Resident-facing labels for metro "What changed?" fact blocks.
+ * Resident-facing labels for AUTH-derived "What changed?" fact blocks.
  * Segregation is for the opened trail only (not the closed summary).
  */
 export const METRO_MILLS_CHANGE_FROM_LAST_YEAR_LABEL = "Change from last year";
-export const METRO_MILLS_MOST_NOTABLE_CHANGE_LABEL = "Most notable change";
+export const METRO_MILLS_MOST_NOTABLE_INCREASE_LABEL = "Most notable increase";
 
 /**
  * Adjacent YoY pairs from an ascending AUTH series. Skips gaps by pairing
@@ -73,10 +74,11 @@ function sameYearPair(
 }
 
 /**
- * Select metro trail mill-change blocks from an AUTH series.
+ * Select AUTH-derived trail mill-change blocks from an AUTH series.
  *
  * @returns `changeFromLastYear` null when fewer than two published points;
- *   `mostNotableChange` null when absent, or when it is the same pair as last year.
+ *   `mostNotableChange` null when there is no positive increase, or when the
+ *   largest increase is the same pair as last year.
  */
 export function selectMetroAuthorityMillsChangeBlocks(
   series: AuthorityMillsSeriesPoint[],
@@ -93,23 +95,25 @@ export function selectMetroAuthorityMillsChangeBlocks(
 
   let mostNotable: AuthorityMillsYoYChange | null = null;
   for (const candidate of changes) {
+    if (candidate.delta <= 0) continue;
     if (!mostNotable) {
       mostNotable = candidate;
       continue;
     }
-    const candAbs = Math.abs(candidate.delta);
-    const bestAbs = Math.abs(mostNotable.delta);
-    if (candAbs > bestAbs) {
+    if (candidate.delta > mostNotable.delta) {
       mostNotable = candidate;
       continue;
     }
     // Tie-break: prefer the more recent pair.
-    if (candAbs === bestAbs && candidate.toYear > mostNotable.toYear) {
+    if (
+      candidate.delta === mostNotable.delta &&
+      candidate.toYear > mostNotable.toYear
+    ) {
       mostNotable = candidate;
     }
   }
 
-  if (mostNotable && sameYearPair(mostNotable, changeFromLastYear)) {
+  if (!mostNotable || sameYearPair(mostNotable, changeFromLastYear)) {
     return { changeFromLastYear, mostNotableChange: null };
   }
 
@@ -152,4 +156,31 @@ export function formatMetroMillsChangeFactValue(
     );
   }
   return lines.join("\n");
+}
+
+/**
+ * Home card h3 fragment: mill-rate percent change for the latest adjacent
+ * published pair (`|delta| / |fromMills|`). Not a whole-bill tax estimate.
+ *
+ * @returns null when there is no pair, or when `fromMills` is 0 (percent
+ *   undefined). Flat pair → "No change from last year".
+ */
+export function formatHomeLastYearMillsPercentChange(
+  change: AuthorityMillsYoYChange | null | undefined,
+): string | null {
+  if (!change) return null;
+  if (change.delta === 0) return "No change from last year";
+  if (change.fromMills === 0) return null;
+
+  const pct = (Math.abs(change.delta) / Math.abs(change.fromMills)) * 100;
+  const magnitude = formatHomeMillsPercentMagnitude(pct);
+  const direction = change.delta > 0 ? "Up" : "Down";
+  return `${direction} ${magnitude}% from last year`;
+}
+
+/** Compact percent digits for home headings (enough for tiny mill moves). */
+function formatHomeMillsPercentMagnitude(absPercent: number): string {
+  if (absPercent >= 10) return absPercent.toFixed(0);
+  if (absPercent >= 1) return absPercent.toFixed(1);
+  return absPercent.toFixed(2);
 }

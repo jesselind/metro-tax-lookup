@@ -9,9 +9,15 @@ import {
   type LevyAuthorityChainEntryRecord,
 } from "@/lib/levyAuthorityChainBuild";
 import {
+  formatHomeLastYearMillsPercentChange,
+  selectMetroAuthorityMillsChangeBlocks,
+} from "@/lib/authorityMillsChangeBlocks";
+import { authorityMillsSeries } from "@/lib/authorityMillsHistory";
+import {
   crossCountyAuthorityById,
   findCrossCountyAuthorityByCountyLevyCode,
   findCrossCountyAuthorityByLevyCode,
+  levyLineCodeForCrossCountyAuthority,
   type CrossCountyAuthorityRegistryRow,
 } from "@/lib/crossCountyAuthorityRegistry";
 import {
@@ -243,4 +249,91 @@ export function findLevyAuthorityChainEntry(
     options?.countyId?.trim(),
     authorityLabel,
   );
+}
+
+/** How many latest Arapahoe-related authority chains to show on the home search form. */
+export const HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT = 3;
+
+/**
+ * True when the curated entry is for an Arapahoe County tax entity (or a
+ * multi-county entity with an Arapahoe AUTH / overlay). Single-county
+ * `match.levyLineCode` entries in this file are Arapahoe AUTH codes.
+ */
+export function authorityChainRecordServesArapahoe(
+  record: LevyAuthorityChainEntryRecord,
+): boolean {
+  if (record.match.levyLineCode?.trim()) return true;
+  const registryId = record.match.registryId?.trim();
+  if (!registryId) return false;
+  const registryRow = crossCountyAuthorityById(registryId);
+  if (registryRow?.levyLineCodeByCounty.arapahoe?.trim()) return true;
+  return Boolean(record.countyOverlays?.arapahoe);
+}
+
+export type HomeLatestArapahoeAuthorityChainCard = {
+  /** Tax authority display name (home card title). */
+  authorityDisplayName: string;
+  /**
+   * Last-year mill % line when available
+   * (e.g. "Up 7.2% from last year"). Null when percent is undefined.
+   */
+  lastYearPercentLabel: string | null;
+  /**
+   * YoY direction for home percent chrome (same red-up / green-down as levy
+   * tiles). Null when {@link lastYearPercentLabel} is null.
+   */
+  lastYearDirection: "more" | "less" | "neutral" | null;
+  /** Built trail for Arapahoe residents (overlays + AUTH mills). */
+  entry: LevyAuthorityChainEntry;
+  /** Arapahoe stack AUTH / levy line code for rate-table deep-links. */
+  levyLineCode?: string;
+};
+
+function homeDirectionFromLastYearChange(
+  change: { delta: number } | null,
+): "more" | "less" | "neutral" | null {
+  if (!change) return null;
+  if (change.delta > 0) return "more";
+  if (change.delta < 0) return "less";
+  return "neutral";
+}
+
+/**
+ * Latest Arapahoe-related authority-chain entries for the home search form.
+ * File order is append order; take the last N that serve Arapahoe, newest first.
+ */
+export function latestArapahoeAuthorityChainCardsForHome(
+  limit: number = HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT,
+): HomeLatestArapahoeAuthorityChainCard[] {
+  const arapahoeRecords = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.filter(
+    authorityChainRecordServesArapahoe,
+  );
+  const latestOldestFirst = arapahoeRecords.slice(-Math.max(0, limit));
+  const newestFirst = [...latestOldestFirst].reverse();
+  return newestFirst.map((record) => {
+    const registryId = record.match.registryId?.trim();
+    const levyLineCode = registryId
+      ? levyLineCodeForCrossCountyAuthority(registryId, "arapahoe")
+      : record.match.levyLineCode?.trim();
+    const code = levyLineCode?.trim();
+    const { changeFromLastYear } = code
+      ? selectMetroAuthorityMillsChangeBlocks(
+          authorityMillsSeries(code, "arapahoe"),
+        )
+      : { changeFromLastYear: null };
+    const lastYearPercentLabel =
+      formatHomeLastYearMillsPercentChange(changeFromLastYear);
+    const lastYearDirection = lastYearPercentLabel
+      ? homeDirectionFromLastYearChange(changeFromLastYear)
+      : null;
+    return {
+      authorityDisplayName: record.authority.displayName,
+      lastYearPercentLabel,
+      lastYearDirection,
+      entry: buildLevyAuthorityChainEntry(record, {
+        residentCountyId: "arapahoe",
+      }),
+      levyLineCode: code || undefined,
+    };
+  });
 }

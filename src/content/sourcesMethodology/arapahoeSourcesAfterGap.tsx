@@ -281,7 +281,7 @@ export function ArapahoeSourcesAfterGap({
         electors (the people legally allowed to vote in that district
         election) authorized, but no public ballot wording or certified vote
         count can be found, we link that district record and leave the missing
-        details blank.           For metro and fire
+        details blank. For metro, fire, library, and city
         trails, rate history in{" "}
         <strong className="font-semibold text-slate-900">
           What changed?
@@ -289,11 +289,14 @@ export function ArapahoeSourcesAfterGap({
         {" "}
         comes from Arapahoe&apos;s bundled authority mill totals (Levy
         Percentage series): always the change from last year, and a separate
-        Most notable change block when a larger year-to-year move exists. Fire
-        protection district trails (such as South Metro Fire Rescue Ballot
-        Issue 7A) still use county Ballot Issue letters and certified vote
-        totals when those exist; when the district covers more than one
-        county, Arapahoe vote totals are labeled as Arapahoe-only. In one
+        Most notable increase block when a larger year-to-year mill increase
+        exists (decreases do not win that second block; only published AUTH
+        years are compared, so an older ballot jump may not appear there). Fire
+        and library district trails (such as South Metro Fire Rescue Ballot
+        Issue 7A and Arapahoe Library District Ballot Issue 4A) still use
+        county Ballot Issue letters and certified vote totals when those
+        exist; when the district covers more than one county, Arapahoe vote
+        totals are labeled as Arapahoe-only. In one
         county case, the only sample ballot we can link is in
         another language; we link that official PDF, say when
         we cannot find English among the currently published files, and show
@@ -304,7 +307,8 @@ export function ArapahoeSourcesAfterGap({
         lives in{" "}
         <code className="rounded bg-slate-100 px-1 text-sm text-slate-800">
           public/data/levy-authority-chain-entries.json
-        </code>.
+        </code>. The home address search shows the latest three Arapahoe-related
+        trails from that file.
       </p>
       {unlocatedAuthorityChainSources.length > 0 ? (
         <details

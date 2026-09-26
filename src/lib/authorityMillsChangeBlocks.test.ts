@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import {
   adjacentAuthorityMillsYoYChanges,
+  formatHomeLastYearMillsPercentChange,
   formatMetroMillsChangeFactValue,
   selectMetroAuthorityMillsChangeBlocks,
 } from "@/lib/authorityMillsChangeBlocks";
@@ -41,6 +42,7 @@ describe("authorityMillsChangeBlocks", () => {
       delta: expect.closeTo(-0.431, 5),
       calendarYearSpan: 1,
     });
+    // Largest increase is still 2020→2021 (+126.336); last year is a decrease.
     expect(mostNotableChange).toEqual({
       fromYear: 2020,
       toYear: 2021,
@@ -64,7 +66,7 @@ describe("authorityMillsChangeBlocks", () => {
     expect(mostNotableChange).toBeNull();
   });
 
-  it("tie-breaks equal absolute moves toward the more recent pair", () => {
+  it("tie-breaks equal increases toward the more recent pair", () => {
     const series: AuthorityMillsSeriesPoint[] = [
       { taxYear: 2020, mills: 0 },
       { taxYear: 2021, mills: 10 },
@@ -74,7 +76,7 @@ describe("authorityMillsChangeBlocks", () => {
     const { changeFromLastYear, mostNotableChange } =
       selectMetroAuthorityMillsChangeBlocks(series);
     expect(changeFromLastYear?.toYear).toBe(2023);
-    // |+10| twice (2020→2021 and 2021→2022); prefer more recent → 2021→2022
+    // +10 twice (2020→2021 and 2021→2022); prefer more recent → 2021→2022
     expect(mostNotableChange).toEqual({
       fromYear: 2021,
       toYear: 2022,
@@ -83,6 +85,54 @@ describe("authorityMillsChangeBlocks", () => {
       delta: 10,
       calendarYearSpan: 1,
     });
+  });
+
+  it("prefers a smaller increase over a larger decrease (Library-shaped)", () => {
+    const series: AuthorityMillsSeriesPoint[] = [
+      { taxYear: 2022, mills: 5.771 },
+      { taxYear: 2023, mills: 5.413 },
+      { taxYear: 2024, mills: 5.715 },
+      { taxYear: 2025, mills: 5.719 },
+    ];
+    const { changeFromLastYear, mostNotableChange } =
+      selectMetroAuthorityMillsChangeBlocks(series);
+    expect(changeFromLastYear).toEqual({
+      fromYear: 2024,
+      toYear: 2025,
+      fromMills: 5.715,
+      toMills: 5.719,
+      delta: expect.closeTo(0.004, 5),
+      calendarYearSpan: 1,
+    });
+    // Decrease 2022→2023 (−0.358) must not beat increase 2023→2024 (+0.302).
+    expect(mostNotableChange).toEqual({
+      fromYear: 2023,
+      toYear: 2024,
+      fromMills: 5.413,
+      toMills: 5.715,
+      delta: expect.closeTo(0.302, 5),
+      calendarYearSpan: 1,
+    });
+  });
+
+  it("omits most notable when the series has only decreases or is flat", () => {
+    const onlyDecreases: AuthorityMillsSeriesPoint[] = [
+      { taxYear: 2022, mills: 10 },
+      { taxYear: 2023, mills: 9 },
+      { taxYear: 2024, mills: 8 },
+    ];
+    const flat: AuthorityMillsSeriesPoint[] = [
+      { taxYear: 2023, mills: 5 },
+      { taxYear: 2024, mills: 5 },
+      { taxYear: 2025, mills: 5 },
+    ];
+    const down = selectMetroAuthorityMillsChangeBlocks(onlyDecreases);
+    expect(down.changeFromLastYear?.toYear).toBe(2024);
+    expect(down.mostNotableChange).toBeNull();
+
+    const flatBlocks = selectMetroAuthorityMillsChangeBlocks(flat);
+    expect(flatBlocks.changeFromLastYear?.toYear).toBe(2025);
+    expect(flatBlocks.mostNotableChange).toBeNull();
   });
 
   it("annotates non-consecutive published tax years in fact text", () => {
@@ -128,5 +178,68 @@ describe("authorityMillsChangeBlocks", () => {
         calendarYearSpan: 1,
       }),
     ).toBe("2023: 50.000 mills\n2024: 50.000 mills\nNo change in mills");
+  });
+
+  it("formats home last-year mill percent for card headings", () => {
+    expect(
+      formatHomeLastYearMillsPercentChange({
+        fromYear: 2024,
+        toYear: 2025,
+        fromMills: 5.715,
+        toMills: 5.719,
+        delta: 0.004,
+        calendarYearSpan: 1,
+      }),
+    ).toBe("Up 0.07% from last year");
+    expect(
+      formatHomeLastYearMillsPercentChange({
+        fromYear: 2024,
+        toYear: 2025,
+        fromMills: 6.613,
+        toMills: 7.087,
+        delta: 0.474,
+        calendarYearSpan: 1,
+      }),
+    ).toBe("Up 7.2% from last year");
+    expect(
+      formatHomeLastYearMillsPercentChange({
+        fromYear: 2024,
+        toYear: 2025,
+        fromMills: 9.29,
+        toMills: 12.25,
+        delta: 2.96,
+        calendarYearSpan: 1,
+      }),
+    ).toBe("Up 32% from last year");
+    expect(
+      formatHomeLastYearMillsPercentChange({
+        fromYear: 2024,
+        toYear: 2025,
+        fromMills: 10,
+        toMills: 9,
+        delta: -1,
+        calendarYearSpan: 1,
+      }),
+    ).toBe("Down 10% from last year");
+    expect(
+      formatHomeLastYearMillsPercentChange({
+        fromYear: 2024,
+        toYear: 2025,
+        fromMills: 5,
+        toMills: 5,
+        delta: 0,
+        calendarYearSpan: 1,
+      }),
+    ).toBe("No change from last year");
+    expect(
+      formatHomeLastYearMillsPercentChange({
+        fromYear: 2020,
+        toYear: 2021,
+        fromMills: 0,
+        toMills: 126.336,
+        delta: 126.336,
+        calendarYearSpan: 1,
+      }),
+    ).toBeNull();
   });
 });

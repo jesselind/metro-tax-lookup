@@ -8,9 +8,10 @@
  * JSON supplies facts only; wording lives here (KISS / DRY).
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
- * `metro`, `fire`, `city`) inject nouns, measure kinds, budget labels, and mills
- * takeaways. Multiple authorization steps belong in `measures[]` (chronological);
- * closed summary stays one short who/when line, with optional `also` elections.
+ * `metro`, `fire`, `library`, `city`) inject nouns, measure kinds, budget labels,
+ * and mills takeaways. Multiple authorization steps belong in `measures[]`
+ * (chronological); closed summary stays one short who/when line, with optional
+ * `also` elections.
  *
  * Ideology (also in `docs/levy-explainer-authoring.md`): always show the
  * next-best official source. Prefer the exact document; when it is missing,
@@ -43,6 +44,9 @@ export const METRO_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 
 /** Default bill wording for fire-family entries when JSON omits `governmentBillName`. */
 export const FIRE_GOVERNMENT_BILL_NAME_DEFAULT = "the fire district";
+
+/** Default bill wording for library-family entries when JSON omits `governmentBillName`. */
+export const LIBRARY_GOVERNMENT_BILL_NAME_DEFAULT = "the library district";
 
 /** Default bill wording for city-family entries when JSON omits `governmentBillName`. */
 export const CITY_GOVERNMENT_BILL_NAME_DEFAULT = "the city";
@@ -90,6 +94,7 @@ export type LevyAuthorityChainFamily =
   | "county"
   | "metro"
   | "fire"
+  | "library"
   | "city";
 
 /** Static open-gap copy (no entry-specific numbers). */
@@ -207,6 +212,26 @@ export const BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
   earlier_approved: "Voters earlier approved",
 };
 
+/**
+ * Prefixed voter-approval lead for measure bodies. Election outcomes must not
+ * stand alone: use the entry's `summarySource.text` (same phrase as the closed
+ * summary) before "voters approved" / also / earlier.
+ */
+export function attributedVotersApprovalLead(
+  summaryAttribution: string,
+  bodyLead: LevyAuthorityChainBodyLead,
+): string {
+  const attr = summaryAttribution.trim();
+  if (!attr) {
+    throw new Error(
+      "summaryAttribution is required before a Voters approved lead",
+    );
+  }
+  const phrase = BODY_LEAD_PHRASES[bodyLead];
+  const lead = phrase.charAt(0).toLowerCase() + phrase.slice(1);
+  return `${attr}, ${lead}`;
+}
+
 const METRO_BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
   approved: "Eligible electors approved",
   also_approved: "Eligible electors also approved",
@@ -222,8 +247,10 @@ const METRO_BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
 export function unavailableBallotMeasureBody(
   ballotIssue: string,
   electionMonthYear: string,
+  summaryAttribution: string,
 ): string {
-  return `Voters approved Ballot Issue ${ballotIssue} in ${electionMonthYear}. The county's published election files do not include the ballot wording for this measure.`;
+  const lead = attributedVotersApprovalLead(summaryAttribution, "approved");
+  return `${lead} Ballot Issue ${ballotIssue} in ${electionMonthYear}. The county's published election files do not include the ballot wording for this measure.`;
 }
 
 /**
@@ -247,8 +274,14 @@ export function nonEnglishSampleAiTranslatedMeasureIntro(params: {
   electionMonthYear: string;
   /** Resident language label, e.g. "Spanish". */
   languageLabel: string;
+  /** Same attribution phrase as closed summary (`summarySource.text`). */
+  summaryAttribution: string;
 }): string {
-  return `Voters approved Ballot Issue ${params.ballotIssue} in ${params.electionMonthYear}. We could only locate a sample ballot in ${params.languageLabel}. ${NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE}`;
+  const lead = attributedVotersApprovalLead(
+    params.summaryAttribution,
+    "approved",
+  );
+  return `${lead} Ballot Issue ${params.ballotIssue} in ${params.electionMonthYear}. We could only locate a sample ballot in ${params.languageLabel}. ${NON_ENGLISH_SAMPLE_ENGLISH_NOT_LOCATED_SENTENCE}`;
 }
 
 /** School pack: override cap sentence; interpolates curated max mills per year. */
@@ -315,6 +348,7 @@ export type LevyAuthorityChainFamilyPack = {
   unavailableMeasureBody: (
     ballotIssue: string | undefined,
     electionMonthYear: string,
+    summaryAttribution: string,
   ) => string;
   ballotStepTitle: (
     ballotIssue: string | undefined,
@@ -338,6 +372,11 @@ export type LevyAuthorityChainFamilyPack = {
       maxAuthorizedMills?: number;
       /** County TABOR retention: who keeps revenue (e.g. "the county"). */
       governmentBillName?: string;
+      /**
+       * Closed-summary attribution phrase (`summarySource.text`). Required
+       * when the body lead is a Voters approved / also / earlier phrase.
+       */
+      summaryAttribution?: string;
     },
   ) => string;
   budgetBody: (authorityShortName: string, detail: string) => string;
@@ -353,8 +392,12 @@ const SCHOOL_PACK: LevyAuthorityChainFamilyPack = {
   approvalStepBody: VOTES_STEP_BODY,
   ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
   unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
-  unavailableMeasureBody(ballotIssue, electionMonthYear) {
-    return unavailableBallotMeasureBody(ballotIssue ?? "", electionMonthYear);
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+    return unavailableBallotMeasureBody(
+      ballotIssue ?? "",
+      electionMonthYear,
+      summaryAttribution,
+    );
   },
   ballotStepTitle(ballotIssue, kind, options) {
     const yearPart = options?.titleYearSuffix
@@ -372,7 +415,10 @@ const SCHOOL_PACK: LevyAuthorityChainFamilyPack = {
     }
   },
   ballotStepBody(kind, detail, bodyLead, options) {
-    const lead = BODY_LEAD_PHRASES[bodyLead];
+    const lead = attributedVotersApprovalLead(
+      options?.summaryAttribution ?? "",
+      bodyLead,
+    );
     switch (kind) {
       case "override": {
         const parts = [`${lead} ${detail}.`];
@@ -404,8 +450,12 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
   approvalStepBody: VOTES_STEP_BODY,
   ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
   unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
-  unavailableMeasureBody(ballotIssue, electionMonthYear) {
-    return unavailableBallotMeasureBody(ballotIssue ?? "", electionMonthYear);
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+    return unavailableBallotMeasureBody(
+      ballotIssue ?? "",
+      electionMonthYear,
+      summaryAttribution,
+    );
   },
   ballotStepTitle(ballotIssue, kind, options) {
     switch (kind) {
@@ -423,7 +473,10 @@ const COUNTY_PACK: LevyAuthorityChainFamilyPack = {
     }
   },
   ballotStepBody(kind, detail, bodyLead, options) {
-    const lead = BODY_LEAD_PHRASES[bodyLead];
+    const lead = attributedVotersApprovalLead(
+      options?.summaryAttribution ?? "",
+      bodyLead,
+    );
     switch (kind) {
       case "tabor_revenue_retention": {
         if (options?.maxAuthorizedMills == null) {
@@ -492,7 +545,7 @@ const METRO_PACK: LevyAuthorityChainFamilyPack = {
   approvalStepBody: METRO_AUTHORIZATION_STEP_BODY,
   ballotFactLabel: FACT_LABEL_METRO_ELECTION_RECORD,
   unavailableBallotFactValue: FACT_VALUE_METRO_BALLOT_TEXT_UNAVAILABLE,
-  unavailableMeasureBody(_ballotIssue, electionMonthYear) {
+  unavailableMeasureBody(_ballotIssue, electionMonthYear, _summaryAttribution) {
     return `Eligible electors authorized this in ${electionMonthYear}. We could not locate public ballot wording for the authorization.`;
   },
   ballotStepTitle(ballotIssue, kind, options) {
@@ -553,65 +606,128 @@ export const FIRE_MILLS_STEP_BODY =
   "Your bill uses one total mill rate for this fire district each year.";
 
 /**
+ * Default library "What changed?" chrome. Rate figures are AUTH-derived (same
+ * helper as metro/fire). Entry `mills.stepBody` may replace this takeaway.
+ */
+export const LIBRARY_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this library district each year.";
+
+/**
+ * Shared Ballot Issue + certified-votes pack for fire and library districts
+ * (Voters language; AUTH-derived What changed?; trailing How people voted).
+ */
+function ballotSpecialDistrictPack(options: {
+  packLabel: string;
+  millsStepBody: string;
+  governmentBillNameDefault: string;
+  bondCeilingSentence: string;
+  bondRepaymentChangeSentence: string;
+}): LevyAuthorityChainFamilyPack {
+  const {
+    packLabel,
+    millsStepBody,
+    governmentBillNameDefault,
+    bondCeilingSentence,
+    bondRepaymentChangeSentence,
+  } = options;
+  return {
+    budgetStepTitle: "What the district's budget says",
+    budgetFactLabel: "District budget",
+    millsStepBody,
+    millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+    measureKinds: new Set([
+      "bond",
+      "operations_mill",
+      "tabor_revenue_retention",
+    ]),
+    approvalStepTitle: STEP_TITLE_HOW_VOTED,
+    approvalStepBody: VOTES_STEP_BODY,
+    ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
+    unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
+    unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+      return unavailableBallotMeasureBody(
+        ballotIssue ?? "",
+        electionMonthYear,
+        summaryAttribution,
+      );
+    },
+    ballotStepTitle(ballotIssue, kind, titleOptions) {
+      const titlePlain = requireTrimmedBallotTitlePlain(
+        titleOptions?.titlePlain,
+        kind,
+      );
+      switch (kind) {
+        case "bond":
+        case "operations_mill":
+        case "tabor_revenue_retention":
+          return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
+        default:
+          throw new Error(
+            `${packLabel} pack does not support measure kind: ${kind}`,
+          );
+      }
+    },
+    ballotStepBody(kind, detail, bodyLead, bodyOptions) {
+      const lead = attributedVotersApprovalLead(
+        bodyOptions?.summaryAttribution ?? "",
+        bodyLead,
+      );
+      switch (kind) {
+        case "bond":
+          return `${lead} borrowing ${detail}. ${bondCeilingSentence} ${bondRepaymentChangeSentence}`;
+        case "operations_mill":
+          return `${lead} ${detail}.`;
+        case "tabor_revenue_retention": {
+          if (bodyOptions?.maxAuthorizedMills == null) {
+            throw new Error(
+              "tabor_revenue_retention requires maxAuthorizedMills",
+            );
+          }
+          const governmentBillName =
+            bodyOptions?.governmentBillName?.trim() ||
+            governmentBillNameDefault;
+          const max = bodyOptions.maxAuthorizedMills.toFixed(3);
+          return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
+        }
+        default:
+          throw new Error(
+            `${packLabel} pack does not support measure kind: ${kind}`,
+          );
+      }
+    },
+    budgetBody(authorityShortName, detail) {
+      return `${authorityShortName}'s budget ${detail}.`;
+    },
+  };
+}
+
+/**
  * Fire protection district pack. First consumer: South Metro Fire (`4100`).
  * Coordinated Ballot Issue + county certified votes (school-like trail), with
  * AUTH-derived What changed? (metro-like mills). Actor language: Voters.
  */
-const FIRE_PACK: LevyAuthorityChainFamilyPack = {
-  budgetStepTitle: "What the district's budget says",
-  budgetFactLabel: "District budget",
+const FIRE_PACK: LevyAuthorityChainFamilyPack = ballotSpecialDistrictPack({
+  packLabel: "fire",
   millsStepBody: FIRE_MILLS_STEP_BODY,
-  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
-  measureKinds: new Set([
-    "bond",
-    "operations_mill",
-    "tabor_revenue_retention",
-  ]),
-  approvalStepTitle: STEP_TITLE_HOW_VOTED,
-  approvalStepBody: VOTES_STEP_BODY,
-  ballotFactLabel: FACT_LABEL_BALLOT_TEXT,
-  unavailableBallotFactValue: FACT_VALUE_BALLOT_TEXT_UNAVAILABLE,
-  unavailableMeasureBody(ballotIssue, electionMonthYear) {
-    return unavailableBallotMeasureBody(ballotIssue ?? "", electionMonthYear);
-  },
-  ballotStepTitle(ballotIssue, kind, options) {
-    const titlePlain = requireTrimmedBallotTitlePlain(options?.titlePlain, kind);
-    switch (kind) {
-      case "bond":
-      case "operations_mill":
-      case "tabor_revenue_retention":
-        return `Ballot Issue ${ballotIssue}: ${titlePlain}`;
-      default:
-        throw new Error(`fire pack does not support measure kind: ${kind}`);
-    }
-  },
-  ballotStepBody(kind, detail, bodyLead, options) {
-    const lead = BODY_LEAD_PHRASES[bodyLead];
-    switch (kind) {
-      case "bond":
-        return `${lead} borrowing ${detail}. ${FIRE_BOND_CEILING_SENTENCE} ${FIRE_BOND_REPAYMENT_CHANGE_SENTENCE}`;
-      case "operations_mill":
-        return `${lead} ${detail}.`;
-      case "tabor_revenue_retention": {
-        if (options?.maxAuthorizedMills == null) {
-          throw new Error(
-            "tabor_revenue_retention requires maxAuthorizedMills",
-          );
-        }
-        const governmentBillName =
-          options?.governmentBillName?.trim() ||
-          FIRE_GOVERNMENT_BILL_NAME_DEFAULT;
-        const max = options.maxAuthorizedMills.toFixed(3);
-        return `${lead} letting ${governmentBillName} keep and spend money that under TABOR would otherwise have to go back to taxpayers, for needs such as ${detail}. People often call this kind of vote de-Brucing. The ballot said this was without a new tax and without raising the maximum rate (${max} mills).`;
-      }
-      default:
-        throw new Error(`fire pack does not support measure kind: ${kind}`);
-    }
-  },
-  budgetBody(authorityShortName, detail) {
-    return `${authorityShortName}'s budget ${detail}.`;
-  },
-};
+  governmentBillNameDefault: FIRE_GOVERNMENT_BILL_NAME_DEFAULT,
+  bondCeilingSentence: FIRE_BOND_CEILING_SENTENCE,
+  bondRepaymentChangeSentence: FIRE_BOND_REPAYMENT_CHANGE_SENTENCE,
+});
+
+/**
+ * Library district pack. First consumer: Arapahoe Library District (`4026`).
+ * Same trail shape as fire (Voters + Ballot Issue + certified votes;
+ * AUTH-derived What changed?).
+ */
+const LIBRARY_PACK: LevyAuthorityChainFamilyPack = ballotSpecialDistrictPack({
+  packLabel: "library",
+  millsStepBody: LIBRARY_MILLS_STEP_BODY,
+  governmentBillNameDefault: LIBRARY_GOVERNMENT_BILL_NAME_DEFAULT,
+  bondCeilingSentence:
+    "That vote set ceilings. It did not lock in one fixed share of today's total rate.",
+  bondRepaymentChangeSentence:
+    "Bonds may be sold over time, so the repayment part of your library-district tax can change.",
+});
 
 /**
  * Default city "What changed?" chrome. Rate figures are AUTH-derived (same
@@ -654,9 +770,13 @@ const CITY_PACK: LevyAuthorityChainFamilyPack = {
   approvalStepBody: CITY_AUTHORIZATION_STEP_BODY,
   ballotFactLabel: FACT_LABEL_CITY_RECORD,
   unavailableBallotFactValue: FACT_VALUE_CITY_AUTHORIZATION_RECORD,
-  unavailableMeasureBody(ballotIssue, electionMonthYear) {
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
     if (ballotIssue) {
-      return unavailableBallotMeasureBody(ballotIssue, electionMonthYear);
+      return unavailableBallotMeasureBody(
+        ballotIssue,
+        electionMonthYear,
+        summaryAttribution,
+      );
     }
     return `City Council authorized this in ${electionMonthYear}. We could not locate a separate public ordinance PDF for the authorization.`;
   },
@@ -683,15 +803,24 @@ const CITY_PACK: LevyAuthorityChainFamilyPack = {
   ballotStepBody(kind, detail, bodyLead, options) {
     switch (kind) {
       case "bond": {
-        const lead = BODY_LEAD_PHRASES[bodyLead];
+        const lead = attributedVotersApprovalLead(
+          options?.summaryAttribution ?? "",
+          bodyLead,
+        );
         return `${lead} borrowing ${detail}. ${CITY_BOND_CEILING_SENTENCE} ${CITY_BOND_REPAYMENT_CHANGE_SENTENCE}`;
       }
       case "operations_mill": {
-        const lead = BODY_LEAD_PHRASES[bodyLead];
+        const lead = attributedVotersApprovalLead(
+          options?.summaryAttribution ?? "",
+          bodyLead,
+        );
         return `${lead} ${detail}.`;
       }
       case "tabor_revenue_retention": {
-        const lead = BODY_LEAD_PHRASES[bodyLead];
+        const lead = attributedVotersApprovalLead(
+          options?.summaryAttribution ?? "",
+          bodyLead,
+        );
         if (options?.maxAuthorizedMills == null) {
           throw new Error(
             "tabor_revenue_retention requires maxAuthorizedMills",
@@ -728,6 +857,7 @@ const FAMILY_PACKS: Record<
   county: COUNTY_PACK,
   metro: METRO_PACK,
   fire: FIRE_PACK,
+  library: LIBRARY_PACK,
   city: CITY_PACK,
 };
 
@@ -738,19 +868,25 @@ export function getAuthorityChainFamilyPack(
 }
 
 /**
- * Metro, fire, and city: What changed? mill figures come from the AUTH series
- * (not hand-authored current/prior fields). School and county still author mills.
+ * Metro, fire, library, and city: What changed? mill figures come from the AUTH
+ * series (not hand-authored current/prior fields). School and county still
+ * author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
 ): boolean {
-  return family === "metro" || family === "fire" || family === "city";
+  return (
+    family === "metro" ||
+    family === "fire" ||
+    family === "library" ||
+    family === "city"
+  );
 }
 
 /**
  * Metro and city fold approval / vote facts onto each measure step so several
- * authorizations stay chronological. School, county, and fire keep a trailing
- * How people voted step for certified totals.
+ * authorizations stay chronological. School, county, fire, and library keep a
+ * trailing How people voted step for certified totals.
  */
 export function foldsApprovalOntoMeasures(
   family: LevyAuthorityChainFamily,
@@ -805,7 +941,18 @@ export function buildSummaryVoterClause(
   note?: string,
 ): string {
   const list = formatBallotIssueList(issues);
-  const notePart = note ? ` ${note}` : "";
+  // Notes that start with `:` / `;` / `,` attach without a space
+  // (`November 2015: Raise…`). Parenthetical notes keep a leading space
+  // (`November 2020 (LPS calls…)`).
+  let notePart = "";
+  if (note) {
+    const trimmed = note.trimStart();
+    const attachesTight =
+      trimmed.startsWith(":") ||
+      trimmed.startsWith(";") ||
+      trimmed.startsWith(",");
+    notePart = attachesTight ? trimmed : ` ${trimmed}`;
+  }
   return `voters approved ${list} in ${election}${notePart}`;
 }
 

@@ -150,7 +150,9 @@ describe("levyAuthorityChainBuild", () => {
     )!;
     const entry = buildLevyAuthorityChainEntry(record);
     const ballot4c = entry.steps.find((s) => s.id === "ballot-4c-debt-free");
-    expect(ballot4c?.body).toContain("Voters approved Ballot Issue 4C");
+    expect(ballot4c?.body).toContain(
+      "According to Arapahoe County's certified election results, voters approved Ballot Issue 4C",
+    );
     expect(ballot4c?.body).toContain(
       "We could only locate a sample ballot in Spanish",
     );
@@ -332,7 +334,7 @@ describe("levyAuthorityChainBuild", () => {
     ).toBeUndefined();
     expect(mills?.facts.map((f) => f.label)).toEqual([
       "Change from last year",
-      "Most notable change",
+      "Most notable increase",
     ]);
 
     expect(() =>
@@ -387,7 +389,9 @@ describe("levyAuthorityChainBuild", () => {
     expect(arapahoeEntry.summary).not.toContain("eligible electors");
     expect(arapahoeEntry.summary).not.toMatch(/NOTE:\s*NOTE:/);
     expect(measure?.title).toBe("Ballot Issue 7A: 3 more mills for fire and EMS");
-    expect(measure?.body).toContain("Voters approved");
+    expect(measure?.body).toContain(
+      "According to official certified election results, voters approved",
+    );
     expect(measure?.body).toContain("12.25 mills");
     expect(measure?.bodyTermId).toBe("term-tabor");
     expect(votes?.title).toBe("How people voted");
@@ -419,6 +423,51 @@ describe("levyAuthorityChainBuild", () => {
           src.url.includes("douglasco.gov/documents/"),
         ),
       ),
+    ).toBe(true);
+  });
+
+  it("builds Arapahoe Library from AUTH-derived mills and Ballot Issue 4A votes", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) => candidate.id === "arapahoe-library-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const measure = entry.steps.find(
+      (step) => step.id === "ballot-4a-operations-mill",
+    );
+    const votes = entry.steps.find(
+      (step) => step.id === "county-reported-results",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(entry.summary).toBe(
+      "According to Arapahoe County's certified election results, voters approved Ballot Issue 4A in November 2015: Raise the mill levy from 4.2 to 5.4 for library services.",
+    );
+    expect(entry.summary).not.toContain("eligible electors");
+    expect(measure?.title).toBe(
+      "Ballot Issue 4A: Raise the mill levy from 4.2 to 5.4 for library services",
+    );
+    expect(measure?.body).toContain(
+      "According to Arapahoe County's certified election results, voters approved",
+    );
+    expect(measure?.body).toContain("5.4 mills");
+    expect(measure?.body).toContain("replenish reserves spent in recent years");
+    expect(measure?.bodyTermId).toBe("term-tabor");
+    expect(votes?.title).toBe("How people voted");
+    expect(votes?.facts.some((fact) => fact.value.includes("31,915"))).toBe(
+      true,
+    );
+    expect(mills?.body).toBe(
+      "Your bill uses one total mill rate for this library district each year.",
+    );
+    expect(mills?.body).not.toContain("replenish reserves");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+      "Most notable increase",
+    ]);
+    expect(
+      entry.openGaps.some((g) => g.id === "no-fund-level-mill-split"),
     ).toBe(true);
   });
 
@@ -481,7 +530,7 @@ describe("levyAuthorityChainBuild", () => {
     expect(mills?.bodyTermMatch).toBe("rate");
     expect(mills?.facts.map((fact) => fact.label)).toEqual([
       "Change from last year",
-      "Most notable change",
+      "Most notable increase",
     ]);
     const series = authorityMillsSeries("4571", "arapahoe");
     const { changeFromLastYear, mostNotableChange } =
@@ -540,7 +589,7 @@ describe("levyAuthorityChainBuild", () => {
     expect(mills?.body).toContain("temporary TABOR reductions");
     expect(mills?.facts.map((fact) => fact.label)).toEqual([
       "Change from last year",
-      "Most notable change",
+      "Most notable increase",
     ]);
     expect(entry.openGaps.some((g) => g.id === "city-temporary-mill-reduction")).toBe(
       true,
