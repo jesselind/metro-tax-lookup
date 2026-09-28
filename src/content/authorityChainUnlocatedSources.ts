@@ -138,6 +138,42 @@ export const AUTHORITY_CHAIN_UNLOCATED_SOURCES: readonly AuthorityChainUnlocated
       authorNote:
         "City family entry city-of-aurora-authority-chain uses the adopted budget as the official cite for temporary TABOR mill reductions. Prefer a stable ordinance PDF deep-link when one is currently available.",
     },
+    {
+      id: "antelope-hills-4042-founding-ordinance",
+      status: "open",
+      notedAsOf: "2026-09",
+      authorityLabel: "Antelope Hills General Improvement District",
+      authCode: "4042",
+      measureLabel: "Town ordinance creating the municipal GID",
+      sought:
+        "A stable public copy of the Town of Bennett ordinance that created Antelope Hills General Improvement District (Town records cite Ordinance No. 383, Series 1999).",
+      lookedWhere:
+        "Town of Bennett website and Public Records page. Signed Resolution 2025-01GID (hosted under public/sourced-records/ after CORA) cites Ordinance 383 and C.R.S. § 31-25-609; the ordinance text itself is still not posted at a durable public file URL.",
+      nextBest: {
+        text: "Town of Bennett Public Records",
+        url: "https://www.bennettco.gov/town-clerk/page/public-records",
+      },
+      authorNote:
+        "municipal_gid entry cites C.R.S. § 31-25-609 for board structure. openGap municipal-gid-founding-ordinance-unlocated until Ordinance 383 PDF is sourced. CORA packet PDFs live under public/sourced-records/town-of-bennett/antelope-hills-gid/.",
+    },
+    {
+      id: "antelope-hills-4042-bond-debt-disclosures",
+      status: "open",
+      notedAsOf: "2026-09",
+      authorityLabel: "Antelope Hills General Improvement District",
+      authCode: "4042",
+      measureLabel: "Outstanding principal / bond continuing disclosures",
+      sought:
+        "A public official statement, amortization schedule, or EMMA continuing disclosure stating remaining principal and maturity for this GID's debt.",
+      lookedWhere:
+        "EMMA issuer browse for ANTELOPE HILLS COLO GEN IMPT DIST (CUSIP 03666RAA7 present; Financial / OS / Event tabs empty). Town CORA packet (now under public/sourced-records/) names Series 2006 budgeted principal, Board-directed $85k, and stated 2027 payoff; remaining balance still not stated.",
+      nextBest: {
+        text: "Town of Bennett Public Records",
+        url: "https://www.bennettco.gov/town-clerk/page/public-records",
+      },
+      authorNote:
+        "Trail cites sourced-records budget/minutes for $85k, 2027 payoff date, and Series 2006 budgeted principal. openGap municipal-gid-bond-debt-records-unlocated remains for remaining principal / remittance audit. Do not claim remittances were stolen.",
+    },
   ];
 
 /** Open blockers shown on `/sources`. */

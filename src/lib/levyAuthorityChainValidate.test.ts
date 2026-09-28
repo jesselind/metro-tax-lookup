@@ -187,7 +187,7 @@ describe("levyAuthorityChainValidate", () => {
     (school.authority as Record<string, unknown>).governmentBillName =
       "Cherry Creek School District";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /authority\.governmentBillName only applies to county, metro, fire, library, or city family entries/i,
+      /authority\.governmentBillName only applies to county, metro, fire, library, city, or municipal_gid family entries/i,
     );
   });
 
@@ -306,5 +306,99 @@ describe("levyAuthorityChainValidate", () => {
     delete measure.votes;
 
     expect(() => validateLevyAuthorityChainData(data)).toThrow(/votes/i);
+  });
+
+  it("enforces summarySource placement for every shipped family", () => {
+    const data = shippedFile();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    expect(entries.length).toBeGreaterThanOrEqual(7);
+
+    const families = new Set(entries.map((e) => e.family));
+    expect(families.has("school")).toBe(true);
+    expect(families.has("metro")).toBe(true);
+    expect(families.has("municipal_gid")).toBe(true);
+
+    // Full-file validate already runs assertSummarySourcePlacement; this pins
+    // the two contracts explicitly so a future soft `includes` check cannot
+    // reintroduce a mid-sentence-only or duplicated cite.
+    expect(() => validateLevyAuthorityChainData(data)).not.toThrow();
+  });
+
+  it("rejects leading-attribution entries whose summarySource is not the sentence lead", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const school = entries.find((e) => e.family === "school")!;
+    // Phrase still appears in the summary (Ballot Issue mark) but is not the lead.
+    (school.summarySource as { text: string }).text = "Ballot Issue 4A";
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /exactly once in built summary|must start with summarySource\.text|must start with "According to "/i,
+    );
+  });
+
+  it("rejects leading-attribution summarySource that omits According to", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const metro = entries.find((e) => e.family === "metro")!;
+    const prior = (metro.summarySource as { text: string }).text;
+    expect(prior.startsWith("According to ")).toBe(true);
+    (metro.summarySource as { text: string }).text = prior.replace(
+      /^According to /,
+      "Per ",
+    );
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /must start with "According to "/i,
+    );
+  });
+
+  it("rejects municipal_gid summarySource that omits According to", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const gid = entries.find((e) => e.family === "municipal_gid")!;
+    (gid.summarySource as { text: string }).text =
+      "Colorado Revised Statutes Title 31 § 31-25-609";
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /must start with summarySource\.text|must start with "According to "/i,
+    );
+  });
+
+  it("rejects municipal_gid measure kinds outside the pack", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const gid = entries.find((e) => e.id === "antelope-hills-gid-authority-chain")!;
+    const measures = gid.measures as Array<Record<string, unknown>>;
+    measures.push({
+      stepId: "gid-not-yet-curated-bond",
+      kind: "bond",
+      electionMonthYear: "November 2020",
+      titlePlain: "Borrow for improvements",
+      detail: "up to $1 million",
+      bodyLead: "approved",
+      ballotIssue: "5A",
+      ballotTextKind: "unavailable",
+      ballotTextSource: {
+        text: "Town elections hub",
+        url: "https://www.bennettco.gov/",
+      },
+      approval: {
+        label: "District record",
+        value: "placeholder",
+        source: {
+          text: "Town elections hub",
+          url: "https://www.bennettco.gov/",
+        },
+      },
+    });
+    const gaps = new Set([
+      ...((gid.openGapIds as string[]) ?? []),
+      "no-stable-ballot-text",
+    ]);
+    gid.openGapIds = [...gaps];
+
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /not valid for family municipal_gid/i,
+    );
   });
 });

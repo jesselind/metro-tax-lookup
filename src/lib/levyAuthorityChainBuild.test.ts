@@ -25,6 +25,21 @@ import {
 } from "@/lib/levyAuthorityChain";
 
 describe("levyAuthorityChainBuild", () => {
+  it("places summarySource once as the linked attribution lead for every family", () => {
+    expect(LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.length).toBeGreaterThanOrEqual(7);
+
+    for (const record of LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS) {
+      const entry = buildLevyAuthorityChainEntry(record, {
+        residentCountyId: "arapahoe",
+      });
+      const cite = record.summarySource.text;
+      expect(entry.summarySource?.text).toBe(cite);
+      expect(cite.startsWith("According to ")).toBe(true);
+      expect(entry.summary.startsWith(cite)).toBe(true);
+      expect(entry.summary.split(cite).length - 1).toBe(1);
+    }
+  });
+
   it("builds Cherry Creek with fixed step order and template chrome", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (r) => r.id === "cherry-creek-5-school-authority-chain",
@@ -605,6 +620,85 @@ describe("levyAuthorityChainBuild", () => {
     expect(
       entry.steps.some((step) => step.id === "county-reported-results"),
     ).toBe(false);
+  });
+
+  it("builds Antelope Hills GID from AUTH-derived mills and municipal_gid_board", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) => candidate.id === "antelope-hills-gid-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const board = entry.steps.find(
+      (step) => step.id === "municipal-gid-board-crs-31-25-609",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("municipal_gid");
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(entry.summary).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 31 § 31-25-609, the Town of Bennett Board of Trustees sits as the board of this municipal general improvement district.",
+    );
+    expect(entry.summarySource?.text).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 31 § 31-25-609",
+    );
+    expect(entry.summary.startsWith(entry.summarySource!.text)).toBe(true);
+    expect(entry.summary.split(entry.summarySource!.text).length - 1).toBe(1);
+    expect(entry.summary).not.toContain("(");
+    expect(entry.summary).not.toContain("eligible electors");
+    expect(entry.summary).not.toContain("City Council set");
+    expect(board?.title).toBe("Who sits as the board?");
+    expect(board?.body.trim()).toBe("");
+    expect(board?.facts.map((fact) => fact.label)).toEqual([
+      "Town board sits as the GID board",
+    ]);
+    expect(board?.facts[0]?.value).toContain("Colorado law says");
+    expect(board?.facts[0]?.value).toContain("Town of Bennett Board of Trustees");
+    expect(board?.facts[0]?.value).toContain("hold town office");
+    expect(board?.facts[0]?.value).not.toContain("ex officio");
+    expect(board?.facts[0]?.value).not.toContain("municipality");
+    expect(board?.facts[0]?.sources[0]?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-31.pdf#page=373",
+    );
+    expect(entry.summarySource?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-31.pdf#page=373",
+    );
+    expect(mills?.body).toBe(
+      "Your bill uses one total mill rate for this district each year.",
+    );
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("No change in mills");
+    expect(mills?.facts[0]?.value).toContain("36.710");
+    const whoGets = entry.steps.find((step) => step.id === "who-sets");
+    expect(whoGets?.facts.map((fact) => fact.label)).toEqual([
+      "Name on the county tax list",
+      "Board-directed early principal (2026 budget)",
+      "Stated payoff date (Town minutes)",
+      "2026 Series 2006 bond principal (budgeted)",
+    ]);
+    expect(whoGets?.facts[1]?.sources[0]?.url).toContain(
+      "/sourced-records/town-of-bennett/antelope-hills-gid/2025-01gid-adopting-2026-budget.pdf",
+    );
+    expect(whoGets?.facts[2]?.sources[0]?.url).toContain(
+      "/sourced-records/town-of-bennett/antelope-hills-gid/2025-10-14-regular-meeting-minutes.pdf",
+    );
+    expect(
+      entry.openGaps.some((g) => g.id === "municipal-gid-founding-ordinance-unlocated"),
+    ).toBe(true);
+    expect(
+      entry.openGaps.some((g) => g.id === "municipal-gid-bond-debt-records-unlocated"),
+    ).toBe(true);
+    expect(
+      entry.openGaps.find((g) => g.id === "municipal-gid-bond-debt-records-unlocated")
+        ?.body,
+    ).toContain("2027");
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "municipal-gid-board-crs-31-25-609",
+    ]);
   });
 
   it("trimmed summarySource.text matches built summary for link overlay", () => {

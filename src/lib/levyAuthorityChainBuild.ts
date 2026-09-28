@@ -28,6 +28,7 @@ import {
   FIRE_GOVERNMENT_BILL_NAME_DEFAULT,
   LIBRARY_GOVERNMENT_BILL_NAME_DEFAULT,
   METRO_GOVERNMENT_BILL_NAME_DEFAULT,
+  MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
@@ -165,7 +166,12 @@ export type LevyAuthorityChainSummarySpec = {
   headlineIssues?: string[];
   /** Metro authorization substance, without an invented ballot label. */
   headlinePlain?: string;
-  headlineElection: string;
+  /**
+   * Election month/year (or city budget year) for voter/council summary paths.
+   * Omit on `municipal_gid` (closed summary is attribution lead + headlinePlain;
+   * no election dating on that line).
+   */
+  headlineElection?: string;
   headlineNote?: string;
   /**
    * Optional always-visible follow-on after the approval sentence. Rendered on
@@ -355,6 +361,9 @@ function governmentBillNameForRecord(
   if (record.family === "city") {
     return CITY_GOVERNMENT_BILL_NAME_DEFAULT;
   }
+  if (record.family === "municipal_gid") {
+    return MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
   return "";
 }
 
@@ -378,21 +387,52 @@ function buildSummary(
         `[${record.id}] metro summary.headlinePlain must be non-empty`,
       );
     }
+    const headlineElection = record.summary.headlineElection?.trim();
+    if (!headlineElection) {
+      throw new Error(
+        `[${record.id}] metro summary.headlineElection must be non-empty`,
+      );
+    }
     return appendSummaryClosingNote(
-      `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${record.summary.headlineElection}.`,
+      `${summaryAttribution}, eligible electors authorized ${headlinePlain} in ${headlineElection}.`,
       record.summary.summaryClosingNote,
     );
   }
   if (record.family === "city" && record.summary.headlinePlain?.trim()) {
     const headlinePlain = record.summary.headlinePlain.trim();
+    const headlineElection = record.summary.headlineElection?.trim();
+    if (!headlineElection) {
+      throw new Error(
+        `[${record.id}] city summary.headlineElection must be non-empty`,
+      );
+    }
     return appendSummaryClosingNote(
-      `${summaryAttribution}, City Council set ${headlinePlain} for ${record.summary.headlineElection}.`,
+      `${summaryAttribution}, City Council set ${headlinePlain} for ${headlineElection}.`,
       record.summary.summaryClosingNote,
+    );
+  }
+  if (record.family === "municipal_gid") {
+    const headlinePlain = record.summary.headlinePlain?.trim();
+    if (!headlinePlain) {
+      throw new Error(
+        `[${record.id}] municipal_gid summary.headlinePlain must be non-empty`,
+      );
+    }
+    // Same link contract as metro/city: summarySource.text is the linked lead.
+    return appendSummaryClosingNote(
+      `${summaryAttribution}, ${headlinePlain}.`,
+      record.summary.summaryClosingNote,
+    );
+  }
+  const headlineElection = record.summary.headlineElection?.trim();
+  if (!headlineElection) {
+    throw new Error(
+      `[${record.id}] summary.headlineElection must be non-empty`,
     );
   }
   const headline = buildSummaryVoterClause(
     record.summary.headlineIssues ?? [],
-    record.summary.headlineElection,
+    headlineElection,
     record.summary.headlineNote,
   );
   const alsoClauses =
@@ -710,13 +750,16 @@ function buildMeasureStep(
   let body: string;
   let bodyDisclosure: LevyAuthorityChainStep["bodyDisclosure"];
   let bodyLink: LevyAuthorityChainStep["bodyLink"];
-  /** City council budget-cited auth: substance lives in fact subheads, not body. */
+  /** City council / municipal GID budget-cited auth: substance in fact subheads. */
   let cityAuthorizationTakeaway: LevyAuthorityChainFact | undefined;
-  if (measure.kind === "city_authorization") {
+  if (
+    measure.kind === "city_authorization" ||
+    measure.kind === "municipal_gid_board"
+  ) {
     const titlePlain = measure.titlePlain?.trim();
     if (!titlePlain) {
       throw new Error(
-        `[${record.id}] city_authorization ${measure.stepId} requires titlePlain`,
+        `[${record.id}] ${measure.kind} ${measure.stepId} requires titlePlain`,
       );
     }
     const takeaway = pack.ballotStepBody(
@@ -793,6 +836,7 @@ function buildMeasureStep(
     ...(cityAuthorizationTakeaway ? [cityAuthorizationTakeaway] : []),
     ...(measure.kind !== "metro_commitment" &&
     measure.kind !== "city_authorization" &&
+    measure.kind !== "municipal_gid_board" &&
     !omitDuplicateUnavailableFact
       ? [
           {
@@ -827,11 +871,15 @@ function buildMeasureStep(
         sources: [measure.resultsSource],
       });
     } else if (measure.approval) {
-      facts.push({
-        label: measure.approval.label,
-        value: measure.approval.value,
-        sources: [measure.approval.source],
-      });
+      // municipal_gid_board takeaway already carries approval.source; a second
+      // fact would repeat the same statute cite and legalese.
+      if (measure.kind !== "municipal_gid_board") {
+        facts.push({
+          label: measure.approval.label,
+          value: measure.approval.value,
+          sources: [measure.approval.source],
+        });
+      }
     } else {
       throw new Error(
         `[${record.id}] ${family} measure ${measure.stepId} needs votes + resultsSource or approval`,
@@ -850,8 +898,9 @@ function buildMeasureStep(
     body,
     ...(bodyLink ? { bodyLink } : {}),
     ...(bodyDisclosure ? { bodyDisclosure } : {}),
-    // city_authorization moves bodyTerm onto the takeaway fact value.
-    ...(measure.kind === "city_authorization"
+    // city_authorization / municipal_gid_board move bodyTerm onto the takeaway fact.
+    ...(measure.kind === "city_authorization" ||
+    measure.kind === "municipal_gid_board"
       ? {}
       : {
           bodyTermId: measure.bodyTermId,

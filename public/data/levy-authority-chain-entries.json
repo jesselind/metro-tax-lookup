@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -585,6 +585,86 @@
       ],
       "openGapIds": [
         "no-fund-level-mill-split"
+      ]
+    },
+    {
+      "id": "antelope-hills-gid-authority-chain",
+      "family": "municipal_gid",
+      "match": {
+        "levyLineCode": "4042"
+      },
+      "authority": {
+        "displayName": "Antelope Hills General Improvement District",
+        "countyListName": "ANTELOPE HLS GEN IMP DIST",
+        "governingBody": "town_board_of_trustees",
+        "governmentBillName": "the district",
+        "whoGetsBody": "This municipal general improvement district's property-tax revenue is collected by the county and sent to the town that sits as the district's board. Under Colorado law, these districts may levy property tax for local improvements in their area.",
+        "whoGetsFacts": [
+          {
+            "label": "Name on the county tax list",
+            "value": "ANTELOPE HLS GEN IMP DIST",
+            "sources": []
+          },
+          {
+            "label": "Board-directed early principal (2026 budget)",
+            "value": "$85,000 transfer from the GID general fund toward Series 2006 principal",
+            "sources": [
+              {
+                "text": "Resolution 2025-01GID (2026 budget)",
+                "url": "https://civiclookup.com/sourced-records/town-of-bennett/antelope-hills-gid/2025-01gid-adopting-2026-budget.pdf"
+              }
+            ]
+          },
+          {
+            "label": "Stated payoff date (Town minutes)",
+            "value": "October 14, 2025 minutes say a 2027 payoff date, and that the $85,000 transfer does not move that date earlier",
+            "sources": [
+              {
+                "text": "Oct 14, 2025 Antelope Hills GID regular meeting minutes",
+                "url": "https://civiclookup.com/sourced-records/town-of-bennett/antelope-hills-gid/2025-10-14-regular-meeting-minutes.pdf"
+              }
+            ]
+          },
+          {
+            "label": "2026 Series 2006 bond principal (budgeted)",
+            "value": "$346,745 principal and about $45,000 interest in the adopted 2026 debt-service budget",
+            "sources": [
+              {
+                "text": "Resolution 2025-01GID (2026 budget)",
+                "url": "https://civiclookup.com/sourced-records/town-of-bennett/antelope-hills-gid/2025-01gid-adopting-2026-budget.pdf"
+              }
+            ]
+          }
+        ]
+      },
+      "summarySource": {
+        "text": "According to the 2024 Colorado Revised Statutes Title 31 § 31-25-609",
+        "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-31.pdf#page=373"
+      },
+      "summary": {
+        "headlinePlain": "the Town of Bennett Board of Trustees sits as the board of this municipal general improvement district"
+      },
+      "mills": {},
+      "measures": [
+        {
+          "stepId": "municipal-gid-board-crs-31-25-609",
+          "kind": "municipal_gid_board",
+          "electionMonthYear": "December 2024",
+          "titlePlain": "Town board sits as the GID board",
+          "detail": "the town's elected board also runs this district. They do that because they hold town office, not because voters elect a separate GID board. For Antelope Hills, that is the Town of Bennett Board of Trustees",
+          "approval": {
+            "label": "C.R.S. § 31-25-609",
+            "value": "Under this statute, the town or city board is the board of the general improvement district.",
+            "source": {
+              "text": "Colorado Revised Statutes Title 31 (2024)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-31.pdf#page=373"
+            }
+          }
+        }
+      ],
+      "openGapIds": [
+        "municipal-gid-founding-ordinance-unlocated",
+        "municipal-gid-bond-debt-records-unlocated"
       ]
     }
   ]

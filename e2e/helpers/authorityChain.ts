@@ -19,6 +19,10 @@ import { levyLineCodeForCrossCountyAuthority } from "../../src/lib/crossCountyAu
 import { deepLinkLevyPercentageUrlForParcel } from "../../src/lib/authorityMillsHistory";
 import { safeHttpOrHttpsUrl } from "../../src/lib/safeExternalHref";
 import {
+  authorityChainSourceHref,
+  isSourcedRecordsUrl,
+} from "../../src/lib/sourcedRecords";
+import {
   SYNTHETIC_E2E_AUTHORITY,
   SYNTHETIC_E2E_TAG_SHORT_DESCR,
 } from "../fixtures/syntheticCountyData";
@@ -179,8 +183,8 @@ export async function assertAuthorityChainPanel(
   ).toBeVisible();
 
   if (entry.summarySource) {
-    const summaryHref = safeHttpOrHttpsUrl(entry.summarySource.url);
-    expect(summaryHref, "summarySource.url must be http(s)").toBeTruthy();
+    const summaryHref = authorityChainSourceHref(entry.summarySource.url);
+    expect(summaryHref, "summarySource.url must resolve to a safe href").toBeTruthy();
     await expect(
       chain.getByRole("link", { name: entry.summarySource.text }),
     ).toHaveAttribute("href", summaryHref!);
@@ -206,7 +210,7 @@ export async function assertAuthorityChainPanel(
   for (const mark of entry.summaryIssueMarks ?? []) {
     const expectedCount = entry.summary.includes(mark.match) ? 1 : 0;
     if (mark.url) {
-      const href = safeHttpOrHttpsUrl(mark.url);
+      const href = authorityChainSourceHref(mark.url);
       expect(href, `summary issue link for ${mark.match}`).toBeTruthy();
       const links = chain.getByRole("link", { name: mark.match });
       await expect(
@@ -271,13 +275,14 @@ export async function assertAuthorityChainPanel(
     !countyId || countyConfigById(countyId)?.features.millsHistory === true;
 
   for (const href of collectAuthorityChainSourceUrls(entry)) {
-    const expectedHref = deepLinkRateTable
+    const parcelHref = deepLinkRateTable
       ? deepLinkLevyPercentageUrlForParcel(
           href,
           levyLineCode,
           SYNTHETIC_E2E_TAG_SHORT_DESCR,
         )
       : href;
+    const expectedHref = authorityChainSourceHref(parcelHref) ?? parcelHref;
     await expect(
       chain.locator(`a[href="${cssEscapeAttr(expectedHref)}"]`).first(),
     ).toBeVisible();
@@ -303,6 +308,10 @@ export function collectAuthorityChainSourceUrlsForEntries(
   const byProbe = new Map<string, string>();
   for (const entry of entries) {
     for (const href of collectAuthorityChainSourceUrls(entry)) {
+      // First-party CORA copies under public/sourced-records/ are checked on
+      // disk by unit validation; do not treat production deploy lag as a
+      // third-party cite failure.
+      if (isSourcedRecordsUrl(href)) continue;
       const probe = urlForHttpProbe(href);
       if (!byProbe.has(probe)) byProbe.set(probe, href);
     }
