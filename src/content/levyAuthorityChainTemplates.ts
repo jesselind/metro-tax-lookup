@@ -8,10 +8,10 @@
  * JSON supplies facts only; wording lives here (KISS / DRY).
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
- * `metro`, `fire`, `library`, `city`) inject nouns, measure kinds, budget labels,
- * and mills takeaways. Multiple authorization steps belong in `measures[]`
- * (chronological); closed summary stays one short who/when line, with optional
- * `also` elections.
+ * `metro`, `fire`, `library`, `city`, `municipal_gid`) inject nouns, measure
+ * kinds, budget labels, and mills takeaways. Multiple authorization steps
+ * belong in `measures[]` (chronological); closed summary stays one short
+ * who/when line, with optional `also` elections.
  *
  * Ideology (also in `docs/levy-explainer-authoring.md`): always show the
  * next-best official source. Prefer the exact document; when it is missing,
@@ -51,6 +51,9 @@ export const LIBRARY_GOVERNMENT_BILL_NAME_DEFAULT = "the library district";
 /** Default bill wording for city-family entries when JSON omits `governmentBillName`. */
 export const CITY_GOVERNMENT_BILL_NAME_DEFAULT = "the city";
 
+/** Default bill wording for municipal GID entries when JSON omits `governmentBillName`. */
+export const MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
+
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
 export const STEP_TITLE_WHAT_CHANGED = "What changed?";
@@ -74,6 +77,9 @@ export const FACT_VALUE_METRO_BALLOT_TEXT_UNAVAILABLE =
 export const FACT_LABEL_CITY_RECORD = "City record";
 export const FACT_VALUE_CITY_AUTHORIZATION_RECORD =
   "Official city budget or ordinance record linked";
+export const FACT_LABEL_MUNICIPAL_GID_RECORD = "State or district record";
+export const FACT_VALUE_MUNICIPAL_GID_AUTHORIZATION_RECORD =
+  "Official state statute or district record linked";
 
 /**
  * Allowed `authority.governingBody` ids in JSON (validation + future trail inject).
@@ -84,6 +90,7 @@ export const GOVERNING_BODY_IDS = [
   "board",
   "board_of_county_commissioners",
   "city_council",
+  "town_board_of_trustees",
 ] as const;
 
 export type LevyAuthorityChainGoverningBody =
@@ -95,7 +102,8 @@ export type LevyAuthorityChainFamily =
   | "metro"
   | "fire"
   | "library"
-  | "city";
+  | "city"
+  | "municipal_gid";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -132,6 +140,16 @@ export const OPEN_GAP_BODIES = {
    */
   "city-temporary-mill-reduction":
     "The city publishes one total mill rate on your bill. Recent city budgets say City Council has used temporary reductions to stay under TABOR, below a higher historical rate that needs voter approval to raise. From the county rate table alone, we cannot show a separate temporary-reduction line versus that historical ceiling.",
+  /**
+   * Municipal GID: founding town/city ordinance not at a stable public URL.
+   */
+  "municipal-gid-founding-ordinance-unlocated":
+    "Colorado law says the town or city board sits as this district's board. Town budget records name Ordinance No. 383, Series 1999 as the founding ordinance, but we have not yet located a public copy of that ordinance text itself.",
+  /**
+   * Municipal GID: remaining principal / amortization still not located.
+   */
+  "municipal-gid-bond-debt-records-unlocated":
+    "This trail cites Town budget and minutes for budgeted Series 2006 debt service, a Board-directed $85,000 early principal transfer, and the Town's stated 2027 payoff date. It does not state remaining principal or audit remittance postings. We have not yet located an amortization schedule or EMMA continuing disclosure that states the balance still owed.",
 } as const;
 
 /**
@@ -170,6 +188,8 @@ export const KNOWN_OPEN_GAP_IDS: ReadonlySet<LevyAuthorityChainOpenGapId> =
 export const VOTES_STEP_BODY = "County certified totals:";
 export const METRO_AUTHORIZATION_STEP_BODY = "Official district records:";
 export const CITY_AUTHORIZATION_STEP_BODY = "Official city records:";
+export const MUNICIPAL_GID_AUTHORIZATION_STEP_BODY =
+  "Official state and district records:";
 
 export type LevyAuthorityChainMeasureKind =
   | "override"
@@ -190,7 +210,12 @@ export type LevyAuthorityChainMeasureKind =
    * (for example an annual tax levy ordinance or budget-stated temporary mill
    * reduction). Bill-first `titlePlain` + `detail` + cited `approval` required.
    */
-  | "city_authorization";
+  | "city_authorization"
+  /**
+   * Municipal GID board fact under Title 31 (town or city board sits as the
+   * GID board). Bill-first `titlePlain` + `detail` + cited `approval` required.
+   */
+  | "municipal_gid_board";
 
 const CITY_COUNCIL_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
@@ -199,6 +224,15 @@ const CITY_COUNCIL_BODY_LEAD_PHRASES: Record<
   approved: "City Council set",
   also_approved: "City Council also set",
   earlier_approved: "City Council earlier set",
+};
+
+const MUNICIPAL_GID_BODY_LEAD_PHRASES: Record<
+  LevyAuthorityChainBodyLead,
+  string
+> = {
+  approved: "Colorado law says",
+  also_approved: "Colorado law also says",
+  earlier_approved: "Colorado law earlier said",
 };
 
 export type LevyAuthorityChainBodyLead =
@@ -215,7 +249,7 @@ export const BODY_LEAD_PHRASES: Record<LevyAuthorityChainBodyLead, string> = {
 /**
  * Prefixed voter-approval lead for measure bodies. Election outcomes must not
  * stand alone: use the entry's `summarySource.text` (same phrase as the closed
- * summary) before "voters approved" / also / earlier.
+ * summary lead) before "voters approved" / also / earlier.
  */
 export function attributedVotersApprovalLead(
   summaryAttribution: string,
@@ -849,6 +883,80 @@ const CITY_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Default municipal GID "What changed?" chrome. Rate figures are AUTH-derived
+ * (same helper as metro/city). Entry `mills.stepBody` may replace this takeaway.
+ */
+export const MUNICIPAL_GID_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this district each year.";
+
+/** Step title for statute-cited municipal GID board facts. */
+export const MUNICIPAL_GID_BOARD_STEP_TITLE = "Who sits as the board?";
+
+export const MUNICIPAL_GID_BUDGET_STEP_TITLE =
+  "What the district's budget says";
+
+/**
+ * Municipal general improvement district pack (Title 31, art. 25, part 6).
+ * First consumer: Antelope Hills GID (`4042`). AUTH-derived What changed?
+ * Fold approval onto each measure (city-like). Closed summary uses the same
+ * linked `summarySource` lead contract as other families (`According to …`),
+ * then plain `headlinePlain` (no voters / City Council glue). Kind shipped
+ * today: `municipal_gid_board`. Add bond / operations_mill /
+ * tabor_revenue_retention to `measureKinds` when a public Ballot Issue cite
+ * exists and `summarySource` still fits a voters-approved lead.
+ */
+const MUNICIPAL_GID_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: MUNICIPAL_GID_BUDGET_STEP_TITLE,
+  budgetFactLabel: "District budget",
+  millsStepBody: MUNICIPAL_GID_MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set(["municipal_gid_board"]),
+  approvalStepTitle: STEP_TITLE_HOW_AUTHORIZED,
+  approvalStepBody: MUNICIPAL_GID_AUTHORIZATION_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_MUNICIPAL_GID_RECORD,
+  unavailableBallotFactValue: FACT_VALUE_MUNICIPAL_GID_AUTHORIZATION_RECORD,
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+    if (ballotIssue) {
+      return unavailableBallotMeasureBody(
+        ballotIssue,
+        electionMonthYear,
+        summaryAttribution,
+      );
+    }
+    return `This district's board authorized this in ${electionMonthYear}. We could not locate a separate public ballot PDF for the authorization.`;
+  },
+  ballotStepTitle(_ballotIssue, kind, _options) {
+    switch (kind) {
+      case "municipal_gid_board":
+        return MUNICIPAL_GID_BOARD_STEP_TITLE;
+      default:
+        throw new Error(
+          `municipal_gid pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead, _options) {
+    switch (kind) {
+      case "municipal_gid_board": {
+        const lead = MUNICIPAL_GID_BODY_LEAD_PHRASES[bodyLead];
+        const trimmed = detail.trim();
+        if (!trimmed) {
+          throw new Error("municipal_gid_board requires detail");
+        }
+        return `${lead} ${trimmed}${/[.!?]$/.test(trimmed) ? "" : "."}`;
+      }
+      default:
+        throw new Error(
+          `municipal_gid pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
@@ -859,6 +967,7 @@ const FAMILY_PACKS: Record<
   fire: FIRE_PACK,
   library: LIBRARY_PACK,
   city: CITY_PACK,
+  municipal_gid: MUNICIPAL_GID_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -868,9 +977,9 @@ export function getAuthorityChainFamilyPack(
 }
 
 /**
- * Metro, fire, library, and city: What changed? mill figures come from the AUTH
- * series (not hand-authored current/prior fields). School and county still
- * author mills.
+ * Metro, fire, library, city, and municipal_gid: What changed? mill figures
+ * come from the AUTH series (not hand-authored current/prior fields). School
+ * and county still author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
@@ -879,19 +988,22 @@ export function usesAuthDerivedMills(
     family === "metro" ||
     family === "fire" ||
     family === "library" ||
-    family === "city"
+    family === "city" ||
+    family === "municipal_gid"
   );
 }
 
 /**
- * Metro and city fold approval / vote facts onto each measure step so several
- * authorizations stay chronological. School, county, fire, and library keep a
- * trailing How people voted step for certified totals.
+ * Metro, city, and municipal_gid fold approval / vote facts onto each measure
+ * step so several authorizations stay chronological. School, county, fire, and
+ * library keep a trailing How people voted step for certified totals.
  */
 export function foldsApprovalOntoMeasures(
   family: LevyAuthorityChainFamily,
 ): boolean {
-  return family === "metro" || family === "city";
+  return (
+    family === "metro" || family === "city" || family === "municipal_gid"
+  );
 }
 
 export function capitalizeResidentPhrase(phrase: string): string {

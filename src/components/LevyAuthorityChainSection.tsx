@@ -38,7 +38,7 @@ import {
 } from "@/lib/levyAuthorityChain";
 import { countyConfigById } from "@/lib/countyConfig";
 import { deepLinkLevyPercentageUrlForParcel } from "@/lib/authorityMillsHistory";
-import { safeHttpOrHttpsUrl } from "@/lib/safeExternalHref";
+import { authorityChainSourceHref } from "@/lib/sourcedRecords";
 import {
   TERM_LINK_CLASS,
   TOOL_OUTLINED_TOGGLE_BUTTON_CLASS,
@@ -153,7 +153,7 @@ function SourceLinks({
               taxAreaShortCode,
             )
           : src.url;
-        const safeHref = safeHttpOrHttpsUrl(parcelSpecificUrl);
+        const safeHref = authorityChainSourceHref(parcelSpecificUrl);
         return (
           <li key={`${src.text}-${i}`}>
             {safeHref ? (
@@ -182,7 +182,7 @@ function SourceLinks({
  */
 function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
   const source = entry.summarySource;
-  const safeHref = source ? safeHttpOrHttpsUrl(source.url) : null;
+  const safeHref = source ? authorityChainSourceHref(source.url) : null;
   const termIdRaw = entry.summaryTermId;
   const termMatch = entry.summaryTermMatch;
   const summaryTermId =
@@ -218,7 +218,9 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
     const at = entry.summary.indexOf(issue.match);
     if (at < 0) continue;
     const end = at + issue.match.length;
-    const issueUrl = issue.url ? safeHttpOrHttpsUrl(issue.url) ?? undefined : undefined;
+    const issueUrl = issue.url
+      ? authorityChainSourceHref(issue.url) ?? undefined
+      : undefined;
     marks.push({
       start: at,
       end,
@@ -324,7 +326,7 @@ function renderStepBody(entry: LevyAuthorityChainEntry, step: LevyAuthorityChain
   };
   const marks: Mark[] = [];
   const bodyLink = step.bodyLink;
-  const linkHref = bodyLink ? safeHttpOrHttpsUrl(bodyLink.url) : null;
+  const linkHref = bodyLink ? authorityChainSourceHref(bodyLink.url) : null;
   if (bodyLink && linkHref) {
     const at = step.body.indexOf(bodyLink.match);
     if (at >= 0) {

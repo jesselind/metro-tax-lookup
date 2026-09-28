@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.21.0",
+    date: "2026-09-28",
+    title: "Municipal GID authority-chain pack; Antelope Hills (AUTH 4042)",
+    highlights: [
+      "New authority-chain family `municipal_gid` (Title 31 municipal general improvement districts): AUTH-derived What changed? (Change from last year shows No change in mills when the rate is flat; Most notable increase omitted when there is no increase); measure kind `municipal_gid_board` for town/city board as GID board under C.R.S. § 31-25-609.",
+      "Curated Antelope Hills General Improvement District AUTH `4042` / TE `64265/1`: Who gets → What changed? → Who sits as the board? Closed summary uses the shared linked `summarySource` lead (`According to the 2024 Colorado Revised Statutes Title 31 § 31-25-609`, `#page=373`) plus board substance. Who sits as the board? is one plain-language fact with a single Title 31 cite (no duplicate statute fact / no ex officio legalese). Who gets facts cite Town CORA records for Board-directed $85k early principal, stated 2027 payoff date, and 2026 Series 2006 budgeted principal. Open gaps for founding ordinance text and remaining principal / remittance audit. Unlocated hunts point to Town of Bennett Public Records.",
+      "Sourced records: commit official CORA (and similar) PDFs under `public/sourced-records/` with `provenance.json` when the issuer did not post a durable file URL; cites use `https://civiclookup.com/sourced-records/…` (`docs/sourced-records.md`). First packet: Town of Bennett / Antelope Hills GID.",
+      "Validator requires every family's `summarySource.text` to start with \"According to \", appear exactly once, and start the built summary (same lead-link contract; municipal_gid is not a second placement mode). Sourced-records https cites must map to a real file under `public/sourced-records/`.",
+    ],
+  },
+  {
     version: "5.20.0",
     date: "2026-09-26",
     title: "Arapahoe Library District authority chain (AUTH 4026 / Ballot Issue 4A)",

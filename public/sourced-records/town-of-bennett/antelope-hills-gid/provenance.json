@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "issuer": "Town of Bennett",
+  "entity": "Antelope Hills General Improvement District",
+  "entityAuthCode": "4042",
+  "custodian": "Town Clerk, Town of Bennett",
+  "requestChannel": "issuer_public_records_portal",
+  "issuerRecordsHubUrl": "https://www.bennettco.gov/town-clerk/page/public-records",
+  "obtainedHow": "Public records request filed through the Town of Bennett Town Clerk Public Records page (https://www.bennettco.gov/town-clerk/page/public-records). Town Clerk emailed the responsive PDFs as the records response. Not obtained from a third-party resident email.",
+  "deliveryMethod": "email_from_custodian",
+  "receivedDate": "2026-09-25",
+  "issuerPostedPublicFileUrl": null,
+  "sourceStream": "town_cora_response",
+  "notes": "Exact copies of the Town Clerk records-response attachments. Town did not post these PDFs at a durable public file URL on its site. Separate from documents a concerned resident emailed the campaign (tax statement, Civic Lookup screenshots, bond closing image packs): those were reviewed for research, logged in the working doc, and deleted from the working folder; they are not hosted under public/sourced-records/. Prefer the issuer hub for new requests; do not treat DocAccess deep links as durable cites.",
+  "documents": [
+    {
+      "file": "2025-10-14-regular-meeting-minutes.pdf",
+      "title": "Antelope Hills GID Regular Meeting Minutes (October 14, 2025)",
+      "originalFilename": "10-14-2025 - Regular Meeting Minutes_AHGID.pdf"
+    },
+    {
+      "file": "2025-10-14-meeting-packet.pdf",
+      "title": "Antelope Hills GID meeting packet (October 14, 2025)",
+      "originalFilename": "Antelope Hills GID 10-14-2025.pdf"
+    },
+    {
+      "file": "2025-12-09-meeting-packet.pdf",
+      "title": "Antelope Hills GID meeting packet (December 9, 2025)",
+      "originalFilename": "Antelope Hills GID 12-9-2025.pdf"
+    },
+    {
+      "file": "2025-01gid-adopting-2026-budget.pdf",
+      "title": "Resolution No. 2025-01GID adopting and making appropriations for budget year 2026",
+      "originalFilename": "Res. No. 2025-01GID - Adopting and Making Appropriations for the Budget Year 2026.pdf"
+    }
+  ]
+}
