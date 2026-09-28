@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.22.0",
+    date: "2026-09-28",
+    title: "Home teaching bar: two numbers that make property tax go up",
+    highlights: [
+      "Unlocked home (under the privacy line, above latest authority-chain updates): one horizontal two-segment bar (Property value | Mill levy) with in-bar icons, subtext, and What's this? CSS subgrid keeps icon / title / subtext / What's this? rows aligned across halves.",
+      "Mill levy teaching uses a new total brief (`term-mill-levy-total`: everyone on your bill, added up; school/county/city/fire/metro districts). One-district `term-mill-levy` brief unchanged elsewhere. Property value reuses `term-actual-value`.",
+      "Property-report Summary graphic deferred to a later branch.",
+    ],
+  },
+  {
     version: "5.21.0",
     date: "2026-09-28",
     title: "Municipal GID authority-chain pack; Antelope Hills (AUTH 4042)",

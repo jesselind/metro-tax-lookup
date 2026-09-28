@@ -22,6 +22,7 @@ import {
   showCountyScopeTopLine,
 } from "@/components/CountyScopeTopLine";
 import { HomeLatestAuthorityChainCards } from "@/components/HomeLatestAuthorityChainCards";
+import { HomeWhyTaxesGoUpTeaching } from "@/components/HomeWhyTaxesGoUpTeaching";
 import {
   CampaignSiteLink,
   hasCampaignSiteLink,
@@ -2447,6 +2448,8 @@ export function HomeParcelAddressLookup({
               </CampaignSiteLink>
             </div>
           ) : null}
+          <hr className="mt-8 border-0 border-t border-slate-300" />
+          <HomeWhyTaxesGoUpTeaching />
           <hr className="mt-8 border-0 border-t border-slate-300" />
           <HomeLatestAuthorityChainCards />
         </div>
