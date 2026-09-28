@@ -53,6 +53,7 @@ const GLOSSARY_FULL_ENTRY_SET = new Set<string>(GLOSSARY_FULL_ENTRY_TERM_IDS);
 const GLOSSARY_TERM_ALIASES: Record<string, string> = {
   "term-mills": "term-mill-levy",
   "term-levy": "term-mill-levy",
+  "term-mill-levy-total": "term-mill-levy",
 };
 
 /** Canonical `term-*` id for a glossary aside. */

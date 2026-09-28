@@ -39,6 +39,23 @@ export function TermLevyBriefBody() {
   );
 }
 
+/**
+ * Home teaching bar (total rate): everyone on the bill, not one district line.
+ * Do not reuse {@link TermLevyBriefBody} there — that brief is one-district.
+ */
+export function TermMillLevyTotalBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      Your{" "}
+      <strong className="font-semibold text-slate-900">mill levy</strong>
+      {" "}
+      total is everyone on your bill, added up: school, county, city, fire, metro districts, and
+      others. Each sets its own rate. Those rates become one number. One mill is $1 of tax for every
+      $1,000 of assessed value.
+    </p>
+  );
+}
+
 export function TermLevyPropertyExampleBody({
   mills,
   assessed,

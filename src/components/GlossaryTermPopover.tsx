@@ -16,6 +16,7 @@ import {
   TermEligibleElectorsBriefBody,
   TermAggregateDebtBriefBody,
   TermLevyBriefBody,
+  TermMillLevyTotalBriefBody,
   TermPinBriefBody,
   TermTagBriefBody,
   TermTaborBriefBody,
@@ -37,6 +38,7 @@ import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
 /** Extra flow briefs not already in parcel or levy-modal registries. */
 type ExtraFlowGlossaryTermId =
   | "term-mill-levy"
+  | "term-mill-levy-total"
   | "term-pin"
   | "term-tag"
   | "term-debt-free-schools-mill-levy"
@@ -56,6 +58,10 @@ const EXTRA_BRIEFS: Record<
   { title: string; Brief: FC }
 > = {
   "term-mill-levy": { title: "Mill levy", Brief: TermLevyBriefBody },
+  "term-mill-levy-total": {
+    title: "Mill levy",
+    Brief: TermMillLevyTotalBriefBody,
+  },
   "term-pin": { title: "PIN", Brief: TermPinBriefBody },
   "term-tag": { title: "TAG", Brief: TermTagBriefBody },
   "term-debt-free-schools-mill-levy": {
