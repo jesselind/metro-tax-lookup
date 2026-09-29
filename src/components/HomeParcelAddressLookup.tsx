@@ -23,6 +23,7 @@ import {
 } from "@/components/CountyScopeTopLine";
 import { HomeLatestAuthorityChainCards } from "@/components/HomeLatestAuthorityChainCards";
 import { HomeWhyTaxesGoUpTeaching } from "@/components/HomeWhyTaxesGoUpTeaching";
+import { PropertyWhyTaxesGoUpSection } from "@/components/PropertyWhyTaxesGoUpSection";
 import {
   CampaignSiteLink,
   hasCampaignSiteLink,
@@ -90,6 +91,7 @@ import {
   buildLevyDollarAssessedContext,
   scaleLevyDollarAssessedContextPerUnit,
 } from "@/lib/levyDollarAssessedContext";
+import { resolvePropertyWhyTaxesGoUpModel } from "@/lib/propertyWhyTaxesGoUp";
 import {
   fetchCountyParcelRecordForPin,
   fetchCountyPinToTagJson,
@@ -1515,6 +1517,53 @@ export function HomeParcelAddressLookup({
     !isRentMode &&
     !isBusinessPersonalAccount;
 
+  /** Own (Real + BPP), not Rent: two-lever Summary above levies. */
+  const showWhyTaxesGoUpSummary =
+    levyReadyForSummary && !isRentMode;
+
+  const whyTaxesGoUpModel = useMemo(
+    () =>
+      resolvePropertyWhyTaxesGoUpModel({
+        levyLineCodes: levyLines.map((line) => line.levyLineCode),
+        countyId: activeCountyConfig.id,
+        valuationHistory: !valuationHistoryLoading ? valuationHistory : null,
+        priorYearValuesGap: activePriorYearValuesGap,
+        valuationHistoryPending:
+          countyFeatureAvailable(
+            "valuationHistoryShards",
+            activeCountyConfig,
+          ) && valuationHistoryLoading,
+      }),
+    [
+      levyLines,
+      activeCountyConfig,
+      valuationHistory,
+      valuationHistoryLoading,
+      activePriorYearValuesGap,
+    ],
+  );
+
+  const whyTaxesGoUpParcelRecordHref = useMemo(
+    () =>
+      safeCountyParcelRecordUrl(levyLoadedMeta?.pin, activeCountyConfig, {
+        year: parcelSummaryYears?.parcelRecordLinkYear,
+      }),
+    [
+      levyLoadedMeta?.pin,
+      activeCountyConfig,
+      parcelSummaryYears?.parcelRecordLinkYear,
+    ],
+  );
+
+  const whyTaxesGoUpSection = showWhyTaxesGoUpSummary ? (
+    <PropertyWhyTaxesGoUpSection
+      model={whyTaxesGoUpModel}
+      countyId={activeCountyConfig.id}
+      hasSaleHistory={!isBusinessPersonalAccount && parcelRecord != null}
+      parcelRecordHref={whyTaxesGoUpParcelRecordHref}
+    />
+  ) : null;
+
   const parcelSubsections = useMemo(
     () =>
       parcelRecordSubsectionPresence(parcelRecordForDisplay, {
@@ -1528,6 +1577,7 @@ export function HomeParcelAddressLookup({
     const showPropertyDetails = showPropertyDetailsColumn;
     return {
       jumps: buildHomeDashboardJumps({
+        showSummary: showWhyTaxesGoUpSummary,
         showRentPressure:
           isRentMode &&
           estimatedAnnualPropertyTaxDollars != null &&
@@ -1572,6 +1622,7 @@ export function HomeParcelAddressLookup({
     isRentMode,
     estimatedAnnualPropertyTaxDollars,
     rentWholePropertyMonthly,
+    showWhyTaxesGoUpSummary,
     showHomeLevyBreakdownRegion,
     showPropertyDetailsColumn,
     parcelSubsections,
@@ -1861,9 +1912,10 @@ export function HomeParcelAddressLookup({
     </section>
   ) : null;
 
-  /** Unlocked workbench (PIN fallback / Add tile): levy then values then property details. */
+  /** Unlocked workbench (PIN fallback / Add tile): Summary then levy then values then property details. */
   const levyAndPropertyLayout = (
     <div className={DASHBOARD_SECTION_STACK_CLASS}>
+      {whyTaxesGoUpSection}
       <div className={DASHBOARD_SECTION_LEAD_STACK_CLASS}>
         {levySectionLead}
         {levyBreakdownMain}
@@ -2603,6 +2655,7 @@ export function HomeParcelAddressLookup({
                   </p>
                 ) : null}
               </div>
+              {whyTaxesGoUpSection}
               {showHomeLevyBreakdownRegion ? (
                 <div
                   id={HOME_LEVY_BREAKDOWN_ID}

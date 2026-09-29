@@ -73,12 +73,21 @@ export const HOME_NOV_COMPS_HEADING_ID = "home-nov-comps-grid-heading";
 /** Home `<main id="page-top">` — same focus target as Back to top. */
 export const HOME_PAGE_TOP_ID = "page-top";
 
+/** Focus target for property-report two-lever Summary bar heading. */
+export const HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID =
+  "home-why-taxes-go-up-summary-heading";
+
+/** Section root for property-report Summary (two-lever bar). */
+export const HOME_WHY_TAXES_GO_UP_SUMMARY_ID = "home-why-taxes-go-up-summary";
+
 /**
  * Jump destinations for the locked-report section nav.
  * Order matches the main-column scroll order for the active lens.
- * No "Summary" / `#page-top` lead — levy (or Rent pressure) is first.
+ * Own Summary (temporary Jump label) leads when that section mounts; else levy
+ * (or Rent pressure) is first.
  */
 export type HomeDashboardJumpId =
+  | "summary"
   | "rent-pressure"
   | "levies"
   | "property-details"
@@ -124,6 +133,8 @@ export type HomeLockedUtilityNav = {
  * (Own | Rent | BPP) and account. Only list jumps whose targets exist.
  */
 export type HomeDashboardJumpFlags = {
+  /** Own only: two-lever Summary bar above levies. */
+  showSummary: boolean;
   showRentPressure: boolean;
   showLevies: boolean;
   showPropertyDetails: boolean;
@@ -143,15 +154,23 @@ export type HomeDashboardJumpFlags = {
 
 /**
  * Build gated Jump to… options in main-column order for the active lens.
- * Leads with levy (or Rent pressure when that panel mounts). Omits any section
- * that is not on the report. Appraised and assessed sits after levies (before
- * Property details). Property details parent stays when the panel mounts;
- * remaining subsections are flat siblings (no nested submenu).
+ * Own Summary (temporary label) leads when mounted; else Rent pressure or levy.
+ * Omits any section that is not on the report. Appraised and assessed sits after
+ * levies (before Property details). Property details parent stays when the panel
+ * mounts; remaining subsections are flat siblings (no nested submenu).
  */
 export function buildHomeDashboardJumps(
   flags: HomeDashboardJumpFlags,
 ): HomeDashboardJump[] {
   const jumps: HomeDashboardJump[] = [];
+  if (flags.showSummary) {
+    jumps.push({
+      id: "summary",
+      label: "Summary",
+      focusId: HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID,
+      highlightId: HOME_WHY_TAXES_GO_UP_SUMMARY_ID,
+    });
+  }
   if (flags.showRentPressure) {
     jumps.push({
       id: "rent-pressure",

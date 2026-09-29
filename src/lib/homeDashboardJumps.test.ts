@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { buildHomeDashboardJumps } from "@/lib/homeDashboardJumps";
 
 const baseFlags = {
+  showSummary: false,
   showRentPressure: false,
   showLevies: false,
   showPropertyDetails: false,
@@ -43,10 +44,11 @@ describe("buildHomeDashboardJumps", () => {
     expect(jumps[0]?.label).toBe("See how Douglas displays your data");
   });
 
-  it("keeps page order for Own Real with all subsections", () => {
+  it("keeps page order for Own Real with Summary and all subsections", () => {
     expect(
       buildHomeDashboardJumps({
         ...baseFlags,
+        showSummary: true,
         showLevies: true,
         showPropertyDetails: true,
         showAppraisedAssessed: true,
@@ -60,6 +62,7 @@ describe("buildHomeDashboardJumps", () => {
         showFeedback: true,
       }).map((j) => j.id),
     ).toEqual([
+      "summary",
       "levies",
       "appraised-assessed",
       "property-details",
@@ -74,12 +77,19 @@ describe("buildHomeDashboardJumps", () => {
     ]);
   });
 
-  it("leads with levy when present (no Summary jump)", () => {
+  it("leads with temporary Summary jump when Own Summary mounts", () => {
     const jumps = buildHomeDashboardJumps({
       ...baseFlags,
+      showSummary: true,
       showLevies: true,
     });
     expect(jumps).toEqual([
+      {
+        id: "summary",
+        label: "Summary",
+        focusId: "home-why-taxes-go-up-summary-heading",
+        highlightId: "home-why-taxes-go-up-summary",
+      },
       {
         id: "levies",
         label: "Where is your money going?",
@@ -89,7 +99,15 @@ describe("buildHomeDashboardJumps", () => {
     ]);
   });
 
-  it("curates Rent jumps: pressure, levy, compare, feedback", () => {
+  it("leads with levy when Summary is off", () => {
+    const jumps = buildHomeDashboardJumps({
+      ...baseFlags,
+      showLevies: true,
+    });
+    expect(jumps.map((j) => j.id)).toEqual(["levies"]);
+  });
+
+  it("curates Rent jumps: pressure, levy, compare, feedback (no Summary)", () => {
     expect(
       buildHomeDashboardJumps({
         ...baseFlags,
@@ -101,10 +119,11 @@ describe("buildHomeDashboardJumps", () => {
     ).toEqual(["rent-pressure", "levies", "county-compare", "feedback"]);
   });
 
-  it("curates BPP jumps without real-property-only subsections", () => {
+  it("curates BPP jumps with Summary and without real-property-only subsections", () => {
     expect(
       buildHomeDashboardJumps({
         ...baseFlags,
+        showSummary: true,
         showLevies: true,
         showPropertyDetails: true,
         showAppraisedAssessed: true,
@@ -112,6 +131,7 @@ describe("buildHomeDashboardJumps", () => {
         showFeedback: true,
       }).map((j) => j.id),
     ).toEqual([
+      "summary",
       "levies",
       "appraised-assessed",
       "property-details",

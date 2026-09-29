@@ -23,7 +23,10 @@ import {
   HOME_DASHBOARD_UTILITY_BAR_ID,
   HOME_FEEDBACK_ASIDE_ID,
   HOME_PROPERTY_DETAILS_ID,
+  HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID,
+  HOME_WHY_TAXES_GO_UP_SUMMARY_ID,
 } from "../src/lib/homeDashboardJumps";
+import { PROPERTY_VALUE_COUNTY_GAP_FACE } from "../src/lib/propertyWhyTaxesGoUp";
 
 /**
  * Try demo: PIN-less fixture → levy stack + property details + missing-data mailto.
@@ -35,6 +38,18 @@ test.describe("Try demo property", () => {
     await page.getByRole("button", { name: "Try demo property" }).click();
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
+
+    const summarySection = page.locator(`#${HOME_WHY_TAXES_GO_UP_SUMMARY_ID}`);
+    await expect(
+      page.getByRole("heading", {
+        name: "Two numbers make your property tax go up",
+        level: 3,
+      }),
+    ).toBeVisible();
+    await expect(summarySection).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(summarySection).toContainText(PROPERTY_VALUE_COUNTY_GAP_FACE);
+    await expect(summarySection.getByText(/mills (higher|lower) since/i)).toBeVisible();
+
     const valuesSection = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
     const appraisedGap = valuesSection.getByRole("note").filter({
       hasText: COUNTY_PRIOR_YEAR_VALUES_DASHBOARD_LEAD_APPRAISED,
@@ -58,7 +73,7 @@ test.describe("Try demo property", () => {
     const onThisPage = page.getByRole("navigation", { name: "On this page" });
     await expect(
       onThisPage.getByRole("button", { name: "Summary", exact: true }),
-    ).toHaveCount(0);
+    ).toBeVisible();
 
     // Desktop sidenav scroll-spies (mobile Jump does not): after scroll, one current jump.
     await page.locator("#home-levy-stack-tiles").hover();
@@ -66,6 +81,13 @@ test.describe("Try demo property", () => {
     await expect(
       onThisPage.locator('button[aria-current="location"]'),
     ).toHaveCount(1);
+
+    await onThisPage.getByRole("button", { name: "Summary", exact: true }).click();
+    const summaryHeading = page.locator(
+      `#${HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID}`,
+    );
+    await expect(summaryHeading).toBeFocused();
+    await expect(summaryHeading).toBeInViewport();
 
     await page
       .getByRole("navigation", { name: "On this page" })
@@ -147,8 +169,16 @@ test.describe("Try demo property", () => {
     ).toBeVisible();
     await jumpSummary.click();
     await expect(details).toHaveAttribute("open", "");
-    await page.keyboard.press("Escape");
+    await sectionNav.getByRole("button", { name: "Summary", exact: true }).click();
+    const summaryHeading = page.locator(
+      `#${HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID}`,
+    );
+    await expect(summaryHeading).toBeFocused();
+    await expect(summaryHeading).toBeInViewport();
     await expect(details).not.toHaveAttribute("open", "");
+    await expect(
+      page.locator(`#${HOME_WHY_TAXES_GO_UP_SUMMARY_ID}`),
+    ).toContainText(PROPERTY_VALUE_COUNTY_GAP_FACE);
   });
 
   test("mobile TOC list scrolls when taller than the viewport, then jumps", async ({
