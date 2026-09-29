@@ -27,6 +27,17 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.23.1",
+    date: "2026-09-29",
+    title:
+      "Summary bar fine-tune: shared faces, clearer Arapahoe gap, louder Close",
+    highlights: [
+      "One WhyTaxesGoUpBar for home teaching and locked Own Summary (deleted whyTaxesGoUpTeachingSegments). Heading: Two numbers raise your property taxes. Teaching gloss under each title; property faces stay loud ($ / relative mill % with up/down circle icons; since YYYY quieter). Arapahoe Property value face: County does not publish prior years (no on-bar COUNTY DATA GAP eyebrow; What's this? still county-gap). Mill teaching: everyone on your tax bill, added up.",
+      "Bar chrome: stack below theme xs (30rem); icon+title one row; full width in locked report; cqw face type. Levy detail and account-switcher Close use solid btn-primary (same token as Search) so the dismiss control is findable on phones.",
+      "Helpers: formatAppraisedChangeFaceLines / formatMillsChangeFaceLines; shared formatMillsPercentMagnitude. Unit + try-demo / home-smoke e2e updated for heading and gap face.",
+    ],
+  },
+  {
     version: "5.23.0",
     date: "2026-09-28",
     title:

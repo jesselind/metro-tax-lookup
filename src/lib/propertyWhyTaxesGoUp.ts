@@ -8,6 +8,7 @@
  * total faces for the two-lever bar. Pure helpers — no React.
  */
 
+import { formatMillsPercentMagnitude } from "@/lib/authorityMillsChangeBlocks";
 import { authorityMillsSeries } from "@/lib/authorityMillsHistory";
 import type { CountyValuationHistoryPoint } from "@/lib/countyValuationHistoryData";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
@@ -216,30 +217,80 @@ export function resolvePropertyWhyTaxesGoUpModel(options: {
   };
 }
 
-/** `$120,000 higher since 2020` (whole dollars). */
+/** `$120,000` + direction + `since 2020` for stacked Summary faces (icon in UI). */
+export function formatAppraisedChangeFaceLines(face: WhyTaxesGoUpChangeFace): {
+  amountLine: string;
+  direction: WhyTaxesGoUpChangeFace["direction"];
+  sinceLine: string | null;
+} {
+  if (face.direction === "unchanged") {
+    return {
+      amountLine: `Unchanged since ${face.sinceYear}`,
+      direction: "unchanged",
+      sinceLine: null,
+    };
+  }
+  return {
+    amountLine: formatUsdWhole(Math.abs(face.delta)),
+    direction: face.direction,
+    sinceLine: `since ${face.sinceYear}`,
+  };
+}
+
+/** `$120,000 higher since 2020` (whole dollars) — single line for aria / tests. */
 export function formatAppraisedChangeFaceLine(
   face: WhyTaxesGoUpChangeFace,
 ): string {
-  const amount = formatUsdWhole(Math.abs(face.delta));
-  if (face.direction === "unchanged") {
-    return `Unchanged since ${face.sinceYear}`;
-  }
-  const word = face.direction === "higher" ? "higher" : "lower";
-  return `${amount} ${word} since ${face.sinceYear}`;
+  const { amountLine, direction, sinceLine } =
+    formatAppraisedChangeFaceLines(face);
+  if (direction === "unchanged" || sinceLine == null) return amountLine;
+  return `${amountLine} ${direction} ${sinceLine}`;
 }
 
-/** `12.500 mills higher since 2020` (three-decimal mill display). */
-export function formatMillsChangeFaceLine(face: WhyTaxesGoUpChangeFace): string {
-  const amount = formatCountyLevyMillsDisplay(Math.abs(face.delta));
+/**
+ * Relative mill-rate percent change for the Summary face
+ * (`|delta| / |start|`), same magnitude rules as home authority cards.
+ * Falls back to mills when start mills are 0 (percent undefined).
+ * UI shows amount + up/down icon; aria keeps higher/lower words.
+ */
+export function formatMillsChangeFaceLines(face: WhyTaxesGoUpChangeFace): {
+  amountLine: string;
+  direction: WhyTaxesGoUpChangeFace["direction"];
+  sinceLine: string | null;
+} {
   if (face.direction === "unchanged") {
-    return `Unchanged since ${face.sinceYear}`;
+    return {
+      amountLine: `Unchanged since ${face.sinceYear}`,
+      direction: "unchanged",
+      sinceLine: null,
+    };
   }
-  const word = face.direction === "higher" ? "higher" : "lower";
-  return `${amount} mills ${word} since ${face.sinceYear}`;
+  if (face.startValue === 0) {
+    return {
+      amountLine: `${formatCountyLevyMillsDisplay(Math.abs(face.delta))} mills`,
+      direction: face.direction,
+      sinceLine: `since ${face.sinceYear}`,
+    };
+  }
+  const pct =
+    (Math.abs(face.delta) / Math.abs(face.startValue)) * 100;
+  const magnitude = formatMillsPercentMagnitude(pct);
+  return {
+    amountLine: `${magnitude}%`,
+    direction: face.direction,
+    sinceLine: `since ${face.sinceYear}`,
+  };
+}
+
+/** Single-line form for aria / tests (`14% higher since 2020`). */
+export function formatMillsChangeFaceLine(face: WhyTaxesGoUpChangeFace): string {
+  const { amountLine, direction, sinceLine } = formatMillsChangeFaceLines(face);
+  if (direction === "unchanged" || sinceLine == null) return amountLine;
+  return `${amountLine} ${direction} ${sinceLine}`;
 }
 
 export const PROPERTY_VALUE_COUNTY_GAP_FACE =
-  "The county will not publish prior-year values.";
+  "County does not publish prior years";
 
 export const PROPERTY_VALUE_PROPERTY_MISSING_FACE =
   "Not available for this property";
@@ -247,4 +298,4 @@ export const PROPERTY_VALUE_PROPERTY_MISSING_FACE =
 export const PROPERTY_VALUE_TEACHING_SUBTEXT =
   "What the county says your property is worth";
 
-export const MILL_LEVY_TEACHING_SUBTEXT = "Everyone on your bill, added up";
+export const MILL_LEVY_TEACHING_SUBTEXT = "Everyone on your tax bill, added up";

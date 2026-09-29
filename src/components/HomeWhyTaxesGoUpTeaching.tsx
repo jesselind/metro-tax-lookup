@@ -7,13 +7,14 @@
 
 /**
  * Unlocked home: teaching block for why property taxes go up (valuation + mill levy).
- * Generic only — no property numbers.
+ * Same bar as locked Own Summary; no property faces.
  */
-import { WhyTaxesGoUpTwoSegmentBar } from "@/components/WhyTaxesGoUpTwoSegmentBar";
-import { buildWhyTaxesGoUpTeachingSegments } from "@/components/whyTaxesGoUpTeachingSegments";
+import {
+  WhyTaxesGoUpBar,
+  WHY_TAXES_GO_UP_HEADING,
+} from "@/components/WhyTaxesGoUpBar";
 
-export const HOME_WHY_TAXES_GO_UP_HEADING =
-  "Two numbers make your property tax go up";
+export const HOME_WHY_TAXES_GO_UP_HEADING = WHY_TAXES_GO_UP_HEADING;
 
 export function HomeWhyTaxesGoUpTeaching() {
   const headingId = "home-why-taxes-go-up-heading";
@@ -25,13 +26,10 @@ export function HomeWhyTaxesGoUpTeaching() {
           id={headingId}
           className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
         >
-          {HOME_WHY_TAXES_GO_UP_HEADING}
+          {WHY_TAXES_GO_UP_HEADING}
         </h2>
 
-        <WhyTaxesGoUpTwoSegmentBar
-          className="mt-6"
-          segments={buildWhyTaxesGoUpTeachingSegments("home-why-taxes")}
-        />
+        <WhyTaxesGoUpBar idPrefix="home-why-taxes" />
       </div>
     </section>
   );

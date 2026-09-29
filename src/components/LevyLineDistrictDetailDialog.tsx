@@ -17,7 +17,7 @@ import type {
 } from "@/lib/specialDistrictMatch";
 import { ModalPortal } from "@/components/ModalPortal";
 import { AuthorityMillsHistoryChart } from "@/components/AuthorityMillsHistoryChart";
-import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
+import { btnPrimaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSection";
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
@@ -1269,7 +1269,7 @@ export function LevyLineDistrictDetailDialog({
           <div className="shrink-0 border-t border-slate-200 bg-white px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
             <button
               type="button"
-              className={`${btnOutlineSecondaryMd} w-full justify-center py-3`}
+              className={`${btnPrimaryMd} w-full justify-center`}
               onClick={onClose}
               aria-label="Close levy details"
             >

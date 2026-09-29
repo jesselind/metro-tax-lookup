@@ -44,12 +44,12 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Two numbers make your property tax go up",
+      name: "Two numbers raise your property taxes",
       level: 2,
     }),
   ).toBeVisible();
   await expect(page.getByText("Property value", { exact: true })).toBeVisible();
-  await expect(page.getByText("Everyone on your bill, added up")).toBeVisible();
+  await expect(page.getByText("Everyone on your tax bill, added up")).toBeVisible();
   await expect(page.getByText("Supported Colorado counties")).toHaveCount(0);
 
   // Campaign disclosure follows SITE_CONFIG; forks that clear values must not

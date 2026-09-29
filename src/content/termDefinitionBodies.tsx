@@ -49,7 +49,7 @@ export function TermMillLevyTotalBriefBody() {
       Your{" "}
       <strong className="font-semibold text-slate-900">mill levy</strong>
       {" "}
-      total is everyone on your bill, added up: school, county, city, fire, metro districts, and
+      total is everyone on your tax bill, added up: school, county, city, fire, metro districts, and
       others. Each sets its own rate. Those rates become one number. One mill is $1 of tax for every
       $1,000 of assessed value.
     </p>
