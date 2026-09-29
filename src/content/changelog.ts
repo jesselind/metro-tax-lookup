@@ -27,13 +27,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.23.0",
+    date: "2026-09-28",
+    title:
+      "Property-report Summary: two-lever bar with multi-year faces",
+    highlights: [
+      "Locked Own report (Real + BPP, including Try demo; not Rent): Summary section above Where is your money going? Jump label temporary Summary; heading is the home sentence in dashboard section-title style (not unlocked-home h2). Jump focus uses scroll-mt on the Summary heading so the title clears the sticky mobile Jump strip.",
+      "Same two-segment bar as home (shared WhyTaxesGoUpTwoSegmentBar). When publishable: appraised $… higher/lower/unchanged since <year> and total mills … since <year>. Overlap years when both series exist; new mid-window districts stay in mill totals. Arapahoe Property value half: COUNTY DATA GAP eyebrow + The county will not publish prior-year values. + COUNTY DATA GAP What's this?; mill half still multi-year. Douglas missing history: Not available for this property. Nothing publishable → generic home faces.",
+      "Mobile-first type hierarchy on the shared bar. Helpers in propertyWhyTaxesGoUp.ts; try-demo e2e covers Summary face + Jump.",
+    ],
+  },
+  {
     version: "5.22.0",
     date: "2026-09-28",
     title: "Home teaching bar: two numbers that make property tax go up",
     highlights: [
       "Unlocked home (under the privacy line, above latest authority-chain updates): one horizontal two-segment bar (Property value | Mill levy) with in-bar icons, subtext, and What's this? CSS subgrid keeps icon / title / subtext / What's this? rows aligned across halves.",
       "Mill levy teaching uses a new total brief (`term-mill-levy-total`: everyone on your bill, added up; school/county/city/fire/metro districts). One-district `term-mill-levy` brief unchanged elsewhere. Property value reuses `term-actual-value`.",
-      "Property-report Summary graphic deferred to a later branch.",
+      "Property-report Summary graphic follows in 5.23.0.",
     ],
   },
   {

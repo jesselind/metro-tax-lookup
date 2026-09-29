@@ -159,6 +159,9 @@ test("business personal property: thin fields, levy stack, notice of valuation",
   await expect(onThisPage).toBeVisible();
   // summary a11y role varies by engine; list is open on lg+ (desktop CI default).
   await expect(
+    onThisPage.getByRole("button", { name: "Summary", exact: true }),
+  ).toBeVisible();
+  await expect(
     onThisPage.getByRole("button", { name: "Where is your money going?" }),
   ).toBeVisible();
   await expect(

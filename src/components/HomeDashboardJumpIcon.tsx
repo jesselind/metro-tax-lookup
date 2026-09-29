@@ -10,6 +10,7 @@ import {
   BanknotesIcon,
   BuildingLibraryIcon,
   BuildingOffice2Icon,
+  ChartBarIcon,
   ChartPieIcon,
   ChatBubbleLeftRightIcon,
   ClipboardDocumentCheckIcon,
@@ -27,6 +28,7 @@ import {
 type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
 const JUMP_ICONS: Record<HomeDashboardJumpId, HeroIcon> = {
+  summary: ChartBarIcon,
   "rent-pressure": BanknotesIcon,
   levies: ChartPieIcon,
   "property-details": HomeModernIcon,
