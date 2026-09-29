@@ -17,6 +17,11 @@
   /* Jesse Lind for Assessor campaign site (Website/src/styles/global.css) */
   --color-campaign-green: #05995c;
   --color-campaign-green-dark: #036b40;
+  /*
+   * Why-taxes bar stacks below this; side-by-side from xs up.
+   * rem to match Tailwind defaults (see responsive-design custom breakpoints).
+   */
+  --breakpoint-xs: 30rem;
 }
 
 html {

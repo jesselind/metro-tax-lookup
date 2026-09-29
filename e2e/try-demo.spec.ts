@@ -42,13 +42,30 @@ test.describe("Try demo property", () => {
     const summarySection = page.locator(`#${HOME_WHY_TAXES_GO_UP_SUMMARY_ID}`);
     await expect(
       page.getByRole("heading", {
-        name: "Two numbers make your property tax go up",
+        name: "Two numbers raise your property taxes",
         level: 3,
       }),
     ).toBeVisible();
-    await expect(summarySection).toContainText(COUNTY_SERVICE_GAP_CALLOUT_TITLE);
+    await expect(summarySection).toContainText(
+      "What the county says your property is worth",
+    );
+    await expect(summarySection).toContainText("Everyone on your tax bill, added up");
     await expect(summarySection).toContainText(PROPERTY_VALUE_COUNTY_GAP_FACE);
-    await expect(summarySection.getByText(/mills (higher|lower) since/i)).toBeVisible();
+    await expect(summarySection.getByText(/%/)).toBeVisible();
+    await expect(summarySection.getByText(/since \d{4}/i)).toBeVisible();
+    await summarySection
+      .getByRole("button", {
+        name: "Why prior-year property values from the county are missing",
+      })
+      .click();
+    await expect(
+      page
+        .getByRole("region", {
+          name: "Why prior-year property values from the county are missing",
+        })
+        .getByText(COUNTY_SERVICE_GAP_CALLOUT_TITLE),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
 
     const valuesSection = page.locator(`#${HOME_APPRAISED_ASSESSED_ID}`);
     const appraisedGap = valuesSection.getByRole("note").filter({

@@ -7,7 +7,9 @@ import { describe, expect, it } from "vitest";
 import {
   appraisedValueByTaxYear,
   formatAppraisedChangeFaceLine,
+  formatAppraisedChangeFaceLines,
   formatMillsChangeFaceLine,
+  formatMillsChangeFaceLines,
   parcelTotalMillsByTaxYear,
   resolvePropertyWhyTaxesGoUpModel,
 } from "@/lib/propertyWhyTaxesGoUp";
@@ -173,7 +175,7 @@ describe("resolvePropertyWhyTaxesGoUpModel", () => {
 });
 
 describe("face lines", () => {
-  it("formats dollar and mills change lines", () => {
+  it("formats dollar and mill-levy percent change lines", () => {
     expect(
       formatAppraisedChangeFaceLine({
         sinceYear: 2020,
@@ -188,6 +190,44 @@ describe("face lines", () => {
         sinceYear: 2020,
         startValue: 90,
         endValue: 102.5,
+        delta: 12.5,
+        direction: "higher",
+      }),
+    ).toBe("14% higher since 2020");
+    expect(
+      formatMillsChangeFaceLines({
+        sinceYear: 2020,
+        startValue: 90,
+        endValue: 102.5,
+        delta: 12.5,
+        direction: "higher",
+      }),
+    ).toEqual({
+      amountLine: "14%",
+      direction: "higher",
+      sinceLine: "since 2020",
+    });
+    expect(
+      formatAppraisedChangeFaceLines({
+        sinceYear: 2020,
+        startValue: 100,
+        endValue: 220,
+        delta: 120,
+        direction: "higher",
+      }),
+    ).toEqual({
+      amountLine: "$120",
+      direction: "higher",
+      sinceLine: "since 2020",
+    });
+  });
+
+  it("formats mill face with mills when start is 0", () => {
+    expect(
+      formatMillsChangeFaceLine({
+        sinceYear: 2020,
+        startValue: 0,
+        endValue: 12.5,
         delta: 12.5,
         direction: "higher",
       }),
@@ -206,6 +246,15 @@ describe("face lines", () => {
     ).toBe("$50 lower since 2020");
     expect(
       formatAppraisedChangeFaceLine({
+        sinceYear: 2020,
+        startValue: 100,
+        endValue: 100,
+        delta: 0,
+        direction: "unchanged",
+      }),
+    ).toBe("Unchanged since 2020");
+    expect(
+      formatMillsChangeFaceLine({
         sinceYear: 2020,
         startValue: 100,
         endValue: 100,

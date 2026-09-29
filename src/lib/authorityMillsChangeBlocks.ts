@@ -174,13 +174,13 @@ export function formatHomeLastYearMillsPercentChange(
   if (change.fromMills === 0) return null;
 
   const pct = (Math.abs(change.delta) / Math.abs(change.fromMills)) * 100;
-  const magnitude = formatHomeMillsPercentMagnitude(pct);
+  const magnitude = formatMillsPercentMagnitude(pct);
   const direction = change.delta > 0 ? "Up" : "Down";
   return `${direction} ${magnitude}% from last year`;
 }
 
-/** Compact percent digits for home headings (enough for tiny mill moves). */
-function formatHomeMillsPercentMagnitude(absPercent: number): string {
+/** Compact percent digits for mill-rate relative change (tiny moves need decimals). */
+export function formatMillsPercentMagnitude(absPercent: number): string {
   if (absPercent >= 10) return absPercent.toFixed(0);
   if (absPercent >= 1) return absPercent.toFixed(1);
   return absPercent.toFixed(2);

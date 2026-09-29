@@ -12,7 +12,7 @@ import {
   SitusRealVsBusinessPersonalHelp,
   type SitusMultiAccountChooserItem,
 } from "@/components/SitusMultiAccountChooserList";
-import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
+import { btnPrimaryMd } from "@/lib/buttonClasses";
 import { useDialogFocusTrap } from "@/lib/useDialogFocusTrap";
 
 const TITLE_ID = "situs-multi-account-switcher-heading";
@@ -106,7 +106,7 @@ export function SitusMultiAccountSwitcherDialog({
           <div className="shrink-0 border-t border-slate-200 bg-white px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
             <button
               type="button"
-              className={`${btnOutlineSecondaryMd} w-full cursor-pointer justify-center py-3`}
+              className={`${btnPrimaryMd} w-full cursor-pointer justify-center`}
               onClick={onClose}
               aria-label="Close account list"
             >
