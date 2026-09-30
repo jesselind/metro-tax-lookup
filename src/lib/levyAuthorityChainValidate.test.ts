@@ -436,4 +436,20 @@ describe("levyAuthorityChainValidate", () => {
       /termBriefExamples\.term-debt-free-schools-mill-levy is set but that term is unused/i,
     );
   });
+
+  it("rejects debt-free termBriefExamples that do not match a debt_free_mill measure", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const aps = entries.find(
+      (e) => e.id === "aurora-28j-school-authority-chain",
+    )!;
+    const examples = aps.termBriefExamples as Record<
+      string,
+      Record<string, unknown>
+    >;
+    examples["term-debt-free-schools-mill-levy"].ballotIssue = "5B";
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /ballotIssue and electionMonthYear must match a debt_free_mill measure/i,
+    );
+  });
 });

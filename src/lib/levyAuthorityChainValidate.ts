@@ -1286,6 +1286,21 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           example.budgetSource,
           `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID}.budgetSource`,
         );
+        const debtFreeMeasures = record.measures.filter(
+          (m) => m.kind === "debt_free_mill",
+        );
+        if (debtFreeMeasures.length > 0) {
+          const matchesDebtFreeMeasure = debtFreeMeasures.some(
+            (m) =>
+              m.ballotIssue === example.ballotIssue &&
+              m.electionMonthYear === example.electionMonthYear,
+          );
+          if (!matchesDebtFreeMeasure) {
+            fail(
+              `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID} ballotIssue and electionMonthYear must match a debt_free_mill measure`,
+            );
+          }
+        }
       }
     } else if (
       record.termBriefExamples?.[DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID] !==
