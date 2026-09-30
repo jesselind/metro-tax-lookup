@@ -21,7 +21,12 @@ import {
   COUNTY_EXTERNAL_LINK_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
+import {
+  debtFreeSchoolsMillLevyExamplesFromRecords,
+  type DebtFreeSchoolsMillLevyExample,
+} from "@/content/debtFreeSchoolsMillLevy";
 import { millLevyAssessedExampleText } from "@/content/millLevySummaryCopy";
+import { LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS } from "@/lib/levyAuthorityChain";
 
 const BRIEF_P =
   "text-sm leading-relaxed text-slate-800 sm:text-base";
@@ -263,14 +268,15 @@ export function TermBondsBriefBody() {
 }
 
 /**
- * Colorado school-finance name for a cash capital/tech mill levy (C.R.S. 22-54-108.7).
- * Origin of the phrase in this app: LPS Adopted Budget glossary (not the ballot title).
- * LPS hosts the PDF on its CMS CDN; deep-link to the glossary page.
+ * Popover brief for debt-free schools mill levy.
+ * Shared statute takeaway; district ballot/budget facts come from
+ * {@link DebtFreeSchoolsMillLevyExample} (authority-chain `termBriefExamples`).
  */
-const LPS_DEBT_FREE_SCHOOLS_MILL_LEVY_GLOSSARY_PDF =
-  "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5485/Lps/396569ba-7c07-4364-9c67-51cea622cd2d/20252026-Adopted-Budget.pdf#page=248";
-
-export function TermDebtFreeSchoolsMillLevyBriefBody() {
+export function TermDebtFreeSchoolsMillLevyBriefBody({
+  example,
+}: {
+  example?: DebtFreeSchoolsMillLevyExample;
+}) {
   return (
     <div className="space-y-2">
       <p className={BRIEF_P}>
@@ -278,28 +284,47 @@ export function TermDebtFreeSchoolsMillLevyBriefBody() {
           Debt-free schools mill levy
         </strong>
         {" "}
-        is the name Littleton Public Schools uses in its budget for a property-tax
-        mill levy under Colorado law (C.R.S. 22-54-108.7). LPS ties that name to
-        Ballot Issue 4C (November 2020). The budget describes paying capital,
-        technology, and maintenance costs with tax cash instead of issuing new
-        bonds for them. It is not itself a bond. A district can still have
-        separate bond debt from other elections.
+        is school-finance wording for a property-tax mill levy under Colorado
+        law (C.R.S. 22-54-108.7). The levy raises cash for capital
+        construction, technology, and maintenance so the district does not
+        need new bonds for those costs. It is not itself a bond. A district
+        can still have separate bond debt from other elections.
       </p>
-      <p className={BRIEF_P}>
-        <a
-          href={LPS_DEBT_FREE_SCHOOLS_MILL_LEVY_GLOSSARY_PDF}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          LPS 2025-2026 Adopted Budget glossary<span className="sr-only"> (opens in a new tab)</span>
-        </a>
-      </p>
+      {example ? (
+        <>
+          <p className={BRIEF_P}>
+            {example.districtName} uses that wording for Ballot Issue{" "}
+            {example.ballotIssue} ({example.electionMonthYear}).
+          </p>
+          <p className={BRIEF_P}>
+            <a
+              href={example.budgetSource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={COUNTY_EXTERNAL_LINK_CLASS}
+            >
+              {example.budgetSource.text}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </p>
+        </>
+      ) : null}
     </div>
   );
 }
 
+/**
+ * Full `/glossary` aside. District list comes from authority-chain
+ * `termBriefExamples` so a new school entry updates this without TSX edits.
+ */
 export function TermDebtFreeSchoolsMillLevyFullBody() {
+  const examples = debtFreeSchoolsMillLevyExamplesFromRecords(
+    LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS,
+  );
+  const spanishSampleExamples = examples.filter(
+    (e) => e.usesSpanishSampleAiEnglish,
+  );
+
   return (
     <>
       <p className={FULL_P}>
@@ -307,48 +332,16 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           Debt-free schools mill levy
         </dfn>
         {" "}
-        is school-finance wording for a property-tax mill levy under Colorado law
-        (C.R.S. 22-54-108.7). Littleton Public Schools uses that name in its
-        budget materials and ties it to Ballot Issue 4C, which voters approved
-        in November 2020.
+        is school-finance wording for a property-tax mill levy under Colorado
+        law (C.R.S. 22-54-108.7). Districts use it to put voter-approved tax
+        cash toward capital construction, technology, and maintenance so those
+        costs do not need new bonds. That is why materials call it
+        &quot;debt-free.&quot; It does not mean your tax bill has no school
+        debt: the same district can still have separate bond debt from other
+        elections.
       </p>
       <p className={FULL_P}>
-        LPS&apos;s adopted budget describes the levy as putting new tax money into
-        a supplemental capital construction, technology, and maintenance fund so
-        the district can pay those facility and tech costs with tax cash rather
-        than by selling new bonds for them. That is why districts call it
-        &quot;debt-free.&quot; It does not mean your tax bill has no school debt:
-        LPS still has separate bond debt from other elections (including the
-        November 2018 building bond).
-      </p>
-      <p className={FULL_P}>
-        English wording shown for Ballot Issue 4C in the
-        {" "}
-        <strong className="font-semibold text-slate-900">Who authorized this?</strong>
-        {" "}
-        trail is an AI translation of a county Spanish sample ballot. It is not
-        the legal English ballot text. Research details are under
-        {" "}
-        <a
-          href="/sources#authority-chain-unlocated-sources"
-          className={TERM_LINK_CLASS}
-        >
-          Official documents we could not find
-        </a>
-        {" "}
-        on the Sources page.
-      </p>
-      <p className={FULL_P}>
-        Littleton Public Schools defines the phrase in its
-        {" "}
-        <a
-          href={LPS_DEBT_FREE_SCHOOLS_MILL_LEVY_GLOSSARY_PDF}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          2025-2026 Adopted Budget glossary<span className="sr-only"> (opens in a new tab)</span>
-        </a>. The Colorado General Assembly&apos;s
+        The Colorado General Assembly&apos;s
         {" "}
         <a
           href="https://leg.colorado.gov/bills/hb16-1354"
@@ -359,19 +352,71 @@ export function TermDebtFreeSchoolsMillLevyFullBody() {
           Debt-free Schools Act (HB16-1354)<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {" "}
-        is the statute that created this kind of mill levy. Arapahoe County&apos;s
-        {" "}
-        <a
-          href="https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2020/2020%20General%20Official%20Summary%20Report.pdf#page=15"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={COUNTY_EXTERNAL_LINK_CLASS}
-        >
-          2020 Official Summary Report<span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        {" "}
-        records the Ballot Issue 4C result.
+        created this kind of mill levy.
+        {examples.length > 0 ? (
+          <>
+            {" "}
+            <strong className="font-semibold text-slate-900">
+              Who authorized this?
+            </strong>
+            {" "}
+            trails that use the phrase today:
+          </>
+        ) : null}
       </p>
+      {examples.length > 0 ? (
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-base leading-relaxed text-slate-700 sm:text-lg">
+          {examples.map((example) => (
+            <li key={`${example.districtName}-${example.ballotIssue}`}>
+              {example.districtName}
+              {" "}
+              (Ballot Issue {example.ballotIssue}, {example.electionMonthYear}).
+              {" "}
+              <a
+                href={example.budgetSource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={COUNTY_EXTERNAL_LINK_CLASS}
+              >
+                {example.budgetSource.text}
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {spanishSampleExamples.length > 0 ? (
+        <p className={FULL_P}>
+          English wording shown for
+          {" "}
+          {spanishSampleExamples
+            .map(
+              (e) =>
+                `${e.districtName} Ballot Issue ${e.ballotIssue}`,
+            )
+            .join("; ")}
+          {" "}
+          in
+          {" "}
+          <strong className="font-semibold text-slate-900">
+            Who authorized this?
+          </strong>
+          {" "}
+          is an AI translation of a county Spanish sample ballot when that is
+          the only official ballot wording we can link among published county
+          files. It is not the legal English ballot text. Research details are
+          under
+          {" "}
+          <a
+            href="/sources#authority-chain-unlocated-sources"
+            className={TERM_LINK_CLASS}
+          >
+            Official documents we could not find
+          </a>
+          {" "}
+          on the Sources page.
+        </p>
+      ) : null}
     </>
   );
 }

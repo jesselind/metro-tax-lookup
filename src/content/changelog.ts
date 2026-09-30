@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.25.0",
+    date: "2026-09-29",
+    title:
+      "Aurora Public Schools authority chain (AUTH 0801 / Ballot Issues 5A–5B)",
+    highlights: [
+      "Curated Joint School District No. 28J (Aurora Public Schools) AUTH `0801`: November 2024 Ballot Issue 5A debt-free schools mill levy (up to $30M / up to 6 mills under C.R.S. § 22-54-108.7) and Ballot Issue 5B $1B bond (repayment capped at $1.75B); Arapahoe Notice + Arapahoe-only certified totals with openGap `multi-county-arapahoe-votes-only`; APS mid-year budget cite for Debt Free Schools Mill Levy / Operations and Technology Fund.",
+      "Shared `term-debt-free-schools-mill-levy` brief is statute-level; district ballot/budget facts inject via entry `termBriefExamples` (LPS 4C + APS 5A). Validator requires the example when that term appears. `/glossary` lists those examples from shipped records. Official Summary results deep-link `#page=20`.",
+      "Rate-table page map includes `0801`. Home latest-three cards show APS first (append order).",
+      "Docs: README, locked-decisions, levy-explainer-authoring.",
+    ],
+  },
+  {
     version: "5.24.0",
     date: "2026-09-29",
     title:

@@ -227,6 +227,17 @@
         "bodyTermId": "term-debt-free-schools-mill-levy",
         "bodyTermMatch": "debt-free schools mill levy"
       },
+      "termBriefExamples": {
+        "term-debt-free-schools-mill-levy": {
+          "districtName": "Littleton Public Schools",
+          "ballotIssue": "4C",
+          "electionMonthYear": "November 2020",
+          "budgetSource": {
+            "text": "LPS 2025-2026 Adopted Budget glossary",
+            "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5485/Lps/396569ba-7c07-4364-9c67-51cea622cd2d/20252026-Adopted-Budget.pdf#page=248"
+          }
+        }
+      },
       "openGapIds": [
         "no-fund-level-mill-split",
         "ballot-text-spanish-only-ai-translation"
@@ -588,60 +599,6 @@
       ]
     },
     {
-      "id": "arapahoe-developmental-disabilities-authority-chain",
-      "family": "local_levy",
-      "match": {
-        "levyLineCode": "2999"
-      },
-      "authority": {
-        "displayName": "Developmental Disabilities",
-        "countyListName": "DEVELOPMENTAL DISABILITY",
-        "governingBody": "board_of_county_commissioners",
-        "governmentBillName": "the county",
-        "whoGetsBody": "This mill's property-tax revenue pays for services and supports for Arapahoe County residents with intellectual and developmental disabilities."
-      },
-      "summarySource": {
-        "text": "According to Arapahoe County's certified election results",
-        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2001/2001CoordinatedElection_OfficialResults.pdf#page=5"
-      },
-      "summary": {
-        "headlineIssues": [
-          "4A"
-        ],
-        "headlineElection": "November 2001",
-        "headlineNote": ": One mill for developmental disability services"
-      },
-      "mills": {},
-      "measures": [
-        {
-          "stepId": "ballot-4a-operations-mill",
-          "ballotIssue": "4A",
-          "kind": "operations_mill",
-          "electionMonthYear": "November 2001",
-          "titlePlain": "One mill for developmental disability services",
-          "detail": "imposing an additional property tax of one (1.00) mill in Arapahoe County (about $6.5 million in the first year, and more later as values change) to purchase services and supports for county residents with developmental disabilities, and letting the county keep and spend that revenue without TABOR refund limits",
-          "ballotTextKind": "sample_ballot",
-          "ballotTextSource": {
-            "text": "2001 County sample ballot (Ballot Issue 4A)",
-            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2001/2001CoordinatedElection_SampleBallot.pdf#page=2"
-          },
-          "bodyTermId": "term-tabor",
-          "bodyTermMatch": "TABOR",
-          "votes": {
-            "yes": "55,335",
-            "yesPct": "63.04%",
-            "no": "32,438",
-            "noPct": "36.96%"
-          },
-          "resultsSource": {
-            "text": "2001 Official Results",
-            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2001/2001CoordinatedElection_OfficialResults.pdf#page=5"
-          }
-        }
-      ],
-      "openGapIds": []
-    },
-    {
       "id": "antelope-hills-gid-authority-chain",
       "family": "municipal_gid",
       "match": {
@@ -720,6 +677,179 @@
         "municipal-gid-founding-ordinance-unlocated",
         "municipal-gid-bond-debt-records-unlocated"
       ]
+    },
+    {
+      "id": "arapahoe-developmental-disabilities-authority-chain",
+      "family": "local_levy",
+      "match": {
+        "levyLineCode": "2999"
+      },
+      "authority": {
+        "displayName": "Developmental Disabilities",
+        "countyListName": "DEVELOPMENTAL DISABILITY",
+        "governingBody": "board_of_county_commissioners",
+        "governmentBillName": "the county",
+        "whoGetsBody": "This mill's property-tax revenue pays for services and supports for Arapahoe County residents with intellectual and developmental disabilities."
+      },
+      "summarySource": {
+        "text": "According to Arapahoe County's certified election results",
+        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2001/2001CoordinatedElection_OfficialResults.pdf#page=5"
+      },
+      "summary": {
+        "headlineIssues": [
+          "4A"
+        ],
+        "headlineElection": "November 2001",
+        "headlineNote": ": One mill for developmental disability services"
+      },
+      "mills": {},
+      "measures": [
+        {
+          "stepId": "ballot-4a-operations-mill",
+          "ballotIssue": "4A",
+          "kind": "operations_mill",
+          "electionMonthYear": "November 2001",
+          "titlePlain": "One mill for developmental disability services",
+          "detail": "imposing an additional property tax of one (1.00) mill in Arapahoe County (about $6.5 million in the first year, and more later as values change) to purchase services and supports for county residents with developmental disabilities, and letting the county keep and spend that revenue without TABOR refund limits",
+          "ballotTextKind": "sample_ballot",
+          "ballotTextSource": {
+            "text": "2001 County sample ballot (Ballot Issue 4A)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2001/2001CoordinatedElection_SampleBallot.pdf#page=2"
+          },
+          "bodyTermId": "term-tabor",
+          "bodyTermMatch": "TABOR",
+          "votes": {
+            "yes": "55,335",
+            "yesPct": "63.04%",
+            "no": "32,438",
+            "noPct": "36.96%"
+          },
+          "resultsSource": {
+            "text": "2001 Official Results",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2001/2001CoordinatedElection_OfficialResults.pdf#page=5"
+          }
+        }
+      ],
+      "openGapIds": []
+    },
+    {
+      "id": "aurora-28j-school-authority-chain",
+      "family": "school",
+      "match": {
+        "levyLineCode": "0801"
+      },
+      "authority": {
+        "displayName": "Aurora Public Schools",
+        "countyListName": "AURORA SCHOOL DIST # 28J",
+        "governingBody": "school_board",
+        "whoGetsBody": "This joint school district's property-tax revenue pays for Aurora Public Schools (Adams-Arapahoe 28J) classrooms, staff, facilities, and related district operations in its service area."
+      },
+      "summarySource": {
+        "text": "According to Arapahoe County's certified election results",
+        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Official%20Summary%20Report%20by%20Method_330948_OU.pdf#page=20"
+      },
+      "summary": {
+        "headlineIssues": [
+          "5A",
+          "5B"
+        ],
+        "headlineElection": "November 2024",
+        "headlineNote": "(APS budget calls 5A a Debt Free Schools Mill Levy)",
+        "summaryTermId": "term-debt-free-schools-mill-levy",
+        "summaryTermMatch": "Debt Free Schools Mill Levy"
+      },
+      "mills": {
+        "currentYear": 2025,
+        "currentMills": "73.186",
+        "priorYear": 2024,
+        "priorMills": "71.331",
+        "currentRateSource": {
+          "text": "County rate table for 2025 (PDF)",
+          "url": "https://files.arapahoeco.gov/Assessor/Mill%20Levies%20by%20Tax%20Area/2025%20Taxing%20District%20Levy%20Percentage.pdf?t=202601121523490"
+        },
+        "priorRateSource": {
+          "text": "County rate table for 2024 (PDF)",
+          "url": "https://files.arapahoeco.gov/Assessor/reports/2024%20Taxing%20District%20Levy%20Percentages.pdf?t=202501281732150"
+        }
+      },
+      "measures": [
+        {
+          "stepId": "ballot-5a-debt-free",
+          "ballotIssue": "5A",
+          "kind": "debt_free_mill",
+          "electionMonthYear": "November 2024",
+          "detail": "up to $30 million in 2025, and amounts raised later from a mill levy of up to 6 mills under C.R.S. § 22-54-108.7, for ongoing cash funding of capital construction, instructional technology, technology upgrades, and maintenance, so more General Fund revenue stays available for attracting and retaining teachers, school counseling for mental health and suicide prevention, and career, technology, and skilled-trades classes",
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "2024 County Notice of Election (Ballot Issue 5A)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Arapahoe%20County_TABOR%20Notice_2024.pdf#page=14"
+          },
+          "votes": {
+            "yes": "41,027",
+            "yesPct": "64.37%",
+            "no": "22,713",
+            "noPct": "35.63%"
+          },
+          "resultsSource": {
+            "text": "2024 Official Summary Report",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Official%20Summary%20Report%20by%20Method_330948_OU.pdf#page=20"
+          },
+          "titleTermId": "term-debt-free-schools-mill-levy",
+          "titleTermMatch": "Debt-free schools mill levy"
+        },
+        {
+          "stepId": "ballot-5b-bond",
+          "ballotIssue": "5B",
+          "kind": "bond",
+          "electionMonthYear": "November 2024",
+          "bodyLead": "also_approved",
+          "detail": "up to $1 billion for school buildings and related capital work (repayment capped at $1.75 billion, annual taxes to repay debt capped at $116.3 million), extending taxes authorized at the district's 2002, 2008, and 2016 bond elections to help repay this debt",
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "2024 County Notice of Election (Ballot Issue 5B)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Arapahoe%20County_TABOR%20Notice_2024.pdf#page=16"
+          },
+          "votes": {
+            "yes": "47,798",
+            "yesPct": "75.08%",
+            "no": "15,862",
+            "noPct": "24.92%"
+          },
+          "resultsSource": {
+            "text": "2024 Official Summary Report",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2024/Official%20Summary%20Report%20by%20Method_330948_OU.pdf#page=20"
+          },
+          "bodyTermId": "term-bonds",
+          "bodyTermMatch": "Bonds"
+        }
+      ],
+      "budget": {
+        "authorityShortName": "APS",
+        "detail": "describes the November 2024 Debt Free Schools Mill Levy (Operations and Technology Fund) for capital construction, instructional technology, technology upgrades, and maintenance, and the $1 billion bond for new and ongoing construction",
+        "factValue": "2024-2025 Mid-Year Modifications to the Adopted Budget",
+        "source": {
+          "text": "APS 2024-2025 Mid-Year Modifications Budget",
+          "url": "https://www.aurorak12.org/common/pages/GetFile.ashx?key=JbSLAFFL"
+        },
+        "bodyTermId": "term-debt-free-schools-mill-levy",
+        "bodyTermMatch": "Debt Free Schools Mill Levy"
+      },
+      "termBriefExamples": {
+        "term-debt-free-schools-mill-levy": {
+          "districtName": "Aurora Public Schools",
+          "ballotIssue": "5A",
+          "electionMonthYear": "November 2024",
+          "budgetSource": {
+            "text": "APS 2024-2025 Mid-Year Modifications Budget",
+            "url": "https://www.aurorak12.org/common/pages/GetFile.ashx?key=JbSLAFFL"
+          }
+        }
+      },
+      "openGapIds": [
+        "no-fund-level-mill-split",
+        "multi-county-arapahoe-votes-only"
+      ]
     }
+
   ]
 }

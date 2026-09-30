@@ -16,6 +16,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PARCEL_GLOSSARY_TERM_IDS } from "@/content/termDefinitionBodies";
 import {
+  DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID,
+} from "@/content/debtFreeSchoolsMillLevy";
+import {
   AUTHORITY_CHAIN_HEADING,
   foldsApprovalOntoMeasures,
   getAuthorityChainFamilyPack,
@@ -1245,6 +1248,51 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     ) {
       fail(
         `[${id}] districtBudget was renamed to budget; update the JSON field`,
+      );
+    }
+
+    const usesDebtFreeTerm =
+      record.summary.summaryTermId === DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID ||
+      record.budget?.bodyTermId === DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID ||
+      record.measures.some(
+        (m) =>
+          m.titleTermId === DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID ||
+          m.bodyTermId === DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID,
+      );
+    if (usesDebtFreeTerm) {
+      const example =
+        record.termBriefExamples?.[DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID];
+      if (!example || typeof example !== "object") {
+        fail(
+          `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID} required when that term appears on the entry (districtName, ballotIssue, electionMonthYear, budgetSource)`,
+        );
+      } else {
+        if (!isNonEmptyString(example.districtName)) {
+          fail(
+            `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID}.districtName required`,
+          );
+        }
+        if (!isNonEmptyString(example.ballotIssue)) {
+          fail(
+            `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID}.ballotIssue required`,
+          );
+        }
+        if (!isNonEmptyString(example.electionMonthYear)) {
+          fail(
+            `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID}.electionMonthYear required`,
+          );
+        }
+        assertHttpsSource(
+          example.budgetSource,
+          `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID}.budgetSource`,
+        );
+      }
+    } else if (
+      record.termBriefExamples?.[DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID] !==
+      undefined
+    ) {
+      fail(
+        `[${id}] termBriefExamples.${DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID} is set but that term is unused on the entry`,
       );
     }
 
