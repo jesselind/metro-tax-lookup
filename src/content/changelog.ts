@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.24.0",
+    date: "2026-09-29",
+    title:
+      "Local levy authority-chain pack; Developmental Disabilities (AUTH 2999)",
+    highlights: [
+      "New authority-chain family `local_levy` for county-collected mills under a state program statute (not a special district board): Voters + Ballot Issue + certified votes; AUTH-derived What changed? (same trail shape as fire/library; county budget chrome).",
+      "Curated Arapahoe Developmental Disabilities AUTH `2999` (DOLA TE `03001/11`): November 2001 Ballot Issue 4A (one mill + TABOR keep) with 2001 sample ballot and Official Results cites; rate-table page map includes 2999. Flat 1.000 mills show Change from last year as No change.",
+      "When both Who authorized this? and What is it? ship for the same AUTH (DD `2999`, Library `4026`): keep both sections; Who gets is money-destination only; type/program/not-a-district cues and statute cites stay in What is it?.",
+      "Docs: README, levy-explainer-authoring, locked-decisions, /sources narrative.",
+    ],
+  },
+  {
     version: "5.23.1",
     date: "2026-09-29",
     title:

@@ -8,10 +8,10 @@
  * JSON supplies facts only; wording lives here (KISS / DRY).
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
- * `metro`, `fire`, `library`, `city`, `municipal_gid`) inject nouns, measure
- * kinds, budget labels, and mills takeaways. Multiple authorization steps
- * belong in `measures[]` (chronological); closed summary stays one short
- * who/when line, with optional `also` elections.
+ * `metro`, `fire`, `library`, `city`, `municipal_gid`, `local_levy`) inject
+ * nouns, measure kinds, budget labels, and mills takeaways. Multiple
+ * authorization steps belong in `measures[]` (chronological); closed summary
+ * stays one short who/when line, with optional `also` elections.
  *
  * Ideology (also in `docs/levy-explainer-authoring.md`): always show the
  * next-best official source. Prefer the exact document; when it is missing,
@@ -53,6 +53,9 @@ export const CITY_GOVERNMENT_BILL_NAME_DEFAULT = "the city";
 
 /** Default bill wording for municipal GID entries when JSON omits `governmentBillName`. */
 export const MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
+
+/** Default bill wording for local_levy entries when JSON omits `governmentBillName`. */
+export const LOCAL_LEVY_GOVERNMENT_BILL_NAME_DEFAULT = "the county";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -103,7 +106,9 @@ export type LevyAuthorityChainFamily =
   | "fire"
   | "library"
   | "city"
-  | "municipal_gid";
+  | "municipal_gid"
+  /** County-collected local mill under a state program statute (not a special district). */
+  | "local_levy";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -647,8 +652,16 @@ export const LIBRARY_MILLS_STEP_BODY =
   "Your bill uses one total mill rate for this library district each year.";
 
 /**
- * Shared Ballot Issue + certified-votes pack for fire and library districts
+ * Default local_levy "What changed?" chrome. Rate figures are AUTH-derived
+ * (same helper as fire/library). Entry `mills.stepBody` may replace this.
+ */
+export const LOCAL_LEVY_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this levy each year.";
+
+/**
+ * Shared Ballot Issue + certified-votes pack for fire, library, and local_levy
  * (Voters language; AUTH-derived What changed?; trailing How people voted).
+ * Optional budget chrome overrides keep local_levy from saying "district".
  */
 function ballotSpecialDistrictPack(options: {
   packLabel: string;
@@ -656,6 +669,8 @@ function ballotSpecialDistrictPack(options: {
   governmentBillNameDefault: string;
   bondCeilingSentence: string;
   bondRepaymentChangeSentence: string;
+  budgetStepTitle?: string;
+  budgetFactLabel?: string;
 }): LevyAuthorityChainFamilyPack {
   const {
     packLabel,
@@ -663,10 +678,12 @@ function ballotSpecialDistrictPack(options: {
     governmentBillNameDefault,
     bondCeilingSentence,
     bondRepaymentChangeSentence,
+    budgetStepTitle = "What the district's budget says",
+    budgetFactLabel = "District budget",
   } = options;
   return {
-    budgetStepTitle: "What the district's budget says",
-    budgetFactLabel: "District budget",
+    budgetStepTitle,
+    budgetFactLabel,
     millsStepBody,
     millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
     measureKinds: new Set([
@@ -761,6 +778,25 @@ const LIBRARY_PACK: LevyAuthorityChainFamilyPack = ballotSpecialDistrictPack({
     "That vote set ceilings. It did not lock in one fixed share of today's total rate.",
   bondRepaymentChangeSentence:
     "Bonds may be sold over time, so the repayment part of your library-district tax can change.",
+});
+
+/**
+ * Local levy (state program) pack. First consumer: Arapahoe Developmental
+ * Disabilities AUTH `2999` (county-collected mill under CRS Title 25.5 / former
+ * 27-10.5; not a special district board). Same trail shape as fire/library
+ * (Voters + Ballot Issue + certified votes; AUTH-derived What changed?).
+ * Budget chrome uses county nouns, not "district".
+ */
+const LOCAL_LEVY_PACK: LevyAuthorityChainFamilyPack = ballotSpecialDistrictPack({
+  packLabel: "local_levy",
+  millsStepBody: LOCAL_LEVY_MILLS_STEP_BODY,
+  governmentBillNameDefault: LOCAL_LEVY_GOVERNMENT_BILL_NAME_DEFAULT,
+  budgetStepTitle: "What the county's budget says",
+  budgetFactLabel: "County budget",
+  bondCeilingSentence:
+    "That vote set ceilings. It did not lock in one fixed share of today's total rate.",
+  bondRepaymentChangeSentence:
+    "Bonds may be sold over time, so the repayment part of this levy can change.",
 });
 
 /**
@@ -968,6 +1004,7 @@ const FAMILY_PACKS: Record<
   library: LIBRARY_PACK,
   city: CITY_PACK,
   municipal_gid: MUNICIPAL_GID_PACK,
+  local_levy: LOCAL_LEVY_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -977,9 +1014,9 @@ export function getAuthorityChainFamilyPack(
 }
 
 /**
- * Metro, fire, library, city, and municipal_gid: What changed? mill figures
- * come from the AUTH series (not hand-authored current/prior fields). School
- * and county still author mills.
+ * Metro, fire, library, city, municipal_gid, and local_levy: What changed?
+ * mill figures come from the AUTH series (not hand-authored current/prior
+ * fields). School and county still author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
@@ -989,7 +1026,8 @@ export function usesAuthDerivedMills(
     family === "fire" ||
     family === "library" ||
     family === "city" ||
-    family === "municipal_gid"
+    family === "municipal_gid" ||
+    family === "local_levy"
   );
 }
 

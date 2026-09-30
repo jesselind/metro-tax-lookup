@@ -70,6 +70,7 @@ const FAMILIES = new Set<LevyAuthorityChainFamily>([
   "library",
   "city",
   "municipal_gid",
+  "local_levy",
 ]);
 const MEASURE_KINDS = new Set([
   "override",
@@ -335,7 +336,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     byEntryId.set(id, true);
 
     if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
-      fail(`[${id}] family must be school, county, metro, fire, library, city, or municipal_gid`);
+      fail(`[${id}] family must be school, county, metro, fire, library, city, municipal_gid, or local_levy`);
     }
     const family = record.family as LevyAuthorityChainFamily;
     const familyPack = getAuthorityChainFamilyPack(family);
@@ -455,10 +456,11 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         family !== "fire" &&
         family !== "library" &&
         family !== "city" &&
-        family !== "municipal_gid"
+        family !== "municipal_gid" &&
+        family !== "local_levy"
       ) {
         fail(
-          `[${id}] authority.governmentBillName only applies to county, metro, fire, library, city, or municipal_gid family entries`,
+          `[${id}] authority.governmentBillName only applies to county, metro, fire, library, city, municipal_gid, or local_levy family entries`,
         );
       }
     }
@@ -1034,7 +1036,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           family === "fire" ||
           family === "library" ||
           family === "city" ||
-          family === "municipal_gid") &&
+          family === "municipal_gid" ||
+          family === "local_levy") &&
         !isNonEmptyString(measure.titlePlain)
       ) {
         fail(
@@ -1053,7 +1056,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           !(family === "fire" && measure.kind === "bond") &&
           !(family === "library" && measure.kind === "bond") &&
           !(family === "city" && measure.kind === "bond") &&
-          !(family === "municipal_gid" && measure.kind === "bond")
+          !(family === "municipal_gid" && measure.kind === "bond") &&
+          !(family === "local_levy" && measure.kind === "bond")
         ) {
           fail(
             `[${id}] measure ${measure.stepId} titlePlain is not valid for this family and kind`,

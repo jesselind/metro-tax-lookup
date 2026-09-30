@@ -281,7 +281,7 @@ export function ArapahoeSourcesAfterGap({
         electors (the people legally allowed to vote in that district
         election) authorized, but no public ballot wording or certified vote
         count can be found, we link that district record and leave the missing
-        details blank. For metro, fire, library, and city
+        details blank.         For metro, fire, library, city, municipal GID, and local levy
         trails, rate history in{" "}
         <strong className="font-semibold text-slate-900">
           What changed?
@@ -291,12 +291,12 @@ export function ArapahoeSourcesAfterGap({
         Percentage series): always the change from last year, and a separate
         Most notable increase block when a larger year-to-year mill increase
         exists (decreases do not win that second block; only published AUTH
-        years are compared, so an older ballot jump may not appear there). Fire
-        and library district trails (such as South Metro Fire Rescue Ballot
-        Issue 7A and Arapahoe Library District Ballot Issue 4A) still use
-        county Ballot Issue letters and certified vote totals when those
-        exist; when the district covers more than one county, Arapahoe vote
-        totals are labeled as Arapahoe-only. In one
+        years are compared, so an older ballot jump may not appear there). Fire,
+        library, and local levy trails (such as South Metro Fire Rescue Ballot
+        Issue 7A, Arapahoe Library District Ballot Issue 4A, and Developmental
+        Disabilities Ballot Issue 4A) still use county Ballot Issue letters and
+        certified vote totals when those exist; when the district covers more
+        than one county, Arapahoe vote totals are labeled as Arapahoe-only. In one
         county case, the only sample ballot we can link is in
         another language; we link that official PDF, say when
         we cannot find English among the currently published files, and show
