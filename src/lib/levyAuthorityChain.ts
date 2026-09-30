@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import raw from "../../public/data/levy-authority-chain-entries.json";
+import type { DebtFreeSchoolsMillLevyTermBriefExamples } from "@/content/debtFreeSchoolsMillLevy";
 import {
   buildLevyAuthorityChainEntry,
   type LevyAuthorityChainEntryRecord,
@@ -95,6 +96,11 @@ export type LevyAuthorityChainEntry = {
    * (ballot text / next-best hub). Bold always; link when a URL is present.
    */
   summaryIssueMarks?: LevyAuthorityChainSummaryIssueMark[];
+  /**
+   * Injected district examples for shared glossary terms (see
+   * `termBriefExamples` on the JSON record).
+   */
+  termBriefExamples?: Partial<DebtFreeSchoolsMillLevyTermBriefExamples>;
   steps: LevyAuthorityChainStep[];
   openGaps: LevyAuthorityChainOpenGap[];
 };

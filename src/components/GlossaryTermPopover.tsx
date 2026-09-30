@@ -34,6 +34,10 @@ import {
 } from "@/lib/toolFlowStyles";
 import type { FC, ReactNode } from "react";
 import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
+import {
+  DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID,
+  type DebtFreeSchoolsMillLevyExample,
+} from "@/content/debtFreeSchoolsMillLevy";
 
 /** Extra flow briefs not already in parcel or levy-modal registries. */
 type ExtraFlowGlossaryTermId =
@@ -123,6 +127,12 @@ type GlossaryTermPopoverProps = {
   afterBrief?: ReactNode;
   /** Face-tile mode for `term-property-tax` (Douglas `realwareTaxDollars` vs default stack). */
   propertyTaxEstimateMode?: PropertyTaxEstimateMode;
+  /**
+   * District ballot/budget example for `term-debt-free-schools-mill-levy`.
+   * Required when that term appears on an authority-chain trail (see
+   * `termBriefExamples` on the entry JSON).
+   */
+  debtFreeSchoolsExample?: DebtFreeSchoolsMillLevyExample;
 };
 
 /**
@@ -139,6 +149,7 @@ export function GlossaryTermPopover({
   variant = "inline",
   afterBrief,
   propertyTaxEstimateMode,
+  debtFreeSchoolsExample,
 }: GlossaryTermPopoverProps) {
   const { title, Brief } = resolveBrief(termId);
   const defaultTriggerClass =
@@ -155,6 +166,10 @@ export function GlossaryTermPopover({
         termId={termId as ParcelGlossaryTermId}
         propertyTaxEstimateMode={propertyTaxEstimateMode}
       />
+    );
+  } else if (termId === DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID) {
+    body = (
+      <TermDebtFreeSchoolsMillLevyBriefBody example={debtFreeSchoolsExample} />
     );
   } else {
     body = <Brief />;

@@ -402,4 +402,54 @@ describe("levyAuthorityChainValidate", () => {
       /not valid for family municipal_gid/i,
     );
   });
+
+  it("rejects debt-free term without termBriefExamples", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const aps = entries.find(
+      (e) => e.id === "aurora-28j-school-authority-chain",
+    )!;
+    delete aps.termBriefExamples;
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /termBriefExamples\.term-debt-free-schools-mill-levy required/i,
+    );
+  });
+
+  it("rejects termBriefExamples when debt-free term is unused", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const county = entries.find(
+      (e) => e.id === "arapahoe-county-authority-chain",
+    )!;
+    county.termBriefExamples = {
+      "term-debt-free-schools-mill-levy": {
+        districtName: "Arapahoe County",
+        ballotIssue: "1A",
+        electionMonthYear: "November 2024",
+        budgetSource: {
+          text: "Example budget",
+          url: "https://example.com/budget.pdf",
+        },
+      },
+    };
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /termBriefExamples\.term-debt-free-schools-mill-levy is set but that term is unused/i,
+    );
+  });
+
+  it("rejects debt-free termBriefExamples that do not match a debt_free_mill measure", () => {
+    const data = cloneShipped();
+    const entries = data.entries as Array<Record<string, unknown>>;
+    const aps = entries.find(
+      (e) => e.id === "aurora-28j-school-authority-chain",
+    )!;
+    const examples = aps.termBriefExamples as Record<
+      string,
+      Record<string, unknown>
+    >;
+    examples["term-debt-free-schools-mill-levy"].ballotIssue = "5B";
+    expect(() => validateLevyAuthorityChainData(data)).toThrow(
+      /ballotIssue and electionMonthYear must match a debt_free_mill measure/i,
+    );
+  });
 });

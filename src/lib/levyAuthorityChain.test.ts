@@ -45,24 +45,24 @@ describe("levyAuthorityChain", () => {
     expect(cards).toHaveLength(HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT);
     // Append order in levy-authority-chain-entries.json; last three, newest first.
     expect(cards.map((c) => c.entry.id)).toEqual([
-      "antelope-hills-gid-authority-chain",
+      "aurora-28j-school-authority-chain",
       "arapahoe-developmental-disabilities-authority-chain",
-      "arapahoe-library-authority-chain",
+      "antelope-hills-gid-authority-chain",
     ]);
-    expect(cards[0]?.authorityDisplayName).toBe(
-      "Antelope Hills General Improvement District",
-    );
-    expect(cards[0]?.lastYearPercentLabel).toBe("No change from last year");
-    expect(cards[0]?.lastYearDirection).toBe("neutral");
-    expect(cards[0]?.levyLineCode).toBe("4042");
+    expect(cards[0]?.authorityDisplayName).toBe("Aurora Public Schools");
+    expect(cards[0]?.lastYearPercentLabel).toBe("Up 2.6% from last year");
+    expect(cards[0]?.lastYearDirection).toBe("more");
+    expect(cards[0]?.levyLineCode).toBe("0801");
     expect(cards[1]?.authorityDisplayName).toBe("Developmental Disabilities");
     expect(cards[1]?.lastYearPercentLabel).toBe("No change from last year");
     expect(cards[1]?.lastYearDirection).toBe("neutral");
     expect(cards[1]?.levyLineCode).toBe("2999");
-    expect(cards[2]?.authorityDisplayName).toBe("Arapahoe Library District");
-    expect(cards[2]?.lastYearPercentLabel).toBe("Up 0.07% from last year");
-    expect(cards[2]?.lastYearDirection).toBe("more");
-    expect(cards[2]?.levyLineCode).toBe("4026");
+    expect(cards[2]?.authorityDisplayName).toBe(
+      "Antelope Hills General Improvement District",
+    );
+    expect(cards[2]?.lastYearPercentLabel).toBe("No change from last year");
+    expect(cards[2]?.lastYearDirection).toBe("neutral");
+    expect(cards[2]?.levyLineCode).toBe("4042");
   });
 
   it("matches Douglas SMFR AUTH 4014 via cross-county registry", () => {

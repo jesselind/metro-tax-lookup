@@ -55,6 +55,7 @@ import {
   voteFactLabel,
 } from "@/content/levyAuthorityChainTemplates";
 import { AUTHORITY_CHAIN_AI_TRANSLATION_DISCLOSURE } from "@/content/levyAuthorityChainCopy";
+import type { DebtFreeSchoolsMillLevyTermBriefExamples } from "@/content/debtFreeSchoolsMillLevy";
 import {
   formatMetroMillsChangeFactValue,
   METRO_MILLS_CHANGE_FROM_LAST_YEAR_LABEL,
@@ -272,6 +273,12 @@ export type LevyAuthorityChainEntryRecord = {
   measures: LevyAuthorityChainMeasureRecord[];
   budget?: LevyAuthorityChainBudgetSpec;
   openGapIds: LevyAuthorityChainOpenGapId[];
+  /**
+   * District-specific facts for shared glossary terms that need injection
+   * (today: `term-debt-free-schools-mill-levy`). Required when that term id
+   * appears on the entry.
+   */
+  termBriefExamples?: Partial<DebtFreeSchoolsMillLevyTermBriefExamples>;
   /** Optional per-county overlays when `match.registryId` serves multiple counties. */
   countyOverlays?: Record<string, LevyAuthorityChainCountyOverlay>;
 };
@@ -1099,6 +1106,10 @@ export function buildLevyAuthorityChainEntry(
   if (recordForBuild.summary.summaryTermId && recordForBuild.summary.summaryTermMatch) {
     entry.summaryTermId = recordForBuild.summary.summaryTermId;
     entry.summaryTermMatch = recordForBuild.summary.summaryTermMatch;
+  }
+
+  if (recordForBuild.termBriefExamples) {
+    entry.termBriefExamples = recordForBuild.termBriefExamples;
   }
 
   return entry;

@@ -4,6 +4,7 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
+import { DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID } from "@/content/debtFreeSchoolsMillLevy";
 import {
   AUTHORITY_CHAIN_HEADING,
   MILLS_STEP_BODY,
@@ -65,6 +66,53 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.steps.at(-2)?.title).toBe(STEP_TITLE_HOW_VOTED);
     expect(entry.openGaps[0]?.body).toBe(
       OPEN_GAP_BODIES["no-fund-level-mill-split"],
+    );
+  });
+
+  it("builds Aurora Public Schools 5A debt-free mill and 5B bond", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (r) => r.id === "aurora-28j-school-authority-chain",
+    )!;
+    expect(record.family).toBe("school");
+    expect(record.match.levyLineCode).toBe("0801");
+    const entry = buildLevyAuthorityChainEntry(record);
+
+    expect(entry.summary).toContain("Ballot Issue 5A and Ballot Issue 5B");
+    expect(entry.summary).toContain("Debt Free Schools Mill Levy");
+    expect(entry.summaryIssueMarks).toEqual([
+      {
+        match: "Ballot Issue 5A",
+        url: record.measures[0]!.ballotTextSource.url,
+      },
+      {
+        match: "Ballot Issue 5B",
+        url: record.measures[1]!.ballotTextSource.url,
+      },
+    ]);
+    const debtFree = entry.steps.find((s) => s.id === "ballot-5a-debt-free");
+    const bond = entry.steps.find((s) => s.id === "ballot-5b-bond");
+    expect(debtFree?.title).toBe(
+      "Ballot Issue 5A: Debt-free schools mill levy",
+    );
+    expect(debtFree?.body).toContain("paid in cash instead of new bonds");
+    expect(bond?.title).toBe("Ballot Issue 5B: Borrowing for buildings");
+    expect(bond?.body).toContain("up to $1 billion");
+    expect(
+      entry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only"),
+    ).toBe(true);
+    expect(
+      entry.openGaps.some((g) => g.id === "no-fund-level-mill-split"),
+    ).toBe(true);
+    expect(entry.termBriefExamples?.[DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID]).toEqual(
+      {
+        districtName: "Aurora Public Schools",
+        ballotIssue: "5A",
+        electionMonthYear: "November 2024",
+        budgetSource: {
+          text: "APS 2024-2025 Mid-Year Modifications Budget",
+          url: "https://www.aurorak12.org/common/pages/GetFile.ashx?key=JbSLAFFL",
+        },
+      },
     );
   });
 
@@ -146,6 +194,9 @@ describe("levyAuthorityChainBuild", () => {
     expect(entry.summary).toContain("Ballot Issue 4C");
     expect(entry.summary).toContain("November 2018");
     expect(entry.summaryTermMatch).toBe("debt-free schools mill levy");
+    expect(entry.termBriefExamples?.[DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID]?.ballotIssue).toBe(
+      "4C",
+    );
     expect(entry.summaryIssueMarks).toEqual([
       {
         match: "Ballot Issue 4C",

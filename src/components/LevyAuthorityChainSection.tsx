@@ -32,6 +32,10 @@ import {
   AUTHORITY_CHAIN_STEPS_DISCLOSURE,
 } from "@/content/levyAuthorityChainCopy";
 import {
+  DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID,
+  type DebtFreeSchoolsMillLevyExample,
+} from "@/content/debtFreeSchoolsMillLevy";
+import {
   isLevyAuthorityChainInlineTermId,
   type LevyAuthorityChainEntry,
   type LevyAuthorityChainStep,
@@ -78,10 +82,19 @@ function authorityCodeForRateTableDeepLink(
  * Turn one or more words/phrases into in-place glossary popovers.
  * Overlapping matches are skipped so we never nest interactive controls.
  */
+function debtFreeExampleForTerm(
+  entry: LevyAuthorityChainEntry | undefined,
+  termId: string,
+): DebtFreeSchoolsMillLevyExample | undefined {
+  if (termId !== DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID) return undefined;
+  return entry?.termBriefExamples?.[DEBT_FREE_SCHOOLS_MILL_LEVY_TERM_ID];
+}
+
 function renderWithInlineTerms(
   text: string,
   terms: Array<{ termId: string; match: string }>,
   idPrefix: string,
+  entry?: LevyAuthorityChainEntry,
 ): ReactNode {
   type Mark = { start: number; end: number; termId: string };
   const marks: Mark[] = [];
@@ -121,6 +134,7 @@ function renderWithInlineTerms(
         termId={mark.termId}
         textTrigger={text.slice(mark.start, mark.end)}
         textTriggerId={`${idPrefix}-${mark.start}`}
+        debtFreeSchoolsExample={debtFreeExampleForTerm(entry, mark.termId)}
       />,
     );
     cursor = mark.end;
@@ -263,6 +277,7 @@ function renderSummary(entry: LevyAuthorityChainEntry): ReactNode {
           termId={summaryTermId}
           textTrigger={slice}
           textTriggerId={`levy-authority-chain-${entry.id}-summary-term`}
+          debtFreeSchoolsExample={debtFreeExampleForTerm(entry, summaryTermId)}
         />,
       );
     } else if (mark.kind === "issue") {
@@ -305,6 +320,7 @@ function renderStepTitle(entry: LevyAuthorityChainEntry, step: LevyAuthorityChai
     step.title,
     [{ termId: step.titleTermId, match: step.titleTermMatch }],
     `levy-authority-chain-${entry.id}-${step.id}-title-term`,
+    entry,
   );
 }
 
@@ -386,6 +402,7 @@ function renderStepBody(entry: LevyAuthorityChainEntry, step: LevyAuthorityChain
           termId={mark.termId}
           textTrigger={slice}
           textTriggerId={`levy-authority-chain-${entry.id}-${step.id}-body-term-${mark.start}`}
+          debtFreeSchoolsExample={debtFreeExampleForTerm(entry, mark.termId)}
         />,
       );
     } else {
@@ -404,14 +421,16 @@ function FactValue({
   value,
   terms,
   idPrefix,
+  entry,
 }: {
   value: string;
   terms?: Array<{ termId: string; match: string }>;
   idPrefix: string;
+  entry?: LevyAuthorityChainEntry;
 }) {
   const withTerms =
     terms && terms.length > 0
-      ? renderWithInlineTerms(value, terms, idPrefix)
+      ? renderWithInlineTerms(value, terms, idPrefix, entry)
       : value;
   if (!value.includes("\n")) {
     return <>{withTerms}</>;
@@ -503,6 +522,7 @@ export function LevyAuthorityChainSection({
                       <dd className="mt-1 text-sm text-slate-700 sm:text-base">
                         <FactValue
                           value={fact.value}
+                          entry={entry}
                           idPrefix={`levy-authority-chain-${entry.id}-${step.id}-fact-${factIndex}`}
                           terms={
                             fact.valueTermId && fact.valueTermMatch
