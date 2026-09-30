@@ -486,6 +486,56 @@ describe("levyAuthorityChainBuild", () => {
     ).toBe(true);
   });
 
+  it("builds Developmental Disabilities from AUTH-derived mills and Ballot Issue 4A votes", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "arapahoe-developmental-disabilities-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const measure = entry.steps.find(
+      (step) => step.id === "ballot-4a-operations-mill",
+    );
+    const votes = entry.steps.find(
+      (step) => step.id === "county-reported-results",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("local_levy");
+    expect(entry.summary).toBe(
+      "According to Arapahoe County's certified election results, voters approved Ballot Issue 4A in November 2001: One mill for developmental disability services.",
+    );
+    expect(entry.summary).not.toContain("eligible electors");
+    expect(measure?.title).toBe(
+      "Ballot Issue 4A: One mill for developmental disability services",
+    );
+    expect(measure?.body).toContain(
+      "According to Arapahoe County's certified election results, voters approved",
+    );
+    expect(measure?.body).toContain("one (1.00) mill");
+    expect(measure?.body).toContain("developmental disabilities");
+    expect(measure?.bodyTermId).toBe("term-tabor");
+    expect(votes?.title).toBe("How people voted");
+    expect(votes?.facts.some((fact) => fact.value.includes("55,335"))).toBe(
+      true,
+    );
+    expect(mills?.body).toBe(
+      "Your bill uses one total mill rate for this levy each year.",
+    );
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("No change in mills");
+    expect(mills?.facts[0]?.value).toContain("1.000");
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "ballot-4a-operations-mill",
+      "county-reported-results",
+    ]);
+  });
+
   it("builds Sky Ranch from AUTH-derived mills and chronological metro steps", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "sky-ranch-3-metro-authority-chain",

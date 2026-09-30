@@ -4,10 +4,10 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Derive metro / fire / library / city / municipal_gid authority-chain
- * "What changed?" blocks from the same AUTH mills-over-time series the modal
- * chart consumes ({@link authorityMillsSeries}). Numbers are never hand-copied
- * into the authority-chain JSON for those entries.
+ * Derive metro / fire / library / city / municipal_gid / local_levy
+ * authority-chain "What changed?" blocks from the same AUTH mills-over-time
+ * series the modal chart consumes ({@link authorityMillsSeries}). Numbers are
+ * never hand-copied into the authority-chain JSON for those entries.
  *
  * Rules (AUTH-derived packs):
  * - Always show **Change from last year** when the series has at least two
