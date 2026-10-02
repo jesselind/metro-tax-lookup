@@ -14,6 +14,7 @@ import {
   WhyTaxesGoUpBar,
   WHY_TAXES_GO_UP_HEADING,
 } from "@/components/WhyTaxesGoUpBar";
+import { DashboardSectionJumpHeading } from "@/components/HomeDashboardJumpIcon";
 import {
   HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
   HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID,
@@ -22,7 +23,6 @@ import {
 import type { PropertyWhyTaxesGoUpModel } from "@/lib/propertyWhyTaxesGoUp";
 import {
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
 } from "@/lib/toolFlowStyles";
 
@@ -43,13 +43,14 @@ export function PropertyWhyTaxesGoUpSection({
       className={`${DASHBOARD_SECTION_LEAD_STACK_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS}`}
       aria-labelledby={HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID}
     >
-      <h3
+      <DashboardSectionJumpHeading
+        jumpId="summary"
         id={HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID}
         tabIndex={-1}
-        className={`${DASHBOARD_SECTION_HEADING_CLASS} ${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} outline-none`}
+        className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} outline-none`}
       >
         {WHY_TAXES_GO_UP_HEADING}
-      </h3>
+      </DashboardSectionJumpHeading>
       <div className="w-full">
         <WhyTaxesGoUpBar
           idPrefix="property-why-taxes"

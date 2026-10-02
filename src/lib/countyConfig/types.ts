@@ -85,9 +85,17 @@ export type CountyFeatures = {
    * IN PROGRESS opt-in: sky **Coming soon** on Comparable properties while the
    * county has a comps PDF product but this site has not wired `urls.compsPdf`
    * yet. Mutually exclusive with {@link CountyFeatures.compsPdf} (gap hosting
-   * failure requires compsPdf, so it cannot combine with this flag either).
+   * failure requires compsPdf, so it cannot combine with this flag either) and
+   * with {@link CountyFeatures.compsPdfFilesApiLookup}.
    */
   compsPdfInProgress: boolean;
+  /**
+   * Live county documents-list lookup for a comps-grid PDF (Douglas files API),
+   * then outbound link to the county download URL when present. Mutually
+   * exclusive with {@link CountyFeatures.compsPdf} and
+   * {@link CountyFeatures.compsPdfInProgress}. Does not use `urls.compsPdf`.
+   */
+  compsPdfFilesApiLookup: boolean;
   bpp: boolean;
   millsHistory: boolean;
   /**

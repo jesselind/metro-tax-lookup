@@ -165,6 +165,15 @@ export function validateCountyConfig(config: CountyConfig): string | null {
   if (config.features.compsPdf && config.features.compsPdfInProgress) {
     return "county config: compsPdf and compsPdfInProgress are mutually exclusive";
   }
+  if (config.features.compsPdf && config.features.compsPdfFilesApiLookup) {
+    return "county config: compsPdf and compsPdfFilesApiLookup are mutually exclusive";
+  }
+  if (
+    config.features.compsPdfInProgress &&
+    config.features.compsPdfFilesApiLookup
+  ) {
+    return "county config: compsPdfInProgress and compsPdfFilesApiLookup are mutually exclusive";
+  }
   if (
     config.features.priorYearValuesGap &&
     config.features.priorYearValuesInProgress

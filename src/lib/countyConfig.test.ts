@@ -88,6 +88,7 @@ function scheduleCountyFixture(
       valuationHistoryShards: false,
       compsPdf: false,
       compsPdfInProgress: false,
+      compsPdfFilesApiLookup: false,
       bpp: false,
       millsHistory: false,
       metroPurposes: false,
@@ -140,8 +141,10 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(countyFeaturePresentation("compsPdf", DOUGLAS_COUNTY_CONFIG)).toBe(
       "omit",
     );
-    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfInProgress).toBe(true);
+    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfInProgress).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfFilesApiLookup).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.compsPdfInProgress).toBe(false);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.compsPdfFilesApiLookup).toBe(false);
     expect(DOUGLAS_COUNTY_CONFIG.features.parcelRecordShards).toBe(true);
     expect(
       countyFeaturePresentation("parcelRecordShards", DOUGLAS_COUNTY_CONFIG),
@@ -445,6 +448,7 @@ describe("validateCountyConfig resident-facing required fields", () => {
           ...DOUGLAS_COUNTY_CONFIG.features,
           compsPdf: true,
           compsPdfInProgress: true,
+          compsPdfFilesApiLookup: false,
         },
         urls: {
           ...DOUGLAS_COUNTY_CONFIG.urls,
@@ -456,6 +460,22 @@ describe("validateCountyConfig resident-facing required fields", () => {
         },
       }),
     ).toMatch(/compsPdf and compsPdfInProgress are mutually exclusive/);
+  });
+
+  it("rejects compsPdfFilesApiLookup with compsPdfInProgress", () => {
+    expect(
+      validateCountyConfig({
+        ...DOUGLAS_COUNTY_CONFIG,
+        features: {
+          ...DOUGLAS_COUNTY_CONFIG.features,
+          compsPdf: false,
+          compsPdfInProgress: true,
+          compsPdfFilesApiLookup: true,
+        },
+      }),
+    ).toMatch(
+      /compsPdfInProgress and compsPdfFilesApiLookup are mutually exclusive/,
+    );
   });
 
   it("rejects blank emptyIdentifierMessage", () => {

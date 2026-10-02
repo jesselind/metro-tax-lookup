@@ -6,6 +6,7 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
+import { DashboardSectionJumpHeading } from "@/components/HomeDashboardJumpIcon";
 import {
   ParcelRecordBuildingAndLandTable,
   ParcelRecordPermitTable,
@@ -24,7 +25,6 @@ import { PARCEL_RECORD_LOAD_FAILED_MESSAGE } from "@/lib/parcelRecordLoadFailedM
 import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -179,12 +179,13 @@ export function ParcelRecordExtendedSection({
       aria-busy={loading}
     >
       {!omitContinuationHeading ? (
-        <h3
+        <DashboardSectionJumpHeading
+          jumpId="property-details"
           id="parcel-record-extended-heading"
-          className={`${DASHBOARD_SECTION_HEADING_CLASS} hidden lg:block`}
+          wrapperClassName="hidden lg:flex"
         >
           Property details cont.
-        </h3>
+        </DashboardSectionJumpHeading>
       ) : null}
 
       {loading || loadFailed || displayRecord == null ? (

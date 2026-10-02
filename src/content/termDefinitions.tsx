@@ -493,6 +493,13 @@ export function TermCompsAside() {
         sell; here it always means the county&apos;s own comparison list, not a
         bank appraisal for a loan and not a realtor packet.
       </p>
+      <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
+        A{" "}
+        <dfn className="font-semibold not-italic text-slate-900">comps grid</dfn>
+        {" "}
+        is a side-by-side table: your property in one column and the comps in the
+        others, so size, features, and sale prices line up for comparison.
+      </p>
       {compsPdfPresentation === "omit" ? null : (
         <p className="mt-3 text-base leading-relaxed text-slate-700 sm:text-lg">
           The county publishes that comparison list as a PDF on{" "}

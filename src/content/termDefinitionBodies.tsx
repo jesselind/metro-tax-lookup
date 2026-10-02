@@ -662,7 +662,11 @@ export function TermCompsBriefBody() {
       value. People often call them{" "}
       <strong className="font-semibold text-slate-900">comps</strong>
       {" "}
-      (short for comparables).
+      (short for comparables). A{" "}
+      <strong className="font-semibold text-slate-900">comps grid</strong>
+      {" "}
+      is a side-by-side table: your property in one column and those comps in
+      the others, so attributes and sale prices line up for comparison.
     </p>
   );
 }

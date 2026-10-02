@@ -5,6 +5,10 @@
 
 "use client";
 
+import {
+  HomeDashboardJumpIcon,
+  HOME_DASHBOARD_SECTION_JUMP_ICON_CLASS,
+} from "@/components/HomeDashboardJumpIcon";
 import { formatUsdWhole } from "@/lib/formatUsd";
 import type { DwellingCountResolution } from "@/lib/resolveDwellingCount";
 import {
@@ -55,9 +59,15 @@ export function RentTaxPressurePanel({
       <h2
         id="home-parcel-rent-tax-pressure-heading"
         tabIndex={-1}
-        className="text-center text-balance text-2xl font-bold leading-tight tracking-tight text-slate-900 outline-none sm:text-3xl"
+        className="mx-auto flex max-w-full min-w-0 items-center justify-center gap-2 text-balance text-center text-2xl font-bold leading-tight tracking-tight text-slate-900 outline-none sm:gap-2.5 sm:text-3xl"
       >
-        You&apos;re still paying property tax if you rent.
+        <HomeDashboardJumpIcon
+          jumpId="rent-pressure"
+          className={HOME_DASHBOARD_SECTION_JUMP_ICON_CLASS}
+        />
+        <span className="min-w-0">
+          You&apos;re still paying property tax if you rent.
+        </span>
       </h2>
       <aside
         id="home-parcel-rent-tax-pressure"

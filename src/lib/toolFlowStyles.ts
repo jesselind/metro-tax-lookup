@@ -447,6 +447,27 @@ export const PARCEL_SUMMARY_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_PO
 /** Value tiles: same content-sized width as {@link PARCEL_SUMMARY_TILE_CLASS}. */
 export const PARCEL_SUMMARY_VALUE_TILE_CLASS = `${PARCEL_SUMMARY_TILE_FRAME_CLIPPED} w-max max-w-full min-w-0`;
 
+/**
+ * Douglas comps-grid lookup CTA (found): colorful full-tile link, same family as
+ * rent / levy tiles. Entire surface is the hit target (no underline-only cue).
+ */
+export const DOUGLAS_COMPS_GRID_FOUND_TILE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} group flex w-full min-w-0 cursor-pointer flex-col gap-2 border border-white/25 bg-gradient-to-br from-teal-600 via-emerald-700 to-slate-900 p-4 text-left text-white shadow-md transition-[filter,transform] hover:brightness-105 active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 sm:gap-2.5 sm:p-5`;
+
+/**
+ * None-found comps-grid tile: same full-tile shape as found, violet gradient
+ * (not Changed/amber, not COUNTY DATA GAP red). Links to Assessor property details.
+ */
+export const DOUGLAS_COMPS_GRID_MISSING_TILE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} group flex w-full min-w-0 cursor-pointer flex-col gap-2 border border-white/25 bg-gradient-to-br from-violet-600 via-purple-700 to-slate-900 p-4 text-left text-white shadow-md transition-[filter,transform] hover:brightness-105 active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 sm:gap-2.5 sm:p-5`;
+
+export const DOUGLAS_COMPS_GRID_FOUND_TILE_TITLE_CLASS =
+  "w-full min-w-0 text-lg font-semibold leading-snug text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] sm:text-xl";
+
+export const DOUGLAS_COMPS_GRID_FOUND_TILE_META_CLASS =
+  "text-sm leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.25)]";
+
+/** Missing / error / loading shells (not a CTA). */
+export const DOUGLAS_COMPS_GRID_STATUS_TILE_CLASS = `${DASHBOARD_TILE_RADIUS_CLASS} w-full min-w-0 border border-slate-200 bg-slate-50 p-4 shadow-sm sm:p-5`;
+
 /** Value tile variant for label popovers (see {@link PARCEL_SUMMARY_TILE_CLASS_POPOVER}). */
 export const PARCEL_SUMMARY_VALUE_TILE_CLASS_POPOVER = `${PARCEL_SUMMARY_TILE_FRAME_POPOVER_SAFE} w-max max-w-full min-w-0`;
 
