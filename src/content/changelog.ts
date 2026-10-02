@@ -32,7 +32,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Douglas comps grid: county documents lookup + outbound PDF link",
     highlights: [
       "Douglas Comparable properties: live check of the Assessor documents files API for the loaded account; teal full-tile CTA to the county COMP_GRID PDF when present, or violet full-tile none-found CTA to that account's Assessor property details (Open county property details ›). Replaces Coming soon / compsPdfInProgress.",
-      "Same-origin route `GET /api/douglas-comps-grid` proxies the county list (avoids browser CORS); PDFs stay on Douglas hosting (no bulk ingest). Documents-list timeout / non-OK → on-site error tile with a short message (not a silent handoff to a down county page). In-app grid parse remains a later step.",
+      "Same-origin route `GET /api/douglas-comps-grid` proxies the county list (avoids browser CORS); PDFs stay on Douglas hosting (no bulk ingest). Documents-list timeout / non-OK / malformed body → on-site error tile with a short message (not a silent handoff to a down county page); `missing` only when the list shape is valid and no COMP_GRID is present. In-app grid parse remains a later step. Unit fixtures use synthetic Douglas account ids.",
       "Locked-report section titles show the same Jump TOC Heroicons beside the heading; heading + What is this? share text baseline (icon stays middle-aligned with the title).",
       "Comparable properties What is this? /glossary: define comps grid as a side-by-side comparison table (not who publishes it or file format).",
       "Docs: `/sources` Douglas methodology, county-config, county-service-gap-callouts, README. Douglas e2e: none-found tile (mocked documents lookup) + `/sources` no longer expects comps Coming soon.",

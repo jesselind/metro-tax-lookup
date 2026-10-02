@@ -6,6 +6,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/douglas-comps-grid/route";
+import {
+  SYNTHETIC_DOUGLAS_PIN,
+  SYNTHETIC_DOUGLAS_PIN_B,
+} from "@/lib/syntheticTestIds";
 
 function requestForAccount(account: string): NextRequest {
   return new NextRequest(
@@ -24,15 +28,14 @@ describe("GET /api/douglas-comps-grid", () => {
       "fetch",
       vi.fn(async () =>
         Response.json({
-          name: "R0399058",
+          name: SYNTHETIC_DOUGLAS_PIN,
           directories: [
             {
               name: "Appeal Summaries",
               files: [
                 {
-                  name: "R0399058_COMP_GRID_2023.PDF",
-                  downloadUrl:
-                    "https://apps.douglas.co.us/realware/DOCUMENTS/R0399058/Appeal Summaries/R0399058_COMP_GRID_2023.PDF",
+                  name: `${SYNTHETIC_DOUGLAS_PIN}_COMP_GRID_2023.PDF`,
+                  downloadUrl: `https://apps.douglas.co.us/realware/DOCUMENTS/${SYNTHETIC_DOUGLAS_PIN}/Appeal Summaries/${SYNTHETIC_DOUGLAS_PIN}_COMP_GRID_2023.PDF`,
                   type: "file",
                 },
               ],
@@ -43,12 +46,12 @@ describe("GET /api/douglas-comps-grid", () => {
       ),
     );
 
-    const res = await GET(requestForAccount("R0399058"));
+    const res = await GET(requestForAccount(SYNTHETIC_DOUGLAS_PIN));
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({
       status: "found",
-      href: "https://apps.douglas.co.us/realware/DOCUMENTS/R0399058/Appeal%20Summaries/R0399058_COMP_GRID_2023.PDF",
-      fileName: "R0399058_COMP_GRID_2023.PDF",
+      href: `https://apps.douglas.co.us/realware/DOCUMENTS/${SYNTHETIC_DOUGLAS_PIN}/Appeal%20Summaries/${SYNTHETIC_DOUGLAS_PIN}_COMP_GRID_2023.PDF`,
+      fileName: `${SYNTHETIC_DOUGLAS_PIN}_COMP_GRID_2023.PDF`,
       taxYear: 2023,
     });
   });
@@ -58,15 +61,14 @@ describe("GET /api/douglas-comps-grid", () => {
       "fetch",
       vi.fn(async () =>
         Response.json({
-          name: "R0399059",
+          name: SYNTHETIC_DOUGLAS_PIN_B,
           directories: [
             {
               name: "Notices of Value",
               files: [
                 {
-                  name: "R0399059_NOV_2026.pdf",
-                  downloadUrl:
-                    "https://apps.douglas.co.us/realware/DOCUMENTS/R0399059/Notices of Value/R0399059_NOV_2026.pdf",
+                  name: `${SYNTHETIC_DOUGLAS_PIN_B}_NOV_2026.pdf`,
+                  downloadUrl: `https://apps.douglas.co.us/realware/DOCUMENTS/${SYNTHETIC_DOUGLAS_PIN_B}/Notices of Value/${SYNTHETIC_DOUGLAS_PIN_B}_NOV_2026.pdf`,
                 },
               ],
               directories: [],
@@ -76,7 +78,7 @@ describe("GET /api/douglas-comps-grid", () => {
       ),
     );
 
-    const res = await GET(requestForAccount("r0399059"));
+    const res = await GET(requestForAccount("r0100002"));
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({ status: "missing" });
   });
@@ -95,7 +97,7 @@ describe("GET /api/douglas-comps-grid", () => {
       "fetch",
       vi.fn(async () => new Response(null, { status: 404 })),
     );
-    const res = await GET(requestForAccount("R0399059"));
+    const res = await GET(requestForAccount(SYNTHETIC_DOUGLAS_PIN_B));
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({ status: "missing" });
   });
@@ -105,11 +107,26 @@ describe("GET /api/douglas-comps-grid", () => {
       "fetch",
       vi.fn(async () => new Response("unavailable", { status: 503 })),
     );
-    const res = await GET(requestForAccount("R0399058"));
+    const res = await GET(requestForAccount(SYNTHETIC_DOUGLAS_PIN));
     expect(res.status).toBe(502);
     await expect(res.json()).resolves.toEqual({
       status: "error",
       message: "The county documents list did not respond successfully.",
+    });
+  });
+
+  it("returns 502 when the county body is not a documents list", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({ error: "unexpected", message: "fail" }),
+      ),
+    );
+    const res = await GET(requestForAccount(SYNTHETIC_DOUGLAS_PIN));
+    expect(res.status).toBe(502);
+    await expect(res.json()).resolves.toEqual({
+      status: "error",
+      message: "The county documents list returned an unexpected response.",
     });
   });
 
@@ -120,7 +137,7 @@ describe("GET /api/douglas-comps-grid", () => {
         throw new Error("network down");
       }),
     );
-    const res = await GET(requestForAccount("R0399058"));
+    const res = await GET(requestForAccount(SYNTHETIC_DOUGLAS_PIN));
     expect(res.status).toBe(502);
     await expect(res.json()).resolves.toEqual({
       status: "error",

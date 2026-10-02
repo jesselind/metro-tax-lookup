@@ -9,10 +9,10 @@ import type { NextRequest } from "next/server";
 import { clientIpFromHeaders, isLoopbackIp } from "@/lib/clientIp";
 import {
   douglasPropertyDocumentsApiUrl,
+  isDouglasPropertyDocumentsTree,
   normalizeDouglasAccountIdForDocumentsApi,
   pickDouglasCompsGridFromDocumentsTree,
   type DouglasCompsGridLookupResponse,
-  type DouglasPropertyDocumentsTree,
 } from "@/lib/douglasCompsGridLookup";
 import { sharedMemoryRateLimit } from "@/lib/memoryRateLimit";
 
@@ -105,8 +105,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const tree = (await countyRes.json()) as DouglasPropertyDocumentsTree;
-    const match = pickDouglasCompsGridFromDocumentsTree(tree);
+    const body: unknown = await countyRes.json();
+    if (!isDouglasPropertyDocumentsTree(body)) {
+      return json(
+        {
+          status: "error",
+          message: "The county documents list returned an unexpected response.",
+        },
+        { status: 502 },
+      );
+    }
+    const match = pickDouglasCompsGridFromDocumentsTree(body);
     if (!match) {
       return json({ status: "missing" });
     }

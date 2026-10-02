@@ -100,13 +100,33 @@ function walkFiles(
 }
 
 /**
+ * True when `value` looks like a Douglas property-documents list body
+ * (`directories` and/or `files` as arrays). Rejects non-objects, arrays, and
+ * bodies that lack both list keys (e.g. error-shaped JSON).
+ */
+export function isDouglasPropertyDocumentsTree(
+  value: unknown,
+): value is DouglasPropertyDocumentsTree {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  const hasDirectories = "directories" in obj;
+  const hasFiles = "files" in obj;
+  if (!hasDirectories && !hasFiles) return false;
+  if (hasDirectories && !Array.isArray(obj.directories)) return false;
+  if (hasFiles && !Array.isArray(obj.files)) return false;
+  return true;
+}
+
+/**
  * Pick the newest COMP_GRID PDF from a Douglas documents tree.
  * Validates download URL scheme + Douglas host allowlist.
  */
 export function pickDouglasCompsGridFromDocumentsTree(
   tree: DouglasPropertyDocumentsTree | null | undefined,
 ): DouglasCompsGridMatch | null {
-  if (!tree || typeof tree !== "object") return null;
+  if (!isDouglasPropertyDocumentsTree(tree)) return null;
   const files: DouglasPropertyDocumentFile[] = [];
   walkFiles(tree, files);
 
