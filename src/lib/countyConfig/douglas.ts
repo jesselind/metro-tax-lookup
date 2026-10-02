@@ -9,8 +9,8 @@
  * Data only. Types: `./types.ts`. Registry: `./registry.ts`.
  *
  * Mills from published Tax Districts and Mill Levies PDFs (no Levy.aspx).
- * Account ids are 8-character alphanumeric. County comps PDFs exist per
- * property but are not wired here yet (`compsPdfInProgress`). No BPP product.
+ * Account ids are 8-character alphanumeric. Comps-grid PDFs are looked up live
+ * from the county documents files API (`compsPdfFilesApiLookup`). No BPP product.
  * Metro purpose rows come from the Abstract of Assessment tax-rates extract
  * (`douglas-metro-levies-*.json`).
  *
@@ -64,7 +64,8 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     parcelRecordShards: true,
     valuationHistoryShards: true,
     compsPdf: false,
-    compsPdfInProgress: true,
+    compsPdfInProgress: false,
+    compsPdfFilesApiLookup: true,
     bpp: false,
     millsHistory: true,
     metroPurposes: true,

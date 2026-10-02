@@ -238,6 +238,13 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     page,
   }) => {
     await installSyntheticCountyData(page, { countyId: "douglas" });
+    await page.route("**/api/douglas-comps-grid**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ status: "missing" }),
+      });
+    });
     await page.goto("/");
     await page.getByRole("radio", { name: "Douglas" }).click();
     await searchSyntheticAddress(page);
@@ -250,6 +257,14 @@ test.describe("Douglas county search gate (Phase 13)", () => {
       page.locator("#home-nov-comps-grid").getByRole("button", {
         name: "Coming soon",
       }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("link", {
+        name: /No county-provided comps grid found/i,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Open county property details ›"),
     ).toBeVisible();
     await expect(
       page.getByRole("status", { name: /KNOWN ISSUE/i }),
@@ -316,7 +331,9 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await expect(page.locator("#county-prior-year-values-in-progress")).toHaveCount(
       0,
     );
-    await expect(page.locator("#county-comps-pdf-in-progress")).toBeVisible();
+    await expect(page.locator("#county-comps-pdf-in-progress")).toHaveCount(0);
+    await expect(page.getByText(/compsPdfFilesApiLookup/i)).toBeVisible();
+    await expect(page.getByText(/COMP_GRID/i).first()).toBeVisible();
     await expect(
       page.locator("#county-property-data-accuracy-warning"),
     ).toHaveCount(0);

@@ -50,6 +50,7 @@ import { AudienceModeSwitch } from "@/components/AudienceModeSwitch";
 import { ComparablePropertiesSection } from "@/components/ComparablePropertiesSection";
 import { CountySearchScopeSwitch } from "@/components/CountySearchScopeSwitch";
 import { HomeDashboardSectionNav } from "@/components/HomeDashboardSectionNav";
+import { DashboardSectionJumpHeading } from "@/components/HomeDashboardJumpIcon";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { RentTaxPressurePanel } from "@/components/RentTaxPressurePanel";
 import { MetroTaxShareFlow } from "@/components/MetroTaxShareFlow";
@@ -169,7 +170,6 @@ import {
 } from "@/lib/parcelSummaryYears";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
   DASHBOARD_SECTION_META_CLASS,
   DASHBOARD_SECTION_STACK_CLASS,
@@ -403,6 +403,10 @@ export function HomeParcelAddressLookup({
   const activeCompsGap = activeCompsPresentation === "gap";
   const activeCompsPdfInProgress = countyFeatureAvailable(
     "compsPdfInProgress",
+    activeCountyConfig,
+  );
+  const activeCompsPdfFilesApiLookup = countyFeatureAvailable(
+    "compsPdfFilesApiLookup",
     activeCountyConfig,
   );
   const activePriorYearValuesGap = countyFeatureAvailable(
@@ -1661,13 +1665,14 @@ export function HomeParcelAddressLookup({
 
   const levySectionLead = (
     <div className={DASHBOARD_SECTION_LEAD_STACK_CLASS}>
-      <h3
+      <DashboardSectionJumpHeading
+        jumpId="levies"
         id={MILL_LEVY_STACK_HEADING_ID}
         tabIndex={-1}
-        className={`${DASHBOARD_SECTION_HEADING_CLASS} ${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} outline-none`}
+        className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} outline-none`}
       >
         Where is your money going?
-      </h3>
+      </DashboardSectionJumpHeading>
       {levyStackIntro}
     </div>
   );
@@ -1712,22 +1717,22 @@ export function HomeParcelAddressLookup({
 
   const propertyDetailsHeader = (
   <>
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <h3
-          id="parcel-record-heading"
-          className={DASHBOARD_SECTION_HEADING_CLASS}
-        >
-          Property details
-        </h3>
-        <ParcelGlossaryPopoverTrigger
-          termId="term-parcel-record"
-          textTrigger="What is this?"
-          textTriggerId="parcel-record-heading-help"
-          variant="parcel-record"
-          textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
-          ariaLabel="What the property details panel shows."
-        />
-      </div>
+      <DashboardSectionJumpHeading
+        jumpId="property-details"
+        id="parcel-record-heading"
+        trailing={
+          <ParcelGlossaryPopoverTrigger
+            termId="term-parcel-record"
+            textTrigger="What is this?"
+            textTriggerId="parcel-record-heading-help"
+            variant="parcel-record"
+            textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
+            ariaLabel="What the property details panel shows."
+          />
+        }
+      >
+        Property details
+      </DashboardSectionJumpHeading>
       {propertyDetailsBundledLabel && parcelRecordBundledAsOf ? (
         <>
           <p className={DASHBOARD_SECTION_META_CLASS}>
@@ -2675,6 +2680,12 @@ export function HomeParcelAddressLookup({
                   compsPdfHref={homeCompsGridPdfHref}
                   compsGap={activeCompsGap}
                   compsPdfInProgress={activeCompsPdfInProgress}
+                  compsPdfFilesApiLookup={activeCompsPdfFilesApiLookup}
+                  compsLookupAccountId={
+                    activeCompsPdfFilesApiLookup
+                      ? (levyLoadedMeta?.pin ?? null)
+                      : null
+                  }
                   compsPresentationOmit={activeCompsPresentation === "omit"}
                   demoMode={isDemoMode}
                   demoGridPayload={
@@ -2683,6 +2694,7 @@ export function HomeParcelAddressLookup({
                   propertySearchHref={
                     activeCountyConfig.residentLinks.propertySearch
                   }
+                  parcelRecordHref={whyTaxesGoUpParcelRecordHref}
                   compsIcon={compsIcon}
                 />
               ) : null}

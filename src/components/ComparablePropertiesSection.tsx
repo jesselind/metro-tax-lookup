@@ -13,7 +13,9 @@ import {
 } from "@/components/CountyCompsPdfHelpPopover";
 import { CountyCompsPdfInProgressPopover } from "@/components/CountyCompsPdfInProgressPopover";
 import { CountyServiceGapCallout } from "@/components/CountyServiceGapCallout";
+import { DouglasCompsGridLookupTile } from "@/components/DouglasCompsGridLookupTile";
 import { NovCompsGridPanel } from "@/components/NovCompsGridPanel";
+import { DashboardSectionJumpHeading } from "@/components/HomeDashboardJumpIcon";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
@@ -31,7 +33,6 @@ import { sourcesPageHref } from "@/lib/sourcesPageHref";
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
   TERM_LINK_CLASS,
 } from "@/lib/toolFlowStyles";
@@ -42,11 +43,23 @@ export type ComparablePropertiesSectionProps = {
   compsPdfHref: string | null;
   compsGap: boolean;
   compsPdfInProgress: boolean;
+  /**
+   * Douglas live documents-list lookup for COMP_GRID PDF. When set with an
+   * account id, replaces Coming soon / static PDF chrome for that path.
+   */
+  compsPdfFilesApiLookup: boolean;
+  /** Account id for {@link compsPdfFilesApiLookup} (Douglas pin). */
+  compsLookupAccountId: string | null;
   compsPresentationOmit: boolean;
   demoMode: boolean;
   /** Demo-only in-app grid payload; omit when not in demo. */
   demoGridPayload?: NovCompsGridPayload | null;
   propertySearchHref: string;
+  /**
+   * Deep link to this parcel's county property page (Douglas Documents). Used by
+   * files-API lookup empty/error states so residents skip the Assessor search hub.
+   */
+  parcelRecordHref: string | null;
   compsIcon: ReactNode;
 };
 
@@ -54,23 +67,29 @@ export type ComparablePropertiesSectionProps = {
  * Own Real comparable-properties section (always mounted when the jump shows).
  * One heading (plain h3 + "What is this?"). When an in-app grid is present, that
  * is the body (no PDF / COUNTY DATA GAP chrome, no nested "Comps grid" title).
- * Without a grid, Coming soon / gap / PDF link sit under the title.
+ * Without a grid, Coming soon / files-API lookup / gap / PDF link sit under the title.
  */
 export function ComparablePropertiesSection({
   countyConfig,
   compsPdfHref,
   compsGap,
   compsPdfInProgress,
+  compsPdfFilesApiLookup,
+  compsLookupAccountId,
   compsPresentationOmit,
   demoMode,
   demoGridPayload = null,
   propertySearchHref,
+  parcelRecordHref,
   compsIcon,
 }: ComparablePropertiesSectionProps) {
   const inAppGridPayload =
     demoMode && demoGridPayload != null ? demoGridPayload : null;
   const showInAppGrid = inAppGridPayload != null;
-  const showPdfChrome = compsPdfInProgress || !compsPresentationOmit;
+  const showFilesApiLookup =
+    compsPdfFilesApiLookup && Boolean(compsLookupAccountId?.trim());
+  const showPdfChrome =
+    compsPdfInProgress || showFilesApiLookup || !compsPresentationOmit;
 
   let pdfBody: ReactNode = null;
   if (!showInAppGrid) {
@@ -79,6 +98,16 @@ export function ComparablePropertiesSection({
         <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
           This county does not publish a comparable properties PDF link here yet.
         </p>
+      );
+    } else if (showFilesApiLookup && compsLookupAccountId) {
+      const countyPropertyHref =
+        parcelRecordHref ?? propertySearchHref;
+      pdfBody = (
+        <DouglasCompsGridLookupTile
+          key={compsLookupAccountId}
+          accountId={compsLookupAccountId}
+          parcelRecordHref={countyPropertyHref}
+        />
       );
     } else if (compsPdfInProgress) {
       pdfBody = (
@@ -186,22 +215,22 @@ export function ComparablePropertiesSection({
       className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} outline-none`}
       aria-labelledby={HOME_NOV_COMPS_HEADING_ID}
     >
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <h3
-          id={HOME_NOV_COMPS_HEADING_ID}
-          className={DASHBOARD_SECTION_HEADING_CLASS}
-        >
-          Comparable properties
-        </h3>
-        <ParcelGlossaryPopoverTrigger
-          termId="term-comps"
-          textTrigger="What is this?"
-          textTriggerId="comps-section-heading-help"
-          variant="parcel-record"
-          textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
-          ariaLabel="What comparable properties means."
-        />
-      </div>
+      <DashboardSectionJumpHeading
+        jumpId="comps"
+        id={HOME_NOV_COMPS_HEADING_ID}
+        trailing={
+          <ParcelGlossaryPopoverTrigger
+            termId="term-comps"
+            textTrigger="What is this?"
+            textTriggerId="comps-section-heading-help"
+            variant="parcel-record"
+            textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
+            ariaLabel="What comparable properties means."
+          />
+        }
+      >
+        Comparable properties
+      </DashboardSectionJumpHeading>
       {showInAppGrid ? (
         <NovCompsGridPanel payload={inAppGridPayload} />
       ) : (

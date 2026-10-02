@@ -90,6 +90,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     valuationHistoryShards: false,
     compsPdf: true,
     compsPdfInProgress: false,
+    compsPdfFilesApiLookup: false,
     bpp: true,
     millsHistory: true,
     metroPurposes: true,

@@ -4,12 +4,14 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { useId, useState, type ReactNode } from "react";
+import { DashboardSectionJumpHeading } from "@/components/HomeDashboardJumpIcon";
 import { ParcelGlossaryPopoverTrigger } from "@/components/ParcelGlossaryPopoverTrigger";
 import { ParcelRecordMissingValue } from "@/components/ParcelRecordMissingValue";
 import { ToolOutlinedToggleButton } from "@/components/ToolOutlinedToggleButton";
 import { CountyPriorYearValuesGapCallout } from "@/components/CountyPriorYearValuesGapCallout";
 import { ValuationHistoryYoYFace } from "@/components/ValuationHistoryYoYFace";
 import type { ParcelGlossaryTermId } from "@/content/termDefinitionBodies";
+import type { HomeDashboardJumpId } from "@/lib/homeDashboardJumps";
 import { PARCEL_RECORD_BUILDING_ATTRIBUTE_TERM_IDS } from "@/content/parcelRecordBuildingAttributeTerms";
 import type {
   CountyParcelRecordRow,
@@ -45,7 +47,6 @@ import {
 import {
   COUNTY_EXTERNAL_LINK_CLASS,
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
-  DASHBOARD_SECTION_HEADING_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
   TERM_LINK_CLASS,
   VALUES_FACE_FIGURE_CLASS,
@@ -109,34 +110,40 @@ function ParcelRecordTableArriveSection({
 }
 
 /**
- * Same chrome as Property details / Comparable properties: plain large h3, optional
- * "What is this?" when a parcel glossary brief exists.
+ * Same chrome as Property details / Comparable properties: plain large h3 with
+ * Jump TOC icon, optional "What is this?" when a parcel glossary brief exists.
  */
 function ParcelDashboardSectionHeading({
   title,
+  jumpId,
   termId,
   helpTriggerId,
   ariaLabel,
 }: {
   title: string;
+  jumpId: HomeDashboardJumpId;
   termId?: ParcelGlossaryTermId;
   helpTriggerId?: string;
   ariaLabel?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <h3 className={DASHBOARD_SECTION_HEADING_CLASS}>{title}</h3>
-      {termId != null && helpTriggerId != null ? (
-        <ParcelGlossaryPopoverTrigger
-          termId={termId}
-          textTrigger="What is this?"
-          textTriggerId={helpTriggerId}
-          variant="parcel-record"
-          textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
-          ariaLabel={ariaLabel ?? `What ${title} means.`}
-        />
-      ) : null}
-    </div>
+    <DashboardSectionJumpHeading
+      jumpId={jumpId}
+      trailing={
+        termId != null && helpTriggerId != null ? (
+          <ParcelGlossaryPopoverTrigger
+            termId={termId}
+            textTrigger="What is this?"
+            textTriggerId={helpTriggerId}
+            variant="parcel-record"
+            textTriggerClassName={`text-xs ${TERM_LINK_CLASS} sm:text-sm`}
+            ariaLabel={ariaLabel ?? `What ${title} means.`}
+          />
+        ) : undefined
+      }
+    >
+      {title}
+    </DashboardSectionJumpHeading>
   );
 }
 
@@ -533,7 +540,10 @@ function ParcelValueTable({
         tabIndex={-1}
         className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} outline-none`}
       >
-        <ParcelDashboardSectionHeading title="Appraised and assessed values" />
+        <ParcelDashboardSectionHeading
+          title="Appraised and assessed values"
+          jumpId="appraised-assessed"
+        />
         <p>
           <ParcelRecordMissingValue
             fieldLabel="Appraised and assessed values"
@@ -568,7 +578,10 @@ function ParcelValueTable({
       tabIndex={-1}
       className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} ${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} ${DASHBOARD_SECTION_LEAD_STACK_CLASS} outline-none`}
     >
-      <ParcelDashboardSectionHeading title="Appraised and assessed values" />
+      <ParcelDashboardSectionHeading
+        title="Appraised and assessed values"
+        jumpId="appraised-assessed"
+      />
       {yearNote != null || sectionStatusChrome != null ? (
         <div className="space-y-2">
           {yearNote ? (
@@ -928,7 +941,12 @@ export function ParcelRecordBuildingAndLandTable({
             key={`building-${buildingNum}`}
             id={sectionId}
             className="space-y-3"
-            heading={<ParcelDashboardSectionHeading title="Building(s)" />}
+            heading={
+              <ParcelDashboardSectionHeading
+                title="Building(s)"
+                jumpId="buildings"
+              />
+            }
           >
             {table}
           </ParcelRecordTableArriveSection>
@@ -995,7 +1013,9 @@ export function ParcelRecordBuildingAndLandTable({
             key={`area-${buildingNum}`}
             id={sectionId}
             className="space-y-3"
-            heading={<ParcelDashboardSectionHeading title="Area" />}
+            heading={
+              <ParcelDashboardSectionHeading title="Area" jumpId="area" />
+            }
           >
             {table}
           </ParcelRecordTableArriveSection>
@@ -1045,6 +1065,7 @@ export function ParcelRecordBuildingAndLandTable({
         heading={
           <ParcelDashboardSectionHeading
             title="Land Line"
+            jumpId="land-line"
             termId="term-parcel-land-line"
             helpTriggerId="parcel-land-line-heading-help"
             ariaLabel="What Land Line means."
@@ -1137,6 +1158,7 @@ export function ParcelRecordSaleTable({
     >
       <ParcelDashboardSectionHeading
         title="Sale history"
+        jumpId="sale-history"
         termId="term-parcel-sale"
         helpTriggerId="parcel-sale-history-heading-help"
         ariaLabel="What sale history means."
@@ -1272,6 +1294,7 @@ export function ParcelRecordPermitTable({
       heading={
         <ParcelDashboardSectionHeading
           title="Permits"
+          jumpId="permits"
           termId="term-parcel-permit"
           helpTriggerId="parcel-permits-heading-help"
           ariaLabel="What permits means."

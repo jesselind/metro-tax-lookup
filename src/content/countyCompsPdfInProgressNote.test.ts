@@ -30,9 +30,11 @@ describe("countyCompsPdfInProgress copy", () => {
     expect(COUNTY_COMPS_PDF_IN_PROGRESS_DASHBOARD_LEAD).not.toMatch(/\u2014/);
   });
 
-  it("is on for Douglas and off for Arapahoe", () => {
-    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfInProgress).toBe(true);
+  it("is off for Douglas once files-API lookup ships, and off for Arapahoe", () => {
+    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfInProgress).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.compsPdfFilesApiLookup).toBe(true);
     expect(DOUGLAS_COUNTY_CONFIG.features.compsPdf).toBe(false);
     expect(ARAPAHOE_COUNTY_CONFIG.features.compsPdfInProgress).toBe(false);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.compsPdfFilesApiLookup).toBe(false);
   });
 });

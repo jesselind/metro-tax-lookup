@@ -33,6 +33,9 @@ export const SYNTHETIC_PIN_NOISY = "123010000001999";
 /** Invented Douglas 8-character account id (letter prefix); not a real parcel. */
 export const SYNTHETIC_DOUGLAS_PIN = "R0100001";
 
+/** Second invented Douglas account id (distinct from {@link SYNTHETIC_DOUGLAS_PIN}). */
+export const SYNTHETIC_DOUGLAS_PIN_B = "R0100002";
+
 /** 6-character shard prefix for {@link SYNTHETIC_DOUGLAS_PIN}. */
 export const SYNTHETIC_DOUGLAS_PIN_SHARD_PREFIX = "R01000";
 

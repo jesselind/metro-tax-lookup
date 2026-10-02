@@ -6,6 +6,10 @@
 "use client";
 
 import { useMemo } from "react";
+import {
+  HomeDashboardJumpIcon,
+  HOME_DASHBOARD_SECTION_JUMP_ICON_CLASS,
+} from "@/components/HomeDashboardJumpIcon";
 import { GlossaryTermPopover } from "@/components/GlossaryTermPopover";
 import { btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import {
@@ -119,9 +123,15 @@ export function LevyCountyCompareSection({
         <h4
           id={HOME_COUNTY_COMPARE_HEADING_ID}
           tabIndex={-1}
-          className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} text-base font-semibold leading-snug text-slate-900 outline-none sm:text-lg`}
+          className={`${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} flex min-w-0 items-center gap-2 text-base font-semibold leading-snug text-slate-900 outline-none sm:gap-2.5 sm:text-lg`}
         >
-          See how {countyConfig.displayName} displays your data
+          <HomeDashboardJumpIcon
+            jumpId="county-compare"
+            className={HOME_DASHBOARD_SECTION_JUMP_ICON_CLASS}
+          />
+          <span className="min-w-0">
+            See how {countyConfig.displayName} displays your data
+          </span>
         </h4>
         <div className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
           <span className="sr-only">Property match. </span>

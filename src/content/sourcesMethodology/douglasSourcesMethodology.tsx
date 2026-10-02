@@ -275,15 +275,17 @@ export function DouglasSourcesMethodology() {
           Comparable properties:
         </strong>
         {" "}
-        Douglas County publishes a comps PDF for each property. This site has
-        not wired a per-parcel download URL yet (
-        <code className={CODE_INLINE_CLASS}>compsPdf</code>
+        Douglas County publishes comps-grid PDFs for some accounts (often under
+        Appeal Summaries on the Assessor property page). This site asks the
+        county documents list API for the loaded account (
+        <code className={CODE_INLINE_CLASS}>compsPdfFilesApiLookup</code>
+        ), then links the county download URL when a{" "}
+        <code className={CODE_INLINE_CLASS}>COMP_GRID</code>
         {" "}
-        stays off;
-        {" "}
-        <code className={CODE_INLINE_CLASS}>compsPdfInProgress</code>
-        {" "}
-        shows Coming soon under the Comparable properties heading).
+        file is present, or offers a none-found tile to that account&apos;s Assessor
+        property details (Documents). If the documents list cannot be reached,
+        Comparable properties shows a short on-site error instead of guessing.
+        PDFs are not stored here. In-app grid parse is a later step.
       </p>
       {countyFeatureAvailable(
         "compsPdfInProgress",
