@@ -5,8 +5,8 @@
 
 import { expect, test } from "@playwright/test";
 import {
+  fillStreetAddress,
   fillStreetAndSubmitSearch,
-  streetAddressField,
 } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
@@ -38,9 +38,8 @@ test("typeahead stays open after list scroll blur; closes on outside pointer", a
   await installSyntheticCountyData(page);
   await page.goto("/");
 
-  const street = streetAddressField(page);
   // Many synthetic places at house 5000 so the list overflows max-h.
-  await street.fill("5000 Synthetic");
+  const street = await fillStreetAddress(page, "5000 Synthetic");
 
   const list = page.getByRole("listbox", { name: "Address suggestions" });
   await expect(list).toBeVisible();
@@ -65,8 +64,7 @@ test.describe("shipped Arapahoe Wheeling place collision", () => {
   test("typeahead lists WHEELING ST and S WHEELING WAY as separate places", async ({
     page,
   }) => {
-    const street = streetAddressField(page);
-    await street.fill(WHEELING_BARE_QUERY);
+    await fillStreetAddress(page, WHEELING_BARE_QUERY);
 
     const list = page.getByRole("listbox", { name: "Address suggestions" });
     await expect(list).toBeVisible({ timeout: 30_000 });
@@ -116,8 +114,7 @@ test.describe("shipped Arapahoe 1400 Havana place + Matching properties order", 
   test("typeahead lists HAVANA ST and S HAVANA ST as separate places", async ({
     page,
   }) => {
-    const street = streetAddressField(page);
-    await street.fill(HAVANA_BARE_QUERY);
+    await fillStreetAddress(page, HAVANA_BARE_QUERY);
 
     const list = page.getByRole("listbox", { name: "Address suggestions" });
     await expect(list).toBeVisible({ timeout: 30_000 });
