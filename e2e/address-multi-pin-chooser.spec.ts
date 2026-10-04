@@ -16,8 +16,8 @@ import {
   SYNTHETIC_MULTI_REAL_PIN,
 } from "./fixtures/syntheticCountyData";
 import {
+  fillStreetAddress,
   fillStreetAndSubmitSearch,
-  streetAddressField,
 } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
 
@@ -33,8 +33,7 @@ test("multi-account situs: one typeahead place, then full PIN chooser", async ({
   await installSyntheticCountyData(page);
   await page.goto("/");
 
-  const street = streetAddressField(page);
-  await street.fill(SYNTHETIC_MULTI_E2E_ADDRESS);
+  const street = await fillStreetAddress(page, SYNTHETIC_MULTI_E2E_ADDRESS);
 
   const list = page.getByRole("listbox", { name: "Address suggestions" });
   await expect(list).toBeVisible();
@@ -362,8 +361,7 @@ test("all-Real multi-unit situs: chooser works; no Switch account type", async (
   await installSyntheticCountyData(page);
   await page.goto("/");
 
-  const street = streetAddressField(page);
-  await street.fill(SYNTHETIC_CONDO_E2E_ADDRESS);
+  const street = await fillStreetAddress(page, SYNTHETIC_CONDO_E2E_ADDRESS);
   const list = page.getByRole("listbox", { name: "Address suggestions" });
   await expect(list).toBeVisible();
   await expect(list.getByRole("option")).toHaveCount(1);

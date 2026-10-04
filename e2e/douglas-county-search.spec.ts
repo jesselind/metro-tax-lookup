@@ -16,8 +16,8 @@ import {
   SYNTHETIC_PIN,
 } from "./fixtures/syntheticCountyData";
 import {
+  fillStreetAndSubmitSearch,
   searchSyntheticAddress,
-  streetAddressField,
   viewDistrictDetailsButton,
 } from "./helpers/addressLookup";
 import { installSyntheticCountyData } from "./helpers/installSyntheticCountyData";
@@ -38,10 +38,7 @@ test.describe("Douglas county search gate (Phase 13)", () => {
     await page.goto("/");
     await page.getByRole("radio", { name: "Douglas" }).click();
 
-    const street = streetAddressField(page);
-    await street.fill(SYNTHETIC_DOUGLAS_PIN);
-    await street.press("Escape");
-    await page.getByRole("button", { name: "Search" }).click();
+    await fillStreetAndSubmitSearch(page, SYNTHETIC_DOUGLAS_PIN);
 
     await expect(page.locator("#home-levy-stack-subheading")).toBeVisible();
     await expect(page.getByText(authorityLabel)).toBeVisible();

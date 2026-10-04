@@ -46,6 +46,23 @@ export function viewDistrictDetailsButton(
 }
 
 /**
+ * Fill the street combobox and wait until the controlled value matches.
+ *
+ * WebKit on Linux CI can report fill done before React state updates; Search
+ * then runs empty ("Enter your street address.") and success UI never appears.
+ * Call after `installSyntheticCountyData(page)` (when needed) and `page.goto("/")`.
+ */
+export async function fillStreetAddress(
+  page: Page,
+  address: string,
+): Promise<Locator> {
+  const street = streetAddressField(page);
+  await street.fill(address);
+  await expect(street).toHaveValue(address);
+  return street;
+}
+
+/**
  * Fill the street field, dismiss an open typeahead listbox, click Search.
  *
  * Escape still closes the list; blur alone does not. Call after
@@ -55,8 +72,7 @@ export async function fillStreetAndSubmitSearch(
   page: Page,
   address: string,
 ): Promise<void> {
-  const street = streetAddressField(page);
-  await street.fill(address);
+  const street = await fillStreetAddress(page, address);
   await street.press("Escape");
   await page.getByRole("button", { name: "Search" }).click();
 }
