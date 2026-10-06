@@ -19,7 +19,7 @@ type ParcelRecordReportIds = {
 
 const ParcelRecordReportIdsContext = createContext<ParcelRecordReportIds>({});
 
-const BRIEF_P = "text-sm leading-relaxed text-slate-800 sm:text-base";
+const BRIEF_P = "text-base leading-relaxed text-slate-800 sm:text-lg";
 
 /** Default trigger look for missing values in the property panel and tables. */
 export const PARCEL_RECORD_MISSING_VALUE_TRIGGER_CLASS =

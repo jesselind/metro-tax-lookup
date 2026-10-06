@@ -22,6 +22,6 @@ export function GovernmentTypeBriefBody({ displayLabel }: { displayLabel: string
   const text = getLocalGovernmentTypeBrief(displayLabel);
 
   return (
-    <p className="text-sm leading-relaxed text-slate-800 sm:text-base">{text}</p>
+    <p className="text-base leading-relaxed text-slate-800 sm:text-lg">{text}</p>
   );
 }

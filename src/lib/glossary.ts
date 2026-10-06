@@ -19,6 +19,7 @@ export const GLOSSARY_FULL_ENTRY_TERM_IDS = [
   "term-ain",
   "term-assessed-value",
   "term-assessment-year",
+  "term-bonds",
   "term-comps",
   "term-debt-free-schools-mill-levy",
   "term-de-brucing",
@@ -54,6 +55,7 @@ const GLOSSARY_TERM_ALIASES: Record<string, string> = {
   "term-mills": "term-mill-levy",
   "term-levy": "term-mill-levy",
   "term-mill-levy-total": "term-mill-levy",
+  "term-bond-repayment": "term-bonds",
 };
 
 /** Canonical `term-*` id for a glossary aside. */

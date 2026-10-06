@@ -85,7 +85,11 @@ export type InfoHintPopoverProps = InfoHintPopoverBase &
 
 /** Portaled panels must clear modal shells (`z-[100]`). Layout only; surface is {@link PANEL_SURFACE_CLASS}. */
 const PANEL_LAYOUT =
-  "w-max max-w-[min(18rem,calc(100vw-2rem))] rounded-lg px-2.5 py-2 text-left text-xs leading-snug normal-case tracking-normal shadow-lg outline-none z-[110]";
+  "w-max rounded-lg px-2.5 py-2 text-left text-sm leading-snug normal-case tracking-normal shadow-lg outline-none z-[110]";
+
+/** Default width when callers do not pass {@link InfoHintPopoverProps.panelClassName}. */
+const PANEL_SIZE_DEFAULT =
+  "max-w-[min(18rem,calc(100vw-2rem))] sm:max-w-[min(24rem,calc(100vw-2.5rem))] lg:max-w-[min(28rem,calc(100vw-3rem))]";
 
 /**
  * Text-trigger floating note for in-flow definitions and hints.
@@ -220,7 +224,7 @@ export function InfoHintPopover({
     };
   }, [open, dismiss]);
 
-  const panelClassNameMerged = `${PANEL_LAYOUT} ${PANEL_SURFACE_CLASS[variant]}${panelClassName ? ` ${panelClassName}` : ""} fixed`;
+  const panelClassNameMerged = `${PANEL_LAYOUT} ${PANEL_SURFACE_CLASS[variant]} ${panelClassName ?? PANEL_SIZE_DEFAULT} fixed`;
 
   const panel = open ? (
     <div

@@ -8,6 +8,12 @@ export const STACK_RATE_CHANGE_CALLOUT_MESSAGE =
   "Your property tax bill changed from last year.";
 
 /**
+ * Permanent title on the levy-detail mill YoY box (above the % headline).
+ * Separates past mill-rate change from a current ballot proposal panel when both show.
+ */
+export const LEVY_DETAIL_HISTORICAL_CHANGE_TITLE = "Historical change";
+
+/**
  * Arapahoe: county bulk table + assessor guidance (no public valuation history).
  * Used for the default county and any wired county without Douglas-shaped copy.
  */

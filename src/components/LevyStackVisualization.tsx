@@ -8,6 +8,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { SpecialDistrictDirectoryFile } from "@/lib/specialDistrictMatch";
 import { LevyChangedBadge } from "@/components/LevyChangedBadge";
+import {
+  BallotProposalNoticeBadge,
+  BALLOT_PROPOSAL_NOTICE_BADGE_ON_DARK_CLASS,
+} from "@/components/BallotProposalNoticeBadge";
 import { MILL_LEVY_TILES_ID } from "@/content/millLevySummaryCopy";
 import { btnOutlinePrimaryMd, btnOutlineSecondaryMd } from "@/lib/buttonClasses";
 import { InlineErrorCallout } from "@/components/InlineErrorCallout";
@@ -35,6 +39,12 @@ import { formatCountyLevyMillsDisplay as formatMills } from "@/lib/formatCountyL
 import {
   type CountyConfig,
 } from "@/lib/countyConfig";
+import {
+  ballotProposalNoticeBadgeAriaLabel,
+  findBallotProposalNoticeEntry,
+  FIRST_BALLOT_PROPOSAL_LEVY_TILE_DOM_ID,
+} from "@/lib/ballotProposalNotice";
+import { HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS } from "@/lib/homeDashboardJumps";
 import {
   safeCountyLevyAspxUrl,
 } from "@/lib/safeExternalHref";
@@ -470,6 +480,23 @@ export function LevyStackVisualization({
     return null;
   }, [tilesSorted, lineIdsWithMillChanges]);
 
+  const firstBallotProposalLevyTileId = useMemo(() => {
+    if (!countyConfig.features.ballotProposalNotice) return null;
+    for (const item of tilesSorted) {
+      const sourceLine = lines.find((l) => l.id === item.id);
+      if (
+        findBallotProposalNoticeEntry({
+          countyId: countyConfig.id,
+          levyLineCode: sourceLine?.levyLineCode,
+          authorityLabel: item.authority,
+        }) != null
+      ) {
+        return item.id;
+      }
+    }
+    return null;
+  }, [tilesSorted, lines, countyConfig.features.ballotProposalNotice, countyConfig.id]);
+
   const actionLine = useMemo(
     () => (tileActionsId ? lines.find((l) => l.id === tileActionsId) : undefined),
     [lines, tileActionsId],
@@ -631,6 +658,19 @@ export function LevyStackVisualization({
                     : null;
                 const millChangeDirectionPhrase =
                   levyTileMillChangeDirectionPhrase(millDelta);
+                const ballotProposalEntry =
+                  countyConfig.features.ballotProposalNotice
+                    ? findBallotProposalNoticeEntry({
+                        countyId: countyConfig.id,
+                        levyLineCode: sourceLine?.levyLineCode,
+                        authorityLabel: item.authority,
+                      })
+                    : null;
+                const showBallotProposalBadge = ballotProposalEntry != null;
+                const showMillRateChangedBadge =
+                  millRateChanged &&
+                  countyConfig.features.millRateChangedBadge &&
+                  !showBallotProposalBadge;
                 const lineDollarsRounded =
                   assessedForLevyDollars != null
                     ? levyDisplayDollarsForAudience(
@@ -655,17 +695,33 @@ export function LevyStackVisualization({
                   firstChangedLevyTileId != null &&
                   item.id === firstChangedLevyTileId;
 
+                const isFirstBallotProposalLevyTile =
+                  firstBallotProposalLevyTileId != null &&
+                  item.id === firstBallotProposalLevyTileId;
+
+                const jumpTileDomId = isFirstBallotProposalLevyTile
+                  ? FIRST_BALLOT_PROPOSAL_LEVY_TILE_DOM_ID
+                  : isFirstChangedLevyTile
+                    ? FIRST_CHANGED_LEVY_TILE_DOM_ID
+                    : undefined;
+
+                const ballotAria =
+                  ballotProposalEntry != null
+                    ? `, ${ballotProposalNoticeBadgeAriaLabel(ballotProposalEntry)}`
+                    : "";
+
                 return (
                   <div
                     key={item.id}
-                    id={
-                      isFirstChangedLevyTile
-                        ? FIRST_CHANGED_LEVY_TILE_DOM_ID
-                        : undefined
-                    }
+                    id={jumpTileDomId}
+                    tabIndex={isFirstBallotProposalLevyTile ? -1 : undefined}
                     className={`min-w-0 ${
-                      isFirstChangedLevyTile
-                        ? "scroll-mt-6 sm:scroll-mt-8 "
+                      jumpTileDomId != null
+                        ? `${HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS} `
+                        : ""
+                    }${
+                      isFirstBallotProposalLevyTile
+                        ? `${DASHBOARD_SECTION_ARRIVE_TARGET_CLASS} outline-none `
                         : ""
                     }${levyTileClass(isEditing)} ${
                       !isEditing
@@ -762,10 +818,10 @@ export function LevyStackVisualization({
                             lineDollarsRounded != null
                               ? `View district details for ${item.authority}, ${formatMills(item.mills)} mills, estimated ${levyDollarPeriodLabel} tax ${formatUsdWhole(lineDollarsRounded)}${levyDollarSuffix ?? ""} from assessed value${
                                   millChangeDirectionPhrase ?? ""
-                                }`
+                                }${ballotAria}`
                               : `View district details for ${item.authority}, ${formatMills(item.mills)} mills${
                                   millChangeDirectionPhrase ?? ""
-                                }`
+                                }${ballotAria}`
                           }
                           onClick={() => {
                             setTileActionsId(null);
@@ -804,7 +860,20 @@ export function LevyStackVisualization({
                               </p>
                             </div>
                             <div className="flex w-full min-w-0 flex-col gap-2 self-end sm:gap-3">
-                              {millRateChanged ? (
+                              {showBallotProposalBadge ? (
+                                <BallotProposalNoticeBadge
+                                  className={
+                                    BALLOT_PROPOSAL_NOTICE_BADGE_ON_DARK_CLASS
+                                  }
+                                  ariaLabel={
+                                    ballotProposalEntry
+                                      ? ballotProposalNoticeBadgeAriaLabel(
+                                          ballotProposalEntry,
+                                        )
+                                      : undefined
+                                  }
+                                />
+                              ) : showMillRateChangedBadge ? (
                                 <LevyChangedBadge millsDelta={millDelta} />
                               ) : null}
                               <div className="flex w-full min-w-0 items-end justify-between gap-3">

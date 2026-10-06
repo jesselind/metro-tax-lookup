@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "countyId": "arapahoe",
+  "electionDate": "2026-11-03",
+  "electionLabel": "November 3, 2026 General Election",
+  "notice": {
+    "title": "Arapahoe County TABOR Notice 2026",
+    "url": "https://files.arapahoeco.gov/Clerk%20and%20Recorder/ArapahoeVotes/Documents/TABOR%20Notice%202026.pdf"
+  },
+  "prototypeNote": "Curated from the Arapahoe County Clerk & Recorder Notice of Election (TABOR Notice) for November 3, 2026. Property-tax-related measures only (mills, property-tax debt, property-tax revenue limit waivers). Sales-tax Notice items are out of scope for this product. Match stack AUTH via match.levyLineCode. Resident claims cite the Notice PDF with #page= (PDF viewer page index).",
+  "entries": [
+    {
+      "id": "arapahoe-2026-littleton-school-0601",
+      "match": {
+        "levyLineCode": "0601"
+      },
+      "authorityDisplayName": "Arapahoe County School District No. 6 (Littleton Public Schools)",
+      "measures": [
+        {
+          "ballotIssue": "4A",
+          "titlePlain": "Mill levy override (a voter-approved higher mill rate) for General Fund school purposes",
+          "kind": "property_tax_increase",
+          "tone": "increase",
+          "noticePage": 4,
+          "summary": "Voters are asked to raise District taxes by $10,289,724 in 2026 for collection in 2027 (and by other amounts in later years up to a statute limit), with the new revenue going to the General Fund (the district's main operating budget) for purposes such as attracting and retaining teachers, school safety, and academic and career programs. The ballot also asks that those revenues be spent as a voter-approved revenue change under TABOR.",
+          "fiscalFacts": [
+            {
+              "label": "Proposed tax increase (first full fiscal year)",
+              "value": "$10,289,724"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arapahoe-2026-bennett-fire-4060",
+      "match": {
+        "levyLineCode": "4060"
+      },
+      "authorityDisplayName": "Bennett Fire Protection District",
+      "measures": [
+        {
+          "ballotIssue": "7G",
+          "titlePlain": "Waive the 5.25% property tax revenue limit",
+          "kind": "revenue_limit_waiver",
+          "tone": "effective_increase",
+          "noticePage": 9,
+          "summary": "Voters are asked to waive the 5.25% property tax limit for all future property tax years. The ballot wording says this is without increasing property taxes. The same question also asks that all District revenues be collected, retained, and spent even if revenue limits in law would otherwise block that.",
+          "fiscalFacts": []
+        }
+      ]
+    },
+    {
+      "id": "arapahoe-2026-bennett-school-0901",
+      "match": {
+        "levyLineCode": "0901"
+      },
+      "authorityDisplayName": "Bennett School District No. 29J",
+      "measures": [
+        {
+          "ballotIssue": "5A",
+          "titlePlain": "Bond and property tax for school buildings",
+          "kind": "debt_and_property_tax",
+          "tone": "increase",
+          "noticePage": 10,
+          "summary": "Voters are asked to raise District debt by up to $125 million (repayment cost up to $235 million) and to raise District taxes by up to $11 million a year to repair and improve school buildings and address enrollment growth, including a new high school and converting the existing high school to a middle school. The ballot asks for property taxes charged without limit as to the mill rate, up to those dollar caps, to pay the bonds.",
+          "fiscalFacts": [
+            {
+              "label": "Proposed tax increase (first full fiscal year)",
+              "value": "$11,000,000"
+            },
+            {
+              "label": "Proposed bond principal",
+              "value": "$125,000,000"
+            },
+            {
+              "label": "Total bond repayment cost (maximum)",
+              "value": "$235,000,000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arapahoe-2026-hills-cherry-creek-4365",
+      "match": {
+        "levyLineCode": "4365"
+      },
+      "authorityDisplayName": "Hills at Cherry Creek Metropolitan District",
+      "measures": [
+        {
+          "ballotIssue": "6A",
+          "titlePlain": "Property tax increase for district operations",
+          "kind": "property_tax_increase",
+          "tone": "increase",
+          "noticePage": 23,
+          "summary": "Voters are asked to raise District taxes by $105,000 a year beginning in 2027 (and by inflation plus local growth each year after that) for operations and maintenance such as the perimeter wall, playground, park, and courts. The county Clerk's election notice states the levy is expected to be an additional 3.688 mills. The ballot also asks to collect and spend those revenues even if TABOR and the 5.5% property tax revenue limit would otherwise block that.",
+          "fiscalFacts": [
+            {
+              "label": "Proposed tax increase (first full fiscal year)",
+              "value": "$105,000"
+            },
+            {
+              "label": "Expected additional mills (election notice)",
+              "value": "3.688 mills"
+            },
+            {
+              "label": "Election notice cost example",
+              "value": "About $20.90 per month for a $1,000,000 residence in 2027"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

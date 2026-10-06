@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   GLOSSARY_FULL_ENTRY_TERM_IDS,
+  canonicalGlossaryTermId,
   hasGlossaryFullEntry,
 } from "./glossary";
 
@@ -27,5 +28,10 @@ describe("GLOSSARY_FULL_ENTRY_TERM_IDS", () => {
     expect(hasGlossaryFullEntry("term-mills")).toBe(true);
     expect(hasGlossaryFullEntry("term-levy")).toBe(true);
     expect(hasGlossaryFullEntry("term-parcel-architectural-style")).toBe(false);
+  });
+
+  it("resolves bond-repayment alias to the bonds entry", () => {
+    expect(hasGlossaryFullEntry("term-bond-repayment")).toBe(true);
+    expect(canonicalGlossaryTermId("term-bond-repayment")).toBe("term-bonds");
   });
 });

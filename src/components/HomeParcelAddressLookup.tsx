@@ -21,6 +21,10 @@ import {
   CountyScopeTopLine,
   showCountyScopeTopLine,
 } from "@/components/CountyScopeTopLine";
+import {
+  HomeBallotProposalNoticeJumpButton,
+  HomeBallotProposalNoticeSection,
+} from "@/components/HomeBallotProposalNoticeCards";
 import { HomeLatestAuthorityChainCards } from "@/components/HomeLatestAuthorityChainCards";
 import { HomeWhyTaxesGoUpTeaching } from "@/components/HomeWhyTaxesGoUpTeaching";
 import { PropertyWhyTaxesGoUpSection } from "@/components/PropertyWhyTaxesGoUpSection";
@@ -396,6 +400,18 @@ export function HomeParcelAddressLookup({
       CAMPAIGN_DEFAULT_COUNTY_CONFIG,
     [resolvedCountyId],
   );
+
+  /** County whose TABOR Notice list appears on the unlocked home form. */
+  const homeBallotNoticeCountyId = useMemo((): string | null => {
+    if (countySearchScope.kind === "county") {
+      const id = countySearchScope.countyId;
+      return countyConfigById(id)?.features.ballotProposalNotice ? id : null;
+    }
+    return countyConfigById(CAMPAIGN_DEFAULT_COUNTY_ID)?.features
+      .ballotProposalNotice
+      ? CAMPAIGN_DEFAULT_COUNTY_ID
+      : null;
+  }, [countySearchScope]);
   const activeCompsPresentation = countyFeaturePresentation(
     "compsPdf",
     activeCountyConfig,
@@ -2497,6 +2513,9 @@ export function HomeParcelAddressLookup({
             We do not save your address. This uses publicly available data. We
             do not track you.
           </p>
+          <HomeBallotProposalNoticeJumpButton
+            countyId={homeBallotNoticeCountyId}
+          />
           {hasCampaignSiteLink() ? (
             <div className="mt-4 flex justify-center">
               {/* FORK REQUIRED: SITE_CONFIG.campaignHomeDisclosureLabel + campaignSiteUrl */}
@@ -2507,7 +2526,15 @@ export function HomeParcelAddressLookup({
           ) : null}
           <hr className="mt-8 border-0 border-t border-slate-300" />
           <HomeWhyTaxesGoUpTeaching />
-          <hr className="mt-8 border-0 border-t border-slate-300" />
+          {homeBallotNoticeCountyId ? (
+            <>
+              <hr className="mt-8 border-0 border-t border-slate-300" />
+              <HomeBallotProposalNoticeSection
+                countyId={homeBallotNoticeCountyId}
+              />
+              <hr className="mt-8 border-0 border-t border-slate-300" />
+            </>
+          ) : null}
           <HomeLatestAuthorityChainCards />
         </div>
       ) : (
@@ -2602,6 +2629,10 @@ export function HomeParcelAddressLookup({
                     idPrefix="audience-mode-report"
                   />
                 ) : null}
+                <HomeBallotProposalNoticeJumpButton
+                  countyId={activeCountyConfig.id}
+                  levyLines={levyLines}
+                />
                 {/* Mobile: Switch under Own|Rent (desktop Switch lives in the sidenav). */}
                 {!busy &&
                 canSwitchSitusAccounts &&
