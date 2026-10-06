@@ -280,7 +280,7 @@ export function findBallotProposalNoticeEntry(options: {
   if (!countyId) return null;
   const config = countyConfigById(countyId);
   if (!config?.features.ballotProposalNotice) return null;
-  const file = FILES_BY_COUNTY[countyId];
+  const file = FILES_BY_COUNTY[config.id];
   if (!file) return null;
 
   const record = findFirstMatchingLevyEntry(
@@ -307,7 +307,7 @@ export function ballotProposalNoticeEntriesForCounty(
   if (!id) return [];
   const config = countyConfigById(id);
   if (!config?.features.ballotProposalNotice) return [];
-  const file = FILES_BY_COUNTY[id];
+  const file = FILES_BY_COUNTY[config.id];
   if (!file) return [];
   return file.entries.map((record) => buildEntry(file, record));
 }

@@ -155,6 +155,16 @@ describe("ballotProposalNotice", () => {
     ).toBeNull();
   });
 
+  it("resolves Notice JSON when countyId casing differs from the file map key", () => {
+    const entry = findBallotProposalNoticeEntry({
+      countyId: " Arapahoe ",
+      levyLineCode: "0601",
+    });
+    expect(entry).not.toBeNull();
+    expect(entry!.measures[0]!.ballotIssue).toBe("4A");
+    expect(ballotProposalNoticeHomeEntriesForCounty("Arapahoe")).toHaveLength(4);
+  });
+
   it("parcelStackHasBallotProposalNotice is true when a Notice AUTH is on the stack", () => {
     expect(
       parcelStackHasBallotProposalNotice(
