@@ -27,6 +27,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.27.1",
+    date: "2026-10-06",
+    title: "TABOR Support/Oppose bar: aligned wraps in popover and glossary",
+    highlights: [
+      "TABOR Support / Oppose contrast bar (`TaborSupportOpposeBar`): shared header and slogan rows so both halves stay vertically aligned when labels wrap; fixed slogan line breaks so the trailing $ does not sit alone on a line. Same wording and colors; Bonds example bars unchanged.",
+    ],
+  },
+  {
     version: "5.27.0",
     date: "2026-10-06",
     title:
