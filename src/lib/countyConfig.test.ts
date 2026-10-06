@@ -97,6 +97,8 @@ function scheduleCountyFixture(
       dataMartRefreshGap: false,
       millPdfTaxDistrictGap: false,
       propertyDataAccuracyWarning: false,
+      millRateChangedBadge: true,
+      ballotProposalNotice: false,
     },
     knownFailures: {
       compsPdfHostedFiles: false,
@@ -170,6 +172,10 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(ARAPAHOE_COUNTY_CONFIG.features.propertyDataAccuracyWarning).toBe(
       false,
     );
+    expect(ARAPAHOE_COUNTY_CONFIG.features.ballotProposalNotice).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.millRateChangedBadge).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.ballotProposalNotice).toBe(false);
+    expect(DOUGLAS_COUNTY_CONFIG.features.millRateChangedBadge).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesGap).toBe(true);
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
       false,

@@ -21,8 +21,10 @@ import { btnPrimaryMd } from "@/lib/buttonClasses";
 import { formatCountyLevyMillsDisplay } from "@/lib/formatCountyLevyMills";
 import { LevyExplainerModalSection } from "@/components/LevyExplainerModalSection";
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
+import { BallotProposalNoticeSection } from "@/components/BallotProposalNoticeSection";
 import { findLevyExplainerEntry } from "@/lib/levyExplainer";
 import { findLevyAuthorityChainEntry } from "@/lib/levyAuthorityChain";
+import { findBallotProposalNoticeEntry } from "@/lib/ballotProposalNotice";
 import { isSchoolAuthorityLevyLine } from "@/lib/levyLineAssessedBase";
 import {
   countyConfigById,
@@ -66,6 +68,7 @@ import {
   YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_AFTER_LINK,
   YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LEAD_BEFORE_LINK,
   YOY_THEORETICAL_DOLLAR_POPOVER_DOUGLAS_LINK_LABEL,
+  LEVY_DETAIL_HISTORICAL_CHANGE_TITLE,
   yoyTheoreticalDollarPopoverCopy,
 } from "@/content/levyYoYCopy";
 import {
@@ -461,6 +464,12 @@ export function LevyLineDistrictDetailDialog({
     sourceTagId,
     lgId: dolaMatch?.lgId ?? undefined,
   });
+  const ballotProposalNoticeEntry = findBallotProposalNoticeEntry({
+    countyId,
+    levyLineCode,
+    authorityLabel,
+  });
+
   const levyAuthorityChainEntry = findLevyAuthorityChainEntry(authorityLabel, {
     countyId,
     levyLineCode,
@@ -639,6 +648,12 @@ export function LevyLineDistrictDetailDialog({
               {pctLabel}% of your property tax
             </p>
 
+            {ballotProposalNoticeEntry ? (
+              <BallotProposalNoticeSection
+                entry={ballotProposalNoticeEntry}
+              />
+            ) : null}
+
             {yoy ? (
               <div
                 className={`mt-4 rounded-lg border-2 ${metroYoySurface.box} ${
@@ -647,13 +662,19 @@ export function LevyLineDistrictDetailDialog({
                     : "px-3 py-3 sm:px-4 sm:py-3.5"
                 }`}
                 role="region"
-                aria-labelledby="levy-detail-metro-yoy-heading"
+                aria-labelledby="levy-detail-metro-yoy-title"
               >
                 {yoy.canExpand ? (
                   <>
+                    <p
+                      id="levy-detail-metro-yoy-title"
+                      className="px-3 pt-3 text-sm font-extrabold uppercase leading-none tracking-wide text-slate-900 sm:px-4 sm:pt-3.5 sm:text-base"
+                    >
+                      {LEVY_DETAIL_HISTORICAL_CHANGE_TITLE}
+                    </p>
                     <button
                       type="button"
-                      className="group w-full cursor-pointer border-0 bg-transparent px-3 py-3 text-left transition-colors hover:bg-black/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50 sm:px-4 sm:py-3.5"
+                      className="group w-full cursor-pointer border-0 bg-transparent px-3 pb-3 pt-2 text-left transition-colors hover:bg-black/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600/50 sm:px-4 sm:pb-3.5 sm:pt-2"
                       aria-expanded={metroYoYBreakdownOpen}
                       aria-controls={metroYoYBreakdownPanelId}
                       aria-label={
@@ -828,27 +849,35 @@ export function LevyLineDistrictDetailDialog({
                     </div>
                   </>
                 ) : (
-                  <div className="px-3 py-3 sm:px-4 sm:py-3.5">
-                    <LevyYoYSummaryBlock
-                      summary={yoy.summary}
-                      headlineId="levy-detail-metro-yoy-heading"
-                      headlineClassName={metroYoySurface.headline}
-                      showCollapsedDollarLine
-                      usesTheoreticalAssessed={yoyUsesTheoreticalAssessed}
-                      collapsedDollarFootnoteId={
-                        yoyShowsDollarFootnote
-                          ? yoySummaryDollarFootnoteId
-                          : undefined
-                      }
-                    />
-                    {yoyShowsDollarFootnote ? (
-                      <YoYTheoreticalDollarFootnote
-                        idSuffix="summary"
-                        countyId={countyId}
-                        accountId={accountId}
+                  <>
+                    <p
+                      id="levy-detail-metro-yoy-title"
+                      className="text-sm font-extrabold uppercase leading-none tracking-wide text-slate-900 sm:text-base"
+                    >
+                      {LEVY_DETAIL_HISTORICAL_CHANGE_TITLE}
+                    </p>
+                    <div className="mt-2">
+                      <LevyYoYSummaryBlock
+                        summary={yoy.summary}
+                        headlineId="levy-detail-metro-yoy-heading"
+                        headlineClassName={metroYoySurface.headline}
+                        showCollapsedDollarLine
+                        usesTheoreticalAssessed={yoyUsesTheoreticalAssessed}
+                        collapsedDollarFootnoteId={
+                          yoyShowsDollarFootnote
+                            ? yoySummaryDollarFootnoteId
+                            : undefined
+                        }
                       />
-                    ) : null}
-                  </div>
+                      {yoyShowsDollarFootnote ? (
+                        <YoYTheoreticalDollarFootnote
+                          idSuffix="summary"
+                          countyId={countyId}
+                          accountId={accountId}
+                        />
+                      ) : null}
+                    </div>
+                  </>
                 )}
               </div>
             ) : null}

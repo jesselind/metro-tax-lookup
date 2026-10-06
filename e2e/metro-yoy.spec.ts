@@ -5,7 +5,10 @@
 
 import { expect, test } from "@playwright/test";
 import { displayMartAuthorityName } from "../src/lib/countyParcelLevyData";
-import { AUTHORITY_MILLS_HISTORY_CHART_HEADING } from "../src/content/levyYoYCopy";
+import {
+  AUTHORITY_MILLS_HISTORY_CHART_HEADING,
+  LEVY_DETAIL_HISTORICAL_CHANGE_TITLE,
+} from "../src/content/levyYoYCopy";
 import { MILL_LEVY_CHANGED_LABEL } from "../src/content/millLevySummaryCopy";
 import { PARCEL_RECORD_SALE_HISTORY_ID } from "../src/components/ParcelRecordCountyTables";
 import {
@@ -84,7 +87,7 @@ test.describe("Metro year-over-year UI", () => {
     await expect(page.locator(`#${PARCEL_RECORD_SALE_HISTORY_ID}`)).toBeFocused();
   });
 
-  test("AUTH history change shows Changed on levy tiles", async ({
+  test("AUTH history change hides Changed on Arapahoe tiles during ballot Notice period", async ({
     page,
   }) => {
     await installSyntheticCountyData(page, { includeAuthYoY: true });
@@ -92,29 +95,31 @@ test.describe("Metro year-over-year UI", () => {
     await searchSyntheticAddress(page);
 
     await expect(page.getByText(nonMetroAuthorityLabel)).toBeVisible();
-    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
-    // Mill levy total Changed is intentionally not transferred; levy tiles keep Changed.
+    // Arapahoe features.millRateChangedBadge is false while ballotProposalNotice is on.
+    await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await expect(
       page.getByText("Your property tax bill changed from last year."),
     ).toHaveCount(0);
 
-    // Rent keeps levy-tile Changed cues (not an owner-only control).
+    // Rent still opens details; YoY box in the dialog is unchanged.
     await page.getByRole("radio", { name: "I Rent" }).click();
-    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await page.getByRole("radio", { name: "I Own" }).click();
-    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
 
     await viewDistrictDetailsButton(page, nonMetroAuthorityLabel).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByRole("region", { name: /2\.0% higher than last year/i }),
+      dialog.getByRole("region", { name: LEVY_DETAIL_HISTORICAL_CHANGE_TITLE }),
+    ).toBeVisible();
+    await expect(
+      dialog.getByText(/2\.0% higher than last year/i).first(),
     ).toBeVisible();
     await dialog
       .getByRole("button", { name: /2\.0% higher than last year\. Details\./i })
       .click();
     const yoySummary = dialog.getByRole("region", {
-      name: /2\.0% higher than last year/i,
+      name: LEVY_DETAIL_HISTORICAL_CHANGE_TITLE,
     });
     await expect(
       yoySummary.getByText("Tax Year 2024", { exact: true }),
@@ -184,14 +189,15 @@ test.describe("Metro year-over-year UI", () => {
     await searchSyntheticAddress(page);
 
     await expect(page.getByText(metroAuthorityLabel)).toBeVisible();
-    await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
+    // Arapahoe millRateChangedBadge off during Nov 2026 TABOR Notice period.
+    await expect(page.getByText("Changed", { exact: true })).toHaveCount(0);
     await expect(
       page.getByText("Your property tax bill changed from last year."),
     ).toHaveCount(0);
 
     const firstChangedTile = page.locator("#levy-tile-first-rate-change");
     await expect(firstChangedTile).toBeVisible();
-    await expect(firstChangedTile).toContainText(MILL_LEVY_CHANGED_LABEL);
+    await expect(firstChangedTile).not.toContainText(MILL_LEVY_CHANGED_LABEL);
 
     // Tax year note when years differ; stack Total shows estimated dollars.
     await expect(page.getByText(/Tax year is 2025/)).toBeVisible();
@@ -213,8 +219,9 @@ test.describe("Metro year-over-year UI", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(
-      dialog.getByRole("region", { name: /% higher than last year/i }),
+      dialog.getByRole("region", { name: LEVY_DETAIL_HISTORICAL_CHANGE_TITLE }),
     ).toBeVisible();
+    await expect(dialog.getByText(/% higher than last year/i).first()).toBeVisible();
     await expect(dialog.getByText("General Operating")).toHaveCount(0);
     await expect(dialog.getByText(/^Difference:/)).toHaveCount(0);
 

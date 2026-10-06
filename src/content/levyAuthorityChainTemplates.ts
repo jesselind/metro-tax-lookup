@@ -584,7 +584,7 @@ const METRO_PACK: LevyAuthorityChainFamilyPack = {
   approvalStepBody: METRO_AUTHORIZATION_STEP_BODY,
   ballotFactLabel: FACT_LABEL_METRO_ELECTION_RECORD,
   unavailableBallotFactValue: FACT_VALUE_METRO_BALLOT_TEXT_UNAVAILABLE,
-  unavailableMeasureBody(_ballotIssue, electionMonthYear, _summaryAttribution) {
+  unavailableMeasureBody(_ballotIssue, electionMonthYear) {
     return `Eligible electors authorized this in ${electionMonthYear}. We could not locate public ballot wording for the authorization.`;
   },
   ballotStepTitle(ballotIssue, kind, options) {
@@ -962,7 +962,7 @@ const MUNICIPAL_GID_PACK: LevyAuthorityChainFamilyPack = {
     }
     return `This district's board authorized this in ${electionMonthYear}. We could not locate a separate public ballot PDF for the authorization.`;
   },
-  ballotStepTitle(_ballotIssue, kind, _options) {
+  ballotStepTitle(_ballotIssue, kind) {
     switch (kind) {
       case "municipal_gid_board":
         return MUNICIPAL_GID_BOARD_STEP_TITLE;
@@ -972,7 +972,7 @@ const MUNICIPAL_GID_PACK: LevyAuthorityChainFamilyPack = {
         );
     }
   },
-  ballotStepBody(kind, detail, bodyLead, _options) {
+  ballotStepBody(kind, detail, bodyLead) {
     switch (kind) {
       case "municipal_gid_board": {
         const lead = MUNICIPAL_GID_BODY_LEAD_PHRASES[bodyLead];

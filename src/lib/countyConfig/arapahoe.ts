@@ -99,6 +99,14 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     dataMartRefreshGap: true,
     millPdfTaxDistrictGap: false,
     propertyDataAccuracyWarning: false,
+    /**
+     * Nov 3, 2026 TABOR Notice period: hide amber Changed so the white
+     * On the ballot badge is the primary tile cue. After the election, set
+     * millRateChangedBadge back to true and ballotProposalNotice to false
+     * (or keep Notice JSON and only flip ballotProposalNotice off).
+     */
+    millRateChangedBadge: false,
+    ballotProposalNotice: true,
   },
   knownFailures: {
     compsPdfHostedFiles: true,

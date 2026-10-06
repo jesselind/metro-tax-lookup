@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.27.0",
+    date: "2026-10-06",
+    title:
+      "Arapahoe Nov 2026 TABOR Notice: On the ballot badge + proposal panel",
+    highlights: [
+      "White **On the ballot** badge (red warning icon, black inset border) on levy tiles for authorities in the Arapahoe Clerk & Recorder TABOR Notice for the November 3, 2026 election. Detail dialog: ballot-proposal panel above the mill YoY box - locked chrome `border-4 border-dashed border-red-600 bg-red-50` (same light fill as Historical change; dashed brighter border so the panels do not look related); closed face with larger **Proposed tax increase** eyebrow + warning triangle + election heading + dollar/mill hook; default-collapsed **See what's on the ballot** disclosure with Notice summary, fiscal facts, and `#page=` cites (numbered list only when an authority has more than one measure). No separate “On this property tax bill” block. Mill YoY box permanently titled **HISTORICAL CHANGE** (all caps).",
+      "CountyFeatures flags (flip in `arapahoe.ts` / `douglas.ts`): `ballotProposalNotice` (Arapahoe on) and `millRateChangedBadge` (Arapahoe off for this period so Changed does not compete). Curated JSON: `public/data/arapahoe-ballot-proposal-notice.json`. Lookup: `src/lib/ballotProposalNotice.ts`. Docs: `docs/county-config.md`, locked-decisions.",
+      "AUTH coverage (property-tax Notice only): Littleton schools `0601` 4A; Bennett Fire `4060` 7G (revenue-limit waiver; sales-tax 7F omitted); Bennett schools `0901` 5A; Hills at Cherry Creek MD `4365` 6A. Sales-tax Notice items (Aurora / Centennial / Sheridan / Bennett Fire 7F) are out of scope. Home jump: **Property tax issue(s) on the November 3, 2026 ballot** (singular when one matching measure; &quot;issue&quot; covers tax increases and revenue-limit waivers); same four authorities on home and levy tiles. Locked report: same red jump under Own|Rent when the stack includes a Notice AUTH; scrolls to + arrive-highlights the first matching levy tile (`ballotProposalNotice` flag). e2e: unlocked home jump, locked first-tile jump (AUTH `0601`), Douglas scope hides jump; metro-yoy updated for Changed-off Arapahoe.",
+      "Fiscal year popover: budget year those dollar figures apply to; &quot;first full fiscal year&quot; = authority estimate for that first full year after the measure would take effect; names the county Clerk election notice (TABOR Notice PDF under Official source); range vs single-year examples; no July–June claim. Dropped baseline spending rows. In-place glosses for mill levy override and General Fund. Revenue keep-and-spend lines use plain &quot;even if … would otherwise block that&quot; (no lawyer &quot;notwithstanding&quot;). Popover for **property tax revenue limit**: 5.5% = older statute cap (DLG); 5.25% = newer 2024 statute cap (HB24B-1001); not TABOR; not your personal bill %. Bonds popover + `/glossary`: loan not free money; tax dollars pay project + interest to lenders; home-loan comparison; two example stacked bars (direct = all to project; bond = project + interest; not fixed %); ballot often stresses borrow amount over total repayment; voter ceilings kept. TABOR popover + glossary: after the cap definition, a two-half Support / Oppose bar (excess $ returned to taxpayers vs government keeps the extra $); rule text stays in its own paragraph. Glossary/flow popover body type +1 Tailwind step (`text-base` / `sm:text-lg`); panel base and related chrome bumped with it; sm+/lg width/height unchanged.",
+    ],
+  },
+  {
     version: "5.26.0",
     date: "2026-10-02",
     title: "Douglas comps grid: county documents lookup + outbound PDF link",

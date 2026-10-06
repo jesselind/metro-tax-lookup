@@ -74,6 +74,8 @@ export const DOUGLAS_COUNTY_CONFIG: CountyConfig = {
     dataMartRefreshGap: false,
     millPdfTaxDistrictGap: true,
     propertyDataAccuracyWarning: false,
+    millRateChangedBadge: true,
+    ballotProposalNotice: false,
   },
   knownFailures: {
     compsPdfHostedFiles: false,

@@ -74,3 +74,17 @@ export const COLORADO_DOR_TABOR_URL = "https://tax.colorado.gov/tabor";
 /** Colorado General Assembly / Legislative Council handbook page on TABOR. */
 export const COLORADO_LEG_TABOR_URL =
   "https://content.leg.colorado.gov/content/tabor";
+
+/**
+ * Colorado Division of Local Government: statutory 5.5% property tax revenue
+ * limit (Annual Levy Law). States this is not a TABOR limit.
+ */
+export const COLORADO_DLG_55_PROPERTY_TAX_REVENUE_LIMIT_URL =
+  "https://dlg.colorado.gov/55-property-tax-revenue-limit";
+
+/**
+ * Colorado General Assembly bill that set the newer 5.25% local-government
+ * property tax revenue limit (HB24B-1001; related to SB24-233 / C.R.S. 29-1-1702).
+ */
+export const COLORADO_LEG_HB24B_1001_URL =
+  "https://leg.colorado.gov/bills/hb24b-1001";

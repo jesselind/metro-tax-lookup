@@ -13,7 +13,7 @@ export const COMPS_PDF_ICON_CONTROL_CLASS =
   "inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent p-0 text-slate-600 outline-offset-2 transition-colors hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
 
 const PANEL_CLASS =
-  "z-50 max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white p-3 text-left text-sm leading-relaxed text-slate-800 shadow-lg";
+  "z-50 max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white p-3 text-left text-base leading-relaxed text-slate-800 shadow-lg";
 
 type CountyCompsPdfHelpPopoverProps = {
   ariaLabel: string;

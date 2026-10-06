@@ -13,6 +13,7 @@
 import { CountyCompsPdfAssessorAvailabilityCopy } from "@/components/CountyCompsPdfGuidance";
 import { PreserveSessionDocLink } from "@/components/PreserveSessionDocLink";
 import {
+  TermBondsFullBody,
   TermDebtFreeSchoolsMillLevyFullBody,
   TermDeBrucingFullBody,
   TermMillLevyFullBody,
@@ -817,6 +818,14 @@ export function TermMillLevyAside() {
   );
 }
 
+export function TermBondsAside() {
+  return (
+    <TermAside id="term-bonds" title="Bonds" titleId="term-bonds-title">
+      <TermBondsFullBody />
+    </TermAside>
+  );
+}
+
 export function TermDebtFreeSchoolsMillLevyAside() {
   return (
     <TermAside
@@ -905,6 +914,7 @@ export function AllTermDefinitionAsides() {
       <TermAinAside />
       <TermAssessedValueAside />
       <TermAssessmentYearAside />
+      <TermBondsAside />
       <TermCompsAside />
       <TermDataMartAside />
       <TermDeBrucingAside />

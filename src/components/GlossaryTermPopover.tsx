@@ -20,6 +20,10 @@ import {
   TermPinBriefBody,
   TermTagBriefBody,
   TermTaborBriefBody,
+  TermFiscalYearBriefBody,
+  TermStatuteLimitBriefBody,
+  TermPropertyTaxRevenueLimitBriefBody,
+  TermBondRepaymentBriefBody,
   levyModalTermRegistry,
   parcelGlossaryTermBriefRegistry,
   type ParcelGlossaryTermId,
@@ -49,7 +53,11 @@ type ExtraFlowGlossaryTermId =
   | "term-de-brucing"
   | "term-tabor"
   | "term-eligible-electors"
-  | "term-aggregate-debt";
+  | "term-aggregate-debt"
+  | "term-fiscal-year"
+  | "term-statute-limit"
+  | "term-property-tax-revenue-limit"
+  | "term-bond-repayment";
 
 /** Terms with a brief popover on the property/levy flow (not only parcel registry). */
 export type FlowGlossaryTermId =
@@ -84,6 +92,22 @@ const EXTRA_BRIEFS: Record<
   "term-aggregate-debt": {
     title: "Aggregate debt",
     Brief: TermAggregateDebtBriefBody,
+  },
+  "term-fiscal-year": {
+    title: "Fiscal year",
+    Brief: TermFiscalYearBriefBody,
+  },
+  "term-statute-limit": {
+    title: "Statute limit",
+    Brief: TermStatuteLimitBriefBody,
+  },
+  "term-property-tax-revenue-limit": {
+    title: "Property tax revenue limit",
+    Brief: TermPropertyTaxRevenueLimitBriefBody,
+  },
+  "term-bond-repayment": {
+    title: "Bond repayment",
+    Brief: TermBondRepaymentBriefBody,
   },
 };
 
@@ -184,7 +208,7 @@ export function GlossaryTermPopover({
       {body}
       {afterBrief}
       {showGlossaryLink ? (
-        <p className="border-t border-slate-200 pt-2 text-sm leading-snug">
+        <p className="border-t border-slate-200 pt-2 text-base leading-snug">
           <GlossaryFullDefinitionLink termId={termId} />
         </p>
       ) : null}

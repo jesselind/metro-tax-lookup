@@ -135,6 +135,28 @@ export type CountyFeatures = {
    * honesty chrome until fixed.
    */
   propertyDataAccuracyWarning: boolean;
+  /**
+   * Amber **Changed** badge on levy tiles when AUTH mill rates moved year over
+   * year (Levy % history). Set **false** to hide those badges (e.g. during a
+   * county TABOR Notice / ballot period so the ballot badge is the primary cue).
+   *
+   * Flip with {@link CountyFeatures.ballotProposalNotice} in the county file
+   * (`arapahoe.ts` / `douglas.ts`). Docs: `docs/county-config.md`.
+   */
+  millRateChangedBadge: boolean;
+  /**
+   * White **On the ballot** badge on matching levy tiles + ballot-proposal
+   * section at the top of the levy detail dialog (below header mills/%, above
+   * the YoY % box). Curated rows live in
+   * `public/data/{countyId}-ballot-proposal-notice.json` (Arapahoe: Nov 2026
+   * Clerk & Recorder TABOR Notice). Set **false** after the election (or when
+   * this county has no Notice coverage) to hide badge + section without
+   * deleting the JSON.
+   *
+   * Flip with {@link CountyFeatures.millRateChangedBadge} in the county file.
+   * Lookup: `src/lib/ballotProposalNotice.ts`. Docs: `docs/county-config.md`.
+   */
+  ballotProposalNotice: boolean;
 };
 
 export type CountyFeatureKey = keyof CountyFeatures;

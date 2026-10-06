@@ -12,8 +12,10 @@
 import type { FC } from "react";
 import type { LevyModalTermId } from "@/lib/levyModalTermIds";
 import {
+  COLORADO_DLG_55_PROPERTY_TAX_REVENUE_LIMIT_URL,
   COLORADO_DOR_TABOR_URL,
   COLORADO_DPT_ASSESSED_VALUE_SECTION_URL,
+  COLORADO_LEG_HB24B_1001_URL,
   COLORADO_LEG_TABOR_URL,
 } from "@/lib/arapahoeCountyUrls";
 import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
@@ -27,9 +29,11 @@ import {
 } from "@/content/debtFreeSchoolsMillLevy";
 import { millLevyAssessedExampleText } from "@/content/millLevySummaryCopy";
 import { LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS } from "@/lib/levyAuthorityChain";
+import { BondTaxDollarBars } from "@/components/BondTaxDollarBars";
+import { TaborSupportOpposeBar } from "@/components/TaborSupportOpposeBar";
 
 const BRIEF_P =
-  "text-sm leading-relaxed text-slate-800 sm:text-base";
+  "text-base leading-relaxed text-slate-800 sm:text-lg";
 const FULL_P =
   "mt-3 text-base leading-relaxed text-slate-700 sm:text-lg";
 
@@ -252,18 +256,81 @@ export function TermBondsBriefBody() {
       <p className={BRIEF_P}>
         <strong className="font-semibold text-slate-900">Bonds</strong>
         {" "}
-        are loans for big projects such as school buildings. When voters approve a
-        bond measure, they usually set ceilings: how much the district may borrow,
-        and how much property tax may go to repay that debt each year.
+        are loans. The government borrows money now for a big project (such as a
+        building), then uses tax money over many years to pay that loan back.
+        That is not free money for the project.
       </p>
       <p className={BRIEF_P}>
-        A yes vote is permission within those caps, not a promise that one fixed
-        chunk of today&apos;s published total rate is already locked in as
-        building-debt tax. The district may sell the loans in pieces over several
-        years. The bond-repayment part of your school tax can rise or fall as
-        loans are issued or paid down.
+        Tax dollars on a bond do two jobs. Some pay for the project. Some pay
+        interest and related costs to the banks or investors who loaned the
+        money. Over time, taxpayers usually repay more than the amount
+        borrowed, much like a home loan costs more than the purchase price.
+      </p>
+      <BondTaxDollarBars />
+      <p className={BRIEF_P}>
+        A yes vote usually sets two upper limits: how much the district may
+        borrow, and how much tax may go each year to pay it back. It does not
+        lock in one fixed bond tax on today&apos;s bill. The district may borrow
+        in pieces over several years. The bond part of the tax can go up when
+        new loans are sold, and down as old loans are paid off.
       </p>
     </div>
+  );
+}
+
+/** Full `/glossary` aside; same takeaways as {@link TermBondsBriefBody}. */
+export function TermBondsFullBody() {
+  return (
+    <>
+      <p className={FULL_P}>
+        <dfn className="font-semibold not-italic text-slate-900">Bonds</dfn>
+        {" "}
+        are loans. A local government borrows money now for a big project such
+        as a school or fire station, then uses tax money over many years to pay
+        that loan back. Borrowing is not free money for the project.
+      </p>
+      <p className={FULL_P}>
+        Tax dollars on a bond do two jobs. Some pay for the project itself. Some
+        pay interest and related costs to the banks or investors who loaned the
+        money. Over time, taxpayers usually repay more than the amount borrowed,
+        much like a home loan costs more than the purchase price. That financing
+        cost is normal. It still matters on the ballot: wording often highlights
+        the project and the amount borrowed, while the higher total repayment
+        cost (principal plus interest) is easier to miss.
+      </p>
+      <BondTaxDollarBars className="mt-3" />
+      <p className={FULL_P}>
+        A yes vote usually sets two upper limits: how much the district may
+        borrow, and how much tax may go each year to pay it back. It does not
+        lock in one fixed bond tax on today&apos;s bill. The district may borrow
+        in pieces over several years. The bond part of the tax can go up when
+        new loans are sold, and down as old loans are paid off.
+      </p>
+    </>
+  );
+}
+
+/**
+ * Ballot notice fact labels: bond principal (amount borrowed) vs total
+ * repayment cost (principal + interest and other costs, often a maximum).
+ */
+export function TermBondRepaymentBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">Bond repayment</strong>
+      {" "}
+      is what it costs to pay the loan back over time. The county Clerk&apos;s
+      election notice often shows two ceilings:{" "}
+      <strong className="font-semibold text-slate-900">bond principal</strong>
+      {" "}
+      (how much may be borrowed) and a higher{" "}
+      <strong className="font-semibold text-slate-900">
+        total bond repayment cost
+      </strong>
+      {" "}
+      (principal plus interest and related costs, usually a maximum). Those are
+      district- or city-wide caps, not a dollar amount for one property.
+    </p>
   );
 }
 
@@ -504,8 +571,11 @@ export function TermTaborBriefBody() {
         {" "}
         (Taxpayer&apos;s Bill of Rights) is a Colorado constitution rule. It
         caps how much tax money many state and local governments may keep.
+      </p>
+      <TaborSupportOpposeBar className="mt-2" />
+      <p className={BRIEF_P}>
         Without voter permission to keep more, money collected above that limit
-        must go back to taxpayers. It also usually requires voter approval for
+        must go back to taxpayers. TABOR also usually requires voter approval for
         new taxes or higher tax rates.
       </p>
       <p className={BRIEF_P}>
@@ -533,6 +603,92 @@ export function TermTaborBriefBody() {
   );
 }
 
+/** Budget year the ballot-notice dollar figures apply to. */
+export function TermFiscalYearBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      A{" "}
+      <strong className="font-semibold text-slate-900">fiscal year</strong>
+      {" "}
+      is the budget year those dollar figures apply to. When this panel says
+      &quot;first full fiscal year,&quot; the proposed tax increase is the
+      authority&apos;s estimate for that first full year after the measure would
+      take effect. The county Clerk&apos;s election notice (the TABOR Notice PDF
+      linked under Official source) sometimes labels that year as a range (for
+      example 2026–2027) and sometimes as a single year (for example 2026).
+    </p>
+  );
+}
+
+/** Legal ceiling named in ballot text (e.g. a C.R.S. school finance cap). */
+export function TermStatuteLimitBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      A{" "}
+      <strong className="font-semibold text-slate-900">statute limit</strong>
+      {" "}
+      is a ceiling written into Colorado law (a statute). The ballot may ask for
+      tax amounts up to that legal maximum.
+    </p>
+  );
+}
+
+/**
+ * Statutory property tax revenue growth caps (5.25% vs 5.5%), not TABOR.
+ * Brief for ballot-proposal Notice copy.
+ */
+export function TermPropertyTaxRevenueLimitBriefBody() {
+  return (
+    <div className="space-y-2">
+      <p className={BRIEF_P}>
+        A{" "}
+        <strong className="font-semibold text-slate-900">
+          property tax revenue limit
+        </strong>
+        {" "}
+        is a Colorado law that caps how much a local government&apos;s total
+        property-tax collections may grow from one year to the next. Local
+        government here means a fire district, a metro district, and so on. It
+        is not{" "}
+        <strong className="font-semibold text-slate-900">TABOR</strong>
+        {". "}
+        The percent on the ballot is not how much your own tax bill goes up.
+      </p>
+      <p className={BRIEF_P}>
+        Why two numbers? Colorado wrote this kind of ceiling more than once. An
+        older law uses{" "}
+        <strong className="font-semibold text-slate-900">5.5%</strong>
+        {". "}
+        A 2024 law uses{" "}
+        <strong className="font-semibold text-slate-900">5.25%</strong>
+        {". "}
+        The ballot names which ceiling that question would remove. If voters say
+        yes, the district no longer has to stay under that ceiling.
+      </p>
+      <p className={BRIEF_P}>
+        Official sources:{" "}
+        <a
+          href={COLORADO_DLG_55_PROPERTY_TAX_REVENUE_LIMIT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          state page about the 5.5% limit<span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {", and the "}
+        <a
+          href={COLORADO_LEG_HB24B_1001_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={COUNTY_EXTERNAL_LINK_CLASS}
+        >
+          2024 state law that set the 5.25% limit<span className="sr-only"> (opens in a new tab)</span>
+        </a>.
+      </p>
+    </div>
+  );
+}
+
 export function TermTaborFullBody() {
   return (
     <>
@@ -541,10 +697,13 @@ export function TermTaborFullBody() {
         {" "}
         stands for the Taxpayer&apos;s Bill of Rights. Colorado voters added it
         to the state constitution in 1992 (Article X, Section 20). It caps how
-        much tax money many state and local governments may keep. Without voter
-        permission to keep more, money collected above that limit must go back
-        to taxpayers. TABOR also usually requires voter approval before a
-        government adopts a new tax or raises a tax rate.
+        much tax money many state and local governments may keep.
+      </p>
+      <TaborSupportOpposeBar />
+      <p className={FULL_P}>
+        Without voter permission to keep more, money collected above that limit
+        must go back to taxpayers. TABOR also usually requires voter approval
+        before a government adopts a new tax or raises a tax rate.
       </p>
       <p className={FULL_P}>
         On a property-tax bill, some local governments stay under the keep-limit
@@ -1070,9 +1229,13 @@ export function TermParcelConstructionTypeBriefBody() {
   );
 }
 
-/** Wider, scrollable panel for parcel glossary popovers (summary tiles + property details). */
+/**
+ * Scrollable panel for glossary / flow term popovers.
+ * Mobile stays tight; sm+ and lg get more width and height so briefs + charts
+ * (e.g. TABOR Support/Oppose bar) can breathe.
+ */
 export const PARCEL_GLOSSARY_POPOVER_PANEL_CLASS =
-  "max-w-[min(22rem,calc(100vw-2rem))] max-h-[min(18rem,60vh)] overflow-y-auto overscroll-contain";
+  "max-w-[min(22rem,calc(100vw-2rem))] sm:max-w-[min(28rem,calc(100vw-2.5rem))] lg:max-w-[min(36rem,calc(100vw-3rem))] max-h-[min(18rem,60vh)] sm:max-h-[min(28rem,75vh)] lg:max-h-[min(32rem,80vh)] overflow-y-auto overscroll-contain";
 
 export const PARCEL_GLOSSARY_TERM_IDS = [
   "term-property-classification",

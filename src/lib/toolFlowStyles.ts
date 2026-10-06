@@ -503,6 +503,53 @@ export const SUMMARY_TILE_STATUS_BADGE_BASE_CLASS =
 export const LEVY_CHANGED_BADGE_TONE_CLASS =
   "border-amber-950 bg-amber-300 text-amber-950";
 
+/**
+ * White On the ballot badge (levy tiles during a TABOR Notice period).
+ * Phone-first large type; desktop stays smaller. Border reads white–black–white:
+ * outer white rim, inset black line, white fill.
+ */
+export const BALLOT_PROPOSAL_NOTICE_BADGE_BASE_CLASS =
+  "inline-flex shrink-0 items-center justify-center gap-2.5 whitespace-nowrap rounded-md border-2 border-white bg-white px-3.5 py-3.5 text-lg font-extrabold uppercase leading-none tracking-wide text-black shadow-[inset_0_0_0_2px_#000] sm:gap-2 sm:px-3 sm:py-2.5 sm:text-base";
+
+/**
+ * Locked ballot-proposal panel chrome (levy detail dialog).
+ *
+ * Pair with the mill YoY **Historical change** box (`levyYoYSurfaceClasses`):
+ * same light fill (`bg-red-50`) + dark text so both stay readable, but do **not**
+ * share a solid frame — ballot uses a thick dashed brighter alarm border so the
+ * two panels do not look related.
+ *
+ * Do not swap back to solid-red filled headers / white-on-red body (hard to read)
+ * or dark brick borders. Source of truth for the urgent surface class below.
+ *
+ * Closed-face layout (see `BallotProposalNoticeSection`):
+ * 1. Eyebrow {@link BALLOT_PROPOSAL_NOTICE_EYEBROW_CLASS} + warning triangle
+ * 2. Election heading (date line unchanged)
+ * 3. Punchy closed summary
+ * 4. Collapsed disclosure (default closed)
+ */
+export const BALLOT_PROPOSAL_NOTICE_PANEL_URGENT_CLASS =
+  "border-4 border-dashed border-red-600 bg-red-50 text-red-950";
+
+/**
+ * Proposed tax increase / revenue-limit eyebrow on the ballot panel.
+ * One step larger than body/base so it leads the closed face.
+ */
+export const BALLOT_PROPOSAL_NOTICE_EYEBROW_CLASS =
+  "flex items-center gap-2 text-lg font-extrabold uppercase leading-none tracking-wide text-red-800 sm:gap-2.5 sm:text-xl";
+
+/** Warning triangle slot beside the ballot eyebrow. */
+export const BALLOT_PROPOSAL_NOTICE_EYEBROW_ICON_CLASS =
+  "inline-flex size-7 shrink-0 items-center justify-center text-red-600 sm:size-8";
+
+/** Non-urgent fallback when a Notice entry is not an increase tone. */
+export const BALLOT_PROPOSAL_NOTICE_PANEL_NEUTRAL_CLASS =
+  "border-2 border-slate-300 bg-slate-50 text-slate-900";
+
+/** Home address-search jump to the county Notice list (solid red; full width). */
+export const HOME_BALLOT_PROPOSAL_NOTICE_JUMP_BUTTON_CLASS =
+  "w-full cursor-pointer rounded-md border border-red-900/30 bg-red-700 px-5 py-3 text-lg font-bold uppercase leading-snug tracking-wide text-white shadow-md shadow-red-950/15 transition-colors hover:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600/45 focus-visible:ring-offset-2";
+
 /** Red county-gap badge (e.g. Prior $ missing on mill chart). Light fill + dark text, same recipe as Changed. */
 export const COUNTY_SERVICE_GAP_BADGE_TONE_CLASS =
   "border-red-950 bg-red-200 text-red-950";

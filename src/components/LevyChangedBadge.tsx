@@ -91,6 +91,9 @@ export type LevyChangedBadgeProps = {
 /**
  * Amber Changed cue used on levy tiles and the Mill levy summary chip.
  * Direction arrows are decorative; the caller announces direction if needed.
+ *
+ * Gate with `CountyFeatures.millRateChangedBadge` (Arapahoe off during the
+ * Nov 2026 TABOR Notice period). See `docs/county-config.md`.
  */
 export function LevyChangedBadge({
   millsDelta,
