@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.27.2",
+    date: "2026-10-06",
+    title:
+      "Playwright: stable street-address fill on Linux WebKit (React 19)",
+    highlights: [
+      "`fillStreetAddress` (`e2e/helpers/addressLookup.ts`): click, clear, `pressSequentially`, then `expect().toPass()` until the controlled combobox `inputValue` matches. Replaces bare `fill()`, which on Linux WebKit CI often skipped React 19 `onChange` so Search ran empty and the levy stack never appeared. One path for all browsers; every spec that searches via the helper picks this up.",
+    ],
+  },
+  {
     version: "5.27.1",
     date: "2026-10-06",
     title: "TABOR Support/Oppose bar: aligned wraps in popover and glossary",

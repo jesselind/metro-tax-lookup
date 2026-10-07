@@ -16,9 +16,9 @@ export const STREET_ADDRESS_FIELD_LABEL = "Street address";
  * Locator for the home street address field.
  *
  * The control is an `<input>` with `role="combobox"` (street typeahead), so
- * `getByRole("textbox", …)` will not find it. Prefer `getByLabel` so fill/smoke
- * stay stable if the ARIA role is adjusted; assert `combobox` in smoke when you
- * want to lock the typeahead a11y contract.
+ * `getByRole("textbox", …)` will not find it. Prefer `getByLabel` so search
+ * helpers stay stable if the ARIA role is adjusted; assert `combobox` in smoke
+ * when you want to lock the typeahead a11y contract.
  */
 export function streetAddressField(page: Page): Locator {
   return page.getByLabel(STREET_ADDRESS_FIELD_LABEL, { exact: true });
@@ -46,10 +46,19 @@ export function viewDistrictDetailsButton(
 }
 
 /**
- * Fill the street combobox and wait until the controlled value matches.
+ * Focus the street combobox and type `address` until React controlled state matches.
  *
- * WebKit on Linux CI can report fill done before React state updates; Search
- * then runs empty ("Enter your street address.") and success UI never appears.
+ * The home field is `value={simpleAddressLine}` / `onChange` → `setSimpleAddressLine`.
+ * On Linux CI WebKit, Playwright `fill()` often sets the DOM without firing that
+ * React 19 `onChange`, so Search runs empty and the levy stack never appears.
+ * Chromium, Firefox, and macOS WebKit usually accept `fill()`; we still use one
+ * path everywhere.
+ *
+ * Resident path: click (runs the field's `onFocus` index prefetch), clear, then
+ * `pressSequentially` so each character emits keydown/input/keyup. Assert with
+ * `inputValue` (controlled `value` prop). Wrap in `expect().toPass()` so Playwright
+ * retries the whole cycle if hydration or WebKit drops the first key sequence.
+ *
  * Call after `installSyntheticCountyData(page)` (when needed) and `page.goto("/")`.
  */
 export async function fillStreetAddress(
@@ -57,8 +66,15 @@ export async function fillStreetAddress(
   address: string,
 ): Promise<Locator> {
   const street = streetAddressField(page);
-  await street.fill(address);
-  await expect(street).toHaveValue(address);
+  await expect(street).toBeEditable();
+
+  await expect(async () => {
+    await street.click();
+    await street.clear();
+    await street.pressSequentially(address);
+    expect(await street.inputValue()).toBe(address);
+  }).toPass();
+
   return street;
 }
 
