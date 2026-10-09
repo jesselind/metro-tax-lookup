@@ -9,8 +9,11 @@ import {
   ballotProposalCountyHomeClosedFace,
   ballotProposalNoticeEntriesForCounty,
   ballotProposalNoticeHomeEntriesForCounty,
+  ballotProposalParcelAnnualImpactDollars,
   findBallotProposalNoticeEntry,
+  noticeAdditionalMillsTotalForMeasures,
   parcelStackHasBallotProposalNotice,
+  parseNoticeAdditionalMills,
 } from "@/lib/ballotProposalNotice";
 import { ARAPAHOE_COUNTY_CONFIG, DOUGLAS_COUNTY_CONFIG } from "@/lib/countyConfig";
 
@@ -92,6 +95,40 @@ describe("ballotProposalNotice", () => {
       true,
     );
     expect(entry!.measures[0]!.noticeSource.url).toContain("#page=23");
+    expect(noticeAdditionalMillsTotalForMeasures(entry!.measures)).toBe(3.688);
+    // 20_000 assessed × 3.688 mills / 1000 → $74
+    expect(
+      ballotProposalParcelAnnualImpactDollars({
+        measures: entry!.measures,
+        assessed: 20_000,
+      }),
+    ).toBe(74);
+  });
+
+  it("parcel impact is null without Notice mills or assessed", () => {
+    expect(parseNoticeAdditionalMills("3.688 mills")).toBe(3.688);
+    expect(parseNoticeAdditionalMills("not a rate")).toBeNull();
+    const littleton = findBallotProposalNoticeEntry({
+      countyId: "arapahoe",
+      levyLineCode: "0601",
+    });
+    expect(noticeAdditionalMillsTotalForMeasures(littleton!.measures)).toBeNull();
+    expect(
+      ballotProposalParcelAnnualImpactDollars({
+        measures: littleton!.measures,
+        assessed: 20_000,
+      }),
+    ).toBeNull();
+    const hills = findBallotProposalNoticeEntry({
+      countyId: "arapahoe",
+      levyLineCode: "4365",
+    });
+    expect(
+      ballotProposalParcelAnnualImpactDollars({
+        measures: hills!.measures,
+        assessed: null,
+      }),
+    ).toBeNull();
   });
 
   it("home list keeps property-tax measures and revenue-limit waivers only", () => {

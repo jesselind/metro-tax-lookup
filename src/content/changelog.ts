@@ -27,6 +27,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.28.0",
+    date: "2026-10-08",
+    title:
+      "Ballot panel parcel impact + Property details spacing before Sale history",
+    highlights: [
+      "Levy detail ballot-proposal closed face: when the Notice publishes additional mills and this year's assessed is known, show **You'll pay $X more per year.*** with a short footnote (current assessed × Notice mills; not the tax bill). Unlocked home list omits the line (`parcelAssessedForImpact`). Fail closed without mills. First Notice row with mills: Hills at Cherry Creek AUTH `4365` 6A. e2e: Hills dialog impact + home omits the line.",
+      "Property details: keep Property classification with the first panel under lead stack; use shared `DASHBOARD_SECTION_STACK_CLASS` before Sale history / building / permits (same TOC air as between major sections). Extended tables reuse that stack class instead of one-off `space-y-*`.",
+    ],
+  },
+  {
     version: "5.27.2",
     date: "2026-10-06",
     title:

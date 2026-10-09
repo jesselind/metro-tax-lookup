@@ -26,6 +26,7 @@ import { isBusinessPersonalPropertyAccount } from "@/lib/situsMultiPinChooser";
 import {
   PARCEL_RECORD_EXTENDED_SHELL_CLASS,
   DASHBOARD_SECTION_LEAD_STACK_CLASS,
+  DASHBOARD_SECTION_STACK_CLASS,
   TOOL_DISCLOSURE_ROW_ALIGN_CLASS,
 } from "@/lib/toolFlowStyles";
 
@@ -190,7 +191,7 @@ export function ParcelRecordExtendedSection({
 
       {loading || loadFailed || displayRecord == null ? (
         <div
-          className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-6`}
+          className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} ${DASHBOARD_SECTION_STACK_CLASS}`}
           aria-live={loading ? "polite" : undefined}
         >
           {loading ? (
@@ -213,7 +214,9 @@ export function ParcelRecordExtendedSection({
         </div>
       ) : (
         <ParcelRecordReportIdsProvider pin={pin} ain={displayRecord.ain}>
-          <div className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} space-y-8`}>
+          <div
+            className={`${PARCEL_RECORD_EXTENDED_SHELL_CLASS} ${DASHBOARD_SECTION_STACK_CLASS}`}
+          >
             {includeValueSection ? (
               <ParcelRecordValueSection
                 record={displayRecord}
@@ -250,7 +253,7 @@ export function ParcelRecordExtendedSection({
                 id={saleBuildingLandPanelId}
                 hidden={!showSaleBuildingLand}
                 aria-labelledby={saleBuildingLandToggleId}
-                className="space-y-6 border-t border-slate-200 pt-4"
+                className={`${DASHBOARD_SECTION_STACK_CLASS} border-t border-slate-200 pt-4`}
               >
                 {saleBuildingLandTables}
               </div>

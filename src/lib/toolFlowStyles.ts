@@ -526,7 +526,8 @@ export const BALLOT_PROPOSAL_NOTICE_BADGE_BASE_CLASS =
  * 1. Eyebrow {@link BALLOT_PROPOSAL_NOTICE_EYEBROW_CLASS} + warning triangle
  * 2. Election heading (date line unchanged)
  * 3. Punchy closed summary
- * 4. Collapsed disclosure (default closed)
+ * 4. Optional parcel impact line (levy modal; Notice mills + assessed only)
+ * 5. Collapsed disclosure (default closed)
  */
 export const BALLOT_PROPOSAL_NOTICE_PANEL_URGENT_CLASS =
   "border-4 border-dashed border-red-600 bg-red-50 text-red-950";

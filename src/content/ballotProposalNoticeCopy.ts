@@ -8,8 +8,27 @@
  * (`BallotProposalNoticeSection`). Keep labels short and parallel.
  */
 
+import { formatUsdWhole } from "@/lib/formatUsd";
+
 /** Expand control for Ballot Issue blocks (collapsed by default). */
 export const BALLOT_PROPOSAL_NOTICE_DISCLOSURE = "See what's on the ballot";
+
+/**
+ * Closed-face parcel line when Notice mills + this year's assessed are known
+ * (levy modal only; omit on the unlocked home list).
+ */
+export function ballotProposalParcelImpactClosedLine(
+  annualDollarsMore: number,
+): string {
+  return `You'll pay ${formatUsdWhole(annualDollarsMore)} more per year.*`;
+}
+
+/**
+ * Footnote for {@link ballotProposalParcelImpactClosedLine}. Keeps the closed
+ * face honest: current assessed × Notice mills, not the tax bill.
+ */
+export const BALLOT_PROPOSAL_PARCEL_IMPACT_DISCLAIMER =
+  "*Estimate from this year's assessed value and the mills in the election notice. Not your tax bill.";
 
 /**
  * Red jump label (unlocked home Notice list, or locked report → first tile).
