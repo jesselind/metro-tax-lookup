@@ -2327,7 +2327,7 @@ export function HomeParcelAddressLookup({
                     </ul>
                   ) : null}
                 </div>
-                <div className="flex w-full min-w-0 flex-col md:w-auto md:flex-none md:justify-end">
+                <div className="flex w-full min-w-0 flex-row gap-2 md:w-auto md:flex-none md:justify-end">
                   <button
                     type="submit"
                     className={ADDRESS_FORM_ACTION_BTN_CLASS}
@@ -2352,6 +2352,14 @@ export function HomeParcelAddressLookup({
                         Search
                       </>
                     )}
+                  </button>
+                  <button
+                    type="button"
+                    className={HOME_ADDRESS_LOOKUP_DEMO_CLASS}
+                    onClick={() => void onLoadDemoProperty()}
+                    disabled={busy || levyLoadBusy}
+                  >
+                    Try demo property
                   </button>
                 </div>
               </>
@@ -2506,18 +2514,6 @@ export function HomeParcelAddressLookup({
               </>
             )}
             </form>
-            {!showAdvancedAddressFields ? (
-              <div className="flex w-full min-w-0 flex-col xl:w-auto xl:flex-none xl:shrink-0 xl:justify-end">
-                <button
-                  type="button"
-                  className={HOME_ADDRESS_LOOKUP_DEMO_CLASS}
-                  onClick={() => void onLoadDemoProperty()}
-                  disabled={busy || levyLoadBusy}
-                >
-                  Try demo property
-                </button>
-              </div>
-            ) : null}
           </div>
           <p className="mt-3 text-center text-base font-semibold tracking-tight text-slate-900 sm:text-lg">
             We do not save your address. This uses publicly available data. We

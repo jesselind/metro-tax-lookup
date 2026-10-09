@@ -77,10 +77,11 @@ function scopeOptionId(scope: CountySearchScope): string {
  * Quiet light-gray radiogroup (not Own | Rent weight). Shown only when two or
  * more situs-enabled counties are wired (`showCountySearchScopeControl`).
  *
- * Layout: stacks above the address form below `lg` (segment full width); shares a
- * row from `lg` with address, Search, and Try demo (`HomeParcelAddressLookup` flex
- * row). CSS: {@link HOME_ADDRESS_LOOKUP_COUNTY_SEGMENT_CLASS}
- * and {@link HOME_ADDRESS_LOOKUP_COUNTY_OPTION_CLASS} + globals.css rules.
+ * Layout: stacks above the address form below `xl` (segment full width); shares a
+ * row from `xl` with the address form (`HomeParcelAddressLookup` flex row). Search
+ * and Try demo stay side by side inside the form. CSS:
+ * {@link HOME_ADDRESS_LOOKUP_COUNTY_SEGMENT_CLASS} and
+ * {@link HOME_ADDRESS_LOOKUP_COUNTY_OPTION_CLASS} + globals.css rules.
  */
 export function CountySearchScopeSwitch({
   value,

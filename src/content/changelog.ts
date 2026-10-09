@@ -27,6 +27,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.28.1",
+    date: "2026-10-09",
+    title:
+      "Home lookup: Search and Try demo property stay side by side on mobile",
+    highlights: [
+      "Address lookup actions: Search and Try demo property share one row at every viewport (no full-width Try demo stack under the form). Equal flex share below `md`; content-width beside the street field from `md`. County segment still stacks above the form until `xl`. Docs: `docs/county-config.md`.",
+    ],
+  },
+  {
     version: "5.28.0",
     date: "2026-10-08",
     title:

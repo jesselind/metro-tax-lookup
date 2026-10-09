@@ -798,13 +798,16 @@ export const HOME_ADDRESS_LOOKUP_LABEL_CLASS =
 export const HOME_ADDRESS_LOOKUP_INPUT_CLASS =
   "home-address-lookup-input min-w-0 w-full";
 
-/** Search submit button. Full width on mobile; content-width from md beside inputs. */
+/**
+ * Search submit button. Shares the actions row with Try demo (flex-1 on narrow;
+ * content-width from md beside the street field). See `.home-address-lookup-search`.
+ */
 export const HOME_ADDRESS_LOOKUP_SEARCH_CLASS =
-  "home-address-lookup-search w-full min-w-0 md:w-auto md:min-w-[8.75rem] md:flex-none";
+  "home-address-lookup-search md:min-w-[8.75rem]";
 
 /**
- * Try demo property. Full width when the lookup cluster is stacked; content-width
- * on the lg+ row. See `.home-address-lookup-demo` in globals.css.
+ * Try demo property. Always beside Search on the actions row. See
+ * `.home-address-lookup-demo` in globals.css.
  */
 export const HOME_ADDRESS_LOOKUP_DEMO_CLASS = "home-address-lookup-demo";
 

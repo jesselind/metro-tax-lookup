@@ -112,12 +112,12 @@ summary {
   }
 
   .home-address-lookup-search {
-    @apply box-border h-12 inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 px-5 text-base font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55;
+    @apply box-border h-12 inline-flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 px-3 text-base font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 md:w-auto md:flex-none md:px-5;
   }
 
-  /** Outline sibling of Search on the lookup row. Stacked: full width; xl+: content-width. */
+  /** Outline sibling of Search; always shares the actions row (never stacks under Search). */
   .home-address-lookup-demo {
-    @apply box-border h-12 inline-flex w-full shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-slate-300 bg-white px-5 text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 xl:w-auto xl:flex-none;
+    @apply box-border h-12 inline-flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 md:w-auto md:flex-none md:px-5;
   }
 
   /** Stacked: full-width bar; xl+: content-width segments. */
