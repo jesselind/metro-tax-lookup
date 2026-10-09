@@ -1918,18 +1918,28 @@ export function HomeParcelAddressLookup({
       <div className={DASHBOARD_SECTION_LEAD_STACK_CLASS}>
         {propertyDetailsHeader}
       </div>
-      <ParcelRecordPanel
-        loading={parcelRecordLoading}
-        loadFailed={parcelRecordLoadFailed}
-        record={parcelRecord}
-        pin={trimmedParcelPin}
-        demoMode={isDemoMode}
-        rentMode={isRentMode}
-        countyConfig={activeCountyConfig}
-        parcelRecordLinkYear={parcelSummaryYears?.parcelRecordLinkYear ?? null}
-      />
-      {propertyClassificationLine}
-      {parcelRecordExtended}
+      {/*
+        Lead stack keeps classification with the first panel; section stack
+        puts the same TOC air before Sale history / building / permits.
+      */}
+      <div className={DASHBOARD_SECTION_STACK_CLASS}>
+        <div className={DASHBOARD_SECTION_LEAD_STACK_CLASS}>
+          <ParcelRecordPanel
+            loading={parcelRecordLoading}
+            loadFailed={parcelRecordLoadFailed}
+            record={parcelRecord}
+            pin={trimmedParcelPin}
+            demoMode={isDemoMode}
+            rentMode={isRentMode}
+            countyConfig={activeCountyConfig}
+            parcelRecordLinkYear={
+              parcelSummaryYears?.parcelRecordLinkYear ?? null
+            }
+          />
+          {propertyClassificationLine}
+        </div>
+        {parcelRecordExtended}
+      </div>
     </section>
   ) : null;
 

@@ -651,6 +651,7 @@ export function LevyLineDistrictDetailDialog({
             {ballotProposalNoticeEntry ? (
               <BallotProposalNoticeSection
                 entry={ballotProposalNoticeEntry}
+                parcelAssessedForImpact={totalAssessedForEstimate}
               />
             ) : null}
 

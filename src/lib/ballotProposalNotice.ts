@@ -16,6 +16,10 @@
  */
 
 import rawArapahoe from "../../public/data/arapahoe-ballot-proposal-notice.json";
+import {
+  annualTaxDollarsFromAssessedMills,
+  parcelAssessedForDollarEstimate,
+} from "@/lib/annualTaxFromAssessedMills";
 import { countyConfigById } from "@/lib/countyConfig";
 import { findFirstMatchingLevyEntry } from "@/lib/levyEntryMatch";
 
@@ -179,6 +183,55 @@ function noticeAdditionalMillsAsk(
   );
   const value = fact?.value?.trim();
   return value || null;
+}
+
+/**
+ * Parse a Notice mills string (e.g. "3.688 mills") to a finite positive number.
+ * Returns null when the value is missing or not a usable mill rate.
+ */
+export function parseNoticeAdditionalMills(
+  value: string | null | undefined,
+): number | null {
+  const raw = value?.trim();
+  if (!raw) return null;
+  const match = raw.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const mills = Number(match[1]);
+  if (!Number.isFinite(mills) || mills <= 0) return null;
+  return mills;
+}
+
+/**
+ * Sum of Notice-published additional mills across measures. Null when none
+ * publish a parseable mill rate (district-wide $ asks alone are not enough).
+ */
+export function noticeAdditionalMillsTotalForMeasures(
+  measures: readonly Pick<BallotProposalMeasureRecord, "fiscalFacts">[],
+): number | null {
+  let total = 0;
+  let found = false;
+  for (const measure of measures) {
+    const mills = parseNoticeAdditionalMills(noticeAdditionalMillsAsk(measure));
+    if (mills == null) continue;
+    total += mills;
+    found = true;
+  }
+  return found ? total : null;
+}
+
+/**
+ * Parcel estimate for a proposed mill increase: this year's assessed × Notice
+ * additional mills ÷ 1000 (whole dollars). Null when mills or assessed are
+ * missing — do not invent a share from district-wide dollar asks alone.
+ */
+export function ballotProposalParcelAnnualImpactDollars(options: {
+  measures: readonly Pick<BallotProposalMeasureRecord, "fiscalFacts">[];
+  assessed: number | null | undefined;
+}): number | null {
+  const assessed = parcelAssessedForDollarEstimate(options.assessed);
+  const mills = noticeAdditionalMillsTotalForMeasures(options.measures);
+  if (assessed == null || mills == null) return null;
+  return annualTaxDollarsFromAssessedMills(assessed, mills);
 }
 
 /**

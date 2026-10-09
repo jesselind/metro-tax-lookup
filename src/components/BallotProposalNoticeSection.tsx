@@ -19,7 +19,9 @@
  * 1. Red eyebrow (Proposed tax increase / revenue limit waiver) — larger type
  * 2. Election heading (unchanged date line)
  * 3. Punchy closed summary (Notice dollars / mills / waiver)
- * 4. Collapsed disclosure (default closed) — flat measure body; numbered
+ * 4. Optional parcel impact (levy modal only): you'll pay $X more + disclaimer
+ *    when Notice mills and assessed are known
+ * 5. Collapsed disclosure (default closed) — flat measure body; numbered
  *    ordered list only when an authority has more than one measure
  *
  * Surface chrome is locked in `toolFlowStyles.ts`
@@ -30,11 +32,16 @@
 import { BallotProposalNoticeClosedFace } from "@/components/BallotProposalNoticeClosedFace";
 import { DisclosureSummary } from "@/components/DisclosureSummary";
 import {
+  ballotProposalParcelAnnualImpactDollars,
   type BallotProposalBuiltMeasure,
   type BallotProposalNoticeEntry,
 } from "@/lib/ballotProposalNotice";
 import { renderBallotProposalNoticeWithInlineTerms } from "@/lib/ballotProposalNoticeInlineTerms";
-import { BALLOT_PROPOSAL_NOTICE_DISCLOSURE } from "@/content/ballotProposalNoticeCopy";
+import {
+  BALLOT_PROPOSAL_NOTICE_DISCLOSURE,
+  BALLOT_PROPOSAL_PARCEL_IMPACT_DISCLAIMER,
+  ballotProposalParcelImpactClosedLine,
+} from "@/content/ballotProposalNoticeCopy";
 import { authorityChainSourceHref } from "@/lib/sourcedRecords";
 import {
   BALLOT_PROPOSAL_NOTICE_PANEL_NEUTRAL_CLASS,
@@ -46,6 +53,12 @@ type Props = {
   entry: BallotProposalNoticeEntry;
   /** Spacing above the panel (levy modal default `mt-4`; home cards use `mt-2`). */
   className?: string;
+  /**
+   * This year's assessed for the levy line (local or school base already
+   * chosen by the caller). When set and the Notice publishes additional mills,
+   * the closed face shows a parcel "you'll pay $X more" line. Omit on home.
+   */
+  parcelAssessedForImpact?: number | null;
 };
 
 function NoticeSourceLink({
@@ -136,6 +149,7 @@ function MeasureBody({
 export function BallotProposalNoticeSection({
   entry,
   className = "mt-4",
+  parcelAssessedForImpact = null,
 }: Props) {
   const urgent = entry.usesIncreaseTone;
   const surface = urgent
@@ -144,6 +158,10 @@ export function BallotProposalNoticeSection({
   const headingId = `levy-detail-ballot-proposal-${entry.id}-heading`;
   const numberedList = entry.measures.length > 1;
   const idPrefix = `ballot-proposal-${entry.id}`;
+  const parcelImpactDollars = ballotProposalParcelAnnualImpactDollars({
+    measures: entry.measures,
+    assessed: parcelAssessedForImpact,
+  });
 
   return (
     <div
@@ -160,6 +178,22 @@ export function BallotProposalNoticeSection({
         )}
         headingId={headingId}
       />
+      {parcelImpactDollars != null ? (
+        <div className="mt-2">
+          <p
+            className="text-base font-semibold leading-relaxed text-red-950 sm:text-lg"
+            aria-describedby={`${idPrefix}-parcel-impact-disclaimer`}
+          >
+            {ballotProposalParcelImpactClosedLine(parcelImpactDollars)}
+          </p>
+          <p
+            id={`${idPrefix}-parcel-impact-disclaimer`}
+            className="mt-1 text-sm leading-relaxed text-slate-700 sm:text-base"
+          >
+            {BALLOT_PROPOSAL_PARCEL_IMPACT_DISCLAIMER}
+          </p>
+        </div>
+      ) : null}
 
       <details className="group mt-3 border-t border-red-600/30 pt-3">
         <DisclosureSummary label={BALLOT_PROPOSAL_NOTICE_DISCLOSURE} />
