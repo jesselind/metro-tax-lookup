@@ -7,7 +7,8 @@ import packageJson from "../../package.json";
 
 /** From package.json; bump when you cut a release. Also add a hand-written
  * entry at the top of `src/content/changelog.ts` (resident `/changelog` page;
- * unit test requires the current version as the newest entry). */
+ * unit test requires the current version as the newest entry). Voice and date:
+ * `.cursor/rules/changelog.mdc`. */
 export const APP_VERSION = packageJson.version;
 
 /** Mountain Time (Colorado). Same calendar day whether build runs locally or on UTC CI. */

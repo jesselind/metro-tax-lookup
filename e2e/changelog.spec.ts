@@ -4,11 +4,15 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { expect, test } from "@playwright/test";
-import { CHANGELOG_ENTRIES } from "../src/content/changelog";
+import {
+  CHANGELOG_ENTRIES,
+  changelogEntryBullets,
+} from "../src/content/changelog";
 import packageJson from "../package.json";
 
 const APP_VERSION = packageJson.version;
 const newest = CHANGELOG_ENTRIES[0]!;
+const newestFirstBullet = changelogEntryBullets(newest)[0]!;
 
 test("changelog page shows current version and release content", async ({
   page,
@@ -26,7 +30,7 @@ test("changelog page shows current version and release content", async ({
   ).toBeVisible();
   await expect(page.getByText(newest.title, { exact: true })).toBeVisible();
   await expect(
-    page.getByText(newest.highlights[0]!, { exact: true }),
+    page.getByText(newestFirstBullet, { exact: true }),
   ).toBeVisible();
 });
 
