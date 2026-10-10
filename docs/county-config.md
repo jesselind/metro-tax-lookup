@@ -40,12 +40,12 @@ Multi-county situs / account indexes are large. Do **not** prefetch every wired 
 
 **UI (two wired counties today):** Label **Select your Colorado county** above a compact light-gray segment **Arapahoe | Douglas | ?** (custom radiogroup; not native radio dots; not Own | Rent black/white weight). Segment labels use at least `text-base` (16px). Visible “?” has accessible name **I don't know my county**. Default Arapahoe. When many counties ship, reconsider a select.
 
-**Layout (2026-08-30; Try demo on row 2026-08-30):**
+**Layout (2026-08-30; Search + Try demo always side by side 2026-10-09):**
 
 | Viewport | County toggle + address row + Try demo |
 | --- | --- |
-| **&lt; lg** | Stack vertically. County segment spans **full width** of the lookup column; three options share the bar evenly. Address + Search use the existing `md` form grid (street beside Search from `md` up). **Try demo property** is its own full-width row under that cluster. |
-| **lg+** | Same row (`lg:flex-row lg:items-end`): county segment **content-width**, address form, Search, **Try demo property**. County options sized to label text (`lg:flex-none`), not equal columns. Option horizontal padding **doubles** on this row (`lg:px-8` vs `px-4` when stacked). |
+| **&lt; xl** | Stack vertically. County segment spans **full width** of the lookup column; three options share the bar evenly. Street field alone on narrow; from `md` up, street beside the actions row. **Search** and **Try demo property** always share one actions row (`flex-row`; equal `flex-1` below `md`, content-width from `md`). |
+| **xl+** | Same row (`xl:flex-row xl:items-end`): county segment **content-width**, address form (street + Search + Try demo). County options sized to label text (`xl:flex-none`), not equal columns. Option horizontal padding **doubles** on this row (`xl:px-8` vs `px-4` when stacked). |
 
 County segment, street input, Search, and Try demo share **48px** height (`box-border h-12`). Labels share `HOME_ADDRESS_LOOKUP_LABEL_CLASS` (`text-sm font-medium text-slate-800 mb-1`).
 
@@ -54,9 +54,9 @@ County segment, street input, Search, and Try demo share **48px** height (`box-b
 | Class | Role |
 | --- | --- |
 | `.home-address-lookup-input` | Street / advanced address fields |
-| `.home-address-lookup-search` | Search button (primary chrome inlined; not `@apply btn-primary`) |
-| `.home-address-lookup-demo` | Try demo property (outline; full width stacked, content-width on `lg+`) |
-| `.home-address-lookup-county-segment` | Radiogroup shell (`w-full` stacked; `lg:w-auto` on row) |
+| `.home-address-lookup-search` | Search button (primary; `flex-1` with Try demo on narrow; content-width from `md`) |
+| `.home-address-lookup-demo` | Try demo property (outline; always beside Search; same flex rules) |
+| `.home-address-lookup-county-segment` | Radiogroup shell (`w-full` stacked; `xl:w-auto` on row) |
 | `.home-address-lookup-county-option` | Segment option buttons |
 
 TSX uses string tokens from `src/lib/toolFlowStyles.ts` (`HOME_ADDRESS_LOOKUP_*`). Tailwind v4 `@apply` in these rules must reference **utilities only** — nesting `@apply` of another component class fails PostCSS in dev and build.
