@@ -4,1387 +4,1535 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Release notes for `/changelog` (footer version link). Hand-written highlights
- * only - do not paste raw commit subjects. Newest first. When you bump
+ * Release notes for `/changelog` (footer version link). Hand-written, high-level
+ * highlights only - not a commit or file dump. Newest first. When you bump
  * `package.json` version, add a matching entry here (unit test enforces the
- * current version appears).
+ * current version appears). Follow `.cursor/rules/changelog.mdc`.
  *
  * Audience: contributors, forkers, and anyone tracking what shipped. Prefer
- * accurate technical takeaways over resident-softened marketing. Entries are
- * drawn from `package.json` version bumps and related commits in git history.
+ * accurate product takeaways over implementation detail.
  */
+
+export type ChangelogSectionKind = "added" | "changed" | "fixed" | "removed";
+
+export const CHANGELOG_SECTION_ORDER: {
+  kind: ChangelogSectionKind;
+  label: string;
+}[] = [
+  { kind: "added", label: "Added" },
+  { kind: "changed", label: "Changed" },
+  { kind: "fixed", label: "Fixed" },
+  { kind: "removed", label: "Removed" },
+];
 
 export type ChangelogEntry = {
   /** Semver matching a shipped `package.json` version. */
   version: string;
-  /** Calendar date the version shipped (YYYY-MM-DD, America/Denver). */
+  /** Calendar date the version went live (YYYY-MM-DD, America/Denver). */
   date: string;
-  /** One-line technical takeaway for contributors and forkers. */
+  /** One-line takeaway for the release. */
   title: string;
-  /** Short bullets: what changed for someone using the tool. */
-  highlights: string[];
+  /** Keep a Changelog-style sections; omit empty kinds. */
+  sections: Partial<Record<ChangelogSectionKind, string[]>>;
 };
+
+/** Flatten section bullets in Added → Changed → Fixed → Removed order. */
+export function changelogEntryBullets(entry: ChangelogEntry): string[] {
+  return CHANGELOG_SECTION_ORDER.flatMap(
+    ({ kind }) => entry.sections[kind] ?? [],
+  );
+}
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
     version: "5.28.1",
-    date: "2026-10-09",
-    title:
-      "Home lookup: Search and Try demo property stay side by side on mobile",
-    highlights: [
-      "Address lookup actions: Search and Try demo property share one row at every viewport (no full-width Try demo stack under the form). Equal flex share below `md`; content-width beside the street field from `md`. County segment still stacks above the form until `xl`. Docs: `docs/county-config.md`.",
-    ],
+    date: "2026-10-10",
+    title: "Search and Try demo stay side by side on mobile",
+    sections: {
+      changed: [
+        "Address lookup keeps Search and Try demo property on one row at every screen size."
+      ]
+    },
   },
   {
     version: "5.28.0",
     date: "2026-10-08",
-    title:
-      "Ballot panel parcel impact + Property details spacing before Sale history",
-    highlights: [
-      "Levy detail ballot-proposal closed face: when the Notice publishes additional mills and this year's assessed is known, show **You'll pay $X more per year.*** with a short footnote (current assessed × Notice mills; not the tax bill). Unlocked home list omits the line (`parcelAssessedForImpact`). Fail closed without mills. First Notice row with mills: Hills at Cherry Creek AUTH `4365` 6A. e2e: Hills dialog impact + home omits the line.",
-      "Property details: keep Property classification with the first panel under lead stack; use shared `DASHBOARD_SECTION_STACK_CLASS` before Sale history / building / permits (same TOC air as between major sections). Extended tables reuse that stack class instead of one-off `space-y-*`.",
-    ],
+    title: "Ballot panel shows parcel dollar impact",
+    sections: {
+      added: [
+        "Levy ballot panel can show an estimated yearly dollar impact when Notice mills and assessed value are known."
+      ],
+      changed: [
+        "Property details spacing before Sale history matches other major sections."
+      ]
+    },
   },
   {
     version: "5.27.2",
     date: "2026-10-06",
-    title:
-      "Playwright: stable street-address fill on Linux WebKit (React 19)",
-    highlights: [
-      "`fillStreetAddress` (`e2e/helpers/addressLookup.ts`): click, clear, `pressSequentially`, then `expect().toPass()` until the controlled combobox `inputValue` matches. Replaces bare `fill()`, which on Linux WebKit CI often skipped React 19 `onChange` so Search ran empty and the levy stack never appeared. One path for all browsers; every spec that searches via the helper picks this up.",
-    ],
+    title: "More reliable address fill in end-to-end tests",
+    sections: {
+      fixed: [
+        "Street-address fill in Playwright is stable on Linux WebKit with React 19."
+      ]
+    },
   },
   {
     version: "5.27.1",
     date: "2026-10-06",
-    title: "TABOR Support/Oppose bar: aligned wraps in popover and glossary",
-    highlights: [
-      "TABOR Support / Oppose contrast bar (`TaborSupportOpposeBar`): shared header and slogan rows so both halves stay vertically aligned when labels wrap; fixed slogan line breaks so the trailing $ does not sit alone on a line. Same wording and colors; Bonds example bars unchanged.",
-    ],
+    title: "TABOR Support/Oppose bar wraps cleanly",
+    sections: {
+      fixed: [
+        "Support and Oppose halves stay aligned when labels wrap in the popover and glossary."
+      ]
+    },
   },
   {
     version: "5.27.0",
     date: "2026-10-06",
-    title:
-      "Arapahoe Nov 2026 TABOR Notice: On the ballot badge + proposal panel",
-    highlights: [
-      "White **On the ballot** badge (red warning icon, black inset border) on levy tiles for authorities in the Arapahoe Clerk & Recorder TABOR Notice for the November 3, 2026 election. Detail dialog: ballot-proposal panel above the mill YoY box - locked chrome `border-4 border-dashed border-red-600 bg-red-50` (same light fill as Historical change; dashed brighter border so the panels do not look related); closed face with larger **Proposed tax increase** eyebrow + warning triangle + election heading + dollar/mill hook; default-collapsed **See what's on the ballot** disclosure with Notice summary, fiscal facts, and `#page=` cites (numbered list only when an authority has more than one measure). No separate “On this property tax bill” block. Mill YoY box permanently titled **HISTORICAL CHANGE** (all caps).",
-      "CountyFeatures flags (flip in `arapahoe.ts` / `douglas.ts`): `ballotProposalNotice` (Arapahoe on) and `millRateChangedBadge` (Arapahoe off for this period so Changed does not compete). Curated JSON: `public/data/arapahoe-ballot-proposal-notice.json`. Lookup: `src/lib/ballotProposalNotice.ts`. Docs: `docs/county-config.md`, locked-decisions.",
-      "AUTH coverage (property-tax Notice only): Littleton schools `0601` 4A; Bennett Fire `4060` 7G (revenue-limit waiver; sales-tax 7F omitted); Bennett schools `0901` 5A; Hills at Cherry Creek MD `4365` 6A. Sales-tax Notice items (Aurora / Centennial / Sheridan / Bennett Fire 7F) are out of scope. Home jump: **Property tax issue(s) on the November 3, 2026 ballot** (singular when one matching measure; &quot;issue&quot; covers tax increases and revenue-limit waivers); same four authorities on home and levy tiles. Locked report: same red jump under Own|Rent when the stack includes a Notice AUTH; scrolls to + arrive-highlights the first matching levy tile (`ballotProposalNotice` flag). e2e: unlocked home jump, locked first-tile jump (AUTH `0601`), Douglas scope hides jump; metro-yoy updated for Changed-off Arapahoe.",
-      "Fiscal year popover: budget year those dollar figures apply to; &quot;first full fiscal year&quot; = authority estimate for that first full year after the measure would take effect; names the county Clerk election notice (TABOR Notice PDF under Official source); range vs single-year examples; no July–June claim. Dropped baseline spending rows. In-place glosses for mill levy override and General Fund. Revenue keep-and-spend lines use plain &quot;even if … would otherwise block that&quot; (no lawyer &quot;notwithstanding&quot;). Popover for **property tax revenue limit**: 5.5% = older statute cap (DLG); 5.25% = newer 2024 statute cap (HB24B-1001); not TABOR; not your personal bill %. Bonds popover + `/glossary`: loan not free money; tax dollars pay project + interest to lenders; home-loan comparison; two example stacked bars (direct = all to project; bond = project + interest; not fixed %); ballot often stresses borrow amount over total repayment; voter ceilings kept. TABOR popover + glossary: after the cap definition, a two-half Support / Oppose bar (excess $ returned to taxpayers vs government keeps the extra $); rule text stays in its own paragraph. Glossary/flow popover body type +1 Tailwind step (`text-base` / `sm:text-lg`); panel base and related chrome bumped with it; sm+/lg width/height unchanged.",
-    ],
+    title: "Arapahoe November 2026 TABOR Notice on levy tiles",
+    sections: {
+      added: [
+        "On the ballot badge and proposal panel for Arapahoe authorities in the Clerk TABOR Notice.",
+        "Home and report jumps to property-tax ballot issues when the levy stack includes a Notice authority.",
+        "TABOR Support/Oppose contrast bar in the glossary and related popovers."
+      ],
+      changed: [
+        "Mill year-over-year box titled Historical change for this period.",
+        "Clearer fiscal-year, bonds, and property-tax revenue limit popover copy."
+      ]
+    },
   },
   {
     version: "5.26.0",
     date: "2026-10-02",
-    title: "Douglas comps grid: county documents lookup + outbound PDF link",
-    highlights: [
-      "Douglas Comparable properties: live check of the Assessor documents files API for the loaded account; teal full-tile CTA to the county COMP_GRID PDF when present, or violet full-tile none-found CTA to that account's Assessor property details (Open county property details ›). Replaces Coming soon / compsPdfInProgress.",
-      "Same-origin route `GET /api/douglas-comps-grid` proxies the county list (avoids browser CORS); PDFs stay on Douglas hosting (no bulk ingest). Documents-list timeout / non-OK / malformed body → on-site error tile with a short message (not a silent handoff to a down county page); `missing` only when the list shape is valid and no COMP_GRID is present. In-app grid parse remains a later step. Unit fixtures use synthetic Douglas account ids.",
-      "Locked-report section titles show the same Jump TOC Heroicons beside the heading; heading + What is this? share text baseline (icon stays middle-aligned with the title).",
-      "Comparable properties What is this? /glossary: define comps grid as a side-by-side comparison table (not who publishes it or file format).",
-      "Docs: `/sources` Douglas methodology, county-config, county-service-gap-callouts, README. Douglas e2e: none-found tile (mocked documents lookup) + `/sources` no longer expects comps Coming soon.",
-    ],
+    title: "Douglas comps PDF lookup from the Assessor",
+    sections: {
+      added: [
+        "Comparable properties checks the county documents list and links the comps PDF when present."
+      ],
+      changed: [
+        "Locked-report section titles show the same Jump icons as the TOC."
+      ],
+      fixed: [
+        "Clear on-site error when the documents lookup fails, instead of a silent handoff."
+      ]
+    },
   },
   {
     version: "5.25.0",
     date: "2026-09-29",
-    title:
-      "Aurora Public Schools authority chain (AUTH 0801 / Ballot Issues 5A–5B)",
-    highlights: [
-      "Curated Joint School District No. 28J (Aurora Public Schools) AUTH `0801`: November 2024 Ballot Issue 5A debt-free schools mill levy (up to $30M / up to 6 mills under C.R.S. § 22-54-108.7) and Ballot Issue 5B $1B bond (repayment capped at $1.75B); Arapahoe Notice + Arapahoe-only certified totals with openGap `multi-county-arapahoe-votes-only`; APS mid-year budget cite for Debt Free Schools Mill Levy / Operations and Technology Fund.",
-      "Shared `term-debt-free-schools-mill-levy` brief is statute-level; district ballot/budget facts inject via entry `termBriefExamples` (LPS 4C + APS 5A). Validator requires the example when that term appears. `/glossary` lists those examples from shipped records. Official Summary results deep-link `#page=20`.",
-      "Rate-table page map includes `0801`. Home latest-three cards show APS first (append order).",
-      "Docs: README, locked-decisions, levy-explainer-authoring.",
-    ],
+    title: "Aurora Public Schools authority chain",
+    sections: {
+      added: [
+        "Who authorized this? trail for Aurora Public Schools (Ballot Issues 5A and 5B)."
+      ]
+    },
   },
   {
     version: "5.24.0",
     date: "2026-09-29",
-    title:
-      "Local levy authority-chain pack; Developmental Disabilities (AUTH 2999)",
-    highlights: [
-      "New authority-chain family `local_levy` for county-collected mills under a state program statute (not a special district board): Voters + Ballot Issue + certified votes; AUTH-derived What changed? (same trail shape as fire/library; county budget chrome).",
-      "Curated Arapahoe Developmental Disabilities AUTH `2999` (DOLA TE `03001/11`): November 2001 Ballot Issue 4A (one mill + TABOR keep) with 2001 sample ballot and Official Results cites; rate-table page map includes 2999. Flat 1.000 mills show Change from last year as No change.",
-      "When both Who authorized this? and What is it? ship for the same AUTH (DD `2999`, Library `4026`): keep both sections; Who gets is money-destination only; type/program/not-a-district cues and statute cites stay in What is it?.",
-      "Docs: README, levy-explainer-authoring, locked-decisions, /sources narrative.",
-    ],
+    title: "Developmental Disabilities local-levy authority chain",
+    sections: {
+      added: [
+        "Local-levy authority-chain family for county-collected program mills.",
+        "Arapahoe Developmental Disabilities Who authorized this? trail."
+      ]
+    },
   },
   {
     version: "5.23.1",
     date: "2026-09-29",
-    title:
-      "Summary bar fine-tune: shared faces, clearer Arapahoe gap, louder Close",
-    highlights: [
-      "One WhyTaxesGoUpBar for home teaching and locked Own Summary (deleted whyTaxesGoUpTeachingSegments). Heading: Two numbers raise your property taxes. Teaching gloss under each title; property faces stay loud ($ / relative mill % with up/down circle icons; since YYYY quieter). Arapahoe Property value face: County does not publish prior years (no on-bar COUNTY DATA GAP eyebrow; What's this? still county-gap). Mill teaching: everyone on your tax bill, added up.",
-      "Bar chrome: stack below theme xs (30rem); icon+title one row; full width in locked report; cqw face type. Levy detail and account-switcher Close use solid btn-primary (same token as Search) so the dismiss control is findable on phones.",
-      "Helpers: formatAppraisedChangeFaceLines / formatMillsChangeFaceLines; shared formatMillsPercentMagnitude. Unit + try-demo / home-smoke e2e updated for heading and gap face.",
-    ],
+    title: "Summary bar polish and clearer Close controls",
+    sections: {
+      changed: [
+        "Home teaching and locked Own Summary share one two-lever bar.",
+        "Arapahoe Property value face states the county does not publish prior years.",
+        "Levy detail and account-switcher Close use the same solid primary style as Search."
+      ]
+    },
   },
   {
     version: "5.23.0",
     date: "2026-09-28",
-    title:
-      "Property-report Summary: two-lever bar with multi-year faces",
-    highlights: [
-      "Locked Own report (Real + BPP, including Try demo; not Rent): Summary section above Where is your money going? Jump label temporary Summary; heading is the home sentence in dashboard section-title style (not unlocked-home h2). Jump focus uses scroll-mt on the Summary heading so the title clears the sticky mobile Jump strip.",
-      "Same two-segment bar as home (shared WhyTaxesGoUpTwoSegmentBar). When publishable: appraised $… higher/lower/unchanged since <year> and total mills … since <year>. Overlap years when both series exist; new mid-window districts stay in mill totals. Arapahoe Property value half: COUNTY DATA GAP eyebrow + The county will not publish prior-year values. + COUNTY DATA GAP What's this?; mill half still multi-year. Douglas missing history: Not available for this property. Nothing publishable → generic home faces.",
-      "Mobile-first type hierarchy on the shared bar. Helpers in propertyWhyTaxesGoUp.ts; try-demo e2e covers Summary face + Jump.",
-    ],
+    title: "Property-report Summary with multi-year faces",
+    sections: {
+      added: [
+        "Locked Own report Summary section with appraised and mill faces when history is publishable."
+      ]
+    },
   },
   {
     version: "5.22.0",
     date: "2026-09-28",
-    title: "Home teaching bar: two numbers that make property tax go up",
-    highlights: [
-      "Unlocked home (under the privacy line, above latest authority-chain updates): one horizontal two-segment bar (Property value | Mill levy) with in-bar icons, subtext, and What's this? CSS subgrid keeps icon / title / subtext / What's this? rows aligned across halves.",
-      "Mill levy teaching uses a new total brief (`term-mill-levy-total`: everyone on your bill, added up; school/county/city/fire/metro districts). One-district `term-mill-levy` brief unchanged elsewhere. Property value reuses `term-actual-value`.",
-      "Property-report Summary graphic follows in 5.23.0.",
-    ],
+    title: "Home teaching bar for property value and mill levy",
+    sections: {
+      added: [
+        "Unlocked home shows a two-segment bar explaining the two numbers that raise property tax."
+      ]
+    },
   },
   {
     version: "5.21.0",
     date: "2026-09-28",
-    title: "Municipal GID authority-chain pack; Antelope Hills (AUTH 4042)",
-    highlights: [
-      "New authority-chain family `municipal_gid` (Title 31 municipal general improvement districts): AUTH-derived What changed? (Change from last year shows No change in mills when the rate is flat; Most notable increase omitted when there is no increase); measure kind `municipal_gid_board` for town/city board as GID board under C.R.S. § 31-25-609.",
-      "Curated Antelope Hills General Improvement District AUTH `4042` / TE `64265/1`: Who gets → What changed? → Who sits as the board? Closed summary uses the shared linked `summarySource` lead (`According to the 2024 Colorado Revised Statutes Title 31 § 31-25-609`, `#page=373`) plus board substance. Who sits as the board? is one plain-language fact with a single Title 31 cite (no duplicate statute fact / no ex officio legalese). Who gets facts cite Town CORA records for Board-directed $85k early principal, stated 2027 payoff date, and 2026 Series 2006 budgeted principal. Open gaps for founding ordinance text and remaining principal / remittance audit. Unlocated hunts point to Town of Bennett Public Records.",
-      "Sourced records: commit official CORA (and similar) PDFs under `public/sourced-records/` with `provenance.json` when the issuer did not post a durable file URL; cites use `https://civiclookup.com/sourced-records/…` (`docs/sourced-records.md`). First packet: Town of Bennett / Antelope Hills GID.",
-      "Validator requires every family's `summarySource.text` to start with \"According to \", appear exactly once, and start the built summary (same lead-link contract; municipal_gid is not a second placement mode). Sourced-records https cites must map to a real file under `public/sourced-records/`.",
-    ],
+    title: "Antelope Hills municipal GID authority chain",
+    sections: {
+      added: [
+        "Municipal GID authority-chain family.",
+        "Antelope Hills General Improvement District Who authorized this? trail.",
+        "Sourced-records path for official PDFs without a durable issuer URL."
+      ]
+    },
   },
   {
     version: "5.20.0",
     date: "2026-09-26",
-    title: "Arapahoe Library District authority chain (AUTH 4026 / Ballot Issue 4A)",
-    highlights: [
-      "Library authority-chain family pack (Voters + Ballot Issue + certified votes; AUTH-derived What changed?, same trail shape as fire).",
-      "Curated Arapahoe Library District AUTH 4026: November 2015 Ballot Issue 4A (mill levy 4.2→5.4 + TABOR keep; Notice purpose includes replenishing reserves spent in recent years) with 2015 Notice and Official Results cites; rate-table page map includes 4026. Closed summary includes the same Raise the mill levy from 4.2 to 5.4 for library services phrase as the measure title.",
-      "AUTH-derived What changed? second block is Most notable increase (largest positive adjacent mill Δ; omit if same as Change from last year or no increase; decreases no longer win). Shared helper for metro/fire/library/city. Measure bodies that say voters approved are prefixed with the entry summarySource attribution (same as the closed summary).",
-      "Home address search: latest three Arapahoe-related Who authorized this? panels under the privacy line (blog-style lead; authority name then same-size Up/Down mill % in levy YoY red/green box). Shared authority-chain panel chrome is slate (bg-slate-100 / border-slate-500) on home and levy modal. Campaign outline under the privacy line (footer copy kept).",
-    ],
+    title: "Arapahoe Library District authority chain",
+    sections: {
+      added: [
+        "Who authorized this? trail for Arapahoe Library District (Ballot Issue 4A)."
+      ],
+      changed: [
+        "Home shows the latest three Arapahoe-related authorization updates under the privacy line."
+      ]
+    },
   },
   {
     version: "5.19.3",
     date: "2026-09-22",
-    title: "CodeRabbit: exclude parcel and valuation shards from PR review",
-    highlights: [
-      "`.coderabbit.yaml` `path_filters` exclude `public/data/arapahoe-parcel-record-by-pin/**`, `douglas-parcel-record-by-pin/**`, and `douglas-valuation-history-by-account/**`. Free-plan reviews cap at 100 files after filters; full Arapahoe ship PRs were ~3000 files and skipped. GitHub still shows the full PR file list.",
-    ],
+    title: "CodeRabbit skips large parcel data shards",
+    sections: {
+      changed: [
+        "PR review excludes large parcel and valuation shard trees so reviews stay under the file cap."
+      ]
+    },
   },
   {
     version: "5.19.2",
     date: "2026-09-22",
-    title:
-      "Arapahoe Antelope Hills TAG: TE-pinned GID, fire, and groundwater mills",
-    highlights: [
-      "Curated TE pins in `tools/arapahoe_dola_authority_overrides.json` for mart labels that fuzzy-failed under the 0.92 floor: `ANTELOPE HLS GEN IMP DIST` → `64265/1` (36.71), `BENNETT FIRE PROTECTION` → `64018/1` (10.898), `NORTH KIOWA BIJOU WATER` → `64099/1` (0.02; legalName corrected to DOLA Groundwater Mgmt). Rebuilt Arapahoe levy stacks + district directory so reporter TAG `1258496` / PIN `034147241` matches the county Levy.aspx total (107.016). Contact can resolve LGID `64265`.",
-      "Pre-ship gate: `npm run assert:ingest-levy-stack-scope` (allowlist fixture) must exit 0 before `--ship-allow-diff`. Line identity is `(code, authorityName)` so mart rename/history rows that reuse one AUTH code do not false-fail. Bumped `COUNTY_LEVY_STACKS_CACHE_BUST` and `SPECIAL_DISTRICT_DIRECTORY_CACHE_BUST` so `/data` max-age does not keep a pre-pin stacks/directory copy.",
-      "Regression: `tools/test_ingest_dola_match.py` AntelopeHillsTagOverrideTests; Vitest locks shipped TAG `1258496` mills + Contact LGID; assert unit tests cover shared-AUTH rename history. Docs: README, county-ingest, /sources (curated TE pins when labels truncate).",
-    ],
+    title: "Antelope Hills TAG mill join corrections",
+    sections: {
+      fixed: [
+        "Antelope Hills GID, Bennett Fire, and North Kiowa Bijou groundwater mills match the county levy total for the curated TAG."
+      ]
+    },
   },
   {
     version: "5.19.1",
     date: "2026-09-21",
-    title:
-      "Arapahoe values: always-visible prior-year COUNTY DATA GAP in Appraised and Assessed cards",
-    highlights: [
-      "When `priorYearValuesGap` is on and valuation history is missing: Appraised and Assessed kind cards show a compact always-visible COUNTY DATA GAP callout (`CountyPriorYearValuesGapCallout`) in the YoY/chart slot. Appraised lead says prior-year appraised values; Assessed lead says prior-year assessed values. Removes the Prior years missing badge under the section title. School assessed unchanged. Mill-chart footer keeps Prior $ missing badge + assessed popover. /sources hub + Arapahoe methodology red box name both series (still one callout). Sale history jumps in the two callouts use distinct accessible names.",
-      "Values section disclosures: each toggle owns its panel on mobile (See data in table form, then Building and land breakdown) so opening a table pushes the next control down. From `sm`, both toggles sit side-by-side (stretch width); open panels span full width below. Kind cards and disclosures share the same column gutter.",
-      "Desktop sidenav: rail `slate-200`; inverted hover/scroll-spy (`slate-800` + white text); single `border-*-2` dividers (no stacked hairlines). Mobile Jump strip unchanged.",
-      "Docs: county-service-gap-callouts, county-config, locked-decisions, README, /sources Arapahoe narrative. E2e: try-demo and metro-yoy assert kind-specific in-card callouts and Sale history jump; mill-chart popover still covered.",
-    ],
+    title: "Always-visible prior-year gap on Arapahoe value cards",
+    sections: {
+      changed: [
+        "Appraised and Assessed cards show an in-card COUNTY DATA GAP when prior-year values are missing.",
+        "Values section table disclosures stack cleanly on mobile and sit side by side from sm up."
+      ]
+    },
   },
   {
     version: "5.19.0",
     date: "2026-09-21",
-    title:
-      "Appraised and assessed values: kind cards, always-visible YoY, in-flow charts",
-    highlights: [
-      "Appraised and assessed values: one kind card per value type (Appraised, Assessed, School assessed). When valuation history shards exist: Appraised and Assessed show always-visible prior|current tax years, colored Difference (red up / green down / slate flat), assessed tax-impact line at current mills, and embedded chart; no YoY badge, no duplicate hero Total $, no ValuationHistoryDialog. School assessed stays Total $ only (no prior|current|Difference or chart on that card). Peer Appraised|Assessed cap at two columns; School assessed full-width below. Charts pin to the card bottom so side-by-side peers stay aligned when only one card has tax-impact copy.",
-      "Section disclosures: See data in table form and Building and land breakdown share one toggle row (stacked full-width below sm, side-by-side from sm). Wording in this section stays Appraised (not Actual). Arapahoe without history: current-year Total on the card plus Prior years missing under the section title.",
-      "Removed ValuationHistoryDialog and unused values YoY badge styles. README, locked-decisions, /sources Arapahoe gap narrative, and e2e (Douglas in-flow YoY, try-demo kind cards, BPP/non-res values section) updated.",
-    ],
+    title: "Appraised and assessed value kind cards",
+    sections: {
+      added: [
+        "One kind card per value type with always-visible year-over-year and in-flow charts when history exists."
+      ],
+      removed: [
+        "Separate valuation-history dialog for those cards."
+      ]
+    },
   },
   {
     version: "5.18.1",
     date: "2026-09-21",
-    title:
-      "Locked report: values after levies; quieter Total bar; valuation YoY matches levy tiles",
-    highlights: [
-      "Locked-report order: levies → Appraised and assessed values (own section) → Property details. Jump list matches DOM. Values table chrome: quieter rows, larger Total figure, prior-year gap / Coming soon badge under the section title; soft Year over year opener under Total when history exists.",
-      "Levy stack Total bar: `$` / mills / `%` only (drop Est. property tax glossary from the bar; breakdown paragraph above already covers estimate honesty). TOC section rhythm: shared stack gap above titles, tighter heading→body lead stack (no compounding heading mt).",
-      "ValuationHistoryDialog YoY matches levy-tile disclosure: chart always visible; YoY summary starts collapsed (headline + Details ›); prior|current|Difference and tax-impact line on expand; table stays behind See data in table form.",
-      "Docs: README + locked-decisions. E2e: Douglas valuation modal asserts collapsed-then-expand and chart region caption (not heading); BPP values table under Appraised and assessed section id; levy Total no longer expects Est. property tax in the bar. Year over year opener aria-label includes the signed dollar delta (visual delta stays aria-hidden).",
-    ],
+    title: "Values section after levies; quieter Total bar",
+    sections: {
+      changed: [
+        "Locked report order: levies, then appraised and assessed values, then Property details.",
+        "Levy stack Total bar shows dollars, mills, and percent only."
+      ]
+    },
   },
   {
     version: "5.18.0",
     date: "2026-09-20",
-    title:
-      "Comparable properties: one sticky comps table everywhere; TOC polish",
-    highlights: [
-      "In-app comps grid uses the same TanStack table on every viewport (field-name + subject sticky left; sale columns scroll horizontally). Sticky field-name and subject columns keep fixed floors (no mobile shrink of the label column; subject is not sized like a narrow sale column). Dropped the mobile field-card stack. No outer panel shell; scrollport max-height 50vh below sm (min(600px, 70vh) from sm up). Mobile tip: swipe sideways.",
-      "Locked-report wide tables (comps, parcel record, levy data table) share DashboardHScrollTable: below lg the scrollport bleeds the main-column right gutter; trailing pad inside the scrollport matches the left page inset so far-right scroll still clears a thick phone case. Soft slate fade on the right edge only when more columns sit past that edge (no left fade: it washed out sticky / first-column labels). End-pad uses inline-block min-w-full (not w-max) so columns hug content instead of desktop preferred widths; tables may still h-scroll when content is wider (e.g. Total chrome under the dollar). Appraised and assessed values freezes the field-name column while Total / Building / Land scroll; values and comps scrollports are keyboard regions (arrow / Page / Home / End). Comps scrollport keeps a 1px bottom pad and overscroll-y containment so the last row border stays visible.",
-      "When a grid is present (Try demo property today), Comparable properties keeps one h3 + What is this? and the grid is the body - no nested Comps grid heading and no PDF / COUNTY DATA GAP / demo-PDF chrome under the title. Without a grid, Coming soon / gap / PDF under that same title is unchanged.",
-      "Permits TOC sibling uses the same large h3 + What is this? chrome as other parcel subsections. Locked-report page and Jump order: Comparable properties (Own Real) then county compare then Feedback.",
-      "E2e: assert resident see/do (visible, in viewport, click, keyboard, wheel) instead of absolute pixel geometry. Sticky Jump, TOC scroll-then-jump, values h-scroll, and typeahead list scroll rewritten that way; agent rule bans px / DevTools geometry gates.",
-    ],
+    title: "One sticky comps table on every viewport",
+    sections: {
+      changed: [
+        "Comparable properties uses one sticky table everywhere (no separate mobile card stack).",
+        "Wide locked-report tables share horizontal scroll with a soft fade when more columns remain."
+      ]
+    },
   },
   {
     version: "5.17.1",
     date: "2026-09-19",
-    title:
-      "Mobile Jump TOC: disable scroll-spy; keep sequential section jumps reliable",
-    highlights: [
-      "Mobile Jump disclosure (`<lg`): no scroll-spy / no `aria-current` highlighting. Spy stays on the desktop sidenav only (`lg+`). Open-menu height was poisoning sticky scroll-mt and re-rendering the jump list mid-tap so the first Jump worked and later taps failed (Safari and Chromium, including Try demo property).",
-      "Mobile open Jump list: measured max-height to the remaining viewport space under the list (no minimum floor that can push the menu past the fold) with internal scroll; sticky CSS var keeps the closed-strip height while open. After a Jump tap, collapse then instant scroll (smooth scroll after sticky collapse was often cancelled).",
-      "E2e: short-viewport list scroll capped to available space + Feedback jump in view; second Jump after the first lands focused and in viewport; assert no mobile `aria-current`. Docs: README + locked-decisions.",
-    ],
+    title: "Mobile Jump jumps stay reliable",
+    sections: {
+      fixed: [
+        "Mobile Jump no longer uses scroll-spy, so sequential section jumps keep working."
+      ]
+    },
   },
   {
     version: "5.17.0",
     date: "2026-09-19",
-    title:
-      "Locked report: levy-first layout, sticky section nav, no summary tile cluster",
-    highlights: [
-      "Desktop locked report: sticky left rail (3/12) with permanent address + Switch account type + section nav on a full-height slate-50 column flush to hero and footer; main column (9/12) holds I Own|I Rent then Where is your money going? Content max-width 84rem. Mobile: sticky full-bleed slate Jump strip with address inside the disclosure summary (either row toggles the menu; closed = one truncated line, open = postage street / city-state-ZIP / county stack); I Own|I Rent (and Switch) sit under that strip, not above it. Drop Summary / Value summary and the summary-tile cluster.",
-      "One Jump to a section list curated by Own|Rent|BPP and what is mounted (levy first; Property details parent + flat subsections; county compare and Feedback always; comps always-on for Own Real only). Outside click/tap and Escape collapse the mobile TOC; desktop sidenav scroll-spy sets aria-current from curated focus ids (mobile Jump does not spy as of 5.17.1). Sticky aside is a direct child of the tall flex/grid parent so mobile stick works. Audience switch labels are first-person (I Own / I Rent). Section jumps use Heroicons outline glyphs beside each label.",
-      "Transfer: Est. property tax glossary onto levy stack Total dollars; Actual/Assessed Changed + Year over year openers + prior-year gap into Appraised and assessed values; comps PDF/gap/Coming soon into always-on Comparable properties under the section title (Property details-style h3 + What is this?; no transferred summary tile). Drop BPP Notice of Valuation chip and Mill levy total Changed.",
-      "Rent locked report stays lean (pressure + levy + county compare + Feedback; no Property details / comps). Address chrome falls back to parcel-record situs when hits lack a label. Docs + e2e updated for the new report layout.",
-    ],
+    title: "Levy-first locked report with sticky section nav",
+    sections: {
+      added: [
+        "Desktop sidenav and mobile Jump strip for section navigation."
+      ],
+      changed: [
+        "Locked report leads with levies; summary tile cluster removed."
+      ],
+      removed: [
+        "Summary / Value summary tile cluster."
+      ]
+    },
   },
   {
     version: "5.16.0",
     date: "2026-09-17",
-    title:
-      "Est. property tax face equals mill-levy stack dollars (levyStackDollars)",
-    highlights: [
-      "County-agnostic default: propertyTaxEstimateMode levyStackDollars - face tile uses annualTaxDollarsForLevyStack (same dual-base math as the mill-levy total). Removes singleAssessedTimesTotalMills so face can no longer disagree with the stack when school assessed differs from local.",
-      "Douglas unchanged: realwareTaxDollars face; stack still reconciles to Realware. Arapahoe Assessor Levy.aspx remains mills-only; face $ stays labeled Est. property tax (app-derived).",
-      "Popover and Arapahoe /sources: drop face-vs-stack divergence copy; Vitest locks face === stack on Huron-shaped synthetic and rejects naive local x total mills.",
-      "Levy stack Own-mode dollar note: stronger estimate disclaimer under the breakdown (credits, timing, rounding vs tax statement), parallel to Rent equal-split caveats - no ~ or Est. prefixes on tile or total dollars.",
-      "Arapahoe /sources: drop unreproduced 'some parcels Assessor school differs' caveat; school assessed stays DPT-rate math matching the parcel-page pattern. Closed working 01 without a mismatch PIN.",
-    ],
+    title: "Est. property tax matches the mill-levy stack",
+    sections: {
+      changed: [
+        "Default face Property tax dollars use the same dual-base math as the mill-levy stack.",
+        "Estimate copy focuses on tax statement differences, not face-vs-stack divergence."
+      ]
+    },
   },
   {
     version: "5.15.0",
     date: "2026-09-15",
-    title:
-      "Douglas Realware face tax + county-agnostic dual-rate levy dollars",
-    highlights: [
-      "Douglas face Property tax uses Realware taxDollars + alternateTaxDollars for the face year (propertyTaxEstimateMode: realwareTaxDollars); fail closed when those fields are missing - never silent mills fallback. Arapahoe kept singleAssessedTimesTotalMills for the face tile (superseded in 5.16.0 by levyStackDollars).",
-      "County-agnostic levy-line dollars: school authorities use school assessed when it differs from local assessed; other lines use local. Stack total rounds each assessed side once (Realware-style buckets). Classifier covers SCHOOL DIST / School District / School(s) labels (e.g. Schools - Debt Service).",
-      "Tax year tile follows Realware face year matching pin assessed when valuation history loads; school assessed overlays into the values table. Re-shipped douglas-valuation-history-by-account shards with alternate assessed + tax dollar fields; cache bust 20260915splitrate.",
-      "CI: synthetic Realware-shaped extract golden (no real situs); Vitest face ≠ mills product + stack↔face dual-base goldens; Douglas e2e asserts face and mill-stack total both $2,500 on the split-rate fixture. Arapahoe authority-mills extract imports pdfplumber only when opening a PDF so synthetic unit tests run under the CI rapidfuzz-only Python env.",
-      "Arapahoe Assessor Levy.aspx is mills-only (C3) - Arapahoe face mode stayed singleAssessedTimesTotalMills with intentional face≠stack when school ≠ local (superseded in 5.16.0). Docs + /sources noted county mills-only table and DPT school-assessed caveats.",
-      "Home locked report: do not autofocus Jump to a section when a property loads (focus stays on #page-top from lock); avoids a highlighted TOC summary on every lookup.",
-      "Douglas propertyDataAccuracyWarning cleared (KNOWN ISSUE banner and /sources callout off) after Realware face tax + dual-rate stack honesty. Maintainer contract: .cursor/rules/property-tax-estimate-honesty.mdc. Arapahoe school-assessed / missing-mills fidelity parked for follow-up (primary county).",
-      "Summary tile label Est. property tax (not Est. on every $); popover: estimate vs tax statement (face≠stack note removed in 5.16.0).",
-    ],
+    title: "Douglas Realware face tax and dual-rate levy dollars",
+    sections: {
+      added: [
+        "Douglas face Property tax uses Realware tax dollars for the face year."
+      ],
+      changed: [
+        "School levy lines use school assessed when it differs from local assessed.",
+        "Tax year follows the Realware face year when valuation history loads."
+      ]
+    },
   },
   {
     version: "5.14.3",
     date: "2026-09-14",
-    title:
-      "Douglas KNOWN ISSUE banner; comps Coming soon; honesty on tax-year/estimate issues",
-    highlights: [
-      "Douglas locked report: amber KNOWN ISSUE banner under Jump to a section (not sticky; Jump to stays the only stuck chrome). Reusable KnownIssueBanner / KnownIssueCallout shells; Douglas copy states tax year labels and estimated property tax can disagree with the Assessor site; Sources deep link + county property-page guidance.",
-      "CountyConfig.features.propertyDataAccuracyWarning (Douglas on, Arapahoe off). Matching amber callout on /sources Douglas methodology (#county-property-data-accuracy-warning). Not COUNTY DATA GAP and not sky Coming soon.",
-      "Douglas Comparable properties: compsPdfInProgress Coming soon tile + /sources soft note while comps PDF URL is unwired (compsPdf stays false).",
-      "Known follow-ups (not this release): align Douglas tax-year stamp with shipped values; split-rate estimated tax vs Tax Calculation worksheets; county-parity gates so year/dollar mismatches fail tests.",
-    ],
+    title: "Douglas known-issue banner and comps Coming soon",
+    sections: {
+      added: [
+        "Douglas locked report shows a known-issue banner when tax year or estimate can disagree with the Assessor site."
+      ],
+      changed: [
+        "Comparable properties shows Coming soon while the comps PDF path is unwired."
+      ]
+    },
   },
   {
     version: "5.14.2",
     date: "2026-09-13",
-    title:
-      "Typeahead splits distinct streets under one situs key; multi-match help shortens",
-    highlights: [
-      "Address typeahead: when one stripped situs key holds different street lines (not unit-only condo), emit one suggestion per street line so direction/type collisions (e.g. ST vs S … WAY) are both visible; pick sets hits for that place only. Same-street Real+BPP stays one place; a bucket-wide Real+BPP mix does not glue distinct streets.",
-      "Shared partition helper (situsMultiPinChooser) groups hits by street line after unit strip; condo units that differ only by unit stay one row. Typeahead and Search can narrow places independently even when pin-to-tag Real+BPP spans the key; unit regressions cover mixed account kinds on distinct streets.",
-      "Matching properties: sort by place (street) first, then Real / business personal within that place, so one address's BPP is not split by another street under the same key. When the typed street omits a direction, the no-direction place lists first (e.g. HAVANA ST before S HAVANA ST). Unit + e2e lock against shipped Arapahoe 1400 Havana ST vs S Havana ST.",
-      "Multi-match chooser: drop the long on-page county-search paragraph so the list sits higher on mobile; Real vs business personal property glossary popover keeps the pick-your-account guidance. Heading is N accounts that may match (not at this address).",
-      "Refine address: hide Try demo property so the dense field row is less crowded.",
-      "Address lookup: county scope switch stays full-width on its own line through lg; sits beside the form from xl up (was lg). Segment bar, options, and Try demo use the same xl breakpoint.",
-      "Search place discrimination: after a situs key hit, keep all places when the typed street has no direction/type (or is ambiguous); lock to one place only when typed direction and/or street type uniquely identifies it (autofill locality stripped; no metro-grid defaults). Prefer showing more over blocking the resident. Unit + e2e lock against shipped Arapahoe 1201 Wheeling ST vs S Wheeling Way. README, Arapahoe /sources matching narrative, and county-config pointer updated.",
-    ],
+    title: "Clearer multi-street address matching",
+    sections: {
+      changed: [
+        "Typeahead lists distinct street lines that share one situs key.",
+        "Matching properties sorts by place, then Real vs business personal.",
+        "Multi-match help is shorter so the list sits higher on mobile."
+      ]
+    },
   },
   {
     version: "5.14.1",
     date: "2026-09-13",
-    title:
-      "DOLA fuzzy join ships high-confidence identity only; Aurora school Contact fixed",
-    highlights: [
-      "Ingest mill join (`dola_match.py` + emergency v1 twin): fuzzy matches below high (score < 0.92) no longer write lgId / taxEntityId / matchedLegalName; method none keeps the diagnostic score. Stops medium guesses (e.g. Aurora School Dist # 28J → Byers 32J) from driving Contact via preferredLgId.",
-      "Override pin: AURORA SCHOOL DIST # 28J → Adams-Arapahoe 28J School District TE 64907/1 (AUTH 0801). Rebuilt Arapahoe levy stacks and colorado-special-district-directory.json (64907 with APS website).",
-      "Contact: directory + levy-stacks fetch use cache-bust query params; preferredLgId with no directory row returns none (no fuzzy invent). LG 64907 website override → https://www.aurorak12.org (DOLA still lists broken aps.k12.co.us). Regression: tools/test_ingest_dola_match.py; src/lib/specialDistrictMatch.test.ts locks shipped 0801 Contact to aurorak12, not byers32j/aps.k12.",
-      "Contact title keeps DOLA legal name; curated common-name gloss (src/content/districtCommonNames.ts by LG ID) when everyday name differs: LG 64907 Also known as Aurora Public Schools (J = joint Adams/Arapahoe).",
-      "Contact modal: drop resident 'as of' / source CSV footer (freshness stays on /sources and directory JSON snapshot).",
-      "Home: one Back to top (below Feedback); remove duplicate under county-compare. Campaign outline disclosure moves from home lookup to SiteFooter (every page); drop redundant footer sentence fields.",
-      "Jump to a section: always leads with Summary (scroll/focus #page-top like Back to top; summary tiles are the top of the locked report), before gated report sections and START OVER.",
-    ],
+    title: "Safer district Contact matching; Aurora schools fixed",
+    sections: {
+      changed: [
+        "Campaign outline disclosure moves to the site footer on every page."
+      ],
+      fixed: [
+        "Low-confidence DOLA name matches no longer drive Contact; Aurora Public Schools Contact points to the correct district."
+      ]
+    },
   },
   {
     version: "5.14.0",
     date: "2026-09-11",
-    title:
-      "City of Aurora authority chain; levy modal popovers only; Prior $ missing on mill chart",
-    highlights: [
-      "Authority-chain family pack city (family city) with City of Aurora AUTH 3001: Who gets → What changed? → What the city's budget says (titlePlain Temporary mill rate under TABOR + cited 2026 Adopted Budget; no duplicate trailing budget). Rate-table page map includes 3001 (registry-linked 4100 via extractor). Unlocated hunt: aurora-3001-tax-levy-ordinance in authorityChainUnlocatedSources.",
-      "Levy modal: remove jump-to sky definition panel (LevyModalInlineDefinitionPanel deleted). Mills, purpose labels, Tax entity, LG ID, explainer {{term:}}, and Government type What's this? use GlossaryTermPopover / InfoHintPopover only. Home Rule Municipalities brief: charter covers local/municipal matters; state law may still control or override statewide or mixed concerns. Authoring: jargon = popovers only.",
-      "Mill chart gap badge: Assessed value keeps Prior years missing; AuthorityMillsHistoryChart footer uses Prior $ missing (COUNTY_PRIOR_YEAR_VALUES_MILL_CHART_STATUS) with the same COUNTY DATA GAP popover body.",
-      "Docs/README/e2e: city pack + popover contracts; metro YoY purpose brief asserts portaled popover; authority-chain helper skips empty city_authorization step bodies.",
-    ],
+    title: "City of Aurora authority chain; levy modal popovers",
+    sections: {
+      added: [
+        "Who authorized this? trail for the City of Aurora."
+      ],
+      changed: [
+        "Levy modal definitions use popovers only (no separate jump-to definition panel)."
+      ]
+    },
   },
   {
     version: "5.13.1",
     date: "2026-09-11",
-    title:
-      "Home campaign disclosure styled to Assessor site outline branding",
-    highlights: [
-      "Home CampaignSiteLink outline control: campaign dark-green border + text (#036b40), Inter bold (next/font preload false), 14pt type, trailing period removed from campaignHomeDisclosureLabel.",
-      "Inline external-link icon at end of label (aria-hidden; existing sr-only opens-in-new-tab). Footer/privacy campaign text links unchanged.",
-    ],
+    title: "Campaign disclosure matches Assessor outline branding",
+    sections: {
+      changed: [
+        "Home campaign outline control uses the campaign green outline style."
+      ]
+    },
   },
   {
     version: "5.13.0",
     date: "2026-09-10",
-    title:
-      "Locked-report sticky Jump to a section bar (On this page)",
-    highlights: [
-      "Home locked report: sticky On this page strip under PageHero (HomeDashboardUtilityBar, slate-600 sub-header; sticks after the blue hero scrolls away). Native details disclosure Jump to a section lists Summary first, then gated destinations that are on the page (levy stack, Property details, county compare, in-app comps when present, Feedback) plus START OVER last (hairline + bold caps). Hero Start over stays on PageHero while locked.",
-      "Jumps use focusNearestDashboardSection with sticky-bar scroll-margin (CSS var = Jump to summary-row height via ResizeObserver, plus 0.5rem so titles are not flush under the bar); arrive ring is outside indigo with white offset (inset painted under tiles/tables; overflow-x-clip pad keeps the ring unclipped). Property details summary jump chip removed.",
-      "buildHomeDashboardJumps gates options; e2e address-multi-pin-chooser asserts the disclosure and START OVER. Sticky bar must share the tall TOOL_PAGE_INNER column with the report body (short hero+bar wrapper kills sticky).",
-    ],
+    title: "Sticky Jump to a section on the locked report",
+    sections: {
+      added: [
+        "Sticky On this page / Jump to a section strip on the locked report."
+      ]
+    },
   },
   {
     version: "5.12.0",
     date: "2026-09-08",
-    title:
-      "County-agnostic Real+BPP switch and Rent dwelling N from building Units",
-    highlights: [
-      "classifySitusPinAccountKind maps Douglas account types (Residential, Commercial, Industrial, …) to real_property alongside Arapahoe Real/Improvement; Personal stays BPP. Switch account type appears whenever a situs mixes real_property + business personal (Matching properties already listed both). features.bpp remains PDF cites only.",
-      "Rent dwelling count N: after land-line UB, sum positive building Units attributes (Douglas Property_Improvements No_Of_Unit → parcel-record Units). Then duplex/triplex/fourplex Improvement Type, then single-dwelling. Never invent N from Apartment w/9 + Units text.",
-      "Ingest: BUILDING_ATTRIBUTE_FIELDS Units/unit_count; douglas.json aliases No_Of_Unit. Rebuilt douglas-parcel-record-by-pin; COUNTY_PARCEL_RECORD_CACHE_BUST bumped. Unit + ingest tests for Commercial+Personal switch and Units sum.",
-    ],
+    title: "Real+BPP switch across counties; Rent unit count from Units",
+    sections: {
+      changed: [
+        "Switch account type appears whenever a situs mixes real and business personal property.",
+        "Rent dwelling count prefers building Units attributes when present."
+      ]
+    },
   },
   {
     version: "5.11.0",
     date: "2026-09-08",
-    title:
-      "County-resolved feature gates; Douglas metro purposes from Abstract Tax Rates",
-    highlights: [
-      "Home metro purpose-row breakdown mounts only when the resolved county has features.metroPurposes and the levy stack matches a metro LG ID in that county's purpose JSON (shouldShowMetroPurposesSection + metroPurposesFileForCounty). Missing or unknown county never falls back to Arapahoe purpose rows.",
-      "MetroTaxShareFlow requires countyConfig; cite URLs and labels come from residentLinks.millLevyPublicInfoForm / millLevyPublicInfoFormLabel / millLeviesHub / millLeviesHubLabel when metroPurposes is on (validated). Defense in depth: without the flag, children pass through with no purpose chrome.",
-      "Douglas metroPurposes on: purpose rows from Abstract of Assessment tax-rates CSV (DOLA LG ID join; debt names folded onto parent; PDF Tax Rate is mills/10). Shipping file douglas-metro-levies-2026.json; build tools/build_douglas_metro_levies.py.",
-      "Split src/lib/countyConfig.ts into src/lib/countyConfig/ (one data file per county: arapahoe.ts, douglas.ts; shared types/validate/helpers/naming/registry). Import path stays @/lib/countyConfig. Disk ↔ registry contract: packageContract.test.ts.",
-      "LevyLineDistrictDetailDialog requires resolved countyConfig; mills-history chart uses countyFeatureAvailable(\"millsHistory\", countyConfig) for that county (no campaign-default fill-in for unknown ids).",
-      "AUTH mills: county-keyed BUNDLES map (arapahoeAuthority* / douglasAuthority* data modules). Missing or unknown county no longer loads Arapahoe mills. resolveAuthorityMillsLookup returns null without a resident county or registry inference. Cross-county registry millsReferenceCountyId is required. levyPercentageResidentUrlForTaxYear requires an explicit county id.",
-      "/sources Douglas methodology: metro purpose rows + On this page links (Metro district tax share, Mill history). extraNav is a list so counties can ship more than one county-specific nav item.",
-      "Docs: docs/county-config.md, docs/cross-county-authorities.md, docs/county-build-inputs.md, src/lib/countyConfig/README.md, root README. Unit: metroDistrictFromLevyLines, metroPurposesBundle match, authorityMillsHistory, build_douglas_metro_levies, sources registry. e2e: Douglas matching LG ID shows purpose chrome and abstract cite; Arapahoe-only LG ID under Douglas resolve stays omitted; /sources Douglas On this page metro link.",
-      "prebuild validate:app-json -- --all-wired: every county in tools/wired-counties.json must have required {countyId}-* JSON under public/data/ (missing or malformed Douglas shipping files fail the build). Optional metro purpose files use Arapahoe metro-levies-YYYY.json or {countyId}-metro-levies-YYYY.json (Douglas included). --county and --county=<id> cannot combine with --all-wired. Single-county and --data-dir prove-out paths unchanged.",
-      "COUNTY_CONFIG default-param audit: feature helpers, safeExternalHref builders, path builders, and parcel loaders require an explicit county config or countyId (no silent Arapahoe fill-in). Path APIs take countyId first. CAMPAIGN_DEFAULT_COUNTY_CONFIG / CAMPAIGN_DEFAULT_COUNTY_ID name intentional campaign-home Arapahoe (account-lookup empty/not-found messaging included). Unknown countyId no longer falls back to Arapahoe identifier rules for shard prefixes or row lookup.",
-      "Arapahoe County authority-chain Ballot Issue 1A: clearer What changed? body (temporary tax credit as billing a lower rate; voters said yes November 2024; higher rate on the 2024 tax bill paid in 2025). Measure titlePlain: Keeping money TABOR would otherwise return (was Ending the temporary tax credit on your bill).",
-    ],
+    title: "County feature gates; Douglas metro purpose rows",
+    sections: {
+      added: [
+        "Douglas metro purpose breakdown from Abstract of Assessment tax rates."
+      ],
+      changed: [
+        "Metro purposes, mill history, and related features resolve per county with no silent Arapahoe fill-in."
+      ]
+    },
   },
   {
     version: "5.10.0",
     date: "2026-09-07",
-    title: "Douglas West Metro Fire AUTH 4402 DOLA join (Phase 16)",
-    highlights: [
-      "Douglas stack lines for West Metro Fire Protection District (AUTH 4402) join DOLA Tax Entity ID 64243/1 (lgId 64243), not South Metro Fire Rescue 64108/1. Shared override in tools/arapahoe_dola_authority_overrides.json pins the TE id so a thin certifying-county DOLA load cannot fuzzy-match SMFR.",
-      "Rebuilt Douglas levy stacks with the full Douglas DOLA entity set (snapshot dolaRowCount 24 → 379). Stack-embedded lgIds rise accordingly; colorado-special-district-directory.json rebuild covers the union (369 → 609 districts), including West Metro 64243. SMFR AUTH 4014 remains 64108/1. Cross-county match file unchanged for SMFR (4014).",
-      "Regression: tools/test_ingest_dola_match.py asserts AUTH 4402 → 64243/1, AUTH 4014 → 64108/1, and Douglas certifying-county load includes West Metro with a non-thin row count. src/lib/specialDistrictMatch.test.ts locks shipped stack lgIds and Contact preferredLgId alignment (tile name vs directory website). docs/cross-county-authorities.md gap note replaced with the locked TE id.",
-    ],
+    title: "West Metro Fire Contact join on Douglas",
+    sections: {
+      fixed: [
+        "Douglas West Metro Fire joins the correct DOLA tax entity (not South Metro Fire Rescue)."
+      ]
+    },
   },
   {
     version: "5.9.0",
     date: "2026-09-06",
-    title: "Douglas valuation history + levy per-year dollars (Phase 15)",
-    highlights: [
-      "Douglas valuation history from build-time Realware detail JSON retain (not live fetch): tools/fetch_douglas_realware_detail.py, tools/extract_douglas_valuation_history.py, stamp tools/douglas-realware-detail-stamp.txt, ship npm run build:douglas-valuation-history:ship to public/data/douglas-valuation-history-by-account/. Full-county ship: ~169k accounts / thousands of shards (not the early spot-check tree). Optional --validate-meta-count compares extracted accounts to meta totalAccountsProcessed; count deltas warn when retain has missing/unparseable files. Bump COUNTY_VALUATION_HISTORY_CACHE_BUST on re-ship.",
-      "Assessed value and Actual value summary tiles open ValuationHistoryDialog (YoY box, tax-impact line, SVG chart, collapsible table). Property details: View valuation history link only. Douglas priorYearValuesInProgress off; valuationHistoryShards on.",
-      "resolveParcelSummaryYears: Douglas Assessment year / Tax year summary tiles use hashPath maintainer stamp (SPA path year), levy-stack snapshot tax year, and Realware valuation-history latest taxYear for outbound property-page links when loaded. Arapahoe unchanged (mart columns on pin-to-tag). Douglas /sources documents year provenance.",
-      "levyDollarAssessedContext: per-year assessed from valuation-history shards plus loaded parcel current year. Levy YoY dollars use per-year assessed when history has the prior tax year; theoretical plus today's assessed footnote when not (Arapahoe).",
-      "AuthorityMillsHistoryChart: footer mills row, ledger rule, then dollars (larger type) or Prior years missing badge when features.priorYearValuesGap and oldest endpoint lacks assessed. Badge reuses CountyPriorYearValuesGapPopover (same panel as Assessed value tile). Flag-driven, not county-hardcoded.",
-      "ValuationHistoryDialog: bottom scroll padding; See data in table form scrolls the table into view. Unit: levyDollarAssessedContext, valuationHistoryYoY, authorityMillsChartFooter, parcelSummaryYears. e2e: douglas-county-search valuation modal + year tiles; metro-yoy chart gap badge.",
-      "Fix: mill-chart / levy dollar context keys parcel assessed to bill tax year (not assessment year) so Arapahoe current-year dollars show beside Prior years missing. Gap badge requires newest endpoint dollars.",
-    ],
+    title: "Douglas valuation history and per-year levy dollars",
+    sections: {
+      added: [
+        "Douglas valuation history from Realware detail; year-over-year on assessed and actual value."
+      ],
+      changed: [
+        "Levy year-over-year dollars use per-year assessed when history has the prior year."
+      ]
+    },
   },
   {
     version: "5.8.0",
     date: "2026-09-04",
-    title: "Douglas prior-year IN PROGRESS chrome (sky Coming soon)",
-    highlights: [
-      "Reusable IN PROGRESS chrome (sky, not red COUNTY DATA GAP): InProgressBadge, InProgressHeader, InProgressCallout, InfoHintPopover variant in-progress, toolFlowStyles tokens. Calendar icon; panel title IN PROGRESS.",
-      "Douglas priorYearValuesGap off; priorYearValuesInProgress on. Assessed value shows a Coming soon badge (not Prior years missing). Popover: working to get prior-year assessed values onto this site soon; property-page link when loaded. Custom Reports / $50 copy removed from resident and /sources surfaces.",
-      "/sources Douglas Property details: sky IN PROGRESS callout (#county-prior-year-values-in-progress), not the gap hub. YoY dollar footnote uses the same still-looking / still-working tone. Arapahoe prior-year COUNTY DATA GAP unchanged.",
-      "Config: priorYearValuesGap and priorYearValuesInProgress mutually exclusive. docs/county-config.md + docs/county-service-gap-callouts.md. Playwright Douglas e2e updated (e2e/douglas-county-search.spec.ts).",
-    ],
+    title: "Douglas prior-year Coming soon chrome",
+    sections: {
+      added: [
+        "Sky IN PROGRESS / Coming soon chrome for Douglas prior-year assessed values."
+      ],
+      changed: [
+        "Arapahoe prior-year COUNTY DATA GAP unchanged."
+      ]
+    },
   },
   {
     version: "5.7.0",
     date: "2026-09-04",
-    title: "/sources methodology content modules (Phase 14)",
-    highlights: [
-      "Arapahoe and Douglas /sources methodology moved out of src/app/sources/page.tsx into src/content/sourcesMethodology/ (per-county modules + one registry with one entry per county). page.tsx is the shared shell (intro, SourcesCountyGate wiring, Code).",
-      "One SOURCES_COUNTY_CONTENT_MODULES entry per county: methodologyNav, optional extraNav, Methodology, and AfterGap (function or explicit null). Builders: buildSourcesNavByCountyId, buildSourcesSectionsByCountyId, buildSourcesAfterGapByCountyId. Client gate receives navByCountyId so methodology JSX stays off the client graph.",
-      "Page intro and metadata county list come from formatWiredCountyNamesForSourcesIntro(wiredCountyConfigs()) so county 3 does not require a hand-edited string.",
-      "Unit gate: registry.test.ts (every wired county registered; AfterGap explicit; nav/section/after-gap maps agree). docs/county-config.md includes the /sources county N ritual.",
-    ],
+    title: "/sources methodology split by county module",
+    sections: {
+      changed: [
+        "/sources methodology content lives in per-county modules behind a shared page shell."
+      ]
+    },
   },
   {
     version: "5.6.0",
     date: "2026-09-04",
-    title: "Douglas Playwright e2e + prior-year COUNTY DATA GAP (Phase 13)",
-    highlights: [
-      "Dashboard and levy-dialog Sources links pass ?county= for the active / resident county so /sources opens on that methodology (SourcesCountyGate initialCountyId from searchParams; sourcesPageHref helper).",
-      "Playwright: Douglas account-id and address resolve, adjacent auto-try after Arapahoe miss, I don't know my county unique resolve, Douglas See Sources preselect, and Douglas Prior years missing badge (chromium/firefox/webkit). Spec: e2e/douglas-county-search.spec.ts. Synthetic Douglas fixtures; emptySitusCompanionCountyId for miss/hit pairs.",
-      "Douglas priorYearValuesGap on: Prior years missing badge on Assessed value with Douglas COUNTY DATA GAP copy that points residents to this property's Assessor property details (history is there) and notes a bulk download does not appear available for this site. File names and Assessor Custom Reports ($50/hr, text-fragment link to the Real Estate Data Center heading) stay on /sources. Arapahoe keeps assessor guidance that the public site has no bulk prior-year assessed. /sources hub + Property details red box 1:1 for both counties.",
-      "YoY dollar footnote (today's assessed value): same Douglas resident tone (property-page link when loaded; no .txt or fee copy). Arapahoe footnote unchanged.",
-      "Dashboard accuracy mailto secondary: notes we are constantly updating and making corrections to this app.",
-      "docs/county-config.md: Dashboard→sources county query is shipped (no longer Phase 13 deferral).",
-    ],
+    title: "Douglas e2e coverage and prior-year data gap",
+    sections: {
+      added: [
+        "Douglas search and Sources county deep-link coverage in Playwright."
+      ],
+      changed: [
+        "Douglas shows Prior years missing on Assessed value with county-specific guidance."
+      ]
+    },
   },
   {
     version: "5.5.0",
     date: "2026-09-02",
-    title: "District directory includes Douglas stack LGIDs (Phase 12)",
-    highlights: [
-      "colorado-special-district-directory.json is filtered to the union of LGIDs on Arapahoe and Douglas levy stacks (was Arapahoe-only). Douglas levy lines with a DOLA LG ID can show the same Contact block as Arapahoe.",
-      "build:district-directory defaults to both county stack files; repeatable --certifying-county defaults to Arapahoe and Douglas for Property Tax Entities name-only fallback. npm run test:district-directory covers the multi-county filter.",
-      "/sources: Arapahoe contact methodology names shipping counties; Douglas methodology matches levy detail Contact behavior (stack LG ID strongest; name match or DOLA entity data when no directory row).",
-    ],
+    title: "District directory covers Douglas stack LGIDs",
+    sections: {
+      changed: [
+        "Special-district Contact directory includes LGIDs from both Arapahoe and Douglas levy stacks."
+      ]
+    },
   },
   {
     version: "5.4.0",
     date: "2026-09-02",
-    title: "Douglas mill history from Tax Districts and Mill Levies PDFs",
-    highlights: [
-      "Douglas ships public/data/douglas-authority-mills-by-tax-year.json and douglas-authority-rate-table-pages.json (Tax Years 2020–2025). Extract: tools/extract_douglas_authority_mills_by_tax_year.py from the Assessor Tax Districts and Mill Levies PDFs (same format as levy stacks). CountyConfig.features.millsHistory is on.",
-      "Levy tiles, mill-over-time charts, and authority-chain What changed? use the Douglas AUTH series for Douglas residents (SMFR 4014 9.29 → 12.25 in 2024–2025). Rate-table cites are douglasco.gov mill PDFs, not Arapahoe Levy % files. Hub 2021 PDF is unversioned tax-districts-mill-levies.pdf.",
-      "/sources lists each bundled mill-history PDF (Douglas Tax Districts and Mill Levies; Arapahoe Levy Percentage years) so residents can open the same county files the chart cites.",
-      "/sources County=Douglas no longer shows Arapahoe metro / Related county PDFs (Levy Percentage, Mill Levy Public Information Form); those stay behind afterGapByCountyId for Arapahoe. Douglas On this page links to Mill history.",
-      "Removed Douglas SMFR open gap no-resident-county-mills-history. Entity-stack reconciliation remains only for counties that still lack a mills bundle.",
-    ],
+    title: "Douglas mill history from county mill PDFs",
+    sections: {
+      added: [
+        "Douglas mill-rate history for levy tiles and charts from Tax Districts and Mill Levies PDFs."
+      ]
+    },
   },
   {
     version: "5.3.1",
     date: "2026-09-02",
-    title: "Statewide DOLA tax-entities refresh + registry lgId (Phase 11c)",
-    highlights: [
-      "Tracked supporting-data/dola/property-tax-entities-export.csv replaced with a statewide Property Tax Entities export (2026-09-02). Arapahoe certifying-row mills unchanged on anchor entities (SMFR, UDFCD, county); npm run test:ingest includes mill-anchor safeguards before future CSV swaps.",
-      "cross-county-authority-registry.json: lgId backfill on SMFR (64108), UDFCD main (64147), and UDFCD South Platte (64174) from DOLA joins. Line-code mapping unchanged.",
-      "Docs: README, docs/county-build-inputs.md, /sources, and dataSourceUrls.ts document DOLA export ritual (certifying county only; do not filter by local government type). Shipped Arapahoe levy JSON unchanged this release; rebuild optional when mart refreshes.",
-    ],
+    title: "Statewide DOLA tax-entities refresh",
+    sections: {
+      changed: [
+        "Refreshed statewide DOLA Property Tax Entities export; registry LG IDs backfilled for shared authorities."
+      ]
+    },
   },
   {
     version: "5.3.0",
     date: "2026-08-31",
-    title: "Cross-county authority registry + Douglas DOLA stack join (Phase 11)",
-    highlights: [
-      "Runtime registry public/data/cross-county-authority-registry.json maps one logical district to per-county AUTH codes (SMFR, UDFCD main, UDFCD South Platte). Authority chain resolves through findLevyAuthorityChainEntry with match.registryId; AUTH mills history and YoY use resolveAuthorityMillsLookup for the resident county when that county ships a mills bundle. Registry-linked shared entities use reference-county prior-year mills for Changed/tile YoY only when resident stack mills reconcile to the entity current year (numbers only; no cross-county Levy % PDF cites).",
-      "Maintainer stack: tools/wired-counties.json, build_cross_county_authority_matches.py (DOLA Tax Entity ID + matchStatus), tools/cross_county_authority_overrides.json, tools/cross-county-authority-matches.json. Architecture: docs/cross-county-authorities.md.",
-      "Phase 11b: Douglas ingest runs DOLA tax-entity join on stack lines (removed --skip-dola-join). County mill PDF wins when DOLA total disagrees; Douglas stacks relanded with stack-embedded dolaMatch (Tax Entity ID + lgId).",
-      "SMFR authority-chain closed summary uses neutral certified-election attribution for cross-county residents (summarySource on south-metro-fire-authority-chain). Registry-linked entries use countyOverlays in levy-authority-chain-entries.json so shared trails stay county-neutral with per-county notes, tax-list names, and open gaps (Douglas SMFR no longer shows Arapahoe-only ballot-notice NOTE). Resident UI uses each county's own mills bundle only (no cross-county Levy % fallback). E2e covers registry-linked AUTH codes on Arapahoe and Douglas.",
-    ],
+    title: "Cross-county authority registry",
+    sections: {
+      added: [
+        "Registry maps one logical district to per-county AUTH codes for shared authorities."
+      ],
+      changed: [
+        "Douglas stacks join DOLA tax entities; shared authority-chain trails stay county-neutral."
+      ]
+    },
   },
   {
     version: "5.2.0",
     date: "2026-08-30",
-    title: "County-neutral loader modules with compatibility shims (Phase 10)",
-    highlights: [
-      "Canonical loaders: countyParcelLevyData.ts and situsIndexLookup.ts (County* types, fetchCounty* helpers). Deprecated arapahoeParcelLevyData.ts / arapahoeSitusLookup.ts remain as re-export barrels for forks.",
-      "Shipping JSON paths unchanged ({countyId}-* under /data/). countyLoaderContract.test.ts is the Phase 10 ship gate: wired-county URL contract, fetch URL alignment, shim identity, and validator paths.",
-      "countyHeavyDataPathnames() now lists heavy /data/ paths for every wired county (Douglas indexes included in rate-limit tier). README and county-config.md document loader modules.",
-    ],
+    title: "County-neutral data loaders",
+    sections: {
+      changed: [
+        "Parcel and situs loaders are county-agnostic; Arapahoe-named modules remain as compatibility shims."
+      ]
+    },
   },
   {
     version: "5.1.0",
     date: "2026-08-28",
-    title: "Douglas multi-county lookup + parcel-record shards (Phase 9/9b/9c)",
-    highlights: [
-      "Douglas County loads beside Arapahoe by account id and street address (no env county switch). Ingest uses Assessor Property_Location + Property_Values (sum join) and the tax-district mill PDF; situs comes from the location file. Shipping JSON under public/data/douglas-* is committed with this release.",
-      "Phase 9c: douglas-parcel-record-by-pin shards join Ownership / Location legal / Improvements / Subdivision / Sales / Filing (+ optional Hub parcels CSV) into the same Property details shape as Arapahoe. Enrichments: values land lines, lot/block/tract, filing, composite neighborhood code, sales grantor/grantee. Alphanumeric 8-char account ids use path-safe shard prefixes. features.parcelRecordShards is on for Douglas.",
-      "Multi-county UI: when two or more counties are wired, search typeahead, did-you-mean streets, and multi-match chooser rows show the county display name; the dashboard Address tile shows address · County Name.",
-      "Dashboard follows the resolved county: Ownership fills account-map ownerList for Owner of record tiles; LevyCountyCompareSection / parcel-record / levy links take CountyConfig; footer and pin-lookup help list wired counties from COUNTY_CONFIG_BY_ID (not Arapahoe-only hardcodes).",
-      "Honesty gates: COUNTY DATA GAP chrome is opt-in per CountyConfig (priorYearValuesGap, dataMartRefreshGap, millPdfTaxDistrictGap; comps via knownFailures). /sources has a county selector; hub and methodology follow the selected county. docs/county-config.md is the durable multi-county model.",
-      "Hosted property page: urls.parcelRecord supports query or hashPath templates (Douglas #/details/{year}/{id}); hostedPropertyPageName drives Open county … button copy; compare heading uses displayName (See how {County} displays your data).",
-      "Follow-up hardening: county-aware resident links, safer countyId / situs failure detail handling, account-id not-found candidates for letter counties, values-join account-id normalization, and Douglas validate:app-json CLI tests that do not depend on gitignored ingest-out dumps.",
-      "County search gate (multi-county bandwidth): default Arapahoe with lazy situs/pin/levy prefetch on engage; adjacent wired counties auto-try on address miss (adjacentCountyIds, not alphabetical); \"?\" (I don't know my county) probes all situs-enabled counties. Visible load progress on every scoped fetch. Account-id lookup uses the same preferred order. docs/county-config.md; countySearchScope.ts + CountySearchScopeSwitch.",
-      "Home lookup row: label Select your Colorado county; segment Arapahoe | Douglas | ?; Try demo property on the same 48px control row from lg up (stacked full-width below lg). Dropped the Supported Colorado counties availability box (footer still lists coverage). Control chrome: .home-address-lookup-* in globals.css + HOME_ADDRESS_LOOKUP_* in toolFlowStyles.ts. Start over keeps the county pick.",
-      "Site footer: light slate-50 band (slightly darker than page white) with slate-800 body copy for contrast.",
-      "Dev: Tailwind content scan limited to src/ (globals.css source(\"../\")) so public/data JSON shards are not walked on CSS hot reload.",
-    ],
+    title: "Douglas County lookup beside Arapahoe",
+    sections: {
+      added: [
+        "Douglas account-id and address lookup with parcel-record details.",
+        "County picker and multi-county search when more than one county is wired."
+      ],
+      changed: [
+        "Dashboard, footer, and COUNTY DATA GAP chrome follow the resolved county."
+      ]
+    },
   },
   {
     version: "5.0.1",
     date: "2026-08-25",
-    title: "Maintainer download lists; Douglas locked as county 2 (inventory Go)",
-    highlights: [
-      "docs/county-build-inputs.md lists hubs, last-known file URLs, and local save paths for Colorado shared (DOLA), Arapahoe, Douglas, and parked El Paso. Root README and docs/county-ingest.md link there. Large dumps stay gitignored.",
-      "Phase 8 inventory Go: Douglas Assessor Property_Location.txt + Property_Values.txt (headerless) plus the tax-district mill PDF can fill required app JSON shapes (account map + levy stacks). Tax_District_No joins PDF tax district ids (4-digit zero-pad). Phase 9 still needs mapping + headerless text reader + mill-PDF stack reader; the live app remains Arapahoe-only.",
-      "El Paso published dumps stay parked (no tax-area stacks under above-board policy). No scraper / property-search API harvest.",
-    ],
+    title: "Maintainer download lists; Douglas inventory Go",
+    sections: {
+      changed: [
+        "Documented county download hubs and confirmed Douglas source files can fill required app JSON shapes."
+      ]
+    },
   },
   {
     version: "5.0.0",
     date: "2026-08-24",
-    title: "Arapahoe shipping JSON now built by engine v2 (atomic ship-from-new)",
-    highlights: [
-      "Canonical Arapahoe rebuild is npm run build:ingest:ship: raw mart/GIS/DOLA inputs through tools/ingest/ into staging, IDENTICAL gate vs live public/data/, then atomic land of Arapahoe files only (levy stacks, pin-to-tag, situs, parcel-record shards). Metro-levies, directory, explainers, and authority mills are untouched by ship.",
-      "Committed public/data/ Arapahoe JSON now carries snapshot.source new ingest (mapping: arapahoe). Bill data matched the prior v1 tree on IDENTICAL compare (snapshot metadata excluded). npm run build:arapahoe-index remains for emergency v1 rebuild / rollback.",
-      "Ship refuses mid-run writes under public/: staging must not be a symlink; ship_preflight (mart stamp + clean git status public/data/) runs at start and immediately before land; multi-target land restores on failure. Post-cutover mart refresh may pass --ship-allow-diff (skips pre-swap IDENTICAL only).",
-      "Comparison builds stay npm run build:ingest → supporting-data/_ingest-out/ (no --ship). Prove-out and docs: docs/county-ingest.md. Phase 6.5 dual-root UI path (public/data-engine-v2 symlink + COUNTY_DATA_ENGINE=v2) is retired; shipping /data/ is engine v2.",
-    ],
+    title: "Arapahoe shipping data built by ingest engine v2",
+    sections: {
+      changed: [
+        "Arapahoe shipping JSON rebuilds through the new ingest engine with an atomic ship step."
+      ]
+    },
   },
   {
     version: "4.15.1",
     date: "2026-08-24",
-    title: "Typeahead place caption omits condo unit; Real+BPP gate shared with chooser",
-    highlights: [
-      "Multi-PIN place suggestions no longer show a single condo unit (e.g. Unit J01) when the tap still opens Matching properties for every account at that street.",
-      "Shared Real+BPP helper (same pin-to-tag enrich as the chooser) locks Broadway-style Real + business personal property places so typeahead sample labels stay unchanged; unit-suffix strip is secondary for all-Real multi only.",
-      "Matching properties: Real+BPP places still sort by actual value within kind; all-Real multi (condo units) sort by address label so units read in order.",
-      "Typeahead and Search reuse the existing pin-to-tag fetch cache (prefetch with situs); no ingest or county-engine v2 changes.",
-    ],
+    title: "Typeahead omits condo unit in place captions",
+    sections: {
+      changed: [
+        "Multi-PIN place suggestions no longer show a single condo unit when Matching properties still lists every account."
+      ]
+    },
   },
   {
     version: "4.15.0",
     date: "2026-08-23",
-    title: "County-agnostic static data paths for shipping JSON",
-    highlights: [
-      "Static county JSON URLs resolve from COUNTY_CONFIG.id via src/lib/countyDataPaths.ts (`{dataRoot}/{countyId}-*`). Shipping stays `/data/`; loaders accept an optional dataRoot and cache per root.",
-      "Local v2 UI sanity check: flip COUNTY_DATA_ENGINE_SETTING in src/lib/countyDataEngine.ts (or NEXT_PUBLIC_COUNTY_DATA_ENGINE=v2 in .env.local) and symlink public/data-engine-v2 to supporting-data/_ingest-out. Disk parity remains npm run diff:ingest.",
-      "Validator APP_JSON_* paths and rate-limit HEAVY_DATA_PATHS derive from the same helpers. Engines stay separate: no write to public/data/ from ingest; no ship-from-new in this release.",
-    ],
+    title: "County-agnostic static data paths",
+    sections: {
+      changed: [
+        "Shipping JSON URLs resolve from county id so loaders are not Arapahoe-hardcoded."
+      ]
+    },
   },
   {
     version: "4.14.0",
     date: "2026-08-22",
-    title: "Two-engine ingest architecture proved; shipping rebuild unchanged",
-    highlights: [
-      "Locked model: the shipping Arapahoe rebuild (npm run build:arapahoe-index to public/data/) and the new ingest engine (tools/ingest/, npm run build:ingest to supporting-data/_ingest-out/) stay separate. No cross-imports, no retargeting the old script, no deleting v1. Writing shipping JSON from ingest is an explicit later cutover, not this release.",
-      "Arapahoe backend prove-out (Phase 6): the same supporting-data mart/GIS/DOLA inputs through engine v2 reproduce committed public/data/ (levy stacks, account map, situs, parcel-record shards, dolaMatch). npm run diff:ingest -- public/data supporting-data/_ingest-out must exit IDENTICAL. Green CI does not substitute; parity is a local gate (CI has no mart CSVs).",
-      "Engine v2 now emits situs, parcel-record shards, and DOLA mill join (dola_match.py; shared tools/arapahoe_dola_authority_overrides.json). compare.py includes dolaMatch; snapshot metadata remains the only documented compare skip.",
-      "Prove-out safeguards: npm run validate:app-json -- --data-dir supporting-data/_ingest-out validates candidate output; --data-dir resolves with realpathSync and must stay inside the repo. Build and compare CLI tests refuse public/ out dirs. CI runs ci:test:ingest (classifier, reader/writer/compare, situs contract).",
-      "Maintainer docs: docs/README.md (index) and docs/county-ingest.md (control vs candidate paths, compare semantics, prove-out procedure). Root README links there instead of inlining the ritual.",
-      "Residents and forks: committed public/data/ and the live site behavior are unchanged until a future ship-from-new decision. npm install + npm run dev still use the same bundled JSON.",
-    ],
+    title: "New ingest engine proved against shipping data",
+    sections: {
+      changed: [
+        "New ingest reproduces committed Arapahoe shipping JSON locally; live site data unchanged until ship-from-new."
+      ]
+    },
   },
   {
     version: "4.13.0",
     date: "2026-08-18",
-    title: "New ingest beside current Arapahoe rebuild (mapping file, reader, writer, compare)",
-    highlights: [
-      "tools/ingest/mappings/arapahoe.json maps Arapahoe Data Mart column names (TAGId, Pin, TotalActual, ...) to shared field names (taxAreaId, accountId, totalActual, ...). Shared reader and writer code has no Arapahoe column names.",
-      "tools/ingest/reader.py reads a levy stack CSV and a parcel CSV through the mapping file and returns intermediate records. tools/ingest/writer.py converts those records to the app JSON shapes (levy stacks + account map) and writes them to a comparison directory; never writes to public/data/.",
-      "tools/ingest/compare.py diffs two JSON directories (e.g. public/data vs supporting-data/_ingest-out). Excludes snapshot metadata (bundledAsOf, source) and dolaMatch from the diff so transient and phase-gated fields do not count as differences.",
-      "npm run build:ingest (tools/ingest/build.py) runs the new ingest CLI. npm run diff:ingest (tools/ingest/compare.py) compares directories. Production rebuild stays npm run build:arapahoe-index. New ingest writes to supporting-data/_ingest-out/ (gitignored). Python tests: npm run test:ingest-reader (test_ingest_reader.py).",
-    ],
+    title: "New ingest reader, writer, and compare",
+    sections: {
+      added: [
+        "New ingest mapping, reader, writer, and compare tools beside the current Arapahoe rebuild."
+      ]
+    },
   },
   {
     version: "4.12.0",
     date: "2026-08-18",
     title: "Ingest classifier for county drop folders",
-    highlights: [
-      "tools/ingest/classify.py inspects CSV/XLSX headers, PDF text samples, and GeoJSON/GDB field names. It prints a human report (or --json) with coverage ready / mapping-needed / new-reader / will-be-off. Missing a levy-stack source is a hard fail. Missing a comps PDF is optional (recommended compsPdf flag off). The classifier does not write app JSON or anything under public/.",
-      "npm run test:ingest uses synthetic drop folders and invented headers (including a 10-digit schedule, not Pin/TAGId). Arapahoe-shaped mart + DOLA headers print ready for levy stacks, account map, situs, and shards. Production rebuild stays npm run build:arapahoe-index.",
-    ],
+    sections: {
+      added: [
+        "Classifier inspects county drop folders and reports what can feed required app JSON."
+      ]
+    },
   },
   {
     version: "4.11.0",
     date: "2026-08-18",
     title: "County config and feature-available flags",
-    highlights: [
-      "County config (src/lib/countyConfig.ts) holds identifier digit rules, URL templates, host allowlist, feature-available flags (situs, comps PDF, BPP, mills history, metro purposes), DOLA certifying-county filter, and known county-data failures. Arapahoe is the first county file. Campaign chrome stays in siteConfig.ts.",
-      "URL builders read templates and the host allowlist from that config. Features a county never had are omitted; a known hosting failure still uses COUNTY DATA GAP (Arapahoe comps PDFs). Address search stays on screen when situs is off (id-only lookup). Vitest covers Arapahoe 9-digit PIN and a 10-digit schedule fixture with invented ids.",
-    ],
+    sections: {
+      added: [
+        "County config holds identifier rules, URL templates, and feature-available flags."
+      ]
+    },
   },
   {
     version: "4.10.0",
     date: "2026-08-18",
     title: "App JSON contract for the new ingest",
-    highlights: [
-      "App JSON contract: required levy stacks + account map, optional situs and metro purpose files, and compsPdf flag consistency (AIN-like field). Vitest uses invented ids. npm run validate:app-json (also in prebuild) checks shipping files exist and have the required root keys. pinDigits is county-specific (Arapahoe ships 9), not a Colorado standard.",
-      "New ingest will live under tools/ingest/ and write to a comparison directory; production npm run build:arapahoe-index and public/data/arapahoe-*.json stay as they are until that comparison matches. Arapahoe is the first county the new ingest must reproduce.",
-    ],
+    sections: {
+      added: [
+        "Validated contract for required and optional shipping JSON shapes ahead of the new ingest."
+      ]
+    },
   },
   {
     version: "4.9.4",
     date: "2026-08-18",
-    title: "Mill levy tile and prior-year values gap",
-    highlights: [
-      "Removed the amber Your property tax bill changed from last year banner and the Property tax change teaching chip/modal. Summary row adds a Mill levy chip (total mill levy, same wrap as Property tax) with a Changed badge only when that total moved. The chip jumps to mill levy tiles (nearest scroll + heading focus; short data-arrive ring on the mill levy tile grid; glossary popover stays on the label only). Face is mills plus Changed; no extra jump chevron next to mills. Property tax stays this year's dollar with no Changed badge. Actual value / Assessed value will get Changed when prior-year figures exist. Property details jump is full width at every viewport (min-h-11 tap floor). Summary chips on one wrap line stretch to the tallest (PARCEL_SUMMARY_ROW_CLASS items-stretch). Summary tile labels are text-xs at every viewport.",
-      "Prior-year COUNTY DATA GAP sits as a red Prior years missing badge on Assessed value (white chip; CountyServiceGapBadge, same shape as Changed, light red fill and dark text, not red fill on the tile). The popover is the same InfoHintPopover as tile glossary briefs (width/scroll), with variant county-data-gap so the panel uses the COUNTY DATA GAP surface (thin red border + light red fill). COUNTY DATA GAP header and copy sit inside that panel: we tried to get prior-year values from the county and were unable to, an in-sentence Sale history jump to the parcel sale table, and an in-sentence Sources link. /sources states we searched published county and state sources, including the mart Main Parcel Table (current-year figures only). Header-to-copy gap is shared with the comps gap tile and other COUNTY DATA GAP callouts. County gap notes name the county file attempt, not this app's inability. Rent still shows Mill levy and levy tile Changed badges. Mill levy Changed uses the same levy-stack badge, including the up/down arrow for how the total moved. Own | Rent to content below uses the same vertical step as summary-tile wrap (HOME_AUDIENCE_STACK_GAP_CLASS). Dashboard tile glossary labels keep a question-mark-circle icon on the same line as the term, stretched to that label's line box. Levy stack intro: Select a mill levy tile for more details. Mill levy brief: one mill is $1 of tax per $1,000 of assessed value; the summary-chip popover adds a this-property example. Mill levy jump uses start scroll when the tile grid sits low in the viewport (stacked), nearest when tiles are already on screen.",
-    ],
+    title: "Mill levy summary chip and prior-year gap badge",
+    sections: {
+      added: [
+        "Mill levy summary chip with Changed when the total moved."
+      ],
+      changed: [
+        "Prior-year COUNTY DATA GAP sits as a Prior years missing badge on Assessed value."
+      ],
+      removed: [
+        "Amber whole-bill changed banner and Property tax change teaching chip."
+      ]
+    },
   },
   {
     version: "4.9.3",
     date: "2026-08-17",
-    title: "County service gap callouts (COUNTY DATA GAP)",
-    highlights: [
-      "Shared county-gap chrome: CountyServiceGapCallout, CountyServiceGapHeader, and toolFlowStyles summary-tile classes. Distinct from InlineErrorCallout (county export/hosting limits, role=note, not app errors).",
-      "Home dashboard: compact Data Mart refresh note under County data current as of; Comparable properties summary tile uses COUNTY DATA GAP framing when ARAPAHOE_COMPS_PDF_HOSTED_FILES_TEMPORARILY_UNAVAILABLE is true.",
-      "/sources: standalone When county data fails hub (jump-link index) plus matching contextual COUNTY DATA GAP boxes in Your property tax bill (comps PDF, Aug 17 Data Mart attempt, prior-year assessed limit). Your property tax bill section precedes Metro district tax share.",
-      "Maintainer guide docs/county-service-gap-callouts.md and base-rule pointer: user-visible gaps ship dashboard + /sources (1:1 hub list to contextual red box). Demo bundledAsOf aligned to tools/county-mart-data-as-of.txt (2026-07-15).",
-      "ESLint local/jsx-inline-prose-spacing (npm run lint; CI ESLint job) fails ambiguous newlines next to inline tags and Link. CodeRabbit defers to that rule instead of {\" \"} review sweeps.",
-    ],
+    title: "COUNTY DATA GAP callouts",
+    sections: {
+      added: [
+        "Shared COUNTY DATA GAP chrome on the dashboard and matching /sources hub boxes."
+      ]
+    },
   },
   {
     version: "4.9.2",
     date: "2026-08-16",
-    title: "Per-parcel neighborhood from Assessor Open GIS Parcels",
-    highlights: [
-      "Property details Neighborhood and Neighborhood Code now fill from the Assessor Open GIS Parcels layer (PIN join; code and name only into public JSON). Main Parcel CSV still has no NBHD column, and neighborhood is never inferred from subdivision name. PINs with no code, or with conflicting code/name rows in the export, keep the No data found empty state.",
-      "build_arapahoe_parcel_levy_index.py reads the GDB via --gis-parcels-gdb and treats a missing GDB or zero-row join as a build error; --skip-neighborhood is the explicit opt-out. The download stamp comes from data-as-of.txt next to the GDB actually used and ships as snapshot.gisParcelsAsOf.",
-      "Parcel-record shard requests carry ARAPAHOE_PARCEL_RECORD_CACHE_BUST so browsers do not serve a pre-neighborhood copy from the /data max-age cache. Try demo and synthetic e2e fixtures include fictional neighborhood name/code so Property details asserts the filled rows.",
-    ],
+    title: "Neighborhood from Assessor Open GIS Parcels",
+    sections: {
+      added: [
+        "Property details Neighborhood and code fill from the Assessor Open GIS Parcels layer."
+      ]
+    },
   },
   {
     version: "4.9.1",
     date: "2026-08-16",
-    title: "Fire authority chain, SMFR 7A trail, and property-specific rate-table PDF pages",
-    highlights: [
-      "New fire family for Who authorized this? (Voters + Ballot Issue + Arapahoe certified tallies; AUTH-derived What changed?). First entry: South Metro Fire Rescue AUTH 4100, Ballot Issue 7A (November 2025), with a closed-summary NOTE when the Arapahoe Notice PDF is not currently available and Douglas County's Notice carries the same 7A wording.",
-      "County Levy % source links deep-link to the parcel tax-area page via arapahoe-authority-rate-table-pages.json (tax year + AUTH + TAG). Missing historical combinations open the year PDF at page 1 rather than inventing a page.",
-      "Verified #page= fragments on remaining single-document cites (county 2025 budget, Sky Ranch 2026 budget whoGets, LPS 2020 Spanish sample 4C). Own-mode landing intro tightened to one line.",
-    ],
+    title: "Fire authority chain and rate-table page cites",
+    sections: {
+      added: [
+        "Fire Who authorized this? family; South Metro Fire Rescue Ballot Issue 7A trail."
+      ],
+      changed: [
+        "Levy % source links deep-link to the parcel tax-area page when known."
+      ]
+    },
   },
   {
     version: "4.9.0",
     date: "2026-08-15",
-    title: "Metro authority chain: AUTH-derived rate changes and chronological trail",
-    highlights: [
-      "Metro Who authorized this? trails derive What changed? from the same county authority mill series as the history chart: always Change from last year, plus a separate Most notable change block when a larger year-to-year move exists (largest absolute adjacent move; more recent wins ties). No hand-authored metro mill numbers.",
-      "Sky Ranch Metro District No. 3 (4571) reads chronologically: November 2020 elector authorization, December 2020 county service-plan support, then the August 2022 capital pledge to the community authority board, with approval evidence on each step instead of a trailing duplicate.",
-      "Levy % PDF cites for those rate blocks come from the bundled AUTH mills data (one source of truth); non-consecutive published years are labeled as such.",
-    ],
+    title: "Metro authority chain from published mill series",
+    sections: {
+      changed: [
+        "Metro Who authorized this? rate changes come from the same AUTH mill series as the history chart."
+      ]
+    },
   },
   {
     version: "4.8.2",
     date: "2026-08-13",
     title: "BPP hides Rent; Switch account type is Real+BPP only",
-    highlights: [
-      "Own | Rent and Rent dashboard chrome are hidden on business personal property accounts; switching back to Real restores the prior lens.",
-      "Dashboard Switch account type appears only when the situs mixes business personal property with another account kind (all-Real condo multi uses Matching properties only).",
-      "Rent unknown-N / pending copy and the levy rent footnote say units / per-unit instead of homes; landing Rent invite adds Where's it going?",
-    ],
+    sections: {
+      changed: [
+        "Own | Rent hidden on business personal property accounts.",
+        "Switch account type only when the situs mixes Real and business personal property."
+      ]
+    },
   },
   {
     version: "4.8.1",
     date: "2026-08-12",
     title: "Python tooling docstrings on non-obvious helpers",
-    highlights: [
-      "Offline tools: useful module/function docstrings on the NOV comps parser, district directory/import helpers, parcel-index private builders, and related extract utilities (contracts and quirks, not wallpaper on trivial helpers).",
-      "README contributor note: prefer that same bar for future `tools/*.py` changes.",
-    ],
+    sections: {
+      changed: [
+        "Offline tools gain useful docstrings on non-obvious helpers."
+      ]
+    },
   },
   {
     version: "4.8.0",
     date: "2026-08-12",
-    title: "Own / Rent audience lens with equal-split tax pressure",
-    highlights: [
-      "Home Own | Rent switch (default Own, aria-only Own or rent): same chrome on search and locked report; Start over resets to Own. Landing intro follows the lens (Own: bill hook; Rent: You're still paying property tax if you rent).",
-      "Rent mode: colored pressure tiles (estimated /mo when N is known, all-tax /yr, unit count) with equal-split caveats; pierce heading on the report. N from land-line UB, duplex/triplex/fourplex, or single dwelling.",
-      "Rent levy and metro dollars use the same per-unit share when N is known, shown as monthly /mo with rent-framed metro copy; Own keeps annual whole-account figures. No Add tile / levy line edit in Rent.",
-      "Rent curation hides comps / BPP NOV / demo comps grid and the bill-impact banner, omits owner mailing rows, and collapses sale/building/land tables under a disclosure.",
-    ],
+    title: "Own / Rent audience lens",
+    sections: {
+      added: [
+        "Own | Rent switch with equal-split tax pressure tiles and per-unit levy dollars in Rent mode."
+      ]
+    },
   },
   {
     version: "4.7.3",
     date: "2026-08-12",
-    title: "Dashboard tiles beside levies; unified property details; chooser row hits",
-    highlights: [
-      "Locked report: summary tiles sit beside the levy stack on large screens (content-sized chips wrap in the left column); a narrow Property details chip (jump control) precedes comps / Notice of Valuation; Property details is one full-width block below for Real and business personal property (no sidebar split).",
-      "Multi-PIN chooser and Switch account type modal: whole-row hit targets; Real vs business personal property glossary once under the heading, not on each row.",
-      "Parcel PIN or AIN panel stays unlocked-search / county-fallback only (never on a locked dashboard).",
-    ],
+    title: "Summary tiles beside levies; unified Property details",
+    sections: {
+      changed: [
+        "Summary tiles sit beside the levy stack on large screens; Property details is one full-width block."
+      ]
+    },
   },
   {
     version: "4.7.2",
     date: "2026-08-11",
-    title: "In-dashboard multi-account switcher modal",
-    highlights: [
-      "Multi-PIN situs: Switch account type is a salmon dashboard button (multi-account only) that opens a levy-style modal instead of unlocking the post-search chooser.",
-      "Modal rows are full-row hit targets with Currently viewing on the active PIN; Real / business personal property kinds stay prominent with glossary briefs.",
-      "Single-PIN properties omit the control; post-search Matching properties chooser is unchanged.",
-    ],
+    title: "In-dashboard multi-account switcher",
+    sections: {
+      added: [
+        "Switch account type opens an in-dashboard modal instead of unlocking the post-search chooser."
+      ]
+    },
   },
   {
     version: "4.7.1",
     date: "2026-08-09",
-    title: "Business personal property dashboard and continuous property details",
-    highlights: [
-      "Business personal property accounts reuse the Real dashboard shell with a thin field set: hide comps, photo/sketch, ownership type, neighborhood/land use/subdivision, and sale/building/permit tables; keep levy stack, metro, and totals-only values.",
-      "Summary Notice of Valuation PDF and county Details deep link use personalpropertysearch AIN URLs; assessed rows use the DPT personal-property rate by year (26% in 2026).",
-      "Account type tile labels Real vs business personal property; multi-PIN situs makes the whole tile the Change account control. BPP values stay inline in the property column instead of below the levy grid.",
-    ],
+    title: "Business personal property dashboard",
+    sections: {
+      added: [
+        "Business personal property accounts use a thin Real-style dashboard with levy stack and totals."
+      ]
+    },
   },
   {
     version: "4.7.0",
     date: "2026-08-05",
-    title: "Campaign disclosure connection, Open Graph share image, footer accuracy",
-    highlights: [
-      "Campaign disclosure: home outline control, footer sentence, Privacy external-links mention, and bottom \"Paid for by...\" line; all `campaign*` strings live in `src/lib/siteConfig.ts` and are marked FORK REQUIRED.",
-      "Open Graph / Twitter large-image metadata with committed 1200x630 art (`src/assets/images/OG-image.png`); `metadataBase` / `SITE_CONFIG.siteOrigin` (override via `NEXT_PUBLIC_SITE_URL`).",
-      "Footer accuracy copy: try to match published county/state figures, invite Contact when something looks wrong; Contact intro invites error reports.",
-    ],
+    title: "Campaign disclosure, Open Graph image, footer accuracy",
+    sections: {
+      added: [
+        "Campaign disclosure controls, Open Graph share image, and clearer footer accuracy copy."
+      ]
+    },
   },
   {
     version: "4.6.2",
     date: "2026-08-04",
     title: "E2E hardening and synthetic multi-PIN fixtures",
-    highlights: [
-      "Playwright: shared fill/search and district-details helpers; multi-PIN chooser asserts use listitem structure instead of CSS class or bounding-box geometry.",
-      "Authority-chain panel UI cases no longer embed live source URL probes; one deduped HEAD/ranged-GET test covers curated cites so a flaky host does not look like a panel regression.",
-      "Unit tests: replaced real hospital/Broadway PINs and owners with shared SYNTHETIC_MULTI_* IDs; README test-PII policy covers commercial parcels, not only homeowners.",
-    ],
+    sections: {
+      changed: [
+        "Playwright helpers and synthetic multi-PIN fixtures; cite health separated from UI panel tests."
+      ]
+    },
   },
   {
     version: "4.6.1",
     date: "2026-08-03",
-    title: "Clearer assessed-rate labels, plus this Changelog page",
-    highlights: [
-      "Non-residential assessed rows only show a percent when the property class maps cleanly to the state chart (for example commercial or industrial). Exempt and other special classes no longer get a guessed 26%.",
-      "Added this Changelog page so release notes stay in the app, not only in git history.",
-    ],
+    title: "Clearer assessed-rate labels; Changelog page",
+    sections: {
+      added: [
+        "In-app Changelog page for release notes."
+      ],
+      changed: [
+        "Non-residential assessed rows show a percent only when the class maps cleanly to the state chart."
+      ]
+    },
   },
   {
     version: "4.6.0",
     date: "2026-08-03",
-    title: "Shared-address account chooser and non-residential assessed values",
-    highlights: [
-      "When several tax accounts share one street address (for example a building plus business personal property), search shows one place first, then a list of every account with owner, Real vs business personal property, and value, so a large Real account is not hidden behind a look-alike address line.",
-      "Assessed value display follows state use: residential keeps local and school rates; non-residential Real no longer shows the residential school assessed row or residential rate labels.",
-      "Business personal property can appear in that chooser so Real accounts stay findable. A dedicated personal-property dashboard is still planned.",
-    ],
+    title: "Shared-address account chooser",
+    sections: {
+      added: [
+        "When several tax accounts share one street address, search shows every account after the place."
+      ],
+      changed: [
+        "Non-residential Real assessed display follows state use (no residential school row)."
+      ]
+    },
   },
   {
     version: "4.5.8",
     date: "2026-08-03",
-    title: "Spanish sample-ballot pattern and metro authority-chain pack",
-    highlights: [
-      "Littleton 4C: when Arapahoe election files only publish a Spanish sample ballot, link that official text, state findability plainly, and put AI-translated English in a nested disclosure with caveats; validation blocks measure detail without ballot text.",
-      "Metro family pack for Sky Ranch; AI translation control styled as a toggle; /sources tracks unlocated election docs including the non-English sample pattern.",
-    ],
+    title: "Spanish sample-ballot pattern; metro authority-chain pack",
+    sections: {
+      added: [
+        "Metro family pack for Sky Ranch; Spanish-only sample ballot pattern with AI-translated English disclosure."
+      ]
+    },
   },
   {
     version: "4.5.7",
     date: "2026-07-31",
-    title: "Authority-chain summary links and mill-history chart polish",
-    highlights: [
-      "Authority-chain summary: drop unsourced closer; bold/link Ballot Issue phrases from measure ballot-text sources; YoY Details control on the headline line.",
-      "Mill rate over time: caption restored in-popover, then ship polish to a full-width descriptive heading with year-dot InfoHint popovers; AUTH YoY e2e asserts 2018 mills.",
-    ],
+    title: "Authority-chain summary links and mill-history polish",
+    sections: {
+      changed: [
+        "Authority-chain summaries link Ballot Issue phrases; mill-rate-over-time chart polish."
+      ]
+    },
   },
   {
     version: "4.5.6",
     date: "2026-07-30",
-    title: "County authority-chain templates moved into JSON facts",
-    highlights: [
-      "Arapahoe County 1A story lives in entry JSON (mills body, titlePlain, summarySource) instead of hard-coded pack copy; TABOR and credit gaps use authority.governmentBillName.",
-      "Validation for mills.bodyTerms and at most one tabor_revenue_retention measure; gaps disclosure renamed to \"What we can't say for sure\"; resident 1A/TABOR copy clarified.",
-    ],
+    title: "County authority-chain templates in JSON",
+    sections: {
+      changed: [
+        "Arapahoe County 1A story lives in entry JSON instead of hard-coded pack copy."
+      ]
+    },
   },
   {
     version: "4.5.5",
     date: "2026-07-28",
-    title: "Arapahoe County authority chain (AUTH 2998 / Ballot Issue 1A)",
-    highlights: [
-      "Injectable school/county template packs so the county temporary-discount trail can use plain language with TABOR glossary help.",
-      "Authority-chain validation tightened on CodeRabbit follow-ups.",
-    ],
+    title: "Arapahoe County authority chain (Ballot Issue 1A)",
+    sections: {
+      added: [
+        "Who authorized this? trail for Arapahoe County Ballot Issue 1A."
+      ]
+    },
   },
   {
     version: "4.5.4",
     date: "2026-07-28",
-    title: "Littleton authority chain v2 with ballot-text fallback",
-    highlights: [
-      "Authority-chain entries move to structured v2 templates; AUTH 0601 ships.",
-      "When ballot wording is missing, link the county file-library hub instead of a dead or Spanish-only PDF.",
-    ],
+    title: "Littleton authority chain with ballot-text fallback",
+    sections: {
+      added: [
+        "Littleton schools Who authorized this? trail with a file-library fallback when ballot wording is missing."
+      ]
+    },
   },
   {
     version: "4.5.3",
     date: "2026-07-28",
     title: "Typeahead stays open when the mobile keyboard dismisses",
-    highlights: [
-      "Blur on list scroll (and iOS Done) no longer closes suggestions; dismiss via outside tap, Tab away, Escape, Search, or pick.",
-      "E2e coverage for scroll-blur behavior; ZIP-only situs locality locked; Main Parcel export glossed in docs.",
-    ],
+    sections: {
+      fixed: [
+        "Suggestions stay open on list scroll and iOS Done; dismiss via outside tap, Tab, Escape, Search, or pick."
+      ]
+    },
   },
   {
     version: "4.5.2",
     date: "2026-07-27",
-    title: "Multi-match address UX: typeahead, postage labels, ZIP-aware situs",
-    highlights: [
-      "Match lists sit above refine fields on mobile; typeahead expands to every unit; two-line city/ST/ZIP situs labels; scroll to top on property lock; PINs labeled on match rows.",
-      "Situs JSON cache-bust on regenerate; dependency updates; typeahead a11y follow-ups.",
-    ],
+    title: "Multi-match address UX polish",
+    sections: {
+      changed: [
+        "Match lists, postage-style labels, and ZIP-aware situs captions for multi-match addresses."
+      ]
+    },
   },
   {
     version: "4.5.1",
     date: "2026-07-27",
-    title: "Situs matching hardened; PIN or AIN accepted",
-    highlights: [
-      "Offline lookup: soft street-type cleanup, fuzzy street suggestions at the same house number, and typeahead.",
-      "AIN resolves through the pin map so parcel-id paste works without a geocoder; authority-chain match helper follow-ups.",
-    ],
+    title: "Harder situs matching; PIN or AIN accepted",
+    sections: {
+      changed: [
+        "Softer street matching with typeahead; AIN paste resolves through the pin map."
+      ]
+    },
   },
   {
     version: "4.5.0",
     date: "2026-07-27",
-    title: "Who authorized this? authority-chain prototype (Cherry Creek AUTH 0501)",
-    highlights: [
-      "Curated levy-authority-chain-entries.json with https sources, open gaps, summarySource attribution, and allowedInlineTermIds; panel wired into levy tile details.",
-      "Shared levyEntryMatch plus DisclosureChevron/DisclosureSummary; metro card simplified to one headline tile (debt when present, otherwise total metro share).",
-      "Property classification moved under the first Property details panel; unit and Playwright coverage for AUTH 0501.",
-    ],
+    title: "Who authorized this? authority-chain prototype",
+    sections: {
+      added: [
+        "Curated Who authorized this? panel in levy details (Cherry Creek schools first)."
+      ]
+    },
   },
   {
     version: "4.4.4",
     date: "2026-07-25",
     title: "/data rate limiting and Civic Lookup rebrand",
-    highlights: [
-      "In-memory fixed-window rate limits on /data via src/proxy.ts (Next 16 proxy); platform IP headers only; privacy page aligned for voluntary email and IP use.",
-      "Product rename to Civic Lookup with brand asserted separately from the AGPL code grant; demo-oriented rate-limit raises and IP-identity hardening followed the initial ship.",
-      "Home levy/property DOM order and levy-breakdown landmark a11y fixes.",
-    ],
+    sections: {
+      added: [
+        "Rate limits on /data responses."
+      ],
+      changed: [
+        "Product rename to Civic Lookup."
+      ]
+    },
   },
   {
     version: "4.4.3",
     date: "2026-07-23",
-    title: "Comps PDF unavailable tile and dashboard summary layout",
-    highlights: [
-      "Clearer Comps PDF unavailable presentation and dashboard summary layout.",
-      "Follow-ups on authority name, PDF path coercion, and chart caption copy.",
-    ],
+    title: "Comps PDF unavailable tile and summary layout",
+    sections: {
+      changed: [
+        "Clearer Comps PDF unavailable presentation and dashboard summary layout."
+      ]
+    },
   },
   {
     version: "4.4.2",
     date: "2026-07-21",
-    title: "Mill-rate history chart in the levy modal (Tax Years 2018-2025)",
-    highlights: [
-      "Levy detail modal shows mill-rate history for Tax Years 2018-2025.",
-      "YoY docs aligned with 4.4.1 modal behavior.",
-    ],
+    title: "Mill-rate history chart in the levy modal",
+    sections: {
+      added: [
+        "Levy detail modal shows mill-rate history for Tax Years 2018-2025."
+      ]
+    },
   },
   {
     version: "4.4.1",
     date: "2026-07-21",
-    title: "Levy YoY detail modal clarity and usability",
-    highlights: [
-      "Polish for the year-over-year levy detail modal.",
-      "Levy copy clarifications and tighter AUTH reconcile lookup.",
-    ],
+    title: "Levy year-over-year modal clarity",
+    sections: {
+      changed: [
+        "Clearer year-over-year levy detail modal."
+      ]
+    },
   },
   {
     version: "4.4.0",
     date: "2026-07-21",
-    title: "All-tile mill-rate change (Tax Year 2025 vs 2024)",
-    highlights: [
-      "Year-over-year mill-rate transparency on every levy tile from county Taxing District Levy Percentage PDFs (AUTH codes); Changed badge and amber stack callout.",
-      "Bundled arapahoe-authority-mills-by-tax-year.json; mills-first modal YoY; optional hypothetical dollars with treasurer disclaimer; metro purpose YoY only when Public Info reconciles to AUTH totals.",
-      "Stack-level bill-direction dollars left for a later phase (Treasurer sources).",
-    ],
+    title: "Year-over-year mill-rate change on every levy tile",
+    sections: {
+      added: [
+        "Changed badge and mill year-over-year detail from county Levy Percentage PDFs."
+      ]
+    },
   },
   {
     version: "4.3.1",
     date: "2026-07-20",
     title: "Neutral metro rate-change note",
-    highlights: [
-      "Replace the red/green whole-metro dollar callout with a neutral amber note that scrolls to the first Changed levy tile (respects reduced motion).",
-      "Top bill-change callout kept high-level (not metro- or tile-specific); focus-after-scroll and YoY disclosure hardening.",
-    ],
+    sections: {
+      changed: [
+        "Whole-metro dollar callout becomes a neutral amber note that scrolls to the first Changed tile."
+      ]
+    },
   },
   {
     version: "4.3.0",
     date: "2026-07-20",
-    title: "Metro mill YoY UI and budget-year 2026 metro levy data",
-    highlights: [
-      "Re-extract metro-levies-2026.json; purpose-level YoY detection with bill-impact callout when prior totals are complete; Changed badge and What changed panel.",
-      "Prior-year mills on levy rows when published; Tax year / Property tax tile behavior when years differ; Vitest, extract, and Playwright coverage.",
-      "Stop committing supporting-data/ dumps; runtime stays on public/data JSON; county mart download stamp moves to tools/county-mart-data-as-of.txt.",
-    ],
+    title: "Metro mill year-over-year and 2026 metro levy data",
+    sections: {
+      added: [
+        "Purpose-level metro mill changes with bill-impact callout when prior totals are complete."
+      ],
+      changed: [
+        "Budget-year 2026 metro levy data refreshed."
+      ]
+    },
   },
   {
     version: "4.2.9",
     date: "2026-07-18",
-    title: "More parcel shard fields and in-flow glossary help",
-    highlights: [
-      "Surface additional parcel-record shard fields; clarify in-flow glossary help.",
-      "InfoHintPopover: keyboard focus, scroll Check the math into view, span root, dismiss UX.",
-    ],
+    title: "More parcel fields and in-flow glossary help",
+    sections: {
+      changed: [
+        "Additional parcel-record fields; clearer in-flow glossary help."
+      ]
+    },
   },
   {
     version: "4.2.8",
     date: "2026-07-17",
-    title: "Glossary deep links open in a new tab; shared definition underline",
-    highlights: [
-      "Glossary deep links open in a new tab so parcel results stay put.",
-      "Definition cues use a thick indigo underline that inherits local label color.",
-    ],
+    title: "Glossary deep links open in a new tab",
+    sections: {
+      changed: [
+        "Glossary deep links open in a new tab; shared thick indigo definition underline."
+      ]
+    },
   },
   {
     version: "4.2.7",
     date: "2026-07-16",
-    title: "Dedicated Glossary page; county data through 2026-07-15",
-    highlights: [
-      "Add /glossary as a dedicated key-terms page.",
-      "Refresh bundled county data through 2026-07-15.",
-    ],
+    title: "Dedicated Glossary page",
+    sections: {
+      added: [
+        "/glossary key-terms page."
+      ],
+      changed: [
+        "Bundled county data through 2026-07-15."
+      ]
+    },
   },
   {
     version: "4.2.6",
     date: "2026-07-14",
-    title: "Clearer Details cues; privacy and open-code trust signals",
-    highlights: [
-      "Levy tile Details cues made clearer.",
-      "Surface privacy and open-code trust signals in the UI.",
-    ],
+    title: "Clearer Details cues; privacy and open-code signals",
+    sections: {
+      changed: [
+        "Clearer levy Details cues; privacy and open-code trust signals in the UI."
+      ]
+    },
   },
   {
     version: "4.2.5",
     date: "2026-07-13",
-    title: "Scrub PII from tests/demo; synthetic parcel-index tests",
-    highlights: [
-      "E2e and demo paths scrub real PII.",
-      "Synthetic parcel-index tests added for the build pipeline.",
-    ],
+    title: "Scrub PII from tests and demo",
+    sections: {
+      changed: [
+        "E2e and demo paths use synthetic identities; synthetic parcel-index tests."
+      ]
+    },
   },
   {
     version: "4.2.4",
     date: "2026-07-12",
-    title: "Parcel record polish: missing-data mailto, DPT rates, footer",
-    highlights: [
-      "Missing-data mailto, DPT assessment-rate presentation, and footer polish on the parcel record path.",
-    ],
+    title: "Parcel record polish",
+    sections: {
+      changed: [
+        "Missing-data mailto, assessment-rate presentation, and footer polish on the parcel record path."
+      ]
+    },
   },
   {
     version: "4.2.3",
     date: "2026-07-12",
-    title: "Parcel record: transfers, permits, sale links, county tables",
-    highlights: [
-      "Transfers, permits, and sale links on the parcel record; county-table polish.",
-    ],
+    title: "Parcel record transfers, permits, and sale links",
+    sections: {
+      added: [
+        "Transfers, permits, and sale links on the parcel record."
+      ]
+    },
   },
   {
     version: "4.2.2",
     date: "2026-07-11",
-    title: "Re-shard parcel records by 6-digit PIN prefix",
-    highlights: [
-      "Parcel-record JSON shards keyed by 6-digit PIN prefix (replacing the earlier 5-digit scheme).",
-    ],
+    title: "Parcel records re-sharded by 6-digit PIN prefix",
+    sections: {
+      changed: [
+        "Parcel-record shards keyed by 6-digit PIN prefix."
+      ]
+    },
   },
   {
     version: "4.2.1",
     date: "2026-07-11",
-    title: "Computed assessed splits and ownership type labels",
-    highlights: [
-      "Parcel-record assessed splits computed in the panel path.",
-      "Ownership type labels corrected.",
-    ],
+    title: "Computed assessed splits and ownership labels",
+    sections: {
+      changed: [
+        "Parcel-record assessed splits and ownership type labels corrected."
+      ]
+    },
   },
   {
     version: "4.2.0",
     date: "2026-07-04",
     title: "Property details panel with sharded parcel data",
-    highlights: [
-      "Home dashboard Property details column beside the levy stack: lazy-loaded Main Parcel fields after PIN levy lookup; compare card below.",
-      "5-digit PIN-prefix JSON shards (~500 KiB per lookup) with fetchCountyParcelRecordForPin caching and stale-response guards on rapid PIN switches.",
-      "bundledAsOf driven by maintainer county-mart download date; lg+ keyboard tab order hardened.",
-    ],
+    sections: {
+      added: [
+        "Property details column with lazy-loaded parcel fields after PIN levy lookup."
+      ]
+    },
   },
   {
     version: "4.1.3",
     date: "2026-06-25",
     title: "Levy tiles more obviously interactive",
-    highlights: [
-      "Consistent interactive layout so levy tiles read as clickable controls.",
-    ],
+    sections: {
+      changed: [
+        "Levy tiles read more clearly as clickable controls."
+      ]
+    },
   },
   {
     version: "4.1.2",
     date: "2026-06-22",
-    title: "County parcel record link; centralized comps PDF guidance",
-    highlights: [
-      "Direct PPINum.aspx link and clearer county-compare card on the levy stack.",
-      "Comps PDF availability copy centralized in countyCompsPdfGuidance.ts (icon popover, /sources, glossary).",
-    ],
+    title: "County parcel record link; comps PDF guidance",
+    sections: {
+      changed: [
+        "Clearer county-compare card; comps PDF availability copy centralized."
+      ]
+    },
   },
   {
     version: "4.1.1",
     date: "2026-05-07",
     title: "Comps grid mobile cards and section help",
-    highlights: [
-      "Below sm: scrollable field cards; TanStack table only at sm+ to avoid duplicate row ids.",
-      "Comps grid heading is the underlined popover trigger; table header associations and /sources updates.",
-    ],
+    sections: {
+      changed: [
+        "Mobile field cards for the comps grid; section heading opens the popover."
+      ]
+    },
   },
   {
     version: "4.1.0",
     date: "2026-05-01",
-    title: "NOV comps grid parser, demo grid, and comps PDF outage UX",
-    highlights: [
-      "Offline pdfplumber extractor for Arapahoe NOV page-2 comps grid; bundled definitions; parser tests and build hooks.",
-      "Demo-mode NovCompsGridPanel (TanStack + row-label popovers); comps PDF flaky-host guidance via InfoHintPopover; standard InfoHintPopover on mobile home hints.",
-      "Parser/fixture hardening (DWELLING markers, scrollport a11y, Vercel lazy pdfplumber) while this version was current.",
-    ],
+    title: "NOV comps grid parser and demo grid",
+    sections: {
+      added: [
+        "Offline NOV comps grid extract; demo comps grid; clearer comps PDF outage guidance."
+      ]
+    },
   },
   {
     version: "4.0.0",
     date: "2026-04-30",
     title: "AGPL-3.0 licensing",
-    highlights: [
-      "Project license migrates to GNU Affero General Public License v3.0 (or later); package.json license field and SPDX headers on first-party source.",
-      "App behavior unchanged aside from license metadata and README terms.",
-    ],
+    sections: {
+      changed: [
+        "Project license migrates to GNU Affero General Public License v3.0 or later."
+      ]
+    },
   },
   {
     version: "3.8.0",
     date: "2026-04-30",
-    title: "Demo property flow and comps tile fallback",
-    highlights: [
-      "Dashboard demo entry loads the 791 N Amory levy stack with masked parcel details.",
-      "Comps tile keeps a consistent icon with demo-only guidance when no demo comps PDF is available.",
-    ],
+    title: "Demo property flow",
+    sections: {
+      added: [
+        "Try demo property loads a masked sample levy stack."
+      ]
+    },
   },
   {
     version: "3.7.2",
     date: "2026-04-21",
-    title: "Levy matching and district directory coverage fixes",
-    highlights: [
-      "Mart-to-DOLA fuzzy matching normalizes common abbreviations; duplicate TAG rows collapse preferring active status and newest effective year.",
-      "When the LG directory CSV omits a levy-referenced LGID, add a minimal name-only row from the property-tax entities export; rebuild Arapahoe and directory artifacts.",
-    ],
+    title: "Levy matching and district directory fixes",
+    sections: {
+      fixed: [
+        "Mart-to-DOLA matching and directory coverage for levy-referenced districts."
+      ]
+    },
   },
   {
     version: "3.7.1",
     date: "2026-04-19",
-    title: "CodeRabbit tooling and UI nits",
-    highlights: [
-      "Follow-up fixes for tooling and UI notes from review.",
-    ],
+    title: "Review follow-ups",
+    sections: {
+      fixed: [
+        "Small tooling and UI fixes from review."
+      ]
+    },
   },
   {
     version: "3.7.0",
     date: "2026-04-19",
     title: "AIN for county comps PDF; expanded key terms",
-    highlights: [
-      "Pin map and levy metadata carry Main Parcel AIN; Comps tile links a validated Arapahoe comps grid PDF URL.",
-      "Glossary asides for PIN, Parcel, Comps, and TAG; TAG ID links to the TAG term; property wording alignment.",
-    ],
+    sections: {
+      added: [
+        "Comps tile links the county comps PDF when AIN is available."
+      ],
+      changed: [
+        "Glossary asides for PIN, Parcel, Comps, and TAG."
+      ]
+    },
   },
   {
     version: "3.6.1",
     date: "2026-04-09",
-    title: "Parcel term definitions in accessible popovers",
-    highlights: [
-      "Home parcel terms use accessible InfoHint-style popovers.",
-    ],
+    title: "Parcel terms in accessible popovers",
+    sections: {
+      changed: [
+        "Home parcel terms use accessible popovers."
+      ]
+    },
   },
   {
     version: "3.6.0",
     date: "2026-04-09",
-    title: "Tiered address lookup with street sanitization",
-    highlights: [
-      "Home address lookup tiers and sanitizes street input; a11y fixes on the lookup path.",
-    ],
+    title: "Tiered address lookup",
+    sections: {
+      changed: [
+        "Address lookup tiers and sanitizes street input."
+      ]
+    },
   },
   {
     version: "3.5.3",
     date: "2026-04-09",
-    title: "Parcel owner tile, TAG ID footnote, static county links",
-    highlights: [
-      "Dashboard parcel owner tile; levy footnote includes TAG ID; static county links.",
-    ],
+    title: "Parcel owner tile and TAG ID footnote",
+    sections: {
+      added: [
+        "Dashboard parcel owner tile; levy footnote includes TAG ID."
+      ]
+    },
   },
   {
     version: "3.5.2",
     date: "2026-04-09",
     title: "In-modal definitions as primary levy-modal UX",
-    highlights: [
-      "Levy modal favors in-modal definitions; duplicate government panels trimmed.",
-    ],
+    sections: {
+      changed: [
+        "Levy modal favors in-modal definitions; duplicate panels trimmed."
+      ]
+    },
   },
   {
     version: "3.5.1",
     date: "2026-04-08",
-    title: "Feedback mail card and centralized contact mailto",
-    highlights: [
-      "Feedback mail card on the product surface; contact mailto centralized; client JS trimmed.",
-    ],
+    title: "Feedback mail card",
+    sections: {
+      added: [
+        "Feedback mail card; centralized contact mailto."
+      ]
+    },
   },
   {
     version: "3.5.0",
     date: "2026-04-08",
-    title: "DOLA LG directory pipeline, levy modal UX, deploy hardening",
-    highlights: [
-      "Filtered colorado-special-district-directory.json from DOLA LG export scoped to levy-stack LGIDs; build:district-directory script; Arapahoe index prefers LGIS CSV.",
-      "Levy detail dialog: government-type panel from DOLA when no explainer, Contact block, focus improvements; ModalPortal inert/aria-hidden on #__next while open.",
-    ],
+    title: "District directory and levy modal Contact",
+    sections: {
+      added: [
+        "Filtered Colorado special-district directory; Contact block in the levy detail dialog."
+      ]
+    },
   },
   {
     version: "3.4.3",
     date: "2026-04-08",
-    title: "DOLA dlall provenance docs and export defaults",
-    highlights: [
-      "Document DOLA dlall provenance; align export defaults for reproducible builds.",
-    ],
+    title: "DOLA export provenance docs",
+    sections: {
+      changed: [
+        "Documented DOLA export provenance and reproducible build defaults."
+      ]
+    },
   },
   {
     version: "3.4.2",
     date: "2026-04-08",
-    title: "Levy detail guidance refactor; simpler docs/rules",
-    highlights: [
-      "Refactor levy detail guidance copy and simplify project docs/rules.",
-    ],
+    title: "Levy detail guidance and simpler docs",
+    sections: {
+      changed: [
+        "Clearer levy detail guidance; simpler project docs and rules."
+      ]
+    },
   },
   {
     version: "3.4.1",
     date: "2026-04-08",
-    title: "County availability note; consistent border radius",
-    highlights: [
-      "County availability note on the lookup screen.",
-      "Border radius standardized across the app.",
-    ],
+    title: "County availability note; consistent radius",
+    sections: {
+      changed: [
+        "County availability note on lookup; border radius standardized."
+      ]
+    },
   },
   {
     version: "3.4.0",
     date: "2026-04-07",
-    title: "Levy line explainer and parcel JSON prefetch",
-    highlights: [
-      "Levy line explainer content wired into the levy detail path.",
-      "Parcel JSON prefetch to speed post-lookup loads.",
-    ],
+    title: "Levy line explainer and parcel prefetch",
+    sections: {
+      added: [
+        "Levy line explainer in the levy detail path."
+      ],
+      changed: [
+        "Parcel JSON prefetch after lookup."
+      ]
+    },
   },
   {
     version: "3.3.4",
     date: "2026-04-07",
     title: "Estimated levy dollars from assessed value",
-    highlights: [
-      "Home shows estimated levy dollars from assessed value; metro and copy aligned.",
-    ],
+    sections: {
+      added: [
+        "Home shows estimated levy dollars from assessed value."
+      ]
+    },
   },
   {
     version: "3.3.3",
     date: "2026-04-07",
-    title: "Drop hash-synced levy workbench; polish home levy flow",
-    highlights: [
-      "Remove hash-synced levy workbench behavior; polish the home levy flow.",
-    ],
+    title: "Drop hash-synced levy workbench",
+    sections: {
+      changed: [
+        "Home levy flow polish."
+      ],
+      removed: [
+        "Hash-synced levy workbench behavior."
+      ]
+    },
   },
   {
     version: "3.3.2",
     date: "2026-04-07",
-    title: "Tax year tile, glossary copy, layout tokens",
-    highlights: [
-      "Parcel summary tax year tile; glossary copy and layout tokens; footer uses Next Link.",
-    ],
+    title: "Tax year tile and glossary polish",
+    sections: {
+      added: [
+        "Parcel summary tax year tile."
+      ],
+      changed: [
+        "Glossary copy and layout tokens."
+      ]
+    },
   },
   {
     version: "3.3.1",
     date: "2026-04-07",
-    title: "Footer visible without scroll-to-footer choreography",
-    highlights: [
-      "Footer stays visible with minimal page content; dedicated scroll-to-footer no longer required.",
-    ],
+    title: "Footer visible without scroll choreography",
+    sections: {
+      fixed: [
+        "Footer stays visible with minimal page content."
+      ]
+    },
   },
   {
     version: "3.3.0",
     date: "2026-04-07",
-    title: "Home tax flow, parcel tiles, and PIN data refinements",
-    highlights: [
-      "Refine home tax flow, parcel tiles, and pin data.",
-      "Address form field UI improvements.",
-    ],
+    title: "Home tax flow and parcel tile refinements",
+    sections: {
+      changed: [
+        "Home tax flow, parcel tiles, and PIN data refinements."
+      ]
+    },
   },
   {
     version: "3.2.0",
     date: "2026-04-06",
     title: "New dashboard layout",
-    highlights: [
-      "Introduce the dashboard layout used by the home property/levy hub.",
-    ],
+    sections: {
+      added: [
+        "Dashboard layout for the home property and levy hub."
+      ]
+    },
   },
   {
     version: "3.1.5",
     date: "2026-04-06",
     title: "Unified bill card and metro-in-card flow",
-    highlights: [
-      "Bill card unifies metro-in-card flow and related copy.",
-    ],
+    sections: {
+      changed: [
+        "Bill card unifies metro-in-card flow and related copy."
+      ]
+    },
   },
   {
     version: "3.1.4",
     date: "2026-04-06",
     title: "Metro heading helper and a11y",
-    highlights: [
-      "Metro heading helper; rename metroFromLevyLines; metro a11y fixes.",
-    ],
+    sections: {
+      changed: [
+        "Metro heading helper and metro accessibility fixes."
+      ]
+    },
   },
   {
     version: "3.1.3",
     date: "2026-04-06",
-    title: "Stack-only metros and combined multi-metro UI",
-    highlights: [
-      "Metro district card supports stack-only metros and combined multi-metro UI.",
-      "Levy tile UI fixes.",
-    ],
+    title: "Stack-only and multi-metro UI",
+    sections: {
+      changed: [
+        "Metro card supports stack-only metros and combined multi-metro UI."
+      ]
+    },
   },
   {
     version: "3.1.2",
     date: "2026-04-06",
-    title: "Metro tax share: per-levy bar, debt headline, metric tiles",
-    highlights: [
-      "Metro district tax share visualization with per-levy bar, debt headline, metric tiles, and copy rules.",
-    ],
+    title: "Metro tax share visualization",
+    sections: {
+      added: [
+        "Metro district tax share with per-levy bar, debt headline, and metric tiles."
+      ]
+    },
   },
   {
     version: "3.1.1",
     date: "2026-04-06",
-    title: "LG ID matching prefers directory ID, then fuzzy name",
-    highlights: [
-      "Property tax entity contact matching prefers LG ID first, then fuzzy name match.",
-    ],
+    title: "LG ID matching prefers directory ID",
+    sections: {
+      changed: [
+        "District Contact matching prefers LG ID, then fuzzy name."
+      ]
+    },
   },
   {
     version: "3.1.0",
     date: "2026-04-06",
-    title: "Unified levy detail modal and glossary polish",
-    highlights: [
-      "Unified levy detail modal with glossary and copy polish.",
-      "Metro district rate-split details UI simplified (removed nested box).",
-    ],
+    title: "Unified levy detail modal",
+    sections: {
+      changed: [
+        "Unified levy detail modal with glossary polish."
+      ]
+    },
   },
   {
     version: "3.0.2",
     date: "2026-04-05",
-    title: "Home and metro UX; address autofill hardening",
-    highlights: [
-      "Home and metro UX improvements; harden address autofill handling.",
-    ],
+    title: "Home and metro UX; autofill hardening",
+    sections: {
+      changed: [
+        "Home and metro UX improvements; harder address autofill handling."
+      ]
+    },
   },
   {
     version: "3.0.1",
     date: "2026-04-04",
-    title: "Home help, single Start over, metro embed",
-    highlights: [
-      "Home help copy; single Start over control; metro embed polish.",
-    ],
+    title: "Home help and single Start over",
+    sections: {
+      changed: [
+        "Home help copy; single Start over control; metro embed polish."
+      ]
+    },
   },
   {
     version: "3.0.0",
     date: "2026-04-04",
-    title: "Unified address + levy hub (breaking: /levy-breakdown removed)",
-    highlights: [
-      "HomeParcelAddressLookup becomes the hub: address to PIN, levy stack, embedded metro; /levy-breakdown permanently 308-redirects to /.",
-      "Metro construction banner between levy and metro sections; contact page added; sources/footer coverage notes.",
-    ],
+    title: "Unified address and levy hub",
+    sections: {
+      added: [
+        "Home becomes the address-to-levy hub with embedded metro."
+      ],
+      removed: [
+        "Standalone /levy-breakdown page (permanent redirect to home)."
+      ]
+    },
   },
   {
     version: "2.2.0",
     date: "2026-04-03",
-    title: "PIN/TAG levy stacks, district directory, and safe links",
-    highlights: [
-      "Static Arapahoe levy stacks and PIN-to-TAG mapping; Colorado special-district metadata; district detail from bundled data.",
-      "safeExternalHref for http(s) and Arapahoe Levy.aspx links; /sources methodology expansion; Next 16.2.2.",
-    ],
+    title: "PIN/TAG levy stacks and district directory",
+    sections: {
+      added: [
+        "Static Arapahoe levy stacks, PIN-to-TAG mapping, and special-district metadata."
+      ]
+    },
   },
   {
     version: "2.1.1",
     date: "2026-03-31",
     title: "Tools home page card UI",
-    highlights: [
-      "UI/UX updates to tools home page cards.",
-    ],
+    sections: {
+      changed: [
+        "Tools home page card UI updates."
+      ]
+    },
   },
   {
     version: "2.1.0",
     date: "2026-03-31",
     title: "Levy breakdown tool MVP",
-    highlights: [
-      "Levy breakdown reaches MVP with shared reusable components and UI polish.",
-    ],
+    sections: {
+      added: [
+        "Levy breakdown tool reaches MVP."
+      ]
+    },
   },
   {
     version: "2.0.1",
     date: "2026-03-31",
-    title: "Levy breakdown walkthrough and polish",
-    highlights: [
-      "Property tax levy breakdown walkthrough and related polish.",
-    ],
+    title: "Levy breakdown walkthrough",
+    sections: {
+      changed: [
+        "Property tax levy breakdown walkthrough and polish."
+      ]
+    },
   },
   {
     version: "2.0.0",
     date: "2026-03-31",
-    title: "Footer version and Mountain Time last-updated",
-    highlights: [
-      "Footer shows app version and a Mountain Time last-updated date tied to build/deploy, without git or risky config side effects.",
-      "UI and content continuity fixes.",
-    ],
+    title: "Footer version and last-updated date",
+    sections: {
+      added: [
+        "Footer shows app version and Mountain Time last-updated from build/deploy."
+      ]
+    },
   },
   {
     version: "1.0.3",
     date: "2026-03-20",
-    title: "Levy snapshot date in UI; regenerated bundled JSON",
-    highlights: [
-      "UI surfaces the levy snapshot date; bundled JSON regenerated to match.",
-    ],
+    title: "Levy snapshot date in the UI",
+    sections: {
+      changed: [
+        "UI surfaces the levy snapshot date; bundled data regenerated to match."
+      ]
+    },
   },
   {
     version: "1.0.2",
     date: "2026-03-20",
-    title: "UI/UX cleanup and DRY fixes",
-    highlights: [
-      "General UI/UX cleanup and other DRY fixes after the 1.0.1 debt styling pass.",
-    ],
+    title: "UI/UX cleanup",
+    sections: {
+      changed: [
+        "General UI/UX cleanup after the debt styling pass."
+      ]
+    },
   },
   {
     version: "1.0.1",
     date: "2026-03-20",
     title: "Debt styling and results card UI",
-    highlights: [
-      "Red styling to denote debt.",
-      "Results card UI/UX changes.",
-    ],
+    sections: {
+      changed: [
+        "Red styling for debt; results card UI updates."
+      ]
+    },
   },
   {
     version: "1.0.0",
     date: "2026-03-20",
-    title: "All metro districts; total metro share as primary result",
-    highlights: [
-      "Show all metro districts and use total metro share as the primary result.",
-      "Extract shared components (including StaticArticleShell); add CSP and related security headers; hero update.",
-    ],
+    title: "All metro districts; total metro share primary",
+    sections: {
+      added: [
+        "Show all metro districts with total metro share as the primary result."
+      ]
+    },
   },
   {
     version: "0.1.3",
     date: "2026-03-17",
-    title: "Mills definition and metro flow copy/input polish",
-    highlights: [
-      "Updated mills definition.",
-      "Levy extractor handles concatenated county+lgid; mill input limited to 3 decimal places; opening copy restructured; step order made more intuitive.",
-    ],
+    title: "Mills definition and metro flow polish",
+    sections: {
+      changed: [
+        "Updated mills definition; metro flow copy and input polish."
+      ]
+    },
   },
   {
     version: "0.1.2",
     date: "2026-03-17",
-    title: "Metro result math, special-districts map, select a11y",
-    highlights: [
-      "Improve metro result card math, wording, and visuals.",
-      "Link to Colorado special districts map; a11y for metro district select and result announcement.",
-    ],
+    title: "Metro result math and select a11y",
+    sections: {
+      changed: [
+        "Clearer metro result math and wording; metro district select accessibility."
+      ]
+    },
   },
   {
     version: "0.1.1",
     date: "2026-03-17",
-    title: "Clearer property details instructions and early flow fixes",
-    highlights: [
-      "Clarify property details page instructions.",
-      "Rework step 3 so it no longer asks for incorrect user info; additional early UI/UX fixes.",
-    ],
+    title: "Clearer early flow instructions",
+    sections: {
+      changed: [
+        "Clearer property details instructions and early flow fixes."
+      ]
+    },
   },
 ];

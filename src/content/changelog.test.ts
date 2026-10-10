@@ -4,7 +4,11 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 import { describe, expect, it } from "vitest";
-import { CHANGELOG_ENTRIES } from "@/content/changelog";
+import {
+  CHANGELOG_ENTRIES,
+  CHANGELOG_SECTION_ORDER,
+  changelogEntryBullets,
+} from "@/content/changelog";
 import { APP_VERSION } from "@/lib/siteRelease";
 
 describe("CHANGELOG_ENTRIES", () => {
@@ -25,7 +29,7 @@ describe("CHANGELOG_ENTRIES", () => {
     }
   });
 
-  it("requires calendar-valid date, title, and at least one highlight per entry", () => {
+  it("requires calendar-valid date, title, and at least one section bullet per entry", () => {
     for (const entry of CHANGELOG_ENTRIES) {
       expect(entry.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(entry.date);
@@ -40,8 +44,18 @@ describe("CHANGELOG_ENTRIES", () => {
       expect(date.getMonth() + 1).toBe(m);
       expect(date.getDate()).toBe(d);
       expect(entry.title.trim().length).toBeGreaterThan(0);
-      expect(entry.highlights.length).toBeGreaterThan(0);
-      for (const h of entry.highlights) {
+
+      const bullets = changelogEntryBullets(entry);
+      expect(bullets.length).toBeGreaterThan(0);
+
+      const sectionKeys = Object.keys(entry.sections);
+      for (const key of sectionKeys) {
+        expect(CHANGELOG_SECTION_ORDER.some((s) => s.kind === key)).toBe(true);
+        const items = entry.sections[key as keyof typeof entry.sections];
+        expect(items?.length).toBeGreaterThan(0);
+      }
+
+      for (const h of bullets) {
         expect(h.trim().length).toBeGreaterThan(0);
         expect(h).not.toMatch(/\u2014/);
       }

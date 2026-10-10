@@ -1,0 +1,46 @@
+---
+description: High-level Keep a Changelog style for /changelog entries
+globs: src/content/changelog.ts,src/app/changelog/**/*,e2e/changelog.spec.ts
+alwaysApply: false
+---
+
+# Changelog writing
+
+`/changelog` is a **high-level** release log (Keep a Changelog style), not a git dump.
+
+## When shipping
+
+1. Bump `package.json` version **at most once** per branch (see base-rule).
+2. Add or extend the matching entry at the top of `src/content/changelog.ts`.
+3. Set `date` to the calendar day the version **went live** (America/Denver, `YYYY-MM-DD`). Match deploy/merge day, not when work started. Footer "Last updated" stays build/deploy time; do not invent a second meaning for the changelog date.
+4. Unit test requires the newest entry version === `package.json`.
+
+## Level of detail
+
+- **Keep:** What residents or forkers notice: features, behavior changes, fixes, removals, data honesty.
+- **Drop:** File paths, component names, npm scripts, test names, AUTH/TE ids, PR/tooling internals, commit subjects.
+- **Exception:** If the **entire** release is tooling (e.g. CI review filters, ingest-only), one plain bullet is enough. In a large product release, omit incidental tooling.
+
+## Shape
+
+- One short `title` (headline, not a paragraph).
+- Group bullets under `sections`: `added` / `changed` / `fixed` / `removed` (omit empty kinds). The page shows those kinds as compact badges before the release title (not as separate headings).
+- Few bullets per release; each bullet one outcome.
+- No em dashes (U+2014). No smart quotes.
+- Prefer product words already in the app (PIN, TAG, mill levy, Est. property tax).
+
+```typescript
+// BAD - commit / path dump
+sections: {
+  changed: [
+    "`fillStreetAddress` in e2e/helpers/addressLookup.ts; docs: county-config.md.",
+  ],
+}
+
+// GOOD - outcome
+sections: {
+  fixed: [
+    "Street-address fill in Playwright is stable on Linux WebKit with React 19.",
+  ],
+}
+```
