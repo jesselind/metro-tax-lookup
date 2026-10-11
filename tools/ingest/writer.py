@@ -26,6 +26,11 @@ from typing import Any
 
 from ingest.out_dir_policy import validate_out_dir
 from ingest.dola_match import DolaJoinContext
+from ingest.county_levy_mills import (
+    CountyLevyMillsBundle,
+    apply_county_published_mills_to_dola_match,
+    build_tag_id_to_pdf_tag,
+)
 from ingest.parcel_record import (
     PARCEL_RECORD_SHARD_PREFIX_LEN,
     enrich_parcel_record_from_sibling_marts,
@@ -150,6 +155,22 @@ def _tax_year_from_rows(rows: list[dict[str, Any]]) -> str | None:
 # Levy stacks
 # -----------------------------------------------------------------------
 
+def _authority_mills_bundle_path(
+    mapping: dict[str, Any], repo_root: Path | None
+) -> Path | None:
+    rel = mapping.get("authorityMillsBundle")
+    if not rel or not isinstance(rel, str):
+        return None
+    p = Path(rel)
+    if p.is_file():
+        return p
+    if repo_root is not None:
+        candidate = repo_root / rel
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def build_levy_stacks_json(
     rows: list[dict[str, Any]],
     mapping: dict[str, Any],
@@ -157,6 +178,9 @@ def build_levy_stacks_json(
     bundled_as_of: str,
     tax_year: str | None = None,
     dola_join: DolaJoinContext | None = None,
+    tag_id_to_pdf_tag: dict[str, str] | None = None,
+    county_mills_bundle: CountyLevyMillsBundle | None = None,
+    authority_overrides: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """
     Convert levy stack intermediate records to the app JSON shape.
@@ -211,6 +235,18 @@ def build_levy_stacks_json(
                         "millsReason"
                     ):
                         dola_match["millsReason"] = "published_mill_levy_table"
+            if county_mills_bundle is not None and tag_id_to_pdf_tag is not None:
+                pdf_tag = tag_id_to_pdf_tag.get(tag_id, "")
+                resolved_ty = resolved_tax_year or ""
+                dola_match = apply_county_published_mills_to_dola_match(
+                    dola_match,
+                    auth_code=code,
+                    authority_upper=authority.upper(),
+                    pdf_tag=pdf_tag,
+                    tax_year=resolved_ty,
+                    bundle=county_mills_bundle,
+                    overrides=authority_overrides,
+                )
             built_lines.append({
                 "code": code,
                 "authorityName": authority,
@@ -319,6 +355,8 @@ def write_comparison_dir(
     skip_neighborhood: bool = False,
     gis_parcels_gdb: Path | None = None,
     skip_situs_shards: bool = False,
+    repo_root: Path | None = None,
+    skip_county_mills_parity: bool = False,
 ) -> None:
     """
     Write levy stacks + account map (+ optional situs/shards) to out_dir.
@@ -335,12 +373,28 @@ def write_comparison_dir(
     bundled_norm = _normalize_bundled_as_of(bundled_as_of)
 
     resolved_tax_year = tax_year or _tax_year_from_rows(stack_rows)
+    tag_id_to_pdf_tag = build_tag_id_to_pdf_tag(account_rows)
+    county_mills_bundle: CountyLevyMillsBundle | None = None
+    mills_path = _authority_mills_bundle_path(mapping, repo_root)
+    if mills_path is not None:
+        county_mills_bundle = CountyLevyMillsBundle.load(mills_path)
+        print(
+            f"County levy mills bundle: {mills_path} "
+            f"(tax years {', '.join(county_mills_bundle.tax_years)})",
+            file=sys.stderr,
+        )
+    authority_overrides = (
+        dola_join.overrides if dola_join is not None else None
+    )
     stacks = build_levy_stacks_json(
         stack_rows,
         mapping,
         bundled_as_of=bundled_as_of,
         tax_year=resolved_tax_year,
         dola_join=dola_join,
+        tag_id_to_pdf_tag=tag_id_to_pdf_tag,
+        county_mills_bundle=county_mills_bundle,
+        authority_overrides=authority_overrides,
     )
     used_tax_area_ids = {
         _strip(row.get("taxAreaId", ""))
@@ -354,6 +408,31 @@ def write_comparison_dir(
 
     stacks_path = out_dir / county_data_basename(mapping, "levy-stacks-by-tag-id.json")
     stacks_path.write_text(json.dumps(stacks, separators=sep), encoding="utf-8")
+
+    if (
+        not skip_county_mills_parity
+        and county_mills_bundle is not None
+        and tag_id_to_pdf_tag
+    ):
+        from ingest.county_levy_mills import assert_levy_stack_county_mills_parity
+
+        violations = assert_levy_stack_county_mills_parity(
+            stacks,
+            tag_id_to_pdf_tag,
+            county_mills_bundle,
+            tax_year=resolved_tax_year,
+        )
+        if violations:
+            sample = "\n".join(
+                f"  {v.format_line()}" for v in violations[:25]
+            )
+            extra = ""
+            if len(violations) > 25:
+                extra = f"\n  ... and {len(violations) - 25} more"
+            raise ValueError(
+                f"Levy stack county mills parity failed ({len(violations)} "
+                f"violation(s)) before writing {stacks_path}:\n{sample}{extra}"
+            )
 
     account_map = build_account_map_json(
         account_rows, mapping, bundled_as_of=bundled_as_of, tax_year=resolved_tax_year

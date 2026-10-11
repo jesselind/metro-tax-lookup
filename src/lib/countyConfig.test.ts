@@ -180,7 +180,7 @@ describe("DOUGLAS_COUNTY_CONFIG (county 2 fixture)", () => {
     expect(ARAPAHOE_COUNTY_CONFIG.features.priorYearValuesInProgress).toBe(
       false,
     );
-    expect(ARAPAHOE_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(true);
+    expect(ARAPAHOE_COUNTY_CONFIG.features.dataMartRefreshGap).toBe(false);
     expect(ARAPAHOE_COUNTY_CONFIG.features.millPdfTaxDistrictGap).toBe(false);
   });
 
@@ -504,13 +504,12 @@ describe("validateCountyConfig resident-facing required fields", () => {
 });
 
 describe("listCountyServiceGapHubItems", () => {
-  it("lists Arapahoe opt-in gaps only (comps, Data Mart, prior-year)", () => {
+  it("lists Arapahoe opt-in gaps only (comps, prior-year)", () => {
     const anchors = listCountyServiceGapHubItems(ARAPAHOE_COUNTY_CONFIG).map(
       (item) => item.anchor,
     );
     expect(anchors).toEqual([
       COUNTY_SERVICE_GAP_SOURCES_ANCHOR.compsPdf,
-      COUNTY_SERVICE_GAP_SOURCES_ANCHOR.dataMart,
       COUNTY_SERVICE_GAP_SOURCES_ANCHOR.priorYearValues,
     ]);
   });

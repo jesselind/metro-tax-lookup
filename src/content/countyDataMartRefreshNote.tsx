@@ -14,12 +14,12 @@ export const COUNTY_DATA_MART_REFRESH_ATTEMPT_ISO = "2026-08-17";
  * Shipped parcel-record extract when no per-search bundledAsOf is passed (e.g. /sources).
  * Keep in sync with tools/county-mart-data-as-of.txt.
  */
-export const COUNTY_PARCEL_RECORD_BUNDLED_AS_OF_ISO = "2026-07-15";
+export const COUNTY_PARCEL_RECORD_BUNDLED_AS_OF_ISO = "2026-10-10";
 
 /**
- * Shown under "County data current as of …" when a maintainer refresh attempt
- * did not ship. Update or remove when bundled data is successfully replaced.
- * Pattern: docs/county-service-gap-callouts.md
+ * COUNTY DATA GAP copy when a maintainer Data Mart attempt did not ship.
+ * Not shown while `features.dataMartRefreshGap` is false; keep this module and
+ * flip the flag on for the next failed attempt. Pattern: docs/county-service-gap-callouts.md
  */
 export function CountyDataMartRefreshAttemptNote({
   bundledAsOfIso = COUNTY_PARCEL_RECORD_BUNDLED_AS_OF_ISO,

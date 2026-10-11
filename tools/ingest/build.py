@@ -216,6 +216,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Leave dolaMatch as method=none (structural-only; not for parity compare).",
     )
     parser.add_argument(
+        "--skip-county-mills-parity",
+        action="store_true",
+        dest="skip_county_mills_parity",
+        help=(
+            "Skip county AUTH mills parity gate on levy stacks (structural tests only)."
+        ),
+    )
+    parser.add_argument(
         "--skip-situs-shards",
         action="store_true",
         dest="skip_situs_shards",
@@ -501,6 +509,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             skip_neighborhood=args.skip_neighborhood,
             gis_parcels_gdb=gis_gdb,
             skip_situs_shards=args.skip_situs_shards,
+            repo_root=_REPO,
+            skip_county_mills_parity=args.skip_county_mills_parity,
         )
     except OutDirPolicyError as exc:
         print(f"Error: {exc}", file=sys.stderr)

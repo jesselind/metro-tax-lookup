@@ -96,7 +96,7 @@ export const ARAPAHOE_COUNTY_CONFIG: CountyConfig = {
     metroPurposes: true,
     priorYearValuesGap: true,
     priorYearValuesInProgress: false,
-    dataMartRefreshGap: true,
+    dataMartRefreshGap: false,
     millPdfTaxDistrictGap: false,
     propertyDataAccuracyWarning: false,
     /**

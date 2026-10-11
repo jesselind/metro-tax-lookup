@@ -123,6 +123,8 @@ npm run build:arapahoe-index
 
 **Parity bar for unchanged mart:** IDENTICAL with zero accepted diffs on in-scope fields.
 
+**County mills gate (stack lines):** When `authorityMillsBundle` is set on the county mapping, ingest joins each stack line's AUTH to the county Levy % tables (`{countyId}-authority-mills-by-tax-year.json`) using the parcel PDF TAG (`tagShortDescr`, zero-padded). DOLA fuzzy match stays for Tax Entity ID / directory contact; mills on the stack come from the county tables (curated `millsOverride` in `tools/arapahoe_dola_authority_overrides.json` still wins when set). The build fails closed if any line with a known county rate does not match. Maintainer check on shipping JSON: `npm run assert:levy-stack-county-mills`.
+
 ## Parity check (before a careful land)
 
 Use after material ingest changes, or before a land when you expect bill data to match current shipping (same mart stamp). Requires local mart/GIS/DOLA under `supporting-data/` (not in CI).
