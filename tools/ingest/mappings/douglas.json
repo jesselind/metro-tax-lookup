@@ -2,6 +2,7 @@
   "_comment": "Douglas County: Assessor Data Downloads column names \u2192 shared ingest field names. Headerless Property_*.txt files get headers from tabular.*.headers (page column order). Do not put these column names in shared reader/writer code.",
   "county": "douglas",
   "identifierDigits": 8,
+  "authorityMillsBundle": "public/data/douglas-authority-mills-by-tax-year.json",
   "levyAspxTemplate": "",
   "levyStack": {
     "_comment": "Stacks come from the tax-district mill PDF (format tax-district-mill-pdf). Shared intermediate fields match Arapahoe TAG CSV after the PDF reader emits rows.",

@@ -45,6 +45,24 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.29.0",
+    date: "2026-10-10",
+    title: "Mill levy stacks match county tax tables",
+    sections: {
+      fixed: [
+        "Property tax breakdown mills now follow county Levy % tables by authority code and tax area, not DOLA name match alone.",
+        "Cherry Creek and other districts no longer show 0 mills when the county publishes a full rate."
+      ],
+      added: [
+        "Ingest fails closed when any stack line with a known county rate would ship the wrong mills."
+      ],
+      changed: [
+        "Arapahoe Assessor Data Mart refresh bundled as of 2026-10-10.",
+        "Removed the incomplete Assessor Data Mart COUNTY DATA GAP notice now that the October refresh shipped."
+      ]
+    },
+  },
+  {
     version: "5.28.1",
     date: "2026-10-10",
     title: "Search and Try demo stay side by side on mobile",

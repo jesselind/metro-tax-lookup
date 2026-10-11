@@ -2,6 +2,7 @@
   "_comment": "Arapahoe County: Assessor Data Mart column names → shared ingest field names. Do not put these column names in shared reader/writer code.",
   "county": "arapahoe",
   "identifierDigits": 9,
+  "authorityMillsBundle": "public/data/arapahoe-authority-mills-by-tax-year.json",
   "levyAspxTemplate": "https://parcelsearch.arapahoegov.com/Levy.aspx?id={taxAreaId}",
   "levyStack": {
     "file": "tag",

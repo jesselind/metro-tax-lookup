@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.28.1",
+  "version": "5.29.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -39,6 +39,7 @@
     "land:douglas": "cp supporting-data/_ingest-out/douglas/douglas-pin-to-tag.json supporting-data/_ingest-out/douglas/douglas-levy-stacks-by-tag-id.json supporting-data/_ingest-out/douglas/douglas-situs-to-pins.json public/data/ && rm -rf public/data/douglas-parcel-record-by-pin && cp -R supporting-data/_ingest-out/douglas/douglas-parcel-record-by-pin public/data/ && rm -rf public/data/douglas-valuation-history-by-account && cp -R supporting-data/_ingest-out/douglas/douglas-valuation-history-by-account public/data/",
     "diff:ingest": "python3 tools/ingest/compare.py",
     "assert:ingest-levy-stack-scope": "python3 tools/ingest/assert_levy_stack_diff_scope.py --baseline public/data/arapahoe-levy-stacks-by-tag-id.json --candidate supporting-data/_ingest-out/arapahoe-levy-stacks-by-tag-id.json --allowlist tools/fixtures/antelope_gid_levy_stack_allowlist.json",
+    "assert:levy-stack-county-mills": "python3 tools/ingest/assert_levy_stack_county_mills.py --stacks public/data/arapahoe-levy-stacks-by-tag-id.json --pin-to-tag public/data/arapahoe-pin-to-tag.json --authority-mills public/data/arapahoe-authority-mills-by-tax-year.json",
     "test:metro-extract": "python3 -m unittest discover -s tools -p test_extract_metro_levies_2026.py -q",
     "test:douglas-metro-levies": "python3 -m unittest discover -s tools -p test_build_douglas_metro_levies.py -q",
     "build:douglas-metro-levies": "python3 tools/build_douglas_metro_levies.py --bundled-as-of $(date +%F)",
