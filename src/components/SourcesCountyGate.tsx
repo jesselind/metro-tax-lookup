@@ -79,9 +79,7 @@ export function SourcesCountyGate({
   // Unrelated re-renders with the same validated id leave a manual select alone.
   useEffect(() => {
     const t = window.setTimeout(() => {
-      setCountyId((prev) =>
-        prev === validatedInitialId ? prev : validatedInitialId,
-      );
+      setCountyId(validatedInitialId);
     }, 0);
     return () => window.clearTimeout(t);
   }, [validatedInitialId]);

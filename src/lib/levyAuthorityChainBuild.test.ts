@@ -584,7 +584,9 @@ describe("levyAuthorityChainBuild", () => {
     expect(record.family).toBe("urban_drainage");
     expect(record.match.registryId).toBe("udfcd-south-platte");
     expect(arapahoeEntry.summary).toContain("voters approved Ballot Issue 7G");
-    expect(arapahoeEntry.summary).toContain("this line is the South Platte share");
+    expect(arapahoeEntry.summary).toContain(
+      "this line is the separate South Platte levy",
+    );
     expect(measure?.title).toBe(
       "Ballot Issue 7G: Restore flood-control mills up to the 1.0 mill cap",
     );
