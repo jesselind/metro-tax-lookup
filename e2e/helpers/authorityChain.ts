@@ -82,7 +82,9 @@ export function authorityChainE2eCases(): AuthorityChainE2eCase[] {
       const douglasLabel =
         record.id === "south-metro-fire-authority-chain"
           ? "South Metro Fire Rescue Fire Protection District"
-          : undefined;
+          : record.id === "regional-transportation-district-authority-chain"
+            ? "Regional Transportation District"
+            : undefined;
       pushCase({
         levyLineCode: douglasCode,
         entry: buildLevyAuthorityChainEntry(record, {

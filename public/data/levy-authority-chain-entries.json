@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | local_levy). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -9,7 +9,8 @@
     "term-tabor",
     "term-de-brucing",
     "term-eligible-electors",
-    "term-aggregate-debt"
+    "term-aggregate-debt",
+    "term-om-deficit"
   ],
   "entries": [
     {
@@ -848,6 +849,56 @@
       "openGapIds": [
         "no-fund-level-mill-split",
         "multi-county-arapahoe-votes-only"
+      ]
+    },
+    {
+      "id": "regional-transportation-district-authority-chain",
+      "family": "regional_transportation",
+      "match": {
+        "registryId": "rtd"
+      },
+      "authority": {
+        "displayName": "Regional Transportation District",
+        "countyListName": "REGIONAL TRANSPORTATION",
+        "governingBody": "board",
+        "whoGetsBody": "When this district collects a property-tax mill under its limited statutory authority, that money helps pay for regional transit (bus, rail, and related services) in its service area."
+      },
+      "summarySource": {
+        "text": "According to the 2024 Colorado Revised Statutes Title 32 § 32-9-120",
+        "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf#page=274"
+      },
+      "summary": {
+        "headlinePlain": "this district may levy property tax only for an annual deficit in operation and maintenance expenses, and not more than one-half mill"
+      },
+      "countyOverlays": {
+        "douglas": {
+          "countyListName": "Regional Transportation District"
+        }
+      },
+      "mills": {
+        "stepBody": "County published rates for this authority have been 0.000 mills across the years we track. This line can still appear on your levy list even when it does not add property-tax dollars."
+      },
+      "measures": [
+        {
+          "stepId": "rtd-levy-limit-crs-32-9-120",
+          "kind": "regional_transportation_levy_limit",
+          "electionMonthYear": "December 2024",
+          "titlePlain": "Property tax only for an O&M deficit, capped at half a mill",
+          "titleTermId": "term-om-deficit",
+          "titleTermMatch": "O&M deficit",
+          "detail": "this district may not levy a general property tax under the Regional Transportation District Act except to cover an annual deficit in operation and maintenance expenses, and that levy may not exceed one-half mill",
+          "approval": {
+            "label": "C.R.S. § 32-9-120",
+            "value": "Under this statute, no general ad valorem property taxes shall be levied by the district except for the payment of any annual deficit in operation and maintenance expenses, not to exceed one-half mill on each dollar of valuation for assessment each year.",
+            "source": {
+              "text": "Colorado Revised Statutes Title 32 (2024)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf#page=274"
+            }
+          }
+        }
+      ],
+      "openGapIds": [
+        "rtd-sales-tax-funding-separate"
       ]
     }
 

@@ -36,6 +36,9 @@ export type LevyAuthorityChainFact = {
   label: string;
   value: string;
   sources: LevyAuthorityChainLink[];
+  /** Optional in-place glossary gloss on {@link label}. */
+  labelTermId?: string;
+  labelTermMatch?: string;
   /** Optional in-place glossary gloss on {@link value}. */
   valueTermId?: string;
   valueTermMatch?: string;

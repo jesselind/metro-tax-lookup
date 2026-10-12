@@ -77,6 +77,27 @@ describe("crossCountyAuthorityRegistry", () => {
     ).toBe("udfcd-south-platte");
   });
 
+  it("resolves RTD levy codes and authority-chain entry", () => {
+    expect(
+      findCrossCountyAuthorityByCountyLevyCode("arapahoe", "4528")?.id,
+    ).toBe("rtd");
+    expect(
+      findCrossCountyAuthorityByCountyLevyCode("douglas", "4010")?.id,
+    ).toBe("rtd");
+    expect(
+      findLevyAuthorityChainEntry("REGIONAL TRANSPORTATION", {
+        countyId: "arapahoe",
+        levyLineCode: "4528",
+      })?.id,
+    ).toBe("regional-transportation-district-authority-chain");
+    expect(
+      findLevyAuthorityChainEntry("Regional Transportation District", {
+        countyId: "douglas",
+        levyLineCode: "4010",
+      })?.id,
+    ).toBe("regional-transportation-district-authority-chain");
+  });
+
   it("uses Douglas resident county for mills lookup (no cross-county fallback)", () => {
     const target = resolveAuthorityMillsLookup("4014", "douglas");
     expect(target).toEqual({
@@ -159,6 +180,7 @@ describe("crossCountyAuthorityRegistry", () => {
       "smfr-fire": { teId: "64108/1", lgId: "64108" },
       "udfcd-main": { teId: "64147/1", lgId: "64147" },
       "udfcd-south-platte": { teId: "64174/1", lgId: "64174" },
+      rtd: { teId: "64116/1", lgId: "64116" },
     };
 
     for (const row of authorities) {

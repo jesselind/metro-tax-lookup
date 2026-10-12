@@ -15,6 +15,7 @@ import {
   TermDeBrucingBriefBody,
   TermEligibleElectorsBriefBody,
   TermAggregateDebtBriefBody,
+  TermOmDeficitBriefBody,
   TermLevyBriefBody,
   TermMillLevyTotalBriefBody,
   TermPinBriefBody,
@@ -54,6 +55,7 @@ type ExtraFlowGlossaryTermId =
   | "term-tabor"
   | "term-eligible-electors"
   | "term-aggregate-debt"
+  | "term-om-deficit"
   | "term-fiscal-year"
   | "term-statute-limit"
   | "term-property-tax-revenue-limit"
@@ -92,6 +94,10 @@ const EXTRA_BRIEFS: Record<
   "term-aggregate-debt": {
     title: "Aggregate debt",
     Brief: TermAggregateDebtBriefBody,
+  },
+  "term-om-deficit": {
+    title: "O&M deficit",
+    Brief: TermOmDeficitBriefBody,
   },
   "term-fiscal-year": {
     title: "Fiscal year",

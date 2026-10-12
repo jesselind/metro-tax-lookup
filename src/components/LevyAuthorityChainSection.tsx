@@ -517,7 +517,19 @@ export function LevyAuthorityChainSection({
                   {step.facts.map((fact, factIndex) => (
                     <div key={`${step.id}-${fact.label}`}>
                       <dt className="text-sm font-semibold text-slate-800 sm:text-base">
-                        {fact.label}
+                        {fact.labelTermId && fact.labelTermMatch
+                          ? renderWithInlineTerms(
+                              fact.label,
+                              [
+                                {
+                                  termId: fact.labelTermId,
+                                  match: fact.labelTermMatch,
+                                },
+                              ],
+                              `levy-authority-chain-${entry.id}-${step.id}-fact-${factIndex}-label-term`,
+                              entry,
+                            )
+                          : fact.label}
                       </dt>
                       <dd className="mt-1 text-sm text-slate-700 sm:text-base">
                         <FactValue

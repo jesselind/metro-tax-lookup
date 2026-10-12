@@ -250,6 +250,19 @@ export function TermAggregateDebtBriefBody() {
   );
 }
 
+export function TermOmDeficitBriefBody() {
+  return (
+    <p className={BRIEF_P}>
+      <strong className="font-semibold text-slate-900">O&amp;M deficit</strong>
+      {" "}
+      means a shortfall in day-to-day running costs. State law calls that an
+      annual deficit in operation and maintenance expenses, such as keeping
+      buses and trains running and facilities in repair. It is not money for a
+      new rail line or other big capital project.
+    </p>
+  );
+}
+
 export function TermBondsBriefBody() {
   return (
     <div className="space-y-2">

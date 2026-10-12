@@ -30,6 +30,7 @@ import {
   LOCAL_LEVY_GOVERNMENT_BILL_NAME_DEFAULT,
   METRO_GOVERNMENT_BILL_NAME_DEFAULT,
   MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT,
+  REGIONAL_TRANSPORTATION_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
@@ -170,7 +171,8 @@ export type LevyAuthorityChainSummarySpec = {
   headlinePlain?: string;
   /**
    * Election month/year (or city budget year) for voter/council summary paths.
-   * Omit on `municipal_gid` (closed summary is attribution lead + headlinePlain;
+   * Omit on `municipal_gid` / `regional_transportation` (closed summary is
+   * attribution lead + headlinePlain;
    * no election dating on that line).
    */
   headlineElection?: string;
@@ -372,6 +374,9 @@ function governmentBillNameForRecord(
   if (record.family === "municipal_gid") {
     return MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT;
   }
+  if (record.family === "regional_transportation") {
+    return REGIONAL_TRANSPORTATION_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
   if (record.family === "local_levy") {
     return LOCAL_LEVY_GOVERNMENT_BILL_NAME_DEFAULT;
   }
@@ -422,11 +427,14 @@ function buildSummary(
       record.summary.summaryClosingNote,
     );
   }
-  if (record.family === "municipal_gid") {
+  if (
+    record.family === "municipal_gid" ||
+    record.family === "regional_transportation"
+  ) {
     const headlinePlain = record.summary.headlinePlain?.trim();
     if (!headlinePlain) {
       throw new Error(
-        `[${record.id}] municipal_gid summary.headlinePlain must be non-empty`,
+        `[${record.id}] ${record.family} summary.headlinePlain must be non-empty`,
       );
     }
     // Same link contract as metro/city: summarySource.text is the linked lead.
@@ -761,11 +769,12 @@ function buildMeasureStep(
   let body: string;
   let bodyDisclosure: LevyAuthorityChainStep["bodyDisclosure"];
   let bodyLink: LevyAuthorityChainStep["bodyLink"];
-  /** City council / municipal GID budget-cited auth: substance in fact subheads. */
+  /** City / municipal GID / RTD statute-cited auth: substance in fact subheads. */
   let cityAuthorizationTakeaway: LevyAuthorityChainFact | undefined;
   if (
     measure.kind === "city_authorization" ||
-    measure.kind === "municipal_gid_board"
+    measure.kind === "municipal_gid_board" ||
+    measure.kind === "regional_transportation_levy_limit"
   ) {
     const titlePlain = measure.titlePlain?.trim();
     if (!titlePlain) {
@@ -785,6 +794,12 @@ function buildMeasureStep(
       value: takeaway,
       sources: measure.approval ? [measure.approval.source] : [],
     };
+    // titlePlain is the fact label for these kinds; gloss jargon there (not on
+    // the pack step title, which does not include titlePlain).
+    if (measure.titleTermId && measure.titleTermMatch) {
+      takeawayFact.labelTermId = measure.titleTermId;
+      takeawayFact.labelTermMatch = measure.titleTermMatch;
+    }
     if (measure.bodyTermId && measure.bodyTermMatch) {
       takeawayFact.valueTermId = measure.bodyTermId;
       takeawayFact.valueTermMatch = measure.bodyTermMatch;
@@ -848,6 +863,7 @@ function buildMeasureStep(
     ...(measure.kind !== "metro_commitment" &&
     measure.kind !== "city_authorization" &&
     measure.kind !== "municipal_gid_board" &&
+    measure.kind !== "regional_transportation_levy_limit" &&
     !omitDuplicateUnavailableFact
       ? [
           {
@@ -882,9 +898,12 @@ function buildMeasureStep(
         sources: [measure.resultsSource],
       });
     } else if (measure.approval) {
-      // municipal_gid_board takeaway already carries approval.source; a second
-      // fact would repeat the same statute cite and legalese.
-      if (measure.kind !== "municipal_gid_board") {
+      // municipal_gid_board / regional_transportation_levy_limit takeaway already
+      // carries approval.source; a second fact would repeat the same statute cite.
+      if (
+        measure.kind !== "municipal_gid_board" &&
+        measure.kind !== "regional_transportation_levy_limit"
+      ) {
         facts.push({
           label: measure.approval.label,
           value: measure.approval.value,
@@ -898,20 +917,28 @@ function buildMeasureStep(
     }
     facts.push(...(measure.supportingFacts ?? []));
   }
+  const takeawayKind =
+    measure.kind === "city_authorization" ||
+    measure.kind === "municipal_gid_board" ||
+    measure.kind === "regional_transportation_levy_limit";
   return {
     id: measure.stepId,
     title: pack.ballotStepTitle(measure.ballotIssue, measure.kind, {
       titleYearSuffix: measure.titleYearSuffix,
       titlePlain: measure.titlePlain,
     }),
-    titleTermId: measure.titleTermId,
-    titleTermMatch: measure.titleTermMatch,
+    // Takeaway kinds move titleTerm onto the fact label (titlePlain).
+    ...(takeawayKind
+      ? {}
+      : {
+          titleTermId: measure.titleTermId,
+          titleTermMatch: measure.titleTermMatch,
+        }),
     body,
     ...(bodyLink ? { bodyLink } : {}),
     ...(bodyDisclosure ? { bodyDisclosure } : {}),
-    // city_authorization / municipal_gid_board move bodyTerm onto the takeaway fact.
-    ...(measure.kind === "city_authorization" ||
-    measure.kind === "municipal_gid_board"
+    // Takeaway kinds move bodyTerm onto the takeaway fact value.
+    ...(takeawayKind
       ? {}
       : {
           bodyTermId: measure.bodyTermId,

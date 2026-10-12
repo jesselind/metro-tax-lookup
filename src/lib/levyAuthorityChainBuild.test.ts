@@ -723,6 +723,60 @@ describe("levyAuthorityChainBuild", () => {
     ).toBe(false);
   });
 
+  it("builds RTD from AUTH-derived zero mills and regional_transportation_levy_limit", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "regional-transportation-district-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const levyLimit = entry.steps.find(
+      (step) => step.id === "rtd-levy-limit-crs-32-9-120",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("regional_transportation");
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(entry.summary).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 32 § 32-9-120, this district may levy property tax only for an annual deficit in operation and maintenance expenses, and not more than one-half mill.",
+    );
+    expect(entry.summarySource?.text).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 32 § 32-9-120",
+    );
+    expect(entry.summary.startsWith(entry.summarySource!.text)).toBe(true);
+    expect(levyLimit?.title).toBe("Property-tax levy limit");
+    expect(levyLimit?.body.trim()).toBe("");
+    expect(levyLimit?.facts.map((fact) => fact.label)).toEqual([
+      "Property tax only for an O&M deficit, capped at half a mill",
+    ]);
+    expect(levyLimit?.facts[0]?.labelTermId).toBe("term-om-deficit");
+    expect(levyLimit?.facts[0]?.labelTermMatch).toBe("O&M deficit");
+    expect(levyLimit?.titleTermId).toBeUndefined();
+    expect(levyLimit?.facts[0]?.value).toContain("Colorado law says");
+    expect(levyLimit?.facts[0]?.value).toContain("one-half mill");
+    expect(levyLimit?.facts[0]?.sources[0]?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf#page=274",
+    );
+    expect(entry.summarySource?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf#page=274",
+    );
+    expect(mills?.body).toContain("0.000 mills");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("No change in mills");
+    expect(mills?.facts[0]?.value).toContain("0.000");
+    expect(
+      entry.openGaps.some((g) => g.id === "rtd-sales-tax-funding-separate"),
+    ).toBe(true);
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "rtd-levy-limit-crs-32-9-120",
+    ]);
+  });
+
   it("builds Antelope Hills GID from AUTH-derived mills and municipal_gid_board", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "antelope-hills-gid-authority-chain",
