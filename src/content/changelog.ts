@@ -45,6 +45,18 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.30.0",
+    date: "2026-10-12",
+    title: "Who authorized RTD's property-tax mill",
+    sections: {
+      added: [
+        "Regional Transportation District levy tiles open a Who authorized this? trail for the property-tax mill limit in state law, including Arapahoe and Douglas stack codes.",
+        "The trail notes when county tables show 0 mills for RTD and that sales tax is a separate funding source.",
+        "O&M deficit has an in-place definition on the RTD authorization step."
+      ]
+    },
+  },
+  {
     version: "5.29.0",
     date: "2026-10-10",
     title: "Mill levy stacks match county tax tables",

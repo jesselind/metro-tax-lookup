@@ -31,6 +31,17 @@
         "douglas": "4392"
       },
       "millsReferenceCountyId": "arapahoe"
+    },
+    {
+      "id": "rtd",
+      "displayName": "Regional Transportation District",
+      "lgId": "64116",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4528",
+        "douglas": "4010"
+      },
+      "authorityChainEntryId": "regional-transportation-district-authority-chain",
+      "millsReferenceCountyId": "arapahoe"
     }
   ]
 }
