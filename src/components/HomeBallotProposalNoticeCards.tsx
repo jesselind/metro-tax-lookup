@@ -27,6 +27,7 @@ import {
   type BallotProposalNoticeEntry,
 } from "@/lib/ballotProposalNotice";
 import { focusNearestDashboardSection } from "@/lib/focusNearestDashboardSection";
+import { HOME_LANDING_JUMP_SCROLL_MT_CLASS } from "@/lib/homeLandingJumps";
 import { HOME_BALLOT_PROPOSAL_NOTICE_JUMP_BUTTON_CLASS } from "@/lib/toolFlowStyles";
 
 type SharedListProps = {
@@ -134,7 +135,7 @@ export function HomeBallotProposalNoticeSection(props: SharedListProps) {
     <section
       id={HOME_BALLOT_PROPOSAL_NOTICE_SECTION_ID}
       tabIndex={-1}
-      className="mt-8 scroll-mt-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-red-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:scroll-mt-8"
+      className={`mt-8 text-left outline-none focus-visible:ring-2 focus-visible:ring-red-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${HOME_LANDING_JUMP_SCROLL_MT_CLASS}`}
       aria-labelledby={HOME_BALLOT_PROPOSAL_NOTICE_HEADING_ID}
     >
       <div className="mx-auto w-full max-w-2xl">

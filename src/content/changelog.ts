@@ -45,6 +45,21 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.31.0",
+    date: "2026-10-12",
+    title: "Who authorized Urban Drainage flood-control mills",
+    sections: {
+      added: [
+        "Urban Drainage and Flood Control District (Mile High Flood District) levy tiles open a Who authorized this? trail for the November 2018 Ballot Issue that restored mills up to the 1.0 mill ceiling set in state law, including Arapahoe and Douglas stack codes.",
+        "Main district and South Platte bill lines each have their own trail, with notes that the other line often appears on the same bill.",
+        "Unlocked home: the brand title bar sticks and jumps to Look up your property, Two numbers, November 3 ballot, and Latest updates (hamburger on smaller screens; white readable links). Hidden once a locked report Jump menu is up."
+      ],
+      fixed: [
+        "Urban Drainage South Platte closed summary calls that bill line a separate levy, not a share of the 1.0 mill ceiling."
+      ]
+    },
+  },
+  {
     version: "5.30.0",
     date: "2026-10-12",
     title: "Who authorized RTD's property-tax mill",

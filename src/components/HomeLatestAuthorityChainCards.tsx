@@ -12,6 +12,10 @@
  */
 import { LevyAuthorityChainSection } from "@/components/LevyAuthorityChainSection";
 import {
+  HOME_LANDING_JUMP_SCROLL_MT_CLASS,
+  HOME_LATEST_AUTHORITY_CHAINS_SECTION_ID,
+} from "@/lib/homeLandingJumps";
+import {
   latestArapahoeAuthorityChainCardsForHome,
   type HomeLatestArapahoeAuthorityChainCard,
 } from "@/lib/levyAuthorityChain";
@@ -36,7 +40,9 @@ export function HomeLatestAuthorityChainCards({ cards }: Props) {
 
   return (
     <section
-      className="mt-6 text-left"
+      id={HOME_LATEST_AUTHORITY_CHAINS_SECTION_ID}
+      tabIndex={-1}
+      className={`mt-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${HOME_LANDING_JUMP_SCROLL_MT_CLASS}`}
       aria-labelledby={headingId}
     >
       <div className="mx-auto w-full max-w-2xl space-y-6">

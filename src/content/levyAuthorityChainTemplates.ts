@@ -9,7 +9,7 @@
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
  * `metro`, `fire`, `library`, `city`, `municipal_gid`, `regional_transportation`,
- * `local_levy`) inject
+ * `local_levy`, `urban_drainage`) inject
  * nouns, measure kinds, budget labels, and mills takeaways. Multiple
  * authorization steps belong in `measures[]` (chronological); closed summary
  * stays one short who/when line, with optional `also` elections.
@@ -59,6 +59,9 @@ export const REGIONAL_TRANSPORTATION_GOVERNMENT_BILL_NAME_DEFAULT =
 
 /** Default bill wording for local_levy entries when JSON omits `governmentBillName`. */
 export const LOCAL_LEVY_GOVERNMENT_BILL_NAME_DEFAULT = "the county";
+
+/** Default bill wording for urban_drainage entries when JSON omits `governmentBillName`. */
+export const URBAN_DRAINAGE_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -115,7 +118,9 @@ export type LevyAuthorityChainFamily =
   /** Title 32 art. 9 Regional Transportation District (property-tax levy limit). */
   | "regional_transportation"
   /** County-collected local mill under a state program statute (not a special district). */
-  | "local_levy";
+  | "local_levy"
+  /** Title 32 art. 11 Urban Drainage and Flood Control District (MHFD). */
+  | "urban_drainage";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -168,6 +173,16 @@ export const OPEN_GAP_BODIES = {
    */
   "rtd-sales-tax-funding-separate":
     "This trail covers the property-tax mill on your levy list. RTD's main local funding is sales tax, which is a separate tax and is not part of this property-tax authorization trail.",
+  /**
+   * UDFCD / MHFD main mill: South Platte is a separate stack line.
+   */
+  "udfcd-main-south-platte-separate-levy":
+    "County tax lists often show a separate Urban Drainage South Platte levy (about 0.1 mills) in addition to this main district mill. That is a different bill line. This trail covers the main district mill only.",
+  /**
+   * UDFCD / MHFD South Platte mill: main district mill is a separate stack line.
+   */
+  "udfcd-south-platte-main-separate-levy":
+    "County tax lists often show a separate main Urban Drainage & Flood mill (about 0.9 mills) in addition to this South Platte levy. That is a different bill line. This trail covers the South Platte mill only.",
 } as const;
 
 /**
@@ -688,9 +703,17 @@ export const LOCAL_LEVY_MILLS_STEP_BODY =
   "Your bill uses one total mill rate for this levy each year.";
 
 /**
- * Shared Ballot Issue + certified-votes pack for fire, library, and local_levy
- * (Voters language; AUTH-derived What changed?; trailing How people voted).
- * Optional budget chrome overrides keep local_levy from saying "district".
+ * Default urban drainage "What changed?" chrome. Rate figures are AUTH-derived
+ * (same helper as fire/library). Entry `mills.stepBody` may replace this.
+ */
+export const URBAN_DRAINAGE_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this drainage district each year.";
+
+/**
+ * Shared Ballot Issue + certified-votes pack for fire, library, local_levy, and
+ * urban_drainage (Voters language; AUTH-derived What changed?; trailing How
+ * people voted). Optional budget chrome overrides keep local_levy from saying
+ * "district".
  */
 function ballotSpecialDistrictPack(options: {
   packLabel: string;
@@ -826,6 +849,23 @@ const LOCAL_LEVY_PACK: LevyAuthorityChainFamilyPack = ballotSpecialDistrictPack(
     "That vote set ceilings. It did not lock in one fixed share of today's total rate.",
   bondRepaymentChangeSentence:
     "Bonds may be sold over time, so the repayment part of this levy can change.",
+});
+
+/**
+ * Urban drainage / flood control district pack (Title 32, art. 11). First
+ * consumer: Urban Drainage & Flood Control District / MHFD main mill via
+ * registry `udfcd-main` (Arapahoe AUTH `4712`, Douglas AUTH `4002`). Same trail
+ * shape as fire/library (Voters + Ballot Issue + certified votes; AUTH-derived
+ * What changed?). South Platte levy is a separate registry row / follow-up.
+ */
+const URBAN_DRAINAGE_PACK: LevyAuthorityChainFamilyPack = ballotSpecialDistrictPack({
+  packLabel: "urban_drainage",
+  millsStepBody: URBAN_DRAINAGE_MILLS_STEP_BODY,
+  governmentBillNameDefault: URBAN_DRAINAGE_GOVERNMENT_BILL_NAME_DEFAULT,
+  bondCeilingSentence:
+    "That vote set ceilings. It did not lock in one fixed share of today's total rate.",
+  bondRepaymentChangeSentence:
+    "Bonds may be sold over time, so the repayment part of your drainage-district tax can change.",
 });
 
 /**
@@ -1113,6 +1153,7 @@ const FAMILY_PACKS: Record<
   municipal_gid: MUNICIPAL_GID_PACK,
   regional_transportation: REGIONAL_TRANSPORTATION_PACK,
   local_levy: LOCAL_LEVY_PACK,
+  urban_drainage: URBAN_DRAINAGE_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -1122,9 +1163,10 @@ export function getAuthorityChainFamilyPack(
 }
 
 /**
- * Metro, fire, library, city, municipal_gid, regional_transportation, and
- * local_levy: What changed? mill figures come from the AUTH series (not
- * hand-authored current/prior fields). School and county still author mills.
+ * Metro, fire, library, city, municipal_gid, regional_transportation,
+ * local_levy, and urban_drainage: What changed? mill figures come from the AUTH
+ * series (not hand-authored current/prior fields). School and county still
+ * author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
@@ -1136,15 +1178,16 @@ export function usesAuthDerivedMills(
     family === "city" ||
     family === "municipal_gid" ||
     family === "regional_transportation" ||
-    family === "local_levy"
+    family === "local_levy" ||
+    family === "urban_drainage"
   );
 }
 
 /**
  * Metro, city, municipal_gid, and regional_transportation fold approval / vote
  * facts onto each measure step so several authorizations stay chronological.
- * School, county, fire, and library keep a trailing How people voted step for
- * certified totals.
+ * School, county, fire, library, local_levy, and urban_drainage keep a trailing
+ * How people voted step for certified totals.
  */
 export function foldsApprovalOntoMeasures(
   family: LevyAuthorityChainFamily,

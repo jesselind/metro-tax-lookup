@@ -72,6 +72,12 @@ import {
   HOME_PROPERTY_DETAILS_ID,
   type HomeLockedUtilityNav,
 } from "@/lib/homeDashboardJumps";
+import {
+  buildHomeLandingJumps,
+  type HomeLandingJump,
+} from "@/lib/homeLandingJumps";
+import { ballotProposalNoticeHomeEntriesForCounty } from "@/lib/ballotProposalNotice";
+import { latestArapahoeAuthorityChainCardsForHome } from "@/lib/levyAuthorityChain";
 import { parcelRecordSubsectionPresence } from "@/lib/parcelRecordSubsectionPresence";
 import { btnOutlinePrimaryMd } from "@/lib/buttonClasses";
 import {
@@ -267,12 +273,19 @@ export type HomeParcelAddressLookupProps = {
    * Hero Start over stays on PageHero while viewing.
    */
   onLockedUtilityNavChange?: (nav: HomeLockedUtilityNav | null) => void;
+  /**
+   * Unlocked landing only: section jumps for the sticky title-bar menu.
+   * {@code null} when the search form / teaching blocks are not mounted
+   * (locked report or address search locked).
+   */
+  onLandingJumpsChange?: (jumps: HomeLandingJump[] | null) => void;
 };
 
 export function HomeParcelAddressLookup({
   onViewingParcelChange,
   onAudienceModeChange,
   onLockedUtilityNavChange,
+  onLandingJumpsChange,
 }: HomeParcelAddressLookupProps = {}) {
   const [simpleAddressLine, setSimpleAddressLine] = useState("");
   /** After a first-line search returns no match or many matches, show the four-field form. */
@@ -450,7 +463,9 @@ export function HomeParcelAddressLookup({
     ) {
       return;
     }
-    setUnit("");
+    // Defer so this is not a sync setState-in-effect (react-hooks/set-state-in-effect).
+    const t = window.setTimeout(() => setUnit(""), 0);
+    return () => window.clearTimeout(t);
   }, [unit, streetNumber, streetNumberSuffix, streetName]);
 
   /**
@@ -713,8 +728,8 @@ export function HomeParcelAddressLookup({
   /** Debounced street typeahead for the simple address line. */
   useEffect(() => {
     if (addressSearchLocked || busy || showAdvancedAddressFields) {
-      setStreetTypeaheadOpen(false);
-      return;
+      const t = window.setTimeout(() => setStreetTypeaheadOpen(false), 0);
+      return () => window.clearTimeout(t);
     }
     const handle = window.setTimeout(() => {
       const parsed = parseSimpleAddressLineForSitusLookup(simpleAddressLine);
@@ -1659,6 +1674,25 @@ export function HomeParcelAddressLookup({
       onLockedUtilityNavChange?.(null);
     };
   }, [lockedUtilityNav, onLockedUtilityNavChange]);
+
+  const landingJumps = useMemo((): HomeLandingJump[] | null => {
+    // Teaching blocks and Notice list live only on the unlocked search form.
+    if (addressSearchLocked) return null;
+    const ballotEntries = homeBallotNoticeCountyId
+      ? ballotProposalNoticeHomeEntriesForCounty(homeBallotNoticeCountyId)
+      : [];
+    return buildHomeLandingJumps({
+      showBallotNotice: ballotEntries.length > 0,
+      showAuthorityChains: latestArapahoeAuthorityChainCardsForHome().length > 0,
+    });
+  }, [addressSearchLocked, homeBallotNoticeCountyId]);
+
+  useEffect(() => {
+    onLandingJumpsChange?.(landingJumps);
+    return () => {
+      onLandingJumpsChange?.(null);
+    };
+  }, [landingJumps, onLandingJumpsChange]);
 
   const propertyDetailsBundledLabel = useMemo(() => {
     if (!parcelRecordBundledAsOf) return null;

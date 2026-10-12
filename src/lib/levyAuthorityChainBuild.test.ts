@@ -492,6 +492,129 @@ describe("levyAuthorityChainBuild", () => {
     ).toBe(true);
   });
 
+  it("builds UDFCD main from AUTH-derived mills and Ballot Issue 7G votes", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "urban-drainage-flood-main-authority-chain",
+    )!;
+    const arapahoeEntry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const douglasEntry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "douglas",
+    });
+    const measure = arapahoeEntry.steps.find(
+      (step) => step.id === "ballot-7g-operations-mill",
+    );
+    const votes = arapahoeEntry.steps.find(
+      (step) => step.id === "county-reported-results",
+    );
+    const mills = arapahoeEntry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("urban_drainage");
+    expect(arapahoeEntry.summary).toContain("voters approved Ballot Issue 7G");
+    expect(arapahoeEntry.summary).toContain(
+      "Restore flood-control mills up to the 1.0 mill ceiling set in state law",
+    );
+    expect(arapahoeEntry.summary).not.toContain("eligible electors");
+    expect(measure?.title).toBe(
+      "Ballot Issue 7G: Restore flood-control mills up to the 1.0 mill cap",
+    );
+    expect(measure?.body).toContain(
+      "According to official certified election results, voters approved",
+    );
+    expect(measure?.body).toContain("1.0 mills");
+    expect(measure?.bodyTermId).toBe("term-tabor");
+    expect(
+      measure?.facts.some(
+        (fact) => fact.label === "Statutory mill ceiling (C.R.S. § 32-11-217)",
+      ),
+    ).toBe(true);
+    expect(votes?.title).toBe("How people voted");
+    expect(votes?.facts.some((fact) => fact.value.includes("146,184"))).toBe(
+      true,
+    );
+    expect(mills?.body).toContain("Ballot Issue 7G restored");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+      "Most notable increase",
+    ]);
+    expect(
+      mills?.facts.some(
+        (fact) =>
+          fact.label === "Most notable increase" &&
+          fact.value.includes("0.726") &&
+          fact.value.includes("0.900"),
+      ),
+    ).toBe(true);
+    expect(
+      arapahoeEntry.openGaps.some(
+        (g) => g.id === "udfcd-main-south-platte-separate-levy",
+      ),
+    ).toBe(true);
+    expect(
+      douglasEntry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only"),
+    ).toBe(true);
+    expect(
+      douglasEntry.openGaps.some(
+        (g) => g.id === "udfcd-main-south-platte-separate-levy",
+      ),
+    ).toBe(true);
+  });
+
+  it("builds UDFCD South Platte from AUTH-derived mills and Ballot Issue 7G votes", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "urban-drainage-flood-south-platte-authority-chain",
+    )!;
+    const arapahoeEntry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const douglasEntry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "douglas",
+    });
+    const measure = arapahoeEntry.steps.find(
+      (step) => step.id === "ballot-7g-operations-mill",
+    );
+    const votes = arapahoeEntry.steps.find(
+      (step) => step.id === "county-reported-results",
+    );
+    const mills = arapahoeEntry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("urban_drainage");
+    expect(record.match.registryId).toBe("udfcd-south-platte");
+    expect(arapahoeEntry.summary).toContain("voters approved Ballot Issue 7G");
+    expect(arapahoeEntry.summary).toContain(
+      "this line is the separate South Platte levy",
+    );
+    expect(measure?.title).toBe(
+      "Ballot Issue 7G: Restore flood-control mills up to the 1.0 mill cap",
+    );
+    expect(measure?.bodyTermId).toBe("term-tabor");
+    expect(
+      measure?.facts.some(
+        (fact) =>
+          fact.label === "South Platte one-tenth mill (C.R.S. § 32-11-217)",
+      ),
+    ).toBe(true);
+    expect(votes?.facts.some((fact) => fact.value.includes("146,184"))).toBe(
+      true,
+    );
+    expect(mills?.body).toContain("South Platte bill line");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+      "Most notable increase",
+    ]);
+    expect(
+      arapahoeEntry.openGaps.some(
+        (g) => g.id === "udfcd-south-platte-main-separate-levy",
+      ),
+    ).toBe(true);
+    expect(
+      douglasEntry.openGaps.some((g) => g.id === "multi-county-arapahoe-votes-only"),
+    ).toBe(true);
+  });
+
   it("builds Arapahoe Library from AUTH-derived mills and Ballot Issue 4A votes", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "arapahoe-library-authority-chain",

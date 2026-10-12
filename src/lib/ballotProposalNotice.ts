@@ -38,6 +38,7 @@ export function scrollToHomeBallotProposalNoticeSection(): void {
   const el = document.getElementById(HOME_BALLOT_PROPOSAL_NOTICE_SECTION_ID);
   if (!el) return;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Section uses HOME_LANDING_JUMP_SCROLL_MT_CLASS so block:start clears the sticky title bar.
   el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
   el.focus({ preventScroll: true });
 }

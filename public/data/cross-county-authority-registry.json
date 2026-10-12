@@ -20,6 +20,7 @@
         "arapahoe": "4712",
         "douglas": "4002"
       },
+      "authorityChainEntryId": "urban-drainage-flood-main-authority-chain",
       "millsReferenceCountyId": "arapahoe"
     },
     {
@@ -30,6 +31,7 @@
         "arapahoe": "4713",
         "douglas": "4392"
       },
+      "authorityChainEntryId": "urban-drainage-flood-south-platte-authority-chain",
       "millsReferenceCountyId": "arapahoe"
     },
     {
