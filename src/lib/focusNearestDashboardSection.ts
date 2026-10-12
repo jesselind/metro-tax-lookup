@@ -38,6 +38,13 @@ export type FocusNearestDashboardSectionOptions = {
    * height changes often cancel in-flight smooth scrolls.
    */
   behavior?: ScrollBehavior;
+  /**
+   * Force {@code scrollIntoView} block. Default uses
+   * {@link resolveDashboardJumpScrollBlock} (nearest when already on screen).
+   * Home landing title-bar jumps pass {@code "start"} so the section title
+   * always lands under the sticky bar, even when already in the viewport.
+   */
+  block?: ScrollLogicalPosition;
 };
 
 /** True when the tiles' top is far enough down that nearest-scroll barely moves. */
@@ -96,6 +103,7 @@ export function focusNearestDashboardSection({
   highlightId,
   stickyInsetPx,
   behavior: behaviorOption,
+  block: blockOption,
 }: FocusNearestDashboardSectionOptions): void {
   if (typeof document === "undefined") return;
   const focusEl = document.getElementById(focusId);
@@ -107,13 +115,15 @@ export function focusNearestDashboardSection({
     "(prefers-reduced-motion: reduce)",
   ).matches;
   const inset = measureStickyInsetPx(stickyInsetPx);
-  const block = resolveDashboardJumpScrollBlock({
-    focusTop: focusEl.getBoundingClientRect().top,
-    highlightTop:
-      highlightEl != null ? highlightEl.getBoundingClientRect().top : null,
-    viewportHeight: window.innerHeight,
-    stickyInsetPx: inset,
-  });
+  const block =
+    blockOption ??
+    resolveDashboardJumpScrollBlock({
+      focusTop: focusEl.getBoundingClientRect().top,
+      highlightTop:
+        highlightEl != null ? highlightEl.getBoundingClientRect().top : null,
+      viewportHeight: window.innerHeight,
+      stickyInsetPx: inset,
+    });
 
   const behavior =
     behaviorOption ?? (reduceMotion ? "auto" : "smooth");

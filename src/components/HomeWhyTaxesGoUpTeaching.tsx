@@ -13,6 +13,10 @@ import {
   WhyTaxesGoUpBar,
   WHY_TAXES_GO_UP_HEADING,
 } from "@/components/WhyTaxesGoUpBar";
+import {
+  HOME_LANDING_JUMP_SCROLL_MT_CLASS,
+  HOME_WHY_TAXES_GO_UP_SECTION_ID,
+} from "@/lib/homeLandingJumps";
 
 export const HOME_WHY_TAXES_GO_UP_HEADING = WHY_TAXES_GO_UP_HEADING;
 
@@ -20,7 +24,12 @@ export function HomeWhyTaxesGoUpTeaching() {
   const headingId = "home-why-taxes-go-up-heading";
 
   return (
-    <section className="mt-8 text-center" aria-labelledby={headingId}>
+    <section
+      id={HOME_WHY_TAXES_GO_UP_SECTION_ID}
+      tabIndex={-1}
+      className={`mt-8 text-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${HOME_LANDING_JUMP_SCROLL_MT_CLASS}`}
+      aria-labelledby={headingId}
+    >
       <div className="mx-auto w-full max-w-3xl">
         <h2
           id={headingId}

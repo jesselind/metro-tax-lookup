@@ -13,9 +13,20 @@ export const RADIUS_SURFACE_CLASS = "rounded-lg";
 /** Main column cap (header, hero, footer, tools). Value: `--site-content-max-width` in `src/app/globals.css`. */
 export const SITE_CONTENT_MAX_WIDTH_CLASS = "site-content-max-width";
 
-/** Full-width slate title bar (PageHero): viewport breakout. */
+/**
+ * Full-width slate title bar (PageHero): viewport breakout.
+ * Uses margin centering (not translate) so {@link PAGE_HERO_STICKY_OUTER_CLASS}
+ * can stick without a transform creating a broken sticky containing block.
+ */
 export const PAGE_HERO_OUTER_CLASS =
-  "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2";
+  "relative w-screen max-w-[100vw] ml-[calc(50%-50vw)]";
+
+/**
+ * Sticky unlocked-home title bar (landing section nav). Same full-bleed shell as
+ * {@link PAGE_HERO_OUTER_CLASS}; do not add translate — sticky + transform clips
+ * the bar and hides the brand.
+ */
+export const PAGE_HERO_STICKY_OUTER_CLASS = `${PAGE_HERO_OUTER_CLASS} sticky top-0 z-50`;
 
 /** Slate strip: flex so the constrained inner column stays vertically centered in the bar at any width. */
 export const PAGE_HERO_SLATE_BAR_CLASS =
@@ -235,9 +246,6 @@ export const SOURCES_PAGE_INNER_CLASS = TOOL_PAGE_INNER_CLASS_HUB;
 
 /** PageHero + lead paragraph: spacing under the slate title bar matches all tools. */
 export const TOOL_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-3";
-
-/** Home hub only: a bit more air between the slate bar and the landing intro. */
-export const HOME_PAGE_HERO_INTRO_GROUP_CLASS = "flex flex-col gap-4 sm:gap-5";
 
 /** Home landing intro wrapper: width and tight leading; line uses {@link HOME_LANDING_INTRO_LINE_CLASS}. */
 export const HOME_LANDING_INTRO_CLASS =

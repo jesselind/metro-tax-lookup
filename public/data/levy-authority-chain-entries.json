@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -899,6 +899,160 @@
       ],
       "openGapIds": [
         "rtd-sales-tax-funding-separate"
+      ]
+    },
+    {
+      "id": "urban-drainage-flood-main-authority-chain",
+      "family": "urban_drainage",
+      "match": {
+        "registryId": "udfcd-main"
+      },
+      "authority": {
+        "displayName": "Urban Drainage & Flood Control District",
+        "countyListName": "URBAN DRAINAGE & FLOOD",
+        "governingBody": "board",
+        "whoGetsBody": "This district's property-tax revenue pays for regional stormwater and flood control work in its service area, including flood warning systems, floodplain open space, and keeping streams clear of debris."
+      },
+      "summarySource": {
+        "text": "According to official certified election results",
+        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2018/Official%20Summary%20Report%20for%20Canvass.pdf#page=17"
+      },
+      "summary": {
+        "headlineIssues": [
+          "7G"
+        ],
+        "headlineElection": "November 2018",
+        "headlineNote": ": Restore flood-control mills up to the 1.0 mill ceiling set in state law"
+      },
+      "countyOverlays": {
+        "douglas": {
+          "countyListName": "Urban Drainage & Flood Control District",
+          "openGapIds": [
+            "multi-county-arapahoe-votes-only"
+          ]
+        }
+      },
+      "mills": {
+        "stepBody": "Ballot Issue 7G restored this district's main mill rate toward the 1.0 mill ceiling set in state law. County published rates for this authority show that jump between Tax Year 2018 and Tax Year 2019, then a steady 0.900 mills."
+      },
+      "measures": [
+        {
+          "stepId": "ballot-7g-operations-mill",
+          "ballotIssue": "7G",
+          "kind": "operations_mill",
+          "electionMonthYear": "November 2018",
+          "titlePlain": "Restore flood-control mills up to the 1.0 mill cap",
+          "detail": "raising Urban Drainage and Flood Control District taxes by about $14.9 million in 2019 (up to about $1.97 that year for each $100,000 of actual residential valuation) and by amounts raised later from a levy not to exceed 1.0 mills for flood warning gauges, floodplain parks and open space, and removing debris from streams, with the mill rate subject to the ceilings in state law, and letting the district keep and spend that revenue without TABOR refund limits",
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "2018 County Notice of Election (Ballot Issue 7G)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2018/Arapahoe%20County%20TABOR%20Notice%202018_FINAL.pdf#page=27"
+          },
+          "bodyTermId": "term-tabor",
+          "bodyTermMatch": "TABOR",
+          "supportingFacts": [
+            {
+              "label": "Statutory mill ceiling (C.R.S. § 32-11-217)",
+              "value": "State law caps the board's main district levy at one mill (with set shares for engineering, capital, and floodway work). A levy above one mill needs voter approval. A separate one-tenth mill for South Platte River work applies in Adams, Arapahoe, Denver, Douglas, and Jefferson.",
+              "sources": [
+                {
+                  "text": "Colorado Revised Statutes Title 32 (2024)",
+                  "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf#page=321"
+                }
+              ]
+            }
+          ],
+          "votes": {
+            "yes": "146,184",
+            "yesPct": "57.75%",
+            "no": "106,939",
+            "noPct": "42.25%"
+          },
+          "resultsSource": {
+            "text": "2018 Official Summary Report for Canvass",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2018/Official%20Summary%20Report%20for%20Canvass.pdf#page=17"
+          }
+        }
+      ],
+      "openGapIds": [
+        "udfcd-main-south-platte-separate-levy"
+      ]
+    },
+    {
+      "id": "urban-drainage-flood-south-platte-authority-chain",
+      "family": "urban_drainage",
+      "match": {
+        "registryId": "udfcd-south-platte"
+      },
+      "authority": {
+        "displayName": "Urban Drainage & Flood, South Platte Levy",
+        "countyListName": "URBN DRNGE&FLD (S PLATTE)",
+        "governingBody": "board",
+        "whoGetsBody": "This bill line's property-tax revenue pays for maintenance and improvements on the South Platte River and its tributaries inside the district (in Adams, Arapahoe, Denver, Douglas, and Jefferson)."
+      },
+      "summarySource": {
+        "text": "According to official certified election results",
+        "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2018/Official%20Summary%20Report%20for%20Canvass.pdf#page=17"
+      },
+      "summary": {
+        "headlineIssues": [
+          "7G"
+        ],
+        "headlineElection": "November 2018",
+        "headlineNote": ": Restore flood-control mills up to the 1.0 mill ceiling set in state law (this line is the South Platte share)"
+      },
+      "countyOverlays": {
+        "douglas": {
+          "countyListName": "Urban Drainage & Flood South Platte",
+          "openGapIds": [
+            "multi-county-arapahoe-votes-only"
+          ]
+        }
+      },
+      "mills": {
+        "stepBody": "Ballot Issue 7G restored the district's mills toward the 1.0 mill ceiling set in state law. This South Platte bill line is the separate one-tenth mill for South Platte River work. County published rates for this authority settle at 0.100 mills in recent years."
+      },
+      "measures": [
+        {
+          "stepId": "ballot-7g-operations-mill",
+          "ballotIssue": "7G",
+          "kind": "operations_mill",
+          "electionMonthYear": "November 2018",
+          "titlePlain": "Restore flood-control mills up to the 1.0 mill cap",
+          "detail": "raising Urban Drainage and Flood Control District taxes by about $14.9 million in 2019 (up to about $1.97 that year for each $100,000 of actual residential valuation) and by amounts raised later from a levy not to exceed 1.0 mills for flood warning gauges, floodplain parks and open space, and removing debris from streams, with the mill rate subject to the ceilings in state law, and letting the district keep and spend that revenue without TABOR refund limits",
+          "ballotTextKind": "notice",
+          "ballotTextSource": {
+            "text": "2018 County Notice of Election (Ballot Issue 7G)",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2018/Arapahoe%20County%20TABOR%20Notice%202018_FINAL.pdf#page=27"
+          },
+          "bodyTermId": "term-tabor",
+          "bodyTermMatch": "TABOR",
+          "supportingFacts": [
+            {
+              "label": "South Platte one-tenth mill (C.R.S. § 32-11-217)",
+              "value": "State law lets the district levy a separate tax of up to one-tenth of a mill in Adams, Arapahoe, Denver, Douglas, and Jefferson for maintenance and improvements on the South Platte River inside the district. That is in addition to the main district mill, which is capped at one mill.",
+              "sources": [
+                {
+                  "text": "Colorado Revised Statutes Title 32 (2024)",
+                  "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-32.pdf#page=321"
+                }
+              ]
+            }
+          ],
+          "votes": {
+            "yes": "146,184",
+            "yesPct": "57.75%",
+            "no": "106,939",
+            "noPct": "42.25%"
+          },
+          "resultsSource": {
+            "text": "2018 Official Summary Report for Canvass",
+            "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/2018/Official%20Summary%20Report%20for%20Canvass.pdf#page=17"
+          }
+        }
+      ],
+      "openGapIds": [
+        "udfcd-south-platte-main-separate-levy"
       ]
     }
 

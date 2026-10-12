@@ -78,7 +78,12 @@ export function SourcesCountyGate({
   // Soft nav can change `?county=` without remounting; keep state aligned.
   // Unrelated re-renders with the same validated id leave a manual select alone.
   useEffect(() => {
-    setCountyId(validatedInitialId);
+    const t = window.setTimeout(() => {
+      setCountyId((prev) =>
+        prev === validatedInitialId ? prev : validatedInitialId,
+      );
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [validatedInitialId]);
   const config =
     countyConfigById(countyId) ??

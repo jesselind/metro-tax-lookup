@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DouglasPropertyDataAccuracyKnownIssueBanner } from "@/content/douglasPropertyDataAccuracyKnownIssueBanner";
+import { HomeLandingNav } from "@/components/HomeLandingNav";
 import { HomeParcelAddressLookup } from "@/components/HomeParcelAddressLookup";
 import { PageHero } from "@/components/PageHero";
 import { SiteBrandHeroTitle } from "@/components/SiteBrandHeroTitle";
@@ -16,9 +17,14 @@ import {
 } from "@/lib/audienceMode";
 import type { HomeLockedUtilityNav } from "@/lib/homeDashboardJumps";
 import {
+  HOME_LANDING_JUMP_SCROLL_MT_CLASS,
+  HOME_LANDING_LOOKUP_ID,
+  HOME_LANDING_NAVBAR_ID,
+  type HomeLandingJump,
+} from "@/lib/homeLandingJumps";
+import {
   HOME_LANDING_INTRO_CLASS,
   HOME_LANDING_INTRO_LINE_CLASS,
-  HOME_PAGE_HERO_INTRO_GROUP_CLASS,
   PAGE_HERO_ACTION_BUTTON_CLASS,
   TOOL_PAGE_INNER_CLASS_HUB,
   TOOL_PAGE_INNER_CLASS_HUB_LOCKED_REPORT,
@@ -31,10 +37,14 @@ export function HomePageClient() {
   const [viewingParcel, setViewingParcel] = useState(false);
   const [lockedUtilityNav, setLockedUtilityNav] =
     useState<HomeLockedUtilityNav | null>(null);
+  const [landingJumps, setLandingJumps] = useState<HomeLandingJump[] | null>(
+    null,
+  );
   const [audienceMode, setAudienceMode] = useState<AudienceMode>(
     DEFAULT_AUDIENCE_MODE,
   );
   const startOverHeroRef = useRef<HTMLButtonElement>(null);
+  const landingNavbarRef = useRef<HTMLElement>(null);
   const resetRef = useRef<() => void>(() => {});
 
   const handleViewingParcelChange = useCallback(
@@ -52,11 +62,24 @@ export function HomePageClient() {
     [],
   );
 
+  const handleLandingJumpsChange = useCallback(
+    (jumps: HomeLandingJump[] | null) => {
+      setLandingJumps(jumps);
+    },
+    [],
+  );
+
   const handleAudienceModeChange = useCallback((mode: AudienceMode) => {
     setAudienceMode(mode);
   }, []);
 
   const showHeroStartOver = viewingParcel;
+  /**
+   * Sticky title-bar section menu: unlocked landing only. Never with Start over
+   * or a locked report (Jump TOC owns that path).
+   */
+  const showLandingNav =
+    !viewingParcel && lockedUtilityNav == null && landingJumps != null;
   const showKnownIssueBanner =
     lockedUtilityNav?.propertyDataAccuracyWarning === true;
 
@@ -92,6 +115,11 @@ export function HomePageClient() {
       tabIndex={-1}
       className="flex flex-col bg-white text-slate-900"
     >
+      {/*
+        Sticky title bar must be a direct child of this tall column (not nested
+        in the short hero+intro group). Otherwise sticky only lasts for that
+        group's height (~a few dozen px) before the bar scrolls away.
+      */}
       <div
         className={
           lockedUtilityNav
@@ -99,31 +127,44 @@ export function HomePageClient() {
             : TOOL_PAGE_INNER_CLASS_HUB
         }
       >
-        <div className={HOME_PAGE_HERO_INTRO_GROUP_CLASS}>
-          <PageHero
-            title={<SiteBrandHeroTitle />}
-            actions={
-              showHeroStartOver ? (
-                <button
-                  ref={startOverHeroRef}
-                  type="button"
-                  className={PAGE_HERO_ACTION_BUTTON_CLASS}
-                  onClick={onStartOver}
-                  aria-label={START_OVER_ARIA_LABEL}
-                >
-                  Start over
-                </button>
-              ) : null
-            }
-          />
-          {!viewingParcel ? (
-            <p className={HOME_LANDING_INTRO_CLASS}>
-              <span className={HOME_LANDING_INTRO_LINE_CLASS}>
-                {landingLine}
-              </span>
-            </p>
-          ) : null}
-        </div>
+        <PageHero
+          title={<SiteBrandHeroTitle />}
+          sticky={showLandingNav}
+          stickyId={showLandingNav ? HOME_LANDING_NAVBAR_ID : undefined}
+          stickyRef={showLandingNav ? landingNavbarRef : undefined}
+          sectionNav={
+            showLandingNav && landingJumps != null ? (
+              <HomeLandingNav
+                jumps={landingJumps}
+                navbarRef={landingNavbarRef}
+              />
+            ) : null
+          }
+          actions={
+            showHeroStartOver ? (
+              <button
+                ref={startOverHeroRef}
+                type="button"
+                className={PAGE_HERO_ACTION_BUTTON_CLASS}
+                onClick={onStartOver}
+                aria-label={START_OVER_ARIA_LABEL}
+              >
+                Start over
+              </button>
+            ) : null
+          }
+        />
+        {!viewingParcel ? (
+          <p
+            id={HOME_LANDING_LOOKUP_ID}
+            tabIndex={-1}
+            className={`${HOME_LANDING_INTRO_CLASS} outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${HOME_LANDING_JUMP_SCROLL_MT_CLASS}`}
+          >
+            <span className={HOME_LANDING_INTRO_LINE_CLASS}>
+              {landingLine}
+            </span>
+          </p>
+        ) : null}
         {showKnownIssueBanner && lockedUtilityNav ? (
           <DouglasPropertyDataAccuracyKnownIssueBanner
             countyId={lockedUtilityNav.countyId}
@@ -139,6 +180,7 @@ export function HomePageClient() {
             onViewingParcelChange={handleViewingParcelChange}
             onAudienceModeChange={handleAudienceModeChange}
             onLockedUtilityNavChange={handleLockedUtilityNavChange}
+            onLandingJumpsChange={handleLandingJumpsChange}
           />
         </div>
       </div>
