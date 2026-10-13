@@ -22,7 +22,7 @@ test.describe("audience mode I Own / I Rent", () => {
     await expect(ownRadio).toBeChecked();
     await expect(rentRadio).not.toBeChecked();
     await expect(
-      page.getByText("See where your property tax is actually going."),
+      page.getByText("See where your property tax is actually going. And why."),
     ).toBeVisible();
     await expect(
       page.getByText("Even if you rent."),
@@ -36,7 +36,7 @@ test.describe("audience mode I Own / I Rent", () => {
       ),
     ).toBeVisible();
     await expect(
-      page.getByText("See where your property tax is actually going."),
+      page.getByText("See where your property tax is actually going. And why."),
     ).toHaveCount(0);
 
     await ownRadio.click();

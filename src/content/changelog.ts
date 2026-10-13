@@ -45,6 +45,22 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.31.1",
+    date: "2026-10-13",
+    title: "Locked-report section icons stay with wrapping titles",
+    sections: {
+      fixed: [
+        "On a locked report, section title icons stay beside the heading when the title wraps to a second line.",
+      ],
+      added: [
+        "Brand guidelines handout for design and marketing partners (palette, type, product vs campaign green).",
+      ],
+      changed: [
+        "Unlocked home Own line: See where your property tax is actually going. And why.",
+      ],
+    },
+  },
+  {
     version: "5.31.0",
     date: "2026-10-12",
     title: "Who authorized Urban Drainage flood-control mills",

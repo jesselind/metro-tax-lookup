@@ -73,10 +73,14 @@ type HeadingTag = "h2" | "h3" | "h4";
 /**
  * Locked-report section title with the same Heroicon as the Jump TOC entry.
  *
- * Icon and title use `items-center`. When {@link trailing} is set (e.g. a
- * "What is this?" control), title and trailing share `items-baseline` so mixed
- * font sizes still line up on the text baseline; the icon stays outside that
- * baseline group so it does not pull the help link down.
+ * Icon + title stay on one flex row (`flex-nowrap`). Title text may wrap beside
+ * the icon (`min-w-0` on the heading); do not `flex-wrap` the outer row or a
+ * long title drops under the icon and leaves the glyph alone on the first line.
+ *
+ * When {@link trailing} is set (e.g. "What is this?"), title and trailing share
+ * `items-baseline` so mixed font sizes line up; the icon stays outside that
+ * group. Trailing may wrap under the title; the icon still stays inline with
+ * the first line of the title.
  */
 export function DashboardSectionJumpHeading({
   jumpId,
@@ -96,6 +100,7 @@ export function DashboardSectionJumpHeading({
   /**
    * Classes on the icon+title row (display). Use instead of putting `flex` /
    * `hidden` on {@link className} — the heading tag is text-only.
+   * Keep a flex row without wrap so the icon stays beside wrapping title text.
    */
   wrapperClassName?: string;
   tabIndex?: number;
@@ -118,19 +123,19 @@ export function DashboardSectionJumpHeading({
     <div
       className={`${
         wrapperClassName ?? "flex"
-      } min-w-0 flex-wrap items-center gap-2 sm:gap-2.5`.trim()}
+      } min-w-0 flex-nowrap items-center gap-2 sm:gap-2.5`.trim()}
     >
       <HomeDashboardJumpIcon
         jumpId={jumpId}
         className={HOME_DASHBOARD_SECTION_JUMP_ICON_CLASS}
       />
       {trailing != null ? (
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
           {heading}
           {trailing}
         </div>
       ) : (
-        heading
+        <div className="min-w-0 flex-1">{heading}</div>
       )}
     </div>
   );

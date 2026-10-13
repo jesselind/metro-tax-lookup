@@ -56,7 +56,7 @@ test.describe("home landing title-bar nav", () => {
     await nav.getByRole("button", { name: "Look up your property" }).click();
     await expect(page.locator(`#${HOME_LANDING_LOOKUP_ID}`)).toBeFocused();
     await expect(
-      page.getByText("See where your property tax is actually going."),
+      page.getByText("See where your property tax is actually going. And why."),
     ).toBeVisible();
   });
 

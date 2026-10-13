@@ -8,6 +8,7 @@ Tracked guides for fork/contributors. Setup, npm scripts, data layout, and secur
 
 | Document | Use when |
 | --- | --- |
+| [brand-guidelines.md](./brand-guidelines.md) | Outside design / social / marketing handoff (palette, type, product vs campaign). Canonical hexes also in `src/app/globals.css`. Attach logo files separately - many are not in this repo. |
 | [locked-decisions.md](./locked-decisions.md) | Durable product / UX / copy calls across chats (not a whitelist; ask when unsure) |
 | [county-config.md](./county-config.md) | Multi-county app model: `CountyConfig` features vs gap chrome vs runtime field presence; county search gate; app JSON loader modules (Phase 10); how to add a county without copying Arapahoe. Code map: [`src/lib/countyConfig/README.md`](../src/lib/countyConfig/README.md) |
 | [county-build-inputs.md](./county-build-inputs.md) | Per-county download hubs, last-known file URLs, and local save paths (Colorado shared + Arapahoe + Douglas county 2; El Paso parked) |

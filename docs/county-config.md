@@ -79,6 +79,12 @@ Causes of slow first compile (unchanged):
 
 From `src/app/globals.css`, `../` is `src/` — where all `className` usage lives. Production CSS output is unchanged; this is a dev scan scope fix.
 
+**Do not "fix" the editor "semi-colon expected" warning on `source(...)`.** That diagnostic is the built-in CSS language service (standard `@import` has no `source()`). Tailwind's PostCSS plugin understands it. Removing `source("../")` to silence the squiggle re-opens the slow `public/data/` walk.
+
+**Editor setup (committed):** `.vscode/settings.json` associates `*.css` with the `tailwindcss` language mode; `.vscode/extensions.json` recommends [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) (`bradlc.vscode-tailwindcss`). Both match Tailwind Labs' documented recommendations ([extension README](https://github.com/tailwindlabs/tailwindcss-intellisense/blob/main/packages/vscode-tailwindcss/README.md): `files.associations` + Tailwind CSS language mode). Cursor uses the same settings model. Content-scan `source()` itself: [Detecting classes in source files](https://tailwindcss.com/docs/detecting-classes-in-source-files).
+
+**Do not replace `source("../")` with `@tailwindcss/postcss` `{ base: "src" }` under Next.js Turbopack.** When PostCSS runs without a reliable `from` path, that `base` can become the resolve root for `@import "tailwindcss"`. Resolving from `src/` (no `node_modules`) fails and utility CSS disappears — unstyled UI. Regression confirmed 2026-10-12; keep scan scope on the CSS `source()` form.
+
 Residents can pick the wrong county. Selected county is search order / prefetch scope, not sole ground truth. Account-id path uses the same preferred order (selected → adjacent among format matches; or all format matches when “I don’t know”).
 
 When adding county N: set `adjacentCountyIds` to real neighbors among wired counties only; leave empty until neighbors ship.
