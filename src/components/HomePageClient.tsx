@@ -103,7 +103,7 @@ export function HomePageClient() {
   const landingLine =
     audienceMode === "rent"
       ? "You're still paying property tax if you rent. Where's it going?"
-      : "See where your property tax is actually going.";
+      : "See where your property tax is actually going. And why.";
 
   const onStartOver = useCallback(() => {
     resetRef.current();

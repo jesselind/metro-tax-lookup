@@ -1,8 +1,75 @@
+/*
+ * Tailwind v4 entry + content scan root.
+ *
+ * `source("../")` limits class detection to `src/` (parent of this file). Without
+ * it, every save walks committed `public/data/` JSON shards and hot reload crawls.
+ * See docs/county-config.md.
+ *
+ * KEEP this form. Do not "fix" an editor warning of "semi-colon expected" on
+ * `source(...)`: that is the built-in CSS parser, not Tailwind/PostCSS. The
+ * `source()` function is valid Tailwind and required here.
+ *
+ * Do NOT move the scan root to `@tailwindcss/postcss` `{ base: "src" }` under
+ * Next.js Turbopack. That option can become the package-resolve root when
+ * PostCSS has no `from` path; resolving `tailwindcss` from `src/` fails and
+ * utility CSS disappears (unstyled page). Verified regression 2026-10-12.
+ *
+ * Editor: `.vscode/settings.json` maps `*.css` → `tailwindcss` language mode;
+ * `.vscode/extensions.json` recommends Tailwind CSS IntelliSense
+ * (`bradlc.vscode-tailwindcss`). Per Tailwind Labs extension README — not a
+ * substitute for `source("../")`.
+ */
 @import "tailwindcss" source("../");
 
+/*
+ * =============================================================================
+ * BRAND REFERENCE (for design, social, and partners; not just developers)
+ * =============================================================================
+ * Basic brand cheat sheet. Hex codes and common sizes live here so you can copy
+ * them into Canva, Instagram, print, etc. CSS / Tailwind names in the classes
+ * below are for the website; Primary / Secondary / Accent are the plain roles.
+ * Partner handout (same numbers): docs/brand-guidelines.md — attach logos in
+ * the email/drive pack; most logo files are not in this repo.
+ *
+ * --- Core palette ---
+ * Primary (indigo) ............. #432dd7  Buttons, Search, CTAs, focus rings.
+ * Primary hover ................ #372aac  Hover / pressed fill on primary.
+ * Primary outline .............. #7c86ff  Outline primary borders; text #1e1a4d.
+ * Secondary (near-black) ....... #171717  Body text on white.
+ * White ........................ #ffffff  Page background; text on primary fill.
+ * Neutral border ............... #cad5e2  Default input / outline borders.
+ *
+ * --- Debt / warning accent ---
+ * Debt wash .................... #ffecec  Soft rose callout background.
+ *
+ * --- Campaign green (home disclosure only; not app primary) ---
+ * Campaign green ............... #05995c  Bright accent / focus.
+ * Campaign green dark .......... #036b40  Border + text on white (AA).
+ *
+ * --- Borders ---
+ * Standard UI border ........... 1px   Inputs, outline buttons, lookup row.
+ * Campaign outline ............. 2px   Campaign disclosure button only.
+ * Focus ring ................... 2px   Keyboard focus around controls.
+ *
+ * --- Corner radius ---
+ * Buttons / inputs ............. 6px   (0.375rem, "md")
+ *
+ * --- Type ---
+ * App UI ....................... Geist Sans / Geist Mono (required; free at
+ *                                https://vercel.com/font — do not substitute)
+ * Campaign button .............. Inter, 14pt bold (disclosure only)
+ * Body size .................... 16px  (1rem minimum)
+ *
+ * Color usage rule of thumb:
+ *   CTAs / Search / focus → Primary #432dd7 (hover #372aac)
+ *   Body copy → Secondary #171717 on white
+ *   Campaign disclosure only → #036b40 (not everyday primary)
+ * =============================================================================
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ffffff; /* White — page background */
+  --foreground: #171717; /* Secondary — body text */
   /* Main column cap (hero, tools, footer). Change here only. */
   --site-content-max-width: 84rem;
 }
@@ -12,15 +79,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Debt callouts: visible on large cards, still light; use with slate-600+ text for AA */
+  /* Debt wash — pair with dark slate text for contrast. */
   --color-debt-wash: #ffecec;
-  /* Jesse Lind for Assessor campaign site (Website/src/styles/global.css) */
+  /* Campaign greens (home disclosure only; match Jesse Lind for Assessor site). */
   --color-campaign-green: #05995c;
   --color-campaign-green-dark: #036b40;
-  /*
-   * Why-taxes bar stacks below this; side-by-side from xs up.
-   * rem to match Tailwind defaults (see responsive-design custom breakpoints).
-   */
+  /* Why-taxes bar stacks below this; side-by-side from xs up (30rem / 480px). */
   --breakpoint-xs: 30rem;
 }
 
@@ -57,14 +121,15 @@ summary {
 }
 
 /**
- * Reusable outline controls (links and buttons).
- * Pair base + size: e.g. class="btn-outline-primary btn-outline-primary--md"
+ * Shared controls. Pair base + size, e.g. class="btn-outline-primary btn-outline-primary--md".
+ * Brand colors: see BRAND REFERENCE above.
  */
 @layer components {
   .site-content-max-width {
     max-width: var(--site-content-max-width);
   }
 
+  /** Outline primary (indigo border; not the solid CTA). */
   .btn-outline-primary {
     @apply inline-flex cursor-pointer items-center justify-center rounded-md border border-indigo-400 bg-white font-medium text-indigo-950 shadow-sm transition-colors hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-100 disabled:shadow-none;
   }
@@ -74,16 +139,14 @@ summary {
   .btn-outline-primary--md {
     @apply px-4 py-2 text-base;
   }
+  /** Outline secondary (neutral border). */
   .btn-outline-secondary {
     @apply inline-flex cursor-pointer items-center justify-center rounded-md border border-slate-300 bg-white font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:ring-offset-2 disabled:cursor-not-allowed;
   }
   .btn-outline-secondary--md {
     @apply px-4 py-2 text-base;
   }
-  /**
-   * Home campaign disclosure: campaign-site outline control with dark green
-   * border + text (#036b40) for AA on white; Inter via --font-campaign-inter.
-   */
+  /** Campaign outline (home disclosure only; Inter; not app primary). */
   .btn-campaign-outline {
     @apply inline-flex cursor-pointer items-center justify-center rounded-md border-2 border-campaign-green-dark bg-white font-bold text-campaign-green-dark no-underline transition-colors hover:bg-campaign-green-dark hover:text-white focus:outline-none focus:ring-2 focus:ring-campaign-green focus:ring-offset-2;
     font-family: var(--font-campaign-inter), ui-sans-serif, system-ui, sans-serif;
@@ -91,7 +154,7 @@ summary {
   .btn-campaign-outline--md {
     @apply px-4 py-2 text-[14pt];
   }
-  /** Solid primary (hero actions). Pair: btn-primary btn-primary--md */
+  /** Solid primary CTA. Pair: btn-primary btn-primary--md */
   .btn-primary {
     @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55;
   }
@@ -100,12 +163,9 @@ summary {
   }
 
   /**
-   * Home address lookup row: county segment, street input, Search, and Try demo
-   * share box-border h-12 (48px). @apply utilities only — not other component
-   * classes (Tailwind v4 PostCSS rejects nested @apply of components).
-   *
-   * Tailwind content scan is limited to src/ via source("../") above so committed
-   * public/data/ JSON shards are not walked on every rebuild. See docs/county-config.md.
+   * Home address lookup: county, street, Search, Try demo — shared 48px row.
+   * @apply utilities only (Tailwind v4 rejects nested @apply of components).
+   * Content scan: see `source("../")` comment on the Tailwind import above.
    */
   .home-address-lookup-input {
     @apply box-border h-12 block w-full max-w-none rounded-md border border-slate-300 bg-white px-3 text-base leading-normal shadow-sm placeholder:text-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30;
@@ -115,7 +175,7 @@ summary {
     @apply box-border h-12 inline-flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-800/25 bg-indigo-700 px-3 text-base font-semibold text-white shadow-md shadow-indigo-950/15 transition-colors hover:bg-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/45 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 md:w-auto md:flex-none md:px-5;
   }
 
-  /** Outline sibling of Search; always shares the actions row (never stacks under Search). */
+  /** Outline sibling of Search; always shares the actions row. */
   .home-address-lookup-demo {
     @apply box-border h-12 inline-flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 md:w-auto md:flex-none md:px-5;
   }
