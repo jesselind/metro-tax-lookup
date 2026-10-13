@@ -123,7 +123,7 @@ export function DashboardSectionJumpHeading({
     <div
       className={`${
         wrapperClassName ?? "flex"
-      } min-w-0 flex-nowrap items-center gap-2 sm:gap-2.5`.trim()}
+      } min-w-0 flex-nowrap items-start gap-2 sm:gap-2.5`.trim()}
     >
       <HomeDashboardJumpIcon
         jumpId={jumpId}
