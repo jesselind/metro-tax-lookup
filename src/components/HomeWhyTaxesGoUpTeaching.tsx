@@ -6,17 +6,20 @@
 "use client";
 
 /**
- * Unlocked home: teaching block for why property taxes go up (valuation + mill levy).
- * Same bar as locked Own Summary; no property faces.
+ * Unlocked home: teaching block for why property taxes go up (valuation + mill levy),
+ * plus a vertical sample walkthrough (rates → appraised → assessed → mills → bill).
+ * Same two-lever bar chrome as locked Own Summary; math steps are home-only for now.
  */
 import {
   WhyTaxesGoUpBar,
   WHY_TAXES_GO_UP_HEADING,
 } from "@/components/WhyTaxesGoUpBar";
+import { PropertyTaxMathTeaching } from "@/components/PropertyTaxMathTeaching";
 import {
   HOME_LANDING_JUMP_SCROLL_MT_CLASS,
   HOME_WHY_TAXES_GO_UP_SECTION_ID,
 } from "@/lib/homeLandingJumps";
+import { SAMPLE_PROPERTY_TAX_MATH_VALUES } from "@/lib/propertyTaxMathTeaching";
 
 export const HOME_WHY_TAXES_GO_UP_HEADING = WHY_TAXES_GO_UP_HEADING;
 
@@ -30,7 +33,7 @@ export function HomeWhyTaxesGoUpTeaching() {
       className={`mt-8 text-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${HOME_LANDING_JUMP_SCROLL_MT_CLASS}`}
       aria-labelledby={headingId}
     >
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-4xl">
         <h2
           id={headingId}
           className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
@@ -38,7 +41,14 @@ export function HomeWhyTaxesGoUpTeaching() {
           {WHY_TAXES_GO_UP_HEADING}
         </h2>
 
-        <WhyTaxesGoUpBar idPrefix="home-why-taxes" />
+        <div className="mx-auto w-full max-w-3xl">
+          <WhyTaxesGoUpBar idPrefix="home-why-taxes" />
+        </div>
+
+        <PropertyTaxMathTeaching
+          idPrefix="home-tax-math"
+          values={SAMPLE_PROPERTY_TAX_MATH_VALUES}
+        />
       </div>
     </section>
   );

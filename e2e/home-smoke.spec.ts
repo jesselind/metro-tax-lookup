@@ -50,6 +50,72 @@ test("home shows address lookup and Try demo", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText("Property value", { exact: true })).toBeVisible();
   await expect(page.getByText("Everyone on your tax bill, added up")).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "From appraised value to a tax bill",
+      level: 3,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Colorado sets two assessment rates",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("6.8%", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("7.05%", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByRole("link", {
+      name: /Colorado Division of Property Taxation: Assessed Value/,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "The county appraises your property",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("$500,000", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Appraised value becomes two assessed values",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("$34,000", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("$35,250", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Mills and the mill levy",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "School mills use school assessed value",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Other districts use local assessed value",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Add the pieces for the tax bill",
+      level: 4,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", {
+      name: /School District \$1,410.*Fire \$510/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("$1,410 + $850 + $510 + $680 = $3,450", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("Supported Colorado counties")).toHaveCount(0);
 
   // Campaign disclosure follows SITE_CONFIG; forks that clear values must not

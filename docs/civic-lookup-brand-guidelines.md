@@ -2,6 +2,8 @@
 
 Live site: https://civiclookup.com
 
+For design, social, and marketing. This document is AI-generated. Please clarify any issues or conflicts with Jesse Lind.
+
 ---
 
 ## Names
