@@ -45,6 +45,16 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.32.0",
+    date: "2026-10-17",
+    title: "Home walkthrough from appraised value to mill levy dollars",
+    sections: {
+      added: [
+        "Unlocked home Two numbers section adds a vertical sample walkthrough: two Colorado assessment rates (with DPT cite), appraised value, local and school assessed values, mills and mill levy, school then local mill math, then a share capsule totaling the sample bill.",
+      ],
+    },
+  },
+  {
     version: "5.31.1",
     date: "2026-10-13",
     title: "Locked-report section icons stay with wrapping titles",
