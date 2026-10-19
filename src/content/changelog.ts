@@ -45,6 +45,16 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.34.0",
+    date: "2026-10-19",
+    title: "School assessed on more Arapahoe home parcels",
+    sections: {
+      fixed: [
+        "Residential parcels on the Real tax roll with land value only (not the Improvement class row) now get school assessed at build time, so Property details and the Two numbers walkthrough match county levy math where dual rates apply.",
+      ],
+    },
+  },
+  {
     version: "5.33.0",
     date: "2026-10-19",
     title: "Walkthrough from appraised value to the tax bill",
