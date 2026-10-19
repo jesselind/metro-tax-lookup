@@ -17,6 +17,26 @@ export const COLORADO_DPT_ASSESSED_VALUE_SECTION_URL =
   "https://dpt.colorado.gov/understanding-property-taxes-in-colorado#:~:text=Assessment%20Rates%20chart.-,Assessed%20Value,-Multiplying%20the%20actual";
 
 /**
+ * DPT Understanding guide: 2026 Assessment Rates chart (vacant / commercial /
+ * industrial / agricultural / state assessed). Prefer this for non-residential
+ * Real teaching; not a personal-property row.
+ */
+export const COLORADO_DPT_2026_ASSESSMENT_RATES_SECTION_URL =
+  "https://dpt.colorado.gov/understanding-property-taxes-in-colorado#:~:text=on%20adjusted%20dates.-,2026%20Assessment%20Rates%C2%A0,-Classification";
+
+/**
+ * DPT brochure: commercial and industrial real + personal property valuation
+ * and 2026 assessment rates (Commercial Improved 25%, Commercial Other /
+ * Industrial 26%). Best resident cite for business personal property.
+ */
+export const COLORADO_DPT_BUSINESS_AND_INDUSTRY_URL =
+  "https://dpt.colorado.gov/property-valuation-and-taxation-for-business-and-industry-in-colorado";
+
+/** Deep link to the Assessed Value block on the business-and-industry brochure. */
+export const COLORADO_DPT_BUSINESS_AND_INDUSTRY_ASSESSED_VALUE_SECTION_URL =
+  "https://dpt.colorado.gov/property-valuation-and-taxation-for-business-and-industry-in-colorado#:~:text=Assessed%20Value";
+
+/**
  * DPT note on the 2026 residential local-government rate (6.8% after the
  * temporary reduction on the first $700,000 of actual value).
  */

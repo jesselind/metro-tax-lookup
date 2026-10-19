@@ -44,7 +44,7 @@ describe("buildHomeDashboardJumps", () => {
     expect(jumps[0]?.label).toBe("See how Douglas displays your data");
   });
 
-  it("keeps page order for Own Real with Summary and all subsections", () => {
+  it("keeps page order for Own Real with Two numbers and all subsections", () => {
     expect(
       buildHomeDashboardJumps({
         ...baseFlags,
@@ -77,7 +77,7 @@ describe("buildHomeDashboardJumps", () => {
     ]);
   });
 
-  it("leads with temporary Summary jump when Own Summary mounts", () => {
+  it("leads with Two numbers jump when Own Two numbers mounts", () => {
     const jumps = buildHomeDashboardJumps({
       ...baseFlags,
       showSummary: true,
@@ -86,7 +86,7 @@ describe("buildHomeDashboardJumps", () => {
     expect(jumps).toEqual([
       {
         id: "summary",
-        label: "Summary",
+        label: "Two numbers",
         focusId: "home-why-taxes-go-up-summary-heading",
         highlightId: "home-why-taxes-go-up-summary",
       },
@@ -99,7 +99,7 @@ describe("buildHomeDashboardJumps", () => {
     ]);
   });
 
-  it("leads with levy when Summary is off", () => {
+  it("leads with levy when Two numbers is off", () => {
     const jumps = buildHomeDashboardJumps({
       ...baseFlags,
       showLevies: true,
@@ -107,7 +107,7 @@ describe("buildHomeDashboardJumps", () => {
     expect(jumps.map((j) => j.id)).toEqual(["levies"]);
   });
 
-  it("curates Rent jumps: pressure, levy, compare, feedback (no Summary)", () => {
+  it("curates Rent jumps: pressure, levy, compare, feedback (no Two numbers)", () => {
     expect(
       buildHomeDashboardJumps({
         ...baseFlags,
@@ -119,7 +119,7 @@ describe("buildHomeDashboardJumps", () => {
     ).toEqual(["rent-pressure", "levies", "county-compare", "feedback"]);
   });
 
-  it("curates BPP jumps with Summary and without real-property-only subsections", () => {
+  it("curates BPP jumps with Two numbers and without real-property-only subsections", () => {
     expect(
       buildHomeDashboardJumps({
         ...baseFlags,

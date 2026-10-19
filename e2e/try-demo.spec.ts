@@ -51,8 +51,51 @@ test.describe("Try demo property", () => {
     );
     await expect(summarySection).toContainText("Everyone on your tax bill, added up");
     await expect(summarySection).toContainText(PROPERTY_VALUE_COUNTY_GAP_FACE);
-    await expect(summarySection.getByText(/%/)).toBeVisible();
-    await expect(summarySection.getByText(/since \d{4}/i)).toBeVisible();
+    // Current amounts above change / gap (high-level: no year on these faces).
+    // Scope to bar listitems — walkthrough DOM also repeats appraised $ when closed.
+    const propertyValueLever = summarySection.getByRole("listitem", {
+      name: /Property value/i,
+    });
+    const millLevyLever = summarySection.getByRole("listitem", {
+      name: /Mill levy/i,
+    });
+    await expect(
+      propertyValueLever.getByText("$584,100", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      millLevyLever.getByText("183.894 mills", { exact: true }),
+    ).toBeVisible();
+    await expect(millLevyLever.getByText(/%/)).toBeVisible();
+    await expect(millLevyLever.getByText(/since \d{4}/i)).toBeVisible();
+
+    // Collapsed parcel walkthrough under the bar (expand like a resident).
+    const taxMathDisclosure = summarySection.locator("details").filter({
+      hasText: "From appraised value to a tax bill",
+    });
+    await expect(taxMathDisclosure).toBeVisible();
+    await expect(taxMathDisclosure).not.toHaveAttribute("open", "");
+    await expect(
+      taxMathDisclosure.getByText(
+        "See how this property's appraised value becomes a tax bill",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await taxMathDisclosure.locator("summary").click();
+    await expect(taxMathDisclosure).toHaveAttribute("open", "");
+    // Step titles include an sr-only "Step N." prefix in the accessible name.
+    await expect(
+      taxMathDisclosure.getByRole("heading", {
+        name: /Colorado trims part of appraised value for local taxes/,
+        level: 4,
+      }),
+    ).toBeVisible();
+    await expect(
+      taxMathDisclosure.getByText("School districts", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      taxMathDisclosure.getByText("Other districts", { exact: true }).first(),
+    ).toBeVisible();
+
     await summarySection
       .getByRole("button", {
         name: "Why prior-year property values from the county are missing",
@@ -89,7 +132,7 @@ test.describe("Try demo property", () => {
     }
     const onThisPage = page.getByRole("navigation", { name: "On this page" });
     await expect(
-      onThisPage.getByRole("button", { name: "Summary", exact: true }),
+      onThisPage.getByRole("button", { name: "Two numbers", exact: true }),
     ).toBeVisible();
 
     // Desktop sidenav scroll-spies (mobile Jump does not): after scroll, one current jump.
@@ -99,7 +142,7 @@ test.describe("Try demo property", () => {
       onThisPage.locator('button[aria-current="location"]'),
     ).toHaveCount(1);
 
-    await onThisPage.getByRole("button", { name: "Summary", exact: true }).click();
+    await onThisPage.getByRole("button", { name: "Two numbers", exact: true }).click();
     const summaryHeading = page.locator(
       `#${HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID}`,
     );
@@ -186,7 +229,7 @@ test.describe("Try demo property", () => {
     ).toBeVisible();
     await jumpSummary.click();
     await expect(details).toHaveAttribute("open", "");
-    await sectionNav.getByRole("button", { name: "Summary", exact: true }).click();
+    await sectionNav.getByRole("button", { name: "Two numbers", exact: true }).click();
     const summaryHeading = page.locator(
       `#${HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID}`,
     );

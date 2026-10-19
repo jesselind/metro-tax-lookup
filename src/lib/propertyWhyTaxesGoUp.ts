@@ -4,8 +4,9 @@
 // See LICENSE for full terms or https://www.gnu.org/licenses/agpl-3.0.html
 
 /**
- * Property-report Summary: multi-year Property value (appraised) + Mill levy
- * total faces for the two-lever bar. Pure helpers — no React.
+ * Property-report Two numbers: current-year Property value (appraised) + Mill
+ * levy totals, plus multi-year change / gap faces for the two-lever bar.
+ * Pure helpers — no React.
  */
 
 import { formatMillsPercentMagnitude } from "@/lib/authorityMillsChangeBlocks";
@@ -27,6 +28,12 @@ export type WhyTaxesGoUpYearPoint = {
   value: number;
 };
 
+/** Current face amount for one lever (dollars or mills) with its year label. */
+export type WhyTaxesGoUpCurrentAmount = {
+  year: number;
+  value: number;
+};
+
 export type PropertyValueLeverState =
   | { kind: "change"; face: WhyTaxesGoUpChangeFace }
   /** Arapahoe (priorYearValuesGap): county does not publish prior-year values. */
@@ -45,7 +52,27 @@ export type PropertyWhyTaxesGoUpModel =
       mode: "property";
       propertyValue: PropertyValueLeverState;
       millLevy: WhyTaxesGoUpChangeFace;
+      /** Pin appraised (actual) dollars for the assessment / face year when known. */
+      currentAppraised: WhyTaxesGoUpCurrentAmount | null;
+      /** Parcel mill-levy total for the bill tax year when known. */
+      currentMills: WhyTaxesGoUpCurrentAmount | null;
     };
+
+function currentAmount(
+  value: number | null | undefined,
+  year: number | null | undefined,
+): WhyTaxesGoUpCurrentAmount | null {
+  if (
+    value == null ||
+    !Number.isFinite(value) ||
+    value <= 0 ||
+    year == null ||
+    !Number.isFinite(year)
+  ) {
+    return null;
+  }
+  return { year, value };
+}
 
 function changeFaceFromEndpoints(
   start: WhyTaxesGoUpYearPoint,
@@ -148,9 +175,10 @@ function overlappingYears(
 }
 
 /**
- * Resolve property-report Summary faces.
+ * Resolve property-report Two numbers faces.
  * Mill multi-year is required for `mode: "property"`; otherwise fall back to
- * the generic home teaching bar.
+ * the generic home teaching bar. Current-year amounts are optional add-ons
+ * (shown above change / gap faces when present).
  */
 export function resolvePropertyWhyTaxesGoUpModel(options: {
   levyLineCodes: readonly (string | null | undefined)[];
@@ -160,6 +188,17 @@ export function resolvePropertyWhyTaxesGoUpModel(options: {
   priorYearValuesGap: boolean;
   /** Valuation history shard fetch in flight. */
   valuationHistoryPending?: boolean;
+  /** Pin total actual (appraised) dollars for the current face year. */
+  currentAppraisedDollars?: number | null;
+  /**
+   * Year label for current appraised (assessment year when the county splits
+   * assessment vs tax year; else bill tax year).
+   */
+  appraisedYear?: number | null;
+  /** Sum of this parcel's current levy-line mills. */
+  currentTotalMills?: number | null;
+  /** Year label for current mills (bill tax year). */
+  millsYear?: number | null;
 }): PropertyWhyTaxesGoUpModel {
   const millSeries = parcelTotalMillsByTaxYear(
     options.levyLineCodes,
@@ -168,11 +207,22 @@ export function resolvePropertyWhyTaxesGoUpModel(options: {
   const millEnds = endpointsFromSeries(millSeries);
   if (!millEnds) return { mode: "generic" };
 
+  const currentAppraised = currentAmount(
+    options.currentAppraisedDollars,
+    options.appraisedYear,
+  );
+  const currentMills = currentAmount(
+    options.currentTotalMills,
+    options.millsYear ?? millEnds.end.taxYear,
+  );
+
   if (options.valuationHistoryPending) {
     return {
       mode: "property",
       propertyValue: { kind: "teaching" },
       millLevy: changeFaceFromEndpoints(millEnds.start, millEnds.end),
+      currentAppraised,
+      currentMills,
     };
   }
 
@@ -201,6 +251,8 @@ export function resolvePropertyWhyTaxesGoUpModel(options: {
             ),
           },
           millLevy: changeFaceFromEndpoints(millWindow.start, millWindow.end),
+          currentAppraised,
+          currentMills,
         };
       }
     }
@@ -214,10 +266,32 @@ export function resolvePropertyWhyTaxesGoUpModel(options: {
     mode: "property",
     propertyValue,
     millLevy: changeFaceFromEndpoints(millEnds.start, millEnds.end),
+    currentAppraised,
+    currentMills,
   };
 }
 
-/** `$120,000` + direction + `since 2020` for stacked Summary faces (icon in UI). */
+/**
+ * Current appraised face above change / gap. High-level bar: dollars only
+ * (no year line; assessment vs tax year lives in Values / levy stack).
+ */
+export function formatAppraisedCurrentFaceLine(
+  current: WhyTaxesGoUpCurrentAmount,
+): string {
+  return formatUsdWhole(current.value);
+}
+
+/**
+ * Current mill-levy face above change. High-level bar: mills only (no year
+ * line; bill tax year lives in Values / levy stack).
+ */
+export function formatMillsCurrentFaceLine(
+  current: WhyTaxesGoUpCurrentAmount,
+): string {
+  return `${formatCountyLevyMillsDisplay(current.value)} mills`;
+}
+
+/** `$120,000` + direction + `since 2020` for stacked Two numbers faces (icon in UI). */
 export function formatAppraisedChangeFaceLines(face: WhyTaxesGoUpChangeFace): {
   amountLine: string;
   direction: WhyTaxesGoUpChangeFace["direction"];
@@ -248,7 +322,7 @@ export function formatAppraisedChangeFaceLine(
 }
 
 /**
- * Relative mill-rate percent change for the Summary face
+ * Relative mill-rate percent change for the Two numbers change face
  * (`|delta| / |start|`), same magnitude rules as home authority cards.
  * Falls back to mills when start mills are 0 (percent undefined).
  * UI shows amount + up/down icon; aria keeps higher/lower words.

@@ -45,6 +45,26 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.33.0",
+    date: "2026-10-19",
+    title: "Locked Two numbers: current figures plus parcel tax-math walkthrough",
+    sections: {
+      added: [
+        "Locked Own Two numbers bar shows this property's current appraised value and total mills (no year on those faces) above the existing change or prior-year gap faces (including Arapahoe, where the county does not publish prior years).",
+        "Locked Own Two numbers adds a collapsed From appraised value to a tax bill walkthrough for this parcel: residential dual rates with the 2026 local 10% haircut when it applies, shortened school vs other mill totals, and a jump to Where is your money going?",
+      ],
+      changed: [
+        "Locked-report Jump label for that section is Two numbers (was Summary).",
+        "Locked tax-math walkthrough sits flush under the Two numbers bar; commercial cites the DPT 2026 Assessment Rates chart and business personal property cites the DPT business-and-industry page.",
+        "Unlocked home tax-math sample note is Here's a sample property to show how this works (rates stay in the walkthrough steps).",
+        "Locked Two numbers: current faces are quieter when a change or gap sits below; mill half is amber (not rose) so it does not compete with the metro debt tile; share capsule keeps a phone min-width so short labels are not crushed.",
+      ],
+      fixed: [
+        "Tax-math walkthrough final step uses a single-total title and skips the share bar and sum equation when the bill is one mill total (no pieces to add).",
+      ],
+    },
+  },
+  {
     version: "5.32.0",
     date: "2026-10-17",
     title: "Home walkthrough from appraised value to mill levy dollars",

@@ -73,18 +73,18 @@ export const HOME_NOV_COMPS_HEADING_ID = "home-nov-comps-grid-heading";
 /** Home `<main id="page-top">` — same focus target as Back to top. */
 export const HOME_PAGE_TOP_ID = "page-top";
 
-/** Focus target for property-report two-lever Summary bar heading. */
+/** Focus target for property-report two-lever Two numbers bar heading. */
 export const HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID =
   "home-why-taxes-go-up-summary-heading";
 
-/** Section root for property-report Summary (two-lever bar). */
+/** Section root for property-report Two numbers (two-lever bar). */
 export const HOME_WHY_TAXES_GO_UP_SUMMARY_ID = "home-why-taxes-go-up-summary";
 
 /**
  * Jump destinations for the locked-report section nav.
  * Order matches the main-column scroll order for the active lens.
- * Own Summary (temporary Jump label) leads when that section mounts; else levy
- * (or Rent pressure) is first.
+ * Own Two numbers leads when that section mounts; else levy (or Rent pressure)
+ * is first.
  */
 export type HomeDashboardJumpId =
   | "summary"
@@ -133,7 +133,7 @@ export type HomeLockedUtilityNav = {
  * (Own | Rent | BPP) and account. Only list jumps whose targets exist.
  */
 export type HomeDashboardJumpFlags = {
-  /** Own only: two-lever Summary bar above levies. */
+  /** Own only: two-lever Two numbers bar above levies. */
   showSummary: boolean;
   showRentPressure: boolean;
   showLevies: boolean;
@@ -154,7 +154,7 @@ export type HomeDashboardJumpFlags = {
 
 /**
  * Build gated Jump to… options in main-column order for the active lens.
- * Own Summary (temporary label) leads when mounted; else Rent pressure or levy.
+ * Own Two numbers leads when mounted; else Rent pressure or levy.
  * Omits any section that is not on the report. Appraised and assessed sits after
  * levies (before Property details). Property details parent stays when the panel
  * mounts; remaining subsections are flat siblings (no nested submenu).
@@ -166,7 +166,7 @@ export function buildHomeDashboardJumps(
   if (flags.showSummary) {
     jumps.push({
       id: "summary",
-      label: "Summary",
+      label: "Two numbers",
       focusId: HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID,
       highlightId: HOME_WHY_TAXES_GO_UP_SUMMARY_ID,
     });

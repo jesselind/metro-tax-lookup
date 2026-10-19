@@ -102,6 +102,8 @@ import {
   buildLevyDollarAssessedContext,
   scaleLevyDollarAssessedContextPerUnit,
 } from "@/lib/levyDollarAssessedContext";
+import { buildPropertyTaxMathTeachingValues } from "@/lib/buildPropertyTaxMathTeachingValues";
+import { resolveParcelAssessmentProfile } from "@/lib/parcelAssessmentRates";
 import { resolvePropertyWhyTaxesGoUpModel } from "@/lib/propertyWhyTaxesGoUp";
 import {
   fetchCountyParcelRecordForPin,
@@ -1552,7 +1554,7 @@ export function HomeParcelAddressLookup({
     !isRentMode &&
     !isBusinessPersonalAccount;
 
-  /** Own (Real + BPP), not Rent: two-lever Summary above levies. */
+  /** Own (Real + BPP), not Rent: two-lever Two numbers above levies. */
   const showWhyTaxesGoUpSummary =
     levyReadyForSummary && !isRentMode;
 
@@ -1568,6 +1570,11 @@ export function HomeParcelAddressLookup({
             "valuationHistoryShards",
             activeCountyConfig,
           ) && valuationHistoryLoading,
+        currentAppraisedDollars: levyLoadedMeta?.parcelValues.totalActual,
+        appraisedYear: parcelTaxYearForHistory ?? parcelBillTaxYear,
+        currentTotalMills:
+          !levyAwaitingTemplateMills && sumMills > 0 ? sumMills : null,
+        millsYear: parcelBillTaxYear ?? parcelTaxYearForHistory,
       }),
     [
       levyLines,
@@ -1575,6 +1582,11 @@ export function HomeParcelAddressLookup({
       valuationHistory,
       valuationHistoryLoading,
       activePriorYearValuesGap,
+      levyLoadedMeta?.parcelValues.totalActual,
+      parcelTaxYearForHistory,
+      parcelBillTaxYear,
+      levyAwaitingTemplateMills,
+      sumMills,
     ],
   );
 
@@ -1590,12 +1602,47 @@ export function HomeParcelAddressLookup({
     ],
   );
 
+  const propertyTaxMathTeachingValues = useMemo(() => {
+    if (!showWhyTaxesGoUpSummary || levyAwaitingTemplateMills) return null;
+    const record = parcelRecordForDisplay ?? parcelRecord;
+    if (record == null || levyLoadedMeta == null) return null;
+    const profile = resolveParcelAssessmentProfile(record);
+    return buildPropertyTaxMathTeachingValues({
+      appraisedDollars:
+        levyLoadedMeta.parcelValues.totalActual ?? record.totalActual,
+      localAssessedDollars:
+        levyLoadedMeta.parcelValues.totalAssessed ?? record.totalAssessed,
+      schoolAssessedDollars: record.schoolAssessedTotal,
+      levyLines: levyLines.map((line) => ({
+        authority: line.authority,
+        mills: line.mills,
+        levyLineCode: line.levyLineCode,
+        dolaMatchedLegalName: line.dolaMatch?.matchedLegalName,
+      })),
+      countyId: activeCountyConfig.id,
+      assessmentProfile: profile,
+      assessmentYear: parcelTaxYearForHistory,
+      isPersonalProperty: isBusinessPersonalAccount,
+    });
+  }, [
+    showWhyTaxesGoUpSummary,
+    levyAwaitingTemplateMills,
+    parcelRecordForDisplay,
+    parcelRecord,
+    levyLoadedMeta,
+    levyLines,
+    activeCountyConfig.id,
+    parcelTaxYearForHistory,
+    isBusinessPersonalAccount,
+  ]);
+
   const whyTaxesGoUpSection = showWhyTaxesGoUpSummary ? (
     <PropertyWhyTaxesGoUpSection
       model={whyTaxesGoUpModel}
       countyId={activeCountyConfig.id}
       hasSaleHistory={!isBusinessPersonalAccount && parcelRecord != null}
       parcelRecordHref={whyTaxesGoUpParcelRecordHref}
+      teachingValues={propertyTaxMathTeachingValues}
     />
   ) : null;
 

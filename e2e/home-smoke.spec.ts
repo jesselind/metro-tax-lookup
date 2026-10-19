@@ -57,6 +57,11 @@ test("home shows address lookup and Try demo", async ({ page }) => {
     }),
   ).toBeVisible();
   await expect(
+    page.getByText("Here's a sample property to show how this works.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
     page.getByRole("heading", {
       name: "Colorado sets two assessment rates",
       level: 4,
