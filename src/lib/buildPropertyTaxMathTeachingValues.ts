@@ -23,7 +23,10 @@ import {
   isSchoolAuthorityLevyLine,
   type LevyLineForDualBaseDollars,
 } from "@/lib/levyLineAssessedBase";
-import type { ParcelAssessmentProfile } from "@/lib/parcelAssessmentRates";
+import {
+  COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE,
+  type ParcelAssessmentProfile,
+} from "@/lib/parcelAssessmentRates";
 import {
   PROPERTY_TAX_MATH_COMBINED_COLOR,
   PROPERTY_TAX_MATH_LOCAL_COLOR,
@@ -125,10 +128,13 @@ export function buildPropertyTaxMathTeachingValues(
     };
   }
 
-  // residential_dual
-  const schoolAssessed =
-    parcelAssessedForDollarEstimate(opts.schoolAssessedDollars) ??
-    localAssessed;
+  // residential_dual: both assessed faces are required for the dual-rate
+  // assessed equations. Do not substitute local when school assessed is missing.
+  const schoolAssessed = parcelAssessedForDollarEstimate(
+    opts.schoolAssessedDollars,
+  );
+  if (schoolAssessed == null) return null;
+
   const dualActive =
     Math.round(schoolAssessed) !== Math.round(localAssessed);
 
@@ -139,16 +145,24 @@ export function buildPropertyTaxMathTeachingValues(
     ? residentialLocalActualValueReduction(appraised)
     : null;
 
+  // Haircut equation must reconcile to county local assessed before teaching.
+  if (haircut != null) {
+    const localFromHaircut = Math.round(
+      haircut.adjustedActualDollars * COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE,
+    );
+    if (localFromHaircut !== Math.round(localAssessed)) return null;
+  }
+
   if (!dualActive || schoolMills <= 0) {
-    // Fall back to one assessed base + one mill bucket when school side is
-    // missing or equal (still residential dual rates in the rates step).
+    // One mill bucket when school mills are absent or assessed bases match;
+    // still residential dual rates + both assessed faces in the rates/assessed steps.
     const totalMills = roundMills(schoolMills + localMills);
     return {
       appraisedDollars: Math.round(appraised),
       localAssessmentRateLabel: COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
       schoolAssessmentRateLabel: COLORADO_DPT_2026_RESIDENTIAL_SCHOOL_RATE_LABEL,
       localAssessedDollars: Math.round(localAssessed),
-      schoolAssessedDollars: Math.round(localAssessed),
+      schoolAssessedDollars: Math.round(schoolAssessed),
       assessmentPath: "residential_dual",
       ratesCite: "residential_assessed_value",
       residentialLocalHaircut: haircut,

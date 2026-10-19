@@ -54,7 +54,11 @@ export type PropertyTaxMathTeachingValues = {
   schoolAssessmentRateLabel: string;
   /** Assessed dollars for non-school bill entries. */
   localAssessedDollars: number;
-  /** Assessed dollars for school-district bill entries (equals local when single). */
+  /**
+   * Assessed dollars for school-district bill entries. On the single_rate path
+   * equals local. On residential_dual, county school assessed (even when the
+   * mill preview collapses to one bucket).
+   */
   schoolAssessedDollars: number;
   /**
    * Mill preview + share capsule lines. Home sample: short fake stack.

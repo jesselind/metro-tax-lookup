@@ -114,4 +114,70 @@ describe("buildPropertyTaxMathTeachingValues", () => {
       }),
     ).toBeNull();
   });
+
+  it("returns null on residential dual when school assessed is missing", () => {
+    expect(
+      buildPropertyTaxMathTeachingValues({
+        appraisedDollars: 500_000,
+        localAssessedDollars: 30_600,
+        schoolAssessedDollars: null,
+        levyLines: [
+          { authority: "SCHOOL DIST", mills: 40, levyLineCode: "1001" },
+          { authority: "COUNTY", mills: 16, levyLineCode: "2998" },
+        ],
+        countyId: "arapahoe",
+        assessmentProfile: {
+          mode: "residential_dual",
+          assessedRateLabel: "6.8%",
+          showSchoolAssessedRow: true,
+        },
+        assessmentYear: 2025,
+      }),
+    ).toBeNull();
+  });
+
+  it("keeps county school assessed when the mill preview is one bucket (no school lines)", () => {
+    const values = buildPropertyTaxMathTeachingValues({
+      appraisedDollars: 500_000,
+      localAssessedDollars: 30_600,
+      schoolAssessedDollars: 35_250,
+      levyLines: [{ authority: "COUNTY", mills: 16, levyLineCode: "2998" }],
+      countyId: "arapahoe",
+      assessmentProfile: {
+        mode: "residential_dual",
+        assessedRateLabel: "6.8%",
+        showSchoolAssessedRow: true,
+      },
+      assessmentYear: 2025,
+    });
+    expect(values).not.toBeNull();
+    if (values == null) return;
+    expect(values.assessmentPath).toBe("residential_dual");
+    expect(values.localAssessedDollars).toBe(30_600);
+    expect(values.schoolAssessedDollars).toBe(35_250);
+    expect(values.stackLines).toHaveLength(1);
+    expect(values.stackLines[0]!.key).toBe("all");
+    expect(values.residentialLocalHaircut).toBeNull();
+  });
+
+  it("returns null when the haircut times local rate does not match local assessed", () => {
+    expect(
+      buildPropertyTaxMathTeachingValues({
+        appraisedDollars: 584_100,
+        localAssessedDollars: 40_000, // not 525_690 × 6.8%
+        schoolAssessedDollars: 41_179,
+        levyLines: [
+          { authority: "SCHOOL DIST", mills: 40, levyLineCode: "1001" },
+          { authority: "COUNTY", mills: 16, levyLineCode: "2998" },
+        ],
+        countyId: "arapahoe",
+        assessmentProfile: {
+          mode: "residential_dual",
+          assessedRateLabel: "6.8%",
+          showSchoolAssessedRow: true,
+        },
+        assessmentYear: 2026,
+      }),
+    ).toBeNull();
+  });
 });
