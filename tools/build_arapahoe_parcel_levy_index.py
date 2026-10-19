@@ -233,12 +233,10 @@ def parcel_row_qualifies_for_dual_assessed_splits(row: dict[str, str]) -> bool:
 
 
 def parcel_row_qualifies_for_school_assessed_splits(row: dict[str, str]) -> bool:
-    """School assessed splits apply to improved residential (state use 1xxx) from 2025."""
+    """School assessed splits apply to residential real property (state use 1xxx) from 2025."""
     if not parcel_row_qualifies_for_dual_assessed_splits(row):
         return False
-    if not is_residential_state_use_code(row.get("StateUseCd")):
-        return False
-    return strip_field(row.get("PropertyClassDescr", "")) == "Improvement"
+    return is_residential_state_use_code(row.get("StateUseCd"))
 
 
 def _positive_actual(val: float | None) -> float:

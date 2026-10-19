@@ -111,8 +111,6 @@ export function resolveParcelAssessmentProfile(
       ["PERSONAL", "PERSPROP"].includes(
         (record.propertyClassDescr ?? "").trim().toUpperCase(),
       ));
-  const isImprovement =
-    (record.propertyClassDescr ?? "").trim() === "Improvement";
   const residential = isResidentialStateUseCode(record.stateUseCd);
   const hasCountySchoolAssessed =
     record.schoolAssessedTotal != null &&
@@ -162,7 +160,7 @@ export function resolveParcelAssessmentProfile(
   return {
     mode: "residential_dual",
     assessedRateLabel: COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE_LABEL,
-    showSchoolAssessedRow: isImprovement,
+    showSchoolAssessedRow: true,
   };
 }
 

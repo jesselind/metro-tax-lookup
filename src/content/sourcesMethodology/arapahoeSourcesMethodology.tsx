@@ -323,11 +323,12 @@ export function ArapahoeSourcesMethodology() {
           <strong>Assessed school value</strong>
           {" "}
           is the taxable value school districts use for the school portion of
-          your property tax bill. It is not a Main Parcel column. For improved
+          your property tax bill. It is not a Main Parcel column. For
           {" "}
           <strong>residential</strong>
           {" "}
-          property from 2025 onward, the app computes it with the Colorado
+          property on the Real tax roll from 2025 onward, the app computes it
+          with the Colorado
           {" "}
           <strong>Department of Property Taxation</strong>
           {" "}

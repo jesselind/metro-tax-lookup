@@ -98,19 +98,19 @@ class AssessedSplitQualificationTests(unittest.TestCase):
             )
         )
 
-    def test_school_requires_improvement_class(self) -> None:
+    def test_school_qualifies_residential_real_class(self) -> None:
         self.assertTrue(
             parcel_row_qualifies_for_school_assessed_splits(
                 _real_improvement_row()
             )
         )
-        self.assertFalse(
+        self.assertTrue(
             parcel_row_qualifies_for_school_assessed_splits(
                 {
                     "AssessmentYear": "2026",
                     "TaxRollDescr": "Real",
                     "PropertyClassDescr": "Real",
-                    "StateUseCd": "1177",
+                    "StateUseCd": "1112",
                 }
             )
         )
@@ -153,6 +153,11 @@ class AssessedSplitMathTests(unittest.TestCase):
         self.assertEqual(fields["schoolAssessedLand"], 9165)
         self.assertEqual(fields["schoolAssessedTotal"], 41179)
 
+    def test_school_land_only_from_total_actual(self) -> None:
+        fields = school_assessed_fields_from_actuals(0.0, 168000.0, 168000.0)
+        self.assertEqual(fields["schoolAssessedLand"], 11844)
+        self.assertEqual(fields["schoolAssessedTotal"], 11844)
+
     def test_local_vacant_land_all_to_land(self) -> None:
         fields = local_assessed_split_fields(0.0, 200000.0, 13600.0)
         self.assertEqual(fields, {"assessedBuilding": 0, "assessedLand": 13600})
@@ -175,12 +180,14 @@ class AssessedSplitMathTests(unittest.TestCase):
         self.assertEqual(rec["assessedBuilding"], 26907)
         self.assertEqual(rec["schoolAssessedTotal"], 41179)
 
-    def test_attach_skips_school_when_not_improvement_class(self) -> None:
+    def test_attach_writes_school_for_residential_real_class(self) -> None:
+        land_only_actual = 168000.0
+        land_only_assessed = 11424.0
         rec: dict = {
-            "improvementActual": self.IMPROVEMENT,
-            "landActual": self.LAND,
-            "totalActual": self.TOTAL,
-            "totalAssessed": self.TOTAL_ASSESSED,
+            "improvementActual": 0.0,
+            "landActual": land_only_actual,
+            "totalActual": land_only_actual,
+            "totalAssessed": land_only_assessed,
         }
         attach_computed_assessed_values(
             rec,
@@ -188,11 +195,12 @@ class AssessedSplitMathTests(unittest.TestCase):
                 "AssessmentYear": "2026",
                 "TaxRollDescr": "Real",
                 "PropertyClassDescr": "Real",
-                "StateUseCd": "1177",
+                "StateUseCd": "1112",
             },
         )
-        self.assertIn("assessedLand", rec)
-        self.assertNotIn("schoolAssessedTotal", rec)
+        self.assertEqual(rec["assessedBuilding"], 0)
+        self.assertEqual(rec["assessedLand"], land_only_assessed)
+        self.assertEqual(rec["schoolAssessedTotal"], 11844)
 
     def test_non_residential_proportional_split(self) -> None:
         """Hospital-style non-residential: proportional split, no school assessed."""

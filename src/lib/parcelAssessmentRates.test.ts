@@ -26,7 +26,7 @@ describe("isResidentialStateUseCode", () => {
 });
 
 describe("resolveParcelAssessmentProfile", () => {
-  it("shows school row only for residential improvement", () => {
+  it("shows school row for residential dual (Improvement or Real class)", () => {
     expect(
       resolveParcelAssessmentProfile({
         stateUseCd: "1177",
@@ -34,6 +34,15 @@ describe("resolveParcelAssessmentProfile", () => {
         propertyClassDescr: "Improvement",
         assessmentYear: "2026",
         improvementActual: 100,
+      }).showSchoolAssessedRow,
+    ).toBe(true);
+    expect(
+      resolveParcelAssessmentProfile({
+        stateUseCd: "1112",
+        taxRollDescr: "Real",
+        propertyClassDescr: "Real",
+        assessmentYear: "2026",
+        improvementActual: 0,
       }).showSchoolAssessedRow,
     ).toBe(true);
     expect(
