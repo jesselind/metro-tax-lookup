@@ -8,6 +8,9 @@ import {
   assessedShareOfAppraised,
   computePropertyTaxMathStack,
   localStackLines,
+  PROPERTY_TAX_MATH_TEACHING_SAMPLE_NOTE,
+  PROPERTY_TAX_MATH_TOTAL_STEP_TITLE,
+  PROPERTY_TAX_MATH_TOTAL_STEP_TITLE_SINGLE,
   SAMPLE_PROPERTY_TAX_MATH_VALUES,
   schoolStackLines,
   totalMillsFromMathValues,
@@ -22,6 +25,8 @@ describe("SAMPLE_PROPERTY_TAX_MATH_VALUES", () => {
     expect(v.schoolAssessedDollars).toBe(35_250);
     expect(v.localAssessmentRateLabel).toBe("6.8%");
     expect(v.schoolAssessmentRateLabel).toBe("7.05%");
+    // Home sample stays simplified (no residential local haircut step).
+    expect(v.residentialLocalHaircut ?? null).toBeNull();
   });
 
   it("fake stack uses school assessed only on School District", () => {
@@ -75,5 +80,14 @@ describe("SAMPLE_PROPERTY_TAX_MATH_VALUES", () => {
       "fire",
       "metro",
     ]);
+  });
+
+  it("keeps multi-piece vs single-total final-step titles distinct", () => {
+    expect(PROPERTY_TAX_MATH_TOTAL_STEP_TITLE).toMatch(/pieces/i);
+    expect(PROPERTY_TAX_MATH_TOTAL_STEP_TITLE_SINGLE).toMatch(/estimated tax bill/i);
+    expect(PROPERTY_TAX_MATH_TOTAL_STEP_TITLE_SINGLE).not.toBe(
+      PROPERTY_TAX_MATH_TOTAL_STEP_TITLE,
+    );
+    expect(PROPERTY_TAX_MATH_TEACHING_SAMPLE_NOTE).toMatch(/sample property/i);
   });
 });

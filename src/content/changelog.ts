@@ -45,6 +45,16 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.33.0",
+    date: "2026-10-19",
+    title: "Walkthrough from appraised value to the tax bill",
+    sections: {
+      added: [
+        "On the property report, the Two numbers section now shows current appraised value and total mills, and walks through how those turn into the tax bill.",
+      ],
+    },
+  },
+  {
     version: "5.32.0",
     date: "2026-10-17",
     title: "Home walkthrough from appraised value to mill levy dollars",

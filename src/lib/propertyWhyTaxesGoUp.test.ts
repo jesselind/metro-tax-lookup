@@ -8,8 +8,10 @@ import {
   appraisedValueByTaxYear,
   formatAppraisedChangeFaceLine,
   formatAppraisedChangeFaceLines,
+  formatAppraisedCurrentFaceLine,
   formatMillsChangeFaceLine,
   formatMillsChangeFaceLines,
+  formatMillsCurrentFaceLine,
   parcelTotalMillsByTaxYear,
   resolvePropertyWhyTaxesGoUpModel,
 } from "@/lib/propertyWhyTaxesGoUp";
@@ -79,14 +81,39 @@ describe("resolvePropertyWhyTaxesGoUpModel", () => {
       countyId: "arapahoe",
       valuationHistory: null,
       priorYearValuesGap: true,
+      currentAppraisedDollars: 584_100,
+      appraisedYear: 2026,
+      currentTotalMills: 183.894,
+      millsYear: 2025,
     });
     expect(model.mode).toBe("property");
     if (model.mode !== "property") return;
     expect(model.propertyValue).toEqual({ kind: "county_gap" });
+    expect(model.currentAppraised).toEqual({ year: 2026, value: 584_100 });
+    expect(model.currentMills).toEqual({ year: 2025, value: 183.894 });
     expect(model.millLevy.endValue - model.millLevy.startValue).toBe(
       model.millLevy.delta,
     );
     expect(model.millLevy.direction).toMatch(/higher|lower|unchanged/);
+  });
+
+  it("omits current faces when dollars or mills are missing", () => {
+    const model = resolvePropertyWhyTaxesGoUpModel({
+      levyLineCodes: ["0101"],
+      countyId: "arapahoe",
+      valuationHistory: null,
+      priorYearValuesGap: true,
+      currentAppraisedDollars: 0,
+      appraisedYear: 2026,
+      currentTotalMills: 183.894,
+      millsYear: null,
+    });
+    expect(model.mode).toBe("property");
+    if (model.mode !== "property") return;
+    expect(model.currentAppraised).toBeNull();
+    // millsYear falls back to latest mill-series year
+    expect(model.currentMills?.value).toBe(183.894);
+    expect(model.currentMills?.year).toBeGreaterThanOrEqual(2025);
   });
 
   it("Douglas oddity: property_missing when gap flag off and no history", () => {
@@ -175,6 +202,15 @@ describe("resolvePropertyWhyTaxesGoUpModel", () => {
 });
 
 describe("face lines", () => {
+  it("formats current appraised and mills amounts without years", () => {
+    expect(
+      formatAppraisedCurrentFaceLine({ year: 2026, value: 584_100 }),
+    ).toBe("$584,100");
+    expect(
+      formatMillsCurrentFaceLine({ year: 2025, value: 183.894 }),
+    ).toBe("183.894 mills");
+  });
+
   it("formats dollar and mill-levy percent change lines", () => {
     expect(
       formatAppraisedChangeFaceLine({

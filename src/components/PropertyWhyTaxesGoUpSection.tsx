@@ -7,19 +7,22 @@
 
 /**
  * Locked property report: same WhyTaxesGoUpBar as unlocked home, with optional
- * property faces when publishable. Jump label is temporary "Summary"; heading
- * matches home sentence in dashboard section-title style.
+ * property faces when publishable, plus collapsed From appraised value to a
+ * tax bill walkthrough when parcel teaching values are available.
  */
 import {
   WhyTaxesGoUpBar,
   WHY_TAXES_GO_UP_HEADING,
 } from "@/components/WhyTaxesGoUpBar";
+import { PropertyTaxMathTeaching } from "@/components/PropertyTaxMathTeaching";
 import { DashboardSectionJumpHeading } from "@/components/HomeDashboardJumpIcon";
 import {
   HOME_DASHBOARD_JUMP_SCROLL_MT_CLASS,
   HOME_WHY_TAXES_GO_UP_SUMMARY_HEADING_ID,
   HOME_WHY_TAXES_GO_UP_SUMMARY_ID,
 } from "@/lib/homeDashboardJumps";
+import { jumpToLevyStack } from "@/lib/jumpToLevyStack";
+import type { PropertyTaxMathTeachingValues } from "@/lib/propertyTaxMathTeaching";
 import type { PropertyWhyTaxesGoUpModel } from "@/lib/propertyWhyTaxesGoUp";
 import {
   DASHBOARD_SECTION_ARRIVE_TARGET_CLASS,
@@ -31,12 +34,17 @@ export function PropertyWhyTaxesGoUpSection({
   countyId,
   hasSaleHistory = false,
   parcelRecordHref = null,
+  teachingValues = null,
 }: {
   model: PropertyWhyTaxesGoUpModel;
   countyId: string;
   hasSaleHistory?: boolean;
   parcelRecordHref?: string | null;
+  /** Parcel walkthrough values; omit or null when data is incomplete. */
+  teachingValues?: PropertyTaxMathTeachingValues | null;
 }) {
+  const hasTeaching = teachingValues != null;
+
   return (
     <section
       id={HOME_WHY_TAXES_GO_UP_SUMMARY_ID}
@@ -51,9 +59,16 @@ export function PropertyWhyTaxesGoUpSection({
       >
         {WHY_TAXES_GO_UP_HEADING}
       </DashboardSectionJumpHeading>
-      <div className="w-full">
+      <div
+        className={
+          hasTeaching
+            ? "mt-6 w-full overflow-hidden rounded-lg ring-1 ring-slate-200/90"
+            : "w-full"
+        }
+      >
         <WhyTaxesGoUpBar
           idPrefix="property-why-taxes"
+          className={hasTeaching ? "mt-0 rounded-none" : undefined}
           property={
             model.mode === "property"
               ? {
@@ -65,6 +80,17 @@ export function PropertyWhyTaxesGoUpSection({
               : undefined
           }
         />
+        {hasTeaching ? (
+          <PropertyTaxMathTeaching
+            idPrefix="property-tax-math"
+            values={teachingValues}
+            context="property"
+            collapsedByDefault
+            attachBelowBar
+            className="mt-0"
+            onJumpToLevyStack={jumpToLevyStack}
+          />
+        ) : null}
       </div>
     </section>
   );

@@ -8,7 +8,8 @@
 /**
  * Unlocked home: teaching block for why property taxes go up (valuation + mill levy),
  * plus a vertical sample walkthrough (rates → appraised → assessed → mills → bill).
- * Same two-lever bar chrome as locked Own Summary; math steps are home-only for now.
+ * Same two-lever bar chrome as locked Two numbers; sample props keep this path
+ * visually unchanged when the locked report uses the same teaching component.
  */
 import {
   WhyTaxesGoUpBar,

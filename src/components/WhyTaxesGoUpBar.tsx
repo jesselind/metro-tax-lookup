@@ -6,11 +6,12 @@
 "use client";
 
 /**
- * One Property value | Mill levy bar for unlocked home and locked Own Summary.
+ * One Property value | Mill levy bar for unlocked home and locked Two numbers.
  * Home / generic: teaching gloss only. Property mode: same chrome + optional
- * bottom-right faces (change / gap / missing). Change teaching copy or bar
- * styles here once for both surfaces.
+ * current-year amounts above change / gap / missing faces. Change teaching copy
+ * or bar styles here once for both surfaces.
  */
+import type { ReactNode } from "react";
 import { useId } from "react";
 import { ChartPieIcon, HomeModernIcon } from "@heroicons/react/24/outline";
 import {
@@ -36,8 +37,10 @@ import { jumpToParcelSaleHistory } from "@/lib/jumpToParcelSaleHistory";
 import {
   formatAppraisedChangeFaceLine,
   formatAppraisedChangeFaceLines,
+  formatAppraisedCurrentFaceLine,
   formatMillsChangeFaceLine,
   formatMillsChangeFaceLines,
+  formatMillsCurrentFaceLine,
   MILL_LEVY_TEACHING_SUBTEXT,
   PROPERTY_VALUE_COUNTY_GAP_FACE,
   PROPERTY_VALUE_PROPERTY_MISSING_FACE,
@@ -57,11 +60,19 @@ const WHY_TAXES_PROPERTY_FACE_CLASS =
   "max-w-full text-center font-bold tabular-nums leading-tight tracking-tight text-white text-[clamp(1.5rem,15cqw,2.75rem)]";
 
 /**
- * Arapahoe / missing-history warning — same family, lower max so long copy
- * does not dominate next to a short `%` + direction icon face.
+ * Current appraised / mills when a change or gap face sits below — one step
+ * quieter so the delta (or gap status) stays the punchline.
+ */
+const WHY_TAXES_CURRENT_FACE_CONTEXT_CLASS =
+  "max-w-full text-center font-bold tabular-nums leading-tight tracking-tight text-white text-[clamp(1.25rem,11cqw,1.875rem)]";
+
+/**
+ * Arapahoe / missing-history warning — mono + medium so it reads as a
+ * status/gap message, not another pretty payoff figure. Lower max so long
+ * copy does not dominate next to a short `%` + direction icon face.
  */
 const WHY_TAXES_COUNTY_GAP_FACE_TEXT_CLASS =
-  "max-w-full text-center font-bold leading-tight tracking-tight text-white text-[clamp(1.25rem,11cqw,1.875rem)]";
+  "max-w-full text-center font-mono font-medium leading-tight tracking-tight text-white text-[clamp(1.25rem,11cqw,1.875rem)]";
 
 /** `since YYYY` — same container scale, one step quieter than the change line. */
 const WHY_TAXES_PROPERTY_FACE_SINCE_CLASS =
@@ -71,6 +82,29 @@ const WHY_TAXES_CHANGE_FACE_STACK_CLASS =
   "flex w-full min-w-0 flex-col items-center text-center";
 
 const WHY_TAXES_CHANGE_FACE_AMOUNT_ROW_CLASS = `${WHY_TAXES_PROPERTY_FACE_CLASS} flex flex-wrap items-center justify-center gap-x-2 gap-y-1`;
+
+function WhyTaxesGoUpCurrentFaceStack({
+  amountLine,
+  size = "loud",
+}: {
+  amountLine: string;
+  /** `context` when change/gap sits below; `loud` when current is alone. */
+  size?: "loud" | "context";
+}) {
+  return (
+    <div className={WHY_TAXES_CHANGE_FACE_STACK_CLASS}>
+      <p
+        className={
+          size === "context"
+            ? WHY_TAXES_CURRENT_FACE_CONTEXT_CLASS
+            : WHY_TAXES_PROPERTY_FACE_CLASS
+        }
+      >
+        {amountLine}
+      </p>
+    </div>
+  );
+}
 
 function WhyTaxesGoUpChangeFaceStack({
   amountLine,
@@ -107,6 +141,25 @@ function WhyTaxesGoUpChangeFaceStack({
       {sinceLine != null ? (
         <p className={WHY_TAXES_PROPERTY_FACE_SINCE_CLASS}>{sinceLine}</p>
       ) : null}
+    </div>
+  );
+}
+
+/** Current-year amount on top; existing change / gap face below when present. */
+function WhyTaxesGoUpLeverFaceStack({
+  current,
+  below,
+}: {
+  current?: ReactNode;
+  below?: ReactNode;
+}) {
+  if (current == null && below == null) return null;
+  if (current == null) return <>{below}</>;
+  if (below == null) return <>{current}</>;
+  return (
+    <div className="flex w-full min-w-0 flex-col items-center gap-3 text-center">
+      {current}
+      {below}
     </div>
   );
 }
@@ -185,7 +238,7 @@ export type WhyTaxesGoUpBarPropertyProps = {
 
 /**
  * Shared two-lever bar. Omit `property` for home / generic teaching; pass it
- * for locked Own Summary faces.
+ * for locked Two numbers faces.
  */
 export function WhyTaxesGoUpBar({
   idPrefix,
@@ -198,13 +251,15 @@ export function WhyTaxesGoUpBar({
 }) {
   const propertyValue = property?.model.propertyValue;
   const millLevy = property?.model.millLevy;
+  const currentAppraised = property?.model.currentAppraised ?? null;
+  const currentMills = property?.model.currentMills ?? null;
   const countyId = property?.countyId ?? "";
   const hasSaleHistory = property?.hasSaleHistory ?? false;
   const parcelRecordHref = property?.parcelRecordHref ?? null;
 
   const propertyBody = PROPERTY_VALUE_TEACHING_SUBTEXT;
 
-  const propertyFace =
+  const propertyBelowFace =
     propertyValue?.kind === "change" ? (
       <WhyTaxesGoUpChangeFaceStack
         {...formatAppraisedChangeFaceLines(propertyValue.face)}
@@ -219,10 +274,44 @@ export function WhyTaxesGoUpBar({
       </p>
     ) : undefined;
 
+  const propertyCurrentFace =
+    currentAppraised != null ? (
+      <WhyTaxesGoUpCurrentFaceStack
+        amountLine={formatAppraisedCurrentFaceLine(currentAppraised)}
+        size={propertyBelowFace != null ? "context" : "loud"}
+      />
+    ) : undefined;
+
+  const propertyFace =
+    propertyCurrentFace != null || propertyBelowFace != null ? (
+      <WhyTaxesGoUpLeverFaceStack
+        current={propertyCurrentFace}
+        below={propertyBelowFace}
+      />
+    ) : undefined;
+
   const millsFaceLines =
     millLevy != null ? formatMillsChangeFaceLines(millLevy) : null;
   const millsChangeLine =
     millLevy != null ? formatMillsChangeFaceLine(millLevy) : null;
+  const millsBelowFace =
+    millsFaceLines != null ? (
+      <WhyTaxesGoUpChangeFaceStack {...millsFaceLines} />
+    ) : undefined;
+  const millsCurrentFace =
+    currentMills != null ? (
+      <WhyTaxesGoUpCurrentFaceStack
+        amountLine={formatMillsCurrentFaceLine(currentMills)}
+        size={millsBelowFace != null ? "context" : "loud"}
+      />
+    ) : undefined;
+  const millsFace =
+    millsCurrentFace != null || millsBelowFace != null ? (
+      <WhyTaxesGoUpLeverFaceStack
+        current={millsCurrentFace}
+        below={millsBelowFace}
+      />
+    ) : undefined;
 
   const propertyFooter =
     propertyValue?.kind === "county_gap" ? (
@@ -242,14 +331,43 @@ export function WhyTaxesGoUpBar({
       />
     );
 
-  const propertyListitemAriaLabel =
+  const propertyCurrentAria =
+    currentAppraised != null
+      ? formatAppraisedCurrentFaceLine(currentAppraised)
+      : null;
+  const propertyBelowAria =
     propertyValue?.kind === "county_gap"
-      ? `Property value. ${PROPERTY_VALUE_TEACHING_SUBTEXT}. ${COUNTY_SERVICE_GAP_CALLOUT_TITLE}. ${PROPERTY_VALUE_COUNTY_GAP_FACE}`
+      ? `${COUNTY_SERVICE_GAP_CALLOUT_TITLE}. ${PROPERTY_VALUE_COUNTY_GAP_FACE}`
       : propertyValue?.kind === "property_missing"
-        ? `Property value. ${PROPERTY_VALUE_TEACHING_SUBTEXT}. ${PROPERTY_VALUE_PROPERTY_MISSING_FACE}`
+        ? PROPERTY_VALUE_PROPERTY_MISSING_FACE
         : propertyValue?.kind === "change"
-          ? `Property value. ${PROPERTY_VALUE_TEACHING_SUBTEXT}. ${formatAppraisedChangeFaceLine(propertyValue.face)}`
-          : undefined;
+          ? formatAppraisedChangeFaceLine(propertyValue.face)
+          : null;
+  const propertyListitemAriaLabel =
+    propertyCurrentAria != null || propertyBelowAria != null
+      ? [
+          "Property value.",
+          PROPERTY_VALUE_TEACHING_SUBTEXT + ".",
+          propertyCurrentAria,
+          propertyBelowAria,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : undefined;
+
+  const millsCurrentAria =
+    currentMills != null ? formatMillsCurrentFaceLine(currentMills) : null;
+  const millsListitemAriaLabel =
+    millsCurrentAria != null || millsChangeLine != null
+      ? [
+          "Mill levy.",
+          MILL_LEVY_TEACHING_SUBTEXT + ".",
+          millsCurrentAria,
+          millsChangeLine,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : undefined;
 
   return (
     <WhyTaxesGoUpTwoSegmentBar
@@ -268,13 +386,10 @@ export function WhyTaxesGoUpBar({
         {
           key: "mill-levy",
           title: "Mill levy",
-          barClassName: "bg-rose-700",
+          barClassName: "bg-amber-700",
           Icon: ChartPieIcon,
           body: MILL_LEVY_TEACHING_SUBTEXT,
-          face:
-            millsFaceLines != null ? (
-              <WhyTaxesGoUpChangeFaceStack {...millsFaceLines} />
-            ) : undefined,
+          face: millsFace,
           footer: (
             <GlossaryTermPopover
               termId="term-mill-levy-total"
@@ -284,10 +399,7 @@ export function WhyTaxesGoUpBar({
               ariaLabel="Brief definition of mill levy total"
             />
           ),
-          listitemAriaLabel:
-            millsChangeLine != null
-              ? `Mill levy. ${MILL_LEVY_TEACHING_SUBTEXT}. ${millsChangeLine}`
-              : undefined,
+          listitemAriaLabel: millsListitemAriaLabel,
         },
       ]}
     />

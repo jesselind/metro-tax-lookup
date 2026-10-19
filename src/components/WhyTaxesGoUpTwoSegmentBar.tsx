@@ -6,7 +6,7 @@
 "use client";
 
 /**
- * Shared two-segment bar chrome for home teaching and property-report Summary.
+ * Shared two-segment bar chrome for home teaching and property-report Two numbers.
  * Mobile-first (Tailwind): unprefixed = stacked; `xs:` (30rem) = side-by-side
  * with CSS subgrid. Icon + title share one row. Optional faceEyebrow sits tight
  * above the loud face (e.g. COUNTY DATA GAP); empty eyebrow cells still occupy
@@ -46,7 +46,7 @@ export const WHY_TAXES_GO_UP_WHATS_THIS_TRIGGER_CLASS =
 
 export function WhyTaxesGoUpTwoSegmentBar({
   segments,
-  className = "mt-6",
+  className = "mt-6 rounded-lg",
 }: {
   segments: readonly WhyTaxesGoUpBarSegment[];
   className?: string;
@@ -60,7 +60,7 @@ export function WhyTaxesGoUpTwoSegmentBar({
 
   return (
     <div
-      className={`${className} grid grid-cols-1 overflow-hidden rounded-lg xs:grid-cols-2 ${
+      className={`${className} grid grid-cols-1 overflow-hidden xs:grid-cols-2 ${
         totalRows === 5
           ? "xs:[grid-template-rows:auto_auto_auto_auto_auto]"
           : totalRows === 4
