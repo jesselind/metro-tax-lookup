@@ -57,8 +57,10 @@ export function residentialLocalActualValueReduction(
 }
 
 /**
- * Teach the haircut on locked residential dual-rate parcels for assessment
- * years where the statute applies. Home sample stays simplified (no haircut).
+ * Year + dual-rate gate for the residential local haircut (2026+). Home sample
+ * stays simplified (no haircut). Matching parcel local assessed is a separate
+ * check in `buildPropertyTaxMathTeachingValues` (Arapahoe fail closed;
+ * Douglas Realware may omit the step and still teach).
  */
 export function shouldTeachResidentialLocalActualValueReduction(
   assessmentYear: number | null | undefined,

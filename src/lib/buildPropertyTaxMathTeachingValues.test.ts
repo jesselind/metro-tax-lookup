@@ -160,23 +160,70 @@ describe("buildPropertyTaxMathTeachingValues", () => {
     expect(values.residentialLocalHaircut).toBeNull();
   });
 
-  it("returns null when the haircut times local rate does not match local assessed", () => {
+  it("opens Douglas 2026 dual-rate teaching with Realware local (R0399058) and omits haircut step", () => {
+    const profile = {
+      mode: "residential_dual" as const,
+      assessedRateLabel: "6.8%",
+      showSchoolAssessedRow: true,
+    };
+    const lines = [
+      { authority: "DOUGLAS COUNTY SCHOOL DIST", mills: 20, levyLineCode: "1001" },
+      { authority: "DOUGLAS COUNTY", mills: 16.5, levyLineCode: "2998" },
+    ];
     expect(
       buildPropertyTaxMathTeachingValues({
-        appraisedDollars: 584_100,
-        localAssessedDollars: 40_000, // not 525_690 × 6.8%
-        schoolAssessedDollars: 41_179,
-        levyLines: [
-          { authority: "SCHOOL DIST", mills: 40, levyLineCode: "1001" },
-          { authority: "COUNTY", mills: 16, levyLineCode: "2998" },
-        ],
-        countyId: "arapahoe",
-        assessmentProfile: {
-          mode: "residential_dual",
-          assessedRateLabel: "6.8%",
-          showSchoolAssessedRow: true,
-        },
+        appraisedDollars: 641_560,
+        localAssessedDollars: 43_620,
+        schoolAssessedDollars: 45_230,
+        levyLines: lines,
+        countyId: "douglas",
+        assessmentProfile: profile,
         assessmentYear: 2026,
+      }),
+    ).toBeNull();
+    const values = buildPropertyTaxMathTeachingValues({
+      appraisedDollars: 641_560,
+      localAssessedDollars: 43_620,
+      schoolAssessedDollars: 45_230,
+      levyLines: lines,
+      countyId: "douglas",
+      propertyTaxEstimateMode: "realwareTaxDollars",
+      assessmentProfile: profile,
+      assessmentYear: 2026,
+    });
+    expect(values).not.toBeNull();
+    if (values == null) return;
+    expect(values.localAssessedDollars).toBe(43_620);
+    expect(values.schoolAssessedDollars).toBe(45_230);
+    expect(values.residentialLocalHaircut).toBeNull();
+    expect(values.stackLines.map((l) => l.key)).toEqual(["school", "local"]);
+    expect(
+      propertyTaxMathTeachingReconcilesToLevyStack(values, lines, "douglas"),
+    ).toBe(true);
+  });
+
+  it("returns null when the haircut times local rate does not match local assessed", () => {
+    const opts = {
+      appraisedDollars: 584_100,
+      localAssessedDollars: 40_000, // not 525_690 × 6.8%
+      schoolAssessedDollars: 41_179,
+      levyLines: [
+        { authority: "SCHOOL DIST", mills: 40, levyLineCode: "1001" },
+        { authority: "COUNTY", mills: 16, levyLineCode: "2998" },
+      ],
+      countyId: "arapahoe",
+      assessmentProfile: {
+        mode: "residential_dual" as const,
+        assessedRateLabel: "6.8%",
+        showSchoolAssessedRow: true,
+      },
+      assessmentYear: 2026,
+    };
+    expect(buildPropertyTaxMathTeachingValues(opts)).toBeNull();
+    expect(
+      buildPropertyTaxMathTeachingValues({
+        ...opts,
+        propertyTaxEstimateMode: "levyStackDollars",
       }),
     ).toBeNull();
   });

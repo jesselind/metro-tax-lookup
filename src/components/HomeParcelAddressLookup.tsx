@@ -1612,6 +1612,8 @@ export function HomeParcelAddressLookup({
         levyLoadedMeta.parcelValues.totalActual ?? record.totalActual,
       localAssessedDollars:
         levyLoadedMeta.parcelValues.totalAssessed ?? record.totalAssessed,
+      // Required for Douglas haircut-mismatch teaching; Arapahoe still fail-closed.
+      propertyTaxEstimateMode: activeCountyConfig.propertyTaxEstimateMode,
       schoolAssessedDollars: record.schoolAssessedTotal,
       levyLines: levyLines.map((line) => ({
         authority: line.authority,
@@ -1632,6 +1634,7 @@ export function HomeParcelAddressLookup({
     levyLoadedMeta,
     levyLines,
     activeCountyConfig.id,
+    activeCountyConfig.propertyTaxEstimateMode,
     parcelTaxYearForHistory,
     isBusinessPersonalAccount,
   ]);
