@@ -8,6 +8,14 @@
  * Shortened mill preview: school mills total vs other mills total (or one
  * combined bucket when single-rate). Returns null when the walkthrough cannot
  * be filled honestly.
+ *
+ * 2026+ residential dual-rate haircut: teach 10% of the first $700,000 of
+ * actual, then × 6.8% local, only when parcel local assessed equals that
+ * product. Arapahoe (`levyStackDollars`) fails closed on mismatch. Douglas
+ * (`realwareTaxDollars`) still teaches using Realware local assessed so the
+ * walkthrough matches Property details and mill levy dollars, and omits the
+ * haircut step. Do not substitute Douglas Estimated Taxes worksheet local.
+ * School assessed stays Realware alternate. See /sources Douglas methodology.
  */
 
 import {
@@ -33,6 +41,7 @@ import {
   PROPERTY_TAX_MATH_SCHOOL_COLOR,
   type PropertyTaxMathTeachingValues,
 } from "@/lib/propertyTaxMathTeaching";
+import type { PropertyTaxEstimateMode } from "@/lib/propertyTaxEstimate";
 import {
   residentialLocalActualValueReduction,
   shouldTeachResidentialLocalActualValueReduction,
@@ -46,9 +55,69 @@ export type BuildPropertyTaxMathTeachingValuesOpts = {
   countyId: string | null | undefined;
   assessmentProfile: ParcelAssessmentProfile;
   assessmentYear: number | null | undefined;
+  /**
+   * Face-tax mode from CountyConfig. Pass through from the locked report.
+   * Douglas `realwareTaxDollars` may omit the haircut step when Realware local
+   * assessed ≠ worksheet math; Arapahoe `levyStackDollars` must still return
+   * null on that mismatch. Do not infer Douglas from countyId alone.
+   */
+  propertyTaxEstimateMode?: PropertyTaxEstimateMode | null;
   /** True for business personal property accounts (DPT business-and-industry cite). */
   isPersonalProperty?: boolean;
 };
+
+/** True only when both county and face mode are Douglas Realware. */
+function isDouglasRealwarePropertyTaxFace(
+  countyId: string | null | undefined,
+  mode: PropertyTaxEstimateMode | null | undefined,
+): boolean {
+  return countyId === "douglas" && mode === "realwareTaxDollars";
+}
+
+/**
+ * Whether to include the legislative haircut in teaching, or hide the
+ * walkthrough.
+ *
+ * - Local matches haircut × 6.8%: include the haircut step (Arapahoe and Douglas).
+ * - Mismatch + Douglas Realware face: include teaching, haircut null (keep
+ *   Realware local; mill-levy total still uses that local).
+ * - Mismatch otherwise (including Arapahoe): `{ ok: false }` so the builder
+ *   returns null. countyId `"douglas"` without `realwareTaxDollars` also fails
+ *   closed.
+ */
+function residentialLocalHaircutForTeaching(
+  opts: BuildPropertyTaxMathTeachingValuesOpts,
+  appraised: number,
+  localAssessed: number,
+):
+  | { ok: true; haircut: ReturnType<typeof residentialLocalActualValueReduction> }
+  | { ok: false } {
+  if (
+    !shouldTeachResidentialLocalActualValueReduction(
+      opts.assessmentYear,
+      opts.assessmentProfile.mode,
+    )
+  ) {
+    return { ok: true, haircut: null };
+  }
+  const haircut = residentialLocalActualValueReduction(appraised);
+  if (haircut == null) return { ok: true, haircut: null };
+  const localFromHaircut = Math.round(
+    haircut.adjustedActualDollars * COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE,
+  );
+  if (localFromHaircut === Math.round(localAssessed)) {
+    return { ok: true, haircut };
+  }
+  if (
+    isDouglasRealwarePropertyTaxFace(
+      opts.countyId,
+      opts.propertyTaxEstimateMode,
+    )
+  ) {
+    return { ok: true, haircut: null };
+  }
+  return { ok: false };
+}
 
 function roundMills(n: number): number {
   return Math.round(n * 1000) / 1000;
@@ -79,7 +148,8 @@ function sumMillsBySchoolBucket(
 
 /**
  * Parcel teaching values, or null when appraised, assessed, or mills are
- * missing so the walkthrough would invent numbers.
+ * missing, or when 2026+ haircut math does not match local assessed outside
+ * the Douglas Realware exception above.
  */
 export function buildPropertyTaxMathTeachingValues(
   opts: BuildPropertyTaxMathTeachingValuesOpts,
@@ -138,20 +208,13 @@ export function buildPropertyTaxMathTeachingValues(
   const dualActive =
     Math.round(schoolAssessed) !== Math.round(localAssessed);
 
-  const haircut = shouldTeachResidentialLocalActualValueReduction(
-    opts.assessmentYear,
-    profile.mode,
-  )
-    ? residentialLocalActualValueReduction(appraised)
-    : null;
-
-  // Haircut equation must reconcile to county local assessed before teaching.
-  if (haircut != null) {
-    const localFromHaircut = Math.round(
-      haircut.adjustedActualDollars * COLORADO_DPT_2026_RESIDENTIAL_LOCAL_RATE,
-    );
-    if (localFromHaircut !== Math.round(localAssessed)) return null;
-  }
+  const haircutResult = residentialLocalHaircutForTeaching(
+    opts,
+    appraised,
+    localAssessed,
+  );
+  if (!haircutResult.ok) return null;
+  const haircut = haircutResult.haircut;
 
   if (!dualActive || schoolMills <= 0) {
     // One mill bucket when school mills are absent or assessed bases match;

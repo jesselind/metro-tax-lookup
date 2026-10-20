@@ -45,6 +45,16 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.34.1",
+    date: "2026-10-20",
+    title: "Douglas Two numbers walkthrough on dual-rate homes",
+    sections: {
+      fixed: [
+        "On Douglas residential parcels, the Two numbers walkthrough now opens even when county local assessed does not match the 2026 legislative local adjustment. It uses the same local assessed as Property details and the mill levy total, and skips the haircut step when those numbers would disagree.",
+      ],
+    },
+  },
+  {
     version: "5.34.0",
     date: "2026-10-19",
     title: "School assessed on more Arapahoe home parcels",
