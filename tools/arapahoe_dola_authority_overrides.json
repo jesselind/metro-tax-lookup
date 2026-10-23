@@ -25,6 +25,11 @@
       "taxEntityId": "64174/1",
       "note": "Mart 4713; separate DOLA row from 4712 — South Platte levy (0.1) vs main drainage (0.9)."
     },
+    "W. ARAP. CONSERVATION DIS": {
+      "legalName": "West Arapahoe Conservation District",
+      "taxEntityId": "03080/1",
+      "note": "Mart AUTH 4744 truncates (W. ARAP.). Pin TE 03080/1 (0 mills). Soil conservation district (Title 35 art. 70). Fuzzy on truncated label otherwise misses the DOLA row."
+    },
 
     "SMFR FIRE PROTECTION DISTRICT": {
       "legalName": "South Metro Fire Rescue Fire Protection District",

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage | conservation). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -1053,6 +1053,61 @@
       ],
       "openGapIds": [
         "udfcd-south-platte-main-separate-levy"
+      ]
+    },
+    {
+      "id": "west-arapahoe-conservation-authority-chain",
+      "family": "conservation",
+      "match": {
+        "levyLineCode": "4744"
+      },
+      "authority": {
+        "displayName": "West Arapahoe Conservation District",
+        "countyListName": "W. ARAP. CONSERVATION DIS",
+        "governingBody": "board",
+        "whoGetsBody": "When this district collects a property-tax mill that qualified electors approved, that money pays for the district's conservation work, including soil and water conservation, erosion control, and related land stewardship in its area."
+      },
+      "summarySource": {
+        "text": "According to the 2024 Colorado Revised Statutes Title 35 § 35-70-109",
+        "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538"
+      },
+      "summary": {
+        "headlinePlain": "this district may levy property tax only after qualified electors approve it, and not more than one-half mill"
+      },
+      "mills": {
+        "stepBody": "County published rates for this authority have been 0.000 mills across the years we track. This line can still appear on your levy list even when it does not add property-tax dollars."
+      },
+      "measures": [
+        {
+          "stepId": "conservation-levy-limit-crs-35-70-109",
+          "kind": "conservation_levy_limit",
+          "electionMonthYear": "December 2024",
+          "titlePlain": "Property tax only after qualified electors approve it, capped at half a mill",
+          "detail": "this district may not impose a property-tax levy unless qualified electors of the district approve it, and that levy may not exceed one-half mill",
+          "approval": {
+            "label": "C.R.S. § 35-70-109",
+            "value": "Under this statute, no tax levy or assessment shall be imposed within a district unless it is first submitted to the qualified electors of the district and approved by a majority of the votes cast. The assessment on real property shall not exceed one-half of one mill.",
+            "source": {
+              "text": "Colorado Revised Statutes Title 35 (2024)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538"
+            }
+          },
+          "supportingFacts": [
+            {
+              "label": "Who may vote on a levy (C.R.S. § 35-70-104)",
+              "value": "For these districts, a qualified elector is a registered voter or corporation that owns land in the district, or an heir or devisee of that land (someone who inherits it from a deceased landowner).",
+              "sources": [
+                {
+                  "text": "Colorado Revised Statutes Title 35 (2024)",
+                  "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=531"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "openGapIds": [
+        "conservation-mill-election-unlocated"
       ]
     }
 

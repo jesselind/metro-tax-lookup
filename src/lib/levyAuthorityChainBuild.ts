@@ -32,6 +32,7 @@ import {
   MUNICIPAL_GID_GOVERNMENT_BILL_NAME_DEFAULT,
   REGIONAL_TRANSPORTATION_GOVERNMENT_BILL_NAME_DEFAULT,
   URBAN_DRAINAGE_GOVERNMENT_BILL_NAME_DEFAULT,
+  CONSERVATION_GOVERNMENT_BILL_NAME_DEFAULT,
   FACT_LABEL_COUNTY_LIST_NAME,
   FACT_VALUE_COUNTY_ELECTION_NOTICE,
   FACT_VALUE_COUNTY_SAMPLE_BALLOT,
@@ -172,9 +173,9 @@ export type LevyAuthorityChainSummarySpec = {
   headlinePlain?: string;
   /**
    * Election month/year (or city budget year) for voter/council summary paths.
-   * Omit on `municipal_gid` / `regional_transportation` (closed summary is
-   * attribution lead + headlinePlain;
-   * no election dating on that line).
+   * Omit on `municipal_gid` / `regional_transportation` / `conservation`
+   * (closed summary is attribution lead + headlinePlain; no election dating
+   * on that line).
    */
   headlineElection?: string;
   headlineNote?: string;
@@ -384,6 +385,9 @@ function governmentBillNameForRecord(
   if (record.family === "urban_drainage") {
     return URBAN_DRAINAGE_GOVERNMENT_BILL_NAME_DEFAULT;
   }
+  if (record.family === "conservation") {
+    return CONSERVATION_GOVERNMENT_BILL_NAME_DEFAULT;
+  }
   return "";
 }
 
@@ -433,7 +437,8 @@ function buildSummary(
   }
   if (
     record.family === "municipal_gid" ||
-    record.family === "regional_transportation"
+    record.family === "regional_transportation" ||
+    record.family === "conservation"
   ) {
     const headlinePlain = record.summary.headlinePlain?.trim();
     if (!headlinePlain) {
@@ -778,7 +783,8 @@ function buildMeasureStep(
   if (
     measure.kind === "city_authorization" ||
     measure.kind === "municipal_gid_board" ||
-    measure.kind === "regional_transportation_levy_limit"
+    measure.kind === "regional_transportation_levy_limit" ||
+    measure.kind === "conservation_levy_limit"
   ) {
     const titlePlain = measure.titlePlain?.trim();
     if (!titlePlain) {
@@ -868,6 +874,7 @@ function buildMeasureStep(
     measure.kind !== "city_authorization" &&
     measure.kind !== "municipal_gid_board" &&
     measure.kind !== "regional_transportation_levy_limit" &&
+    measure.kind !== "conservation_levy_limit" &&
     !omitDuplicateUnavailableFact
       ? [
           {
@@ -902,11 +909,13 @@ function buildMeasureStep(
         sources: [measure.resultsSource],
       });
     } else if (measure.approval) {
-      // municipal_gid_board / regional_transportation_levy_limit takeaway already
-      // carries approval.source; a second fact would repeat the same statute cite.
+      // municipal_gid_board / regional_transportation_levy_limit /
+      // conservation_levy_limit takeaway already carries approval.source; a
+      // second fact would repeat the same statute cite.
       if (
         measure.kind !== "municipal_gid_board" &&
-        measure.kind !== "regional_transportation_levy_limit"
+        measure.kind !== "regional_transportation_levy_limit" &&
+        measure.kind !== "conservation_levy_limit"
       ) {
         facts.push({
           label: measure.approval.label,
@@ -924,7 +933,8 @@ function buildMeasureStep(
   const takeawayKind =
     measure.kind === "city_authorization" ||
     measure.kind === "municipal_gid_board" ||
-    measure.kind === "regional_transportation_levy_limit";
+    measure.kind === "regional_transportation_levy_limit" ||
+    measure.kind === "conservation_levy_limit";
   return {
     id: measure.stepId,
     title: pack.ballotStepTitle(measure.ballotIssue, measure.kind, {

@@ -1,6 +1,6 @@
 {
   "name": "metro-tax-lookup",
-  "version": "5.34.1",
+  "version": "5.35.0",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
@@ -56,20 +56,24 @@
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-popover": "^1.1.15",
     "@tanstack/react-table": "^8.21.3",
-    "next": "^16.2.7",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "^16.2.7",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
   }
 }

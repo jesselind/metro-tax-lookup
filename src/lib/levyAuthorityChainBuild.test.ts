@@ -900,6 +900,60 @@ describe("levyAuthorityChainBuild", () => {
     ]);
   });
 
+  it("builds West Arapahoe Conservation from AUTH-derived zero mills and conservation_levy_limit", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "west-arapahoe-conservation-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const levyLimit = entry.steps.find(
+      (step) => step.id === "conservation-levy-limit-crs-35-70-109",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("conservation");
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(entry.summary).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 35 § 35-70-109, this district may levy property tax only after qualified electors approve it, and not more than one-half mill.",
+    );
+    expect(entry.summarySource?.text).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 35 § 35-70-109",
+    );
+    expect(entry.summary.startsWith(entry.summarySource!.text)).toBe(true);
+    expect(levyLimit?.title).toBe("Property-tax levy limit");
+    expect(levyLimit?.body.trim()).toBe("");
+    expect(levyLimit?.facts.map((fact) => fact.label)).toEqual([
+      "Property tax only after qualified electors approve it, capped at half a mill",
+      "Who may vote on a levy (C.R.S. § 35-70-104)",
+    ]);
+    expect(levyLimit?.facts[0]?.value).toContain("Colorado law says");
+    expect(levyLimit?.facts[0]?.value).toContain("one-half mill");
+    expect(levyLimit?.facts[0]?.sources[0]?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538",
+    );
+    expect(levyLimit?.facts[1]?.value).toContain("owns land");
+    expect(levyLimit?.facts[1]?.value).toContain("heir or devisee");
+    expect(entry.summarySource?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538",
+    );
+    expect(mills?.body).toContain("0.000 mills");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("No change in mills");
+    expect(mills?.facts[0]?.value).toContain("0.000");
+    expect(
+      entry.openGaps.some((g) => g.id === "conservation-mill-election-unlocated"),
+    ).toBe(true);
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "conservation-levy-limit-crs-35-70-109",
+    ]);
+  });
+
   it("builds Antelope Hills GID from AUTH-derived mills and municipal_gid_board", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "antelope-hills-gid-authority-chain",

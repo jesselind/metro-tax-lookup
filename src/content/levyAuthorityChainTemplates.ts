@@ -9,7 +9,7 @@
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
  * `metro`, `fire`, `library`, `city`, `municipal_gid`, `regional_transportation`,
- * `local_levy`, `urban_drainage`) inject
+ * `local_levy`, `urban_drainage`, `conservation`) inject
  * nouns, measure kinds, budget labels, and mills takeaways. Multiple
  * authorization steps belong in `measures[]` (chronological); closed summary
  * stays one short who/when line, with optional `also` elections.
@@ -62,6 +62,9 @@ export const LOCAL_LEVY_GOVERNMENT_BILL_NAME_DEFAULT = "the county";
 
 /** Default bill wording for urban_drainage entries when JSON omits `governmentBillName`. */
 export const URBAN_DRAINAGE_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
+
+/** Default bill wording for conservation entries when JSON omits `governmentBillName`. */
+export const CONSERVATION_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -120,7 +123,9 @@ export type LevyAuthorityChainFamily =
   /** County-collected local mill under a state program statute (not a special district). */
   | "local_levy"
   /** Title 32 art. 11 Urban Drainage and Flood Control District (MHFD). */
-  | "urban_drainage";
+  | "urban_drainage"
+  /** Title 35 art. 70 conservation district (Colorado Soil Conservation Act). */
+  | "conservation";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -183,6 +188,12 @@ export const OPEN_GAP_BODIES = {
    */
   "udfcd-south-platte-main-separate-levy":
     "County tax lists often show a separate main Urban Drainage & Flood mill (about 0.9 mills) in addition to this South Platte levy. That is a different bill line. This trail covers the South Platte mill only.",
+  /**
+   * Conservation district: statute requires a qualified-elector vote before any
+   * mill; we have not located that election for this district.
+   */
+  "conservation-mill-election-unlocated":
+    "State law says this district cannot collect a property-tax mill until qualified electors approve a levy. County property-tax tables show 0.000 mills for the years we track. We have not located a published mill-levy election for this district, so we cannot say whether qualified electors ever approved a levy that is not being collected today.",
 } as const;
 
 /**
@@ -225,6 +236,8 @@ export const MUNICIPAL_GID_AUTHORIZATION_STEP_BODY =
   "Official state and district records:";
 export const REGIONAL_TRANSPORTATION_AUTHORIZATION_STEP_BODY =
   "Official state and district records:";
+export const CONSERVATION_AUTHORIZATION_STEP_BODY =
+  "Official state and district records:";
 
 export type LevyAuthorityChainMeasureKind =
   | "override"
@@ -255,7 +268,12 @@ export type LevyAuthorityChainMeasureKind =
    * RTD property-tax levy limit under Title 32 art. 9 (C.R.S. § 32-9-120).
    * Bill-first `titlePlain` + `detail` + cited `approval` required.
    */
-  | "regional_transportation_levy_limit";
+  | "regional_transportation_levy_limit"
+  /**
+   * Conservation-district levy limit under Title 35 art. 70 (C.R.S. § 35-70-109).
+   * Bill-first `titlePlain` + `detail` + cited `approval` required.
+   */
+  | "conservation_levy_limit";
 
 const CITY_COUNCIL_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
@@ -276,6 +294,15 @@ const MUNICIPAL_GID_BODY_LEAD_PHRASES: Record<
 };
 
 const REGIONAL_TRANSPORTATION_BODY_LEAD_PHRASES: Record<
+  LevyAuthorityChainBodyLead,
+  string
+> = {
+  approved: "Colorado law says",
+  also_approved: "Colorado law also says",
+  earlier_approved: "Colorado law earlier said",
+};
+
+const CONSERVATION_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
   string
 > = {
@@ -1140,6 +1167,85 @@ const REGIONAL_TRANSPORTATION_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Default conservation "What changed?" chrome. Rate figures are AUTH-derived.
+ * Entry `mills.stepBody` may replace this takeaway (this district uses a
+ * zero-mill note).
+ */
+export const CONSERVATION_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this district each year.";
+
+/** Step title for statute-cited conservation-district levy limit. */
+export const CONSERVATION_LEVY_LIMIT_STEP_TITLE = "Property-tax levy limit";
+
+export const CONSERVATION_BUDGET_STEP_TITLE =
+  "What the district's budget says";
+
+export const FACT_LABEL_CONSERVATION_RECORD = "State or district record";
+export const FACT_VALUE_CONSERVATION_AUTHORIZATION_RECORD =
+  "Official state statute or district record linked";
+
+/**
+ * Conservation district pack (Title 35, art. 70 / Colorado Soil Conservation
+ * Act). First consumer: West Arapahoe Conservation District AUTH `4744`.
+ * AUTH-derived What changed?. Fold approval onto each measure (RTD-like).
+ * Closed summary: linked `summarySource` lead + plain `headlinePlain`.
+ * Kind shipped today: `conservation_levy_limit` (C.R.S. § 35-70-109).
+ * Do not invent a property-tax Ballot Issue; a mill still needs a
+ * qualified-elector vote (`openGap` `conservation-mill-election-unlocated`
+ * when that election is not located).
+ */
+const CONSERVATION_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: CONSERVATION_BUDGET_STEP_TITLE,
+  budgetFactLabel: "District budget",
+  millsStepBody: CONSERVATION_MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set(["conservation_levy_limit"]),
+  approvalStepTitle: STEP_TITLE_HOW_AUTHORIZED,
+  approvalStepBody: CONSERVATION_AUTHORIZATION_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_CONSERVATION_RECORD,
+  unavailableBallotFactValue: FACT_VALUE_CONSERVATION_AUTHORIZATION_RECORD,
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+    if (ballotIssue) {
+      return unavailableBallotMeasureBody(
+        ballotIssue,
+        electionMonthYear,
+        summaryAttribution,
+      );
+    }
+    return `This district's board authorized this in ${electionMonthYear}. We could not locate a separate public ballot PDF for the authorization.`;
+  },
+  ballotStepTitle(_ballotIssue, kind) {
+    switch (kind) {
+      case "conservation_levy_limit":
+        return CONSERVATION_LEVY_LIMIT_STEP_TITLE;
+      default:
+        throw new Error(
+          `conservation pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead) {
+    switch (kind) {
+      case "conservation_levy_limit": {
+        const lead = CONSERVATION_BODY_LEAD_PHRASES[bodyLead];
+        const trimmed = detail.trim();
+        if (!trimmed) {
+          throw new Error("conservation_levy_limit requires detail");
+        }
+        return `${lead} ${trimmed}${/[.!?]$/.test(trimmed) ? "" : "."}`;
+      }
+      default:
+        throw new Error(
+          `conservation pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
@@ -1154,6 +1260,7 @@ const FAMILY_PACKS: Record<
   regional_transportation: REGIONAL_TRANSPORTATION_PACK,
   local_levy: LOCAL_LEVY_PACK,
   urban_drainage: URBAN_DRAINAGE_PACK,
+  conservation: CONSERVATION_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -1164,9 +1271,9 @@ export function getAuthorityChainFamilyPack(
 
 /**
  * Metro, fire, library, city, municipal_gid, regional_transportation,
- * local_levy, and urban_drainage: What changed? mill figures come from the AUTH
- * series (not hand-authored current/prior fields). School and county still
- * author mills.
+ * local_levy, urban_drainage, and conservation: What changed? mill figures
+ * come from the AUTH series (not hand-authored current/prior fields). School
+ * and county still author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
@@ -1179,15 +1286,16 @@ export function usesAuthDerivedMills(
     family === "municipal_gid" ||
     family === "regional_transportation" ||
     family === "local_levy" ||
-    family === "urban_drainage"
+    family === "urban_drainage" ||
+    family === "conservation"
   );
 }
 
 /**
- * Metro, city, municipal_gid, and regional_transportation fold approval / vote
- * facts onto each measure step so several authorizations stay chronological.
- * School, county, fire, library, local_levy, and urban_drainage keep a trailing
- * How people voted step for certified totals.
+ * Metro, city, municipal_gid, regional_transportation, and conservation fold
+ * approval / vote facts onto each measure step so several authorizations stay
+ * chronological. School, county, fire, library, local_levy, and urban_drainage
+ * keep a trailing How people voted step for certified totals.
  */
 export function foldsApprovalOntoMeasures(
   family: LevyAuthorityChainFamily,
@@ -1196,7 +1304,8 @@ export function foldsApprovalOntoMeasures(
     family === "metro" ||
     family === "city" ||
     family === "municipal_gid" ||
-    family === "regional_transportation"
+    family === "regional_transportation" ||
+    family === "conservation"
   );
 }
 

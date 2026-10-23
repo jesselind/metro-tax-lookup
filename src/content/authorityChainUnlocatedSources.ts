@@ -174,6 +174,24 @@ export const AUTHORITY_CHAIN_UNLOCATED_SOURCES: readonly AuthorityChainUnlocated
       authorNote:
         "Trail cites sourced-records budget/minutes for $85k, 2027 payoff date, and Series 2006 budgeted principal. openGap municipal-gid-bond-debt-records-unlocated remains for remaining principal / remittance audit. Do not claim remittances were stolen.",
     },
+    {
+      id: "west-arapahoe-4744-mill-levy-election",
+      status: "open",
+      notedAsOf: "2026-10",
+      authorityLabel: "West Arapahoe Conservation District",
+      authCode: "4744",
+      measureLabel: "Qualified-elector mill levy election (C.R.S. § 35-70-109)",
+      sought:
+        "A Notice of Election, sample ballot, or certified yes/no tally for a West Arapahoe Conservation District mill-levy vote.",
+      lookedWhere:
+        "Arapahoe County Past Elections File Library listings for recent general elections, the district's public pages, and county mill tables for Tax Years 2018-2025 (all 0.000 mills). OSA local-government filings for this district are budget exemptions, not mill certifications.",
+      nextBest: {
+        text: "Colorado Revised Statutes Title 35 (2024) § 35-70-109",
+        url: "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538",
+      },
+      authorNote:
+        "conservation family cites C.R.S. § 35-70-109 for the half-mill ceiling and election gate. openGap conservation-mill-election-unlocated until a district mill election is located. Do not invent a Ballot Issue letter. Do not treat the WordPress district page as an official mill-authorization cite.",
+    },
   ];
 
 /** Open blockers shown on `/sources`. */

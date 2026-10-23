@@ -45,6 +45,16 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.35.0",
+    date: "2026-10-23",
+    title: "West Arapahoe Conservation District authority chain",
+    sections: {
+      added: [
+        "Who authorized this? for West Arapahoe Conservation District. County tables show 0.000 mills; state law allows a levy only after a district vote, and only up to one-half mill.",
+      ],
+    },
+  },
+  {
     version: "5.34.1",
     date: "2026-10-20",
     title: "Douglas Two numbers walkthrough on dual-rate homes",
