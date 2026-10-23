@@ -45,28 +45,28 @@ describe("levyAuthorityChain", () => {
     expect(cards).toHaveLength(HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT);
     // Append order in levy-authority-chain-entries.json; last three, newest first.
     expect(cards.map((c) => c.entry.id)).toEqual([
+      "west-arapahoe-conservation-authority-chain",
       "urban-drainage-flood-south-platte-authority-chain",
       "urban-drainage-flood-main-authority-chain",
-      "regional-transportation-district-authority-chain",
     ]);
     expect(cards[0]?.authorityDisplayName).toBe(
-      "Urban Drainage & Flood, South Platte Levy",
+      "West Arapahoe Conservation District",
     );
     expect(cards[0]?.lastYearPercentLabel).toBe("No change from last year");
     expect(cards[0]?.lastYearDirection).toBe("neutral");
-    expect(cards[0]?.levyLineCode).toBe("4713");
+    expect(cards[0]?.levyLineCode).toBe("4744");
     expect(cards[1]?.authorityDisplayName).toBe(
-      "Urban Drainage & Flood Control District",
+      "Urban Drainage & Flood, South Platte Levy",
     );
     expect(cards[1]?.lastYearPercentLabel).toBe("No change from last year");
     expect(cards[1]?.lastYearDirection).toBe("neutral");
-    expect(cards[1]?.levyLineCode).toBe("4712");
+    expect(cards[1]?.levyLineCode).toBe("4713");
     expect(cards[2]?.authorityDisplayName).toBe(
-      "Regional Transportation District",
+      "Urban Drainage & Flood Control District",
     );
     expect(cards[2]?.lastYearPercentLabel).toBe("No change from last year");
     expect(cards[2]?.lastYearDirection).toBe("neutral");
-    expect(cards[2]?.levyLineCode).toBe("4528");
+    expect(cards[2]?.levyLineCode).toBe("4712");
   });
 
   it("matches Douglas SMFR AUTH 4014 via cross-county registry", () => {

@@ -5,7 +5,7 @@
 
 /**
  * Derive metro / fire / library / city / municipal_gid /
- * regional_transportation / local_levy / urban_drainage
+ * regional_transportation / local_levy / urban_drainage / conservation
  * authority-chain "What changed?" blocks from the same AUTH mills-over-time
  * series the modal chart consumes ({@link authorityMillsSeries}). Numbers are
  * never hand-copied into the authority-chain JSON for those entries.

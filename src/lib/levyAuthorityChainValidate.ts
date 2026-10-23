@@ -77,6 +77,7 @@ const FAMILIES = new Set<LevyAuthorityChainFamily>([
   "regional_transportation",
   "local_levy",
   "urban_drainage",
+  "conservation",
 ]);
 const MEASURE_KINDS = new Set([
   "override",
@@ -89,6 +90,7 @@ const MEASURE_KINDS = new Set([
   "city_authorization",
   "municipal_gid_board",
   "regional_transportation_levy_limit",
+  "conservation_levy_limit",
 ]);
 const BODY_LEADS = new Set(["approved", "also_approved", "earlier_approved"]);
 const BALLOT_TEXT_KINDS = new Set(["notice", "sample_ballot", "unavailable"]);
@@ -132,8 +134,8 @@ function countOccurrences(haystack: string, needle: string): number {
  * reuse it via attributedVotersApprovalLead stay coherent.
  *
  * Family packs differ only in the words after the lead (voters / eligible
- * electors / City Council / plain `headlinePlain` for municipal_gid and
- * regional_transportation). Do not
+ * electors / City Council / plain `headlinePlain` for municipal_gid,
+ * regional_transportation, and conservation). Do not
  * invent a second placement mode (for example parenthetical-only cites).
  */
 function assertSummarySourcePlacement(options: {
@@ -344,7 +346,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
     byEntryId.set(id, true);
 
     if (!FAMILIES.has(record.family as LevyAuthorityChainFamily)) {
-      fail(`[${id}] family must be school, county, metro, fire, library, city, municipal_gid, regional_transportation, local_levy, or urban_drainage`);
+      fail(`[${id}] family must be school, county, metro, fire, library, city, municipal_gid, regional_transportation, local_levy, urban_drainage, or conservation`);
     }
     const family = record.family as LevyAuthorityChainFamily;
     const familyPack = getAuthorityChainFamilyPack(family);
@@ -467,10 +469,11 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         family !== "municipal_gid" &&
         family !== "regional_transportation" &&
         family !== "local_levy" &&
-        family !== "urban_drainage"
+        family !== "urban_drainage" &&
+        family !== "conservation"
       ) {
         fail(
-          `[${id}] authority.governmentBillName only applies to county, metro, fire, library, city, municipal_gid, regional_transportation, local_levy, or urban_drainage family entries`,
+          `[${id}] authority.governmentBillName only applies to county, metro, fire, library, city, municipal_gid, regional_transportation, local_levy, urban_drainage, or conservation family entries`,
         );
       }
     }
@@ -544,7 +547,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
     } else if (
       family === "municipal_gid" ||
-      family === "regional_transportation"
+      family === "regional_transportation" ||
+      family === "conservation"
     ) {
       if (!isNonEmptyString(record.summary.headlinePlain)) {
         fail(`[${id}] ${family} summary.headlinePlain required`);
@@ -568,13 +572,14 @@ export function validateLevyAuthorityChainData(data: unknown): void {
       }
       if (record.summary.headlinePlain !== undefined) {
         fail(
-          `[${id}] summary.headlinePlain only applies to metro, city, municipal_gid, or regional_transportation entries`,
+          `[${id}] summary.headlinePlain only applies to metro, city, municipal_gid, regional_transportation, or conservation entries`,
         );
       }
     }
     if (
       family !== "municipal_gid" &&
       family !== "regional_transportation" &&
+      family !== "conservation" &&
       !isNonEmptyString(record.summary.headlineElection)
     ) {
       fail(`[${id}] summary.headlineElection required`);
@@ -814,13 +819,15 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         family === "metro" ||
         family === "city" ||
         family === "municipal_gid" ||
-        family === "regional_transportation"
+        family === "regional_transportation" ||
+        family === "conservation"
       ) {
         if (
           (measure.kind === "metro_commitment" ||
             measure.kind === "city_authorization" ||
             measure.kind === "municipal_gid_board" ||
-            measure.kind === "regional_transportation_levy_limit") &&
+            measure.kind === "regional_transportation_levy_limit" ||
+            measure.kind === "conservation_levy_limit") &&
           measure.ballotIssue !== undefined
         ) {
           fail(
@@ -855,7 +862,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         measure.kind !== "metro_commitment" &&
         measure.kind !== "city_authorization" &&
         measure.kind !== "municipal_gid_board" &&
-        measure.kind !== "regional_transportation_levy_limit"
+        measure.kind !== "regional_transportation_levy_limit" &&
+        measure.kind !== "conservation_levy_limit"
       ) {
         if (!BALLOT_TEXT_KINDS.has(measure.ballotTextKind)) {
           fail(
@@ -900,7 +908,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           family === "metro" ||
           family === "city" ||
           family === "municipal_gid" ||
-          family === "regional_transportation"
+          family === "regional_transportation" ||
+          family === "conservation"
         ) {
           fail(
             `[${id}] measure ${measure.stepId} Spanish/AI ballot fallback does not apply to ${family} entries`,
@@ -1072,6 +1081,18 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           );
         }
       }
+      if (measure.kind === "conservation_levy_limit") {
+        if (family !== "conservation") {
+          fail(
+            `[${id}] measure ${measure.stepId} conservation_levy_limit only applies to conservation entries`,
+          );
+        }
+        if (!isNonEmptyString(measure.titlePlain)) {
+          fail(
+            `[${id}] measure ${measure.stepId} conservation_levy_limit requires titlePlain`,
+          );
+        }
+      }
       if (
         (family === "metro" ||
           family === "fire" ||
@@ -1080,7 +1101,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           family === "municipal_gid" ||
           family === "regional_transportation" ||
           family === "local_levy" ||
-          family === "urban_drainage") &&
+          family === "urban_drainage" ||
+          family === "conservation") &&
         !isNonEmptyString(measure.titlePlain)
       ) {
         fail(
@@ -1096,6 +1118,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           measure.kind !== "city_authorization" &&
           measure.kind !== "municipal_gid_board" &&
           measure.kind !== "regional_transportation_levy_limit" &&
+          measure.kind !== "conservation_levy_limit" &&
           !(family === "metro" && measure.kind === "bond") &&
           !(family === "fire" && measure.kind === "bond") &&
           !(family === "library" && measure.kind === "bond") &&
@@ -1103,7 +1126,8 @@ export function validateLevyAuthorityChainData(data: unknown): void {
           !(family === "municipal_gid" && measure.kind === "bond") &&
           !(family === "regional_transportation" && measure.kind === "bond") &&
           !(family === "local_levy" && measure.kind === "bond") &&
-          !(family === "urban_drainage" && measure.kind === "bond")
+          !(family === "urban_drainage" && measure.kind === "bond") &&
+          !(family === "conservation" && measure.kind === "bond")
         ) {
           fail(
             `[${id}] measure ${measure.stepId} titlePlain is not valid for this family and kind`,
@@ -1219,7 +1243,7 @@ export function validateLevyAuthorityChainData(data: unknown): void {
         }
       } else if (measure.approval !== undefined) {
         fail(
-          `[${id}] measure ${measure.stepId} approval only applies to metro, city, municipal_gid, or regional_transportation entries`,
+          `[${id}] measure ${measure.stepId} approval only applies to metro, city, municipal_gid, regional_transportation, or conservation entries`,
         );
       }
       if (!foldsApprovalOntoMeasures(family) || measure.votes !== undefined) {
