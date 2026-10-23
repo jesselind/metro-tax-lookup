@@ -934,6 +934,7 @@ describe("levyAuthorityChainBuild", () => {
       "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538",
     );
     expect(levyLimit?.facts[1]?.value).toContain("owns land");
+    expect(levyLimit?.facts[1]?.value).toContain("heir or devisee");
     expect(entry.summarySource?.url).toBe(
       "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-35.pdf#page=538",
     );

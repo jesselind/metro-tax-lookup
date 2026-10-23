@@ -1095,7 +1095,7 @@
           "supportingFacts": [
             {
               "label": "Who may vote on a levy (C.R.S. § 35-70-104)",
-              "value": "For these districts, a qualified elector is a registered voter or corporation that owns land in the district.",
+              "value": "For these districts, a qualified elector is a registered voter or corporation that owns land in the district, or an heir or devisee of that land (someone who inherits it from a deceased landowner).",
               "sources": [
                 {
                   "text": "Colorado Revised Statutes Title 35 (2024)",

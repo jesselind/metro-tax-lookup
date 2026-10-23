@@ -52,9 +52,6 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       added: [
         "Who authorized this? for West Arapahoe Conservation District. County tables show 0.000 mills; state law allows a levy only after a district vote, and only up to one-half mill.",
       ],
-      changed: [
-        "App runtime is Next.js 16.4 and React 19.3, with matching types and lint config.",
-      ],
     },
   },
   {
