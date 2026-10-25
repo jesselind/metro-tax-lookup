@@ -954,6 +954,67 @@ describe("levyAuthorityChainBuild", () => {
     ]);
   });
 
+  it("builds Arapahoe Law Enforcement Authority from AUTH-derived mills and law_enforcement_levy_limit", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "arapahoe-law-enforcement-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const levyLimit = entry.steps.find(
+      (step) => step.id === "law-enforcement-levy-limit-crs-30-11-406",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("law_enforcement");
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(entry.summary).toBe(
+      "According to the 2025 Arapahoe County Adopted Budget, the base mill levy has been 4.982 since 1993 when voters approved a 0.900 mill increase.",
+    );
+    expect(entry.summarySource?.text).toBe(
+      "According to the 2025 Arapahoe County Adopted Budget",
+    );
+    expect(entry.summary.startsWith(entry.summarySource!.text)).toBe(true);
+    expect(levyLimit?.title).toBe("Property-tax levy limit");
+    expect(levyLimit?.body.trim()).toBe("");
+    expect(levyLimit?.facts.map((fact) => fact.label)).toEqual([
+      "Up to seven mills for operating expenses",
+      "4.982 mills since 1993 (county budget)",
+      "Who sits as the board (C.R.S. § 30-11-404)",
+      "1998 TABOR revenue change (county budget)",
+      "Ballot Issue 5A (November 1998)",
+    ]);
+    expect(levyLimit?.facts[0]?.value).toContain("Colorado law says");
+    expect(levyLimit?.facts[0]?.value).toContain("seven mills");
+    expect(levyLimit?.facts[0]?.sources[0]?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-30.pdf#page=178",
+    );
+    expect(levyLimit?.facts[1]?.value).toContain("4.982");
+    expect(levyLimit?.facts[1]?.value).toContain("0.900");
+    expect(levyLimit?.facts[3]?.value).toContain("TABOR");
+    expect(levyLimit?.facts[4]?.value).toContain("34,921");
+    expect(entry.summarySource?.url).toBe(
+      "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf#page=77",
+    );
+    expect(mills?.body).toContain("4.982 mills");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("No change in mills");
+    expect(mills?.facts[0]?.value).toContain("4.982");
+    expect(
+      entry.openGaps.some(
+        (g) => g.id === "law-enforcement-ballot-records-unlocated",
+      ),
+    ).toBe(true);
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "law-enforcement-levy-limit-crs-30-11-406",
+    ]);
+  });
+
   it("builds Antelope Hills GID from AUTH-derived mills and municipal_gid_board", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "antelope-hills-gid-authority-chain",

@@ -9,7 +9,7 @@
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
  * `metro`, `fire`, `library`, `city`, `municipal_gid`, `regional_transportation`,
- * `local_levy`, `urban_drainage`, `conservation`) inject
+ * `local_levy`, `urban_drainage`, `conservation`, `law_enforcement`) inject
  * nouns, measure kinds, budget labels, and mills takeaways. Multiple
  * authorization steps belong in `measures[]` (chronological); closed summary
  * stays one short who/when line, with optional `also` elections.
@@ -65,6 +65,9 @@ export const URBAN_DRAINAGE_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 
 /** Default bill wording for conservation entries when JSON omits `governmentBillName`. */
 export const CONSERVATION_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
+
+/** Default bill wording for law_enforcement entries when JSON omits `governmentBillName`. */
+export const LAW_ENFORCEMENT_GOVERNMENT_BILL_NAME_DEFAULT = "the authority";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -125,7 +128,9 @@ export type LevyAuthorityChainFamily =
   /** Title 32 art. 11 Urban Drainage and Flood Control District (MHFD). */
   | "urban_drainage"
   /** Title 35 art. 70 conservation district (Colorado Soil Conservation Act). */
-  | "conservation";
+  | "conservation"
+  /** Title 30 art. 11 part 4 county law enforcement authority. */
+  | "law_enforcement";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -194,6 +199,12 @@ export const OPEN_GAP_BODIES = {
    */
   "conservation-mill-election-unlocated":
     "State law says this district cannot collect a property-tax mill until qualified electors approve a levy. County property-tax tables show 0.000 mills for the years we track. We have not located a published mill-levy election for this district, so we cannot say whether qualified electors ever approved a levy that is not being collected today.",
+  /**
+   * Law enforcement authority: 1993 mill-increase ballot, 1998 ballot wording,
+   * and the creation election are not in published county election files.
+   */
+  "law-enforcement-ballot-records-unlocated":
+    "State law says electors must approve creating a law enforcement authority. The 2025 county budget describes later voter approvals in 1993 and 1998, and we link the 1998 certified yes/no totals for Ballot Issue 5A. We have not located the 1993 ballot wording, the 1998 ballot wording, or the creation election among Arapahoe County's published election files.",
 } as const;
 
 /**
@@ -238,6 +249,8 @@ export const REGIONAL_TRANSPORTATION_AUTHORIZATION_STEP_BODY =
   "Official state and district records:";
 export const CONSERVATION_AUTHORIZATION_STEP_BODY =
   "Official state and district records:";
+export const LAW_ENFORCEMENT_AUTHORIZATION_STEP_BODY =
+  "Official state and county records:";
 
 export type LevyAuthorityChainMeasureKind =
   | "override"
@@ -273,7 +286,13 @@ export type LevyAuthorityChainMeasureKind =
    * Conservation-district levy limit under Title 35 art. 70 (C.R.S. § 35-70-109).
    * Bill-first `titlePlain` + `detail` + cited `approval` required.
    */
-  | "conservation_levy_limit";
+  | "conservation_levy_limit"
+  /**
+   * County law-enforcement-authority levy limit under Title 30 art. 11 part 4
+   * (C.R.S. § 30-11-406). Bill-first `titlePlain` + `detail` + cited
+   * `approval` required.
+   */
+  | "law_enforcement_levy_limit";
 
 const CITY_COUNCIL_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
@@ -303,6 +322,15 @@ const REGIONAL_TRANSPORTATION_BODY_LEAD_PHRASES: Record<
 };
 
 const CONSERVATION_BODY_LEAD_PHRASES: Record<
+  LevyAuthorityChainBodyLead,
+  string
+> = {
+  approved: "Colorado law says",
+  also_approved: "Colorado law also says",
+  earlier_approved: "Colorado law earlier said",
+};
+
+const LAW_ENFORCEMENT_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
   string
 > = {
@@ -1246,6 +1274,84 @@ const CONSERVATION_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Default law-enforcement "What changed?" chrome. Rate figures are AUTH-derived.
+ * Entry `mills.stepBody` may replace this takeaway.
+ */
+export const LAW_ENFORCEMENT_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this authority each year.";
+
+/** Step title for statute-cited law-enforcement-authority levy limit. */
+export const LAW_ENFORCEMENT_LEVY_LIMIT_STEP_TITLE = "Property-tax levy limit";
+
+export const LAW_ENFORCEMENT_BUDGET_STEP_TITLE =
+  "What the authority's budget says";
+
+export const FACT_LABEL_LAW_ENFORCEMENT_RECORD = "State or county record";
+export const FACT_VALUE_LAW_ENFORCEMENT_AUTHORIZATION_RECORD =
+  "Official state statute or county record linked";
+
+/**
+ * Law enforcement authority pack (Title 30, art. 11, part 4). First consumer:
+ * Arapahoe Law Enforcement Authority AUTH `4012`. AUTH-derived What changed?.
+ * Fold approval onto each measure (conservation-like). Closed summary: linked
+ * `summarySource` lead + plain `headlinePlain`. Kind shipped today:
+ * `law_enforcement_levy_limit` (C.R.S. § 30-11-406). Do not invent a
+ * property-tax Ballot Issue letter for the 1993 mill increase; missing 1993 /
+ * 1998 ballot wording and the creation election stay
+ * `openGap` `law-enforcement-ballot-records-unlocated`.
+ */
+const LAW_ENFORCEMENT_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: LAW_ENFORCEMENT_BUDGET_STEP_TITLE,
+  budgetFactLabel: "County budget",
+  millsStepBody: LAW_ENFORCEMENT_MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set(["law_enforcement_levy_limit"]),
+  approvalStepTitle: STEP_TITLE_HOW_AUTHORIZED,
+  approvalStepBody: LAW_ENFORCEMENT_AUTHORIZATION_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_LAW_ENFORCEMENT_RECORD,
+  unavailableBallotFactValue: FACT_VALUE_LAW_ENFORCEMENT_AUTHORIZATION_RECORD,
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+    if (ballotIssue) {
+      return unavailableBallotMeasureBody(
+        ballotIssue,
+        electionMonthYear,
+        summaryAttribution,
+      );
+    }
+    return `This authority's board authorized this in ${electionMonthYear}. We could not locate a separate public ballot PDF for the authorization.`;
+  },
+  ballotStepTitle(_ballotIssue, kind) {
+    switch (kind) {
+      case "law_enforcement_levy_limit":
+        return LAW_ENFORCEMENT_LEVY_LIMIT_STEP_TITLE;
+      default:
+        throw new Error(
+          `law_enforcement pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead) {
+    switch (kind) {
+      case "law_enforcement_levy_limit": {
+        const lead = LAW_ENFORCEMENT_BODY_LEAD_PHRASES[bodyLead];
+        const trimmed = detail.trim();
+        if (!trimmed) {
+          throw new Error("law_enforcement_levy_limit requires detail");
+        }
+        return `${lead} ${trimmed}${/[.!?]$/.test(trimmed) ? "" : "."}`;
+      }
+      default:
+        throw new Error(
+          `law_enforcement pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
@@ -1261,6 +1367,7 @@ const FAMILY_PACKS: Record<
   local_levy: LOCAL_LEVY_PACK,
   urban_drainage: URBAN_DRAINAGE_PACK,
   conservation: CONSERVATION_PACK,
+  law_enforcement: LAW_ENFORCEMENT_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -1271,9 +1378,9 @@ export function getAuthorityChainFamilyPack(
 
 /**
  * Metro, fire, library, city, municipal_gid, regional_transportation,
- * local_levy, urban_drainage, and conservation: What changed? mill figures
- * come from the AUTH series (not hand-authored current/prior fields). School
- * and county still author mills.
+ * local_levy, urban_drainage, conservation, and law_enforcement: What
+ * changed? mill figures come from the AUTH series (not hand-authored
+ * current/prior fields). School and county still author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
@@ -1287,15 +1394,17 @@ export function usesAuthDerivedMills(
     family === "regional_transportation" ||
     family === "local_levy" ||
     family === "urban_drainage" ||
-    family === "conservation"
+    family === "conservation" ||
+    family === "law_enforcement"
   );
 }
 
 /**
- * Metro, city, municipal_gid, regional_transportation, and conservation fold
- * approval / vote facts onto each measure step so several authorizations stay
- * chronological. School, county, fire, library, local_levy, and urban_drainage
- * keep a trailing How people voted step for certified totals.
+ * Metro, city, municipal_gid, regional_transportation, conservation, and
+ * law_enforcement fold approval / vote facts onto each measure step so
+ * several authorizations stay chronological. School, county, fire, library,
+ * local_levy, and urban_drainage keep a trailing How people voted step for
+ * certified totals.
  */
 export function foldsApprovalOntoMeasures(
   family: LevyAuthorityChainFamily,
@@ -1305,7 +1414,8 @@ export function foldsApprovalOntoMeasures(
     family === "city" ||
     family === "municipal_gid" ||
     family === "regional_transportation" ||
-    family === "conservation"
+    family === "conservation" ||
+    family === "law_enforcement"
   );
 }
 
