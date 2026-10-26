@@ -9,7 +9,8 @@
  *
  * Master trail (shared step order + chrome) + family packs (`school`, `county`,
  * `metro`, `fire`, `library`, `city`, `municipal_gid`, `regional_transportation`,
- * `local_levy`, `urban_drainage`, `conservation`, `law_enforcement`) inject
+ * `local_levy`, `urban_drainage`, `conservation`, `law_enforcement`,
+ * `water_quality`) inject
  * nouns, measure kinds, budget labels, and mills takeaways. Multiple
  * authorization steps belong in `measures[]` (chronological); closed summary
  * stays one short who/when line, with optional `also` elections.
@@ -68,6 +69,9 @@ export const CONSERVATION_GOVERNMENT_BILL_NAME_DEFAULT = "the district";
 
 /** Default bill wording for law_enforcement entries when JSON omits `governmentBillName`. */
 export const LAW_ENFORCEMENT_GOVERNMENT_BILL_NAME_DEFAULT = "the authority";
+
+/** Default bill wording for water_quality entries when JSON omits `governmentBillName`. */
+export const WATER_QUALITY_GOVERNMENT_BILL_NAME_DEFAULT = "the authority";
 
 /** Step titles shared across families (budget title comes from the pack). */
 export const STEP_TITLE_WHO_GETS = "Who gets this money?";
@@ -130,7 +134,9 @@ export type LevyAuthorityChainFamily =
   /** Title 35 art. 70 conservation district (Colorado Soil Conservation Act). */
   | "conservation"
   /** Title 30 art. 11 part 4 county law enforcement authority. */
-  | "law_enforcement";
+  | "law_enforcement"
+  /** Title 25 art. 8.5 Cherry Creek Basin Water Quality Authority. */
+  | "water_quality";
 
 /** Static open-gap copy (no entry-specific numbers). */
 export const OPEN_GAP_BODIES = {
@@ -205,6 +211,18 @@ export const OPEN_GAP_BODIES = {
    */
   "law-enforcement-ballot-records-unlocated":
     "State law says electors must approve creating a law enforcement authority. The 2025 county budget describes later voter approvals in 1993 and 1998, and we link the 1998 certified yes/no totals for Ballot Issue 5A. We have not located the 1993 ballot wording, the 1998 ballot wording, or the creation election among Arapahoe County's published election files.",
+  /**
+   * Water quality authority: billed mill vs statute/general mill after a
+   * temporary TABOR reduction.
+   */
+  "water-quality-temporary-mill-reduction":
+    "The authority publishes one total mill rate on your bill. Recent authority budgets show a general mill with a temporary mill levy reduction so collections stay under TABOR, below the one-half mill ceiling in state law. From the county rate table alone, we cannot show a separate temporary-reduction line versus that general mill.",
+  /**
+   * Water quality authority: recreation, building-permit, and wastewater fees
+   * are separate from this property-tax mill.
+   */
+  "water-quality-fees-separate":
+    "This trail covers the property-tax mill on your levy list. The authority also collects recreation, building-permit, and wastewater fees. Those fees are not part of this property-tax authorization trail.",
 } as const;
 
 /**
@@ -251,6 +269,8 @@ export const CONSERVATION_AUTHORIZATION_STEP_BODY =
   "Official state and district records:";
 export const LAW_ENFORCEMENT_AUTHORIZATION_STEP_BODY =
   "Official state and county records:";
+export const WATER_QUALITY_AUTHORIZATION_STEP_BODY =
+  "Official state and district records:";
 
 export type LevyAuthorityChainMeasureKind =
   | "override"
@@ -292,7 +312,13 @@ export type LevyAuthorityChainMeasureKind =
    * (C.R.S. § 30-11-406). Bill-first `titlePlain` + `detail` + cited
    * `approval` required.
    */
-  | "law_enforcement_levy_limit";
+  | "law_enforcement_levy_limit"
+  /**
+   * Cherry Creek Basin Water Quality Authority levy limit under Title 25
+   * art. 8.5 (C.R.S. § 25-8.5-111). Bill-first `titlePlain` + `detail` + cited
+   * `approval` required.
+   */
+  | "water_quality_levy_limit";
 
 const CITY_COUNCIL_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
@@ -331,6 +357,15 @@ const CONSERVATION_BODY_LEAD_PHRASES: Record<
 };
 
 const LAW_ENFORCEMENT_BODY_LEAD_PHRASES: Record<
+  LevyAuthorityChainBodyLead,
+  string
+> = {
+  approved: "Colorado law says",
+  also_approved: "Colorado law also says",
+  earlier_approved: "Colorado law earlier said",
+};
+
+const WATER_QUALITY_BODY_LEAD_PHRASES: Record<
   LevyAuthorityChainBodyLead,
   string
 > = {
@@ -1352,6 +1387,86 @@ const LAW_ENFORCEMENT_PACK: LevyAuthorityChainFamilyPack = {
   },
 };
 
+/**
+ * Default water-quality "What changed?" chrome. Rate figures are AUTH-derived.
+ * Entry `mills.stepBody` may replace this takeaway.
+ */
+export const WATER_QUALITY_MILLS_STEP_BODY =
+  "Your bill uses one total mill rate for this authority each year.";
+
+/** Step title for statute-cited water-quality-authority levy limit. */
+export const WATER_QUALITY_LEVY_LIMIT_STEP_TITLE = "Property-tax levy limit";
+
+export const WATER_QUALITY_BUDGET_STEP_TITLE =
+  "What the authority's budget says";
+
+export const FACT_LABEL_WATER_QUALITY_RECORD = "State or district record";
+export const FACT_VALUE_WATER_QUALITY_AUTHORIZATION_RECORD =
+  "Official state statute or district record linked";
+
+/**
+ * Water quality authority pack (Title 25, art. 8.5). First consumer: Cherry
+ * Creek Basin Water Quality Authority (`match.registryId`
+ * `cherry-creek-basin-water-quality`; Arapahoe AUTH `4131`, Douglas AUTH
+ * `4340`). AUTH-derived What changed?. Fold approval onto each measure
+ * (conservation-like). Closed summary: linked `summarySource` lead + plain
+ * `headlinePlain`. Kind shipped today: `water_quality_levy_limit`
+ * (C.R.S. § 25-8.5-111). Do not invent a property-tax Ballot Issue for the
+ * half-mill ceiling; temporary TABOR mill reductions stay
+ * `openGap` `water-quality-temporary-mill-reduction`. Recreation /
+ * building-permit / wastewater fees stay `openGap` `water-quality-fees-separate`.
+ */
+const WATER_QUALITY_PACK: LevyAuthorityChainFamilyPack = {
+  budgetStepTitle: WATER_QUALITY_BUDGET_STEP_TITLE,
+  budgetFactLabel: "Authority budget",
+  millsStepBody: WATER_QUALITY_MILLS_STEP_BODY,
+  millsBodyTerms: [{ termId: "term-mill-levy", match: "rate" }],
+  measureKinds: new Set(["water_quality_levy_limit"]),
+  approvalStepTitle: STEP_TITLE_HOW_AUTHORIZED,
+  approvalStepBody: WATER_QUALITY_AUTHORIZATION_STEP_BODY,
+  ballotFactLabel: FACT_LABEL_WATER_QUALITY_RECORD,
+  unavailableBallotFactValue: FACT_VALUE_WATER_QUALITY_AUTHORIZATION_RECORD,
+  unavailableMeasureBody(ballotIssue, electionMonthYear, summaryAttribution) {
+    if (ballotIssue) {
+      return unavailableBallotMeasureBody(
+        ballotIssue,
+        electionMonthYear,
+        summaryAttribution,
+      );
+    }
+    return `This authority's board authorized this in ${electionMonthYear}. We could not locate a separate public ballot PDF for the authorization.`;
+  },
+  ballotStepTitle(_ballotIssue, kind) {
+    switch (kind) {
+      case "water_quality_levy_limit":
+        return WATER_QUALITY_LEVY_LIMIT_STEP_TITLE;
+      default:
+        throw new Error(
+          `water_quality pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  ballotStepBody(kind, detail, bodyLead) {
+    switch (kind) {
+      case "water_quality_levy_limit": {
+        const lead = WATER_QUALITY_BODY_LEAD_PHRASES[bodyLead];
+        const trimmed = detail.trim();
+        if (!trimmed) {
+          throw new Error("water_quality_levy_limit requires detail");
+        }
+        return `${lead} ${trimmed}${/[.!?]$/.test(trimmed) ? "" : "."}`;
+      }
+      default:
+        throw new Error(
+          `water_quality pack does not support measure kind: ${kind}`,
+        );
+    }
+  },
+  budgetBody(authorityShortName, detail) {
+    return `${authorityShortName}'s budget ${detail}.`;
+  },
+};
+
 const FAMILY_PACKS: Record<
   LevyAuthorityChainFamily,
   LevyAuthorityChainFamilyPack
@@ -1368,6 +1483,7 @@ const FAMILY_PACKS: Record<
   urban_drainage: URBAN_DRAINAGE_PACK,
   conservation: CONSERVATION_PACK,
   law_enforcement: LAW_ENFORCEMENT_PACK,
+  water_quality: WATER_QUALITY_PACK,
 };
 
 export function getAuthorityChainFamilyPack(
@@ -1378,9 +1494,9 @@ export function getAuthorityChainFamilyPack(
 
 /**
  * Metro, fire, library, city, municipal_gid, regional_transportation,
- * local_levy, urban_drainage, conservation, and law_enforcement: What
- * changed? mill figures come from the AUTH series (not hand-authored
- * current/prior fields). School and county still author mills.
+ * local_levy, urban_drainage, conservation, law_enforcement, and
+ * water_quality: What changed? mill figures come from the AUTH series (not
+ * hand-authored current/prior fields). School and county still author mills.
  */
 export function usesAuthDerivedMills(
   family: LevyAuthorityChainFamily,
@@ -1395,16 +1511,17 @@ export function usesAuthDerivedMills(
     family === "local_levy" ||
     family === "urban_drainage" ||
     family === "conservation" ||
-    family === "law_enforcement"
+    family === "law_enforcement" ||
+    family === "water_quality"
   );
 }
 
 /**
- * Metro, city, municipal_gid, regional_transportation, conservation, and
- * law_enforcement fold approval / vote facts onto each measure step so
- * several authorizations stay chronological. School, county, fire, library,
- * local_levy, and urban_drainage keep a trailing How people voted step for
- * certified totals.
+ * Metro, city, municipal_gid, regional_transportation, conservation,
+ * law_enforcement, and water_quality fold approval / vote facts onto each
+ * measure step so several authorizations stay chronological. School, county,
+ * fire, library, local_levy, and urban_drainage keep a trailing How people
+ * voted step for certified totals.
  */
 export function foldsApprovalOntoMeasures(
   family: LevyAuthorityChainFamily,
@@ -1415,7 +1532,8 @@ export function foldsApprovalOntoMeasures(
     family === "municipal_gid" ||
     family === "regional_transportation" ||
     family === "conservation" ||
-    family === "law_enforcement"
+    family === "law_enforcement" ||
+    family === "water_quality"
   );
 }
 

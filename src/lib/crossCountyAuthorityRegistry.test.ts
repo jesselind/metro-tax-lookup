@@ -77,6 +77,27 @@ describe("crossCountyAuthorityRegistry", () => {
     ).toBe("udfcd-south-platte");
   });
 
+  it("resolves Cherry Creek Basin Water Quality Authority levy codes and authority-chain entry", () => {
+    expect(
+      findCrossCountyAuthorityByCountyLevyCode("arapahoe", "4131")?.id,
+    ).toBe("cherry-creek-basin-water-quality");
+    expect(
+      findCrossCountyAuthorityByCountyLevyCode("douglas", "4340")?.id,
+    ).toBe("cherry-creek-basin-water-quality");
+    expect(
+      findLevyAuthorityChainEntry("CHERRY CREEK BASIN AUTH", {
+        countyId: "arapahoe",
+        levyLineCode: "4131",
+      })?.id,
+    ).toBe("cherry-creek-basin-water-quality-authority-chain");
+    expect(
+      findLevyAuthorityChainEntry("Cherry Creek Basin Water Quality Authority", {
+        countyId: "douglas",
+        levyLineCode: "4340",
+      })?.id,
+    ).toBe("cherry-creek-basin-water-quality-authority-chain");
+  });
+
   it("resolves RTD levy codes and authority-chain entry", () => {
     expect(
       findCrossCountyAuthorityByCountyLevyCode("arapahoe", "4528")?.id,
@@ -181,6 +202,7 @@ describe("crossCountyAuthorityRegistry", () => {
       "udfcd-main": { teId: "64147/1", lgId: "64147" },
       "udfcd-south-platte": { teId: "64174/1", lgId: "64174" },
       rtd: { teId: "64116/1", lgId: "64116" },
+      "cherry-creek-basin-water-quality": { teId: "64187/1", lgId: "64187" },
     };
 
     for (const row of authorities) {

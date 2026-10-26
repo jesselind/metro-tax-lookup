@@ -38,7 +38,7 @@ import {
   TERM_LINK_CLASS,
   TILE_DETAILS_CUE_ON_LIGHT_CLASS,
 } from "@/lib/toolFlowStyles";
-import { formatLocalGovernmentTypeForDisplay } from "@/lib/localGovernmentTypeDisplay";
+import { resolveLevyGovernmentTypeLabel } from "@/lib/localGovernmentTypeDisplay";
 import {
   GovernmentTypeBriefBody,
   governmentTypeBriefMentionsSpecialDistrict,
@@ -478,24 +478,19 @@ export function LevyLineDistrictDetailDialog({
   });
 
   /**
-   * Government *type* label for the "What's this?" popover: prefer DOLA directory export when
-   * matched; otherwise JSON explainer `origin.level` (government level — not the entity-specific
-   * "What is it?" paragraphs).
+   * Government *type* for the "What's this?" popover: a kind, not the mill's
+   * title. Curated explainer `origin.level` wins when present (directory type
+   * can be a parent LG). Otherwise DOLA Local Government Type, rewritten when
+   * DOLA stored a singleton entity title as the type.
    */
   const governmentTypeDisplayLabel = useMemo((): string | null => {
-    if (match && match.kind !== "none") {
-      const fromDirectory = formatLocalGovernmentTypeForDisplay(
-        match.record.localGovernmentType,
-      );
-      if (fromDirectory) return fromDirectory;
-    }
-    if (levyExplainerEntry) {
-      const raw = levyExplainerEntry.origin.level?.trim();
-      if (raw) {
-        return formatLocalGovernmentTypeForDisplay(raw) ?? raw;
-      }
-    }
-    return null;
+    return resolveLevyGovernmentTypeLabel({
+      directoryLocalGovernmentType:
+        match && match.kind !== "none"
+          ? match.record.localGovernmentType
+          : null,
+      explainerLevel: levyExplainerEntry?.origin.level,
+    });
   }, [match, levyExplainerEntry]);
 
   const governmentTypeShowsSpecialDistrictGlossary = Boolean(
