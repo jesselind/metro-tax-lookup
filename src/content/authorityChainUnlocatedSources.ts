@@ -192,6 +192,25 @@ export const AUTHORITY_CHAIN_UNLOCATED_SOURCES: readonly AuthorityChainUnlocated
       authorNote:
         "conservation family cites C.R.S. § 35-70-109 for the half-mill ceiling and election gate. openGap conservation-mill-election-unlocated until a district mill election is located. Do not invent a Ballot Issue letter. Do not treat the WordPress district page as an official mill-authorization cite.",
     },
+    {
+      id: "arapahoe-lea-4012-ballot-records",
+      status: "open",
+      notedAsOf: "2026-10",
+      authorityLabel: "Arapahoe Law Enforcement Authority",
+      authCode: "4012",
+      measureLabel:
+        "1993 mill-increase ballot, 1998 Ballot Issue 5A wording, and creation election",
+      sought:
+        "A Notice of Election or sample ballot for the 1993 0.900 mill increase, the 1998 Ballot Issue 5A wording, and the elector vote that created this authority under C.R.S. § 30-11-405.",
+      lookedWhere:
+        "Arapahoe County Past Elections File Library (1998 folder has Official Results only; no 1993 folder in the published library), the 2025 Arapahoe County Adopted Budget restatement of the 1993 mill and 1998 revenue change, and C.R.S. Title 30 art. 11 part 4.",
+      nextBest: {
+        text: "Arapahoe County Past Elections File Library",
+        url: "https://www.arapahoeco.gov/your_county/arapahoevotes/records_data/past_elections_file_library.php",
+      },
+      authorNote:
+        "law_enforcement family cites C.R.S. § 30-11-406 for the seven-mill ceiling and the 2025 adopted budget for the 4.982 / 1993 restatement. 1998 Official Results 5A totals are linked; do not treat 5A as the TABOR revenue change unless a source names both. Do not invent a 1993 Ballot Issue letter. openGap law-enforcement-ballot-records-unlocated.",
+    },
   ];
 
 /** Open blockers shown on `/sources`. */

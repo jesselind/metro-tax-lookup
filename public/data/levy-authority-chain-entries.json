@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage | conservation). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage | conservation | law_enforcement). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -1108,6 +1108,102 @@
       ],
       "openGapIds": [
         "conservation-mill-election-unlocated"
+      ]
+    },
+    {
+      "id": "arapahoe-law-enforcement-authority-chain",
+      "family": "law_enforcement",
+      "match": {
+        "levyLineCode": "4012"
+      },
+      "authority": {
+        "displayName": "Arapahoe Law Enforcement Authority",
+        "countyListName": "ARAPAHOE COUNTY L.E.A.",
+        "governingBody": "board_of_county_commissioners",
+        "governmentBillName": "the authority",
+        "whoGetsBody": "This mill's property-tax revenue pays for sheriff law enforcement in unincorporated Arapahoe County. Owners of property in a city or town do not pay this mill."
+      },
+      "summarySource": {
+        "text": "According to the 2025 Arapahoe County Adopted Budget",
+        "url": "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf#page=77"
+      },
+      "summary": {
+        "headlinePlain": "the base mill levy has been 4.982 since 1993 when voters approved a 0.900 mill increase"
+      },
+      "mills": {
+        "stepBody": "County published rates for this authority have been 4.982 mills across the years we track.",
+        "bodyTerms": [
+          {
+            "termId": "term-mills",
+            "match": "mills"
+          }
+        ]
+      },
+      "measures": [
+        {
+          "stepId": "law-enforcement-levy-limit-crs-30-11-406",
+          "kind": "law_enforcement_levy_limit",
+          "electionMonthYear": "December 2024",
+          "titlePlain": "Up to seven mills for operating expenses",
+          "detail": "this authority may levy a property tax of not more than seven mills for operating expenses",
+          "approval": {
+            "label": "C.R.S. § 30-11-406",
+            "value": "Under this statute, a law enforcement authority may levy a tax not to exceed seven mills for the 1983 property tax year and each year after that, for operating expenses.",
+            "source": {
+              "text": "Colorado Revised Statutes Title 30 (2024)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-30.pdf#page=178"
+            }
+          },
+          "bodyTermId": "term-mills",
+          "bodyTermMatch": "mills",
+          "supportingFacts": [
+            {
+              "label": "4.982 mills since 1993 (county budget)",
+              "value": "The 2025 adopted budget says the base mill levy has been 4.982 since 1993, when voters approved a 0.900 mill increase.",
+              "sources": [
+                {
+                  "text": "2025 Arapahoe County Adopted Budget",
+                  "url": "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf#page=77"
+                }
+              ]
+            },
+            {
+              "label": "Who sits as the board (C.R.S. § 30-11-404)",
+              "value": "On the effective date of the creating resolution, the board of county commissioners sits as the governing board of the authority because they hold county office, not because voters elect a separate authority board.",
+              "sources": [
+                {
+                  "text": "Colorado Revised Statutes Title 30 (2024)",
+                  "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-30.pdf#page=177"
+                }
+              ]
+            },
+            {
+              "label": "1998 TABOR revenue change (county budget)",
+              "value": "The 2025 adopted budget says voters in the unincorporated area approved a revenue change in November 1998 that ended the TABOR fiscal-year spending limit for this authority. The authority remains subject to other TABOR limits.",
+              "valueTermId": "term-tabor",
+              "valueTermMatch": "TABOR",
+              "sources": [
+                {
+                  "text": "2025 Arapahoe County Adopted Budget",
+                  "url": "https://files.arapahoeco.gov/Finance/Budget/2025%20Arapahoe%20County%20Adopted%20Budget.pdf#page=74"
+                }
+              ]
+            },
+            {
+              "label": "Ballot Issue 5A (November 1998)",
+              "value": "Yes: 34,921 (70.07%)\nNo: 14,914 (29.93%)",
+              "sources": [
+                {
+                  "text": "1998 Official Results",
+                  "url": "https://files.arapahoeco.gov/Your%20County/Arapahoe%20Votes/Documents/Records%20And%20data/Past%20Elections%20File%20Library/1998/1998GeneralElection_OfficialResults.pdf#page=17"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "openGapIds": [
+        "law-enforcement-ballot-records-unlocated"
       ]
     }
 

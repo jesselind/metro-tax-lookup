@@ -45,6 +45,16 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.36.0",
+    date: "2026-10-25",
+    title: "Arapahoe Law Enforcement Authority chain",
+    sections: {
+      added: [
+        "Who authorized this? for Arapahoe Law Enforcement Authority. County tables show 4.982 mills for unincorporated sheriff service. State law caps that levy at seven mills.",
+      ],
+    },
+  },
+  {
     version: "5.35.0",
     date: "2026-10-23",
     title: "West Arapahoe Conservation District authority chain",

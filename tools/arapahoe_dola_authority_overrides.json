@@ -9,8 +9,9 @@
     },
     "ARAPAHOE COUNTY L.E.A.": {
       "legalName": "Arapahoe Law Enforcement Authority",
+      "taxEntityId": "03002/1",
       "millsOverride": 4.982,
-      "note": "Mart 4012; fuzzy match on the mart label otherwise hits Arapahoe County (2998) and TE 03001/1 (16.959). County Levy.aspx L.E.A. line is 4.982 mills (2025 tax year)."
+      "note": "Mart 4012; fuzzy match on the mart label otherwise hits Arapahoe County (2998) and TE 03001/1 (16.959). Pin TE 03002/1. County Levy.aspx L.E.A. line is 4.982 mills (2025 tax year). Title 30 art. 11 part 4 law enforcement authority."
     },
     "REGIONAL TRANSPORTATION": {
       "legalName": "Regional Transportation District",
