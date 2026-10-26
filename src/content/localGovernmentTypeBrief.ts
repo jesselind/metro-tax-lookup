@@ -8,6 +8,11 @@
  * (`formatLocalGovernmentTypeForDisplay`). Used in the levy detail modal only.
  */
 
+const REGIONAL_TRANSPORTATION_DISTRICT_BRIEF =
+  "A regional transportation district is a special district that plans and operates transit in a multi-county service area. Property tax is one funding source; the district may also use sales tax and other revenue.";
+const URBAN_DRAINAGE_DISTRICT_BRIEF =
+  "An urban drainage district is a special district that manages stormwater and flood control for a defined region and may levy property tax for those services.";
+
 const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
   "Airport Authorities": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
   "Ambulance district": "An ambulance district is a special district that provides emergency medical transport in its coverage area, often funded in part by property tax.",
@@ -15,7 +20,6 @@ const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
   "Business Improvement district": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Cemetery district": "A cemetery district is a special district that maintains cemeteries or burial services for its service area.",
   "Charter school": "A charter school here is a public school under Colorado authorization; how it appears on your tax bill depends on how the county ties the levy to that entity. Any property tax on this row is still a local levy, levied and collected with your county bill.",
-  "Cherry Creek Basin Water Quality Authority": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
   "City & County Of Broomfield": "City and county government combines municipal and county functions in one government; Broomfield is structured this way in Colorado local-government records.",
   "City & County Of Denver": "City and county government combines municipal and county functions in one government; Denver is structured this way in Colorado local-government records.",
   "Colorado New Energy Improvement District": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
@@ -67,7 +71,8 @@ const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
   "Recreation Facility district": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Regional Service Authorities": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
   "Regional Transportation Authorities": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
-  "Regional Transportation District": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
+  "Regional transportation district": REGIONAL_TRANSPORTATION_DISTRICT_BRIEF,
+  "Regional Transportation District": REGIONAL_TRANSPORTATION_DISTRICT_BRIEF,
   "Sanitation district": "A sanitation district is a Colorado special district that provides wastewater or sewer services in its service area and may levy property tax for those services.",
   "School district": "A Colorado school district is a local education government that levies property tax for public schools in its boundaries. It is separate from cities and counties.",
   "Special Improvement District (Intergovernmental Authorities)": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
@@ -80,12 +85,14 @@ const GOVERNMENT_TYPE_BRIEF_BY_DISPLAY: Record<string, string> = {
   "Subdistrict of Special District": "This label identifies a Colorado special district under Title 32: a local government that delivers specific services in its service area and may levy property tax within its boundaries.",
   "Territorial Charter Municipalities": "This label is Colorado's classification for a type of municipal government (city or town). Municipalities levy property tax for city services alongside counties and districts.",
   "University Of Colorado Hospital Authority": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
-  "Urban Drainage & Flood Control District": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
+  "Urban drainage district": URBAN_DRAINAGE_DISTRICT_BRIEF,
+  "Urban Drainage & Flood Control District": URBAN_DRAINAGE_DISTRICT_BRIEF,
   "Urban Renewal Authorities": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
   "Water & Sanitation district": "This label identifies a Colorado special district or special-purpose district. It serves a defined area and may levy property tax for the services it provides.",
   "Water Authorities": "This label identifies a Colorado authority or special-purpose government. It may levy property tax or other charges depending on its enabling law and the services it provides.",
   "Water Conservancy district": "A water conservancy district is a Colorado special district that manages water resources for a defined area and may use property tax where authorized.",
   "Water district": "A water district is a special district organized to provide water supply or delivery; it may levy property tax within its service area depending on its charter and services.",
+  "Water quality authority": "A water quality authority is a special-purpose government created to protect water quality in a defined basin. It may levy property tax and other fees under its enabling law.",
 };
 
 export function getLocalGovernmentTypeBrief(displayLabel: string | null | undefined): string {

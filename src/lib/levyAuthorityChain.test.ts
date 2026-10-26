@@ -45,28 +45,28 @@ describe("levyAuthorityChain", () => {
     expect(cards).toHaveLength(HOME_LATEST_ARAPAHOE_AUTHORITY_CHAIN_COUNT);
     // Append order in levy-authority-chain-entries.json; last three, newest first.
     expect(cards.map((c) => c.entry.id)).toEqual([
+      "cherry-creek-basin-water-quality-authority-chain",
       "arapahoe-law-enforcement-authority-chain",
       "west-arapahoe-conservation-authority-chain",
-      "urban-drainage-flood-south-platte-authority-chain",
     ]);
     expect(cards[0]?.authorityDisplayName).toBe(
-      "Arapahoe Law Enforcement Authority",
+      "Cherry Creek Basin Water Quality Authority",
     );
-    expect(cards[0]?.lastYearPercentLabel).toBe("No change from last year");
-    expect(cards[0]?.lastYearDirection).toBe("neutral");
-    expect(cards[0]?.levyLineCode).toBe("4012");
+    expect(cards[0]?.lastYearPercentLabel).toBe("Up 4.7% from last year");
+    expect(cards[0]?.lastYearDirection).toBe("more");
+    expect(cards[0]?.levyLineCode).toBe("4131");
     expect(cards[1]?.authorityDisplayName).toBe(
-      "West Arapahoe Conservation District",
+      "Arapahoe Law Enforcement Authority",
     );
     expect(cards[1]?.lastYearPercentLabel).toBe("No change from last year");
     expect(cards[1]?.lastYearDirection).toBe("neutral");
-    expect(cards[1]?.levyLineCode).toBe("4744");
+    expect(cards[1]?.levyLineCode).toBe("4012");
     expect(cards[2]?.authorityDisplayName).toBe(
-      "Urban Drainage & Flood, South Platte Levy",
+      "West Arapahoe Conservation District",
     );
     expect(cards[2]?.lastYearPercentLabel).toBe("No change from last year");
     expect(cards[2]?.lastYearDirection).toBe("neutral");
-    expect(cards[2]?.levyLineCode).toBe("4713");
+    expect(cards[2]?.levyLineCode).toBe("4744");
   });
 
   it("matches Douglas SMFR AUTH 4014 via cross-county registry", () => {

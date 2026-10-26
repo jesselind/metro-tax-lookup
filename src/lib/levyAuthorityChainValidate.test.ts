@@ -187,7 +187,7 @@ describe("levyAuthorityChainValidate", () => {
     (school.authority as Record<string, unknown>).governmentBillName =
       "Cherry Creek School District";
     expect(() => validateLevyAuthorityChainData(data)).toThrow(
-      /authority\.governmentBillName only applies to county, metro, fire, library, city, municipal_gid, regional_transportation, local_levy, urban_drainage, conservation, or law_enforcement family entries/i,
+      /authority\.governmentBillName only applies to county, metro, fire, library, city, municipal_gid, regional_transportation, local_levy, urban_drainage, conservation, law_enforcement, or water_quality family entries/i,
     );
   });
 
@@ -322,6 +322,7 @@ describe("levyAuthorityChainValidate", () => {
     expect(families.has("urban_drainage")).toBe(true);
     expect(families.has("conservation")).toBe(true);
     expect(families.has("law_enforcement")).toBe(true);
+    expect(families.has("water_quality")).toBe(true);
 
     // Full-file validate already runs assertSummarySourcePlacement; this pins
     // the two contracts explicitly so a future soft `includes` check cannot

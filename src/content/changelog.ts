@@ -45,6 +45,19 @@ export function changelogEntryBullets(entry: ChangelogEntry): string[] {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    version: "5.37.0",
+    date: "2026-10-26",
+    title: "Cherry Creek Basin Water Quality Authority chain",
+    sections: {
+      added: [
+        "Who authorized this? for Cherry Creek Basin Water Quality Authority. County tables show about 0.45 mills. State law caps that levy at one-half mill unless voters approve a higher rate.",
+      ],
+      fixed: [
+        "Government type is the kind of government, not the mill's name. Developmental Disabilities stays a local levy, not county.",
+      ],
+    },
+  },
+  {
     version: "5.36.0",
     date: "2026-10-25",
     title: "Arapahoe Law Enforcement Authority chain",

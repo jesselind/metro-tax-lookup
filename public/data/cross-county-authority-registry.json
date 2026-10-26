@@ -44,6 +44,17 @@
       },
       "authorityChainEntryId": "regional-transportation-district-authority-chain",
       "millsReferenceCountyId": "arapahoe"
+    },
+    {
+      "id": "cherry-creek-basin-water-quality",
+      "displayName": "Cherry Creek Basin Water Quality Authority",
+      "lgId": "64187",
+      "levyLineCodeByCounty": {
+        "arapahoe": "4131",
+        "douglas": "4340"
+      },
+      "authorityChainEntryId": "cherry-creek-basin-water-quality-authority-chain",
+      "millsReferenceCountyId": "arapahoe"
     }
   ]
 }

@@ -1015,6 +1015,70 @@ describe("levyAuthorityChainBuild", () => {
     ]);
   });
 
+  it("builds Cherry Creek Basin Water Quality Authority from AUTH-derived mills and water_quality_levy_limit", () => {
+    const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
+      (candidate) =>
+        candidate.id === "cherry-creek-basin-water-quality-authority-chain",
+    )!;
+    const entry = buildLevyAuthorityChainEntry(record, {
+      residentCountyId: "arapahoe",
+    });
+    const levyLimit = entry.steps.find(
+      (step) => step.id === "water-quality-levy-limit-crs-25-8-5-111",
+    );
+    const mills = entry.steps.find((step) => step.id === "certified-mills");
+
+    expect(record.family).toBe("water_quality");
+    expect(record.measures[0]?.ballotIssue).toBeUndefined();
+    expect(entry.summary).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 25 § 25-8.5-111, this authority may levy property tax of not more than one-half mill unless electors approve a higher levy.",
+    );
+    expect(entry.summarySource?.text).toBe(
+      "According to the 2024 Colorado Revised Statutes Title 25 § 25-8.5-111",
+    );
+    expect(entry.summary.startsWith(entry.summarySource!.text)).toBe(true);
+    expect(levyLimit?.title).toBe("Property-tax levy limit");
+    expect(levyLimit?.body.trim()).toBe("");
+    expect(levyLimit?.facts.map((fact) => fact.label)).toEqual([
+      "Not more than one-half mill unless electors approve a higher levy",
+      "Temporary mill levy reduction (2026 budget)",
+      "Sixty percent of revenues on pollution abatement (C.R.S. § 25-8.5-111)",
+    ]);
+    expect(levyLimit?.facts[0]?.value).toContain("Colorado law says");
+    expect(levyLimit?.facts[0]?.value).toContain("one-half mill");
+    expect(levyLimit?.facts[0]?.sources[0]?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-25.pdf#page=947",
+    );
+    expect(levyLimit?.facts[1]?.value).toContain("0.500");
+    expect(levyLimit?.facts[1]?.value).toContain("0.450");
+    expect(levyLimit?.facts[1]?.value).toContain("TABOR");
+    expect(levyLimit?.facts[2]?.value).toContain("60 percent");
+    expect(entry.summarySource?.url).toBe(
+      "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-25.pdf#page=947",
+    );
+    expect(mills?.body).toContain("0.425");
+    expect(mills?.body).toContain("TABOR");
+    expect(mills?.facts.map((fact) => fact.label)).toEqual([
+      "Change from last year",
+      "Most notable increase",
+    ]);
+    expect(mills?.facts[0]?.value).toContain("0.430");
+    expect(mills?.facts[0]?.value).toContain("0.450");
+    expect(mills?.facts[1]?.value).toContain("0.451");
+    expect(mills?.facts[1]?.value).toContain("0.478");
+    expect(
+      entry.openGaps.some((g) => g.id === "water-quality-temporary-mill-reduction"),
+    ).toBe(true);
+    expect(
+      entry.openGaps.some((g) => g.id === "water-quality-fees-separate"),
+    ).toBe(true);
+    expect(entry.steps.map((step) => step.id)).toEqual([
+      "who-sets",
+      "certified-mills",
+      "water-quality-levy-limit-crs-25-8-5-111",
+    ]);
+  });
+
   it("builds Antelope Hills GID from AUTH-derived mills and municipal_gid_board", () => {
     const record = LEVY_AUTHORITY_CHAIN_ENTRY_RECORDS.find(
       (candidate) => candidate.id === "antelope-hills-gid-authority-chain",

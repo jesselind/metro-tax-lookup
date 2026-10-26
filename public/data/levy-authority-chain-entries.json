@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage | conservation | law_enforcement). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
+  "prototypeNote": "Structured authority-chain records with explicit family (school | county | metro | fire | library | city | municipal_gid | regional_transportation | local_levy | urban_drainage | conservation | law_enforcement | water_quality). Resident wording is built from levyAuthorityChainTemplates.ts master trail + family packs; inject facts and sources only. Authoring: docs/levy-explainer-authoring.md.",
   "allowedInlineTermIds": [
     "term-mill-levy",
     "term-mills",
@@ -1204,6 +1204,91 @@
       ],
       "openGapIds": [
         "law-enforcement-ballot-records-unlocated"
+      ]
+    },
+    {
+      "id": "cherry-creek-basin-water-quality-authority-chain",
+      "family": "water_quality",
+      "match": {
+        "registryId": "cherry-creek-basin-water-quality"
+      },
+      "authority": {
+        "displayName": "Cherry Creek Basin Water Quality Authority",
+        "countyListName": "CHERRY CREEK BASIN AUTH",
+        "governingBody": "board",
+        "whoGetsBody": "This mill's property-tax revenue helps pay for water-quality work in the Cherry Creek basin, including monitoring Cherry Creek Reservoir and pollution-abatement projects."
+      },
+      "summarySource": {
+        "text": "According to the 2024 Colorado Revised Statutes Title 25 § 25-8.5-111",
+        "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-25.pdf#page=947"
+      },
+      "summary": {
+        "headlinePlain": "this authority may levy property tax of not more than one-half mill unless electors approve a higher levy"
+      },
+      "countyOverlays": {
+        "douglas": {
+          "countyListName": "Cherry Creek Basin Water Quality Authority"
+        }
+      },
+      "mills": {
+        "stepBody": "County published rates for this authority have moved between 0.425 and 0.500 mills in the years we track. Authority budgets show a 0.500 general mill with a temporary reduction in some years so collections stay under TABOR.",
+        "bodyTerms": [
+          {
+            "termId": "term-tabor",
+            "match": "TABOR"
+          },
+          {
+            "termId": "term-mills",
+            "match": "mills"
+          }
+        ]
+      },
+      "measures": [
+        {
+          "stepId": "water-quality-levy-limit-crs-25-8-5-111",
+          "kind": "water_quality_levy_limit",
+          "electionMonthYear": "December 2024",
+          "titlePlain": "Not more than one-half mill unless electors approve a higher levy",
+          "titleTermId": "term-mills",
+          "titleTermMatch": "mill",
+          "detail": "this authority may levy and collect a property tax of not more than one-half mill unless electors approve a higher levy",
+          "approval": {
+            "label": "C.R.S. § 25-8.5-111",
+            "value": "Under this statute, no mill levy for any fiscal year shall exceed one-half mill. A levy greater than one-half mill needs elector approval at an election held under Title 32, article 1, part 8.",
+            "source": {
+              "text": "Colorado Revised Statutes Title 25 (2024)",
+              "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-25.pdf#page=947"
+            }
+          },
+          "supportingFacts": [
+            {
+              "label": "Temporary mill levy reduction (2026 budget)",
+              "value": "The 2026 adopted budget shows a 0.500 general mill with a temporary mill levy reduction of 0.050 mills under TABOR, for a billed total of 0.450 mills.",
+              "valueTermId": "term-tabor",
+              "valueTermMatch": "TABOR",
+              "sources": [
+                {
+                  "text": "2026 Cherry Creek Basin Water Quality Authority Final Budget",
+                  "url": "https://www.cherrycreekbasin.org/files/dde645dce/2+Cherry+Creek+Basin+WQA+2026+Final+Budget.pdf#page=3"
+                }
+              ]
+            },
+            {
+              "label": "Sixty percent of revenues on pollution abatement (C.R.S. § 25-8.5-111)",
+              "value": "State law says at least 60 percent of the authority's annual revenues from fees, tolls, and property tax must be spent on construction and maintenance of pollution-abatement projects in the Cherry Creek basin, or on debt incurred entirely for those projects.",
+              "sources": [
+                {
+                  "text": "Colorado Revised Statutes Title 25 (2024)",
+                  "url": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-25.pdf#page=948"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "openGapIds": [
+        "water-quality-temporary-mill-reduction",
+        "water-quality-fees-separate"
       ]
     }
 

@@ -84,7 +84,9 @@ export function authorityChainE2eCases(): AuthorityChainE2eCase[] {
           ? "South Metro Fire Rescue Fire Protection District"
           : record.id === "regional-transportation-district-authority-chain"
             ? "Regional Transportation District"
-            : undefined;
+            : record.id === "cherry-creek-basin-water-quality-authority-chain"
+              ? "Cherry Creek Basin Water Quality Authority"
+              : undefined;
       pushCase({
         levyLineCode: douglasCode,
         entry: buildLevyAuthorityChainEntry(record, {
